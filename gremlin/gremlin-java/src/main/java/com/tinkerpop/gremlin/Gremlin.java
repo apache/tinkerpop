@@ -7,8 +7,7 @@ import java.util.function.Function;
  */
 public class Gremlin {
 
-    public static void doLambda(Function<Integer, Integer> function) {
-        int x = function.apply(1);
-        doLambda(y -> x + y);
+    public static int doLambda(Function<Integer, Integer> function) {
+        return function.apply(1);
     }
 }
