@@ -8,7 +8,10 @@ import junit.framework.TestCase;
 public class GremlinTest extends TestCase {
 
     public void testDoLambda() {
-        int y = Gremlin.doLambda(x -> x + 1);
-        assertEquals(2, y);
+        String y = Gremlin.doLambda((x, z) -> x + z);
+        assertEquals("12", y);
+        TriFunction<Integer,Integer,Integer,Integer> tri = (a,b,c) -> a+b+c;
+        assertEquals(new Integer(6), tri.blah(1,2,3));
+
     }
 }
