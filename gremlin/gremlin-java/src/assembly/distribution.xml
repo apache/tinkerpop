@@ -1,0 +1,28 @@
+<assembly>
+    <id>distribution</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <fileSets>
+        <fileSet>
+            <includes>
+                <include>pom.xml</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>src</directory>
+        </fileSet>
+        <fileSet>
+            <directory>target/apidocs</directory>
+        </fileSet>
+        <fileSet>
+            <directory>target/site</directory>
+        </fileSet>
+        <fileSet>
+            <directory>target</directory>
+            <includes>
+                <include>gremlin-java-*.jar</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>
