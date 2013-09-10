@@ -33,6 +33,7 @@
     <modules>
         <module>blueprints-core</module>
         <module>blueprints-test</module>
+        <module>blueprints-tinkergraph</module>
         <module>blueprints-neo4j-graph</module>
     </modules>
 

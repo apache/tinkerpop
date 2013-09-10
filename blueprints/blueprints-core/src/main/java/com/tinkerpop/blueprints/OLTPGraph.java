@@ -15,4 +15,6 @@ public interface OLTPGraph {
 
     public void rollback();
 
+    public Features getFeatures();
+
 }
