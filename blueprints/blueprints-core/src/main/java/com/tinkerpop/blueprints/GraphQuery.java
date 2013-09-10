@@ -7,6 +7,8 @@ import java.util.function.Predicate;
  */
 public interface GraphQuery extends Query {
 
+    public GraphQuery ids(Object... ids);
+
     @Override
     public GraphQuery has(String key);
 

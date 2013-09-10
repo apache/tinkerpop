@@ -11,8 +11,6 @@ public interface VertexQuery extends Query {
 
     public VertexQuery labels(String... labels);
 
-    public VertexQuery ids(Object... ids);
-
     @Override
     public VertexQuery has(String key);
 
