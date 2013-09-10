@@ -22,8 +22,8 @@
     <inceptionYear>2009</inceptionYear>
     <licenses>
         <license>
-            <name>BSD 3-Clause</name>
-            <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
+            <name>Apache 2</name>
+            <url>http://www.opensource.org/licenses/Apache-2.0</url>
         </license>
     </licenses>
     <scm>
@@ -31,18 +31,7 @@
         <developerConnection>scm:git:git@github.com:tinkerpop/gremlin.git</developerConnection>
         <url>git@github.com:tinkerpop/gremlin.git</url>
     </scm>
-    <developers>
-        <developer>
-            <name>Marko A. Rodriguez</name>
-            <email>marko@markorodriguez.com</email>
-            <url>http://markorodriguez.com</url>
-        </developer>
-        <developer>
-            <name>Stephen Mallette</name>
-            <email>spmva@genoprime.com</email>
-            <url>http://stephen.genoprime.com</url>
-        </developer>
-    </developers>
+
     <modules>
         <module>gremlin-test</module>
         <module>gremlin-java</module>
