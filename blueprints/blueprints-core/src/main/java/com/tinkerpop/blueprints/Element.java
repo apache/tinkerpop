@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints;
 
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -11,7 +13,13 @@ public interface Element {
 
     public <T> Property<T> setProperty(String key, T value);
 
-    public Iterable<Property> getProperties();
+    public <T> Property<T> removeProperty(String key);
+
+    public Set<String> getPropertyKeys();
+
+    public default <T> T getValue(String key) {
+        return (T) this.getProperty(key).getValue();
+    }
 
     public void remove();
 

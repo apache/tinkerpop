@@ -1,11 +1,13 @@
 package com.tinkerpop.blueprints;
 
+import java.io.Closeable;
+
 /**
- * An OLTPGraph is a container object for a collection of vertices and a collection edges.
+ * An Graph is a container object for a collection of vertices and a collection edges.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface OLTPGraph {
+public interface Graph extends Closeable {
 
     public Vertex addVertex(Property... properties);
 
