@@ -34,7 +34,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
     }
 
     public Edge addEdge(final String label, final Vertex vertex, final Property... properties) {
-        final Edge edge = this.graph.addEdge(null, this, vertex, label);
+        final Edge edge = this.graph.addEdge(this, vertex, label, properties);
         for (final Property property : properties) {
             edge.setProperty(property.getKey(), property.getValue());
         }

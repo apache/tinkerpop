@@ -9,13 +9,10 @@ import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
-import com.tinkerpop.blueprints.util.IndexHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -28,11 +25,11 @@ import java.util.stream.Stream;
 public class TinkerGraph implements Graph, Serializable {
 
     protected Long currentId = 0l;
-    protected Map<String, Vertex> vertices = new HashMap<String, Vertex>();
-    protected Map<String, Edge> edges = new HashMap<String, Edge>();
+    protected Map<String, Vertex> vertices = new HashMap<>();
+    protected Map<String, Edge> edges = new HashMap<>();
 
-    protected TinkerKeyIndex<TinkerVertex> vertexIndex = new TinkerKeyIndex<TinkerVertex>(TinkerVertex.class, this);
-    protected TinkerKeyIndex<TinkerEdge> edgeIndex = new TinkerKeyIndex<TinkerEdge>(TinkerEdge.class, this);
+    protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
+    protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
     private final String directory;
     //private final FileType fileType;
@@ -89,6 +86,8 @@ public class TinkerGraph implements Graph, Serializable {
         //this.fileType = FileType.JAVA;
     }
 
+    ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
+
     public <T extends Element> void createIndex(final String key, final Class<T> elementClass) {
         if (elementClass == null)
             throw ExceptionFactory.classForElementCannotBeNull();
@@ -128,6 +127,7 @@ public class TinkerGraph implements Graph, Serializable {
         }
     }
 
+    ////////////// BLUEPRINTS API METHODS //////////////////
 
     public Vertex addVertex(final Property... properties) {
         String idString = Stream.of(properties)
@@ -151,31 +151,33 @@ public class TinkerGraph implements Graph, Serializable {
 
         final Vertex vertex = new TinkerVertex(idString, this);
         this.vertices.put(vertex.getId().toString(), vertex);
-        Stream.of(properties).forEach(p -> {
+        Stream.of(properties).filter(p -> !p.getKey().equals(Property.Key.ID.toString())).forEach(p -> {
             vertex.setProperty(p.getKey(), p.getValue());
         });
         return vertex;
 
     }
 
-    protected Edge addEdge(final Object id, final Vertex outVertex, final Vertex inVertex, final String label) {
+    protected Edge addEdge(final Vertex outVertex, final Vertex inVertex, final String label, final Property... properties) {
         if (label == null)
             throw ExceptionFactory.edgeLabelCanNotBeNull();
 
-        String idString = null;
-        Edge edge;
-        if (null != id) {
-            idString = id.toString();
-            edge = this.edges.get(idString);
-            if (null != edge) {
-                throw ExceptionFactory.edgeWithIdAlreadyExist(id);
+        String idString = Stream.of(properties)
+                .filter((Property p) -> p.getKey().equals(Property.Key.ID.toString()))
+                .map(p -> p.getValue().toString())
+                .findFirst()
+                .orElseGet(() -> null);
+
+        final Edge edge;
+        if (null != idString) {
+            if (this.edges.containsKey(idString)) {
+                throw ExceptionFactory.edgeWithIdAlreadyExist(idString);
             }
         } else {
             boolean done = false;
             while (!done) {
                 idString = this.getNextId();
-                edge = this.edges.get(idString);
-                if (null == edge)
+                if (!this.edges.containsKey(idString))
                     done = true;
             }
         }
@@ -207,8 +209,8 @@ public class TinkerGraph implements Graph, Serializable {
         this.vertices.clear();
         this.edges.clear();
         this.currentId = 0l;
-        this.vertexIndex = new TinkerKeyIndex<TinkerVertex>(TinkerVertex.class, this);
-        this.edgeIndex = new TinkerKeyIndex<TinkerEdge>(TinkerEdge.class, this);
+        this.vertexIndex = new TinkerIndex<TinkerVertex>(this, TinkerVertex.class);
+        this.edgeIndex = new TinkerIndex<TinkerEdge>(this, TinkerEdge.class);
     }
 
     public void close() {
@@ -237,56 +239,4 @@ public class TinkerGraph implements Graph, Serializable {
     public Features getFeatures() {
         return null;
     }
-
-    protected class TinkerKeyIndex<T extends TinkerElement> extends TinkerIndex<T> implements Serializable {
-
-        private final Set<String> indexedKeys = new HashSet<String>();
-        private TinkerGraph graph;
-
-        public TinkerKeyIndex(final Class<T> indexClass, final TinkerGraph graph) {
-            super(null, indexClass);
-            this.graph = graph;
-        }
-
-        public void autoUpdate(final String key, final Object newValue, final Object oldValue, final T element) {
-            if (this.indexedKeys.contains(key)) {
-                if (oldValue != null)
-                    this.remove(key, oldValue, element);
-                this.put(key, newValue, element);
-            }
-        }
-
-        public void autoRemove(final String key, final Object oldValue, final T element) {
-            if (this.indexedKeys.contains(key)) {
-                this.remove(key, oldValue, element);
-            }
-        }
-
-        public void createKeyIndex(final String key) {
-            if (this.indexedKeys.contains(key))
-                return;
-
-            this.indexedKeys.add(key);
-
-            if (TinkerVertex.class.equals(this.indexClass)) {
-                IndexHelper.reIndexElements(graph, graph.query().vertices(), new HashSet<String>(Arrays.asList(key)));
-            } else {
-                IndexHelper.reIndexElements(graph, graph.query().edges(), new HashSet<String>(Arrays.asList(key)));
-            }
-        }
-
-        public void dropKeyIndex(final String key) {
-            if (!this.indexedKeys.contains(key))
-                return;
-
-            this.indexedKeys.remove(key);
-            this.index.remove(key);
-
-        }
-
-        public Set<String> getIndexedKeys() {
-            return new HashSet<String>(this.indexedKeys);
-        }
-    }
-
 }

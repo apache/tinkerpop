@@ -1,12 +1,15 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.util.IndexHelper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,38 +19,31 @@ import java.util.Set;
 class TinkerIndex<T extends Element> implements Serializable {
 
     protected Map<String, Map<Object, Set<T>>> index = new HashMap<>();
-    protected final String indexName;
     protected final Class<T> indexClass;
+    private final Set<String> indexedKeys = new HashSet<>();
+    private final TinkerGraph graph;
 
-    public TinkerIndex(final String indexName, final Class<T> indexClass) {
-        this.indexName = indexName;
+    public TinkerIndex(final TinkerGraph graph, final Class<T> indexClass) {
+        this.graph = graph;
         this.indexClass = indexClass;
-    }
-
-    public String getIndexName() {
-        return this.indexName;
-    }
-
-    public Class<T> getIndexClass() {
-        return this.indexClass;
     }
 
     public void put(final String key, final Object value, final T element) {
         Map<Object, Set<T>> keyMap = this.index.get(key);
         if (keyMap == null) {
-            keyMap = new HashMap<Object, Set<T>>();
+            keyMap = new HashMap<>();
             this.index.put(key, keyMap);
         }
         Set<T> objects = keyMap.get(value);
         if (null == objects) {
-            objects = new HashSet<T>();
+            objects = new HashSet<>();
             keyMap.put(value, objects);
         }
         objects.add(element);
 
     }
 
-    public Iterable<T> get(final String key, final Object value) {
+    public List<T> get(final String key, final Object value) {
         final Map<Object, Set<T>> keyMap = this.index.get(key);
         if (null == keyMap) {
             return Collections.emptyList();
@@ -56,12 +52,8 @@ class TinkerIndex<T extends Element> implements Serializable {
             if (null == set)
                 return Collections.emptyList();
             else
-                return new ArrayList<T>(set);
+                return new ArrayList<>(set);
         }
-    }
-
-    public Iterable<T> query(final String key, final Object query) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
     }
 
     public long count(final String key, final Object value) {
@@ -98,5 +90,41 @@ class TinkerIndex<T extends Element> implements Serializable {
                 }
             }
         }
+    }
+
+
+    public void autoUpdate(final String key, final Object newValue, final Object oldValue, final T element) {
+        if (this.indexedKeys.contains(key)) {
+            if (oldValue != null)
+                this.remove(key, oldValue, element);
+            this.put(key, newValue, element);
+        }
+    }
+
+    public void autoRemove(final String key, final Object oldValue, final T element) {
+        if (this.indexedKeys.contains(key)) {
+            this.remove(key, oldValue, element);
+        }
+    }
+
+    public void createKeyIndex(final String key) {
+        if (this.indexedKeys.contains(key))
+            return;
+
+        this.indexedKeys.add(key);
+
+        if (TinkerVertex.class.equals(this.indexClass)) {
+            IndexHelper.reIndexElements(graph, graph.query().vertices(), new HashSet<>(Arrays.asList(key)));
+        } else {
+            IndexHelper.reIndexElements(graph, graph.query().edges(), new HashSet<>(Arrays.asList(key)));
+        }
+    }
+
+    public void dropKeyIndex(final String key) {
+        this.index.remove(key).clear();
+    }
+
+    public Set<String> getIndexedKeys() {
+        return this.index.keySet();
     }
 }

@@ -41,8 +41,8 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
     }
 
     public void remove() {
-        TinkerVertex outVertex = (TinkerVertex) this.getVertex(Direction.OUT);
-        TinkerVertex inVertex = (TinkerVertex) this.getVertex(Direction.IN);
+        final TinkerVertex outVertex = (TinkerVertex) this.getVertex(Direction.OUT);
+        final TinkerVertex inVertex = (TinkerVertex) this.getVertex(Direction.IN);
         if (null != outVertex && null != outVertex.outEdges) {
             final Set<Edge> edges = outVertex.outEdges.get(this.getLabel());
             if (null != edges)
@@ -53,7 +53,6 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
             if (null != edges)
                 edges.remove(this);
         }
-
 
         this.graph.edgeIndex.removeElement(this);
         this.graph.edges.remove(this.getId());

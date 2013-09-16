@@ -33,4 +33,7 @@ public interface Property<T> {
     public static Property[] make(Object... values) {
         throw new UnsupportedOperationException();
     }
+
+    // public boolean isHidden()
+    // public void setHidden()
 }
