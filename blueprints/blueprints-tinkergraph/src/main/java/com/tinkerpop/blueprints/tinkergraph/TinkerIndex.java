@@ -33,12 +33,12 @@ class TinkerIndex<T extends Element> implements Serializable {
     protected void put(final String key, final Object value, final T element) {
         Map<Object, Set<T>> keyMap = this.index.get(key);
         if (keyMap == null) {
-            keyMap = new ConcurrentHashMap<>();
+            keyMap = new HashMap<>();
             this.index.put(key, keyMap);
         }
         Set<T> objects = keyMap.get(value);
         if (null == objects) {
-            objects = new CopyOnWriteArraySet<>();
+            objects = new HashSet<>();
             keyMap.put(value, objects);
         }
         objects.add(element);

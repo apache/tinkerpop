@@ -18,7 +18,8 @@ public interface Element {
     public Set<String> getPropertyKeys();
 
     public default <T> T getValue(String key) {
-        return (T) this.getProperty(key).getValue();
+        final Property<T> property = this.getProperty(key);
+        return (null == property) ? null : property.getValue();
     }
 
     public void remove();
