@@ -1,17 +1,19 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.util.IndexHelper;
+import com.tinkerpop.blueprints.Vertex;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,15 +30,15 @@ class TinkerIndex<T extends Element> implements Serializable {
         this.indexClass = indexClass;
     }
 
-    public void put(final String key, final Object value, final T element) {
+    protected void put(final String key, final Object value, final T element) {
         Map<Object, Set<T>> keyMap = this.index.get(key);
         if (keyMap == null) {
-            keyMap = new HashMap<>();
+            keyMap = new ConcurrentHashMap<>();
             this.index.put(key, keyMap);
         }
         Set<T> objects = keyMap.get(value);
         if (null == objects) {
-            objects = new HashSet<>();
+            objects = new CopyOnWriteArraySet<>();
             keyMap.put(value, objects);
         }
         objects.add(element);
@@ -108,16 +110,17 @@ class TinkerIndex<T extends Element> implements Serializable {
     }
 
     public void createKeyIndex(final String key) {
+        Objects.requireNonNull(key);
         if (this.indexedKeys.contains(key))
             return;
-
         this.indexedKeys.add(key);
 
-        if (TinkerVertex.class.equals(this.indexClass)) {
-            IndexHelper.reIndexElements(graph, graph.query().vertices(), new HashSet<>(Arrays.asList(key)));
-        } else {
-            IndexHelper.reIndexElements(graph, graph.query().edges(), new HashSet<>(Arrays.asList(key)));
-        }
+        (Vertex.class.isAssignableFrom(this.indexClass) ?
+                this.graph.vertices.values().<T>parallelStream() :
+                this.graph.edges.values().<T>parallelStream())
+                .map(e -> new Object[]{((T) e).getValue(key), e})
+                .filter(a -> null != a[0])
+                .forEach(a -> this.put(key, a[0], (T) a[1]));
     }
 
     public void dropKeyIndex(final String key) {

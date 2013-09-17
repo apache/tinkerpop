@@ -8,7 +8,6 @@ import com.tinkerpop.blueprints.util.DefaultGraphQuery;
 
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -27,11 +26,10 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
 
     public Iterable<Vertex> vertices() {
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
-        final Stream<? extends Vertex> vertices = (null == indexedContainer) ?
+        return ((null == indexedContainer) ?
                 this.graph.vertices.values().parallelStream() :
-                this.graph.vertexIndex.get(indexedContainer.key, indexedContainer.value).parallelStream();
-
-        return vertices.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers))
+                this.graph.vertexIndex.get(indexedContainer.key, indexedContainer.value).parallelStream())
+                .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers))
                 .limit(this.limit)
                 .collect(Collectors.<Vertex>toList());
     }
