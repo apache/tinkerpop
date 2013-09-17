@@ -14,6 +14,7 @@ import com.tinkerpop.blueprints.util.StringFactory;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -24,66 +25,76 @@ import java.util.stream.Stream;
  */
 public class TinkerGraph implements Graph, Serializable {
 
-    protected Long currentId = 0l;
+    protected Long currentId = -1l;
     protected Map<String, Vertex> vertices = new HashMap<>();
     protected Map<String, Edge> edges = new HashMap<>();
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
-    private final String directory;
-    //private final FileType fileType;
-
     private static final Features FEATURES = new Features();
-    //private static final Features PERSISTENT_FEATURES;
-
-    static {
-        /*FEATURES.supportsDuplicateEdges = true;
-        FEATURES.supportsSelfLoops = true;
-        FEATURES.supportsSerializableObjectProperty = true;
-        FEATURES.supportsBooleanProperty = true;
-        FEATURES.supportsDoubleProperty = true;
-        FEATURES.supportsFloatProperty = true;
-        FEATURES.supportsIntegerProperty = true;
-        FEATURES.supportsPrimitiveArrayProperty = true;
-        FEATURES.supportsUniformListProperty = true;
-        FEATURES.supportsMixedListProperty = true;
-        FEATURES.supportsLongProperty = true;
-        FEATURES.supportsMapProperty = true;
-        FEATURES.supportsStringProperty = true;
-
-        FEATURES.ignoresSuppliedIds = false;
-        FEATURES.isPersistent = false;
-        FEATURES.isWrapper = false;
-
-        FEATURES.supportsIndices = true;
-        FEATURES.supportsKeyIndices = true;
-        FEATURES.supportsVertexKeyIndex = true;
-        FEATURES.supportsEdgeKeyIndex = true;
-        FEATURES.supportsVertexIndex = true;
-        FEATURES.supportsEdgeIndex = true;
-        FEATURES.supportsTransactions = false;
-        FEATURES.supportsVertexIteration = true;
-        FEATURES.supportsEdgeIteration = true;
-        FEATURES.supportsEdgeRetrieval = true;
-        FEATURES.supportsVertexProperties = true;
-        FEATURES.supportsEdgeProperties = true;
-        FEATURES.supportsThreadedTransactions = false;
-
-        PERSISTENT_FEATURES = FEATURES.copyFeatures();
-        PERSISTENT_FEATURES.isPersistent = true;*/
-    }
-
-    public enum FileType {
-        JAVA,
-        GML,
-        GRAPHML,
-        GRAPHSON
-    }
 
     public TinkerGraph() {
-        this.directory = null;
-        //this.fileType = FileType.JAVA;
+    }
+
+    ////////////// BLUEPRINTS API METHODS //////////////////
+
+    public Vertex addVertex(final Property... properties) {
+        Objects.requireNonNull(properties);
+        String idString = Stream.of(properties)
+                .filter((Property p) -> p.getKey().equals(Property.Key.ID.toString()))
+                .map(p -> p.getValue().toString())
+                .findFirst()
+                .orElseGet(() -> null);
+
+        if (null != idString) {
+            if (this.vertices.containsKey(idString))
+                throw ExceptionFactory.vertexWithIdAlreadyExists(idString);
+        } else {
+            idString = TinkerHelper.getNextId(this);
+        }
+
+        final Vertex vertex = new TinkerVertex(idString, this);
+        this.vertices.put(vertex.getId().toString(), vertex);
+        Stream.of(properties).filter(p -> !p.getKey().equals(Property.Key.ID.toString())).forEach(p -> {
+            vertex.setProperty(p.getKey(), p.getValue());
+        });
+        return vertex;
+
+    }
+
+    public GraphQuery query() {
+        return new TinkerGraphQuery(this);
+    }
+
+
+    public String toString() {
+        return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());
+    }
+
+    public void clear() {
+        this.vertices.clear();
+        this.edges.clear();
+        this.currentId = 0l;
+        this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
+        this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
+    }
+
+    public void close() {
+
+    }
+
+    public void commit() {
+
+    }
+
+    public void rollback() {
+
+    }
+
+
+    public Features getFeatures() {
+        return null;
     }
 
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
@@ -125,118 +136,5 @@ public class TinkerGraph implements Graph, Serializable {
         } else {
             throw ExceptionFactory.classIsNotIndexable(elementClass);
         }
-    }
-
-    ////////////// BLUEPRINTS API METHODS //////////////////
-
-    public Vertex addVertex(final Property... properties) {
-        String idString = Stream.of(properties)
-                .filter((Property p) -> p.getKey().equals(Property.Key.ID.toString()))
-                .map(p -> p.getValue().toString())
-                .findFirst()
-                .orElseGet(() -> null);
-
-        if (null != idString) {
-            if (this.vertices.containsKey(idString)) {
-                throw ExceptionFactory.vertexWithIdAlreadyExists(idString);
-            }
-        } else {
-            boolean done = false;
-            while (!done) {
-                idString = this.getNextId();
-                if (!this.vertices.containsKey(idString))
-                    done = true;
-            }
-        }
-
-        final Vertex vertex = new TinkerVertex(idString, this);
-        this.vertices.put(vertex.getId().toString(), vertex);
-        Stream.of(properties).filter(p -> !p.getKey().equals(Property.Key.ID.toString())).forEach(p -> {
-            vertex.setProperty(p.getKey(), p.getValue());
-        });
-        return vertex;
-
-    }
-
-    protected Edge addEdge(final Vertex outVertex, final Vertex inVertex, final String label, final Property... properties) {
-        if (label == null)
-            throw ExceptionFactory.edgeLabelCanNotBeNull();
-
-        String idString = Stream.of(properties)
-                .filter((Property p) -> p.getKey().equals(Property.Key.ID.toString()))
-                .map(p -> p.getValue().toString())
-                .findFirst()
-                .orElseGet(() -> null);
-
-        final Edge edge;
-        if (null != idString) {
-            if (this.edges.containsKey(idString)) {
-                throw ExceptionFactory.edgeWithIdAlreadyExist(idString);
-            }
-        } else {
-            boolean done = false;
-            while (!done) {
-                idString = this.getNextId();
-                if (!this.edges.containsKey(idString))
-                    done = true;
-            }
-        }
-
-        edge = new TinkerEdge(idString, outVertex, inVertex, label, this);
-        this.edges.put(edge.getId().toString(), edge);
-        final TinkerVertex out = (TinkerVertex) outVertex;
-        final TinkerVertex in = (TinkerVertex) inVertex;
-        out.addOutEdge(label, edge);
-        in.addInEdge(label, edge);
-        return edge;
-
-    }
-
-
-    public GraphQuery query() {
-        return new TinkerGraphQuery(this);
-    }
-
-
-    public String toString() {
-        if (null == this.directory)
-            return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());
-        else
-            return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size() + " directory:" + this.directory);
-    }
-
-    public void clear() {
-        this.vertices.clear();
-        this.edges.clear();
-        this.currentId = 0l;
-        this.vertexIndex = new TinkerIndex<TinkerVertex>(this, TinkerVertex.class);
-        this.edgeIndex = new TinkerIndex<TinkerEdge>(this, TinkerEdge.class);
-    }
-
-    public void close() {
-
-    }
-
-    public void commit() {
-
-    }
-
-    public void rollback() {
-
-    }
-
-    private String getNextId() {
-        String idString;
-        while (true) {
-            idString = this.currentId.toString();
-            this.currentId++;
-            if (null == this.vertices.get(idString) || null == this.edges.get(idString) || this.currentId == Long.MAX_VALUE)
-                break;
-        }
-        return idString;
-    }
-
-    public Features getFeatures() {
-        return null;
     }
 }

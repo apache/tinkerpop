@@ -1,7 +1,6 @@
 package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.Compare;
-import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
@@ -17,10 +16,6 @@ import java.util.function.Predicate;
  */
 public abstract class DefaultQuery implements Query {
 
-    private static final String[] EMPTY_LABELS = new String[]{};
-
-    public Direction direction = Direction.BOTH;
-    public String[] labels = EMPTY_LABELS;
     public int limit = Integer.MAX_VALUE;
     public List<HasContainer> hasContainers = new ArrayList<>();
 
@@ -44,8 +39,8 @@ public abstract class DefaultQuery implements Query {
         return this;
     }
 
-    public Query has(final String key, final BiPredicate predicate, final Object value) {
-        this.hasContainers.add(new HasContainer(key, predicate, value));
+    public Query has(final String key, final BiPredicate biPredicate, final Object value) {
+        this.hasContainers.add(new HasContainer(key, biPredicate, value));
         return this;
     }
 
@@ -70,9 +65,9 @@ public abstract class DefaultQuery implements Query {
     protected static class HasContainer implements Predicate<Element> {
         public String key;
         public Object value;
-        public BiPredicate predicate;
+        public BiPredicate<Object, Object> predicate;
 
-        public HasContainer(final String key, final BiPredicate predicate, final Object value) {
+        public HasContainer(final String key, final BiPredicate<Object, Object> predicate, final Object value) {
             this.key = key;
             this.value = value;
             this.predicate = predicate;

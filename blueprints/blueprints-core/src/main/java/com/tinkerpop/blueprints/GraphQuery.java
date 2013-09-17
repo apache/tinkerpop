@@ -16,7 +16,7 @@ public interface GraphQuery extends Query {
     public GraphQuery hasNot(String key);
 
     @Override
-    public GraphQuery has(String key, BiPredicate predicate, Object value);
+    public GraphQuery has(String key, BiPredicate biPredicate, Object value);
 
     @Override
     public <T extends Comparable<?>> GraphQuery interval(String key, T startValue, T endValue);

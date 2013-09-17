@@ -7,6 +7,7 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -17,15 +18,15 @@ import java.util.stream.Stream;
  */
 public abstract class DefaultGraphQuery extends DefaultQuery implements GraphQuery {
 
-    public GraphQuery has(final String key) {
-        super.has(key);
-        return this;
-    }
-
     public GraphQuery ids(final Object... ids) {
         Stream.of(ids).forEach(id -> {
             this.hasContainers.add(new HasContainer(Property.Key.ID.toString(), Compare.EQUAL, id));
         });
+        return this;
+    }
+
+    public GraphQuery has(final String key) {
+        super.has(key);
         return this;
     }
 
@@ -44,8 +45,8 @@ public abstract class DefaultGraphQuery extends DefaultQuery implements GraphQue
         return this;
     }
 
-    public GraphQuery has(final String key, final BiPredicate predicate, final Object value) {
-        super.has(key, predicate, value);
+    public GraphQuery has(final String key, final BiPredicate biPredicate, final Object value) {
+        super.has(key, biPredicate, value);
         return this;
     }
 

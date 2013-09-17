@@ -7,7 +7,7 @@ import java.util.function.BiPredicate;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum Compare implements BiPredicate {
+public enum Compare implements BiPredicate<Object, Object> {
 
     EQUAL, NOT_EQUAL, GREATER_THAN, GREATER_THAN_EQUAL, LESS_THAN, LESS_THAN_EQUAL;
 

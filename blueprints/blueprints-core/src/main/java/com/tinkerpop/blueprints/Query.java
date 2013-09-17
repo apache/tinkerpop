@@ -11,7 +11,7 @@ public interface Query {
 
     public Query hasNot(String key);
 
-    public Query has(String key, BiPredicate predicate, Object value);
+    public Query has(String key, BiPredicate biPredicate, Object value);
 
     public <T extends Comparable<?>> Query interval(String key, T startValue, T endValue);
 

@@ -18,7 +18,7 @@ public interface VertexQuery extends Query {
     public VertexQuery hasNot(String key);
 
     @Override
-    public VertexQuery has(String key, BiPredicate predicate, Object value);
+    public VertexQuery has(String key, BiPredicate biPredicate, Object value);
 
     @Override
     public <T extends Comparable<?>> VertexQuery interval(String key, T startValue, T endValue);

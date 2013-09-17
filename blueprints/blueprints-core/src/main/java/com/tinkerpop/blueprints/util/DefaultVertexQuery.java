@@ -5,7 +5,6 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.VertexQuery;
 
-import java.util.Arrays;
 import java.util.function.BiPredicate;
 
 /**
@@ -15,6 +14,10 @@ import java.util.function.BiPredicate;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class DefaultVertexQuery extends DefaultQuery implements VertexQuery {
+
+    private static final String[] EMPTY_LABELS = new String[]{};
+    public Direction direction = Direction.BOTH;
+    public String[] labels = EMPTY_LABELS;
 
     public VertexQuery has(final String key) {
         super.has(key);
@@ -36,8 +39,8 @@ public abstract class DefaultVertexQuery extends DefaultQuery implements VertexQ
         return this;
     }
 
-    public VertexQuery has(final String key, final BiPredicate predicate, final Object value) {
-        super.has(key, predicate, value);
+    public VertexQuery has(final String key, final BiPredicate biPredicate, final Object value) {
+        super.has(key, biPredicate, value);
         return this;
     }
 

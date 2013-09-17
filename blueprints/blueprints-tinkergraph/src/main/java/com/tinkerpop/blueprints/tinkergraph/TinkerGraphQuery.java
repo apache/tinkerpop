@@ -22,14 +22,14 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
     }
 
     public Iterable<Edge> edges() {
-        return graph.edges.values().stream().filter(v -> HasContainer.testAll(v, this.hasContainers)).limit(this.limit).collect(Collectors.<Edge>toList());
+        return graph.edges.values().parallelStream().filter(v -> HasContainer.testAll(v, this.hasContainers)).limit(this.limit).collect(Collectors.<Edge>toList());
     }
 
     public Iterable<Vertex> vertices() {
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         final Stream<? extends Vertex> vertices = (null == indexedContainer) ?
-                this.graph.vertices.values().stream() :
-                this.graph.vertexIndex.get(indexedContainer.key, indexedContainer.value).stream();
+                this.graph.vertices.values().parallelStream() :
+                this.graph.vertexIndex.get(indexedContainer.key, indexedContainer.value).parallelStream();
 
         return vertices.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers))
                 .limit(this.limit)
