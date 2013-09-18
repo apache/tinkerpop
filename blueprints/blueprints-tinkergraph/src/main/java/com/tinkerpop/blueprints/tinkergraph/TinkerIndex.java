@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
 import java.io.Serializable;
@@ -12,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -118,9 +117,9 @@ class TinkerIndex<T extends Element> implements Serializable {
         (Vertex.class.isAssignableFrom(this.indexClass) ?
                 this.graph.vertices.values().<T>parallelStream() :
                 this.graph.edges.values().<T>parallelStream())
-                .map(e -> new Object[]{((T) e).getValue(key), e})
-                .filter(a -> null != a[0])
-                .forEach(a -> this.put(key, a[0], (T) a[1]));
+                .map(e -> new Object[]{((T) e).getProperty(key), e})
+                .filter(a -> ((Property) a[0]).isPresent())
+                .forEach(a -> this.put(key, ((Property) a[0]).getValue(), (T) a[1]));
     }
 
     public void dropKeyIndex(final String key) {

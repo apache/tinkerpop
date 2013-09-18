@@ -23,10 +23,10 @@ class TinkerHelper {
             throw ExceptionFactory.edgeLabelCanNotBeNull();
 
         String idString = Stream.of(properties)
-                .filter((Property p) -> p.getKey().equals(Property.Key.ID.toString()))
+                .filter(p -> p.is(Property.Key.ID))
                 .map(p -> p.getValue().toString())
                 .findFirst()
-                .orElseGet(() -> null);
+                .orElse(null);
 
         final Edge edge;
         if (null != idString) {
@@ -38,7 +38,7 @@ class TinkerHelper {
 
         edge = new TinkerEdge(idString, outVertex, inVertex, label, graph);
         Stream.of(properties)
-                .filter(p -> !p.getKey().equals(Property.Key.ID.toString()) && !p.getKey().equals(Property.Key.LABEL.toString()))
+                .filter(p -> p.isPresent() & !p.is(Property.Key.ID) && !p.is(Property.Key.LABEL))
                 .forEach(p -> {
                     edge.setProperty(p.getKey(), p.getValue());
                 });

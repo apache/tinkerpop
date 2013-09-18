@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints;
 
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -17,9 +18,11 @@ public interface Element {
 
     public Set<String> getPropertyKeys();
 
-    public default <T> T getValue(String key) {
+    public default <T> T getValue(String key) throws NoSuchElementException {
         final Property<T> property = this.getProperty(key);
-        return (null == property) ? null : property.getValue();
+        if (property.isPresent())
+            return property.getValue();
+        else throw new NoSuchElementException();
     }
 
     public void remove();

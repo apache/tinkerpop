@@ -42,10 +42,10 @@ public class TinkerGraph implements Graph, Serializable {
     public Vertex addVertex(final Property... properties) {
         Objects.requireNonNull(properties);
         String idString = Stream.of(properties)
-                .filter((Property p) -> p.getKey().equals(Property.Key.ID.toString()))
+                .filter(p -> p.is(Property.Key.ID))
                 .map(p -> p.getValue().toString())
                 .findFirst()
-                .orElseGet(() -> null);
+                .orElse(null);
 
         if (null != idString) {
             if (this.vertices.containsKey(idString))
@@ -56,9 +56,11 @@ public class TinkerGraph implements Graph, Serializable {
 
         final Vertex vertex = new TinkerVertex(idString, this);
         this.vertices.put(vertex.getId().toString(), vertex);
-        Stream.of(properties).filter(p -> !p.getKey().equals(Property.Key.ID.toString())).forEach(p -> {
-            vertex.setProperty(p.getKey(), p.getValue());
-        });
+        Stream.of(properties)
+                .filter(p -> p.isPresent() & !p.is(Property.Key.ID))
+                .forEach(p -> {
+                    vertex.setProperty(p.getKey(), p.getValue());
+                });
         return vertex;
 
     }
@@ -66,7 +68,6 @@ public class TinkerGraph implements Graph, Serializable {
     public GraphQuery query() {
         return new TinkerGraphQuery(this);
     }
-
 
     public String toString() {
         return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());

@@ -30,7 +30,8 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public <T> Property<T> getProperty(final String key) {
-        return this.properties.get(key);
+        final Property<T> t = this.properties.get(key);
+        return (null == t) ? Property.<T>empty() : t;
     }
 
     public <T> Property<T> setProperty(final String key, final T value) {
