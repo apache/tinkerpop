@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.query.VertexQuery;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

@@ -3,7 +3,7 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.DefaultVertexQuery;
+import com.tinkerpop.blueprints.query.util.DefaultVertexQuery;
 
 import java.util.ArrayList;
 import java.util.Collection;

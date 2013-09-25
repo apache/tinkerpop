@@ -1,4 +1,4 @@
-package com.tinkerpop.blueprints.global;
+package com.tinkerpop.blueprints.computer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

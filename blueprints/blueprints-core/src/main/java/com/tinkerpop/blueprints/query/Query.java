@@ -1,4 +1,7 @@
-package com.tinkerpop.blueprints;
+package com.tinkerpop.blueprints.query;
+
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 import java.util.function.BiPredicate;
 

@@ -1,10 +1,10 @@
-package com.tinkerpop.blueprints.util;
+package com.tinkerpop.blueprints.query.util;
 
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Query;
+import com.tinkerpop.blueprints.query.Query;
 
 import java.util.ArrayList;
 import java.util.List;

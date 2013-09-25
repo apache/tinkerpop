@@ -1,4 +1,4 @@
-package com.tinkerpop.blueprints;
+package com.tinkerpop.blueprints.query;
 
 import java.util.function.BiPredicate;
 

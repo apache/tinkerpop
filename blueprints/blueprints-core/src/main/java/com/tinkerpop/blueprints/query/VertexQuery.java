@@ -1,4 +1,6 @@
-package com.tinkerpop.blueprints;
+package com.tinkerpop.blueprints.query;
+
+import com.tinkerpop.blueprints.Direction;
 
 import java.util.function.BiPredicate;
 

@@ -4,7 +4,7 @@ import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.DefaultGraphQuery;
+import com.tinkerpop.blueprints.query.util.DefaultGraphQuery;
 
 import java.util.Set;
 import java.util.stream.Collectors;

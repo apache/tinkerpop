@@ -1,5 +1,8 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.computer.GraphComputer;
+import com.tinkerpop.blueprints.query.GraphQuery;
+
 import java.io.Closeable;
 
 /**
@@ -12,6 +15,8 @@ public interface Graph extends Closeable {
     public Vertex addVertex(Property... properties);
 
     public GraphQuery query();
+
+    public GraphComputer compute();
 
     public void commit();
 

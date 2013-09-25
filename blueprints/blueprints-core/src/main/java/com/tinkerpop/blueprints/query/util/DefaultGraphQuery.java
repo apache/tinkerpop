@@ -1,13 +1,12 @@
-package com.tinkerpop.blueprints.util;
+package com.tinkerpop.blueprints.query.util;
 
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.query.GraphQuery;
 
 import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
