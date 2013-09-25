@@ -4,7 +4,6 @@ import com.tinkerpop.blueprints.Property;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,15 +41,5 @@ public class TinkerProperty<T> implements Property<T> {
 
     public <T> T removeMetaValue(final String key) {
         return (T) this.metas.remove(key);
-    }
-
-    public static Property[] of(final Object... keyValues) {
-        if (keyValues.length % 2 != 0)
-            throw new IllegalArgumentException("The provided arguments must have a size that is a factor of 2");
-        final Property[] properties = new Property[keyValues.length / 2];
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            properties[i / 2] = new TinkerProperty((String) Objects.requireNonNull(keyValues[i]), Objects.requireNonNull(keyValues[i + 1]));
-        }
-        return properties;
     }
 }

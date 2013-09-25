@@ -1,6 +1,9 @@
 package com.tinkerpop.blueprints;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -54,16 +57,58 @@ public interface Property<T> {
     public <R> R removeMetaValue(String key);
 
     public static Property[] of(Object... keyValues) {
-        throw new UnsupportedOperationException();
+        if (keyValues.length % 2 != 0)
+            throw new IllegalArgumentException("The provided arguments must have a size that is a factor of 2");
+        final Property[] properties = new Property[keyValues.length / 2];
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            final String key = Objects.requireNonNull(keyValues[i]).toString();
+            final Object value = Objects.requireNonNull(keyValues[i + 1]);
+
+            properties[i / 2] = new Property() {
+                final Map<String, Object> metas = new HashMap<>();
+
+                @Override
+                public String getKey() {
+                    return key;
+                }
+
+                @Override
+                public Object getValue() throws NoSuchElementException {
+                    return value;
+                }
+
+                @Override
+                public boolean isPresent() {
+                    return true;
+                }
+
+                @Override
+                public void setMetaValue(String key, Object value) {
+                    this.metas.put(key, value);
+                }
+
+                @Override
+                public Object getMetaValue(String key) {
+                    return this.metas.get(key);
+                }
+
+                @Override
+                public Object removeMetaValue(String key) {
+                    return this.metas.remove(key);
+                }
+            };
+        }
+        return properties;
     }
 
     public static <T> Property<T> empty() {
         return new Property<T>() {
+            private static final String EMPTY_KEY = "empty";
             private static final String EMPTY_MESSAGE = "This is an empty property";
 
             @Override
             public String getKey() {
-                return "empty";
+                return EMPTY_KEY;
             }
 
             @Override

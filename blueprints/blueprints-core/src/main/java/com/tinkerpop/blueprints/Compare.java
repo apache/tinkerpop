@@ -38,7 +38,7 @@ public enum Compare implements BiPredicate<Object, Object> {
                     return false;
                 return ((Comparable) first).compareTo(second) <= 0;
             default:
-                throw new IllegalArgumentException("Invalid state as no valid compare was provided");
+                throw new IllegalStateException("Invalid state as no valid compare was provided");
         }
     }
 
@@ -56,7 +56,7 @@ public enum Compare implements BiPredicate<Object, Object> {
         else if (this.equals(LESS_THAN_EQUAL))
             return GREATER_THAN;
         else
-            throw new RuntimeException("Comparator does not have an opposite");
+            throw new IllegalStateException("Comparator does not have an opposite");
     }
 
 
@@ -74,7 +74,7 @@ public enum Compare implements BiPredicate<Object, Object> {
         else if (this.equals(NOT_EQUAL))
             return "<>";
         else
-            throw new RuntimeException("Comparator does not have a string representation");
+            throw new IllegalStateException("Comparator does not have a string representation");
     }
 
 
@@ -92,6 +92,6 @@ public enum Compare implements BiPredicate<Object, Object> {
         else if (c.equals("<="))
             return LESS_THAN_EQUAL;
         else
-            throw new IllegalArgumentException("Argument does not match any comparator");
+            throw new IllegalArgumentException("String representation does not match any comparator");
     }
 }
