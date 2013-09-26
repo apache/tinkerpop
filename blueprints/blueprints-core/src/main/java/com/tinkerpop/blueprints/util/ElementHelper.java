@@ -23,7 +23,7 @@ public class ElementHelper {
      * @param value   the value of the property
      * @throws IllegalArgumentException whether the triple is legal and if not, a clear reason message is provided
      */
-    public static final void validateProperty(final Element element, final String key, final Object value) throws IllegalArgumentException {
+    public static void validateProperty(final Element element, final String key, final Object value) throws IllegalArgumentException {
         if (null == value)
             throw ExceptionFactory.propertyValueCanNotBeNull();
         if (null == key)

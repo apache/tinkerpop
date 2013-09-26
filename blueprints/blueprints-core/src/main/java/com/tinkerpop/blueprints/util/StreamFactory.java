@@ -11,6 +11,10 @@ import java.util.stream.StreamSupport;
 public class StreamFactory {
 
     public static <T> Stream<T> stream(final Iterable<T> iterable) {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterable.iterator(), Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterable.iterator(), Spliterator.IMMUTABLE), false);
+    }
+
+    public static <T> Stream<T> parallelStream(final Iterable<T> iterable) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterable.iterator(), Spliterator.IMMUTABLE), true);
     }
 }
