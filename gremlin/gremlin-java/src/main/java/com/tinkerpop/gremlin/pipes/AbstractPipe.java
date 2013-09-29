@@ -1,28 +1,30 @@
 package com.tinkerpop.gremlin.pipes;
 
+import com.tinkerpop.gremlin.pipes.util.Holder;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
+public abstract class AbstractPipe<S,E> implements Pipe<S,E> {
 
-    protected ExpandableIterator<S> starts;
-    private E nextEnd;
-    protected E currentEnd;
+    protected ExpandableIterator<Holder<S>> starts;
+    private Holder<E> nextEnd;
+    protected Holder<E> currentEnd;
     protected boolean available;
 
-    public Pipe<S, E> setStarts(Iterator<S> starts) {
+    public Pipe setStarts(Iterator<Holder<S>> starts) {
         this.starts = new ExpandableIterator<>(starts);
         return this;
     }
 
-    public void addStart(final S start) {
+    public void addStart(final Holder<S> start) {
         this.starts.add(start);
     }
 
-    public E next() {
+    public Holder<E> next() {
         if (this.available) {
             this.available = false;
             return (this.currentEnd = this.nextEnd);
@@ -44,11 +46,11 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
         }
     }
 
-    public E getCurrentEnd() {
+    public Holder<E> getCurrentEnd() {
         return this.currentEnd;
     }
 
-    protected abstract E processNextStart() throws NoSuchElementException;
+    protected abstract Holder<E> processNextStart() throws NoSuchElementException;
 
 
 }

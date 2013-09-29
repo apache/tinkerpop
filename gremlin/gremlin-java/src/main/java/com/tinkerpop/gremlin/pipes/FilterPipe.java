@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.pipes;
 
+import com.tinkerpop.gremlin.pipes.util.Holder;
+
 import java.util.function.Predicate;
 
 /**
@@ -7,17 +9,17 @@ import java.util.function.Predicate;
  */
 public class FilterPipe<S> extends AbstractPipe<S, S> {
 
-    private final Predicate<S> predicate;
+    private final Predicate<Holder<S>> predicate;
 
-    public FilterPipe(final Predicate<S> predicate) {
+    public FilterPipe(final Predicate<Holder<S>> predicate) {
         this.predicate = predicate;
     }
 
-    public S processNextStart() {
+    public Holder<S> processNextStart() {
         while (true) {
-            final S s = this.starts.next();
-            if (this.predicate.test(s))
-                return s;
+            final Holder<S> h = this.starts.next();
+            if (this.predicate.test(h))
+                return h;
         }
     }
 }

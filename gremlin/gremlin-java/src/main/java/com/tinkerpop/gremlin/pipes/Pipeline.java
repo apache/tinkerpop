@@ -1,23 +1,25 @@
 package com.tinkerpop.gremlin.pipes;
 
+import com.tinkerpop.gremlin.pipes.util.Holder;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Pipeline<S, E> extends Pipe<S, E> {
 
-    public <T> Gremlin<S, T> addPipe(final Pipe pipe);
+    public <R extends Pipeline> R addPipe(final Pipe pipe);
 
-    public Pipe<?, E> lastPipe();
+    public Pipe<Object, E> lastPipe();
 
     public default boolean hasNext() {
         return this.lastPipe().hasNext();
     }
 
-    public default E next() {
+    public default Holder<E> next() {
         return this.lastPipe().next();
     }
 
-    public default E getCurrentEnd() {
+    public default Holder<E> getCurrentEnd() {
         return this.lastPipe().getCurrentEnd();
     }
 

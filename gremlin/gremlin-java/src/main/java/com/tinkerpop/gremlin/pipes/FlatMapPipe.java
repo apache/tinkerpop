@@ -1,5 +1,8 @@
 package com.tinkerpop.gremlin.pipes;
 
+import com.tinkerpop.gremlin.pipes.util.Holder;
+import com.tinkerpop.gremlin.pipes.util.HolderIterator;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Function;
@@ -9,19 +12,20 @@ import java.util.function.Function;
  */
 public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
 
-    private Iterator<E> iterator = Collections.emptyIterator();
-    private final Function<S, Iterator<E>> function;
+    private Iterator<Holder<E>> iterator = Collections.emptyIterator();
+    private final Function<Holder<S>, Iterator<E>> function;
 
-    public FlatMapPipe(Function<S, Iterator<E>> function) {
+    public FlatMapPipe(Function<Holder<S>, Iterator<E>> function) {
         this.function = function;
     }
 
-    public E processNextStart() {
+    public Holder<E> processNextStart() {
         while (true) {
             if (this.iterator.hasNext())
                 return this.iterator.next();
             else {
-                this.iterator = this.function.apply(this.starts.next());
+                final Holder<S> h = this.starts.next();
+                this.iterator = new HolderIterator<>(h, this.function.apply(h));
             }
         }
     }
