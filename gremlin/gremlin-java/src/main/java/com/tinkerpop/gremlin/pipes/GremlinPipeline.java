@@ -16,46 +16,46 @@ import java.util.function.Function;
  */
 public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
-    default GremlinPipeline inOutBoth(final Direction direction, final String... labels) {
+    default <R extends GremlinPipeline> R inOutBoth(final Direction direction, final String... labels) {
         return this.addPipe(new FlatMapPipe<Vertex, Vertex>(v -> v.<Vertex>get().query().direction(direction).labels(labels).vertices().iterator()));
     }
 
-    public default GremlinPipeline out(final String... labels) {
+    public default <R extends GremlinPipeline> R out(final String... labels) {
         return this.inOutBoth(Direction.OUT, labels);
     }
 
-    public default GremlinPipeline in(final String... labels) {
+    public default <R extends GremlinPipeline> R in(final String... labels) {
         return this.inOutBoth(Direction.IN, labels);
     }
 
-    public default GremlinPipeline both(final String... labels) {
+    public default <R extends GremlinPipeline> R both(final String... labels) {
         return this.inOutBoth(Direction.BOTH, labels);
     }
 
-    public default GremlinPipeline property(final String key) {
+    public default <R extends GremlinPipeline> R property(final String key) {
         return this.addPipe(new MapPipe<Element, Property>(e -> e.<Element>get().getProperty(key)));
     }
 
-    public default GremlinPipeline value(final String key) {
+    public default <R extends GremlinPipeline> R value(final String key) {
         return this.addPipe(new MapPipe<Element, Object>(e -> e.<Element>get().getValue(key)));
     }
 
-    public default GremlinPipeline has(final String key) {
+    public default <R extends GremlinPipeline> R has(final String key) {
         return this.addPipe(new FilterPipe<Element>(e -> e.<Element>get().getProperty(key).isPresent()));
     }
 
-    public default GremlinPipeline hasNot(final String key) {
+    public default <R extends GremlinPipeline> R hasNot(final String key) {
         return this.addPipe(new FilterPipe<Element>(e -> !e.<Element>get().getProperty(key).isPresent()));
     }
 
-    public default GremlinPipeline has(final String key, final Object value) {
+    public default <R extends GremlinPipeline> R has(final String key, final Object value) {
         return this.addPipe(new FilterPipe<Element>(e -> {
             final Property x = e.<Element>get().getProperty(key);
             return x.isPresent() && Compare.EQUAL.test(x.getValue(), value);
         }));
     }
 
-    public default GremlinPipeline path() {
+    public default <R extends GremlinPipeline> R path() {
         return this.addPipe(new MapPipe<Object, List>(o -> {
             final List path = o.getHistory();
             path.add(o.get());
@@ -80,7 +80,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         return this.addPipe(new FlatMapPipe<>(function));
     }*/
 
-    public default GremlinPipeline sideEffect(final Consumer consumer) {
+    public default <R extends GremlinPipeline> R sideEffect(final Consumer consumer) {
         return this.addPipe(new MapPipe<E, E>(o -> {
             consumer.accept(o);
             return o.get();
@@ -102,7 +102,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     public GremlinPipeline loop(final String key, final Predicate<Object> doWhile, final Predicate<Object> emitPredicate);*/
 
-    public default GremlinPipeline identity() {
+    public default <R extends GremlinPipeline> R identity() {
         return this.addPipe(new MapPipe<>(Function.identity()));
     }
 
