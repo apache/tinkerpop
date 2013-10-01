@@ -3,8 +3,9 @@ package com.tinkerpop.gremlin.pipes;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.function.Function;
 
 /**
@@ -12,20 +13,34 @@ import java.util.function.Function;
  */
 public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
 
-    private Iterator<Holder<E>> iterator = Collections.emptyIterator();
     private final Function<Holder<S>, Iterator<E>> function;
+    private final Queue<Iterator<Holder<E>>> queue = new LinkedList<>();
 
-    public FlatMapPipe(Function<Holder<S>, Iterator<E>> function) {
+    public FlatMapPipe(final Pipeline pipeline, Function<Holder<S>, Iterator<E>> function) {
+        super(pipeline);
         this.function = function;
     }
 
     public Holder<E> processNextStart() {
         while (true) {
-            if (this.iterator.hasNext())
-                return this.iterator.next();
-            else {
-                final Holder<S> h = this.starts.next();
-                this.iterator = new HolderIterator<>(h, this.function.apply(h));
+            final Holder<E> holder = this.getNext();
+            if (null != holder)
+                return holder;
+        }
+    }
+
+    private synchronized Holder<E> getNext() {
+        if (this.queue.isEmpty()) {
+            final Holder<S> holder = this.starts.next();
+            this.queue.add(new HolderIterator<>(this.getPipeline(), holder, this.function.apply(holder)));
+            return null;
+        } else {
+            final Iterator<Holder<E>> iterator = this.queue.peek();
+            if (iterator.hasNext()) {
+                return iterator.next();
+            } else {
+                this.queue.remove();
+                return null;
             }
         }
     }

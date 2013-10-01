@@ -21,9 +21,9 @@ public class GremlinVertexProgram implements VertexProgram {
     private final Map<String, KeyType> computeKeys;
 
     public GremlinVertexProgram(final Consumer<GraphMemory> setupFunction,
-                               final BiConsumer<Vertex, GraphMemory> executeFunction,
-                               final Predicate<GraphMemory> terminateFunction,
-                               final Map<String, KeyType> computeKeys) {
+                                final BiConsumer<Vertex, GraphMemory> executeFunction,
+                                final Predicate<GraphMemory> terminateFunction,
+                                final Map<String, KeyType> computeKeys) {
         this.setupFunction = setupFunction;
         this.executeFunction = executeFunction;
         this.terminateFunction = terminateFunction;

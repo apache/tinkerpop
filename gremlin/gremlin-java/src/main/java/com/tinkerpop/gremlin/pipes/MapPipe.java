@@ -11,12 +11,18 @@ public class MapPipe<S, E> extends AbstractPipe<S, E> {
 
     private final Function<Holder<S>, E> function;
 
-    public MapPipe(final Function<Holder<S>, E> function) {
+    public MapPipe(final Pipeline pipeline, final Function<Holder<S>, E> function) {
+        super(pipeline);
         this.function = function;
     }
 
     public Holder<E> processNextStart() {
-        final Holder<S> h = this.starts.next();
-        return new Holder<>(this.function.apply(h), h);
+        while (true) {
+            final Holder<S> holder = this.starts.next();
+            final E temp = this.function.apply(holder);
+            if (Pipe.NO_OBJECT != temp) {
+                return new Holder<>(this.getPipeline(), temp, holder);
+            }
+        }
     }
 }

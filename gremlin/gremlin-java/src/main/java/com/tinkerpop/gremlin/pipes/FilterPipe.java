@@ -11,7 +11,8 @@ public class FilterPipe<S> extends AbstractPipe<S, S> {
 
     private final Predicate<Holder<S>> predicate;
 
-    public FilterPipe(final Predicate<Holder<S>> predicate) {
+    public FilterPipe(final Pipeline pipeline, final Predicate<Holder<S>> predicate) {
+        super(pipeline);
         this.predicate = predicate;
     }
 

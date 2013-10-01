@@ -67,7 +67,7 @@ public class TinkerVertexMemory implements VertexSystemMemory {
     }
 
 
-    public <T> Property<T> setProperty(final Vertex vertex, final String key, final T value) {
+    public <T> Property<T, Vertex> setProperty(final Vertex vertex, final String key, final T value) {
         Map<String, Property> map = this.memory.get(vertex.getId());
         if (null == map) {
             map = new HashMap<>();
@@ -77,34 +77,40 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         if (isConstantKey(key) && map.containsKey(bspKey))
             throw new IllegalStateException("The constant property " + bspKey + " has already been set for vertex " + vertex);
         else
-            return map.put(bspKey, new SimpleProperty<>(key, value));
+            return map.put(bspKey, new SimpleProperty<>(key, value, vertex));
     }
 
-    public <T> Property<T> getProperty(final Vertex vertex, final String key) {
+    public <T> Property<T, Vertex> getProperty(final Vertex vertex, final String key) {
         final Map<String, Property> map = this.memory.get(vertex.getId());
         if (null == map)
             return null;
         else
-            return (Property<T>) map.get(generateGetKey(key));
+            return (Property<T, Vertex>) map.get(generateGetKey(key));
     }
 
-    public <T> Property<T> removeProperty(final Vertex vertex, final String key) {
+    public <T> Property<T, Vertex> removeProperty(final Vertex vertex, final String key) {
         final Map<String, Property> map = this.memory.get(vertex.getId());
         if (null == map)
             return null;
         else {
-            return (Property<T>) map.remove(generateGetKey(key));
+            return (Property<T, Vertex>) map.remove(generateGetKey(key));
         }
     }
 
-    public static class SimpleProperty<T> implements Property<T> {
+    public static class SimpleProperty<T> implements Property<T, Vertex> {
+        private final Vertex vertex;
         private final String key;
         private final T value;
         private Map<String, Object> metas = new HashMap<>();
 
-        protected SimpleProperty(String key, T value) {
+        protected SimpleProperty(final String key, final T value, final Vertex vertex) {
+            this.vertex = vertex;
             this.key = key;
             this.value = value;
+        }
+
+        public Vertex getElement() {
+            return this.vertex;
         }
 
         public String getKey() {

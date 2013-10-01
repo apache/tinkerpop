@@ -46,15 +46,15 @@ public class ShellEdge implements Edge {
         return this.baseEdge.getPropertyKeys();
     }
 
-    public <T> Property<T> removeProperty(final String key) {
+    public <T> Property<T, Edge> removeProperty(final String key) {
         throw new UnsupportedOperationException();
     }
 
-    public <T> Property<T> getProperty(final String key) {
+    public <T> Property<T, Edge> getProperty(final String key) {
         return this.baseEdge.getProperty(key);
     }
 
-    public <T> Property<T> setProperty(final String key, final T value) {
+    public <T> Property<T, Edge> setProperty(final String key, final T value) {
         throw new UnsupportedOperationException();
     }
 

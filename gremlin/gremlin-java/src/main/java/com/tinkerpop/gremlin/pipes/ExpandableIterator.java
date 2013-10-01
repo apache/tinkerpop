@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.pipes;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -10,7 +10,7 @@ import java.util.Queue;
 public class ExpandableIterator<T> implements Iterator<T> {
 
     private final Iterator<T> iterator;
-    private final Queue<T> queue = new LinkedList<>();
+    private final Queue<T> queue = new ConcurrentLinkedQueue<>();
 
     public ExpandableIterator(final Iterator<T> iterator) {
         this.iterator = iterator;

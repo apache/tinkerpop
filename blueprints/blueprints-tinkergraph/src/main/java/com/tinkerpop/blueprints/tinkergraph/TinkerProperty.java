@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 
 import java.util.HashMap;
@@ -8,15 +9,21 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerProperty<T> implements Property<T> {
+public class TinkerProperty<T, E extends Element> implements Property<T, E> {
 
     private final String key;
     private final T value;
+    private final E element;
     private Map<String, Object> metas = new HashMap<>();
 
-    protected TinkerProperty(String key, T value) {
+    protected TinkerProperty(String key, T value, final E element) {
         this.key = key;
         this.value = value;
+        this.element = element;
+    }
+
+    public E getElement() {
+        return this.element;
     }
 
     public String getKey() {

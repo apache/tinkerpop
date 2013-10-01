@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.pipes.util;
 
 
-import java.util.ArrayList;
-import java.util.List;
+import com.tinkerpop.gremlin.pipes.Pipeline;
+
 import java.util.Objects;
 
 /**
@@ -11,30 +11,45 @@ import java.util.Objects;
 public class Holder<T> {
 
     private T t;
-    private final List history = new ArrayList<>();
+    private int loops = 0;
+    private final Path path = new Path();
+    private final Pipeline pipeline;
 
-    public Holder(final T t) {
+    public <P extends Pipeline> Holder(final P pipeline, final T t) {
+        this.pipeline = pipeline;
         this.t = t;
     }
 
-    public Holder(final T t, Holder head) {
-        this(t);
+    public <P extends Pipeline> Holder(final P pipeline, final T t, Holder head) {
+        this(pipeline, t);
         Objects.requireNonNull(head);
-        this.history.addAll(head.getHistory());
-        this.history.add(head.get());
+        this.loops = head.getLoops();
+        this.path.addAll(head.getPath());
+        this.path.add(head.get());
     }
 
     public <T> T get() {
         return (T) this.t;
     }
 
-    public List getHistory() {
-        return this.history;
+    public Path getPath() {
+        return this.path;
     }
 
+    public <T> T getPath(final String key) {
+        return (T) this.path.get(this.pipeline.getAs(key));
+    }
 
     public String toString() {
         return t.toString();
+    }
+
+    public int getLoops() {
+        return this.loops;
+    }
+
+    public void incrLoops() {
+        this.loops++;
     }
 
 }

@@ -8,14 +8,19 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractPipe<S,E> implements Pipe<S,E> {
+public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
 
+    protected final Pipeline pipeline;
     protected ExpandableIterator<Holder<S>> starts;
     private Holder<E> nextEnd;
     protected Holder<E> currentEnd;
     protected boolean available;
 
-    public Pipe setStarts(Iterator<Holder<S>> starts) {
+    public <P extends Pipeline> AbstractPipe(P pipeline) {
+        this.pipeline = pipeline;
+    }
+
+    public Pipe setStarts(final Iterator<Holder<S>> starts) {
         this.starts = new ExpandableIterator<>(starts);
         return this;
     }
@@ -46,8 +51,8 @@ public abstract class AbstractPipe<S,E> implements Pipe<S,E> {
         }
     }
 
-    public Holder<E> getCurrentEnd() {
-        return this.currentEnd;
+    public <P extends Pipeline> P getPipeline() {
+        return (P) this.pipeline;
     }
 
     protected abstract Holder<E> processNextStart() throws NoSuchElementException;

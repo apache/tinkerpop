@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -16,53 +17,72 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
 
     private final List<Pipe> pipes = new ArrayList<>();
     private Map<String, Integer> asIndex = new HashMap<>();
+    private Pipe<?, E> lastPipe;
 
     public Gremlin(final Iterator<S> starts) {
-        this.setStarts(new HolderIterator(starts));
+        this.setStarts(new HolderIterator<>(this, starts));
     }
 
-    public Gremlin(final Iterable starts) {
+    public Gremlin(final Iterable<S> starts) {
         this(starts.iterator());
     }
 
     public Pipe setStarts(final Iterator<Holder<S>> starts) {
-        this.pipes.add(0, new FilterPipe<S>(s -> true).setStarts(starts));
+        this.pipes.add(0, new FilterPipe<S>(this, s -> true).setStarts(starts));
+        this.lastPipe = this.pipes.get(this.pipes.size() - 1);
         return this;
     }
 
     public void addStart(final Holder<S> start) {
-
+        this.pipes.get(0).addStart(start);
     }
 
-    public Gremlin addPipe(final Pipe pipe) {
-        pipe.setStarts(this.lastPipe());
+    public <P extends Pipeline> P addPipe(final Pipe pipe) {
+        pipe.setStarts(this.lastPipe);
+        this.lastPipe = pipe;
         this.pipes.add(pipe);
-        return this;
+        return (P) this;
     }
 
-    public Pipe lastPipe() {
-        return this.pipes.get(this.pipes.size() - 1);
+    public boolean hasNext() {
+        return this.lastPipe.hasNext();
     }
 
-    /*public GremlinPipeline as(final String key) {
+    public Holder<E> next() {
+        return this.lastPipe.next();
+    }
+
+    public int getAs(final String key) {
+        if (!this.asIndex.containsKey(key))
+            throw new IllegalStateException("The named pipe does not exist");
+        return this.asIndex.get(key);
+    }
+
+    public <P extends GremlinPipeline> P as(final String key) {
         if (this.asIndex.containsKey(key))
             throw new IllegalStateException("The named pipe already exists");
         this.asIndex.put(key, pipes.size() - 1);
-        return this;
+        return (P) this;
     }
 
-    public GremlinPipeline back(final String key) {
-        return this.addPipe(new MapPipe<>(o -> this.pipes.get(this.asIndex.get(key)).getCurrentEnd()));
+    public <P extends GremlinPipeline> P back(final String key) {
+        return (P) this.addPipe(new MapPipe<E, Object>(this, o -> o.getPath(key)));
     }
 
-    public GremlinPipeline loop(final String key, final Predicate<Object> whilePredicate, final Predicate<Object> emitPredicate) {
-        return this.addPipe(new MapPipe<>(o -> {
-            while (true) {
-                if (whilePredicate.test(o))
-                    this.pipes.get(this.asIndex.get(key)).addStart(new Holder(o));
+    public <P extends GremlinPipeline> P loop(final String key, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate) {
+        return this.addPipe(new MapPipe<E, Object>(this, o -> {
+            o.incrLoops();
+            if (whilePredicate.test(o)) {
+                final Holder holder = new Holder(this, o.get(), o);
+                holder.incrLoops();
+                this.pipes.get(this.getAs(key)).addStart(holder);
                 if (emitPredicate.test(o))
-                    return o;
+                    return o.get();
+                else
+                    return NO_OBJECT;
+            } else {
+                return o.get();
             }
         }));
-    }*/
+    }
 }

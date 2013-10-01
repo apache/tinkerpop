@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.VertexQuery;
+import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.io.Serializable;
@@ -22,6 +23,24 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
     protected TinkerVertex(final String id, final TinkerGraph graph) {
         super(id, graph);
+    }
+
+    public <T> Property<T, Vertex> getProperty(final String key) {
+        final Property<T, Vertex> t = this.properties.get(key);
+        return (null == t) ? Property.<T, Vertex>empty() : t;
+    }
+
+    public <T> Property<T, Vertex> setProperty(final String key, final T value) {
+        ElementHelper.validateProperty(this, key, value);
+        final Property<T, Vertex> oldValue = this.properties.put(key, new TinkerProperty<>(key, value, this));
+        this.graph.vertexIndex.autoUpdate(key, value, oldValue, this);
+        return oldValue;
+    }
+
+    public <T> Property<T, Vertex> removeProperty(final String key) {
+        final Property<T, Vertex> oldValue = this.properties.remove(key);
+        this.graph.vertexIndex.autoRemove(key, oldValue, this);
+        return oldValue;
     }
 
     public VertexQuery query() {

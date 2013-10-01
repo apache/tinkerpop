@@ -38,14 +38,14 @@ public class AdjacentShellVertex implements Vertex {
         return this.baseVertex.hashCode();
     }
 
-    public <T> Property<T> getProperty(final String key) {
+    public <T> Property<T, Vertex> getProperty(final String key) {
         if (this.vertexMemory.isComputeKey(key))
             return this.vertexMemory.getProperty(this, key);
         else
             throw new IllegalArgumentException("The provided key is not a compute key: " + key);
     }
 
-    public <T> Property<T> removeProperty(final String key) {
+    public <T> Property<T, Vertex> removeProperty(final String key) {
         throw new UnsupportedOperationException();
     }
 
@@ -53,7 +53,7 @@ public class AdjacentShellVertex implements Vertex {
         throw new UnsupportedOperationException();
     }
 
-    public <T> Property<T> setProperty(final String key, final T value) {
+    public <T> Property<T, Vertex> setProperty(final String key, final T value) {
         throw new UnsupportedOperationException();
     }
 

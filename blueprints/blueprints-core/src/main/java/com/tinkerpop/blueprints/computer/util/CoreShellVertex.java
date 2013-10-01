@@ -43,14 +43,14 @@ public class CoreShellVertex implements Vertex {
         return this.baseVertex.hashCode();
     }
 
-    public <T> Property<T> getProperty(final String key) {
+    public <T> Property<T, Vertex> getProperty(final String key) {
         if (this.vertexMemory.isComputeKey(key))
             return this.vertexMemory.getProperty(this, key);
         else
             return this.baseVertex.getProperty(key);
     }
 
-    public <T> Property<T> setProperty(final String key, final T value) {
+    public <T> Property<T, Vertex> setProperty(final String key, final T value) {
         if (this.vertexMemory.isComputeKey(key))
             return this.vertexMemory.setProperty(this, key, value);
         else
@@ -61,7 +61,7 @@ public class CoreShellVertex implements Vertex {
         return baseVertex.getPropertyKeys();
     }
 
-    public <T> Property<T> removeProperty(final String key) {
+    public <T> Property<T, Vertex> removeProperty(final String key) {
         if (this.vertexMemory.isComputeKey(key))
             return this.vertexMemory.removeProperty(this, key);
         else

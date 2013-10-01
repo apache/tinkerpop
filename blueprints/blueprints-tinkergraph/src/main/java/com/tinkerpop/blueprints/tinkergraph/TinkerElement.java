@@ -29,31 +29,6 @@ abstract class TinkerElement implements Element, Serializable {
         return new HashSet<>(this.properties.keySet());
     }
 
-    public <T> Property<T> getProperty(final String key) {
-        final Property<T> t = this.properties.get(key);
-        return (null == t) ? Property.<T>empty() : t;
-    }
-
-    public <T> Property<T> setProperty(final String key, final T value) {
-        ElementHelper.validateProperty(this, key, value);
-        Property<T> oldValue = this.properties.put(key, new TinkerProperty<>(key, value));
-        if (this instanceof TinkerVertex)
-            this.graph.vertexIndex.autoUpdate(key, value, oldValue, (TinkerVertex) this);
-        else
-            this.graph.edgeIndex.autoUpdate(key, value, oldValue, (TinkerEdge) this);
-        return oldValue;
-    }
-
-    public <T> Property<T> removeProperty(final String key) {
-        Property<T> oldValue = this.properties.remove(key);
-        if (this instanceof TinkerVertex)
-            this.graph.vertexIndex.autoRemove(key, oldValue, (TinkerVertex) this);
-        else
-            this.graph.edgeIndex.autoRemove(key, oldValue, (TinkerEdge) this);
-        return oldValue;
-    }
-
-
     public int hashCode() {
         return this.id.hashCode();
     }

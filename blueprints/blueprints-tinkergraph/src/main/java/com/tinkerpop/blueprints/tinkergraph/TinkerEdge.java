@@ -2,7 +2,9 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
 import com.tinkerpop.blueprints.util.StringFactory;
 
@@ -25,6 +27,24 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
         this.outVertex = outVertex;
         this.inVertex = inVertex;
         this.graph.edgeIndex.autoUpdate(StringFactory.LABEL, this.label, null, this);
+    }
+
+    public <T> Property<T, Edge> getProperty(final String key) {
+        final Property<T, Edge> t = this.properties.get(key);
+        return (null == t) ? Property.<T, Edge>empty() : t;
+    }
+
+    public <T> Property<T, Edge> setProperty(final String key, final T value) {
+        ElementHelper.validateProperty(this, key, value);
+        final Property<T, Edge> oldValue = this.properties.put(key, new TinkerProperty<>(key, value, this));
+        this.graph.edgeIndex.autoUpdate(key, value, oldValue, this);
+        return oldValue;
+    }
+
+    public <T> Property<T, Edge> removeProperty(final String key) {
+        final Property<T, Edge> oldValue = this.properties.remove(key);
+        this.graph.edgeIndex.autoRemove(key, oldValue, this);
+        return oldValue;
     }
 
     public String getLabel() {

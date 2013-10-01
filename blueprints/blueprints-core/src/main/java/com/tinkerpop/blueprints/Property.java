@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Property<T> {
+public interface Property<T, E extends Element> {
 
     public enum Key {
         ID, LABEL;
@@ -26,6 +26,8 @@ public interface Property<T> {
             }
         }
     }
+
+    public E getElement();
 
     public String getKey();
 
@@ -78,6 +80,11 @@ public interface Property<T> {
                 }
 
                 @Override
+                public Element getElement() {
+                    throw new IllegalStateException("The is a container is and is not attached to an element");
+                }
+
+                @Override
                 public boolean isPresent() {
                     return true;
                 }
@@ -101,8 +108,8 @@ public interface Property<T> {
         return properties;
     }
 
-    public static <T> Property<T> empty() {
-        return new Property<T>() {
+    public static <T, E extends Element> Property<T, E> empty() {
+        return new Property<T, E>() {
             private static final String EMPTY_KEY = "empty";
             private static final String EMPTY_MESSAGE = "This is an empty property";
 
@@ -119,6 +126,11 @@ public interface Property<T> {
             @Override
             public boolean isPresent() {
                 return false;
+            }
+
+            @Override
+            public E getElement() {
+                throw new IllegalStateException(EMPTY_MESSAGE);
             }
 
             @Override
