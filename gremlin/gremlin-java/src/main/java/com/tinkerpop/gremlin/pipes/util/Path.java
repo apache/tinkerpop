@@ -16,15 +16,6 @@ public class Path extends ArrayList {
         super(path);
     }
 
-    public boolean add(final Object object) {
-        if (this.size() == 0)
-            return super.add(object);
-        else if (!object.equals(this.get(this.size() - 1)))
-            return super.add(object);
-        else
-            return false;
-    }
-
     public boolean isSimple() {
         return !(new LinkedHashSet(this).size() == this.size());
     }

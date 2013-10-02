@@ -11,5 +11,5 @@ public interface Pipeline<S, E> extends Pipe<S, E> {
         return (P) this;
     }
 
-    public int getAs(final String key);
+    public <A,B> Pipe<A,B> getAs(final String key);
 }

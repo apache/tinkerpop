@@ -22,7 +22,7 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
     public <P extends Pipeline> HolderIterator(final P pipeline, final Holder head, final Iterator<T> iterator) {
         this.pipeline = pipeline;
         this.iterator = iterator;
-        this.head = head;
+        this.head = head.makeSibling(head.get());
     }
 
     public boolean hasNext() {
@@ -30,6 +30,8 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
     }
 
     public Holder<T> next() {
-        return null == this.head ? new Holder<>(this.pipeline, this.iterator.next()) : new Holder<>(this.pipeline, this.iterator.next(), this.head);
+        return null == this.head ?
+                new Holder<>(this.pipeline, this.iterator.next()) :
+                this.head.makeChild(this.iterator.next());
     }
 }

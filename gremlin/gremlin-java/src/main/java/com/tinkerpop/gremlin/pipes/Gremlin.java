@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -52,10 +51,10 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
         return this.lastPipe.next();
     }
 
-    public int getAs(final String key) {
+    public <A, B> Pipe<A, B> getAs(final String key) {
         if (!this.asIndex.containsKey(key))
             throw new IllegalStateException("The named pipe does not exist");
-        return this.asIndex.get(key);
+        return this.pipes.get(this.asIndex.get(key));
     }
 
     public <P extends GremlinPipeline> P as(final String key) {
@@ -66,23 +65,6 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
     }
 
     public <P extends GremlinPipeline> P back(final String key) {
-        return (P) this.addPipe(new MapPipe<E, Object>(this, o -> o.getPath(key)));
-    }
-
-    public <P extends GremlinPipeline> P loop(final String key, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate) {
-        return this.addPipe(new MapPipe<E, Object>(this, o -> {
-            o.incrLoops();
-            if (whilePredicate.test(o)) {
-                final Holder holder = new Holder(this, o.get(), o);
-                holder.incrLoops();
-                this.pipes.get(this.getAs(key)).addStart(holder);
-                if (emitPredicate.test(o))
-                    return o.get();
-                else
-                    return NO_OBJECT;
-            } else {
-                return o.get();
-            }
-        }));
+        return (P) this.addPipe(new MapPipe<E, Object>(this, o -> o.getPath().get(this.asIndex.get(key))));
     }
 }

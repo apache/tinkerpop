@@ -74,7 +74,12 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     public default <P extends GremlinPipeline> P dedup() {
         final Set<Object> set = new LinkedHashSet<>();
-        return this.addPipe(new FilterPipe<Object>(this, o -> set.add(o.get())));
+        return this.addPipe(new FilterPipe<E>(this, o -> set.add(o.get())));
+    }
+
+    public default <P extends GremlinPipeline> P dedup(final Function<Holder, Object> uniqueFunction) {
+        final Set<Object> set = new LinkedHashSet<>();
+        return this.addPipe(new FilterPipe<E>(this, o -> set.add(uniqueFunction.apply(o))));
     }
 
     public default <P extends GremlinPipeline> P filter(final Predicate<Holder<E>> predicate) {
@@ -120,10 +125,23 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     public <P extends GremlinPipeline> P back(final String key);
 
-    public <P extends GremlinPipeline> P loop(final String key, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate);
+    public default <P extends GremlinPipeline> P loop(final String key, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate) {
+        return this.addPipe(new MapPipe<E, Object>(this, o -> {
+            o.incrLoops();
+            if (whilePredicate.test(o)) {
+                final Holder holder = o.makeSibling(o.get());
+                getAs(key).addStart(holder);
+                if (emitPredicate.test(o))
+                    return o.get();
+                else
+                    return NO_OBJECT;
+            } else {
+                return o.get();
+            }
+        }));
+    }
 
     public default <P extends GremlinPipeline> P identity() {
         return this.addPipe(new MapPipe<E, E>(this, o -> o.get()));
     }
-
 }

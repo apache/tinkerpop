@@ -20,9 +20,11 @@ public class MapPipe<S, E> extends AbstractPipe<S, E> {
         while (true) {
             final Holder<S> holder = this.starts.next();
             final E temp = this.function.apply(holder);
-            if (Pipe.NO_OBJECT != temp) {
-                return new Holder<>(this.getPipeline(), temp, holder);
-            }
+            if (Pipe.NO_OBJECT != temp)
+                if (holder.get().equals(temp))
+                    return holder.makeSibling(temp);
+                else
+                    return holder.makeChild(temp);
         }
     }
 }
