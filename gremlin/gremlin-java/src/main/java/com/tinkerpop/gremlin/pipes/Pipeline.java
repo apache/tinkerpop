@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.pipes;
 
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -12,4 +14,6 @@ public interface Pipeline<S, E> extends Pipe<S, E> {
     }
 
     public <A,B> Pipe<A,B> getAs(final String key);
+
+    public Set<String> getAs();
 }

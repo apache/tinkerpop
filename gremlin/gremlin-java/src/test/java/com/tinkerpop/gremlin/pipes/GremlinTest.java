@@ -50,6 +50,16 @@ public class GremlinTest extends TestCase {
 
     }
 
+    public void testMatch() {
+        TinkerGraph g = TinkerFactory.createClassic();
+        new Gremlin(g.query().vertices())
+                .match("a", "d",
+                        Gremlin.of().as("a").out("knows").as("b"),
+                        Gremlin.of().as("b").out("created").as("c"),
+                        Gremlin.of().as("c").value("name").as("d"))
+                .sideEffect(System.out::println).iterate();
+    }
+
     public void testLoop() {
 
         TinkerGraph g = new TinkerGraph();

@@ -4,10 +4,12 @@ import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -26,9 +28,18 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
         this(starts.iterator());
     }
 
+    public static Gremlin of() {
+        return new Gremlin(Collections.emptyIterator());
+    }
+
     public Pipe setStarts(final Iterator<Holder<S>> starts) {
-        this.pipes.add(0, new FilterPipe<S>(this, s -> true).setStarts(starts));
-        this.lastPipe = this.pipes.get(this.pipes.size() - 1);
+        if (this.pipes.size() > 0) {
+            this.pipes.get(0).setStarts(starts);
+        } else {
+            this.pipes.add(new FilterPipe<S>(this, s -> true).setStarts(starts));
+            this.lastPipe = this.pipes.get(this.pipes.size() - 1);
+        }
+
         return this;
     }
 
@@ -49,6 +60,10 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
 
     public Holder<E> next() {
         return this.lastPipe.next();
+    }
+
+    public Set<String> getAs() {
+        return this.asIndex.keySet();
     }
 
     public <A, B> Pipe<A, B> getAs(final String key) {

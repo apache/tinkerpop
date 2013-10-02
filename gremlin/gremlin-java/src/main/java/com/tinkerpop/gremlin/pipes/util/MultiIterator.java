@@ -1,0 +1,50 @@
+package com.tinkerpop.gremlin.pipes.util;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+/**
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ */
+public class MultiIterator<T> implements Iterator<T> {
+
+    private final List<Iterator<T>> iterators;
+    private int current = 0;
+
+    public MultiIterator(final List<Iterator<T>> iterators) {
+        this.iterators = iterators;
+    }
+
+    public boolean hasNext() {
+        Iterator<T> currentIterator = iterators.get(this.current);
+
+        while (true) {
+            if (currentIterator.hasNext()) {
+                return true;
+            } else {
+                this.current++;
+                if (this.current >= iterators.size())
+                    break;
+                currentIterator = iterators.get(this.current);
+            }
+        }
+        return false;
+    }
+
+    public T next() {
+        Iterator<T> currentIterator = iterators.get(this.current);
+        while (true) {
+            if (currentIterator.hasNext()) {
+                return currentIterator.next();
+            } else {
+                this.current++;
+                if (this.current >= iterators.size())
+                    break;
+                currentIterator = iterators.get(current);
+            }
+        }
+        throw new NoSuchElementException();
+    }
+
+}

@@ -141,6 +141,11 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         }));
     }
 
+    public default <P extends GremlinPipeline> P match(final String inAs, final String outAs, final Pipeline... pipelines) {
+        return this.addPipe(new MatchPipe(inAs, outAs, this, pipelines));
+    }
+
+
     public default <P extends GremlinPipeline> P identity() {
         return this.addPipe(new MapPipe<E, E>(this, o -> o.get()));
     }
