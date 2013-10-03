@@ -1,15 +1,13 @@
 package com.tinkerpop.gremlin.pipes;
 
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -17,11 +15,15 @@ import java.util.Set;
 public class Gremlin<S, E> implements GremlinPipeline<S, E> {
 
     private final List<Pipe> pipes = new ArrayList<>();
-    private Map<String, Integer> asIndex = new HashMap<>();
     private Pipe<?, E> lastPipe;
+    private Graph graph = null;
+
+    public Gremlin(final Graph graph) {
+        this.graph = graph;
+    }
 
     public Gremlin(final Iterator<S> starts) {
-        this.setStarts(new HolderIterator<>(this, starts));
+        this.addStarts(new HolderIterator<>(this, starts));
     }
 
     public Gremlin(final Iterable<S> starts) {
@@ -32,26 +34,43 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
         return new Gremlin(Collections.emptyIterator());
     }
 
-    public Pipe setStarts(final Iterator<Holder<S>> starts) {
-        if (this.pipes.size() > 0) {
-            this.pipes.get(0).setStarts(starts);
-        } else {
-            this.pipes.add(new FilterPipe<S>(this, s -> true).setStarts(starts));
-            this.lastPipe = this.pipes.get(this.pipes.size() - 1);
-        }
+    public static Gremlin of(final Graph graph) {
+        return new Gremlin(graph);
+    }
 
+    public Gremlin V() {
+        this.addStarts(new HolderIterator(this, this.graph.query().vertices().iterator()));
         return this;
     }
 
-    public void addStart(final Holder<S> start) {
-        this.pipes.get(0).addStart(start);
+    public void addStarts(final Iterator<Holder<S>> starts) {
+        if (this.pipes.size() > 0) {
+            this.pipes.get(0).addStarts(starts);
+        } else {
+            final Pipe<S, S> pipe = new FilterPipe<S>(this, s -> true);
+            pipe.addStarts(starts);
+            this.pipes.add(pipe);
+            this.lastPipe = (Pipe) pipe;
+        }
+    }
+
+    public List<Pipe> getPipes() {
+        return this.pipes;
     }
 
     public <P extends Pipeline> P addPipe(final Pipe pipe) {
-        pipe.setStarts(this.lastPipe);
+        pipe.addStarts(this.lastPipe);
         this.lastPipe = pipe;
         this.pipes.add(pipe);
         return (P) this;
+    }
+
+    public void setName(final String name) {
+
+    }
+
+    public String getName() {
+        return "gremlin";
     }
 
     public boolean hasNext() {
@@ -62,24 +81,4 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
         return this.lastPipe.next();
     }
 
-    public Set<String> getAs() {
-        return this.asIndex.keySet();
-    }
-
-    public <A, B> Pipe<A, B> getAs(final String key) {
-        if (!this.asIndex.containsKey(key))
-            throw new IllegalStateException("The named pipe does not exist");
-        return this.pipes.get(this.asIndex.get(key));
-    }
-
-    public <P extends GremlinPipeline> P as(final String key) {
-        if (this.asIndex.containsKey(key))
-            throw new IllegalStateException("The named pipe already exists");
-        this.asIndex.put(key, pipes.size() - 1);
-        return (P) this;
-    }
-
-    public <P extends GremlinPipeline> P back(final String key) {
-        return (P) this.addPipe(new MapPipe<E, Object>(this, o -> o.getPath().get(this.asIndex.get(key))));
-    }
 }

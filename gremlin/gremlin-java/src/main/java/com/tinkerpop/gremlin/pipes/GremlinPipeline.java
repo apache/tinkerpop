@@ -8,6 +8,8 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
 import com.tinkerpop.gremlin.pipes.util.Path;
+import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
+import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -121,16 +123,33 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         }
     }
 
-    public <P extends GremlinPipeline> P as(final String key);
+    public default <P extends GremlinPipeline> P as(final String name) {
+        if (null != PipelineHelper.getAs(name, this))
+            throw new IllegalStateException("The named pipe already exists");
+        final List<Pipe> pipes = this.getPipes();
+        pipes.get(pipes.size() - 1).setName(name);
+        return (P) this;
 
-    public <P extends GremlinPipeline> P back(final String key);
+    }
 
-    public default <P extends GremlinPipeline> P loop(final String key, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate) {
+    public default <P extends GremlinPipeline> P back(final String name) {
+        final List<Pipe> pipes = this.getPipes();
+        for (int i = 0; i < pipes.size(); i++) {
+            if (name.equals(pipes.get(i).getName())) {
+                final int temp = i;
+                return this.addPipe(new MapPipe<E, Object>(this, o -> o.getPath().get(temp)));
+            }
+        }
+        throw new IllegalStateException("The named pipe does not exist");
+    }
+
+    public default <P extends GremlinPipeline> P loop(final String name, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate) {
+        final Pipe loopStartPipe = PipelineHelper.getAs(name, getPipeline());
         return this.addPipe(new MapPipe<E, Object>(this, o -> {
             o.incrLoops();
             if (whilePredicate.test(o)) {
-                final Holder holder = o.makeSibling(o.get());
-                getAs(key).addStart(holder);
+                final Holder<Object> holder = o.makeSibling(o.get());
+                loopStartPipe.addStarts(new SingleIterator<Holder>(holder));
                 if (emitPredicate.test(o))
                     return o.get();
                 else

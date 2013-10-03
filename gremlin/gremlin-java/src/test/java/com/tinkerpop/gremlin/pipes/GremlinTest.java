@@ -19,7 +19,7 @@ public class GremlinTest extends TestCase {
     public void testPipeline() {
 
         TinkerGraph g = TinkerFactory.createClassic();
-        new Gremlin<Vertex, List>(g.query().vertices())
+        Gremlin.of(g).V()
                 .out("knows").out("created")
                 .has("name")
                 .value("name").path()
@@ -27,7 +27,7 @@ public class GremlinTest extends TestCase {
 
         System.out.println("--------------");
 
-        new Gremlin<Vertex, Vertex>(g.query().vertices()).as("x").out("knows").back("x").sideEffect(System.out::println).iterate();
+        Gremlin.of(g).V().as("x").out("knows").back("x").path().sideEffect(System.out::println).iterate();
 
         System.out.println("--------------");
 
@@ -37,22 +37,23 @@ public class GremlinTest extends TestCase {
 
         System.out.println("--------------");
 
-        System.out.println(new Gremlin<Vertex, List>(g.query().vertices())
-                .both().groupCount());
+        System.out.println(Gremlin.of(g).V().both().groupCount());
 
         System.out.println("--------------");
 
-        new Gremlin<Vertex, List>(g.query().vertices())
+        Gremlin.of(g).V()
                 .both()
                 .dedup(e -> ((Element) ((Holder) e).get()).getProperty("name").isPresent())
                 .sideEffect(System.out::println)
                 .iterate();
 
+        System.out.println("--------------");
+
     }
 
     public void testMatch() {
         TinkerGraph g = TinkerFactory.createClassic();
-        new Gremlin(g.query().vertices())
+        Gremlin.of(g).V()
                 .match("a", "d",
                         Gremlin.of().as("a").out("knows").as("b"),
                         Gremlin.of().as("b").out("created").as("c"),
@@ -77,7 +78,7 @@ public class GremlinTest extends TestCase {
         f.addEdge("next", a);
 
         new Gremlin(Arrays.asList(a)).as("x").out()
-                .loop("x", o -> ((Holder) o).getLoops() < 2, o -> true)
+                .loop("x", o -> ((Holder) o).getLoops() < 7, o -> true)
                 .sideEffect(o -> System.out.println(((Holder) o).getLoops()))
                 .path().sideEffect(System.out::println).iterate();
     }

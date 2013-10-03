@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.pipes;
 
+import com.tinkerpop.gremlin.pipes.util.ExpandableIterator;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 
 import java.util.Iterator;
@@ -10,8 +11,9 @@ import java.util.NoSuchElementException;
  */
 public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
 
+    protected String name = null;
     protected final Pipeline pipeline;
-    protected ExpandableIterator<Holder<S>> starts;
+    protected ExpandableIterator<Holder<S>> starts = new ExpandableIterator();
     private Holder<E> nextEnd;
     protected Holder<E> currentEnd;
     protected boolean available;
@@ -20,13 +22,19 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
         this.pipeline = pipeline;
     }
 
-    public Pipe setStarts(final Iterator<Holder<S>> starts) {
-        this.starts = new ExpandableIterator<>(starts);
-        return this;
+    public void addStarts(final Iterator<Holder<S>> starts) {
+        this.starts.add(starts);
     }
 
-    public void addStart(final Holder<S> start) {
-        this.starts.add(start);
+    public void setName(final String name) {
+       // if (null != name)
+        //    throw new IllegalStateException("Pipe has already been named");
+        //else
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public Holder<E> next() {

@@ -2,11 +2,12 @@ package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.MultiIterator;
+import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
+import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,13 +26,12 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
         this.inAs = inAs;
         this.outAs = outAs;
         this.pipelines = pipelines;
-        for (int i = 0; i < this.pipelines.length; i++) {
-            for (int j = i + 1; j < this.pipelines.length; j++) {
-                for (final String key : (Set<String>) pipelines[i].getAs()) {
-                    if (pipelines[j].getAs().contains(key)) {
-                        pipelines[j].getAs(key).setStarts(pipelines[i].getAs(key));
-                    }
-                }
+        for (final Pipeline p1 : this.pipelines) {
+            final Pipe endPipe = PipelineHelper.getEnd(p1);
+            for (final Pipeline p2 : this.pipelines) {
+                final Pipe startPipe = PipelineHelper.getStart(p2);
+                if (endPipe.getName().equals(startPipe.getName()))
+                    startPipe.addStarts(endPipe);
             }
         }
     }
@@ -42,17 +42,17 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
                 return this.iterator.next();
             else {
                 final Holder<S> start = this.starts.next();
-                this.getAs(this.inAs).forEach(pipe -> pipe.addStart(start.makeSibling(start.get())));
+                this.getAs(this.inAs).forEach(pipe -> pipe.addStarts(new SingleIterator(start.makeSibling(start.get()))));
                 this.iterator = new MultiIterator(this.getAs(outAs));
             }
         }
     }
 
     public List<Pipe> getAs(final String key) {
-        return Stream.of(this.pipelines)
-                .filter(p -> p.getAs().contains(key))
-                .map(p -> p.getAs(key))
-                .collect(Collectors.<Pipe>toList());
+        return (List) Stream.of(this.pipelines)
+                .map(p -> PipelineHelper.getAs(key,p))
+                .filter(p -> null != p)
+                .collect(Collectors.toList());
     }
 
 }

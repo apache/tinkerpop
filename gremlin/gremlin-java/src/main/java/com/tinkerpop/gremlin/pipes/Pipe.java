@@ -11,9 +11,11 @@ public interface Pipe<S, E> extends Iterator<Holder<E>> {
 
     public static final Object NO_OBJECT = new Object();
 
-    public Pipe setStarts(final Iterator<Holder<S>> iterator);
-
-    public void addStart(final Holder<S> start);
+    public void addStarts(Iterator<Holder<S>> iterator);
 
     public <P extends Pipeline> P getPipeline();
+
+    public String getName();
+
+    public void setName(String name);
 }
