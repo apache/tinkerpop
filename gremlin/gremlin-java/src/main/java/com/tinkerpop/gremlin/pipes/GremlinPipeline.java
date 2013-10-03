@@ -148,7 +148,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         return this.addPipe(new MapPipe<E, Object>(this, o -> {
             o.incrLoops();
             if (whilePredicate.test(o)) {
-                final Holder<Object> holder = o.makeSibling(o.get());
+                final Holder holder = o.makeSibling();
                 loopStartPipe.addStarts(new SingleIterator<Holder>(holder));
                 if (emitPredicate.test(o))
                     return o.get();

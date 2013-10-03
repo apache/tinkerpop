@@ -42,7 +42,7 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
                 return this.iterator.next();
             else {
                 final Holder<S> start = this.starts.next();
-                this.getAs(this.inAs).forEach(pipe -> pipe.addStarts(new SingleIterator(start.makeSibling(start.get()))));
+                this.getAs(this.inAs).forEach(pipe -> pipe.addStarts(new SingleIterator(start.makeSibling())));
                 this.iterator = new MultiIterator(this.getAs(outAs));
             }
         }
