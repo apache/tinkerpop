@@ -10,6 +10,7 @@ import java.util.Iterator;
 public interface Pipe<S, E> extends Iterator<Holder<E>> {
 
     public static final Object NO_OBJECT = new Object();
+    public static final String NONE = "none";
 
     public void addStarts(Iterator<Holder<S>> iterator);
 

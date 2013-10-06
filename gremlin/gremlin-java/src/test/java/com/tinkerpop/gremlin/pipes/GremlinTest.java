@@ -1,15 +1,16 @@
 package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import com.tinkerpop.gremlin.pipes.util.Holder;
+import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 import junit.framework.TestCase;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -81,5 +82,13 @@ public class GremlinTest extends TestCase {
                 .loop("x", o -> ((Holder) o).getLoops() < 7, o -> true)
                 .sideEffect(o -> System.out.println(((Holder) o).getLoops()))
                 .path().sideEffect(System.out::println).iterate();
+    }
+
+    public void testMultiStarts() {
+        Graph graph = TinkerFactory.createClassic();
+        Gremlin g = (Gremlin) Gremlin.of().has("name", "lop");
+        assertFalse(g.hasNext());
+        g.addStarts(new HolderIterator(g, graph.query().vertices().iterator()));
+        g.next();
     }
 }

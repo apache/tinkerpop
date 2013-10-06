@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.pipes;
 
-import com.tinkerpop.gremlin.pipes.util.ExpandableIterator;
+import com.tinkerpop.gremlin.pipes.util.ExpandablePipeIterator;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 
 import java.util.Iterator;
@@ -11,11 +11,10 @@ import java.util.NoSuchElementException;
  */
 public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
 
-    protected String name = null;
+    protected String name = NONE;
     protected final Pipeline pipeline;
-    protected ExpandableIterator<Holder<S>> starts = new ExpandableIterator();
+    protected ExpandablePipeIterator<Holder<S>> starts = new ExpandablePipeIterator<>();
     private Holder<E> nextEnd;
-    protected Holder<E> currentEnd;
     protected boolean available;
 
     public <P extends Pipeline> AbstractPipe(P pipeline) {
@@ -27,9 +26,10 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
     }
 
     public void setName(final String name) {
-       // if (null != name)
-        //    throw new IllegalStateException("Pipe has already been named");
-        //else
+        if (name.equals(NONE))
+            throw new IllegalArgumentException("The name 'none' is reserved to denote no name");
+        if (!this.name.equals(NONE))
+            throw new IllegalStateException("Pipe has already been named " + this.name);
         this.name = name;
     }
 
@@ -40,9 +40,9 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
     public Holder<E> next() {
         if (this.available) {
             this.available = false;
-            return (this.currentEnd = this.nextEnd);
+            return this.nextEnd;
         } else {
-            return (this.currentEnd = this.processNextStart());
+            return this.processNextStart();
         }
     }
 
@@ -52,9 +52,11 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
         else {
             try {
                 this.nextEnd = this.processNextStart();
-                return (this.available = true);
+                this.available = true;
+                return true;
             } catch (final NoSuchElementException e) {
-                return (this.available = false);
+                this.available = false;
+                return false;
             }
         }
     }

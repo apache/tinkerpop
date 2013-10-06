@@ -12,6 +12,7 @@ public class ExpandableIteratorTest extends TestCase {
     public void testExpansion() {
         ExpandableIterator itty = new ExpandableIterator(Arrays.asList().iterator());
         assertFalse(itty.hasNext());
+        assertFalse(itty.hasNext());
         itty.add(Arrays.asList(0, 1).iterator());
         assertTrue(itty.hasNext());
         itty.add(Arrays.asList(2, 3, 4, 5).iterator());
