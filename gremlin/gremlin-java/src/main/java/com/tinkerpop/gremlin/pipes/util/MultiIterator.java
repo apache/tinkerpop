@@ -17,6 +17,9 @@ public class MultiIterator<T> implements Iterator<T> {
     }
 
     public boolean hasNext() {
+        if (this.current >= this.iterators.size())
+            return false;
+
         Iterator<T> currentIterator = iterators.get(this.current);
 
         while (true) {

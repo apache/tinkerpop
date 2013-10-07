@@ -60,6 +60,15 @@ public class GremlinTest extends TestCase {
                         Gremlin.of().as("b").out("created").as("c"),
                         Gremlin.of().as("c").value("name").as("d"))
                 .sideEffect(System.out::println).iterate();
+
+        System.out.println("--------------");
+
+        Gremlin.of(g).V()
+                .match("a", "b",
+                        Gremlin.of().as("a").out("knows").has("name", "josh"),
+                        Gremlin.of().as("a").out("created").has("name", "lop"),
+                        Gremlin.of().as("a").out("created").as("b")).value("name")
+                .sideEffect(System.out::println).iterate();
     }
 
     public void testLoop() {
