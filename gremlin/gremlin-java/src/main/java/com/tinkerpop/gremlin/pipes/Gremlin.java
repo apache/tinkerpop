@@ -23,7 +23,7 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
     }
 
     public Gremlin(final Iterator<S> starts) {
-        this.addStarts(new HolderIterator<>(this, starts));
+        this.addStarts(new HolderIterator<>(starts));
     }
 
     public Gremlin(final Iterable<S> starts) {
@@ -39,7 +39,7 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
     }
 
     public Gremlin V() {
-        this.addStarts(new HolderIterator(this, this.graph.query().vertices().iterator()));
+        this.addStarts(new HolderIterator(this.graph.query().vertices().iterator()));
         return this;
     }
 

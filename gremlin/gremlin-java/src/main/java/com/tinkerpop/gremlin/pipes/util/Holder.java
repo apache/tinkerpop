@@ -11,10 +11,8 @@ public class Holder<T> {
     private T t;
     private int loops = 0;
     private final Path path = new Path();
-    private final Pipeline pipeline;
 
-    public <P extends Pipeline> Holder(final P pipeline, final T t) {
-        this.pipeline = pipeline;
+    public <P extends Pipeline> Holder(final T t) {
         this.t = t;
     }
 
@@ -39,7 +37,7 @@ public class Holder<T> {
     }
 
     public <R> Holder<R> makeChild(final R r) {
-        final Holder<R> holder = new Holder<>(this.pipeline, r);
+        final Holder<R> holder = new Holder<>(r);
         holder.loops = this.loops;
         holder.path.addAll(this.path);
         holder.path.add(this.t);
@@ -47,7 +45,7 @@ public class Holder<T> {
     }
 
     public Holder<T> makeSibling() {
-        final Holder<T> holder = new Holder<>(this.pipeline, t);
+        final Holder<T> holder = new Holder<>(this.t);
         holder.loops = this.loops;
         holder.path.addAll(this.path);
         return holder;

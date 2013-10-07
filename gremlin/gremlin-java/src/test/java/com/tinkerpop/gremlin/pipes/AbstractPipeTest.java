@@ -13,7 +13,7 @@ public class AbstractPipeTest extends TestCase {
     public void testExpansion() {
         Pipe filter = new FilterPipe<Object>(null, s -> true);
         assertFalse(filter.hasNext());
-        filter.addStarts(new HolderIterator(null, Arrays.asList(1, 2, 3).iterator()));
+        filter.addStarts(new HolderIterator(Arrays.asList(1, 2, 3).iterator()));
         assertTrue(filter.hasNext());
         int counter = 0;
         while (filter.hasNext()) {
@@ -23,7 +23,7 @@ public class AbstractPipeTest extends TestCase {
         assertEquals(counter, 3);
         assertFalse(filter.hasNext());
 
-        filter.addStarts(new HolderIterator(null, Arrays.asList(1, 2, 3).iterator()));
+        filter.addStarts(new HolderIterator(Arrays.asList(1, 2, 3).iterator()));
         assertTrue(filter.hasNext());
         while (filter.hasNext()) {
             filter.next();
@@ -41,7 +41,7 @@ public class AbstractPipeTest extends TestCase {
         filter2.addStarts(filter1);
 
         assertFalse(filter2.hasNext());
-        filter1.addStarts(new HolderIterator(null, Arrays.asList(1, 2, 3).iterator()));
+        filter1.addStarts(new HolderIterator(Arrays.asList(1, 2, 3).iterator()));
         assertTrue(filter2.hasNext());
         int counter = 0;
         while (filter2.hasNext()) {

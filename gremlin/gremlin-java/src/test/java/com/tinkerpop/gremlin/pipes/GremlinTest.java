@@ -88,7 +88,7 @@ public class GremlinTest extends TestCase {
         Graph graph = TinkerFactory.createClassic();
         Gremlin g = (Gremlin) Gremlin.of().has("name", "lop");
         assertFalse(g.hasNext());
-        g.addStarts(new HolderIterator(g, graph.query().vertices().iterator()));
+        g.addStarts(new HolderIterator(graph.query().vertices().iterator()));
         g.next();
     }
 }

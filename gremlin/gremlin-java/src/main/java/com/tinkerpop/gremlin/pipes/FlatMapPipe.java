@@ -32,7 +32,7 @@ public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
     private synchronized Holder<E> getNext() {
         if (this.queue.isEmpty()) {
             final Holder<S> holder = this.starts.next();
-            this.queue.add(new HolderIterator<>(this.getPipeline(), holder, this.function.apply(holder)));
+            this.queue.add(new HolderIterator<>(holder, this.function.apply(holder)));
             return null;
         } else {
             final Iterator<Holder<E>> iterator = this.queue.peek();
