@@ -67,7 +67,8 @@ public class GremlinTest extends TestCase {
                 .match("a", "b",
                         Gremlin.of().as("a").out("knows").has("name", "josh"),
                         Gremlin.of().as("a").out("created").has("name", "lop"),
-                        Gremlin.of().as("a").out("created").as("b")).value("name")
+                        Gremlin.of().as("a").out("created").as("b"))
+                .value("name").path()
                 .sideEffect(System.out::println).iterate();
     }
 

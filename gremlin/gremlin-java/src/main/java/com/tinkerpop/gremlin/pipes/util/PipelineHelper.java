@@ -19,4 +19,15 @@ public class PipelineHelper {
     public static <S, E> Pipe<?, E> getEnd(final Pipeline<S, E> pipeline) {
         return pipeline.getPipes().get(pipeline.getPipes().size() - 1);
     }
+
+    public static boolean hasNextIteration(final Pipeline pipeline) {
+        if (pipeline.hasNext()) {
+            while (pipeline.hasNext()) {
+                pipeline.next();
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

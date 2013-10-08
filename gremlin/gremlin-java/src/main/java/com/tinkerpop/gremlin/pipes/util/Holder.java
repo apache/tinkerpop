@@ -45,7 +45,7 @@ public class Holder<T> {
     }
 
     public Holder<T> makeSibling() {
-        final Holder<T> holder = new Holder<>(this.t);
+        final Holder<T> holder = new Holder<>(t);
         holder.loops = this.loops;
         holder.path.addAll(this.path);
         return holder;

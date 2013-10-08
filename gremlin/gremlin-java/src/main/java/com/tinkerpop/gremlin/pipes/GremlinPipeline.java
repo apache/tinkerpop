@@ -103,6 +103,12 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         }));
     }
 
+    /*public default <P extends GremlinPipeline> P select()  {
+        return this.addPipe(new MapPipe<Object,E>(this, h-> {
+            h.getPath()
+        })
+    }*/
+
     public default Map<E, Long> groupCount() {
         final Map<E, Long> map = new HashMap<>();
         try {
@@ -149,7 +155,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
             o.incrLoops();
             if (whilePredicate.test(o)) {
                 final Holder holder = o.makeSibling();
-                loopStartPipe.addStarts(new SingleIterator<Holder>(holder));
+                loopStartPipe.addStarts(new SingleIterator<>(holder));
                 if (emitPredicate.test(o))
                     return o.get();
                 else

@@ -19,7 +19,7 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
 
     private Iterator<Holder<E>> iterator = Collections.emptyIterator();
     private final Pipeline[] pipelines;
-    private final List<Pipeline> noEndPipelines = new ArrayList<>();
+    private final List<Pipeline> predicatePipelines = new ArrayList<>();
     private final String inAs;
     private final String outAs;
 
@@ -38,7 +38,7 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
                         startPipe.addStarts(endPipe);
                 }
             } else {
-                this.noEndPipelines.add(p1);
+                this.predicatePipelines.add(p1);
             }
         }
     }
@@ -48,18 +48,17 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
             if (this.iterator.hasNext())
                 return this.iterator.next();
             else {
+                // CHECK ALL PREDICATE PIPELINES
                 boolean alive = true;
                 final Holder<S> start = this.starts.next();
-                for (final Pipeline pipeline : this.noEndPipelines) {
+                for (final Pipeline pipeline : this.predicatePipelines) {
                     pipeline.addStarts(new SingleIterator(start.makeSibling()));
-                    if (pipeline.hasNext()) {
-                        while (pipeline.hasNext()) {
-                            pipeline.next();
-                        }
-                    } else {
+                    if (!PipelineHelper.hasNextIteration(pipeline)) {
                         alive = false;
+                        break; // short-circuit AND
                     }
                 }
+                // IF PREDICATES HOLD, DO END-NAMED PIPELINES
                 if (alive) {
                     this.getAs(this.inAs).forEach(pipe -> pipe.addStarts(new SingleIterator(start.makeSibling())));
                     this.iterator = new MultiIterator(this.getAs(outAs));
