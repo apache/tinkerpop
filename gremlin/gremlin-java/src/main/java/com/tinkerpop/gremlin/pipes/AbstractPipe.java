@@ -15,9 +15,9 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
     protected final Pipeline pipeline;
     protected ExpandablePipeIterator<Holder<S>> starts = new ExpandablePipeIterator<>();
     private Holder<E> nextEnd;
-    protected boolean available;
+    private boolean available;
 
-    public <P extends Pipeline> AbstractPipe(P pipeline) {
+    public <P extends Pipeline> AbstractPipe(final P pipeline) {
         this.pipeline = pipeline;
     }
 

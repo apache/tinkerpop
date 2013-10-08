@@ -52,6 +52,11 @@ public class GremlinTest extends TestCase {
 
     }
 
+    public void testSelect() {
+        TinkerGraph g = TinkerFactory.createClassic();
+        Gremlin.of(g).V().as("x").out().as("y").select("x", "y").sideEffect(System.out::println).iterate();
+    }
+
     public void testMatch() {
         TinkerGraph g = TinkerFactory.createClassic();
         Gremlin.of(g).V()

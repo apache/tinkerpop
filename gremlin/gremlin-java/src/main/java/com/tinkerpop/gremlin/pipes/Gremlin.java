@@ -23,7 +23,9 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
     }
 
     public Gremlin(final Iterator<S> starts) {
-        this.addStarts(new HolderIterator<>(starts));
+        final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
+        this.addPipe(pipe);
+        this.addStarts(new HolderIterator<>(pipe, starts));
     }
 
     public Gremlin(final Iterable<S> starts) {
@@ -39,19 +41,14 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
     }
 
     public Gremlin V() {
-        this.addStarts(new HolderIterator(this.graph.query().vertices().iterator()));
+        final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
+        this.addPipe(pipe);
+        this.addStarts(new HolderIterator(pipe, this.graph.query().vertices().iterator()));
         return this;
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {
-        if (!this.pipes.isEmpty()) {
-            this.pipes.get(0).addStarts(starts);
-        } else {
-            final Pipe<S, S> pipe = new FilterPipe<S>(this, s -> true);
-            pipe.addStarts(starts);
-            this.pipes.add(pipe);
-            //this.lastPipe = (Pipe) pipe;
-        }
+        this.pipes.get(0).addStarts(starts);
     }
 
     public List<Pipe> getPipes() {
@@ -59,7 +56,8 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
     }
 
     public <P extends Pipeline> P addPipe(final Pipe pipe) {
-        pipe.addStarts(this.pipes.get(this.pipes.size() - 1));
+        if (this.pipes.size() > 0)
+            pipe.addStarts(this.pipes.get(this.pipes.size() - 1));
         //this.lastPipe = pipe;
         this.pipes.add(pipe);
         return (P) this;

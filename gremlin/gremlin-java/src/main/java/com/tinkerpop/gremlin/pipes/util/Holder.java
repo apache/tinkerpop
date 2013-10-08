@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin.pipes.util;
 
 
-import com.tinkerpop.gremlin.pipes.Pipeline;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -12,7 +10,12 @@ public class Holder<T> {
     private int loops = 0;
     private final Path path = new Path();
 
-    public <P extends Pipeline> Holder(final T t) {
+    public Holder(final String name, final T t) {
+        this.t = t;
+        this.path.add(name, t);
+    }
+
+    private Holder(final T t) {
         this.t = t;
     }
 
@@ -36,19 +39,27 @@ public class Holder<T> {
         this.loops++;
     }
 
-    public <R> Holder<R> makeChild(final R r) {
+    public <R> Holder<R> makeChild(final String name, final R r) {
         final Holder<R> holder = new Holder<>(r);
         holder.loops = this.loops;
-        holder.path.addAll(this.path);
-        holder.path.add(this.t);
+        holder.path.add(this.path);
+        holder.path.add(name, r);
         return holder;
     }
 
     public Holder<T> makeSibling() {
-        final Holder<T> holder = new Holder<>(t);
+        final Holder<T> holder = new Holder<>(this.t);
         holder.loops = this.loops;
-        holder.path.addAll(this.path);
+        holder.path.add(this.path);
         return holder;
     }
 
+    public Holder<T> makeSibling(final String name) {
+        final Holder<T> holder = new Holder<>(this.t);
+        holder.loops = this.loops;
+        holder.path.add(this.path);
+        holder.path.names.remove(holder.path.names.size() - 1);
+        holder.path.names.add(name);
+        return holder;
+    }
 }
