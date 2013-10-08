@@ -64,11 +64,12 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
     }
 
     public void setName(final String name) {
-
+        //this.pipes.get(0).setName(name);
     }
 
     public String getName() {
         return "gremlin";
+        // return this.pipes.get(0).getName();
     }
 
     public boolean hasNext() {

@@ -7,8 +7,10 @@ import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,7 +21,7 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
 
     private Iterator<Holder<E>> iterator = Collections.emptyIterator();
     private final Pipeline[] pipelines;
-    private final List<Pipeline> predicatePipelines = new ArrayList<>();
+    private final Map<String, List<Pipeline>> predicatePipelines = new HashMap<>();
     private final String inAs;
     private final String outAs;
 
@@ -38,32 +40,31 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
                         startPipe.addStarts(endPipe);
                 }
             } else {
-                this.predicatePipelines.add(p1);
+                List<Pipeline> pipes = this.predicatePipelines.get(PipelineHelper.getStart(p1).getName());
+                if (null == pipes) {
+                    pipes = new ArrayList<>();
+                    this.predicatePipelines.put(PipelineHelper.getStart(p1).getName(), pipes);
+                }
+                pipes.add(p1);
             }
         }
     }
 
     public Holder<E> processNextStart() {
         while (true) {
-            if (this.iterator.hasNext())
-                return this.iterator.next();
-            else {
-                // CHECK ALL PREDICATE PIPELINES
-                boolean alive = true;
-                final Holder<S> start = this.starts.next();
-                for (final Pipeline pipeline : this.predicatePipelines) {
-                    pipeline.addStarts(new SingleIterator(start.makeSibling()));
-                    if (!PipelineHelper.hasNextIteration(pipeline)) {
-                        alive = false;
-                        break; // short-circuit AND
-                    }
+            if (this.iterator.hasNext()) {
+                // CHECK ALL END PREDICATE PIPELINE
+                final Holder<E> holder = this.iterator.next();
+                if (isLegalPredicate(this.outAs, holder)) {
+                    return holder;
                 }
+            } else {
+                final Holder<S> start = this.starts.next();
                 // IF PREDICATES HOLD, DO END-NAMED PIPELINES
-                if (alive) {
+                if (isLegalPredicate(this.inAs, start)) {
                     this.getAs(this.inAs).forEach(pipe -> pipe.addStarts(new SingleIterator(start.makeSibling())));
                     this.iterator = new MultiIterator(this.getAs(outAs));
                 }
-
             }
         }
     }
@@ -73,6 +74,20 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
                 .map(p -> PipelineHelper.getAs(key, p))
                 .filter(p -> null != p)
                 .collect(Collectors.toList());
+    }
+
+    public boolean isLegalPredicate(final String name, final Holder holder) {
+        boolean alive = true;
+        if (this.predicatePipelines.containsKey(name)) {
+            for (final Pipeline pipeline : this.predicatePipelines.get(name)) {
+                pipeline.addStarts(new SingleIterator(holder.makeSibling()));
+                if (!PipelineHelper.hasNextIteration(pipeline)) {
+                    alive = false;
+                    break; // short-circuit AND
+                }
+            }
+        }
+        return alive;
     }
 
 }
