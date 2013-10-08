@@ -69,14 +69,14 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
         }
     }
 
-    public List<Pipe> getAs(final String key) {
+    private List<Pipe> getAs(final String key) {
         return (List) Stream.of(this.pipelines)
                 .map(p -> PipelineHelper.getAs(key, p))
                 .filter(p -> null != p)
                 .collect(Collectors.toList());
     }
 
-    public boolean isLegalPredicate(final String name, final Holder holder) {
+    private boolean isLegalPredicate(final String name, final Holder holder) {
         boolean alive = true;
         if (this.predicatePipelines.containsKey(name)) {
             for (final Pipeline pipeline : this.predicatePipelines.get(name)) {
