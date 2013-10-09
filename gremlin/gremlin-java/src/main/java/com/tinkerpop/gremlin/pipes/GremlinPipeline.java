@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
@@ -11,6 +12,8 @@ import com.tinkerpop.gremlin.pipes.util.Path;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -55,6 +58,30 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     public default <P extends GremlinPipeline> P both(final String... labels) {
         return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.<Vertex>get().query().direction(Direction.BOTH).labels(labels).vertices().iterator()));
+    }
+
+    public default <P extends GremlinPipeline> P outE(final String... labels) {
+        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.<Vertex>get().query().direction(Direction.OUT).labels(labels).edges().iterator()));
+    }
+
+    public default <P extends GremlinPipeline> P inE(final String... labels) {
+        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.<Vertex>get().query().direction(Direction.IN).labels(labels).edges().iterator()));
+    }
+
+    public default <P extends GremlinPipeline> P bothE(final String... labels) {
+        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.<Vertex>get().query().direction(Direction.BOTH).labels(labels).edges().iterator()));
+    }
+
+    public default <P extends GremlinPipeline> P inV() {
+        return this.addPipe(new MapPipe<Edge, Vertex>(this, e -> e.<Edge>get().getVertex(Direction.IN)));
+    }
+
+    public default <P extends GremlinPipeline> P outV() {
+        return this.addPipe(new MapPipe<Edge, Vertex>(this, e -> e.<Edge>get().getVertex(Direction.OUT)));
+    }
+
+    public default <P extends GremlinPipeline> P bothV() {
+        return this.addPipe(new FlatMapPipe<Edge, Vertex>(this, e -> Arrays.asList(e.<Edge>get().getVertex(Direction.OUT), e.<Edge>get().getVertex(Direction.IN)).iterator()));
     }
 
     public default <P extends GremlinPipeline> P property(final String key) {
@@ -169,6 +196,15 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         pipes.get(pipes.size() - 1).setName(name);
         return (P) this;
 
+    }
+
+    public default List<Holder> next(final int amount) {
+        final List<Holder> result = new ArrayList<>();
+        int counter = 0;
+        while (counter++ < amount && this.hasNext()) {
+            result.add(this.next());
+        }
+        return result;
     }
 
     public default void iterate() {
