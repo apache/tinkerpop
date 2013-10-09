@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,14 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     }
 
     ///////////////////// TRANSFORM STEPS /////////////////////
+
+    public default <P extends GremlinPipeline, E2> P transform(final Function<Holder<E>, E2> function) {
+        return this.addPipe(new MapPipe<>(this, function));
+    }
+
+    public default <P extends GremlinPipeline, E2> P flatTransform(final Function<Holder<E>, Iterator<E2>> function) {
+        return this.addPipe(new FlatMapPipe<>(this, function));
+    }
 
     public <P extends GremlinPipeline> P V();
 
