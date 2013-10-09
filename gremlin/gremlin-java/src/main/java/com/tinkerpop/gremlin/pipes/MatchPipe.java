@@ -77,17 +77,17 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
     }
 
     private boolean isLegalPredicate(final String name, final Holder holder) {
-        boolean alive = true;
+        boolean legal = true;
         if (this.predicatePipelines.containsKey(name)) {
             for (final Pipeline pipeline : this.predicatePipelines.get(name)) {
                 pipeline.addStarts(new SingleIterator(holder.makeSibling()));
                 if (!PipelineHelper.hasNextIteration(pipeline)) {
-                    alive = false;
+                    legal = false;
                     break; // short-circuit AND
                 }
             }
         }
-        return alive;
+        return legal;
     }
 
 }

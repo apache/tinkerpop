@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,22 +28,24 @@ import java.util.stream.Stream;
  */
 public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
-    public <P extends GremlinPipeline> P V();
-
-    default <P extends GremlinPipeline> P inOutBoth(final Direction direction, final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.<Vertex>get().query().direction(direction).labels(labels).vertices().iterator()));
+    public default <P extends GremlinPipeline> P identity() {
+        return this.addPipe(new MapPipe<E, E>(this, o -> o.get()));
     }
 
+    ///////////////////// TRANSFORM STEPS /////////////////////
+
+    public <P extends GremlinPipeline> P V();
+
     public default <P extends GremlinPipeline> P out(final String... labels) {
-        return this.inOutBoth(Direction.OUT, labels);
+        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.<Vertex>get().query().direction(Direction.OUT).labels(labels).vertices().iterator()));
     }
 
     public default <P extends GremlinPipeline> P in(final String... labels) {
-        return this.inOutBoth(Direction.IN, labels);
+        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.<Vertex>get().query().direction(Direction.IN).labels(labels).vertices().iterator()));
     }
 
     public default <P extends GremlinPipeline> P both(final String... labels) {
-        return this.inOutBoth(Direction.BOTH, labels);
+        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.<Vertex>get().query().direction(Direction.BOTH).labels(labels).vertices().iterator()));
     }
 
     public default <P extends GremlinPipeline> P property(final String key) {
@@ -53,6 +54,28 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     public default <P extends GremlinPipeline> P value(final String key) {
         return this.addPipe(new MapPipe<Element, Object>(this, e -> e.<Element>get().getValue(key)));
+    }
+
+    public default <P extends GremlinPipeline> P path() {
+        return this.addPipe(new MapPipe<Object, Path>(this, o -> o.getPath()));
+    }
+
+    public default <P extends GremlinPipeline> P back(final String name) {
+        return this.addPipe(new MapPipe<E, Object>(this, o -> o.getPath().get(name)));
+    }
+
+    public default <P extends GremlinPipeline> P match(final String inAs, final String outAs, final Pipeline... pipelines) {
+        return this.addPipe(new MatchPipe(inAs, outAs, this, pipelines));
+    }
+
+    ///////////////////// FILTER STEPS /////////////////////
+
+    public default <P extends GremlinPipeline> P filter(final Predicate<Holder<E>> predicate) {
+        return this.addPipe(new FilterPipe<>(this, predicate));
+    }
+
+    public default <P extends GremlinPipeline> P simplePath() {
+        return this.addPipe(new FilterPipe<Element>(this, o -> o.getPath().isSimple()));
     }
 
     public default <P extends GremlinPipeline> P has(final String key) {
@@ -70,10 +93,6 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         }));
     }
 
-    public default <P extends GremlinPipeline> P path() {
-        return this.addPipe(new MapPipe<Object, Path>(this, o -> o.getPath()));
-    }
-
     public default <P extends GremlinPipeline> P dedup() {
         final Set<Object> set = new LinkedHashSet<>();
         return this.addPipe(new FilterPipe<E>(this, o -> set.add(o.get())));
@@ -84,17 +103,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         return this.addPipe(new FilterPipe<E>(this, o -> set.add(uniqueFunction.apply(o))));
     }
 
-    public default <P extends GremlinPipeline> P filter(final Predicate<Holder<E>> predicate) {
-        return this.addPipe(new FilterPipe<>(this, predicate));
-    }
-
-    public default <P extends GremlinPipeline, E2> P map(final Function<Holder<E>, E2> function) {
-        return this.addPipe(new MapPipe<>(this, function));
-    }
-
-    public default <P extends GremlinPipeline, E2> P flatMap(final Function<Holder<E>, Iterator<E2>> function) {
-        return this.addPipe(new FlatMapPipe<>(this, function));
-    }
+    ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     public default <P extends GremlinPipeline> P sideEffect(final Consumer<Holder> consumer) {
         return this.addPipe(new FilterPipe<E>(this, o -> {
@@ -123,27 +132,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         }
     }
 
-    public default void iterate() {
-        try {
-            while (true) {
-                this.next();
-            }
-        } catch (final NoSuchElementException e) {
-        }
-    }
-
-    public default <P extends GremlinPipeline> P as(final String name) {
-        if (null != PipelineHelper.getAs(name, this))
-            throw new IllegalStateException("The named pipe already exists");
-        final List<Pipe> pipes = this.getPipes();
-        pipes.get(pipes.size() - 1).setName(name);
-        return (P) this;
-
-    }
-
-    public default <P extends GremlinPipeline> P back(final String name) {
-        return this.addPipe(new MapPipe<E, Object>(this, o -> o.getPath().get(name)));
-    }
+    ///////////////////// BRANCH STEPS /////////////////////
 
     public default <P extends GremlinPipeline> P loop(final String name, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate) {
         final Pipe loopStartPipe = PipelineHelper.getAs(name, getPipeline());
@@ -162,12 +151,23 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         }));
     }
 
-    public default <P extends GremlinPipeline> P match(final String inAs, final String outAs, final Pipeline... pipelines) {
-        return this.addPipe(new MatchPipe(inAs, outAs, this, pipelines));
+    ///////////////////// UTILITY STEPS /////////////////////
+
+    public default <P extends GremlinPipeline> P as(final String name) {
+        if (null != PipelineHelper.getAs(name, this))
+            throw new IllegalStateException("The named pipe already exists");
+        final List<Pipe> pipes = this.getPipes();
+        pipes.get(pipes.size() - 1).setName(name);
+        return (P) this;
+
     }
 
-
-    public default <P extends GremlinPipeline> P identity() {
-        return this.addPipe(new MapPipe<E, E>(this, o -> o.get()));
+    public default void iterate() {
+        try {
+            while (true) {
+                this.next();
+            }
+        } catch (final NoSuchElementException e) {
+        }
     }
 }

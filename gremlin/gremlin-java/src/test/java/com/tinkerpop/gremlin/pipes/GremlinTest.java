@@ -118,4 +118,9 @@ public class GremlinTest extends TestCase {
         g.addStarts(new HolderIterator(graph.query().vertices().iterator()));
         g.next();
     }
+
+    public void testFiltering() {
+        Graph g = TinkerFactory.createClassic();
+        Gremlin.of(g).V().out().out().simplePath();
+    }
 }
