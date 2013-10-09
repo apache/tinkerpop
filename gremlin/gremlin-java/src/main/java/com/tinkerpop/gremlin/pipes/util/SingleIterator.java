@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.pipes.util;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -21,7 +20,7 @@ public class SingleIterator<T> implements Iterator<T> {
 
     public T next() {
         if (!this.alive)
-            throw new NoSuchElementException();
+            throw FastNoSuchElementException.instance();
         else {
             this.alive = false;
             return t;

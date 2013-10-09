@@ -1,49 +1,58 @@
 package com.tinkerpop.gremlin.computer;
 
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphMemory;
 import com.tinkerpop.blueprints.computer.VertexProgram;
+import com.tinkerpop.blueprints.util.StreamFactory;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GremlinVertexProgram implements VertexProgram {
 
-    private final Consumer<GraphMemory> setupFunction;
-    private final BiConsumer<Vertex, GraphMemory> executeFunction;
-    private final Predicate<GraphMemory> terminateFunction;
-    private final Map<String, KeyType> computeKeys;
+    private static final String GREMLIN = "gremlin";
+    private static final String RESULT = "result";
+    private final List<String> steps;
 
-    public GremlinVertexProgram(final Consumer<GraphMemory> setupFunction,
-                                final BiConsumer<Vertex, GraphMemory> executeFunction,
-                                final Predicate<GraphMemory> terminateFunction,
-                                final Map<String, KeyType> computeKeys) {
-        this.setupFunction = setupFunction;
-        this.executeFunction = executeFunction;
-        this.terminateFunction = terminateFunction;
-        this.computeKeys = computeKeys;
+    public GremlinVertexProgram(List<String> steps) {
+        this.steps = steps;
     }
 
     public void setup(final GraphMemory graphMemory) {
-        this.setupFunction.accept(graphMemory);
+        graphMemory.setIfAbsent("steps", steps);
     }
 
     public void execute(final Vertex vertex, final GraphMemory graphMemory) {
-        this.executeFunction.accept(vertex, graphMemory);
+
+        List<String> steps = graphMemory.get("steps");
+        String step = steps.get(graphMemory.getIteration());
+        if (step.equals("V")) {
+            vertex.setProperty(GREMLIN, 1l);
+        } else if (step.equals("out")) {
+            long traversers = StreamFactory.stream(vertex.query().direction(Direction.IN)
+                    .vertices())
+                    .collect(Collectors.summingLong(v -> v.getValue(GREMLIN)));
+            vertex.setProperty(GREMLIN, traversers);
+        } else if (step.equals("count")) {
+            graphMemory.increment(RESULT, vertex.getValue(GREMLIN));
+        } else {
+            throw new UnsupportedOperationException("The step '" + step + "' is not supported");
+        }
     }
 
     public boolean terminate(final GraphMemory graphMemory) {
-        return this.terminateFunction.test(graphMemory);
+        List<String> steps = graphMemory.get("steps");
+        return !(graphMemory.getIteration() < steps.size());
     }
 
     public Map<String, KeyType> getComputeKeys() {
-        return this.computeKeys;
+        return VertexProgram.ofComputeKeys(GREMLIN, KeyType.VARIABLE);
     }
 
     public static Builder create() {
@@ -51,37 +60,15 @@ public class GremlinVertexProgram implements VertexProgram {
     }
 
     public static class Builder {
-        private Consumer<GraphMemory> setupFunction;
-        private BiConsumer<Vertex, GraphMemory> executeFunction;
-        private Predicate<GraphMemory> terminateFunction;
-        private Map<String, KeyType> computeKeys;
+        private List<String> steps;
 
-        public Builder setup(final Consumer<GraphMemory> setupFunction) {
-            this.setupFunction = setupFunction;
-            return this;
-        }
-
-        public Builder execute(final BiConsumer<Vertex, GraphMemory> executeFunction) {
-            this.executeFunction = executeFunction;
-            return this;
-        }
-
-        public Builder terminate(final Predicate<GraphMemory> terminateFunction) {
-            this.terminateFunction = terminateFunction;
-            return this;
-        }
-
-        public Builder computeKeys(final Map<String, KeyType> computeKeys) {
-            this.computeKeys = computeKeys;
+        public Builder steps(final String... steps) {
+            this.steps = Arrays.asList(steps);
             return this;
         }
 
         public GremlinVertexProgram build() {
-            Objects.requireNonNull(this.setupFunction);
-            Objects.requireNonNull(this.executeFunction);
-            Objects.requireNonNull(this.terminateFunction);
-            Objects.requireNonNull(this.computeKeys);
-            return new GremlinVertexProgram(this.setupFunction, this.executeFunction, this.terminateFunction, this.computeKeys);
+            return new GremlinVertexProgram(this.steps);
         }
     }
 }

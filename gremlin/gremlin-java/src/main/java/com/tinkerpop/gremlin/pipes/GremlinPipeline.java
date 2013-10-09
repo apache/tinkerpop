@@ -121,7 +121,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     }
 
     public default <P extends GremlinPipeline> P simplePath() {
-        return this.addPipe(new FilterPipe<Element>(this, o -> o.getPath().isSimple()));
+        return this.addPipe(new FilterPipe<Object>(this, o -> o.getPath().isSimple()));
     }
 
     public default <P extends GremlinPipeline> P has(final String key) {

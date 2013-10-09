@@ -47,7 +47,7 @@ public class MultiIterator<T> implements Iterator<T> {
                 currentIterator = iterators.get(current);
             }
         }
-        throw new NoSuchElementException();
+        throw FastNoSuchElementException.instance();
     }
 
 }

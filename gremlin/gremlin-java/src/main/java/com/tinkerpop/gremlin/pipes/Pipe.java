@@ -19,4 +19,6 @@ public interface Pipe<S, E> extends Iterator<Holder<E>> {
     public String getName();
 
     public void setName(String name);
+
+    // TODO: public void reset();
 }
