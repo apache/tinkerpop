@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -104,6 +105,15 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         return this.addPipe(new MatchPipe(inAs, outAs, this, pipelines));
     }
 
+    public default <P extends GremlinPipeline> P select(final String... names) {
+        return this.addPipe(new MapPipe<Object, List>(this, h -> {
+            final Path path = h.getPath();
+            return names.length == 0 ?
+                    path.getNamedSteps().stream().map(s -> path.get(s)).collect(Collectors.toList()) :
+                    Stream.of(names).map(s -> path.get(s)).collect(Collectors.toList());
+        }));
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     public default <P extends GremlinPipeline> P filter(final Predicate<Holder<E>> predicate) {
@@ -148,14 +158,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         }));
     }
 
-    public default <P extends GremlinPipeline> P select(final String... names) {
-        return this.addPipe(new MapPipe<Object, List>(this, h -> {
-            final Path path = h.getPath();
-            return names.length == 0 ?
-                    path.getNamedSteps().stream().map(s -> path.get(s)).collect(Collectors.toList()) :
-                    Stream.of(names).map(s -> path.get(s)).collect(Collectors.toList());
-        }));
-    }
+    // TODO: What is the state of groupCount/groupBy --- sideEffects/endPoints (the cap() dilema ensues).
 
     public default Map<E, Long> groupCount() {
         final Map<E, Long> map = new HashMap<>();
@@ -205,6 +208,20 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
             result.add(this.next());
         }
         return result;
+    }
+
+    public default List<Holder> toList() {
+        return (List<Holder>) this.fill(new ArrayList<>());
+    }
+
+    public default Collection<Holder> fill(final Collection<Holder> collection) {
+        try {
+            while (true) {
+                collection.add(this.next());
+            }
+        } catch (final NoSuchElementException e) {
+        }
+        return collection;
     }
 
     public default void iterate() {
