@@ -34,16 +34,16 @@ public class GremlinVertexProgram implements VertexProgram {
     }
 
     public void setup(final GraphMemory graphMemory) {
-        graphMemory.setIfAbsent("gremlin", gremlin);
+        graphMemory.setIfAbsent("gremlin", this.gremlin);
     }
 
     public void execute(final Vertex vertex, final GraphMemory graphMemory) {
         if (graphMemory.isInitialIteration()) {
             vertex.setProperty(GREMLINS, Arrays.asList(new Holder<>(Pipe.NONE, vertex)));
         } else {
-            final Pipe pipe = getNextStep(graphMemory);
+            final Pipe pipe = getCurrentPipe(graphMemory);
             if (pipe instanceof FilterPipe) {
-                pipe.addStarts(new SingleIterator<>(new Holder(Pipe.NONE, vertex)));
+                pipe.addStarts(new SingleIterator<>(new Holder(pipe.getName(), vertex)));
                 vertex.setProperty(GREMLINS, PipeHelper.hasNextIteration(pipe) ?
                         vertex.getValue(GREMLINS) :
                         Collections.emptyList());
@@ -68,7 +68,7 @@ public class GremlinVertexProgram implements VertexProgram {
         return VertexProgram.ofComputeKeys(GREMLINS, KeyType.VARIABLE);
     }
 
-    private Pipe getNextStep(final GraphMemory graphMemory) {
+    private Pipe getCurrentPipe(final GraphMemory graphMemory) {
         final Supplier<Gremlin> gremlin = graphMemory.get("gremlin");
         return (Pipe) gremlin.get().getPipes().get(graphMemory.getIteration());
     }
