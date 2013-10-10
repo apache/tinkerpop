@@ -29,6 +29,10 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         this.computeKeys = computeKeys;
     }
 
+    public Map<String, VertexProgram.KeyType> getComputeKeys() {
+        return this.computeKeys;
+    }
+
     public boolean isComputeKey(final String key) {
         return this.computeKeys.containsKey(key);
     }
@@ -83,17 +87,20 @@ public class TinkerVertexMemory implements VertexSystemMemory {
     public <T> Property<T, Vertex> getProperty(final Vertex vertex, final String key) {
         final Map<String, Property> map = this.memory.get(vertex.getId());
         if (null == map)
-            return null;
-        else
-            return (Property<T, Vertex>) map.get(generateGetKey(key));
+            return Property.empty();
+        else {
+            Property<T, Vertex> property = map.get(generateGetKey(key));
+            return null == property ? Property.empty() : property;
+        }
     }
 
     public <T> Property<T, Vertex> removeProperty(final Vertex vertex, final String key) {
         final Map<String, Property> map = this.memory.get(vertex.getId());
         if (null == map)
-            return null;
+            return Property.empty();
         else {
-            return (Property<T, Vertex>) map.remove(generateGetKey(key));
+            Property<T, Vertex> property = map.remove(generateGetKey(key));
+            return null == property ? Property.empty() : property;
         }
     }
 

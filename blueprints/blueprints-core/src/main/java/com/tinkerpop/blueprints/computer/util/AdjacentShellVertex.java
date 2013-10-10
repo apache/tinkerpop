@@ -50,7 +50,7 @@ public class AdjacentShellVertex implements Vertex {
     }
 
     public final Set<String> getPropertyKeys() {
-        throw new UnsupportedOperationException();
+        return this.vertexMemory.getComputeKeys().keySet();
     }
 
     public <T> Property<T, Vertex> setProperty(final String key, final T value) {

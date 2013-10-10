@@ -232,4 +232,16 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         } catch (final NoSuchElementException e) {
         }
     }
+
+    public default long count() {
+        long counter = 0;
+        try {
+            while (true) {
+                this.next();
+                counter++;
+            }
+        } catch (final NoSuchElementException e) {
+        }
+        return counter;
+    }
 }

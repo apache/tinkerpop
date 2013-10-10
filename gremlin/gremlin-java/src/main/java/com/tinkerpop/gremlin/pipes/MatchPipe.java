@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.MultiIterator;
+import com.tinkerpop.gremlin.pipes.util.PipeHelper;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
@@ -81,7 +82,7 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
         if (this.predicatePipelines.containsKey(name)) {
             for (final Pipeline pipeline : this.predicatePipelines.get(name)) {
                 pipeline.addStarts(new SingleIterator(holder.makeSibling()));
-                if (!PipelineHelper.hasNextIteration(pipeline)) {
+                if (!PipeHelper.hasNextIteration(pipeline)) {
                     legal = false;
                     break; // short-circuit AND
                 }

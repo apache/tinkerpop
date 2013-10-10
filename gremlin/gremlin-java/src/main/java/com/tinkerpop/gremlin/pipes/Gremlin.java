@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -15,7 +16,6 @@ import java.util.List;
 public class Gremlin<S, E> implements GremlinPipeline<S, E> {
 
     private final List<Pipe> pipes = new ArrayList<>();
-    //private Pipe<?, E> lastPipe;
     private Graph graph = null;
 
     public Gremlin(final Graph graph) {
@@ -41,6 +41,7 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
     }
 
     public Gremlin V() {
+        Objects.requireNonNull(this.graph);
         final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
         this.addPipe(pipe);
         this.addStarts(new HolderIterator(pipe, this.graph.query().vertices().iterator()));
@@ -58,7 +59,6 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
     public <P extends Pipeline> P addPipe(final Pipe pipe) {
         if (this.pipes.size() > 0)
             pipe.addStarts(this.pipes.get(this.pipes.size() - 1));
-        //this.lastPipe = pipe;
         this.pipes.add(pipe);
         return (P) this;
     }

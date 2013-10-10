@@ -1,58 +1,83 @@
 package com.tinkerpop.gremlin.computer;
 
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphMemory;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.pipes.FilterPipe;
+import com.tinkerpop.gremlin.pipes.FlatMapPipe;
+import com.tinkerpop.gremlin.pipes.Gremlin;
+import com.tinkerpop.gremlin.pipes.MapPipe;
+import com.tinkerpop.gremlin.pipes.Pipe;
+import com.tinkerpop.gremlin.pipes.util.Holder;
+import com.tinkerpop.gremlin.pipes.util.PipeHelper;
+import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GremlinVertexProgram implements VertexProgram {
 
-    private static final String GREMLIN = "gremlin";
-    private static final String RESULT = "result";
-    private final List<String> steps;
+    private static final String GREMLINS = "gremlins";
+    private final Supplier<Gremlin> gremlin;
 
-    public GremlinVertexProgram(List<String> steps) {
-        this.steps = steps;
+    public GremlinVertexProgram(Supplier<Gremlin> gremlin) {
+        this.gremlin = gremlin;
     }
 
     public void setup(final GraphMemory graphMemory) {
-        graphMemory.setIfAbsent("steps", steps);
+        graphMemory.setIfAbsent("gremlin", gremlin);
     }
 
     public void execute(final Vertex vertex, final GraphMemory graphMemory) {
 
-        List<String> steps = graphMemory.get("steps");
-        String step = steps.get(graphMemory.getIteration());
-        if (step.equals("V")) {
-            vertex.setProperty(GREMLIN, 1l);
-        } else if (step.equals("out")) {
-            long traversers = StreamFactory.stream(vertex.query().direction(Direction.IN)
-                    .vertices())
-                    .collect(Collectors.summingLong(v -> v.getValue(GREMLIN)));
-            vertex.setProperty(GREMLIN, traversers);
-        } else if (step.equals("count")) {
-            graphMemory.increment(RESULT, vertex.getValue(GREMLIN));
+        if (graphMemory.isInitialIteration()) {
+            vertex.setProperty(GREMLINS, Arrays.asList(new Holder<>(Pipe.NONE, vertex)));
         } else {
-            throw new UnsupportedOperationException("The step '" + step + "' is not supported");
+            final Graph graph = GraphMaker.makeNeighborGraph(vertex);
+            final Pipe pipe = getNextStep(graphMemory);
+
+            if (pipe instanceof FilterPipe) {
+                pipe.addStarts(new SingleIterator<>(new Holder(Pipe.NONE, vertex)));
+                vertex.setProperty(GREMLINS, PipeHelper.hasNextIteration(pipe) ?
+                        vertex.getValue(GREMLINS) :
+                        Collections.emptyList());
+            } else if (pipe instanceof FlatMapPipe) {
+                final Vertex v1 = graph.query().ids(vertex.getId()).vertices().iterator().next();
+                StreamFactory.stream(v1.query().direction(Direction.BOTH).vertices())
+                        .filter(v -> v.<List>getValue(GREMLINS).size() > 0)
+                        .forEach(v -> {
+                            pipe.addStarts(new SingleIterator<>(new Holder(Pipe.NONE, v)));
+                        });
+                vertex.setProperty(GREMLINS, PipeHelper.toList(pipe));
+            } else if (pipe instanceof MapPipe) {
+                // TODO
+            } else {
+                throw new IllegalStateException("There are no other pipe types -- how did you get here?");
+            }
         }
     }
 
     public boolean terminate(final GraphMemory graphMemory) {
-        List<String> steps = graphMemory.get("steps");
-        return !(graphMemory.getIteration() < steps.size());
+        Supplier<Gremlin> gremlin = graphMemory.get("gremlin");
+        return !(graphMemory.getIteration() < gremlin.get().getPipes().size());
     }
 
     public Map<String, KeyType> getComputeKeys() {
-        return VertexProgram.ofComputeKeys(GREMLIN, KeyType.VARIABLE);
+        return VertexProgram.ofComputeKeys(GREMLINS, KeyType.VARIABLE);
+    }
+
+    private Pipe getNextStep(final GraphMemory graphMemory) {
+        final Supplier<Gremlin> gremlin = graphMemory.get("gremlin");
+        return (Pipe) gremlin.get().getPipes().get(graphMemory.getIteration());
     }
 
     public static Builder create() {
@@ -60,15 +85,15 @@ public class GremlinVertexProgram implements VertexProgram {
     }
 
     public static class Builder {
-        private List<String> steps;
+        private Supplier<Gremlin> gremlin;
 
-        public Builder steps(final String... steps) {
-            this.steps = Arrays.asList(steps);
+        public Builder gremlin(final Supplier<Gremlin> gremlin) {
+            this.gremlin = gremlin;
             return this;
         }
 
         public GremlinVertexProgram build() {
-            return new GremlinVertexProgram(this.steps);
+            return new GremlinVertexProgram(this.gremlin);
         }
     }
 }
