@@ -15,11 +15,17 @@ import java.util.Set;
 public class AdjacentShellVertex implements Vertex {
 
     private final VertexSystemMemory vertexMemory;
-    private final Vertex baseVertex;
+    protected final Vertex baseVertex;
+    protected final Vertex coreVertex;
+
+    public AdjacentShellVertex(final Vertex baseVertex, final Vertex coreVertex, final VertexSystemMemory vertexMemory) {
+        this.baseVertex = baseVertex;
+        this.coreVertex = coreVertex;
+        this.vertexMemory = vertexMemory;
+    }
 
     public AdjacentShellVertex(final Vertex baseVertex, final VertexSystemMemory vertexMemory) {
-        this.baseVertex = baseVertex;
-        this.vertexMemory = vertexMemory;
+        this(baseVertex, null, vertexMemory);
     }
 
     public Object getId() {
@@ -62,7 +68,7 @@ public class AdjacentShellVertex implements Vertex {
     }
 
     public VertexQuery query() {
-        throw new UnsupportedOperationException();
+        return new AdjacentShellVertexQuery(this, vertexMemory);
     }
 
     public void remove() {

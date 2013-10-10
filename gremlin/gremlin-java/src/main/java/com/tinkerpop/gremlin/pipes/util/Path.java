@@ -50,7 +50,7 @@ public class Path {
     }
 
     public boolean isSimple() {
-        return !(new LinkedHashSet(this.objects).size() == this.objects.size());
+        return new LinkedHashSet(this.objects).size() == this.objects.size();
     }
 
     public String toString() {

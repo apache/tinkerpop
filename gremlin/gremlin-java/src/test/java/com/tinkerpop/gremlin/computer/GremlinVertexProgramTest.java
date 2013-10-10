@@ -15,7 +15,10 @@ public class GremlinVertexProgramTest extends TestCase {
     public void testGremlinOLAP() {
         Graph g = TinkerFactory.createClassic();
         ComputeResult result =
-                g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin) Gremlin.of().has("name", "marko").out().out()).build()).submit();
+                g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
+                        Gremlin.of().has("name", "marko").out().out().simplePath().has("name","lop").in())
+                        .build())
+                        .submit();
 
         StreamFactory.stream(g.query().vertices()).forEach(v -> {
             System.out.println(v.getId() + ": " + result.getVertexMemory().getProperty(v, "gremlins").orElseGet(() -> null));

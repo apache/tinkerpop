@@ -106,9 +106,9 @@ public class GremlinTest extends TestCase {
         f.addEdge("next", a);
 
         new Gremlin(Arrays.asList(a)).as("x").out()
-                .loop("x", o -> ((Holder) o).getLoops() < 7, o -> true)
+                .loop("x", o -> ((Holder) o).getLoops() < 3, o -> true)
                 .sideEffect(o -> System.out.println(((Holder) o).getLoops()))
-                .path().sideEffect(System.out::println).iterate();
+                .simplePath().path().sideEffect(System.out::println).iterate();
     }
 
     public void testMultiStarts() {

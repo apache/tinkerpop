@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.computer;
 
 import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphMemory;
 import com.tinkerpop.blueprints.computer.VertexProgram;
@@ -12,6 +11,7 @@ import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.pipes.MapPipe;
 import com.tinkerpop.gremlin.pipes.Pipe;
 import com.tinkerpop.gremlin.pipes.util.Holder;
+import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 import com.tinkerpop.gremlin.pipes.util.PipeHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
@@ -38,25 +38,18 @@ public class GremlinVertexProgram implements VertexProgram {
     }
 
     public void execute(final Vertex vertex, final GraphMemory graphMemory) {
-
         if (graphMemory.isInitialIteration()) {
             vertex.setProperty(GREMLINS, Arrays.asList(new Holder<>(Pipe.NONE, vertex)));
         } else {
-            final Graph graph = GraphMaker.makeNeighborGraph(vertex);
             final Pipe pipe = getNextStep(graphMemory);
-
             if (pipe instanceof FilterPipe) {
                 pipe.addStarts(new SingleIterator<>(new Holder(Pipe.NONE, vertex)));
                 vertex.setProperty(GREMLINS, PipeHelper.hasNextIteration(pipe) ?
                         vertex.getValue(GREMLINS) :
                         Collections.emptyList());
             } else if (pipe instanceof FlatMapPipe) {
-                final Vertex v1 = graph.query().ids(vertex.getId()).vertices().iterator().next();
-                StreamFactory.stream(v1.query().direction(Direction.BOTH).vertices())
-                        .filter(v -> v.<List>getValue(GREMLINS).size() > 0)
-                        .forEach(v -> {
-                            pipe.addStarts(new SingleIterator<>(new Holder(Pipe.NONE, v)));
-                        });
+                pipe.addStarts(new HolderIterator<>(StreamFactory.stream(vertex.query().direction(Direction.BOTH).vertices())
+                        .filter(v -> v.<List>getValue(GREMLINS).size() > 0).iterator()));
                 vertex.setProperty(GREMLINS, PipeHelper.toList(pipe));
             } else if (pipe instanceof MapPipe) {
                 // TODO

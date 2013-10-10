@@ -23,6 +23,11 @@ public class CoreShellVertex implements Vertex {
         this.vertexMemory = vertexMemory;
     }
 
+    public CoreShellVertex(final Vertex baseVertex, final VertexSystemMemory vertexMemory) {
+        this(vertexMemory);
+        this.baseVertex = baseVertex;
+    }
+
     public void setBaseVertex(final Vertex baseVertex) {
         this.baseVertex = baseVertex;
     }
@@ -77,6 +82,7 @@ public class CoreShellVertex implements Vertex {
     }
 
     public VertexQuery query() {
+        final CoreShellVertex core = this;
         return new WrappedVertexQuery(this.baseVertex.query()) {
             @Override
             public Iterable<Edge> edges() {
@@ -85,7 +91,7 @@ public class CoreShellVertex implements Vertex {
 
             @Override
             public Iterable<Vertex> vertices() {
-                return new AdjacentShellVertexIterable(this.query.vertices());
+                return new AdjacentShellVertexIterable(core, this.query.vertices());
             }
         };
     }
@@ -120,9 +126,11 @@ public class CoreShellVertex implements Vertex {
     public class AdjacentShellVertexIterable implements Iterable<Vertex> {
 
         private final Iterable<Vertex> iterable;
+        private final CoreShellVertex coreVertex;
 
-        public AdjacentShellVertexIterable(final Iterable<Vertex> iterable) {
+        public AdjacentShellVertexIterable(final CoreShellVertex coreVertex, final Iterable<Vertex> iterable) {
             this.iterable = iterable;
+            this.coreVertex = coreVertex;
         }
 
         public Iterator<Vertex> iterator() {
@@ -138,7 +146,7 @@ public class CoreShellVertex implements Vertex {
                 }
 
                 public Vertex next() {
-                    return new AdjacentShellVertex(itty.next(), vertexMemory);
+                    return new AdjacentShellVertex(itty.next(), coreVertex, vertexMemory);
                 }
             };
         }

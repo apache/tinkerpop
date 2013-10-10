@@ -50,4 +50,5 @@ public class TinkerGraphTest extends TestCase {
         /*StreamFactory.stream(g.query().vertices())
                 .forEach(v -> System.out.println(result.getVertexMemory().getProperty(v, "i").getValue()));*/
     }
+
 }
