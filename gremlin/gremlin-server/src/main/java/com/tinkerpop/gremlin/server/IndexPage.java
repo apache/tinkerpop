@@ -9,7 +9,7 @@ import io.netty.util.CharsetUtil;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class IndexPage {
+final class IndexPage {
     public static final String NEWLINE = "\r\n";
 
     public static ByteBuf getContent(String webSocketLocation) {
