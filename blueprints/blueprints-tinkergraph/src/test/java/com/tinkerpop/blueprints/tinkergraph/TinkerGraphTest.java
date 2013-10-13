@@ -7,16 +7,19 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.computer.util.LambdaVertexProgram;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.Random;
 import java.util.stream.Stream;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphTest extends TestCase {
+public class TinkerGraphTest {
 
+    @Test
     public void testTinkerGraph() {
         TinkerGraph g = new TinkerGraph();
         g.createIndex("name", Vertex.class);
@@ -31,6 +34,7 @@ public class TinkerGraphTest extends TestCase {
         g.createIndex("blah", Vertex.class);
     }
 
+    @Test
     public void testLambdaProgram() {
         //TinkerGraph g = TinkerFactory.createClassic();
         TinkerGraph g = new TinkerGraph();

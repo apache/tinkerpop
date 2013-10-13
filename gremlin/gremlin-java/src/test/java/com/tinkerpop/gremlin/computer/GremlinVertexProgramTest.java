@@ -5,13 +5,14 @@ import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.pipes.Gremlin;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinVertexProgramTest extends TestCase {
+public class GremlinVertexProgramTest {
 
+    @Test
     public void testGremlinOLAP() {
         Graph g = TinkerFactory.createClassic();
         ComputeResult result =

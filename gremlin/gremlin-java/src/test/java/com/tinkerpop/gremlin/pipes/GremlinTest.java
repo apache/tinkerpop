@@ -8,15 +8,18 @@ import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.Arrays;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinTest extends TestCase {
+public class GremlinTest {
 
+    @Test
     public void testPipeline() {
 
         TinkerGraph g = TinkerFactory.createClassic();
@@ -52,11 +55,13 @@ public class GremlinTest extends TestCase {
 
     }
 
+    @Test
     public void testSelect() {
         TinkerGraph g = TinkerFactory.createClassic();
         Gremlin.of(g).V().as("x").out().as("y").select("x", "y").sideEffect(System.out::println).iterate();
     }
 
+    @Test
     public void testMatch() {
         TinkerGraph g = TinkerFactory.createClassic();
         Gremlin.of(g).V()
@@ -89,6 +94,7 @@ public class GremlinTest extends TestCase {
                 .sideEffect(System.out::println).iterate();
     }
 
+    @Test
     public void testLoop() {
 
         TinkerGraph g = new TinkerGraph();
@@ -111,6 +117,7 @@ public class GremlinTest extends TestCase {
                 .simplePath().path().sideEffect(System.out::println).iterate();
     }
 
+    @Test
     public void testMultiStarts() {
         Graph graph = TinkerFactory.createClassic();
         Gremlin g = (Gremlin) Gremlin.of().has("name", "lop");

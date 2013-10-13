@@ -1,14 +1,19 @@
 package com.tinkerpop.gremlin.pipes.util;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExpandableIteratorTest extends TestCase {
+public class ExpandableIteratorTest {
 
+    @Test
     public void testExpansion() {
         ExpandableIterator itty = new ExpandableIterator(Arrays.asList().iterator());
         assertFalse(itty.hasNext());
