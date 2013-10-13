@@ -27,7 +27,7 @@ public class TinkerGraphTest {
         Vertex stephen = g.addVertex(Property.of("name", "stephen", "id", 12, "blah", "bloop"));
         Random r = new Random();
         Stream.generate(() -> g.addVertex(Property.of(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt()))).limit(100000).count();
-        assertEquals(g.vertices.size(), 100002);
+        assertEquals(100002, g.vertices.size());
         marko.addEdge("knows", stephen);
         System.out.println(g.query().has("name", Compare.EQUAL, "marko").vertices());
         System.out.println(marko.query().direction(Direction.OUT).labels("knows", "workedWith").vertices());

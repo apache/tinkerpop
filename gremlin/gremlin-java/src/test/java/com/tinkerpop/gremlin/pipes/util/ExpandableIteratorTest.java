@@ -28,18 +28,18 @@ public class ExpandableIteratorTest {
         for (int i = 0; i < 10; i++) {
             counter++;
             assertTrue(itty.hasNext());
-            assertEquals(itty.next(), i);
+            assertEquals(i, itty.next());
         }
         assertFalse(itty.hasNext());
-        assertEquals(counter, 10);
+        assertEquals(10, counter);
         itty.add(Arrays.asList(0, 1, 2, 3, 4).iterator());
         assertTrue(itty.hasNext());
         for (int i = 0; i < 5; i++) {
             counter++;
             assertTrue(itty.hasNext());
-            assertEquals(itty.next(), i);
+            assertEquals(i, itty.next());
         }
-        assertEquals(counter, 15);
+        assertEquals(15, counter);
         assertFalse(itty.hasNext());
 
     }

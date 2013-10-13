@@ -25,7 +25,7 @@ public class AbstractPipeTest {
             filter.next();
             counter++;
         }
-        assertEquals(counter, 3);
+        assertEquals(3, counter);
         assertFalse(filter.hasNext());
 
         filter.addStarts(new HolderIterator(Arrays.asList(1, 2, 3).iterator()));
@@ -34,7 +34,7 @@ public class AbstractPipeTest {
             filter.next();
             counter++;
         }
-        assertEquals(counter, 6);
+        assertEquals(6, counter);
         assertFalse(filter.hasNext());
 
 
@@ -54,7 +54,7 @@ public class AbstractPipeTest {
             filter2.next();
             counter++;
         }
-        assertEquals(counter, 3);
+        assertEquals(3, counter);
         assertFalse(filter2.hasNext());
 
     }
