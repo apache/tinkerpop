@@ -11,6 +11,7 @@ import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
 import com.tinkerpop.blueprints.util.StringFactory;
+import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -36,6 +37,21 @@ public class TinkerGraph implements Graph, Serializable {
     private static final Features FEATURES = new Features();
 
     public TinkerGraph() {
+    }
+
+    public TinkerGraph(final Configuration configuration) {
+        if (configuration == null) {
+            throw new IllegalArgumentException("configuration cannot be null");
+        }
+
+        // for future use and compatibility with TinkerPop2...........
+        //this.directory = configuration.getString("blueprints.tg.directory", null);
+        //this.fileType = FileType.valueOf(configuration.getString("blueprints.tg.file-type", "JAVA"));
+        /*
+        if (directory != null) {
+            this.init();
+        }
+        */
     }
 
     ////////////// BLUEPRINTS API METHODS //////////////////
