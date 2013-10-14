@@ -1,9 +1,5 @@
 package com.tinkerpop.gremlin.server;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -14,7 +10,6 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -22,21 +17,17 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import io.netty.util.CharsetUtil;
-import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
-import org.json.JSONObject;
 
-import javax.script.Bindings;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
-
-import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static io.netty.handler.codec.http.HttpHeaders.Names.*;
-import static io.netty.handler.codec.http.HttpHeaders.*;
-import static io.netty.handler.codec.http.HttpMethod.*;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static io.netty.handler.codec.http.HttpMethod.GET;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * Adapted from https://github.com/netty/netty/tree/netty-4.0.10.Final/example/src/main/java/io/netty/example/http/websocketx/server
@@ -127,7 +118,7 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
 
         // todo: write an error if the op code is not recognized
         OpProcessor.instance().select(requestMessage)
-                .orElse((c)->c.getChannelHandlerContext().write("error")).accept(new Context(requestMessage, ctx));
+                .orElse((c) -> c.getChannelHandlerContext().write("error")).accept(new Context(requestMessage, ctx));
 
     }
 
