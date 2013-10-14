@@ -23,12 +23,12 @@ public class GremlinExecutor {
     /**
      * Used in sessionless mode and centrally configured for imports/scripts.
      */
-    private static GroovyScriptEngineImpl sharedScriptEngine = new GroovyScriptEngineImpl();
+    private static final GroovyScriptEngineImpl sharedScriptEngine = new GroovyScriptEngineImpl();
 
     /**
      * Script engines are evaluated in a per session context where imports/scripts are isolated per session.
      */
-    private static Map<UUID, GremlinSession> sessionedScriptEngines = new ConcurrentHashMap<>();
+    private static final Map<UUID, GremlinSession> sessionedScriptEngines = new ConcurrentHashMap<>();
 
     private static Optional<GremlinExecutor> singleton  = Optional.empty();
 

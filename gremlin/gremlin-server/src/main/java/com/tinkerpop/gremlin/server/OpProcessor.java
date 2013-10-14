@@ -23,6 +23,9 @@ public class OpProcessor {
             case "eval":
                 op = validateEvalMessage(message).orElse(evalOp());
                 break;
+            case "invalid":
+                op  = error(String.format("Message could not be parsed.  Check the format of the request. [%s]", message));
+                break;
             default:
                 op  = error(String.format("Message with op code [%s] is not recognized.", message.op));
                 break;

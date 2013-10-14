@@ -42,7 +42,7 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private WebSocketServerHandshaker handshaker;
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead0(final ChannelHandlerContext ctx, final Object msg) throws Exception {
         if (msg instanceof FullHttpRequest) {
             handleHttpRequest(ctx, (FullHttpRequest) msg);
         } else if (msg instanceof WebSocketFrame) {
@@ -51,11 +51,11 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+    public void channelReadComplete(final ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
     }
 
-    private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+    private void handleHttpRequest(final ChannelHandlerContext ctx, final FullHttpRequest req) throws Exception {
         // Handle a bad request.
         if (!req.getDecoderResult().isSuccess()) {
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST));
@@ -70,8 +70,8 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
 
         // Send the demo page and favicon.ico
         if ("/".equals(req.getUri())) {
-            ByteBuf content = IndexPage.getContent(getWebSocketLocation(req));
-            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
+            final ByteBuf content = IndexPage.getContent(getWebSocketLocation(req));
+            final FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
 
             res.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
             setContentLength(res, content.readableBytes());
@@ -80,13 +80,13 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             return;
         }
         if ("/favicon.ico".equals(req.getUri())) {
-            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND);
+            final FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);
             return;
         }
 
         // Handshake
-        WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
+        final WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
                 getWebSocketLocation(req), null, false);
         handshaker = wsFactory.newHandshaker(req);
         if (handshaker == null) {
@@ -96,7 +96,7 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         }
     }
 
-    private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
+    private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) {
 
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {
@@ -114,24 +114,23 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
 
         // todo: support both text and binary where binary allows for versioning of the messages.
         final String request = ((TextWebSocketFrame) frame).text();
-        final RequestMessage requestMessage = RequestMessage.Serializer.parse(request);
+        final RequestMessage requestMessage = RequestMessage.Serializer.parse(request).orElse(RequestMessage.INVALID);
         OpProcessor.instance().select(requestMessage).accept(new Context(requestMessage, ctx));
-
     }
 
     private static void sendHttpResponse(
-        ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse res) {
+            final ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse res) {
 
         // Generate an error page if response getStatus code is not OK (200).
         if (res.getStatus().code() != 200) {
-            ByteBuf buf = Unpooled.copiedBuffer(res.getStatus().toString(), CharsetUtil.UTF_8);
+            final ByteBuf buf = Unpooled.copiedBuffer(res.getStatus().toString(), CharsetUtil.UTF_8);
             res.content().writeBytes(buf);
             buf.release();
             setContentLength(res, res.content().readableBytes());
         }
 
         // Send the response and close the connection if necessary.
-        ChannelFuture f = ctx.channel().writeAndFlush(res);
+        final ChannelFuture f = ctx.channel().writeAndFlush(res);
         if (!isKeepAlive(req) || res.getStatus().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
