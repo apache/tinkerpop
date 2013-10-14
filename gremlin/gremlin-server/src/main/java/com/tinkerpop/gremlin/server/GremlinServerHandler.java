@@ -115,10 +115,7 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         // todo: support both text and binary where binary allows for versioning of the messages.
         final String request = ((TextWebSocketFrame) frame).text();
         final RequestMessage requestMessage = RequestMessage.Serializer.parse(request);
-
-        // todo: write an error if the op code is not recognized
-        OpProcessor.instance().select(requestMessage)
-                .orElse((c) -> c.getChannelHandlerContext().write("error")).accept(new Context(requestMessage, ctx));
+        OpProcessor.instance().select(requestMessage).accept(new Context(requestMessage, ctx));
 
     }
 

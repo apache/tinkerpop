@@ -32,9 +32,7 @@ public class GremlinExecutor {
 
     private static Optional<GremlinExecutor> singleton  = Optional.empty();
 
-    private GremlinExecutor(){
-
-    }
+    private GremlinExecutor(){}
 
     public static GremlinExecutor instance() {
         if (!singleton.isPresent())
@@ -54,11 +52,11 @@ public class GremlinExecutor {
         if (message.optionalSessionId().isPresent()) {
             final GremlinSession session = sessionedScriptEngines.getOrDefault(message.sessionId,
                     new GremlinSession(message.sessionId, bindings));
-            return s -> session.eval(message.args.get("gremlin").toString(), bindings);
+            return s -> session.eval(message.<String>optionalArgs("gremlin").get(), bindings);
         } else {
             return s -> {
                 try {
-                    final Object o = sharedScriptEngine.eval(message.args.get("gremlin").toString(), bindings);
+                    final Object o = sharedScriptEngine.eval(message.<String>optionalArgs("gremlin").get(), bindings);
                     g.commit();
                     return o;
                 } catch (ScriptException ex) {

@@ -17,14 +17,14 @@ public class OpProcessor {
 
     private OpProcessor() { }
 
-    public Optional<Consumer<Context>> select(final RequestMessage message) {
-        final Optional<Consumer<Context>> op;
+    public Consumer<Context> select(final RequestMessage message) {
+        final Consumer<Context> op;
         switch (message.op) {
             case "eval":
-                op = Optional.of(evalOp());
+                op = validateEvalMessage(message).orElse(evalOp());
                 break;
             default:
-                op  = Optional.empty();
+                op  = error(String.format("Message with op code [%s] is not recognized.", message.op));
                 break;
         }
 
@@ -37,7 +37,18 @@ public class OpProcessor {
         return singleton.get();
     }
 
-    private Consumer<Context> evalOp() {
+    private static Optional<Consumer<Context>> validateEvalMessage(final RequestMessage message) {
+        if (!message.optionalArgs("gremlin").isPresent())
+            return Optional.of(error("A message with an [eval] op code requires a [gremlin] argument."));
+        else
+            return Optional.empty();
+    }
+
+    private static Consumer<Context> error(final String message) {
+        return (context) -> context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(message));
+    }
+
+    private static Consumer<Context> evalOp() {
         return (context) -> {
             final Object o = GremlinExecutor.instance().eval(context.getRequestMessage());
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
