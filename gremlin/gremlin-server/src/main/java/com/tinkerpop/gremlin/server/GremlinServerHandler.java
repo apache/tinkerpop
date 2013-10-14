@@ -127,7 +127,7 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
 
         // todo: write an error if the op code is not recognized
         OpProcessor.instance().select(requestMessage)
-                .orElse((c)->c.getChannelHandlerContext().write("error")).process(new Context(requestMessage, ctx));
+                .orElse((c)->c.getChannelHandlerContext().write("error")).accept(new Context(requestMessage, ctx));
 
     }
 
