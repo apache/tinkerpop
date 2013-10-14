@@ -1,14 +1,9 @@
 package com.tinkerpop.gremlin.server;
 
-import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 
-import javax.script.Bindings;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,18 +39,7 @@ public class OpProcessor {
 
     private Consumer<Context> evalOp() {
         return (context) -> {
-            Bindings binding = new SimpleBindings();
-            binding.put("g", TinkerFactory.createClassic());
-
-            GroovyScriptEngineImpl se = new GroovyScriptEngineImpl();
-            Object o;
-            try {
-                o = se.eval(context.getRequestMessage().args.get("gremlin").toString(), binding);
-            } catch (ScriptException ex) {
-                ex.printStackTrace();
-                o = null;
-            }
-
+            final Object o = GremlinExecutor.instance().eval(context.getRequestMessage());
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final AtomicInteger counter = new AtomicInteger(1);
             if (o instanceof Iterator) {
