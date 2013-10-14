@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.server;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -13,6 +15,7 @@ import java.util.function.Consumer;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class OpProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(OpProcessor.class);
     private static Optional<OpProcessor> singleton = Optional.empty();
 
     private OpProcessor() { }
@@ -48,6 +51,7 @@ public class OpProcessor {
     }
 
     private static Consumer<Context> error(final String message) {
+        logger.warn(message);
         return (context) -> context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(message));
     }
 
@@ -59,7 +63,7 @@ public class OpProcessor {
             if (o instanceof Iterator) {
                 ((Iterator) o).forEachRemaining(j -> ctx.channel().write(new TextWebSocketFrame(j.toString() + " " + (counter.getAndIncrement()))));
             } else if (o instanceof Iterable) {
-                ((Iterable) o).forEach(j -> ctx.channel().write(new ContinuationWebSocketFrame(false, 0, j.toString())));
+                ((Iterable) o).forEach(j -> ctx.channel().write(new TextWebSocketFrame(j.toString() + " " + (counter.getAndIncrement()))));
             } else
                 ctx.channel().write(new TextWebSocketFrame(o.toString()));
         };
