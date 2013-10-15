@@ -7,6 +7,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.computer.util.LambdaVertexProgram;
+import com.tinkerpop.blueprints.util.StreamFactory;
 import junit.framework.TestCase;
 
 import java.util.Random;
@@ -34,7 +35,7 @@ public class TinkerGraphTest extends TestCase {
     public void testLambdaProgram() {
         //TinkerGraph g = TinkerFactory.createClassic();
         TinkerGraph g = new TinkerGraph();
-        Stream.generate(g::addVertex).limit(500000).count();
+        Stream.generate(g::addVertex).limit(5000).count();
         ComputeResult result = g.compute().program(LambdaVertexProgram.create()
                 .setup(gm -> {
                 })
@@ -47,8 +48,8 @@ public class TinkerGraphTest extends TestCase {
                 .submit();
 
         System.out.println("Runtime: " + result.getGraphMemory().getRuntime());
-        /*StreamFactory.stream(g.query().vertices())
-                .forEach(v -> System.out.println(result.getVertexMemory().getProperty(v, "i").getValue()));*/
+        StreamFactory.stream(g.query().vertices())
+                .forEach(v -> System.out.println(result.getVertexMemory().getProperty(v, "i").getValue()));
     }
 
 }
