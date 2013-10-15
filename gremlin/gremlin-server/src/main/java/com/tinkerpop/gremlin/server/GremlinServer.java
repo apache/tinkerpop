@@ -37,7 +37,7 @@ public class GremlinServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new WebSocketServerInitializer());
 
-            final Channel ch = b.bind(settings.port).sync().channel();
+            final Channel ch = b.bind(settings.host, settings.port).sync().channel();
             logger.info("Web socket server started at port {}.", settings.port);
             logger.info("Open your browser and navigate to http://localhost:{}/", settings.port);
 
