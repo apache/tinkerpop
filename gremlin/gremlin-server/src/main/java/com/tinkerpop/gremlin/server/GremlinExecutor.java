@@ -62,6 +62,7 @@ public class GremlinExecutor {
             if (logger.isDebugEnabled()) logger.debug("Using shared ScriptEngine to process {}", message);
             return s -> {
                 try {
+                    g.rollback();
                     final Object o = sharedScriptEngine.eval(message.<String>optionalArgs("gremlin").get(), bindings);
                     g.commit();
                     return o;
@@ -75,7 +76,18 @@ public class GremlinExecutor {
 
     public class GremlinSession {
         private final Bindings bindings;
+
+        /**
+         * Each session gets its own ScriptEngine so as to isolate its configuration and the classes loaded to it.
+         * This is important as it enables user interfaces built on Gremlin Server to have isolation in what
+         * libraries they use and what classes exist.
+         */
         private final GroovyScriptEngineImpl scriptEngine = new GroovyScriptEngineImpl();
+
+        /**
+         * By binding the session to run ScriptEngine evaluations in a specific thread, each request will respect
+         * the ThreadLocal nature of Graph implementations.
+         */
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
         public GremlinSession(final UUID session, final Bindings initialBindings) {
