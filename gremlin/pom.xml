@@ -36,6 +36,7 @@
         <module>gremlin-test</module>
         <module>gremlin-java</module>
         <module>gremlin-groovy</module>
+        <module>gremlin-server</module>
     </modules>
     <properties>
         <blueprints.version>3.0.0-SNAPSHOT</blueprints.version>
