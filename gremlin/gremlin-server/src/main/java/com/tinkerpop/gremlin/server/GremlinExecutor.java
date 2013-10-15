@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.server;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
@@ -20,6 +22,8 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinExecutor.class);
+
     /**
      * Used in sessionless mode and centrally configured for imports/scripts.
      */
@@ -52,8 +56,10 @@ public class GremlinExecutor {
         if (message.optionalSessionId().isPresent()) {
             final GremlinSession session = sessionedScriptEngines.getOrDefault(message.sessionId,
                     new GremlinSession(message.sessionId, bindings));
+            if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
             return s -> session.eval(message.<String>optionalArgs("gremlin").get(), bindings);
         } else {
+            if (logger.isDebugEnabled()) logger.debug("Using shared ScriptEngine to process {}", message);
             return s -> {
                 try {
                     final Object o = sharedScriptEngine.eval(message.<String>optionalArgs("gremlin").get(), bindings);
@@ -73,6 +79,7 @@ public class GremlinExecutor {
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
         public GremlinSession(final UUID session, final Bindings initialBindings) {
+            logger.info("New session established for {}", session);
             this.bindings = initialBindings;
             sessionedScriptEngines.put(session, this);
         }
