@@ -8,10 +8,13 @@ import io.netty.channel.ChannelHandlerContext;
 public class Context {
     private final RequestMessage requestMessage;
     private final ChannelHandlerContext channelHandlerContext;
+    private final Settings settings;
 
-    public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx) {
+    public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
+                   final Settings settings) {
         this.requestMessage = requestMessage;
         this.channelHandlerContext = ctx;
+        this.settings = settings;
     }
 
     public RequestMessage getRequestMessage() {

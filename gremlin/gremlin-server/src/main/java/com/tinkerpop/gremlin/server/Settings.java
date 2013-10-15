@@ -16,24 +16,24 @@ import java.util.Optional;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ServerSettings {
+public class Settings {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
 
     public String host;
     public int port;
     public Map<String, String> graphs;
 
-    public static Optional<ServerSettings> read(final String file) {
+    public static Optional<Settings> read(final String file) {
         try {
             final InputStream input = new FileInputStream(new File(file));
 
-            final Constructor constructor = new Constructor(ServerSettings.class);
-            final TypeDescription settingsDescription = new TypeDescription(ServerSettings.class);
+            final Constructor constructor = new Constructor(Settings.class);
+            final TypeDescription settingsDescription = new TypeDescription(Settings.class);
             settingsDescription.putMapPropertyType("graphs", String.class, String.class);
             constructor.addTypeDescription(settingsDescription);
 
             final Yaml yaml = new Yaml(constructor);
-            return Optional.of(yaml.loadAs(input, ServerSettings.class));
+            return Optional.of(yaml.loadAs(input, Settings.class));
         } catch (FileNotFoundException fnfe) {
             return Optional.empty();
         }

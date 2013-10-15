@@ -22,9 +22,9 @@ import java.util.Optional;
  */
 public class GremlinServer {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
-    private final ServerSettings settings;
+    private final Settings settings;
 
-    public GremlinServer(final ServerSettings settings) {
+    public GremlinServer(final Settings settings) {
         this.settings = settings;
     }
 
@@ -35,7 +35,7 @@ public class GremlinServer {
             final ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new WebSocketServerInitializer());
+                    .childHandler(new WebSocketServerInitializer(this.settings));
 
             final Channel ch = b.bind(settings.host, settings.port).sync().channel();
             logger.info("Web socket server started at port {}.", settings.port);
@@ -57,7 +57,7 @@ public class GremlinServer {
             file = "config/gremlin-server.yaml";
         }
 
-        final Optional<ServerSettings> settings = ServerSettings.read(file);
+        final Optional<Settings> settings = Settings.read(file);
         if (settings.isPresent()) {
             logger.info("Configuring Gremlin Server from {}", file);
             new GremlinServer(settings.get()).run();
@@ -73,12 +73,18 @@ public class GremlinServer {
     }
 
     private class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
+        private final Settings settings;
+
+        public WebSocketServerInitializer(final Settings settings) {
+            this.settings = settings;
+        }
+
         @Override
         public void initChannel(final SocketChannel ch) throws Exception {
             final ChannelPipeline pipeline = ch.pipeline();
             pipeline.addLast("codec-http", new HttpServerCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-            pipeline.addLast("handler", new GremlinServerHandler());
+            pipeline.addLast("handler", new GremlinServerHandler(settings));
         }
     }
 }

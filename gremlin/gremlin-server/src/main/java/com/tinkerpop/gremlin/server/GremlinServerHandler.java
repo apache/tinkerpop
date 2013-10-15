@@ -40,6 +40,11 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private static final String WEBSOCKET_PATH = "/gremlin";
 
     private WebSocketServerHandshaker handshaker;
+    private final Settings settings;
+
+    public GremlinServerHandler(final Settings settings) {
+        this.settings = settings;
+    }
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final Object msg) throws Exception {
@@ -115,7 +120,7 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         // todo: support both text and binary where binary allows for versioning of the messages.
         final String request = ((TextWebSocketFrame) frame).text();
         final RequestMessage requestMessage = RequestMessage.Serializer.parse(request).orElse(RequestMessage.INVALID);
-        OpProcessor.instance().select(requestMessage).accept(new Context(requestMessage, ctx));
+        OpProcessor.instance().select(requestMessage).accept(new Context(requestMessage, ctx, settings));
     }
 
     private static void sendHttpResponse(
