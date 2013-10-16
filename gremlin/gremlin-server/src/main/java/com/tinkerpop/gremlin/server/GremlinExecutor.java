@@ -65,7 +65,7 @@ public class GremlinExecutor {
 
             final GremlinSession session = getGremlinSession(message.sessionId, bindings);
             if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
-            return s -> session.eval(message.<String>optionalArgs("gremlin").get(), bindings);
+            return s -> session.eval(message.<String>optionalArgs(RequestMessage.FIELD_GREMLIN).get(), bindings);
         } else {
             // a sessionless request
             if (logger.isDebugEnabled()) logger.debug("Using shared ScriptEngine to process {}", message);
@@ -76,7 +76,7 @@ public class GremlinExecutor {
                 try {
                     // do a safety cleanup of previous transaction...if any
                     graphs.rollbackAll();
-                    final Object o = sharedScriptEngine.eval(message.<String>optionalArgs("gremlin").get(), bindings);
+                    final Object o = sharedScriptEngine.eval(message.<String>optionalArgs(RequestMessage.FIELD_GREMLIN).get(), bindings);
                     graphs.commitAll();
                     return o;
                 } catch (ScriptException ex) {
@@ -90,7 +90,7 @@ public class GremlinExecutor {
 
     private static Map<String,Object> extractBindingsFromMessage(final RequestMessage msg) {
         final Map<String, Object> m = new HashMap<>();
-        final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs("bindings");
+        final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs(RequestMessage.FIELD_BINDINGS);
         return bindingsInMessage.orElse(m);
     }
 
