@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -17,7 +15,6 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Settings {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
 
     public String host;
     public int port;

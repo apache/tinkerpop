@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.GraphFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -13,6 +15,9 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -23,6 +28,7 @@ import java.util.Optional;
 public class GremlinServer {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
     private final Settings settings;
+    private static Optional<Graphs> graphs = Optional.empty();
 
     public GremlinServer(final Settings settings) {
         this.settings = settings;
@@ -77,6 +83,9 @@ public class GremlinServer {
 
         public WebSocketServerInitializer(final Settings settings) {
             this.settings = settings;
+            synchronized (this) {
+                if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
+            }
         }
 
         @Override
@@ -84,7 +93,34 @@ public class GremlinServer {
             final ChannelPipeline pipeline = ch.pipeline();
             pipeline.addLast("codec-http", new HttpServerCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-            pipeline.addLast("handler", new GremlinServerHandler(settings));
+            pipeline.addLast("handler", new GremlinServerHandler(settings, graphs.get()));
+        }
+    }
+
+    /**
+     * Holder of Graph instances configured for the server to be passed to sessionless bindings.
+     */
+    public static class Graphs {
+        private final Map<String, Graph> graphs;
+
+        public Graphs(final Settings settings) {
+            final Map<String, Graph> m = new HashMap<>();
+            settings.graphs.entrySet().forEach(e -> {
+                try {
+                    final Graph newGraph = GraphFactory.open(e.getValue());
+                    m.put(e.getKey(), newGraph);
+                    logger.info("Graph [{}] was successfully configured via [{}].", e.getKey(), e.getValue());
+                } catch (RuntimeException re) {
+                    logger.warn("Graph [{}] configured at [{}] could not be instantiated and will not be available in Gremlin Server.  GraphFactory message: {}",
+                            e.getKey(), e.getValue(), re.getMessage());
+                    if (logger.isDebugEnabled() && re.getCause() != null) logger.debug("GraphFactory exception", re.getCause());
+                }
+            });
+            graphs = Collections.unmodifiableMap(m);
+        }
+
+        public Map<String, Graph> getGraphs() {
+            return graphs;
         }
     }
 }
