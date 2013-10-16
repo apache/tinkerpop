@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.Bindings;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,8 +50,13 @@ public class GremlinExecutor {
         return select(message, graphs).apply(message);
     }
 
+    /**
+     * Determine whether to execute the script by way of a specific session or by the shared script engine in
+     * a sessionless request.
+     */
     private Function<RequestMessage, Object> select(final RequestMessage message, final GremlinServer.Graphs graphs) {
         final Bindings bindings = new SimpleBindings();
+        bindings.putAll(extractBindingsFromMessage(message));
 
         if (message.optionalSessionId().isPresent()) {
             // an in session request...throw in a dummy graph instance for now..............................
@@ -59,7 +65,7 @@ public class GremlinExecutor {
 
             final GremlinSession session = getGremlinSession(message.sessionId, bindings);
             if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
-            return s -> session.eval(message.<String>optionalArgs("gremlin").get(), bindings);
+            return s -> session.eval(message.<String>optionalArgs(RequestMessage.FIELD_GREMLIN).get(), bindings);
         } else {
             // a sessionless request
             if (logger.isDebugEnabled()) logger.debug("Using shared ScriptEngine to process {}", message);
@@ -70,7 +76,7 @@ public class GremlinExecutor {
                 try {
                     // do a safety cleanup of previous transaction...if any
                     graphs.rollbackAll();
-                    final Object o = sharedScriptEngine.eval(message.<String>optionalArgs("gremlin").get(), bindings);
+                    final Object o = sharedScriptEngine.eval(message.<String>optionalArgs(RequestMessage.FIELD_GREMLIN).get(), bindings);
                     graphs.commitAll();
                     return o;
                 } catch (ScriptException ex) {
@@ -80,6 +86,12 @@ public class GremlinExecutor {
                 }
             };
         }
+    }
+
+    private static Map<String,Object> extractBindingsFromMessage(final RequestMessage msg) {
+        final Map<String, Object> m = new HashMap<>();
+        final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs(RequestMessage.FIELD_BINDINGS);
+        return bindingsInMessage.orElse(m);
     }
 
     /**
