@@ -60,9 +60,9 @@ public class OpProcessor {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final AtomicInteger counter = new AtomicInteger(1);
             if (o instanceof Iterator) {
-                ((Iterator) o).forEachRemaining(j -> ctx.channel().write(new TextWebSocketFrame(j.toString() + " " + (counter.getAndIncrement()))));
+                ((Iterator) o).forEachRemaining(j -> ctx.channel().write(new TextWebSocketFrame(j.toString() + " " + (counter.getAndIncrement() + " " + context.getRequestMessage().requestId))));
             } else if (o instanceof Iterable) {
-                ((Iterable) o).forEach(j -> ctx.channel().write(new TextWebSocketFrame(j.toString() + " " + (counter.getAndIncrement()))));
+                ((Iterable) o).forEach(j -> ctx.channel().write(new TextWebSocketFrame(j.toString() + " " + (counter.getAndIncrement() + " " + context.getRequestMessage().requestId))));
             } else
                 ctx.channel().write(new TextWebSocketFrame(o.toString()));
         };

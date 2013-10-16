@@ -16,6 +16,7 @@ final class IndexPage {
         return Unpooled.copiedBuffer(
                 "<html><head><title>.:TinkerPop::Gremlin Server:.</title></head>" + NEWLINE +
                         "<body>" + NEWLINE +
+                        "<script type=\"text/javascript\">(function(){var a=[];for(var b=0;b<=15;b++)a[b]=b.toString(16);var c=function(){var b=\"\";for(var c=1;c<=36;c++)c===9||c===14||c===19||c===24?b+=\"-\":c===15?b+=4:c===20?b+=a[Math.random()*4|8]:b+=a[Math.random()*15|0];return b};typeof exports!=\"undefined\"?module.exports=c:this.UUID=c})(this);</script>" + NEWLINE +
                         "<script type=\"text/javascript\">" + NEWLINE +
                         "var socket;" + NEWLINE +
                         "if (!window.WebSocket) {" + NEWLINE +
@@ -42,7 +43,7 @@ final class IndexPage {
                         "function send(message) {" + NEWLINE +
                         "  if (!window.WebSocket) { return; }" + NEWLINE +
                         "  if (socket.readyState == WebSocket.OPEN) {" + NEWLINE +
-                        "    var json = '{\"op\":\"eval\",\"sessionId\":\"76CEC996-20C2-4766-B2EC-956EB743D46C\",\"requestId\":\"F6D42765-7F81-45EA-B355-240DC71C8D33\",\"args\":{\"gremlin\":\"' + message + '\"}}';" + NEWLINE +
+                        "    var json = '{\"op\":\"eval\",\"sessionId\":\"76CEC996-20C2-4766-B2EC-956EB743D46C\",\"requestId\":\"' + UUID() + '\",\"args\":{\"gremlin\":\"' + message + '\"}}';" + NEWLINE +
                         "    socket.send(json);" + NEWLINE +
                         "  } else {" + NEWLINE +
                         "    alert(\"The socket is not open.\");" + NEWLINE +
