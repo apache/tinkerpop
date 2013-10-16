@@ -18,10 +18,12 @@ import java.util.stream.Stream;
  */
 public class TinkerVertexQuery extends DefaultVertexQuery {
 
-    public TinkerVertex vertex;
+    protected final TinkerVertex vertex;
+    protected final TinkerVertexMemory vertexMemory;
 
-    public TinkerVertexQuery(final TinkerVertex vertex) {
+    public TinkerVertexQuery(final TinkerVertex vertex, final TinkerVertexMemory vertexMemory) {
         this.vertex = vertex;
+        this.vertexMemory = vertexMemory;
     }
 
     private Stream<Edge> makeStream() {
@@ -41,15 +43,22 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
     }
 
     public Iterable<Vertex> vertices() {
-        Stream<Vertex> vertices = Stream.empty();
-
+        Stream<TinkerVertex> vertices = Stream.empty();
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN)) {
-            vertices = Stream.concat(vertices, this.getInEdges(this.labels).stream().filter(e -> HasContainer.testAll(e, this.hasContainers)).map(e -> e.getVertex(Direction.OUT)));
+            vertices = (Stream) Stream.concat(vertices, this.getInEdges(this.labels).stream().filter(e -> HasContainer.testAll(e, this.hasContainers)).map(e -> e.getVertex(Direction.OUT)));
         }
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.OUT)) {
-            vertices = Stream.concat(vertices, this.getOutEdges(this.labels).stream().filter(e -> HasContainer.testAll(e, this.hasContainers)).map(e -> e.getVertex(Direction.IN)));
+            vertices = (Stream) Stream.concat(vertices, this.getOutEdges(this.labels).stream().filter(e -> HasContainer.testAll(e, this.hasContainers)).map(e -> e.getVertex(Direction.IN)));
         }
-        return vertices.limit(this.limit).collect(Collectors.<Vertex>toList());
+        vertices = vertices.limit(this.limit);
+
+        // ADJACENCY REFERENCES DURING GRAPH COMPUTING
+        if (TinkerVertex.State.CENTRIC == this.vertex.state)
+            vertices = vertices.map(v -> v.createClone(TinkerVertex.State.ADJACENT, this.vertex.getId(), this.vertexMemory));
+        else if (TinkerVertex.State.ADJACENT == this.vertex.state)
+            vertices = vertices.filter(v -> v.id.equals(this.vertex.centricId)).map(v -> v.createClone(TinkerVertex.State.CENTRIC, this.vertex.centricId, this.vertexMemory));
+
+        return vertices.collect(Collectors.<Vertex>toList());
     }
 
     public long count() {
