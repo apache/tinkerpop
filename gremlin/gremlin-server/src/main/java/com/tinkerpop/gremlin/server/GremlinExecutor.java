@@ -57,8 +57,7 @@ public class GremlinExecutor {
             final Graph g = TinkerFactory.createClassic();
             bindings.put("g", g);
 
-            final GremlinSession session = sessionedScriptEngines.getOrDefault(message.sessionId,
-                    new GremlinSession(message.sessionId, bindings));
+            final GremlinSession session = getGremlinSession(message.sessionId, bindings);
             if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
             return s -> session.eval(message.<String>optionalArgs("gremlin").get(), bindings);
         } else {
@@ -81,6 +80,20 @@ public class GremlinExecutor {
                 }
             };
         }
+    }
+
+    /**
+     * Finds a session or constructs a new one if it does not exist.
+     */
+    private GremlinSession getGremlinSession(final UUID sessionId, Bindings bindings) {
+        final GremlinSession session;
+        if (sessionedScriptEngines.containsKey(sessionId))
+            session = sessionedScriptEngines.get(sessionId);
+        else {
+            session = new GremlinSession(sessionId, bindings);
+            synchronized (this) { sessionedScriptEngines.put(sessionId, session); }
+        }
+        return session;
     }
 
     public class GremlinSession {
