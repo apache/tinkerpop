@@ -56,7 +56,7 @@ public class OpProcessor {
 
     private static Consumer<Context> evalOp() {
         return (context) -> {
-            final Object o = GremlinExecutor.instance().eval(context.getRequestMessage());
+            final Object o = GremlinExecutor.instance().eval(context.getRequestMessage(), context.getGraphs());
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final AtomicInteger counter = new AtomicInteger(1);
             if (o instanceof Iterator) {

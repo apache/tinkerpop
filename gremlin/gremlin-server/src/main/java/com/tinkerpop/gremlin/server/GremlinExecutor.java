@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
+import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,30 +45,38 @@ public class GremlinExecutor {
         return singleton.get();
     }
 
-    public Object eval(final RequestMessage message) {
-        return select(message).apply(message);
+    public Object eval(final RequestMessage message, final GremlinServer.Graphs graphs) {
+        return select(message, graphs).apply(message);
     }
 
-    public Function<RequestMessage, Object> select(final RequestMessage message) {
+    private Function<RequestMessage, Object> select(final RequestMessage message, final GremlinServer.Graphs graphs) {
         final Bindings bindings = new SimpleBindings();
-        final Graph g = TinkerFactory.createClassic();
-        bindings.put("g", g);
 
         if (message.optionalSessionId().isPresent()) {
+            // an in session request...throw in a dummy graph instance for now..............................
+            final Graph g = TinkerFactory.createClassic();
+            bindings.put("g", g);
+
             final GremlinSession session = sessionedScriptEngines.getOrDefault(message.sessionId,
                     new GremlinSession(message.sessionId, bindings));
             if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
             return s -> session.eval(message.<String>optionalArgs("gremlin").get(), bindings);
         } else {
+            // a sessionless request
             if (logger.isDebugEnabled()) logger.debug("Using shared ScriptEngine to process {}", message);
             return s -> {
+                // put all the preconfigured graphs on the bindings
+                bindings.putAll(graphs.getGraphs());
+
                 try {
-                    g.rollback();
+                    // do a safety cleanup of previous transaction...if any
+                    graphs.rollbackAll();
                     final Object o = sharedScriptEngine.eval(message.<String>optionalArgs("gremlin").get(), bindings);
-                    g.commit();
+                    graphs.commitAll();
                     return o;
                 } catch (ScriptException ex) {
-                    g.rollback();
+                    // todo: gotta work on error handling for failed scripts..........
+                    graphs.rollbackAll();
                     return null;
                 }
             };

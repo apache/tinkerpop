@@ -122,5 +122,13 @@ public class GremlinServer {
         public Map<String, Graph> getGraphs() {
             return graphs;
         }
+
+        public void rollbackAll() {
+            graphs.entrySet().forEach(e->e.getValue().rollback());
+        }
+
+        public void commitAll() {
+            graphs.entrySet().forEach(e->e.getValue().commit());
+        }
     }
 }
