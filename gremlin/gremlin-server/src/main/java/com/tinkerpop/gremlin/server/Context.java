@@ -8,10 +8,15 @@ import io.netty.channel.ChannelHandlerContext;
 public class Context {
     private final RequestMessage requestMessage;
     private final ChannelHandlerContext channelHandlerContext;
+    private final Settings settings;
+    private final GremlinServer.Graphs graphs;
 
-    public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx) {
+    public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
+                   final Settings settings, final GremlinServer.Graphs graphs) {
         this.requestMessage = requestMessage;
         this.channelHandlerContext = ctx;
+        this.settings = settings;
+        this.graphs = graphs;
     }
 
     public RequestMessage getRequestMessage() {
@@ -20,5 +25,13 @@ public class Context {
 
     public ChannelHandlerContext getChannelHandlerContext() {
         return channelHandlerContext;
+    }
+
+    public Settings getSettings() {
+        return settings;
+    }
+
+    public GremlinServer.Graphs getGraphs() {
+        return graphs;
     }
 }

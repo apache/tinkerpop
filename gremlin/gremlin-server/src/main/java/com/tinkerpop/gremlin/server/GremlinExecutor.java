@@ -2,7 +2,10 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
+import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
@@ -20,21 +23,21 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinExecutor.class);
+
     /**
      * Used in sessionless mode and centrally configured for imports/scripts.
      */
-    private static GroovyScriptEngineImpl sharedScriptEngine = new GroovyScriptEngineImpl();
+    private static final GroovyScriptEngineImpl sharedScriptEngine = new GroovyScriptEngineImpl();
 
     /**
      * Script engines are evaluated in a per session context where imports/scripts are isolated per session.
      */
-    private static Map<UUID, GremlinSession> sessionedScriptEngines = new ConcurrentHashMap<>();
+    private static final Map<UUID, GremlinSession> sessionedScriptEngines = new ConcurrentHashMap<>();
 
     private static Optional<GremlinExecutor> singleton  = Optional.empty();
 
-    private GremlinExecutor(){
-
-    }
+    private GremlinExecutor(){}
 
     public static GremlinExecutor instance() {
         if (!singleton.isPresent())
@@ -42,39 +45,75 @@ public class GremlinExecutor {
         return singleton.get();
     }
 
-    public Object eval(final RequestMessage message) {
-        return select(message).apply(message);
+    public Object eval(final RequestMessage message, final GremlinServer.Graphs graphs) {
+        return select(message, graphs).apply(message);
     }
 
-    public Function<RequestMessage, Object> select(final RequestMessage message) {
+    private Function<RequestMessage, Object> select(final RequestMessage message, final GremlinServer.Graphs graphs) {
         final Bindings bindings = new SimpleBindings();
-        final Graph g = TinkerFactory.createClassic();
-        bindings.put("g", g);
 
         if (message.optionalSessionId().isPresent()) {
-            final GremlinSession session = sessionedScriptEngines.getOrDefault(message.sessionId,
-                    new GremlinSession(message.sessionId, bindings));
-            return s -> session.eval(message.args.get("gremlin").toString(), bindings);
+            // an in session request...throw in a dummy graph instance for now..............................
+            final Graph g = TinkerFactory.createClassic();
+            bindings.put("g", g);
+
+            final GremlinSession session = getGremlinSession(message.sessionId, bindings);
+            if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
+            return s -> session.eval(message.<String>optionalArgs("gremlin").get(), bindings);
         } else {
+            // a sessionless request
+            if (logger.isDebugEnabled()) logger.debug("Using shared ScriptEngine to process {}", message);
             return s -> {
+                // put all the preconfigured graphs on the bindings
+                bindings.putAll(graphs.getGraphs());
+
                 try {
-                    final Object o = sharedScriptEngine.eval(message.args.get("gremlin").toString(), bindings);
-                    g.commit();
+                    // do a safety cleanup of previous transaction...if any
+                    graphs.rollbackAll();
+                    final Object o = sharedScriptEngine.eval(message.<String>optionalArgs("gremlin").get(), bindings);
+                    graphs.commitAll();
                     return o;
                 } catch (ScriptException ex) {
-                    g.rollback();
+                    // todo: gotta work on error handling for failed scripts..........
+                    graphs.rollbackAll();
                     return null;
                 }
             };
         }
     }
 
+    /**
+     * Finds a session or constructs a new one if it does not exist.
+     */
+    private GremlinSession getGremlinSession(final UUID sessionId, Bindings bindings) {
+        final GremlinSession session;
+        if (sessionedScriptEngines.containsKey(sessionId))
+            session = sessionedScriptEngines.get(sessionId);
+        else {
+            session = new GremlinSession(sessionId, bindings);
+            synchronized (this) { sessionedScriptEngines.put(sessionId, session); }
+        }
+        return session;
+    }
+
     public class GremlinSession {
         private final Bindings bindings;
+
+        /**
+         * Each session gets its own ScriptEngine so as to isolate its configuration and the classes loaded to it.
+         * This is important as it enables user interfaces built on Gremlin Server to have isolation in what
+         * libraries they use and what classes exist.
+         */
         private final GroovyScriptEngineImpl scriptEngine = new GroovyScriptEngineImpl();
+
+        /**
+         * By binding the session to run ScriptEngine evaluations in a specific thread, each request will respect
+         * the ThreadLocal nature of Graph implementations.
+         */
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
         public GremlinSession(final UUID session, final Bindings initialBindings) {
+            logger.info("New session established for {}", session);
             this.bindings = initialBindings;
             sessionedScriptEngines.put(session, this);
         }
