@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.Bindings;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,8 +50,13 @@ public class GremlinExecutor {
         return select(message, graphs).apply(message);
     }
 
+    /**
+     * Determine whether to execute the script by way of a specific session or by the shared script engine in
+     * a sessionless request.
+     */
     private Function<RequestMessage, Object> select(final RequestMessage message, final GremlinServer.Graphs graphs) {
         final Bindings bindings = new SimpleBindings();
+        bindings.putAll(extractBindingsFromMessage(message));
 
         if (message.optionalSessionId().isPresent()) {
             // an in session request...throw in a dummy graph instance for now..............................
@@ -80,6 +86,12 @@ public class GremlinExecutor {
                 }
             };
         }
+    }
+
+    private static Map<String,Object> extractBindingsFromMessage(final RequestMessage msg) {
+        final Map<String, Object> m = new HashMap<>();
+        final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs("bindings");
+        return bindingsInMessage.orElse(m);
     }
 
     /**

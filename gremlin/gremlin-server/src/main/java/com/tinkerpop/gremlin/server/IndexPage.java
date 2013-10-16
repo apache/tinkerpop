@@ -43,7 +43,7 @@ final class IndexPage {
                         "function send(message) {" + NEWLINE +
                         "  if (!window.WebSocket) { return; }" + NEWLINE +
                         "  if (socket.readyState == WebSocket.OPEN) {" + NEWLINE +
-                        "    var json = '{\"op\":\"eval\",\"sessionId\":\"76CEC996-20C2-4766-B2EC-956EB743D46C\",\"requestId\":\"' + UUID() + '\",\"args\":{\"gremlin\":\"' + message + '\"}}';" + NEWLINE +
+                        "    var json = '{\"op\":\"eval\",\"sessionId\":\"76CEC996-20C2-4766-B2EC-956EB743D46C\",\"requestId\":\"' + UUID() + '\",\"args\":{\"gremlin\":\"' + message + '\", \"bindings\":{\"x\":1}}}';" + NEWLINE +
                         "    socket.send(json);" + NEWLINE +
                         "  } else {" + NEWLINE +
                         "    alert(\"The socket is not open.\");" + NEWLINE +
