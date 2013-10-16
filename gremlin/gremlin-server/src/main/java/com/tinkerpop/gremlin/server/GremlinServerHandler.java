@@ -39,9 +39,8 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
 
-    private static final String WEBSOCKET_PATH = "/gremlin";
-
     private WebSocketServerHandshaker handshaker;
+    private StaticFileHandler staticFileHandler;
     private final Settings settings;
     private final GremlinServer.Graphs graphs;
 
@@ -78,31 +77,25 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             return;
         }
 
-        // Send the demo page and favicon.ico
-        if ("/".equals(req.getUri())) {
-            final ByteBuf content = IndexPage.getContent(getWebSocketLocation(req));
-            final FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
+        final String uri = req.getUri();
 
-            res.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-            setContentLength(res, content.readableBytes());
-
-            sendHttpResponse(ctx, req, res);
-            return;
-        }
-        if ("/favicon.ico".equals(req.getUri())) {
-            final FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND);
-            sendHttpResponse(ctx, req, res);
-            return;
-        }
-
-        // Handshake
-        final WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
-                getWebSocketLocation(req), null, false);
-        handshaker = wsFactory.newHandshaker(req);
-        if (handshaker == null) {
-            WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
+        if (uri.startsWith(settings.webSocketRoute)) {
+            // Web socket handshake
+            WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
+                    getWebSocketLocation(req), null, false);
+            handshaker = wsFactory.newHandshaker(req);
+            if (handshaker == null) {
+                WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
+            } else {
+                handshaker.handshake(ctx.channel(), req);
+            }
         } else {
-            handshaker.handshake(ctx.channel(), req);
+            // Static file request
+            if (staticFileHandler == null) {
+                staticFileHandler = new StaticFileHandler(settings);
+            }
+
+            staticFileHandler.handleHttpStaticFileRequest(ctx, req);
         }
     }
 
@@ -152,7 +145,7 @@ public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         ctx.close();
     }
 
-    private static String getWebSocketLocation(FullHttpRequest req) {
-        return "ws://" + req.headers().get(HOST) + WEBSOCKET_PATH;
+    private String getWebSocketLocation(FullHttpRequest req) {
+        return "ws://" + req.headers().get(HOST) + settings.webSocketRoute;
     }
 }

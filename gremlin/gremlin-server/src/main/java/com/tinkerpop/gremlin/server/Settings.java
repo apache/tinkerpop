@@ -19,6 +19,8 @@ public class Settings {
     public String host;
     public int port;
     public Map<String, String> graphs;
+    public String webSocketRoute;
+    public String staticFilePath;
 
     public static Optional<Settings> read(final String file) {
         try {
