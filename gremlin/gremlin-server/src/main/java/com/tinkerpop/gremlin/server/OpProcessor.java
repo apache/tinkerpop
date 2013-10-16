@@ -1,13 +1,15 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import org.apache.commons.collections.iterators.ArrayIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
@@ -58,13 +60,21 @@ public class OpProcessor {
         return (context) -> {
             final Object o = GremlinExecutor.instance().eval(context.getRequestMessage(), context.getGraphs());
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-            final AtomicInteger counter = new AtomicInteger(1);
-            if (o instanceof Iterator) {
-                ((Iterator) o).forEachRemaining(j -> ctx.channel().write(new TextWebSocketFrame(j.toString() + " " + (counter.getAndIncrement() + " " + context.getRequestMessage().requestId))));
-            } else if (o instanceof Iterable) {
-                ((Iterable) o).forEach(j -> ctx.channel().write(new TextWebSocketFrame(j.toString() + " " + (counter.getAndIncrement() + " " + context.getRequestMessage().requestId))));
-            } else
-                ctx.channel().write(new TextWebSocketFrame(o.toString()));
+            Iterator itty;
+            if (o instanceof Iterable)
+                itty = ((Iterable) o).iterator();
+            else if (o instanceof Iterator)
+                itty = (Iterator) o;
+            else if (o instanceof Object[])
+                itty = new ArrayIterator(o);
+            else if (o instanceof Map)
+                itty = ((Map) o).entrySet().iterator();
+            else if (o instanceof Throwable)
+                itty = new SingleIterator<Object>(((Throwable) o).getMessage());
+            else
+                itty = new SingleIterator<>(o);
+
+            itty.forEachRemaining(j -> ctx.channel().write(new TextWebSocketFrame(ResultSerializer.TO_STRING_RESULT_SERIALIZER.serialize(j, context))));
         };
     }
 }
