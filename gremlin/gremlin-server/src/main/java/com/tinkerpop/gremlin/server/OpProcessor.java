@@ -74,7 +74,13 @@ public class OpProcessor {
             else
                 itty = new SingleIterator<>(o);
 
-            itty.forEachRemaining(j -> ctx.channel().write(new TextWebSocketFrame(ResultSerializer.TO_STRING_RESULT_SERIALIZER.serialize(j, context))));
+            itty.forEachRemaining(j -> {
+                try {
+                    ctx.channel().write(new TextWebSocketFrame(ResultSerializer.TO_STRING_RESULT_SERIALIZER.serialize(j, context)));
+                } catch (Exception ex) {
+                    logger.warn("The result [{}] in the request {} could not be serialized and returned.", j, context.getRequestMessage(), ex);
+                }
+            });
         };
     }
 }

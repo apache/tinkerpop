@@ -1,5 +1,15 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.tinkergraph.TinkerProperty;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 /**
  * Serializes a single result from the ScripEngine.  Typically this will be an item from an iterator.
  *
@@ -7,17 +17,96 @@ package com.tinkerpop.gremlin.server;
  */
 public interface ResultSerializer {
     public static final ToStringResultSerializer TO_STRING_RESULT_SERIALIZER = new ToStringResultSerializer();
+    public static final JsonResultSerializer JSON_RESULT_SERIALIZER = new JsonResultSerializer();
 
-    public String serialize(final Object o, final Context context);
+    public String serialize(final Object o, final Context context) throws Exception;
 
     /**
      * Use toString() to serialize the result.
      */
     public static class ToStringResultSerializer implements ResultSerializer {
         @Override
-        public String serialize(Object o, Context context) {
+        public String serialize(final Object o, final Context context) throws Exception{
             return o == null ? "null" : o.toString();
         }
     }
 
+    /**
+     * Converts a result to JSON.
+     */
+    public static class JsonResultSerializer implements ResultSerializer {
+        public static final String TOKEN_RESULT = "result";
+        public static final String TOKEN_ID = "id";
+        public static final String TOKEN_TYPE = "type";
+        public static final String TOKEN_KEY = "key";
+        public static final String TOKEN_VALUE = "value";
+        public static final String TOKEN_PROPERTIES = "properties";
+        public static final String TOKEN_EDGE = "edge";
+        public static final String TOKEN_VERTEX = "vertex";
+
+        @Override
+        public String serialize(final Object o, final Context context) throws Exception {
+            final JSONObject result = new JSONObject();
+            result.put(TOKEN_RESULT, prepareOutput(o));
+            return result.toString();
+        }
+
+        private Object prepareOutput(final Object object) throws Exception {
+            if (object == null)
+                return JSONObject.NULL;
+            else if (object instanceof Element) {
+                final Element element = (Element) object;
+                final JSONObject jsonObject = new JSONObject();
+                jsonObject.put(TOKEN_ID, element.getId());
+                jsonObject.put(TOKEN_TYPE, element instanceof Edge ? TOKEN_EDGE : TOKEN_VERTEX);
+
+                final JSONObject jsonProperties = new JSONObject();
+                element.getPropertyKeys().forEach(k -> {
+                    try {
+                        jsonProperties.put(k, prepareOutput(element.getProperty(k)));
+                    } catch (Exception ex) {
+                        // there can't be null keys on an element so don't think there is a need to launch
+                        // a JSONException here.
+                        throw new RuntimeException(ex);
+                    }
+                });
+                jsonObject.put(TOKEN_PROPERTIES, jsonProperties);
+                return jsonObject;
+            //} else if (object instanceof Row) {} todo: get Table/Row in when implemented
+            } else if (object instanceof Map) {
+                final JSONObject jsonObject = new JSONObject();
+                final Map map = (Map) object;
+                for (Object key : map.keySet()) {
+                    // force an error here by passing in a null key to the JSONObject.  That way a good error message
+                    // gets back to the user.
+                    if (key instanceof Element) {
+                        final Element element = (Element) key;
+                        final HashMap<String, Object> m = new HashMap<>();
+                        m.put(TOKEN_KEY, this.prepareOutput(element));
+                        m.put(TOKEN_VALUE, this.prepareOutput(map.get(key)));
+
+                        jsonObject.put(element.getId().toString(), new JSONObject(m));
+                    } else {
+                        jsonObject.put(key == null ? null : key.toString(), this.prepareOutput(map.get(key)));
+                    }
+                }
+                return jsonObject;
+            } else if (object instanceof Iterable || object instanceof Iterator) {
+                final JSONArray jsonArray = new JSONArray();
+                final Iterator itty = object instanceof Iterator ? (Iterator) object : ((Iterable) object).iterator();
+                while (itty.hasNext()) {
+                    jsonArray.put(prepareOutput(itty.next()));
+                }
+                return jsonArray;
+            } else if (object instanceof TinkerProperty) {
+                final TinkerProperty t = (TinkerProperty) object;
+                return prepareOutput(t.orElse(null));
+            } else if (object instanceof Number || object instanceof Boolean)
+                return object;
+            else if (object == JSONObject.NULL)
+                return JSONObject.NULL;
+            else
+                return object.toString();
+        }
+    }
 }
