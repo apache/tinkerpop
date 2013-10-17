@@ -24,14 +24,17 @@ public class OpProcessor {
     public Consumer<Context> select(final RequestMessage message) {
         final Consumer<Context> op;
         switch (message.op) {
+            case "init":
+                op = text(GremlinServer.getHeader());
+                break;
             case "eval":
                 op = validateEvalMessage(message).orElse(evalOp());
                 break;
             case "invalid":
-                op  = error(String.format("Message could not be parsed.  Check the format of the request. [%s]", message));
+                op = error(String.format("Message could not be parsed.  Check the format of the request. [%s]", message));
                 break;
             default:
-                op  = error(String.format("Message with op code [%s] is not recognized.", message.op));
+                op = error(String.format("Message with op code [%s] is not recognized.", message.op));
                 break;
         }
 
@@ -49,6 +52,10 @@ public class OpProcessor {
             return Optional.of(error("A message with an [eval] op code requires a [gremlin] argument."));
         else
             return Optional.empty();
+    }
+
+    private static Consumer<Context> text(final String message) {
+        return (context) -> context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(message));
     }
 
     private static Consumer<Context> error(final String message) {

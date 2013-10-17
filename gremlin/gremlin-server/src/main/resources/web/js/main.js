@@ -6,6 +6,8 @@ requirejs.config({
         "dust": "lib/dust/dust-full-1.1.1",
         "dust-helpers": "lib/dust/dust-helpers-1.1.0",
         "jquery": "lib/jquery-1.9.1.min",
+        "jquery-layout": "lib/jquery.layout-latest.min",
+        "jquery-ui": "lib/jquery-ui-1.10.3.custom.min",
         "moment": "lib/moment.min",
         "mustache": "lib/mustache",
         "underscore": "lib/underscore.min",
@@ -13,7 +15,8 @@ requirejs.config({
     },
     shim: {
         "bootstrap": ["jquery"],
-        "dust-helpers": ["dust"]
+        "dust-helpers": ["dust"],
+        "jquery-layout": ["jquery", "jquery-ui"]
     },
     locale: "en-us"
 });

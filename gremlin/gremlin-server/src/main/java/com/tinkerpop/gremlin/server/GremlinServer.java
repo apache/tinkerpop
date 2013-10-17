@@ -71,11 +71,17 @@ public class GremlinServer {
             logger.error("Configuration file at {} could not be found or parsed properly.", file);
     }
 
+    public static String getHeader() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\r\n");
+        builder.append("         \\,,,/\r\n");
+        builder.append("         (o o)\r\n");
+        builder.append("-----oOOo-(_)-oOOo-----\r\n");
+        return builder.toString();
+    }
+
     private static void printHeader() {
-        logger.info("");
-        logger.info("         \\,,,/");
-        logger.info("         (o o)");
-        logger.info("-----oOOo-(_)-oOOo-----");
+        logger.info(getHeader());
     }
 
     private class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
