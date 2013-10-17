@@ -60,7 +60,7 @@ public class OpProcessor {
 
     private static Consumer<Context> error(final String message) {
         logger.warn(message);
-        return (context) -> context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(message));
+        return text(message);
     }
 
     private static Consumer<Context> evalOp() {
