@@ -13,11 +13,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -45,7 +46,8 @@ class GremlinExecutor {
         return singleton.get();
     }
 
-    public Object eval(final RequestMessage message, final GremlinServer.Graphs graphs) {
+    public Object eval(final RequestMessage message, final GremlinServer.Graphs graphs)
+            throws ScriptException, InterruptedException, ExecutionException {
         return select(message, graphs).apply(message);
     }
 
@@ -53,7 +55,7 @@ class GremlinExecutor {
      * Determine whether to execute the script by way of a specific session or by the shared script engine in
      * a sessionless request.
      */
-    private Function<RequestMessage, Object> select(final RequestMessage message, final GremlinServer.Graphs graphs) {
+    private FunctionThatThrows<RequestMessage, Object> select(final RequestMessage message, final GremlinServer.Graphs graphs) {
         final Bindings bindings = new SimpleBindings();
         bindings.putAll(extractBindingsFromMessage(message));
 
@@ -81,7 +83,7 @@ class GremlinExecutor {
                 } catch (ScriptException ex) {
                     // todo: gotta work on error handling for failed scripts..........
                     graphs.rollbackAll();
-                    return null;
+                    throw ex;
                 }
             };
         }
@@ -107,6 +109,11 @@ class GremlinExecutor {
         return session;
     }
 
+    @FunctionalInterface
+    public interface FunctionThatThrows<T, R> {
+        R apply(T t) throws ScriptException, InterruptedException, ExecutionException;
+    }
+
     public class GremlinSession {
         private final Bindings bindings;
 
@@ -129,21 +136,15 @@ class GremlinExecutor {
             sessionedScriptEngines.put(session, this);
         }
 
-        public Object eval(final String script, final Bindings bindings)  {
-            try {
-                // apply the submitted bindings to the server side ones.
-                this.bindings.putAll(bindings);
-                final Future<Object> future = executor.submit(() -> {
-                    try {
-                        return scriptEngine.eval(script, this.bindings);
-                    } catch (Exception ex) {
-                        return null;
-                    }
-                });
-                return future.get();
-            } catch (Exception ex) {
-                return null;
-            }
+        public Object eval(final String script, final Bindings bindings)
+                throws ScriptException, InterruptedException, ExecutionException {
+            // apply the submitted bindings to the server side ones.
+            this.bindings.putAll(bindings);
+            final Future<Object> future = executor.submit(
+                    (Callable<Object>) () -> scriptEngine.eval(script, this.bindings));
+
+            // todo: do a configurable timeout here???
+            return future.get();
         }
     }
 }
