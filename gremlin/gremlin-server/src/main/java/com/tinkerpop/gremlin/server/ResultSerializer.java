@@ -25,9 +25,15 @@ public interface ResultSerializer {
      * Use toString() to serialize the result.
      */
     public static class ToStringResultSerializer implements ResultSerializer {
+
+        private static final String TEXT_RESPONSE_FORMAT_WITH_RESULT = "%s>>%s";
+        private static final String TEXT_RESPONSE_FORMAT_WITH_NULL = "%s>>null";
+
         @Override
         public String serialize(final Object o, final Context context) throws Exception{
-            return o == null ? "null" : o.toString();
+            return o == null ?
+                    String.format(TEXT_RESPONSE_FORMAT_WITH_NULL, context.getRequestMessage().requestId) :
+                    String.format(TEXT_RESPONSE_FORMAT_WITH_RESULT, context.getRequestMessage().requestId, o.toString());
         }
     }
 

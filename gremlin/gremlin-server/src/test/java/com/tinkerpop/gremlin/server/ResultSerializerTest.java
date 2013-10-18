@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -22,6 +23,26 @@ import static org.junit.Assert.assertNotNull;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResultSerializerTest {
+
+    private static final RequestMessage msg = new RequestMessage();
+    static {
+        msg.requestId = UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595");
+    }
+
+    @Test
+    public void serializeToStringNull() throws Exception {
+        final String results = ResultSerializer.TO_STRING_RESULT_SERIALIZER.serialize(null, new Context(msg, null, null, null));
+        assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>null", results);
+    }
+
+    @Test
+    public void serializeToStringAVertex() throws Exception {
+        final TinkerGraph g = TinkerFactory.createClassic();
+        final Vertex v = g.query().has("name", Compare.EQUAL, "marko").vertices().iterator().next();
+        final String results = ResultSerializer.TO_STRING_RESULT_SERIALIZER.serialize(v, new Context(msg, null, null, null));
+        assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>v[1]", results);
+    }
+
     @Test
     public void serializeToJsonNullResultReturnsNull() throws Exception {
         final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(null, new Context(null, null, null, null));
