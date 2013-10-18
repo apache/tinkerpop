@@ -45,6 +45,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
+ * Adapted from https://github.com/netty/netty/blob/master/example/src/main/java/io/netty/example/http/file/HttpStaticFileServerHandler.java
+ *
  * @author Victor Su
  */
 class StaticFileHandler {
@@ -258,7 +260,8 @@ class StaticFileHandler {
     /**
      * Hardcoded mime-type supported by default.
      *
-     * @author Jeanfrancois Arcand
+     * Adapted from https://github.com/Atmosphere/nettosphere/blob/master/server/src/main/java/org/atmosphere/nettosphere/util/MimeType.java
+     *
      */
     static class MimeType {
 

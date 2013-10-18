@@ -11,12 +11,14 @@ requirejs.config({
         "moment": "lib/moment.min",
         "mustache": "lib/mustache",
         "underscore": "lib/underscore.min",
-        "uri": "lib/URI.min"
+        "uri": "lib/URI.min",
+        "uuid": "lib/jquery-uuid"
     },
     shim: {
         "bootstrap": ["jquery"],
         "dust-helpers": ["dust"],
-        "jquery-layout": ["jquery", "jquery-ui"]
+        "jquery-layout": ["jquery", "jquery-ui"],
+        "uuid": ["jquery"]
     },
     locale: "en-us"
 });

@@ -59,7 +59,7 @@ class OpProcessor {
     }
 
     private static Consumer<Context> text(final String message) {
-        return (context) -> context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(message));
+        return (context) -> context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(String.format("%s>>%s", context.getRequestMessage().requestId, message)));
     }
 
     private static Consumer<Context> error(final String message) {

@@ -106,21 +106,23 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {
             handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
-            return;
         }
-        if (frame instanceof PingWebSocketFrame) {
+        else if (frame instanceof PingWebSocketFrame) {
             ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
-            return;
         }
-        if (!(frame instanceof TextWebSocketFrame)) {
+        else if (frame instanceof PongWebSocketFrame) {
+            // nothing to do
+        }
+        else if (frame instanceof TextWebSocketFrame) {
+            // todo: support both text and binary where binary allows for versioning of the messages.
+            final String request = ((TextWebSocketFrame) frame).text();
+            final RequestMessage requestMessage = RequestMessage.Serializer.parse(request).orElse(RequestMessage.INVALID);
+            OpProcessor.instance().select(requestMessage).accept(new Context(requestMessage, ctx, settings, graphs));
+        }
+        else {
             throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
                     .getName()));
         }
-
-        // todo: support both text and binary where binary allows for versioning of the messages.
-        final String request = ((TextWebSocketFrame) frame).text();
-        final RequestMessage requestMessage = RequestMessage.Serializer.parse(request).orElse(RequestMessage.INVALID);
-        OpProcessor.instance().select(requestMessage).accept(new Context(requestMessage, ctx, settings, graphs));
     }
 
     private static void sendHttpResponse(

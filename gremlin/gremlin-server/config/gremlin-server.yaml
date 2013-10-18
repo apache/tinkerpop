@@ -1,4 +1,4 @@
-host: 192.168.3.109
+host: localhost
 port: 8182
 graphs: {g: config/tinkergraph-empty.properties}
 staticFilePath: src/main/resources/web

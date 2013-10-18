@@ -9,78 +9,77 @@ require(
         "underscore",
         "moment",
         "uri",
-        "jquery-layout"
+        "jquery-layout",
+        "uuid"
     ],
     function (domReady, Template, mustache) {
         var _template = new Template();
         var _socket;
+        var _sessionId = $.uuid();
+        var _replRequestId = $.uuid();
 
-        function _sendSocket(op, args) {
-            if (!window.WebSocket) { return; }
-            if (_socket == null || _socket.readyState == WebSocket.OPEN) {
-                var json = {
-                    "op": op,
-                    "sessionId": "76CEC996-20C2-4766-B2EC-956EB743D46C",
-                    "requestId": "F6D42765-7F81-45EA-B355-240DC71C8D33",
-                };
+        function _sendSocket (requestId, op, args) {
+            var request = {
+                "op": op,
+                "sessionId": _sessionId,
+                "requestId": requestId,
+            };
 
-                if (!_.isUndefined(args)) {
-                    json.args = args;
-                }
+            if (!_.isUndefined(args)) {
+                request.args = args;
+            }
 
-                _socket.send(JSON.stringify(json));
+            if (_socket != null && _socket.readyState == WebSocket.OPEN) {
+                _socket.send(JSON.stringify(request));
             }
             else {
-                var result = confirm("Do you want to open a connection to the Gremlin server?");
-                if (result == true) {
-                    _connectSocket();
-                }
+                _connectSocket(function () {
+                    if (_socket != null && _socket.readyState == WebSocket.OPEN) {
+                        _socket.send(JSON.stringify(request));
+                    }
+                });
             }
         }
 
-        function _connectSocket() {
+        function _connectSocket (callback) {
             var pageUri = new URI(window.location.href);
             var socketUri = "ws://" + pageUri.hostname() + ":" + pageUri.port()  + "/gremlin";
 
             _socket = new WebSocket(socketUri);
 
-            _socket.onmessage = function(event) {
-                var dataLines = event.data.split(/\r?\n/);
+            _socket.onmessage = function (evt) {
+                // parse request id
+                var dataParts = evt.data.split(">>");
+                if (dataParts.length > 0) {
+                    var requestId = dataParts[0];
 
-                _(dataLines).each(function (line) {
-                    $("#replPrompt").before('<pre class="repl-text" style="margin: 0; padding: 0; border: 0">' + line + '</pre>');
-                })
+                    if (dataParts.length > 1) {
+                        var dataLines = dataParts[1].split(/\r?\n/);
 
-                $("#replPrompt").show();
-            };
+                        _(dataLines).each(function (line) {
+                            if (requestId == _replRequestId) {
+                                $("#replConsole").append('<pre class="repl-text" style="margin: 0; padding: 0; border: 0">' + line + '</pre>');
+                            }
+                        })
 
-            _socket.onopen = function(event) {
-                $("#replContainer").empty();
-                $("#replContainer").append(_template.get("replPrompt"));
-
-                $("#replPrompt textarea").keydown(function (e) {
-                    var code = e.which;
-                    if (code == 13) {
-                        e.preventDefault();
-
-                        var command = $(this).val().trim();
-                        if (command != "") {
-                            $("#replPrompt").hide();
-                            $("#replPrompt").before('<pre class="repl-text" style="margin: 0; padding: 0; border: 0">gremlin&gt;&nbsp;' + command + '</pre>');
-
-                            _sendSocket ("eval", { "gremlin": command });
-
-
-                            $(this).val("");
-                        }
+                        var container = $(".ui-layout-south");
+                        container[0].scrollTop = container[0].scrollHeight;
                     }
-                });
-
-                _sendSocket("version", { "verbose": true });
+                }
             };
 
-            _socket.onclose = function(event) {
+            _socket.onopen = function (evt) {
+                if (!_.isUndefined(callback)) {
+                    callback();
+                }
+            };
+
+            _socket.onclose = function (evt) {
                 _socket = null;
+            };
+
+            _socket.onerror = function (evt) {
+                alert("An error occurred while connecting to the Gremlin server: " + evt.data)
             };
         }
 
@@ -100,12 +99,26 @@ require(
 
             layout.sizePane("south", 150);
 
+            $("#replPrompt textarea").keydown(function (e) {
+                var code = e.which;
+                if (code == 13) {
+                    e.preventDefault();
+
+                    var command = $(this).val().trim();
+                    if (command != "") {
+                        $("#replConsole").append('<pre class="repl-text" style="margin: 0; padding: 0; border: 0">gremlin&gt;&nbsp;' + command + '</pre>');
+                        _sendSocket(_replRequestId, "eval", { "gremlin": command });
+                        $(this).val("");
+                    }
+                }
+            });
+
             if (!window.WebSocket) {
                 window.WebSocket = window.MozWebSocket;
             }
 
             if (window.WebSocket) {
-                _connectSocket();
+                _sendSocket(_replRequestId, "version", { "verbose" : true });
 
             } else {
                 alert("Your browser does not support web sockets.");
