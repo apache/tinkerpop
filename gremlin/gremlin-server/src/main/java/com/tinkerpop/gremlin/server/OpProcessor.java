@@ -7,9 +7,11 @@ import org.apache.commons.collections.iterators.ArrayIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.ScriptException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 /**
@@ -67,8 +69,31 @@ class OpProcessor {
 
     private static Consumer<Context> evalOp() {
         return (context) -> {
-            final Object o = GremlinExecutor.instance().eval(context.getRequestMessage(), context.getGraphs());
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
+            Object o;
+            try {
+                o = GremlinExecutor.instance().eval(context.getRequestMessage(), context.getGraphs());
+            } catch (ScriptException se) {
+                logger.warn("Error while evaluating a script on request [{}]", context.getRequestMessage());
+                logger.debug("Exception from ScriptException error.", se);
+                error(se.getMessage()).accept(context);
+                return;
+            } catch (InterruptedException ie) {
+                logger.warn("Thread interrupted (perhaps script ran for too long) while processing this request [{}]", context.getRequestMessage());
+                logger.debug("Exception from InterruptedException error.", ie);
+                error(ie.getMessage()).accept(context);
+                return;
+            } catch (ExecutionException ee) {
+                logger.warn("Error while retrieving response from the script evaluated on request [{}]", context.getRequestMessage());
+                logger.debug("Exception from ExecutionException error.", ee.getCause());
+                Throwable inner = ee.getCause();
+                if (inner instanceof ScriptException)
+                    inner = inner.getCause();
+
+                error(inner.getMessage()).accept(context);
+                return;
+            }
+
             Iterator itty;
             if (o instanceof Iterable)
                 itty = ((Iterable) o).iterator();

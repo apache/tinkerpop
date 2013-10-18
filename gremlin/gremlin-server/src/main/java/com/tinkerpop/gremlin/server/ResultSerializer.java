@@ -49,11 +49,13 @@ public interface ResultSerializer {
         public static final String TOKEN_PROPERTIES = "properties";
         public static final String TOKEN_EDGE = "edge";
         public static final String TOKEN_VERTEX = "vertex";
+        public static final String TOKEN_REQUEST = "requestId";
 
         @Override
         public String serialize(final Object o, final Context context) throws Exception {
             final JSONObject result = new JSONObject();
             result.put(TOKEN_RESULT, prepareOutput(o));
+            result.put(TOKEN_REQUEST, context.getRequestMessage().requestId);
             return result.toString();
         }
 
