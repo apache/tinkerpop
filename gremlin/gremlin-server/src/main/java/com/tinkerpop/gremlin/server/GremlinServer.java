@@ -71,6 +71,10 @@ public class GremlinServer {
             logger.error("Configuration file at {} could not be found or parsed properly.", file);
     }
 
+    public static String getVersion() {
+        return "3.0.0-SNAPSHOT";  // hard-coded for now until tokens available
+    }
+
     public static String getHeader() {
         StringBuilder builder = new StringBuilder();
         builder.append("\r\n");

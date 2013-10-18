@@ -1,5 +1,4 @@
-host: localhost
+host: 192.168.3.109
 port: 8182
 graphs: {g: config/tinkergraph-empty.properties}
-webSocketRoute: /gremlin
 staticFilePath: src/main/resources/web

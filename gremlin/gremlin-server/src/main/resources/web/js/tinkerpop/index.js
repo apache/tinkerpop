@@ -15,7 +15,7 @@ require(
         var _template = new Template();
         var _socket;
 
-        function _sendSocket(op, message) {
+        function _sendSocket(op, args) {
             if (!window.WebSocket) { return; }
             if (_socket == null || _socket.readyState == WebSocket.OPEN) {
                 var json = {
@@ -24,8 +24,8 @@ require(
                     "requestId": "F6D42765-7F81-45EA-B355-240DC71C8D33",
                 };
 
-                if (!_.isUndefined(message)) {
-                    json.args = { "gremlin": message };
+                if (!_.isUndefined(args)) {
+                    json.args = args;
                 }
 
                 _socket.send(JSON.stringify(json));
@@ -63,18 +63,20 @@ require(
                     if (code == 13) {
                         e.preventDefault();
 
-                        var command = $(this).val();
+                        var command = $(this).val().trim();
+                        if (command != "") {
+                            $("#replPrompt").hide();
+                            $("#replPrompt").before('<pre class="repl-text" style="margin: 0; padding: 0; border: 0">gremlin&gt;&nbsp;' + command + '</pre>');
 
-                        $("#replPrompt").hide();
-                        $("#replPrompt").before('<pre class="repl-text" style="margin: 0; padding: 0; border: 0">gremlin&gt;&nbsp;' + command + '</pre>');
+                            _sendSocket ("eval", { "gremlin": command });
 
-                        _sendSocket ("eval", command);
 
-                        $(this).val("");
+                            $(this).val("");
+                        }
                     }
                 });
 
-                _sendSocket("init");
+                _sendSocket("version", { "verbose": true });
             };
 
             _socket.onclose = function(event) {
@@ -96,7 +98,6 @@ require(
                 }
             });
 
-            //layout.sizePane("center", 550);
             layout.sizePane("south", 150);
 
             if (!window.WebSocket) {

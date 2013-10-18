@@ -24,8 +24,10 @@ class OpProcessor {
     public Consumer<Context> select(final RequestMessage message) {
         final Consumer<Context> op;
         switch (message.op) {
-            case "init":
-                op = text(GremlinServer.getHeader());
+            case "version":
+                op = (message.optionalArgs("verbose").isPresent())
+                    ? text("Gremlin " + GremlinServer.getVersion() + GremlinServer.getHeader())
+                    : text(GremlinServer.getVersion());
                 break;
             case "eval":
                 op = validateEvalMessage(message).orElse(evalOp());

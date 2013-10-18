@@ -39,6 +39,8 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
 
+    private static final String WEBSOCKET_PATH = "/gremlin";
+
     private WebSocketServerHandshaker handshaker;
     private StaticFileHandler staticFileHandler;
     private final Settings settings;
@@ -79,7 +81,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
 
         final String uri = req.getUri();
 
-        if (uri.startsWith(settings.webSocketRoute)) {
+        if (uri.startsWith(WEBSOCKET_PATH)) {
             // Web socket handshake
             WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
                     getWebSocketLocation(req), null, false);
@@ -146,6 +148,6 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private String getWebSocketLocation(FullHttpRequest req) {
-        return "ws://" + req.headers().get(HOST) + settings.webSocketRoute;
+        return "ws://" + req.headers().get(HOST) + WEBSOCKET_PATH;
     }
 }
