@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,7 @@ import java.util.function.Function;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinExecutor {
+class GremlinExecutor {
     private static final Logger logger = LoggerFactory.getLogger(GremlinExecutor.class);
 
     /**

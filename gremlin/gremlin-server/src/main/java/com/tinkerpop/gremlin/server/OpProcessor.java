@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class OpProcessor {
+class OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(OpProcessor.class);
     private static Optional<OpProcessor> singleton = Optional.empty();
 

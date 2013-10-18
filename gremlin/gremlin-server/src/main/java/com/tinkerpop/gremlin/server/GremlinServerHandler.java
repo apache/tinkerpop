@@ -36,7 +36,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
+class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
 
     private WebSocketServerHandshaker handshaker;
