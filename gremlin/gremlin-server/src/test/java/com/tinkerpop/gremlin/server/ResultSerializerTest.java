@@ -45,17 +45,19 @@ public class ResultSerializerTest {
 
     @Test
     public void serializeToJsonNullResultReturnsNull() throws Exception {
-        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(null, new Context(null, null, null, null));
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(null, new Context(msg, null, null, null));
         final JSONObject json = new JSONObject(results);
         assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
         assertEquals(JSONObject.NULL, json.get(ResultSerializer.JsonResultSerializer.TOKEN_RESULT));
     }
 
     @Test
     public void serializeToJsonNullJSONObjectResultReturnsNull() throws Exception {
-        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(JSONObject.NULL, new Context(null, null, null, null));
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(JSONObject.NULL, new Context(msg, null, null, null));
         final JSONObject json = new JSONObject(results);
         assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
         assertEquals(JSONObject.NULL, json.get(ResultSerializer.JsonResultSerializer.TOKEN_RESULT));
     }
 
@@ -100,10 +102,11 @@ public class ResultSerializerTest {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(funList, new Context(null, null, null, null));
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(funList, new Context(msg, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(ResultSerializer.JsonResultSerializer.TOKEN_RESULT);
 
         assertEquals(2, converted.length());
@@ -118,10 +121,11 @@ public class ResultSerializerTest {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(funList.iterator(), new Context(null, null, null, null));
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(funList.iterator(), new Context(msg, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(ResultSerializer.JsonResultSerializer.TOKEN_RESULT);
 
         assertEquals(2, converted.length());
@@ -138,10 +142,11 @@ public class ResultSerializerTest {
         funList.add(null);
         funList.add(new FunObject("y"));
 
-        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(funList.iterator(), new Context(null, null, null, null));
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(funList.iterator(), new Context(msg, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(ResultSerializer.JsonResultSerializer.TOKEN_RESULT);
 
         assertEquals(3, converted.length());
@@ -161,10 +166,11 @@ public class ResultSerializerTest {
         map.put("y", "some");
         map.put("z", innerMap);
 
-        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(map, new Context(null, null, null, null));
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(map, new Context(msg, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
         final JSONObject jsonObject = json.getJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_RESULT);
 
         assertNotNull(jsonObject);
@@ -192,10 +198,11 @@ public class ResultSerializerTest {
         v.setProperty("friends", friends);
 
         final Iterator iterable = g.query().vertices().iterator();
-        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(iterable, new Context(null, null, null, null));
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(iterable, new Context(msg, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(ResultSerializer.JsonResultSerializer.TOKEN_RESULT);
 
         assertNotNull(converted);
@@ -228,10 +235,11 @@ public class ResultSerializerTest {
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.query().has("name", Compare.EQUAL, "marko").vertices().iterator().next(), 1000);
 
-        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(map, new Context(null, null, null, null));
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(map, new Context(msg, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
         final JSONObject converted = json.getJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_RESULT);
 
         assertNotNull(converted);
