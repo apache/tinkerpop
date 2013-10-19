@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Property<T, E extends Element> {
+public interface Property<T, E extends Thing> extends Thing {
 
     public enum Key {
         ID, LABEL;
@@ -27,7 +27,7 @@ public interface Property<T, E extends Element> {
         }
     }
 
-    public E getElement();
+    public E getThing();
 
     public String getKey();
 
@@ -41,22 +41,42 @@ public interface Property<T, E extends Element> {
     }
 
     public default T orElse(T otherValue) {
-        return isPresent() ? this.getValue() : otherValue;
+        return this.isPresent() ? this.getValue() : otherValue;
     }
 
     public default T orElseGet(Supplier<? extends T> supplier) {
-        return isPresent() ? this.getValue() : supplier.get();
+        return this.isPresent() ? this.getValue() : supplier.get();
     }
 
     public default boolean is(Key reservedKey) {
         return this.getKey().equals(reservedKey.toString());
     }
 
-    public <R> void setMetaValue(String key, R value);
+    public <R> Property<R, Property> setProperty(String key, R value) throws IllegalStateException;
 
-    public <R> R getMetaValue(String key);
+    public <R> Property<R, Property> getProperty(String key) throws IllegalStateException;
 
-    public <R> R removeMetaValue(String key);
+    public <R> Property<R, Property> removeProperty(String key) throws IllegalStateException;
+
+    public static Property.Features getFeatures() {
+        return new Features() {
+        };
+    }
+
+    public interface Features extends com.tinkerpop.blueprints.Features {
+
+        public default boolean supportsMetaProperties() {
+            return true;
+        }
+
+        public default boolean supportsStringValues() {
+            return true;
+        }
+
+        public default boolean supportsIntegerValues() {
+            return true;
+        }
+    }
 
     public static Property[] of(Object... keyValues) {
         if (keyValues.length % 2 != 0)
@@ -67,7 +87,8 @@ public interface Property<T, E extends Element> {
             final Object value = Objects.requireNonNull(keyValues[i + 1]);
 
             properties[i / 2] = new Property() {
-                final Map<String, Object> metas = new HashMap<>();
+                final Map<String, Property> metas = new HashMap<>();
+                final Property p = this;
 
                 @Override
                 public String getKey() {
@@ -80,8 +101,8 @@ public interface Property<T, E extends Element> {
                 }
 
                 @Override
-                public Element getElement() {
-                    throw new IllegalStateException("The is a container is and is not attached to an element");
+                public Thing getThing() {
+                    throw new IllegalStateException("The is a container and is not attached to anything");
                 }
 
                 @Override
@@ -89,26 +110,61 @@ public interface Property<T, E extends Element> {
                     return true;
                 }
 
-                @Override
-                public void setMetaValue(String key, Object value) {
-                    this.metas.put(key, value);
+                public Property setProperty(String aKey, Object aValue) throws IllegalStateException {
+                    final Property property = this.metas.put(key, new Property() {
+                        @Override
+                        public Thing getThing() {
+                            return p;
+                        }
+
+                        @Override
+                        public String getKey() {
+                            return aKey;
+                        }
+
+                        @Override
+                        public Object getValue() throws NoSuchElementException {
+                            return aValue;
+                        }
+
+                        @Override
+                        public boolean isPresent() {
+                            return null != aValue;
+                        }
+
+                        @Override
+                        public Property setProperty(String key, Object value) throws IllegalStateException {
+                            throw new IllegalStateException("A meta property can not have a meta property");
+                        }
+
+                        @Override
+                        public Property getProperty(String key) throws IllegalStateException {
+                            throw new IllegalStateException("A meta property can not have a meta property");
+                        }
+
+                        @Override
+                        public Property removeProperty(String key) throws IllegalStateException {
+                            throw new IllegalStateException("A meta property can not have a meta property");
+                        }
+                    });
+                    return null == property ? Property.empty() : property;
                 }
 
-                @Override
-                public Object getMetaValue(String key) {
-                    return this.metas.get(key);
+                public Property getProperty(String key) throws IllegalStateException {
+                    final Property property = this.metas.get(key);
+                    return null == property ? Property.empty() : property;
                 }
 
-                @Override
-                public Object removeMetaValue(String key) {
-                    return this.metas.remove(key);
+                public Property removeProperty(String key) throws IllegalStateException {
+                    final Property property = this.metas.remove(key);
+                    return null == property ? Property.empty() : property;
                 }
             };
         }
         return properties;
     }
 
-    public static <T, E extends Element> Property<T, E> empty() {
+    public static <T, E extends Thing> Property<T, E> empty() {
         return new Property<T, E>() {
             private static final String EMPTY_KEY = "empty";
             private static final String EMPTY_MESSAGE = "This is an empty property";
@@ -129,22 +185,22 @@ public interface Property<T, E extends Element> {
             }
 
             @Override
-            public E getElement() {
+            public E getThing() {
                 throw new IllegalStateException(EMPTY_MESSAGE);
             }
 
             @Override
-            public <R extends Object> void setMetaValue(String key, R value) {
+            public <R> Property<R, Property> setProperty(String key, R value) throws IllegalStateException {
                 throw new IllegalStateException(EMPTY_MESSAGE);
             }
 
             @Override
-            public <R extends Object> R getMetaValue(String key) {
+            public <R> Property<R, Property> getProperty(String key) throws IllegalStateException {
                 throw new IllegalStateException(EMPTY_MESSAGE);
             }
 
             @Override
-            public <R extends Object> R removeMetaValue(String key) {
+            public <R> Property<R, Property> removeProperty(String key) throws IllegalStateException {
                 throw new IllegalStateException(EMPTY_MESSAGE);
             }
         };

@@ -4,9 +4,9 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
 import com.tinkerpop.blueprints.util.StringFactory;
+import com.tinkerpop.blueprints.util.ThingHelper;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -30,21 +30,21 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
     }
 
     public <T> Property<T, Edge> getProperty(final String key) {
-        final Property<T, Edge> t = this.properties.get(key);
-        return (null == t) ? Property.<T, Edge>empty() : t;
+        final Property<T, Edge> property = this.properties.get(key);
+        return null == property ? Property.empty() : property;
     }
 
     public <T> Property<T, Edge> setProperty(final String key, final T value) {
-        ElementHelper.validateProperty(this, key, value);
-        final Property<T, Edge> oldValue = this.properties.put(key, new TinkerProperty<>(key, value, this));
-        this.graph.edgeIndex.autoUpdate(key, value, oldValue, this);
-        return oldValue;
+        ThingHelper.validateProperty(this, key, value);
+        final Property<T, Edge> property = this.properties.put(key, new TinkerProperty<>(key, value, this));
+        this.graph.edgeIndex.autoUpdate(key, value, null == property ? null : property.getValue(), this);
+        return null == property ? Property.empty() : property;
     }
 
     public <T> Property<T, Edge> removeProperty(final String key) {
-        final Property<T, Edge> oldValue = this.properties.remove(key);
-        this.graph.edgeIndex.autoRemove(key, oldValue, this);
-        return oldValue;
+        final Property<T, Edge> property = this.properties.remove(key);
+        this.graph.edgeIndex.autoRemove(key, null == property ? null : property.getValue(), this);
+        return null == property ? Property.empty() : property;
     }
 
     public String getLabel() {

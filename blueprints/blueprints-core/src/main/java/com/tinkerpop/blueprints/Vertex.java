@@ -16,4 +16,17 @@ public interface Vertex extends Element {
     public VertexQuery query();
 
     public Edge addEdge(String label, Vertex inVertex, Property... properties);
+
+    public static Vertex.Features getFeatures() {
+        return new Features() {
+        };
+    }
+
+    public interface Features extends com.tinkerpop.blueprints.Features {
+
+        public default boolean supportsUserSuppliedIds() {
+            return true;
+        }
+
+    }
 }

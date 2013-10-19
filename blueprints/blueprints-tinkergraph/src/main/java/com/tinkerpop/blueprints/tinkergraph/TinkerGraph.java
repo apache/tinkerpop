@@ -3,7 +3,6 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Features;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
@@ -11,6 +10,7 @@ import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
 import com.tinkerpop.blueprints.util.StringFactory;
+import com.tinkerpop.blueprints.util.ThingHelper;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
@@ -30,11 +30,10 @@ public class TinkerGraph implements Graph, Serializable {
     protected Long currentId = -1l;
     protected Map<String, Vertex> vertices = new HashMap<>();
     protected Map<String, Edge> edges = new HashMap<>();
+    protected Map<String, Property> properties = new HashMap<>();
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
-
-    private static final Features FEATURES = new Features();
 
     public TinkerGraph() {
     }
@@ -89,6 +88,23 @@ public class TinkerGraph implements Graph, Serializable {
     public GraphComputer compute() {
         return new TinkerGraphComputer(this);
     }
+
+    public <T> Property<T, Graph> getProperty(final String key) {
+        final Property<T, Graph> property = this.properties.get(key);
+        return (null == property) ? Property.empty() : property;
+    }
+
+    public <T> Property<T, Graph> setProperty(final String key, final T value) {
+        ThingHelper.validateProperty(this, key, value);
+        final Property<T, Graph> property = this.properties.put(key, new TinkerProperty<>(key, value, this));
+        return null == property ? Property.empty() : property;
+    }
+
+    public <T> Property<T, Graph> removeProperty(final String key) {
+        final Property<T, Graph> property = this.properties.remove(key);
+        return null == property ? Property.empty() : property;
+    }
+
 
     public String toString() {
         return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());

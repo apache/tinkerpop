@@ -19,21 +19,19 @@ import java.util.Map;
  * implementation.  This specialized test suite and runner is for use by Blueprints implementors to test their
  * Graph implementations.  The BlueprintsSuite ensures consistency and validity of the implementations that they
  * test.
- * <p>
  * To use the BlueprintSuite define a class in a test module.  Standard naming would expect the name of the
  * implementation followed by "BlueprintsSuite".  This class should be annotated as follows (note that the "Suite"
  * implements BlueprintsSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
  * <code>
- *     @RunWith(BlueprintsSuite.class)
- *     @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsSuite.class)
- *     public class MsAccessBlueprintsSuite implements BlueprintsSuite.GraphProvider {
- *     }
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @RunWith(BlueprintsSuite.class)
+ * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsSuite.class) public class MsAccessBlueprintsSuite implements BlueprintsSuite.GraphProvider {
+ * }
  * </code>
  * Implementing BlueprintsSuite.GraphProvider provides a way for the BlueprintsSuite to instantiate Graph instances
  * from the implementation being tested to inject into tests in the suite.  The BlueprintsSuite will utilized
  * Features defined in the suite to determine which tests will be executed.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class BlueprintsSuite extends Suite {
 
@@ -84,7 +82,7 @@ public class BlueprintsSuite extends Suite {
         }
 
         default public Configuration newGraphConfiguration() {
-            return newGraphConfiguration(Collections.<String,Object>emptyMap());
+            return newGraphConfiguration(Collections.<String, Object>emptyMap());
         }
 
         /**
@@ -93,7 +91,7 @@ public class BlueprintsSuite extends Suite {
          *
          * @param configurationOverrides Settings to override defaults with.
          */
-        public Configuration newGraphConfiguration(Map<String,Object> configurationOverrides);
+        public Configuration newGraphConfiguration(Map<String, Object> configurationOverrides);
     }
 
     /**
@@ -102,9 +100,6 @@ public class BlueprintsSuite extends Suite {
      */
     public static abstract class AbstractGraphProvider implements GraphProvider {
 
-        /**
-         * Implementors should supply the base configuration for their graph
-         */
         public abstract Map<String, Object> getBaseConfiguration();
 
         @Override
@@ -116,7 +111,7 @@ public class BlueprintsSuite extends Suite {
             // assign overrides but don't allow blueprints.graph setting to be overriden.  the test suite should
             // not be able to override that.
             configurationOverrides.entrySet().stream()
-                    .filter(c->!c.getKey().equals("blueprints.graph"))
+                    .filter(c -> !c.getKey().equals("blueprints.graph"))
                     .forEach(e -> conf.setProperty(e.getKey(), e.getValue()));
             return conf;
         }
@@ -133,6 +128,7 @@ public class BlueprintsSuite extends Suite {
             GraphManager.graphProvider = graphProvider;
             return old;
         }
+
         public static GraphProvider get() {
             return graphProvider;
         }

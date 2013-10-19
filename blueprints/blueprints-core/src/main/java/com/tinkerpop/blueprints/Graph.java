@@ -10,7 +10,7 @@ import java.io.Closeable;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Graph extends Closeable {
+public interface Graph extends Closeable, Thing {
 
     public Vertex addVertex(Property... properties);
 
@@ -22,6 +22,29 @@ public interface Graph extends Closeable {
 
     public void rollback();
 
-    public Features getFeatures();
+    public <T> Property<T, Graph> getProperty(String key);
+
+    public <T> Property<T, Graph> setProperty(String key, T value);
+
+    public <T> Property<T, Graph> removeProperty(String key);
+
+    public static Graph.Features getFeatures() {
+        return new Features() {
+        };
+    }
+
+    public interface Features extends com.tinkerpop.blueprints.Features {
+        public default boolean supportsTransactions() {
+            return true;
+        }
+
+        public default boolean supportsQuery() {
+            return true;
+        }
+
+        public default boolean supportsComputer() {
+            return true;
+        }
+    }
 
 }

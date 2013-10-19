@@ -1,7 +1,7 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
-import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Thing;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,21 +9,21 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerProperty<T, E extends Element> implements Property<T, E> {
+public class TinkerProperty<T, E extends Thing> implements Property<T, E> {
 
     private final String key;
     private final T value;
-    private final E element;
-    private Map<String, Object> metas = new HashMap<>();
+    private final E thing;
+    private Map<String, Property> metas = new HashMap<>();
 
-    protected TinkerProperty(String key, T value, final E element) {
+    protected TinkerProperty(String key, T value, final E thing) {
         this.key = key;
         this.value = value;
-        this.element = element;
+        this.thing = thing;
     }
 
-    public E getElement() {
-        return this.element;
+    public E getThing() {
+        return this.thing;
     }
 
     public String getKey() {
@@ -38,15 +38,18 @@ public class TinkerProperty<T, E extends Element> implements Property<T, E> {
         return this.value != null;
     }
 
-    public <T> void setMetaValue(final String key, final T value) {
-        this.metas.put(key, value);
+    public <R> Property<R, Property> setProperty(String key, R value) throws IllegalStateException {
+        final Property<R, Property> property = this.metas.put(key, new TinkerProperty<R, TinkerProperty>(key, value, this));
+        return null == property ? Property.empty() : property;
     }
 
-    public <T> T getMetaValue(final String key) {
-        return (T) this.metas.get(key);
+    public <R> Property<R, Property> getProperty(String key) throws IllegalStateException {
+        final Property<R, Property> property = this.metas.get(key);
+        return null == property ? Property.empty() : property;
     }
 
-    public <T> T removeMetaValue(final String key) {
-        return (T) this.metas.remove(key);
+    public <R> Property<R, Property> removeProperty(String key) throws IllegalStateException {
+        final Property<R, Property> property = this.metas.remove(key);
+        return null == property ? Property.empty() : property;
     }
 }

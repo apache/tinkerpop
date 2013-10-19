@@ -69,14 +69,13 @@ public class GraphFactory {
      *
      * @param configuration A Map based configuration that will be converted to an Apache configuration object
      *                      via MapConfiguration and passed to the appropriate overload.
-     *
      * @return A Graph instance.
      */
     public static Graph open(final Map configuration) {
         return open(new MapConfiguration(configuration));
     }
 
-    private static final Configuration getConfiguration(final File dirOrFile) {
+    private static Configuration getConfiguration(final File dirOrFile) {
         if (dirOrFile == null) {
             throw new IllegalArgumentException("Need to specify a configuration file or storage directory");
         }

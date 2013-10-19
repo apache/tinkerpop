@@ -5,8 +5,8 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.VertexQuery;
-import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
+import com.tinkerpop.blueprints.util.ThingHelper;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -45,14 +45,14 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
     public <T> Property<T, Vertex> getProperty(final String key) {
         if (State.STANDARD == this.state) {
-            final Property<T, Vertex> t = this.properties.get(key);
-            return (null == t) ? Property.empty() : t;
+            final Property<T, Vertex> property = this.properties.get(key);
+            return (null == property) ? Property.empty() : property;
         } else if (State.CENTRIC == this.state) {
             if (this.vertexMemory.isComputeKey(key))
                 return this.vertexMemory.getProperty(this, key);
             else {
-                final Property<T, Vertex> t = this.properties.get(key);
-                return (null == t) ? Property.empty() : t;
+                final Property<T, Vertex> property = this.properties.get(key);
+                return (null == property) ? Property.empty() : property;
             }
         } else {
             if (this.vertexMemory.isComputeKey(key))
@@ -64,10 +64,10 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
     public <T> Property<T, Vertex> setProperty(final String key, final T value) {
         if (State.STANDARD == this.state) {
-            ElementHelper.validateProperty(this, key, value);
-            final Property<T, Vertex> oldValue = this.properties.put(key, new TinkerProperty<>(key, value, this));
-            this.graph.vertexIndex.autoUpdate(key, value, oldValue, this);
-            return oldValue;
+            ThingHelper.validateProperty(this, key, value);
+            final Property<T, Vertex> property = this.properties.put(key, new TinkerProperty<>(key, value, this));
+            this.graph.vertexIndex.autoUpdate(key, value, null == property ? null : property.getValue(), this);
+            return null == property ? Property.empty() : property;
         } else if (State.CENTRIC == this.state) {
             if (this.vertexMemory.isComputeKey(key))
                 return this.vertexMemory.setProperty(this, key, value);
@@ -80,9 +80,9 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
     public <T> Property<T, Vertex> removeProperty(final String key) {
         if (State.STANDARD == this.state) {
-            final Property<T, Vertex> oldValue = this.properties.remove(key);
-            this.graph.vertexIndex.autoRemove(key, oldValue, this);
-            return oldValue;
+            final Property<T, Vertex> property = this.properties.remove(key);
+            this.graph.vertexIndex.autoRemove(key, null == property ? null : property.getValue(), this);
+            return null == property ? Property.empty() : property;
         } else if (State.CENTRIC == this.state) {
             if (this.vertexMemory.isComputeKey(key))
                 return this.vertexMemory.removeProperty(this, key);
@@ -107,6 +107,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
     public void remove() {
         this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
+        this.properties.clear();
         graph.vertexIndex.removeElement(this);
         graph.vertices.remove(this.id);
     }

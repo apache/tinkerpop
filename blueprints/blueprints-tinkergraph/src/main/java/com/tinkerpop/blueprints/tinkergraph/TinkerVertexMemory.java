@@ -81,7 +81,7 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         if (isConstantKey(key) && map.containsKey(bspKey))
             throw new IllegalStateException("The constant property " + bspKey + " has already been set for vertex " + vertex);
         else
-            return map.put(bspKey, new SimpleProperty<>(key, value, vertex));
+            return map.put(bspKey, new TinkerProperty(key, value, vertex));
     }
 
     public <T> Property<T, Vertex> getProperty(final Vertex vertex, final String key) {
@@ -101,47 +101,6 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         else {
             Property<T, Vertex> property = map.remove(generateGetKey(key));
             return null == property ? Property.empty() : property;
-        }
-    }
-
-    public static class SimpleProperty<T> implements Property<T, Vertex> {
-        private final Vertex vertex;
-        private final String key;
-        private final T value;
-        private Map<String, Object> metas = new HashMap<>();
-
-        protected SimpleProperty(final String key, final T value, final Vertex vertex) {
-            this.vertex = vertex;
-            this.key = key;
-            this.value = value;
-        }
-
-        public Vertex getElement() {
-            return this.vertex;
-        }
-
-        public String getKey() {
-            return this.key;
-        }
-
-        public T getValue() {
-            return this.value;
-        }
-
-        public boolean isPresent() {
-            return this.value != null;
-        }
-
-        public <T> void setMetaValue(final String key, final T value) {
-            this.metas.put(key, value);
-        }
-
-        public <T> T getMetaValue(final String key) {
-            return (T) this.metas.get(key);
-        }
-
-        public <T> T removeMetaValue(final String key) {
-            return (T) this.metas.remove(key);
         }
     }
 }

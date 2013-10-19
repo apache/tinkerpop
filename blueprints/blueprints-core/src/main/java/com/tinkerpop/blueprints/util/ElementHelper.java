@@ -2,39 +2,19 @@ package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class ElementHelper {
-
-    /**
-     * Determines whether the property key/value for the specified element can be legally set.
-     * This is typically used as a pre-condition check prior to setting a property.
-     *
-     * @param element the element for the property to be set
-     * @param key     the key of the property
-     * @param value   the value of the property
-     * @throws IllegalArgumentException whether the triple is legal and if not, a clear reason message is provided
-     */
-    public static void validateProperty(final Element element, final String key, final Object value) throws IllegalArgumentException {
-        if (null == value)
-            throw ExceptionFactory.propertyValueCanNotBeNull();
-        if (null == key)
-            throw ExceptionFactory.propertyKeyCanNotBeNull();
-        if (key.equals(StringFactory.ID))
-            throw ExceptionFactory.propertyKeyIdIsReserved();
-        if (element instanceof Edge && key.equals(StringFactory.LABEL))
-            throw ExceptionFactory.propertyKeyLabelIsReservedForEdges();
-        if (key.isEmpty())
-            throw ExceptionFactory.propertyKeyCanNotBeEmpty();
-    }
 
     /**
      * Copy the properties (key and value) from one element to another.
@@ -189,11 +169,11 @@ public class ElementHelper {
      * @return Whether the two elements are equal
      */
     public static boolean areEqual(final Element a, final Object b) {
+        Objects.requireNonNull(a);
+        Objects.requireNonNull(b);
         if (a == b)
             return true;
-        if (null == b)
-            return false;
-        if (!a.getClass().equals(b.getClass()))
+        if (!((a instanceof Vertex && b instanceof Vertex) || (a instanceof Edge && b instanceof Edge)))
             return false;
         return a.getId().equals(((Element) b).getId());
     }
