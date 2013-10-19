@@ -1,11 +1,14 @@
 package com.tinkerpop.blueprints.util;
 
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -166,11 +169,11 @@ public class ElementHelper {
      * @return Whether the two elements are equal
      */
     public static boolean areEqual(final Element a, final Object b) {
+        Objects.requireNonNull(a);
+        Objects.requireNonNull(b);
         if (a == b)
             return true;
-        if (null == b)
-            return false;
-        if (!a.getClass().equals(b.getClass()))
+        if (!((a instanceof Vertex && b instanceof Vertex) || (a instanceof Edge && b instanceof Edge)))
             return false;
         return a.getId().equals(((Element) b).getId());
     }

@@ -15,4 +15,13 @@ public interface Edge extends Element {
 
     public <T> Property<T, Edge> removeProperty(String key);
 
+    public default Edge.Features getFeatures() {
+        return new Features() {
+        };
+    }
+
+    public interface Features extends com.tinkerpop.blueprints.Features {
+
+    }
+
 }

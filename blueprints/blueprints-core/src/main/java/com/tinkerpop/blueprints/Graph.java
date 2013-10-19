@@ -28,4 +28,23 @@ public interface Graph extends Closeable, Thing {
 
     public <T> Property<T, Graph> removeProperty(String key);
 
+    public default Graph.Features getFeatures() {
+        return new Features() {
+        };
+    }
+
+    public interface Features extends com.tinkerpop.blueprints.Features {
+        public default boolean supportsTransactions() {
+            return true;
+        }
+
+        public default boolean supportsQuery() {
+            return true;
+        }
+
+        public default boolean supportsComputer() {
+            return true;
+        }
+    }
+
 }

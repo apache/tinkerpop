@@ -19,11 +19,9 @@ public class StringFactory {
     public static final String R_BRACKET = "]";
     public static final String DASH = "-";
     public static final String ARROW = "->";
-    public static final String COLON = ":";
 
     public static final String ID = "id";
     public static final String LABEL = "label";
-    public static final String EMPTY_STRING = "";
 
     public static String vertexString(final Vertex vertex) {
         return V + L_BRACKET + vertex.getId() + R_BRACKET;

@@ -5,7 +5,7 @@ package com.tinkerpop.blueprints;
  */
 public interface Thing {
 
-    // public <T extends Features> T getFeatures();
+    public Features getFeatures();
 
     public <T> Property<T, ? extends Thing> getProperty(String key);
 

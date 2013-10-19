@@ -58,6 +58,26 @@ public interface Property<T, E extends Thing> extends Thing {
 
     public <R> Property<R, Property> removeProperty(String key) throws IllegalStateException;
 
+    public default Property.Features getFeatures() {
+        return new Features() {
+        };
+    }
+
+    public interface Features extends com.tinkerpop.blueprints.Features {
+
+        public default boolean supportsMetaProperties() {
+            return true;
+        }
+
+        public default boolean supportsStringValues() {
+            return true;
+        }
+
+        public default boolean supportsIntegerValues() {
+            return true;
+        }
+    }
+
     public static Property[] of(Object... keyValues) {
         if (keyValues.length % 2 != 0)
             throw new IllegalArgumentException("The provided arguments must have a size that is a factor of 2");

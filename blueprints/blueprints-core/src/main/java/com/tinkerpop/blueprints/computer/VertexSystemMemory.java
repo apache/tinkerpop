@@ -13,6 +13,6 @@ public interface VertexSystemMemory extends VertexMemory {
 
     public void setComputeKeys(final Map<String, VertexProgram.KeyType> computeKeys);
 
-    public Map<String,VertexProgram.KeyType> getComputeKeys();
+    public Map<String, VertexProgram.KeyType> getComputeKeys();
 
 }
