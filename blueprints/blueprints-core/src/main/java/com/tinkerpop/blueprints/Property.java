@@ -58,7 +58,7 @@ public interface Property<T, E extends Thing> extends Thing {
 
     public <R> Property<R, Property> removeProperty(String key) throws IllegalStateException;
 
-    public default Property.Features getFeatures() {
+    public static Property.Features getFeatures() {
         return new Features() {
         };
     }

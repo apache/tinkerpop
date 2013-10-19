@@ -5,7 +5,9 @@ package com.tinkerpop.blueprints;
  */
 public interface Thing {
 
-    public Features getFeatures();
+    public static Features getFeatures() {
+        throw new UnsupportedOperationException();
+    }
 
     public <T> Property<T, ? extends Thing> getProperty(String key);
 

@@ -17,7 +17,7 @@ public interface Vertex extends Element {
 
     public Edge addEdge(String label, Vertex inVertex, Property... properties);
 
-    public default Vertex.Features getFeatures() {
+    public static Vertex.Features getFeatures() {
         return new Features() {
         };
     }

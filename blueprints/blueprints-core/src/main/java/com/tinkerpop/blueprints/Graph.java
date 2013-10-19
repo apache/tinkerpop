@@ -28,7 +28,7 @@ public interface Graph extends Closeable, Thing {
 
     public <T> Property<T, Graph> removeProperty(String key);
 
-    public default Graph.Features getFeatures() {
+    public static Graph.Features getFeatures() {
         return new Features() {
         };
     }

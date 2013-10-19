@@ -15,7 +15,7 @@ public interface Edge extends Element {
 
     public <T> Property<T, Edge> removeProperty(String key);
 
-    public default Edge.Features getFeatures() {
+    public static Edge.Features getFeatures() {
         return new Features() {
         };
     }
