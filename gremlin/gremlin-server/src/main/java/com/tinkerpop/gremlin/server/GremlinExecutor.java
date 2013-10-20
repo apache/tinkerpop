@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
+import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +21,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
+ * Execute Gremlin scripts against a ScriptEngine instance.  The ScriptEngine maybe be a shared ScriptEngine in the
+ * case of a sessionless request or a standalone ScriptEngine bound to a session that always executes within the same
+ * thread for every request.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class GremlinExecutor {
@@ -29,7 +33,7 @@ class GremlinExecutor {
     /**
      * Used in sessionless mode and centrally configured for imports/scripts.
      */
-    private static final GroovyScriptEngineImpl sharedScriptEngine = new GroovyScriptEngineImpl();
+    private static final GremlinGroovyScriptEngine sharedScriptEngine = new GremlinGroovyScriptEngine();
 
     /**
      * Script engines are evaluated in a per session context where imports/scripts are isolated per session.
@@ -122,7 +126,7 @@ class GremlinExecutor {
          * This is important as it enables user interfaces built on Gremlin Server to have isolation in what
          * libraries they use and what classes exist.
          */
-        private final GroovyScriptEngineImpl scriptEngine = new GroovyScriptEngineImpl();
+        private final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
 
         /**
          * By binding the session to run ScriptEngine evaluations in a specific thread, each request will respect
