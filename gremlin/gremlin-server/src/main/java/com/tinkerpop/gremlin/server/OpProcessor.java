@@ -27,9 +27,9 @@ class OpProcessor {
         final Consumer<Context> op;
         switch (message.op) {
             case "version":
-                op = (message.optionalArgs("verbose").isPresent())
-                    ? text("Gremlin " + GremlinServer.getVersion() + GremlinServer.getHeader())
-                    : text(GremlinServer.getVersion());
+                op = (message.optionalArgs("verbose").isPresent()) ?
+                        text("Gremlin " + GremlinServer.getVersion() + GremlinServer.getHeader()) :
+                        text(GremlinServer.getVersion());
                 break;
             case "eval":
                 op = validateEvalMessage(message).orElse(evalOp());
@@ -70,21 +70,22 @@ class OpProcessor {
     private static Consumer<Context> evalOp() {
         return (context) -> {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
+            final RequestMessage msg = context.getRequestMessage();
             Object o;
             try {
-                o = GremlinExecutor.instance().eval(context.getRequestMessage(), context.getGraphs());
+                o = GremlinExecutor.instance().eval(msg, context.getGraphs());
             } catch (ScriptException se) {
-                logger.warn("Error while evaluating a script on request [{}]", context.getRequestMessage());
+                logger.warn("Error while evaluating a script on request [{}]", msg);
                 logger.debug("Exception from ScriptException error.", se);
                 error(se.getMessage()).accept(context);
                 return;
             } catch (InterruptedException ie) {
-                logger.warn("Thread interrupted (perhaps script ran for too long) while processing this request [{}]", context.getRequestMessage());
+                logger.warn("Thread interrupted (perhaps script ran for too long) while processing this request [{}]", msg);
                 logger.debug("Exception from InterruptedException error.", ie);
                 error(ie.getMessage()).accept(context);
                 return;
             } catch (ExecutionException ee) {
-                logger.warn("Error while retrieving response from the script evaluated on request [{}]", context.getRequestMessage());
+                logger.warn("Error while retrieving response from the script evaluated on request [{}]", msg);
                 logger.debug("Exception from ExecutionException error.", ee.getCause());
                 Throwable inner = ee.getCause();
                 if (inner instanceof ScriptException)
@@ -108,9 +109,10 @@ class OpProcessor {
             else
                 itty = new SingleIterator<>(o);
 
+            final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs("accept").orElse("text/plain"));
             itty.forEachRemaining(j -> {
                 try {
-                    ctx.channel().write(new TextWebSocketFrame(ResultSerializer.TO_STRING_RESULT_SERIALIZER.serialize(j, context)));
+                    ctx.channel().write(new TextWebSocketFrame(serializer.serialize(j, context)));
                 } catch (Exception ex) {
                     logger.warn("The result [{}] in the request {} could not be serialized and returned.", j, context.getRequestMessage(), ex);
                 }

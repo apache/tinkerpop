@@ -22,6 +22,16 @@ public interface ResultSerializer {
     public String serialize(final Object o, final Context context) throws Exception;
 
     /**
+     * Choose a serializer based on the "accept" argument on the message, where "accept" is a mime type.
+     */
+    public static ResultSerializer select(final String accept) {
+        if (accept.equals("application/json"))
+            return JSON_RESULT_SERIALIZER;
+        else
+            return TO_STRING_RESULT_SERIALIZER;
+    }
+
+    /**
      * Use toString() to serialize the result.
      */
     public static class ToStringResultSerializer implements ResultSerializer {
