@@ -45,7 +45,7 @@ class OpProcessor {
         return op;
     }
 
-    public static OpProcessor instance() {
+    public synchronized static OpProcessor instance() {
         if (!singleton.isPresent())
             singleton = Optional.of(new OpProcessor());
         return singleton.get();

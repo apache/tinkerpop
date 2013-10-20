@@ -44,7 +44,7 @@ class GremlinExecutor {
 
     private GremlinExecutor(){}
 
-    public static GremlinExecutor instance() {
+    public synchronized static GremlinExecutor instance() {
         if (!singleton.isPresent())
             singleton = Optional.of(new GremlinExecutor());
         return singleton.get();
