@@ -1,8 +1,6 @@
-package com.tinkerpop.blueprints.computer.util;
+package com.tinkerpop.blueprints.computer;
 
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.computer.GraphMemory;
-import com.tinkerpop.blueprints.computer.VertexProgram;
 
 import java.util.Map;
 import java.util.Objects;

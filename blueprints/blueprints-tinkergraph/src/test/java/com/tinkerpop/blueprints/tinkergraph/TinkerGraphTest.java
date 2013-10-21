@@ -6,7 +6,7 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.computer.VertexProgram;
-import com.tinkerpop.blueprints.computer.util.LambdaVertexProgram;
+import com.tinkerpop.blueprints.computer.LambdaVertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import org.junit.Test;
 

@@ -5,14 +5,16 @@ import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.computer.GraphMemory;
 import com.tinkerpop.blueprints.computer.Isolation;
 import com.tinkerpop.blueprints.computer.VertexMemory;
-import com.tinkerpop.blueprints.computer.util.DefaultGraphComputer;
+import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphComputer extends DefaultGraphComputer {
+public class TinkerGraphComputer implements GraphComputer {
 
+    private Isolation isolation = Isolation.BSP;
+    private VertexProgram vertexProgram;
     private final TinkerGraph graph;
     private final TinkerGraphMemory graphMemory = new TinkerGraphMemory();
     private TinkerVertexMemory vertexMemory = new TinkerVertexMemory(this.isolation);
@@ -22,8 +24,13 @@ public class TinkerGraphComputer extends DefaultGraphComputer {
     }
 
     public GraphComputer isolation(final Isolation isolation) {
-        super.isolation(isolation);
+        this.isolation = isolation;
         this.vertexMemory = new TinkerVertexMemory(isolation);
+        return this;
+    }
+
+    public GraphComputer program(final VertexProgram program) {
+        this.vertexProgram = program;
         return this;
     }
 
