@@ -5,8 +5,8 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.ComputeResult;
-import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.computer.LambdaVertexProgram;
+import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import org.junit.Test;
 
@@ -26,6 +26,8 @@ public class TinkerGraphTest {
         g.createIndex("name", Vertex.class);
         Vertex marko = g.addVertex(Property.of("name", "marko", "age", 33, "blah", "bloop"));
         Vertex stephen = g.addVertex(Property.of("name", "stephen", "id", 12, "blah", "bloop"));
+        stephen.setProperty(Property.Key.hidden("name"), "stephen");
+        assertEquals("stephen", stephen.getProperty(Property.Key.hidden("name")).getValue());
         Random r = new Random();
         Stream.generate(() -> g.addVertex(Property.of(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt()))).limit(100000).count();
         assertEquals(100002, g.vertices.size());

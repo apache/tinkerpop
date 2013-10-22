@@ -164,7 +164,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         final Map<E, Long> map = new HashMap<>();
         try {
             while (true) {
-                MapHelper.incr(map, (E) this.next().get(), 1l);
+                MapHelper.incr(map, this.next().get(), 1l);
             }
         } catch (final NoSuchElementException e) {
             return map;

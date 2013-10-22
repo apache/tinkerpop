@@ -50,6 +50,10 @@ public class GremlinVertexProgram implements VertexProgram {
             } else if (pipe instanceof FlatMapPipe) {
                 pipe.addStarts(new HolderIterator<>(StreamFactory.stream(vertex.query().direction(Direction.BOTH).vertices())
                         .filter(v -> v.<List>getValue(GREMLINS).size() > 0).iterator()));
+                /*StreamFactory.stream(vertex.query().direction(Direction.BOTH).vertices())
+                        .filter(v -> v.<List>getValue(GREMLINS).size() > 0)
+                        .flatMap(v -> new HolderIterator(v.<List<Holder>>getValue(GREMLINS)).)
+                        .forEach(h -> pipe.addStarts(h)); */
                 vertex.setProperty(GREMLINS, PipeHelper.toList(pipe));
             } else if (pipe instanceof MapPipe) {
                 // TODO

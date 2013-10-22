@@ -17,6 +17,7 @@ public interface Property<T, E extends Thing> extends Thing {
 
         private static final String LABEL_STRING = "label";
         private static final String ID_STRING = "id";
+        private static final String HIDDEN_PREFIX = "%&%";
 
         public String toString() {
             if (this == ID) {
@@ -24,6 +25,10 @@ public interface Property<T, E extends Thing> extends Thing {
             } else {
                 return LABEL_STRING;
             }
+        }
+
+        public static String hidden(final String key) {
+            return HIDDEN_PREFIX.concat(key);
         }
     }
 

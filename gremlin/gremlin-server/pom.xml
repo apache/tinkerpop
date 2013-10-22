@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>gremlin-server</artifactId>
-    <name>Gremlin-Server: Gremlin on the server</name>
+    <name>Gremlin-Server: Gremlin on the Server</name>
 
     <mailingLists>
         <mailingList>

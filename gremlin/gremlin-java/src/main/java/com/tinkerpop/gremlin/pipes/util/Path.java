@@ -19,10 +19,6 @@ public class Path {
         super();
     }
 
-    public Path(final Path path) {
-        this.add(path);
-    }
-
     public int size() {
         return this.objects.size();
     }
