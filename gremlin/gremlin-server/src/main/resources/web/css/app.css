@@ -70,3 +70,9 @@ body {
     background-color: #555555;
     color: #f8f8f8;
 }
+
+.repl-text-inverted {
+    font-family: "Courier New", Courier, monospace;
+    background-color: #dddddd;
+    color: #555555;
+}
