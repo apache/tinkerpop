@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -19,17 +20,16 @@ import java.util.function.Consumer;
  */
 class OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(OpProcessor.class);
-    private static Optional<OpProcessor> singleton = Optional.empty();
 
-    private OpProcessor() { }
+    private static GremlinExecutor gremlinExecutor = new GremlinExecutor();
 
     public Consumer<Context> select(final RequestMessage message) {
         final Consumer<Context> op;
         switch (message.op) {
             case "version":
                 op = (message.optionalArgs("verbose").isPresent()) ?
-                        text("Gremlin " + GremlinServer.getVersion() + GremlinServer.getHeader()) :
-                        text(GremlinServer.getVersion());
+                        text("Gremlin " + Tokens.VERSION + GremlinServer.getHeader()) :
+                        text(Tokens.VERSION);
                 break;
             case "eval":
                 op = validateEvalMessage(message).orElse(evalOp());
@@ -43,12 +43,6 @@ class OpProcessor {
         }
 
         return op;
-    }
-
-    public synchronized static OpProcessor instance() {
-        if (!singleton.isPresent())
-            singleton = Optional.of(new OpProcessor());
-        return singleton.get();
     }
 
     private static Optional<Consumer<Context>> validateEvalMessage(final RequestMessage message) {
@@ -69,11 +63,14 @@ class OpProcessor {
 
     private static Consumer<Context> evalOp() {
         return (context) -> {
+            if (!gremlinExecutor.isInitialized())
+                gremlinExecutor.init(context.getSettings());
+
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final RequestMessage msg = context.getRequestMessage();
             Object o;
             try {
-                o = GremlinExecutor.instance().eval(msg, context.getGraphs());
+                o = gremlinExecutor.eval(msg, context.getGraphs());
             } catch (ScriptException se) {
                 logger.warn("Error while evaluating a script on request [{}]", msg);
                 logger.debug("Exception from ScriptException error.", se);
