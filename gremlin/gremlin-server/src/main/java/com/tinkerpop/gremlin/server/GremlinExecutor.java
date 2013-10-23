@@ -40,16 +40,6 @@ class GremlinExecutor {
      */
     private static final Map<UUID, GremlinSession> sessionedScriptEngines = new ConcurrentHashMap<>();
 
-    private static Optional<GremlinExecutor> singleton  = Optional.empty();
-
-    private GremlinExecutor(){}
-
-    public synchronized static GremlinExecutor instance() {
-        if (!singleton.isPresent())
-            singleton = Optional.of(new GremlinExecutor());
-        return singleton.get();
-    }
-
     public Object eval(final RequestMessage message, final GremlinServer.Graphs graphs)
             throws ScriptException, InterruptedException, ExecutionException {
         return select(message, graphs).apply(message);

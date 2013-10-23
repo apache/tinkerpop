@@ -45,6 +45,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private StaticFileHandler staticFileHandler;
     private final Settings settings;
     private final GremlinServer.Graphs graphs;
+    private static final OpProcessor opProcessor = new OpProcessor();
 
     public GremlinServerHandler(final Settings settings, final GremlinServer.Graphs graphs) {
         if (logger.isDebugEnabled()) logger.debug("GremlinServerHandler initialized.");
@@ -83,7 +84,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
 
         if (uri.startsWith(WEBSOCKET_PATH)) {
             // Web socket handshake
-            WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
+            final WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
                     getWebSocketLocation(req), null, false);
             handshaker = wsFactory.newHandshaker(req);
             if (handshaker == null) {
@@ -102,32 +103,25 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) {
-
         // Check for closing frame
-        if (frame instanceof CloseWebSocketFrame) {
+        if (frame instanceof CloseWebSocketFrame)
             handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
-        }
-        else if (frame instanceof PingWebSocketFrame) {
+        else if (frame instanceof PingWebSocketFrame)
             ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
-        }
-        else if (frame instanceof PongWebSocketFrame) {
-            // nothing to do
-        }
+        else if (frame instanceof PongWebSocketFrame) { } // nothing to do
         else if (frame instanceof TextWebSocketFrame) {
             // todo: support both text and binary where binary allows for versioning of the messages.
             final String request = ((TextWebSocketFrame) frame).text();
             final RequestMessage requestMessage = RequestMessage.Serializer.parse(request).orElse(RequestMessage.INVALID);
-            OpProcessor.instance().select(requestMessage).accept(new Context(requestMessage, ctx, settings, graphs));
+            this.opProcessor.select(requestMessage).accept(new Context(requestMessage, ctx, settings, graphs));
         }
-        else {
+        else
             throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
                     .getName()));
-        }
     }
 
-    private static void sendHttpResponse(
-            final ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse res) {
-
+    private static void sendHttpResponse(final ChannelHandlerContext ctx,
+                                         final FullHttpRequest req, final FullHttpResponse res) {
         // Generate an error page if response getStatus code is not OK (200).
         if (res.getStatus().code() != 200) {
             final ByteBuf buf = Unpooled.copiedBuffer(res.getStatus().toString(), CharsetUtil.UTF_8);

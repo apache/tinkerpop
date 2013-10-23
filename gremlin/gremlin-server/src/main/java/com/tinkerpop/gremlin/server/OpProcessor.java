@@ -20,9 +20,8 @@ import java.util.function.Consumer;
  */
 class OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(OpProcessor.class);
-    private static Optional<OpProcessor> singleton = Optional.empty();
 
-    private OpProcessor() { }
+    private static final GremlinExecutor gremlinExecutor = new GremlinExecutor();
 
     public Consumer<Context> select(final RequestMessage message) {
         final Consumer<Context> op;
@@ -44,12 +43,6 @@ class OpProcessor {
         }
 
         return op;
-    }
-
-    public synchronized static OpProcessor instance() {
-        if (!singleton.isPresent())
-            singleton = Optional.of(new OpProcessor());
-        return singleton.get();
     }
 
     private static Optional<Consumer<Context>> validateEvalMessage(final RequestMessage message) {
@@ -74,7 +67,7 @@ class OpProcessor {
             final RequestMessage msg = context.getRequestMessage();
             Object o;
             try {
-                o = GremlinExecutor.instance().eval(msg, context.getGraphs());
+                o = gremlinExecutor.eval(msg, context.getGraphs());
             } catch (ScriptException se) {
                 logger.warn("Error while evaluating a script on request [{}]", msg);
                 logger.debug("Exception from ScriptException error.", se);
