@@ -19,6 +19,7 @@ public class Settings {
     public String host;
     public int port;
     public Map<String, String> graphs;
+    public Map<String, Object> scriptEngines;
     public String staticFilePath;
 
     public static Optional<Settings> read(final String file) {
@@ -28,6 +29,7 @@ public class Settings {
             final Constructor constructor = new Constructor(Settings.class);
             final TypeDescription settingsDescription = new TypeDescription(Settings.class);
             settingsDescription.putMapPropertyType("graphs", String.class, String.class);
+            settingsDescription.putMapPropertyType("scriptEngines", String.class, Object.class);
             constructor.addTypeDescription(settingsDescription);
 
             final Yaml yaml = new Yaml(constructor);

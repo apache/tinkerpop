@@ -1,4 +1,9 @@
 host: localhost
 port: 8182
-graphs: {g: config/tinkergraph-empty.properties}
+graphs: {
+  g: config/tinkergraph-empty.properties}
+scriptEngines: {
+  gremlin-groovy: {
+    imports: [java.util.Math],
+    static-imports: [java.lang.Math.PI]}}
 staticFilePath: src/main/resources/web
