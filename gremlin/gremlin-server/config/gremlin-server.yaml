@@ -4,6 +4,6 @@ graphs: {
   g: config/tinkergraph-empty.properties}
 scriptEngines: {
   gremlin-groovy: {
-    imports: [java.util.Math],
-    static-imports: [java.lang.Math.PI]}}
+    imports: [java.lang.Math],
+    staticImports: [java.lang.Math.PI]}}
 staticFilePath: src/main/resources/web

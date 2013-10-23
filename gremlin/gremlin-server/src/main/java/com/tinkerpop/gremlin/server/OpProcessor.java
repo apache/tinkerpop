@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 class OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(OpProcessor.class);
 
-    private static final GremlinExecutor gremlinExecutor = new GremlinExecutor();
+    private static GremlinExecutor gremlinExecutor = new GremlinExecutor();
 
     public Consumer<Context> select(final RequestMessage message) {
         final Consumer<Context> op;
@@ -63,6 +63,9 @@ class OpProcessor {
 
     private static Consumer<Context> evalOp() {
         return (context) -> {
+            if (!gremlinExecutor.isInitialized())
+                gremlinExecutor.init(context.getSettings());
+
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final RequestMessage msg = context.getRequestMessage();
             Object o;

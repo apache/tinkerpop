@@ -20,6 +20,9 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
@@ -37,18 +40,15 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
-
     private static final String WEBSOCKET_PATH = "/gremlin";
 
     private WebSocketServerHandshaker handshaker;
     private StaticFileHandler staticFileHandler;
     private final Settings settings;
     private final GremlinServer.Graphs graphs;
-    private static final OpProcessor opProcessor = new OpProcessor();
+    private final OpProcessor opProcessor = new OpProcessor();
 
     public GremlinServerHandler(final Settings settings, final GremlinServer.Graphs graphs) {
-        if (logger.isDebugEnabled()) logger.debug("GremlinServerHandler initialized.");
         this.settings = settings;
         this.graphs = graphs;
     }
