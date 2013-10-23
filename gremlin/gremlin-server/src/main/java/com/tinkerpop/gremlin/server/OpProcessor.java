@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -28,8 +29,8 @@ class OpProcessor {
         switch (message.op) {
             case "version":
                 op = (message.optionalArgs("verbose").isPresent()) ?
-                        text("Gremlin " + GremlinServer.getVersion() + GremlinServer.getHeader()) :
-                        text(GremlinServer.getVersion());
+                        text("Gremlin " + Tokens.VERSION + GremlinServer.getHeader()) :
+                        text(Tokens.VERSION);
                 break;
             case "eval":
                 op = validateEvalMessage(message).orElse(evalOp());
