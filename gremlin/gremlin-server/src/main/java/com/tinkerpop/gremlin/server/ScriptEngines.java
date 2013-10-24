@@ -51,6 +51,13 @@ public class ScriptEngines {
                 scriptEngine.orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported.")));
     }
 
+    public void use(final String group, final String artifact, final String version) {
+        scriptEngines.entrySet().forEach(kv -> {
+            if (kv.getValue() instanceof GremlinGroovyScriptEngine)
+                ((GremlinGroovyScriptEngine) kv.getValue()).use(group, artifact, version);
+        });
+    }
+
     private static Optional<ScriptEngine> createScriptEngine(final String language, final Set<String> imports,
                                                              final Set<String> staticImports) {
         if (language.equals(gremlinGroovyScriptEngineFactory.getLanguageName())) {

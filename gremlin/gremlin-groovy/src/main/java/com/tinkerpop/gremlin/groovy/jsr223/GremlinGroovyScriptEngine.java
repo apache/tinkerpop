@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
+import groovy.grape.Grape;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.DelegatingMetaClass;
@@ -73,6 +74,20 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl {
         final CompilerConfiguration conf = new CompilerConfiguration();
         conf.addCompilationCustomizers(importCustomizerProvider.getImportCustomizer());
         this.loader = new GroovyClassLoader(getParentLoader(), conf);
+    }
+
+    public void use(final String group, final String artifact, final String version) {
+        final Map<String, Object> dependency = new HashMap<String,Object>(){{
+            put("group", group);
+            put("module", artifact);
+            put("version", version);
+        }};
+
+        final Map<String, Object> args = new HashMap<String,Object>(){{
+            put("classLoader", loader);
+        }};
+
+        Grape.grab(args, dependency);
     }
 
     private void checkClearCache() {

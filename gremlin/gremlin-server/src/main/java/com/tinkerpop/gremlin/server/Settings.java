@@ -22,6 +22,7 @@ public class Settings {
     public Map<String, String> graphs;
     public Map<String, ScriptEngineSettings> scriptEngines;
     public String staticFilePath;
+    public List<List<String>> use;
 
     public static Optional<Settings> read(final String file) {
         try {
@@ -31,6 +32,7 @@ public class Settings {
             final TypeDescription settingsDescription = new TypeDescription(Settings.class);
             settingsDescription.putMapPropertyType("graphs", String.class, String.class);
             settingsDescription.putMapPropertyType("scriptEngines", String.class, ScriptEngineSettings.class);
+            settingsDescription.putListPropertyType("use", List.class);
 
             final TypeDescription scriptEngineSettingsDescription = new TypeDescription(ScriptEngineSettings.class);
             scriptEngineSettingsDescription.putListPropertyType("imports", String.class);

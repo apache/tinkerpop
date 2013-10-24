@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
+import groovy.grape.Grape;
+import groovy.lang.GroovyClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +63,7 @@ class GremlinExecutor {
         if (!initialized) {
             if (logger.isDebugEnabled()) logger.debug("Initializing GremlinExecutor");
             sharedScriptEngines = createScriptEngine(settings);
+
             this.settings = settings;
             initialized = true;
         }
@@ -72,6 +75,16 @@ class GremlinExecutor {
             scriptEngines.reload(config.getKey(), new HashSet<>(config.getValue().imports),
                     new HashSet<>(config.getValue().staticImports));
         }
+
+        settings.use.forEach(u-> {
+            if (u.size() != 3)
+                logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
+            else {
+                logger.info("Getting dependencies for [{}]", u);
+                scriptEngines.use(u.get(0), u.get(1), u.get(2));
+            }
+        });
+
         return scriptEngines;
     }
 
