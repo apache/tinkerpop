@@ -131,7 +131,7 @@ require(
 
             layout.sizePane("south", 190);
 
-            $(".ui-layout-south").keydown(function (e) {
+            $("body").keydown(function (e) {
                 var code = e.which;
                 switch (code) {
                     case 27:    // escape
@@ -169,7 +169,7 @@ require(
 
             });
 
-            $(".ui-layout-south").keyup(function (e) {
+            $("body").keyup(function (e) {
                 var code = e.which;
                 switch (code) {
                     case 17:    // ctrl
@@ -185,6 +185,12 @@ require(
                         break;
                 }
             });
+
+            //$("body").keydown(function (e) {
+            //    var code = e.which;
+            //    console.log(code);
+            //});
+
 
             $("#replPrompt textarea").keydown(function (e) {
                 var code = e.which;
