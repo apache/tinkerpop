@@ -30,6 +30,17 @@ public class DefaultImportCustomizerProvider extends AbstractImportCustomizerPro
     }
 
     /**
+     * Utilizes imports defined by the supplied arguments with the .  Those imports defined statically through
+     * initializeStatically() are ignored.
+     */
+    public DefaultImportCustomizerProvider(final ImportCustomizerProvider baseCustomizer,
+                                           final Set<String> extraImports, final Set<String> extraStaticImports) {
+        this(extraImports, extraStaticImports);
+        this.extraImports.addAll(baseCustomizer.getExtraImports());
+        this.extraStaticImports.addAll(baseCustomizer.getExtraStaticImports());
+    }
+
+    /**
      * Allows imports to defined globally and statically. This method must be called prior to initialization of
      * a ScriptEngine instance through the ScriptEngineFactory.
      */

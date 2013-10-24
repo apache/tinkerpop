@@ -47,6 +47,14 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         return ic;
     }
 
+    public Set<String> getExtraImports() {
+        return extraImports;
+    }
+
+    public Set<String> getExtraStaticImports() {
+        return extraStaticImports;
+    }
+
     private void importExtraStatics(final ImportCustomizer ic) {
         for (final String extraStaticImport : extraStaticImports) {
             if (extraStaticImport.endsWith(DOT_STAR)) {
