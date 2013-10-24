@@ -33,7 +33,9 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -44,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl {
+public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager {
 
     private Map<String, Class> classMap = new ConcurrentHashMap<>();
     private Map<String, MethodClosure> globalClosures = new ConcurrentHashMap<>();
@@ -58,6 +60,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl {
     private static final String DOT_GROOVY = ".groovy";
     private static final String GROOVY_LANG_SCRIPT = "groovy.lang.Script";
 
+    private ImportCustomizerProvider importCustomizerProvider;
+
     public GremlinGroovyScriptEngine() {
         this(1500);
     }
@@ -70,13 +74,18 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl {
         // todo: initialize here as we build out gremlin-groovy
         // Gremlin.load();
 
+        this.importCustomizerProvider = importCustomizerProvider;
         this.cacheResetSize = cacheResetSize;
+        createClassLoader();
+    }
+
+    private void createClassLoader() {
         final CompilerConfiguration conf = new CompilerConfiguration();
-        conf.addCompilationCustomizers(importCustomizerProvider.getImportCustomizer());
+        conf.addCompilationCustomizers(this.importCustomizerProvider.getImportCustomizer());
         this.loader = new GroovyClassLoader(getParentLoader(), conf);
     }
 
-    public void use(final String group, final String artifact, final String version) {
+    public synchronized void use(final String group, final String artifact, final String version) {
         final Map<String, Object> dependency = new HashMap<String,Object>(){{
             put("group", group);
             put("module", artifact);
@@ -88,6 +97,26 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl {
         }};
 
         Grape.grab(args, dependency);
+    }
+
+    @Override
+    public synchronized void addImports(final Set<String> importStatements) {
+        final Set<String> staticImports = new HashSet<>();
+        final Set<String> imports = new HashSet<>();
+
+        // TODO: some regex matching here instead to be a bit more flexible with spacing
+        importStatements.forEach(s-> {
+            if (s.startsWith("import static "))
+                staticImports.add(s.replace("import static ", ""));
+            else
+                imports.add(s.replace("import ", ""));
+        });
+
+        this.importCustomizerProvider = new DefaultImportCustomizerProvider(
+                this.importCustomizerProvider, imports, staticImports);
+        createClassLoader();
+        this.globalClosures.clear();
+        this.classMap.clear();
     }
 
     private void checkClearCache() {

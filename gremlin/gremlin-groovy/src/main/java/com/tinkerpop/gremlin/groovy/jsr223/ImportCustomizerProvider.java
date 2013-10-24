@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.groovy.jsr223;
 
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
+import java.util.Set;
+
 /**
  * Allows customization of the imports used by the GremlinGroovyScriptEngine implementation.
  *
@@ -9,4 +11,8 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  */
 public interface ImportCustomizerProvider {
     ImportCustomizer getImportCustomizer();
+
+    Set<String> getExtraImports();
+
+    Set<String> getExtraStaticImports();
 }
