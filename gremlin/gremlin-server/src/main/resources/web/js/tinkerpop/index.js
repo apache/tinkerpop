@@ -107,6 +107,10 @@ require(
                 .value();
 
             $("#replDetail").html(mustache.render(_template.get("searchResult"), data));
+
+            $("#replDetail li:first").removeClass("repl-text");
+            $("#replDetail li:first").addClass("repl-text-inverted");
+
             $("#replDetail li").unbind();
             $("#replDetail li").click(function () {
                 $("#replPrompt textarea").val($(this).html());
@@ -186,12 +190,6 @@ require(
                 }
             });
 
-            //$("body").keydown(function (e) {
-            //    var code = e.which;
-            //    console.log(code);
-            //});
-
-
             $("#replPrompt textarea").keydown(function (e) {
                 var code = e.which;
                 switch (code) {
@@ -258,9 +256,68 @@ require(
                 }
             });
 
+            $("#replStatus div:nth-child(2) > input").keydown(function (e) {
+                var code = e.which;
+                switch (code) {
+                    case 13:    // enter
+                    case 38:    // up arrow
+                    case 40:    // down arrow
+                        e.preventDefault();
+                        break;
+                }
+            });
+
             $("#replStatus div:nth-child(2) > input").keyup(function (e) {
-                var query = $(this).val().trim();
-                _renderReplSearch(query);
+                var code = e.which;
+                switch (code) {
+                    case 13:    // enter
+                        var selection = $("#replDetail li.repl-text-inverted");
+                        if (selection.length > 0) {
+                           $("#replPrompt textarea").val(selection.html());
+                           _closeReplDetail();
+                        }
+                        break;
+
+                    case 38:    // up arrow
+                        var selection = $("#replDetail li.repl-text-inverted");
+                        if (selection.length > 0) {
+                            var prev = selection.prev();
+                            if (prev.length > 0) {
+                                selection.removeClass("repl-text-inverted");
+                                prev.removeClass("repl-text");
+                                prev.addClass("repl-text-inverted");
+                            }
+                            else {
+                                var last = $("#replDetail li:last");
+                                selection.removeClass("repl-text-inverted");
+                                last.removeClass("repl-text");
+                                last.addClass("repl-text-inverted");
+                            }                        }
+                        break;
+
+                    case 40:    // down arrow
+                        var selection = $("#replDetail li.repl-text-inverted");
+                        if (selection.length > 0) {
+                            var next = selection.next();
+                            if (next.length > 0) {
+                                selection.removeClass("repl-text-inverted");
+                                next.removeClass("repl-text");
+                                next.addClass("repl-text-inverted");
+                            }
+                            else {
+                                var first = $("#replDetail li:first");
+                                selection.removeClass("repl-text-inverted");
+                                first.removeClass("repl-text");
+                                first.addClass("repl-text-inverted");
+                            }
+                        }
+                        break;
+
+                    default:
+                        var query = $(this).val().trim();
+                        _renderReplSearch(query);
+                        break;
+                }
             });
 
             if (!window.WebSocket) {
