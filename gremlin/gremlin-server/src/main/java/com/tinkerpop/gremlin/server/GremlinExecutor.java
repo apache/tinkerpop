@@ -106,10 +106,6 @@ class GremlinExecutor {
         final String language = message.<String>optionalArgs("language").orElse("gremlin-groovy");
 
         if (message.optionalSessionId().isPresent()) {
-            // an in session request...throw in a dummy graph instance for now..............................
-            final Graph g = TinkerFactory.createClassic();
-            bindings.put("g", g);
-
             final GremlinSession session = getGremlinSession(message.sessionId, bindings);
             if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
             return s -> session.eval(message.<String>optionalArgs(RequestMessage.FIELD_GREMLIN).get(), bindings, language);
