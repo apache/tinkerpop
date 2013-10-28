@@ -9,9 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -34,6 +38,12 @@ class OpProcessor {
             case "eval":
                 op = validateEvalMessage(message).orElse(evalOp());
                 break;
+            case "import":
+                op = validateImportMessage(message).orElse(importOp());
+                break;
+            case "use":
+                op = validateUseMessage(message).orElse(useOp());
+                break;
             case "invalid":
                 op = error(String.format("Message could not be parsed.  Check the format of the request. [%s]", message));
                 break;
@@ -52,6 +62,40 @@ class OpProcessor {
             return Optional.empty();
     }
 
+    private static Optional<Consumer<Context>> validateImportMessage(final RequestMessage message) {
+        final Optional<List> l = message.optionalArgs("imports");
+        if (!l.isPresent())
+            return Optional.of(error("A message with an [import] op code requires a [imports] argument."));
+
+        if (l.orElse(new ArrayList()).size() == 0)
+            return Optional.of(error("A message with an [import] op code requires that the [imports] argument has at least one import string specified."));
+        else
+            return Optional.empty();
+    }
+
+    private static Optional<Consumer<Context>> validateUseMessage(final RequestMessage message) {
+        final Optional<List> l = message.optionalArgs("use");
+        if (!l.isPresent())
+            return Optional.of(error("A message with an [use] op code requires a [coordinates] argument."));
+
+        final List coordinates = l.orElse(new ArrayList());
+        if (coordinates.size() == 0)
+            return Optional.of(error("A message with an [use] op code requires that the [coordinates] argument has at least one set of valid maven coordinates specified."));
+
+        if (!coordinates.stream().allMatch(OpProcessor::validateCoordinates))
+            return Optional.of(error("A message with an [use] op code requires that all [coordinates] specified are valid maven coordinates with a group, artifact, and version."));
+        else
+            return Optional.empty();
+    }
+
+    private static boolean validateCoordinates(final Object coordinates) {
+        if (!(coordinates instanceof Map))
+            return false;
+
+        final Map m = (Map) coordinates;
+        return m.containsKey("group") && m.containsKey("artifact") && m.containsKey("version");
+    }
+
     private static Consumer<Context> text(final String message) {
         return (context) -> context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(String.format("%s>>%s", context.getRequestMessage().requestId, message)));
     }
@@ -59,6 +103,22 @@ class OpProcessor {
     private static Consumer<Context> error(final String message) {
         logger.warn(message);
         return text(message);
+    }
+
+    private static Consumer<Context> importOp() {
+        return (context) -> {
+            final RequestMessage msg = context.getRequestMessage();
+            final List<String> l = (List<String>) msg.args.get("imports");
+            gremlinExecutor.select(msg).addImports(new HashSet<>(l));
+        };
+    }
+
+    private static Consumer<Context> useOp() {
+        return (context) -> {
+            final RequestMessage msg = context.getRequestMessage();
+            final List<Map<String,String>> usings = (List<Map<String,String>>) msg.args.get("use");
+            usings.forEach(c -> gremlinExecutor.select(msg).use(c.get("group"), c.get("artifact"), c.get("version")));
+        };
     }
 
     private static Consumer<Context> evalOp() {

@@ -1,9 +1,5 @@
 package com.tinkerpop.gremlin.server;
 
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import groovy.grape.Grape;
-import groovy.lang.GroovyClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,7 +53,7 @@ class GremlinExecutor {
 
     public Object eval(final RequestMessage message, final GremlinServer.Graphs graphs)
             throws ScriptException, InterruptedException, ExecutionException {
-        return select(message, graphs).apply(message);
+        return selectForEval(message, graphs).apply(message);
     }
 
     public synchronized void init(final Settings settings) {
@@ -99,14 +96,14 @@ class GremlinExecutor {
      * Determine whether to execute the script by way of a specific session or by the shared script engine in
      * a sessionless request.
      */
-    private FunctionThatThrows<RequestMessage, Object> select(final RequestMessage message, final GremlinServer.Graphs graphs) {
+    private FunctionThatThrows<RequestMessage, Object> selectForEval(final RequestMessage message, final GremlinServer.Graphs graphs) {
         final Bindings bindings = new SimpleBindings();
         bindings.putAll(extractBindingsFromMessage(message));
 
         final String language = message.<String>optionalArgs("language").orElse("gremlin-groovy");
 
         if (message.optionalSessionId().isPresent()) {
-            final GremlinSession session = getGremlinSession(message.sessionId, bindings);
+            final GremlinSession session = getGremlinSession(message.sessionId);
             if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
             return s -> session.eval(message.<String>optionalArgs(RequestMessage.FIELD_GREMLIN).get(), bindings, language);
         } else {
@@ -131,6 +128,13 @@ class GremlinExecutor {
         }
     }
 
+    public ScriptEngineOps select(final RequestMessage message) {
+        if (message.optionalSessionId().isPresent())
+            return getGremlinSession(message.sessionId);
+        else
+            return sharedScriptEngines;
+    }
+
     private static Map<String,Object> extractBindingsFromMessage(final RequestMessage msg) {
         final Map<String, Object> m = new HashMap<>();
         final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs(RequestMessage.FIELD_BINDINGS);
@@ -140,12 +144,12 @@ class GremlinExecutor {
     /**
      * Finds a session or constructs a new one if it does not exist.
      */
-    private GremlinSession getGremlinSession(final UUID sessionId, final Bindings bindings) {
+    private GremlinSession getGremlinSession(final UUID sessionId) {
         final GremlinSession session;
         if (sessionedScriptEngines.containsKey(sessionId))
             session = sessionedScriptEngines.get(sessionId);
         else {
-            session = new GremlinSession(sessionId, bindings, settings);
+            session = new GremlinSession(sessionId, settings);
             synchronized (this) { sessionedScriptEngines.put(sessionId, session); }
         }
         return session;
@@ -156,7 +160,7 @@ class GremlinExecutor {
         R apply(T t) throws ScriptException, InterruptedException, ExecutionException;
     }
 
-    public class GremlinSession {
+    public class GremlinSession implements ScriptEngineOps {
         private final Bindings bindings;
 
         /**
@@ -172,13 +176,14 @@ class GremlinExecutor {
          */
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        public GremlinSession(final UUID session, final Bindings initialBindings, final Settings settings) {
+        public GremlinSession(final UUID session, final Settings settings) {
             logger.info("New session established for {}", session);
-            this.bindings = initialBindings;
+            this.bindings = new SimpleBindings();
             this.scriptEngines = createScriptEngine(settings);
             sessionedScriptEngines.put(session, this);
         }
 
+        @Override
         public Object eval(final String script, final Bindings bindings, final String language)
                 throws ScriptException, InterruptedException, ExecutionException {
             // apply the submitted bindings to the server side ones.
@@ -188,6 +193,16 @@ class GremlinExecutor {
 
             // todo: do a configurable timeout here???
             return future.get();
+        }
+
+        @Override
+        public void addImports(final Set<String> imports) {
+            scriptEngines.addImports(imports);
+        }
+
+        @Override
+        public void use(final String group, final String artifact, final String version) {
+            scriptEngines.use(group, artifact, version);
         }
     }
 }

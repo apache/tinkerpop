@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ScriptEngines {
+public class ScriptEngines implements ScriptEngineOps{
     /**
      * ScriptEngines configured for the server keyed on the language name.
      */
@@ -32,6 +32,7 @@ public class ScriptEngines {
     /**
      * Evaluate a script with Bindings for a particular language.
      */
+    @Override
     public Object eval(final String script, final Bindings bindings, final String language) throws ScriptException {
         if (!scriptEngines.containsKey(language))
             throw new IllegalArgumentException("Language [%s] not configured on this server.");
@@ -58,6 +59,7 @@ public class ScriptEngines {
      * Perform append to the existing import list for all ScriptEngine instances that implement the DependencyManager
      * interface.
      */
+    @Override
     public void addImports(final Set<String> imports) {
         getDependencyManagers().forEach(dm ->  dm.addImports(imports));
     }
@@ -66,6 +68,7 @@ public class ScriptEngines {
      * Pull in dependencies given some Maven coordinates.  Cycle through each ScriptEngine and determine if it
      * implements DependencyManager.  For those that do call the DependencyManager.use() method to fire it up.
      */
+    @Override
     public void use(final String group, final String artifact, final String version) {
         getDependencyManagers().forEach(dm -> dm.use(group, artifact, version));
     }
@@ -84,8 +87,9 @@ public class ScriptEngines {
     private static Optional<ScriptEngine> createScriptEngine(final String language, final Set<String> imports,
                                                              final Set<String> staticImports) {
         if (language.equals(gremlinGroovyScriptEngineFactory.getLanguageName())) {
-            // gremlin-groovy gets special initialization for custom imports and such.  not sure how to implement
-            // this generically for other ScriptEngine implementations.
+            // gremlin-groovy gets special initialization for custom imports and such.  could implement this more
+            // generically with the DependencyManager interface, but going to wait to see how other ScriptEngines
+            // develop for TinkerPop3 before committing too deeply here to any specific way of doing this.
             return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(1500,
                     new DefaultImportCustomizerProvider(imports, staticImports)));
         } else {
