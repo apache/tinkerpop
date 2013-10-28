@@ -13,9 +13,6 @@ import java.util.UUID;
 public class RequestMessage {
     public static RequestMessage INVALID = new RequestMessage("invalid");
 
-    public static final String FIELD_GREMLIN = "gremlin";
-    public static final String FIELD_BINDINGS = "bindings";
-
     public UUID sessionId = null;
     public UUID requestId = null;
     public String op;

@@ -9,9 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -26,15 +30,21 @@ class OpProcessor {
     public Consumer<Context> select(final RequestMessage message) {
         final Consumer<Context> op;
         switch (message.op) {
-            case "version":
-                op = (message.optionalArgs("verbose").isPresent()) ?
+            case ServerTokens.OPS_VERSION:
+                op = (message.optionalArgs(ServerTokens.ARGS_VERBOSE).isPresent()) ?
                         text("Gremlin " + Tokens.VERSION + GremlinServer.getHeader()) :
                         text(Tokens.VERSION);
                 break;
-            case "eval":
+            case ServerTokens.OPS_EVAL:
                 op = validateEvalMessage(message).orElse(evalOp());
                 break;
-            case "invalid":
+            case ServerTokens.OPS_IMPORT:
+                op = validateImportMessage(message).orElse(importOp());
+                break;
+            case ServerTokens.OPS_USE:
+                op = validateUseMessage(message).orElse(useOp());
+                break;
+            case ServerTokens.OPS_INVALID:
                 op = error(String.format("Message could not be parsed.  Check the format of the request. [%s]", message));
                 break;
             default:
@@ -46,10 +56,55 @@ class OpProcessor {
     }
 
     private static Optional<Consumer<Context>> validateEvalMessage(final RequestMessage message) {
-        if (!message.optionalArgs("gremlin").isPresent())
-            return Optional.of(error("A message with an [eval] op code requires a [gremlin] argument."));
+        if (!message.optionalArgs(ServerTokens.ARGS_GREMLIN).isPresent())
+            return Optional.of(error(String.format("A message with an [%s] op code requires a [%s] argument.",
+                    ServerTokens.OPS_EVAL, ServerTokens.ARGS_GREMLIN)));
         else
             return Optional.empty();
+    }
+
+    private static Optional<Consumer<Context>> validateImportMessage(final RequestMessage message) {
+        final Optional<List> l = message.optionalArgs(ServerTokens.ARGS_IMPORTS);
+        if (!l.isPresent())
+            return Optional.of(error(String.format("A message with an [%s] op code requires a [%s] argument.",
+                    ServerTokens.OPS_IMPORT, ServerTokens.ARGS_IMPORTS)));
+
+        if (l.orElse(new ArrayList()).size() == 0)
+            return Optional.of(error(String.format(
+                    "A message with an [%s] op code requires that the [%s] argument has at least one import string specified.",
+                    ServerTokens.OPS_IMPORT, ServerTokens.ARGS_IMPORTS)));
+        else
+            return Optional.empty();
+    }
+
+    private static Optional<Consumer<Context>> validateUseMessage(final RequestMessage message) {
+        final Optional<List> l = message.optionalArgs(ServerTokens.ARGS_COORDINATES);
+        if (!l.isPresent())
+            return Optional.of(error(String.format("A message with an [%s] op code requires a [%s] argument.",
+                    ServerTokens.OPS_USE, ServerTokens.ARGS_COORDINATES)));
+
+        final List coordinates = l.orElse(new ArrayList());
+        if (coordinates.size() == 0)
+            return Optional.of(error(String.format(
+                    "A message with an [%s] op code requires that the [%s] argument has at least one set of valid maven coordinates specified.",
+                    ServerTokens.OPS_USE, ServerTokens.ARGS_COORDINATES)));
+
+        if (!coordinates.stream().allMatch(OpProcessor::validateCoordinates))
+            return Optional.of(error(String.format(
+                    "A message with an [%s] op code requires that all [%s] specified are valid maven coordinates with a group, artifact, and version.",
+                    ServerTokens.OPS_USE, ServerTokens.ARGS_COORDINATES)));
+        else
+            return Optional.empty();
+    }
+
+    private static boolean validateCoordinates(final Object coordinates) {
+        if (!(coordinates instanceof Map))
+            return false;
+
+        final Map m = (Map) coordinates;
+        return m.containsKey(ServerTokens.ARGS_COORDINATES_GROUP)
+                && m.containsKey(ServerTokens.ARGS_COORDINATES_ARTIFACT)
+                && m.containsKey(ServerTokens.ARGS_COORDINATES_VERSION);
     }
 
     private static Consumer<Context> text(final String message) {
@@ -59,6 +114,23 @@ class OpProcessor {
     private static Consumer<Context> error(final String message) {
         logger.warn(message);
         return text(message);
+    }
+
+    private static Consumer<Context> importOp() {
+        return (context) -> {
+            final RequestMessage msg = context.getRequestMessage();
+            final List<String> l = (List<String>) msg.args.get(ServerTokens.ARGS_IMPORTS);
+            gremlinExecutor.select(msg).addImports(new HashSet<>(l));
+        };
+    }
+
+    private static Consumer<Context> useOp() {
+        return (context) -> {
+            final RequestMessage msg = context.getRequestMessage();
+            final List<Map<String,String>> usings = (List<Map<String,String>>) msg.args.get(ServerTokens.ARGS_COORDINATES);
+            usings.forEach(c -> gremlinExecutor.select(msg).use(c.get(ServerTokens.ARGS_COORDINATES_GROUP),
+                    c.get(ServerTokens.ARGS_COORDINATES_ARTIFACT), c.get(ServerTokens.ARGS_COORDINATES_VERSION)));
+        };
     }
 
     private static Consumer<Context> evalOp() {
@@ -106,7 +178,7 @@ class OpProcessor {
             else
                 itty = new SingleIterator<>(o);
 
-            final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs("accept").orElse("text/plain"));
+            final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
             itty.forEachRemaining(j -> {
                 try {
                     ctx.channel().write(new TextWebSocketFrame(serializer.serialize(j, context)));

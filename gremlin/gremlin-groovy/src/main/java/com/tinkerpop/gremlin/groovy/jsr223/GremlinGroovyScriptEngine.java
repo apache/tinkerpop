@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * This implementation maps the native GroovyScriptEngine to work correctly with JSR223.
@@ -47,6 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager {
+    private static final Pattern patternImportStatic = Pattern.compile("\\Aimport\\sstatic.*");
 
     private Map<String, Class> classMap = new ConcurrentHashMap<>();
     private Map<String, MethodClosure> globalClosures = new ConcurrentHashMap<>();
@@ -56,6 +58,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private static int counter = 0;
     private int cacheResetSize = 1500;
 
+    private static final String STATIC = "static";
     private static final String SCRIPT = "Script";
     private static final String DOT_GROOVY = ".groovy";
     private static final String GROOVY_LANG_SCRIPT = "groovy.lang.Script";
@@ -79,12 +82,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         createClassLoader();
     }
 
-    private void createClassLoader() {
-        final CompilerConfiguration conf = new CompilerConfiguration();
-        conf.addCompilationCustomizers(this.importCustomizerProvider.getImportCustomizer());
-        this.loader = new GroovyClassLoader(getParentLoader(), conf);
-    }
-
+    @Override
     public synchronized void use(final String group, final String artifact, final String version) {
         final Map<String, Object> dependency = new HashMap<String,Object>(){{
             put("group", group);
@@ -104,17 +102,31 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         final Set<String> staticImports = new HashSet<>();
         final Set<String> imports = new HashSet<>();
 
-        // TODO: some regex matching here instead to be a bit more flexible with spacing
         importStatements.forEach(s-> {
-            if (s.startsWith("import static "))
-                staticImports.add(s.replace("import static ", ""));
-            else
-                imports.add(s.replace("import ", ""));
+            final String trimmed = s.trim();
+            if (patternImportStatic.matcher(trimmed).matches()) {
+                final int pos = trimmed.indexOf(STATIC);
+                staticImports.add(s.substring(pos + 6).trim());
+            } else
+                imports.add(s.substring(6).trim());
         });
 
         this.importCustomizerProvider = new DefaultImportCustomizerProvider(
                 this.importCustomizerProvider, imports, staticImports);
+        resetClassLoader();
+    }
+
+    private void createClassLoader() {
+        final CompilerConfiguration conf = new CompilerConfiguration();
+        conf.addCompilationCustomizers(this.importCustomizerProvider.getImportCustomizer());
+        this.loader = new GroovyClassLoader(getParentLoader(), conf);
+    }
+
+    private void resetClassLoader() {
         createClassLoader();
+
+        // must clear the local cache here because the the classloader has been reset.  therefore, classes previously
+        // referenced before that might no have evaluated might cleanly evaluate now.
         this.globalClosures.clear();
         this.classMap.clear();
     }
