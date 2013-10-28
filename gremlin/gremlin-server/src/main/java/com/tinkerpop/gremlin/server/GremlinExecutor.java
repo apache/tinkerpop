@@ -100,12 +100,12 @@ class GremlinExecutor {
         final Bindings bindings = new SimpleBindings();
         bindings.putAll(extractBindingsFromMessage(message));
 
-        final String language = message.<String>optionalArgs("language").orElse("gremlin-groovy");
+        final String language = message.<String>optionalArgs(ServerTokens.ARGS_LANGUAGE).orElse("gremlin-groovy");
 
         if (message.optionalSessionId().isPresent()) {
             final GremlinSession session = getGremlinSession(message.sessionId);
             if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
-            return s -> session.eval(message.<String>optionalArgs(RequestMessage.FIELD_GREMLIN).get(), bindings, language);
+            return s -> session.eval(message.<String>optionalArgs(ServerTokens.ARGS_GREMLIN).get(), bindings, language);
         } else {
             // a sessionless request
             if (logger.isDebugEnabled()) logger.debug("Using shared ScriptEngine to process {}", message);
@@ -116,7 +116,7 @@ class GremlinExecutor {
                 try {
                     // do a safety cleanup of previous transaction...if any
                     graphs.rollbackAll();
-                    final Object o = sharedScriptEngines.eval(message.<String>optionalArgs(RequestMessage.FIELD_GREMLIN).get(), bindings, language);
+                    final Object o = sharedScriptEngines.eval(message.<String>optionalArgs(ServerTokens.ARGS_GREMLIN).get(), bindings, language);
                     graphs.commitAll();
                     return o;
                 } catch (ScriptException ex) {
@@ -137,7 +137,7 @@ class GremlinExecutor {
 
     private static Map<String,Object> extractBindingsFromMessage(final RequestMessage msg) {
         final Map<String, Object> m = new HashMap<>();
-        final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs(RequestMessage.FIELD_BINDINGS);
+        final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs(ServerTokens.ARGS_BINDINGS);
         return bindingsInMessage.orElse(m);
     }
 
