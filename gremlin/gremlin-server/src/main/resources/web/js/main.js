@@ -16,6 +16,7 @@ requirejs.config({
     },
     shim: {
         "bootstrap": ["jquery"],
+        "cookie": ["jquery"],
         "dust-helpers": ["dust"],
         "jquery-layout": ["jquery", "jquery-ui"],
         "uuid": ["jquery"]
