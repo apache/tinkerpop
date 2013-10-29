@@ -40,6 +40,10 @@ public class TinkerGraph implements Graph, Serializable {
     private TinkerGraph() {
     }
 
+    public static TinkerGraph open() {
+        return open(Optional.empty());
+    }
+
     public static <G extends Graph> G open(final Optional<Configuration> configuration) {
         return (G) new TinkerGraph();
     }
