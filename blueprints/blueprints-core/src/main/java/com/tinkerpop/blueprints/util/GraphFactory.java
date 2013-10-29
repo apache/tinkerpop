@@ -25,11 +25,8 @@ public class GraphFactory {
      * @return A Graph instance.
      */
     public static Graph open(final Configuration configuration) {
-        final Optional<Configuration> conf;
-        if (configuration == null)
-            conf = Optional.empty();
-        else
-            conf = Optional.of(configuration);
+        if (null == configuration)
+            throw new IllegalArgumentException("Configuration argument cannot be null");
 
         final String clazz = configuration.getString("blueprints.graph", null);
         if (null == clazz)
@@ -46,7 +43,7 @@ public class GraphFactory {
         try {
             // will basically use Graph.open(Configuration c) to instantiate, but could technically use any method on
             // any class with the same signature.  that keeps things open for TitanFactory at the moment.
-            g = (Graph) graphClass.getMethod("open", Configuration.class).invoke(null, conf);
+            g = (Graph) graphClass.getMethod("open", Configuration.class).invoke(null, configuration);
         } catch (final NoSuchMethodException e1) {
             throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument - [%s] does not seem to have one", clazz));
         } catch (final Exception e2) {
