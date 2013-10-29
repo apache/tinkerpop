@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints.util;
 
+import java.util.NoSuchElementException;
+
 /**
  * The ExceptionFactory provides standard exceptions that should be used by all Blueprints implementations.
  * This ensures that the look-and-feel of all implementations are the same in terms of terminology and punctuation.
@@ -64,6 +66,14 @@ public class ExceptionFactory {
         return new IllegalArgumentException("Edge label can not be null");
     }
 
+    public static IllegalStateException propertyPropertyCanNotHaveAProperty() {
+        throw new IllegalStateException("A property's property can not have a property");
+    }
+
+    public static NoSuchElementException propertyHasNoValue() {
+        throw new NoSuchElementException("The property has no value and thus, does not exist");
+    }
+
     // IndexableGraph related exceptions
 
     public static IllegalArgumentException indexAlreadyExists(final String indexName) {
@@ -81,7 +91,7 @@ public class ExceptionFactory {
     }
 
     public static IllegalArgumentException classForElementCannotBeNull() {
-        return new IllegalArgumentException("elementClass argument cannot be null.");
+        return new IllegalArgumentException("elementClass argument cannot be null");
     }
 
     // TransactionalGraph related exceptions

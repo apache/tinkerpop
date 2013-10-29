@@ -9,11 +9,11 @@ public interface Edge extends Element {
 
     public String getLabel();
 
-    public <T> Property<T, Edge> getProperty(String key);
+    public <V> Property<V, Edge> getProperty(String key);
 
-    public <T> Property<T, Edge> setProperty(String key, T value);
+    public <V> Property<V, Edge> setProperty(String key, V value);
 
-    public <T> Property<T, Edge> removeProperty(String key);
+    public <V> Property<V, Edge> removeProperty(String key);
 
     public static Edge.Features getFeatures() {
         return new Features() {

@@ -7,11 +7,11 @@ import com.tinkerpop.blueprints.query.VertexQuery;
  */
 public interface Vertex extends Element {
 
-    public <T> Property<T, Vertex> getProperty(String key);
+    public <V> Property<V, Vertex> getProperty(String key);
 
-    public <T> Property<T, Vertex> setProperty(String key, T value);
+    public <V> Property<V, Vertex> setProperty(String key, V value);
 
-    public <T> Property<T, Vertex> removeProperty(String key);
+    public <V> Property<V, Vertex> removeProperty(String key);
 
     public VertexQuery query();
 

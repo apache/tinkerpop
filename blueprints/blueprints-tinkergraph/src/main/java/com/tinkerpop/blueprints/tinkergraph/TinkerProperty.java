@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Thing;
+import com.tinkerpop.blueprints.util.ExceptionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +36,7 @@ public class TinkerProperty<T, E extends Thing> implements Property<T, E> {
     }
 
     public T getValue() {
+        if (null == this.value) throw ExceptionFactory.propertyHasNoValue();
         return this.value;
     }
 
