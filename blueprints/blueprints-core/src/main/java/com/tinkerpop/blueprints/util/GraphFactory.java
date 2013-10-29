@@ -25,19 +25,17 @@ public class GraphFactory {
      */
     public static Graph open(final Configuration configuration) {
         final String clazz = configuration.getString("blueprints.graph", null);
-
-        if (clazz == null) {
+        if (null == clazz)
             throw new RuntimeException("Configuration must contain a valid 'blueprints.graph' setting");
-        }
 
-        Class graphClass;
+        final Class graphClass;
         try {
             graphClass = Class.forName(clazz);
         } catch (ClassNotFoundException cnfe) {
             throw new RuntimeException(String.format("GraphFactory could not find [%s].  Ensure that the jar is in the classpath.", clazz));
         }
 
-        Graph g;
+        final Graph g;
         try {
             // will basically use Graph.open(Configuration c) to instantiate, but could technically use any method on
             // any class with the same signature.  that keeps things open for TitanFactory at the moment.
@@ -74,13 +72,11 @@ public class GraphFactory {
     }
 
     private static Configuration getConfiguration(final File dirOrFile) {
-        if (dirOrFile == null) {
+        if (null == dirOrFile)
             throw new IllegalArgumentException("Need to specify a configuration file or storage directory");
-        }
 
-        if (!dirOrFile.isFile()) {
+        if (!dirOrFile.isFile())
             throw new IllegalArgumentException("Location of configuration must be a file");
-        }
 
         try {
             return new PropertiesConfiguration(dirOrFile);
