@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
 
@@ -97,7 +98,7 @@ public class GremlinTest {
     @Test
     public void testLoop() {
 
-        TinkerGraph g = TinkerGraph.open(null);
+        TinkerGraph g = TinkerGraph.open(Optional.empty());
         Vertex a = g.addVertex(Property.of(Property.Key.ID, "1"));
         Vertex b = g.addVertex(Property.of(Property.Key.ID, "2"));
         Vertex c = g.addVertex(Property.of(Property.Key.ID, "3"));

@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -39,7 +40,7 @@ public class TinkerGraph implements Graph, Serializable {
     private TinkerGraph() {
     }
 
-    public static <G extends Graph> G open(final Configuration configuration) {
+    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
         return (G) new TinkerGraph();
     }
 

@@ -3,12 +3,14 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
+import java.util.Optional;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TinkerFactory {
     public static TinkerGraph createClassic() {
-        final TinkerGraph graph = TinkerGraph.open(null);
+        final TinkerGraph graph = TinkerGraph.open(Optional.empty());
 
         final Vertex marko = graph.addVertex(Property.of(Property.Key.ID, 1, "name", "marko", "age", 29));
         final Vertex vadas = graph.addVertex(Property.of(Property.Key.ID, 2, "name", "vadas", "age", 27));

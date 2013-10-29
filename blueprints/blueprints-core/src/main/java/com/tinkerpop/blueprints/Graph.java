@@ -4,6 +4,8 @@ import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.Optional;
+
 /**
  * An Graph is a container object for a collection of vertices and a collection edges.
  *
@@ -12,7 +14,7 @@ import org.apache.commons.configuration.Configuration;
  */
 public interface Graph extends AutoCloseable, Thing {
 
-    public static <G extends Graph> G open(final Configuration configuration) {
+    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
         throw new UnsupportedOperationException("Implementations should override this method");
     }
 

@@ -8,6 +8,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Factory to construct new Graph instances from a Configuration object or properties file.
@@ -24,6 +25,12 @@ public class GraphFactory {
      * @return A Graph instance.
      */
     public static Graph open(final Configuration configuration) {
+        final Optional<Configuration> conf;
+        if (configuration == null)
+            conf = Optional.empty();
+        else
+            conf = Optional.of(configuration);
+
         final String clazz = configuration.getString("blueprints.graph", null);
         if (null == clazz)
             throw new RuntimeException("Configuration must contain a valid 'blueprints.graph' setting");
@@ -32,18 +39,18 @@ public class GraphFactory {
         try {
             graphClass = Class.forName(clazz);
         } catch (final ClassNotFoundException e) {
-            throw new RuntimeException(String.format("GraphFactory could not find [%s].  Ensure that the jar is in the classpath.", clazz));
+            throw new RuntimeException(String.format("GraphFactory could not find [%s] - Ensure that the jar is in the classpath", clazz));
         }
 
         final Graph g;
         try {
             // will basically use Graph.open(Configuration c) to instantiate, but could technically use any method on
             // any class with the same signature.  that keeps things open for TitanFactory at the moment.
-            g = (Graph) graphClass.getMethod("open", Configuration.class).invoke(null, configuration);
+            g = (Graph) graphClass.getMethod("open", Configuration.class).invoke(null, conf);
         } catch (final NoSuchMethodException e1) {
-            throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument. [%s] does not seem to have one.", clazz));
+            throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument - [%s] does not seem to have one", clazz));
         } catch (final Exception e2) {
-            throw new RuntimeException(String.format("GraphFactory could not instantiate this Graph implementation [%s].", clazz), e2);
+            throw new RuntimeException(String.format("GraphFactory could not instantiate this Graph implementation [%s]", clazz), e2);
         }
 
         return g;

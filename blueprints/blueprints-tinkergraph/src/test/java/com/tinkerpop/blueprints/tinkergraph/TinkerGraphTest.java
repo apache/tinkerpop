@@ -10,6 +10,7 @@ import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import org.junit.Test;
 
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Stream;
 
@@ -22,7 +23,7 @@ public class TinkerGraphTest {
 
     @Test
     public void testTinkerGraph() {
-        final TinkerGraph g = TinkerGraph.open(null);
+        final TinkerGraph g = TinkerGraph.open(Optional.empty());
         g.createIndex("name", Vertex.class);
         final Vertex marko = g.addVertex(Property.of("name", "marko", "age", 33, "blah", "bloop"));
         final Vertex stephen = g.addVertex(Property.of("name", "stephen", "id", 12, "blah", "bloop"));
@@ -39,7 +40,7 @@ public class TinkerGraphTest {
 
     @Test
     public void testLambdaProgram() {
-        TinkerGraph g = TinkerGraph.open(null);
+        TinkerGraph g = TinkerGraph.open(Optional.empty());
         Stream.generate(g::addVertex).limit(5000).count();
         ComputeResult result = g.compute().program(LambdaVertexProgram.create()
                 .setup(gm -> {

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -184,7 +185,7 @@ public class ResultSerializerTest {
 
     @Test
     public void serializeToJsonIteratorWithEmbeddedMap() throws Exception {
-        Graph g = TinkerGraph.open(null);
+        Graph g = TinkerGraph.open(Optional.empty());
         final Vertex v = g.addVertex();
         final Map<String, Object> map = new HashMap<>();
         map.put("x", 500);
