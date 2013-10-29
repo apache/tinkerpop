@@ -65,9 +65,9 @@ public abstract class DefaultQuery implements Query {
     protected static class HasContainer implements Predicate<Element> {
         public String key;
         public Object value;
-        public BiPredicate<Object, Object> predicate;
+        public BiPredicate predicate;
 
-        public HasContainer(final String key, final BiPredicate<Object, Object> predicate, final Object value) {
+        public HasContainer(final String key, final BiPredicate predicate, final Object value) {
             this.key = key;
             this.value = value;
             this.predicate = predicate;

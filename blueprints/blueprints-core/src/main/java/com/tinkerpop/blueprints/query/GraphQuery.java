@@ -3,7 +3,10 @@ package com.tinkerpop.blueprints.query;
 import java.util.function.BiPredicate;
 
 /**
+ * @author Matthias Broecheler (me@matthiasb.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Luca Garulli (http://www.orientechnologies.com)
+ * @author Daniel Kuppitz (daniel.kuppitz@shoproach.com)
  */
 public interface GraphQuery extends Query {
 
