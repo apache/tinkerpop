@@ -31,7 +31,7 @@ public class GraphFactory {
         final Class graphClass;
         try {
             graphClass = Class.forName(clazz);
-        } catch (ClassNotFoundException cnfe) {
+        } catch (final ClassNotFoundException e) {
             throw new RuntimeException(String.format("GraphFactory could not find [%s].  Ensure that the jar is in the classpath.", clazz));
         }
 
@@ -40,10 +40,10 @@ public class GraphFactory {
             // will basically use Graph.open(Configuration c) to instantiate, but could technically use any method on
             // any class with the same signature.  that keeps things open for TitanFactory at the moment.
             g = (Graph) graphClass.getMethod("open", Configuration.class).invoke(null, configuration);
-        } catch (NoSuchMethodException nsme) {
+        } catch (final NoSuchMethodException e1) {
             throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument. [%s] does not seem to have one.", clazz));
-        } catch (Exception ex) {
-            throw new RuntimeException(String.format("GraphFactory could not instantiate this Graph implementation [%s].", clazz), ex);
+        } catch (final Exception e2) {
+            throw new RuntimeException(String.format("GraphFactory could not instantiate this Graph implementation [%s].", clazz), e2);
         }
 
         return g;
@@ -80,7 +80,7 @@ public class GraphFactory {
 
         try {
             return new PropertiesConfiguration(dirOrFile);
-        } catch (ConfigurationException e) {
+        } catch (final ConfigurationException e) {
             throw new IllegalArgumentException("Could not load configuration at: " + dirOrFile, e);
         }
     }
