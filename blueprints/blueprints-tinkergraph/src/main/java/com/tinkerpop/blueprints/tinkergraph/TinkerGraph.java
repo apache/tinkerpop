@@ -84,19 +84,19 @@ public class TinkerGraph implements Graph, Serializable {
         return new HashMap<>(this.properties);
     }
 
-    public <T> Property<T, Graph> getProperty(final String key) {
-        final Property<T, Graph> property = this.properties.get(key);
+    public <V> Property<V, Graph> getProperty(final String key) {
+        final Property<V, Graph> property = this.properties.get(key);
         return (null == property) ? Property.empty() : property;
     }
 
-    public <T> Property<T, Graph> setProperty(final String key, final T value) {
+    public <V> Property<V, Graph> setProperty(final String key, final V value) {
         ThingHelper.validateProperty(this, key, value);
-        final Property<T, Graph> property = this.properties.put(key, new TinkerProperty<>(key, value, this));
+        final Property<V, Graph> property = this.properties.put(key, new TinkerProperty<>(key, value, this));
         return null == property ? Property.empty() : property;
     }
 
-    public <T> Property<T, Graph> removeProperty(final String key) {
-        final Property<T, Graph> property = this.properties.remove(key);
+    public <V> Property<V, Graph> removeProperty(final String key) {
+        final Property<V, Graph> property = this.properties.remove(key);
         return null == property ? Property.empty() : property;
     }
 
@@ -132,7 +132,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
 
-    public <T extends Element> void createIndex(final String key, final Class<T> elementClass) {
+    public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
         if (elementClass == null)
             throw ExceptionFactory.classForElementCannotBeNull();
 
@@ -145,7 +145,7 @@ public class TinkerGraph implements Graph, Serializable {
         }
     }
 
-    public <T extends Element> void dropIndex(final String key, final Class<T> elementClass) {
+    public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
         if (elementClass == null)
             throw ExceptionFactory.classForElementCannotBeNull();
 
@@ -158,7 +158,7 @@ public class TinkerGraph implements Graph, Serializable {
         }
     }
 
-    public <T extends Element> Set<String> getIndexedKeys(final Class<T> elementClass) {
+    public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
         if (elementClass == null)
             throw ExceptionFactory.classForElementCannotBeNull();
 
