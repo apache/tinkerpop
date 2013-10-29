@@ -43,7 +43,7 @@ public class GraphFactory {
         try {
             // will basically use Graph.open(Configuration c) to instantiate, but could technically use any method on
             // any class with the same signature.  that keeps things open for TitanFactory at the moment.
-            g = (Graph) graphClass.getMethod("open", Configuration.class).invoke(null, configuration);
+            g = (Graph) graphClass.getMethod("open", Optional.class).invoke(null, Optional.of(configuration));
         } catch (final NoSuchMethodException e1) {
             throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument - [%s] does not seem to have one", clazz));
         } catch (final Exception e2) {
