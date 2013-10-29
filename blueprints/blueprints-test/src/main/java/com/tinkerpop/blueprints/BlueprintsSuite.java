@@ -78,7 +78,7 @@ public class BlueprintsSuite extends Suite {
     public static interface GraphProvider {
 
         default public Graph newTestGraph() {
-            return GraphFactory.open(newGraphConfiguration());
+            return Graph.open(newGraphConfiguration());
         }
 
         default public Configuration newGraphConfiguration() {

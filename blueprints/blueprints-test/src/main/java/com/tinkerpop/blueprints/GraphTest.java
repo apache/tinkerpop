@@ -11,7 +11,7 @@ public class GraphTest {
     public void shouldOpenInMemoryGraphViaApacheConfig() {
         final Configuration conf = BlueprintsSuite.GraphManager.get().newGraphConfiguration();
         final Graph expectedGraph = BlueprintsSuite.GraphManager.get().newTestGraph();
-        final Graph g = GraphFactory.open(conf);
+        final Graph g = Graph.open(conf);
 
         assertNotNull(g);
         assertEquals(expectedGraph.getClass(), g.getClass());
