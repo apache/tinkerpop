@@ -3,13 +3,8 @@ package com.tinkerpop.blueprints;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.MapConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
 
 import java.io.Closeable;
-import java.io.File;
-import java.util.Map;
 
 /**
  * An Graph is a container object for a collection of vertices and a collection edges.

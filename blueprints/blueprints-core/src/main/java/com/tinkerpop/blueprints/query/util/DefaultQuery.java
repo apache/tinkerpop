@@ -55,10 +55,6 @@ public abstract class DefaultQuery implements Query {
         return this;
     }
 
-    public boolean test(final Element element) {
-        return this.hasContainers.stream().filter(c -> c.test(element)).iterator().hasNext();
-    }
-
     ////////////////////
 
 
