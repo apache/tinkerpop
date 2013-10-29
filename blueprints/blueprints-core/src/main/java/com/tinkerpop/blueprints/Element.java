@@ -1,9 +1,5 @@
 package com.tinkerpop.blueprints;
 
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

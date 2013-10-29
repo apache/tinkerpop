@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.util.ExceptionFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -144,22 +146,22 @@ public interface Property<T, E extends Thing> extends Thing {
 
                         @Override
                         public Property setProperty(String key, Object value) throws IllegalStateException {
-                            throw new IllegalStateException("A meta property can not have a property");
+                            throw ExceptionFactory.propertyPropertyCanNotHaveAProperty();
                         }
 
                         @Override
                         public Property getProperty(String key) throws IllegalStateException {
-                            throw new IllegalStateException("A meta property can not have a property");
+                            throw ExceptionFactory.propertyPropertyCanNotHaveAProperty();
                         }
 
                         @Override
                         public Property removeProperty(String key) throws IllegalStateException {
-                            throw new IllegalStateException("A meta property can not have a property");
+                            throw ExceptionFactory.propertyPropertyCanNotHaveAProperty();
                         }
 
                         @Override
                         public Map<String, Property> getProperties() {
-                            throw new IllegalStateException("A meta property can not have properties");
+                            throw ExceptionFactory.propertyPropertyCanNotHaveAProperty();
                         }
                     });
                     return null == property ? Property.empty() : property;
@@ -191,7 +193,7 @@ public interface Property<T, E extends Thing> extends Thing {
 
             @Override
             public T getValue() throws NoSuchElementException {
-                throw new NoSuchElementException();
+                throw ExceptionFactory.propertyHasNoValue();
             }
 
             @Override

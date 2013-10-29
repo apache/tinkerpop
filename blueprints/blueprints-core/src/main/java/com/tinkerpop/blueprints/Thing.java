@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.util.ExceptionFactory;
+
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -29,6 +31,6 @@ public interface Thing {
         final Property<T, ? extends Thing> property = this.getProperty(key);
         if (property.isPresent())
             return property.getValue();
-        else throw new NoSuchElementException();
+        else throw ExceptionFactory.propertyHasNoValue();
     }
 }
