@@ -13,10 +13,9 @@ import java.util.stream.Stream;
  */
 class TinkerHelper {
 
-    protected static String getNextId(TinkerGraph graph) {
+    protected static String getNextId(final TinkerGraph graph) {
         return Stream.generate(() -> ((Long) (++graph.currentId)).toString()).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findFirst().get();
     }
-
 
     protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Property... properties) {
         if (label == null)

@@ -29,6 +29,10 @@ abstract class TinkerElement implements Element, Serializable {
         return new HashSet<>(this.properties.keySet());
     }
 
+    public Map<String, Property> getProperties() {
+        return new HashMap<>(this.properties);
+    }
+
     public int hashCode() {
         return this.id.hashCode();
     }

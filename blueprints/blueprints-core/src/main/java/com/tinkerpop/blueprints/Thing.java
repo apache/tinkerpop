@@ -1,5 +1,9 @@
 package com.tinkerpop.blueprints;
 
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -9,9 +13,22 @@ public interface Thing {
         throw new UnsupportedOperationException();
     }
 
+    public default Set<String> getPropertyKeys() {
+        return this.getProperties().keySet();
+    }
+
+    public Map<String, Property> getProperties();
+
     public <T> Property<T, ? extends Thing> getProperty(String key);
 
     public <T> Property<T, ? extends Thing> setProperty(String key, T value);
 
     public <T> Property<T, ? extends Thing> removeProperty(String key);
+
+    public default <T> T getValue(String key) throws NoSuchElementException {
+        final Property<T, ? extends Thing> property = this.getProperty(key);
+        if (property.isPresent())
+            return property.getValue();
+        else throw new NoSuchElementException();
+    }
 }

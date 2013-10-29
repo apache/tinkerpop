@@ -79,6 +79,10 @@ public class TinkerGraph implements Graph, Serializable {
         return new TinkerGraphComputer(this);
     }
 
+    public Map<String, Property> getProperties() {
+        return new HashMap<>(this.properties);
+    }
+
     public <T> Property<T, Graph> getProperty(final String key) {
         final Property<T, Graph> property = this.properties.get(key);
         return (null == property) ? Property.empty() : property;

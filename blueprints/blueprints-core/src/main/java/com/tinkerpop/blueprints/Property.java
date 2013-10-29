@@ -92,8 +92,13 @@ public interface Property<T, E extends Thing> extends Thing {
             final Object value = Objects.requireNonNull(keyValues[i + 1]);
 
             properties[i / 2] = new Property() {
-                final Map<String, Property> metas = new HashMap<>();
+                final Map<String, Property> properties = new HashMap<>();
                 final Property p = this;
+
+                @Override
+                public Map<String, Property> getProperties() {
+                    return new HashMap<>(this.properties);
+                }
 
                 @Override
                 public String getKey() {
@@ -116,7 +121,7 @@ public interface Property<T, E extends Thing> extends Thing {
                 }
 
                 public Property setProperty(String aKey, Object aValue) throws IllegalStateException {
-                    final Property property = this.metas.put(key, new Property() {
+                    final Property property = this.properties.put(key, new Property() {
                         @Override
                         public Thing getThing() {
                             return p;
@@ -139,29 +144,34 @@ public interface Property<T, E extends Thing> extends Thing {
 
                         @Override
                         public Property setProperty(String key, Object value) throws IllegalStateException {
-                            throw new IllegalStateException("A meta property can not have a meta property");
+                            throw new IllegalStateException("A meta property can not have a property");
                         }
 
                         @Override
                         public Property getProperty(String key) throws IllegalStateException {
-                            throw new IllegalStateException("A meta property can not have a meta property");
+                            throw new IllegalStateException("A meta property can not have a property");
                         }
 
                         @Override
                         public Property removeProperty(String key) throws IllegalStateException {
-                            throw new IllegalStateException("A meta property can not have a meta property");
+                            throw new IllegalStateException("A meta property can not have a property");
+                        }
+
+                        @Override
+                        public Map<String, Property> getProperties() {
+                            throw new IllegalStateException("A meta property can not have properties");
                         }
                     });
                     return null == property ? Property.empty() : property;
                 }
 
                 public Property getProperty(String key) throws IllegalStateException {
-                    final Property property = this.metas.get(key);
+                    final Property property = this.properties.get(key);
                     return null == property ? Property.empty() : property;
                 }
 
                 public Property removeProperty(String key) throws IllegalStateException {
-                    final Property property = this.metas.remove(key);
+                    final Property property = this.properties.remove(key);
                     return null == property ? Property.empty() : property;
                 }
             };
@@ -206,6 +216,11 @@ public interface Property<T, E extends Thing> extends Thing {
 
             @Override
             public <R> Property<R, Property> removeProperty(String key) throws IllegalStateException {
+                throw new IllegalStateException(EMPTY_MESSAGE);
+            }
+
+            @Override
+            public Map<String, Property> getProperties() throws IllegalStateException {
                 throw new IllegalStateException(EMPTY_MESSAGE);
             }
         };

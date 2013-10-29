@@ -4,15 +4,17 @@ import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import org.apache.commons.configuration.Configuration;
 
-import java.io.Closeable;
-
 /**
  * An Graph is a container object for a collection of vertices and a collection edges.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Graph extends Closeable, Thing {
+public interface Graph extends AutoCloseable, Thing {
+
+    public static <G extends Graph> G open(final Configuration configuration) {
+        throw new UnsupportedOperationException("Implementations should override this method");
+    }
 
     public Vertex addVertex(Property... properties);
 
@@ -47,16 +49,5 @@ public interface Graph extends Closeable, Thing {
         public default boolean supportsComputer() {
             return true;
         }
-    }
-
-    /**
-     * Open a graph.
-     *
-     * @param configuration A configuration object that specifies the minimally required properties for a Graph instance.
-     *                      This minimum is determined by the Graph instance itself.
-     * @return A Graph instance.
-     */
-    public static <G extends Graph> G open(final Configuration configuration) {
-        throw new UnsupportedOperationException("Implementors should override this method.");
     }
 }
