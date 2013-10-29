@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface Graph extends AutoCloseable, Thing {
 
     public static <G extends Graph> G open(Optional<Configuration> configuration) {
-        throw new UnsupportedOperationException("Implementations should override this method");
+        throw new UnsupportedOperationException("Implementations must override this method");
     }
 
     public Vertex addVertex(Property... properties);
