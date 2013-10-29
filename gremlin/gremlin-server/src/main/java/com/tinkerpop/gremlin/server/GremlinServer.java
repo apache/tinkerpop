@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.GraphFactory;
+import com.tinkerpop.blueprints.util.GraphFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
