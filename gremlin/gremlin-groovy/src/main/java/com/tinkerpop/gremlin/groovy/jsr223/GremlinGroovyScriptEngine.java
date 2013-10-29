@@ -35,6 +35,7 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -53,6 +54,11 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private Map<String, Class> classMap = new ConcurrentHashMap<>();
     private Map<String, MethodClosure> globalClosures = new ConcurrentHashMap<>();
     protected GroovyClassLoader loader;
+
+    /**
+     * The list of loaded plugins for the console.
+     */
+    private final Set<String> loadedPlugins = new HashSet<>();
 
     private volatile GremlinGroovyScriptEngineFactory factory;
     private static int counter = 0;
@@ -95,6 +101,15 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         }};
 
         Grape.grab(args, dependency);
+
+        // note that the service loader utilized the classloader from the groovy shell as shell class are available
+        // from within there given loading through Grape.
+        ServiceLoader.load(ScriptEnginePlugin.class, loader).forEach(it -> {
+            if (!loadedPlugins.contains(it.getName())) {
+                it.pluginTo(new ScriptEnginePlugin.ScriptEngineController(this));
+                loadedPlugins.add(it.getName());
+            }
+        });
     }
 
     @Override
@@ -114,6 +129,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         this.importCustomizerProvider = new DefaultImportCustomizerProvider(
                 this.importCustomizerProvider, imports, staticImports);
         resetClassLoader();
+    }
+
+    public Set plugins() {
+        return loadedPlugins;
     }
 
     private void createClassLoader() {

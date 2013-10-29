@@ -128,8 +128,14 @@ class OpProcessor {
         return (context) -> {
             final RequestMessage msg = context.getRequestMessage();
             final List<Map<String,String>> usings = (List<Map<String,String>>) msg.args.get(ServerTokens.ARGS_COORDINATES);
-            usings.forEach(c -> gremlinExecutor.select(msg).use(c.get(ServerTokens.ARGS_COORDINATES_GROUP),
-                    c.get(ServerTokens.ARGS_COORDINATES_ARTIFACT), c.get(ServerTokens.ARGS_COORDINATES_VERSION)));
+            usings.forEach(c -> {
+                final String group = c.get(ServerTokens.ARGS_COORDINATES_GROUP);
+                final String artifact = c.get(ServerTokens.ARGS_COORDINATES_ARTIFACT);
+                final String version = c.get(ServerTokens.ARGS_COORDINATES_VERSION);
+                logger.info("Loading plugin [group={},artifact={},version={}]", group, artifact, version);
+                gremlinExecutor.select(msg).use(group, artifact, version);
+                text(String.format("Plugin loaded - [group=%s,artifact=%s,version=%s]", group, artifact, version)).accept(context);
+            });
         };
     }
 
