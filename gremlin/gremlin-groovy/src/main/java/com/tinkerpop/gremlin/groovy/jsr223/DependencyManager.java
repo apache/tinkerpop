@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -11,7 +12,10 @@ import java.util.Set;
  */
 public interface DependencyManager {
     /**
-     * Take maven coordinates and load the classes into the classloader used by the ScriptEngine.
+     * Take maven coordinates and load the classes into the classloader used by the ScriptEngine.  Those ScriptEngines
+     * that can should support script engine plugins by checking if there are any new ScriptEnginePlugin
+     * implementations in the classloader.  The GremlinGroovyScriptEngine implementation uses ServiceLoader to figure
+     * out if there are such classes and then calls the plugInTo() method on that ScriptEnginePlugin interface.
      */
     void use(final String group, final String artifact, final String version);
 
@@ -19,4 +23,9 @@ public interface DependencyManager {
      * Perform class imports for the ScriptEngine.
      */
     void addImports(final Set<String> importStatements);
+
+    /**
+     * List the dependencies in the ScriptEngine classloader.
+     */
+    Map[] dependencies();
 }

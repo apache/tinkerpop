@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -43,6 +42,9 @@ class OpProcessor {
                 break;
             case ServerTokens.OPS_USE:
                 op = validateUseMessage(message).orElse(useOp());
+                break;
+            case ServerTokens.OPS_DEPENDENCIES:
+                op = validateUseMessage(message).orElse(depsOp());
                 break;
             case ServerTokens.OPS_INVALID:
                 op = error(String.format("Message could not be parsed.  Check the format of the request. [%s]", message));
@@ -108,7 +110,8 @@ class OpProcessor {
     }
 
     private static Consumer<Context> text(final String message) {
-        return (context) -> context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(String.format("%s>>%s", context.getRequestMessage().requestId, message)));
+        return (context) -> context.getChannelHandlerContext().channel().write(
+                new TextWebSocketFrame(String.format("%s>>%s", context.getRequestMessage().requestId, message)));
     }
 
     private static Consumer<Context> error(final String message) {
@@ -121,6 +124,21 @@ class OpProcessor {
             final RequestMessage msg = context.getRequestMessage();
             final List<String> l = (List<String>) msg.args.get(ServerTokens.ARGS_IMPORTS);
             gremlinExecutor.select(msg).addImports(new HashSet<>(l));
+        };
+    }
+
+    private static Consumer<Context> depsOp() {
+        return (context) -> {
+            final RequestMessage msg = context.getRequestMessage();
+            final ChannelHandlerContext ctx = context.getChannelHandlerContext();
+            final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
+            final Map dependencies = gremlinExecutor.select(msg).dependencies();
+            try {
+                ctx.channel().write(new TextWebSocketFrame(serializer.serialize(dependencies, context)));
+            } catch (Exception ex) {
+                logger.warn("The result [{}] in the request {} could not be serialized and returned.",
+                        dependencies, context.getRequestMessage(), ex);
+            }
         };
     }
 

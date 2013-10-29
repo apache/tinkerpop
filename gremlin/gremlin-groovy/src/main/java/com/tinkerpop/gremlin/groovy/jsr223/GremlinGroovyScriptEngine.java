@@ -113,6 +113,11 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     @Override
+    public Map[] dependencies() {
+        return Grape.listDependencies(loader);
+    }
+
+    @Override
     public synchronized void addImports(final Set<String> importStatements) {
         final Set<String> staticImports = new HashSet<>();
         final Set<String> imports = new HashSet<>();

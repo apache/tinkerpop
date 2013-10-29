@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.server;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -28,4 +30,9 @@ public interface ScriptEngineOps {
      * implements DependencyManager.  For those that do call the DependencyManager.use() method to fire it up.
      */
     public void use(final String group, final String artifact, final String version);
+
+    /**
+     * Get a list of all dependencies loaded to the ScriptEngine.
+     */
+    public Map<String,List<Map>> dependencies();
 }

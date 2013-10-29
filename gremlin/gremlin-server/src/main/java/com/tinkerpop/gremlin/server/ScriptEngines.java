@@ -9,11 +9,13 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -71,6 +73,18 @@ public class ScriptEngines implements ScriptEngineOps{
     @Override
     public void use(final String group, final String artifact, final String version) {
         getDependencyManagers().forEach(dm -> dm.use(group, artifact, version));
+    }
+
+    /**
+     * List dependencies for those ScriptEngines that implement the DependencyManager interface.
+     */
+    @Override
+    public Map<String,List<Map>> dependencies() {
+        final Map m = new HashMap();
+        scriptEngines.entrySet().stream()
+                .filter(kv -> kv.getValue() instanceof DependencyManager)
+                .forEach(kv -> m.put(kv.getKey(), Arrays.asList(((DependencyManager) kv.getValue()).dependencies())));
+        return m;
     }
 
     /**

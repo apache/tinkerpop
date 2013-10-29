@@ -8,6 +8,7 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -193,6 +194,11 @@ class GremlinExecutor {
 
             // todo: do a configurable timeout here???
             return future.get();
+        }
+
+        @Override
+        public Map<String, List<Map>> dependencies() {
+            return scriptEngines.dependencies();
         }
 
         @Override
