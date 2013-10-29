@@ -29,20 +29,20 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
         this.graph.edgeIndex.autoUpdate(StringFactory.LABEL, this.label, null, this);
     }
 
-    public <T> Property<T, Edge> getProperty(final String key) {
-        final Property<T, Edge> property = this.properties.get(key);
+    public <V> Property<V, Edge> getProperty(final String key) {
+        final Property<V, Edge> property = this.properties.get(key);
         return null == property ? Property.empty() : property;
     }
 
-    public <T> Property<T, Edge> setProperty(final String key, final T value) {
+    public <V> Property<V, Edge> setProperty(final String key, final V value) {
         ThingHelper.validateProperty(this, key, value);
-        final Property<T, Edge> property = this.properties.put(key, new TinkerProperty<>(key, value, this));
+        final Property<V, Edge> property = this.properties.put(key, new TinkerProperty<>(key, value, this));
         this.graph.edgeIndex.autoUpdate(key, value, null == property ? null : property.getValue(), this);
         return null == property ? Property.empty() : property;
     }
 
-    public <T> Property<T, Edge> removeProperty(final String key) {
-        final Property<T, Edge> property = this.properties.remove(key);
+    public <V> Property<V, Edge> removeProperty(final String key) {
+        final Property<V, Edge> property = this.properties.remove(key);
         this.graph.edgeIndex.autoRemove(key, null == property ? null : property.getValue(), this);
         return null == property ? Property.empty() : property;
     }

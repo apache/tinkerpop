@@ -10,14 +10,14 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerProperty<T, E extends Thing> implements Property<T, E> {
+public class TinkerProperty<V, T extends Thing> implements Property<V, T> {
 
     private final String key;
-    private final T value;
-    private final E thing;
+    private final V value;
+    private final T thing;
     private Map<String, Property> properties = new HashMap<>();
 
-    protected TinkerProperty(String key, T value, final E thing) {
+    protected TinkerProperty(String key, V value, final T thing) {
         this.key = key;
         this.value = value;
         this.thing = thing;
@@ -27,7 +27,7 @@ public class TinkerProperty<T, E extends Thing> implements Property<T, E> {
         return this.properties;
     }
 
-    public E getThing() {
+    public T getThing() {
         return this.thing;
     }
 
@@ -35,7 +35,7 @@ public class TinkerProperty<T, E extends Thing> implements Property<T, E> {
         return this.key;
     }
 
-    public T getValue() {
+    public V getValue() {
         if (null == this.value) throw ExceptionFactory.propertyHasNoValue();
         return this.value;
     }
@@ -44,18 +44,18 @@ public class TinkerProperty<T, E extends Thing> implements Property<T, E> {
         return this.value != null;
     }
 
-    public <R> Property<R, Property> setProperty(String key, R value) throws IllegalStateException {
-        final Property<R, Property> property = this.properties.put(key, new TinkerProperty<R, TinkerProperty>(key, value, this));
+    public <V2> Property<V2, Property> setProperty(String key, V2 value) throws IllegalStateException {
+        final Property<V2, Property> property = this.properties.put(key, new TinkerProperty<V2, TinkerProperty>(key, value, this));
         return null == property ? Property.empty() : property;
     }
 
-    public <R> Property<R, Property> getProperty(String key) throws IllegalStateException {
-        final Property<R, Property> property = this.properties.get(key);
+    public <V2> Property<V2, Property> getProperty(String key) throws IllegalStateException {
+        final Property<V2, Property> property = this.properties.get(key);
         return null == property ? Property.empty() : property;
     }
 
-    public <R> Property<R, Property> removeProperty(String key) throws IllegalStateException {
-        final Property<R, Property> property = this.properties.remove(key);
+    public <V2> Property<V2, Property> removeProperty(String key) throws IllegalStateException {
+        final Property<V2, Property> property = this.properties.remove(key);
         return null == property ? Property.empty() : property;
     }
 }
