@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 public interface Graph extends AutoCloseable, Thing {
 
-    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
+    public static <G extends Graph> G open(Optional<Configuration> configuration) {
         throw new UnsupportedOperationException("Implementations should override this method");
     }
 
@@ -28,11 +28,11 @@ public interface Graph extends AutoCloseable, Thing {
 
     public void rollback();
 
-    public <T> Property<T, Graph> getProperty(String key);
+    public <V> Property<V, Graph> getProperty(String key);
 
-    public <T> Property<T, Graph> setProperty(String key, T value);
+    public <V> Property<V, Graph> setProperty(String key, V value);
 
-    public <T> Property<T, Graph> removeProperty(String key);
+    public <V> Property<V, Graph> removeProperty(String key);
 
     public static Graph.Features getFeatures() {
         return new Features() {

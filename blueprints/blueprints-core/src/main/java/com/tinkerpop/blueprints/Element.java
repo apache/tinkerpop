@@ -7,11 +7,11 @@ public interface Element extends Thing {
 
     public Object getId();
 
-    public <T> Property<T, ? extends Element> getProperty(String key);
+    public <V> Property<V, ? extends Element> getProperty(String key);
 
-    public <T> Property<T, ? extends Element> setProperty(String key, T value);
+    public <V> Property<V, ? extends Element> setProperty(String key, V value);
 
-    public <T> Property<T, ? extends Element> removeProperty(String key);
+    public <V> Property<V, ? extends Element> removeProperty(String key);
 
     public void remove();
 

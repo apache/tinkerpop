@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Property<T, E extends Thing> extends Thing {
+public interface Property<V, T extends Thing> extends Thing {
 
     public enum Key {
         ID, LABEL;
@@ -34,24 +34,24 @@ public interface Property<T, E extends Thing> extends Thing {
         }
     }
 
-    public E getThing();
+    public T getThing();
 
     public String getKey();
 
-    public T getValue() throws NoSuchElementException;
+    public V getValue() throws NoSuchElementException;
 
     public boolean isPresent();
 
-    public default void ifPresent(Consumer<? super T> consumer) {
+    public default void ifPresent(Consumer<? super V> consumer) {
         if (this.isPresent())
             consumer.accept(this.getValue());
     }
 
-    public default T orElse(T otherValue) {
+    public default V orElse(V otherValue) {
         return this.isPresent() ? this.getValue() : otherValue;
     }
 
-    public default T orElseGet(Supplier<? extends T> supplier) {
+    public default V orElseGet(Supplier<? extends V> supplier) {
         return this.isPresent() ? this.getValue() : supplier.get();
     }
 
@@ -59,11 +59,11 @@ public interface Property<T, E extends Thing> extends Thing {
         return this.getKey().equals(reservedKey.toString());
     }
 
-    public <R> Property<R, Property> setProperty(String key, R value) throws IllegalStateException;
+    public <V2> Property<V2, Property> setProperty(String key, V2 value) throws IllegalStateException;
 
-    public <R> Property<R, Property> getProperty(String key) throws IllegalStateException;
+    public <V2> Property<V2, Property> getProperty(String key) throws IllegalStateException;
 
-    public <R> Property<R, Property> removeProperty(String key) throws IllegalStateException;
+    public <V2> Property<V2, Property> removeProperty(String key) throws IllegalStateException;
 
     public static Property.Features getFeatures() {
         return new Features() {
@@ -181,8 +181,8 @@ public interface Property<T, E extends Thing> extends Thing {
         return properties;
     }
 
-    public static <T, E extends Thing> Property<T, E> empty() {
-        return new Property<T, E>() {
+    public static <V, T extends Thing> Property<V, T> empty() {
+        return new Property<V, T>() {
             private static final String EMPTY_KEY = "empty";
             private static final String EMPTY_MESSAGE = "This is an empty property";
 
@@ -192,7 +192,7 @@ public interface Property<T, E extends Thing> extends Thing {
             }
 
             @Override
-            public T getValue() throws NoSuchElementException {
+            public V getValue() throws NoSuchElementException {
                 throw ExceptionFactory.propertyHasNoValue();
             }
 
@@ -202,22 +202,22 @@ public interface Property<T, E extends Thing> extends Thing {
             }
 
             @Override
-            public E getThing() {
+            public T getThing() {
                 throw new IllegalStateException(EMPTY_MESSAGE);
             }
 
             @Override
-            public <R> Property<R, Property> setProperty(String key, R value) throws IllegalStateException {
+            public <V2> Property<V2, Property> setProperty(String key, V2 value) throws IllegalStateException {
                 throw new IllegalStateException(EMPTY_MESSAGE);
             }
 
             @Override
-            public <R> Property<R, Property> getProperty(String key) throws IllegalStateException {
+            public <V2> Property<V2, Property> getProperty(String key) throws IllegalStateException {
                 throw new IllegalStateException(EMPTY_MESSAGE);
             }
 
             @Override
-            public <R> Property<R, Property> removeProperty(String key) throws IllegalStateException {
+            public <V2> Property<V2, Property> removeProperty(String key) throws IllegalStateException {
                 throw new IllegalStateException(EMPTY_MESSAGE);
             }
 
