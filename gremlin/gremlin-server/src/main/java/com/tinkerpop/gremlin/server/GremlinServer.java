@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.GraphFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -112,7 +113,7 @@ public class GremlinServer {
             final Map<String, Graph> m = new HashMap<>();
             settings.graphs.entrySet().forEach(e -> {
                 try {
-                    final Graph newGraph = Graph.open(e.getValue());
+                    final Graph newGraph = GraphFactory.open(e.getValue());
                     m.put(e.getKey(), newGraph);
                     logger.info("Graph [{}] was successfully configured via [{}].", e.getKey(), e.getValue());
                 } catch (RuntimeException re) {

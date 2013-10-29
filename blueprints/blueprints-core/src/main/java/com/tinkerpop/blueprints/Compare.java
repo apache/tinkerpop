@@ -22,21 +22,13 @@ public enum Compare implements BiPredicate<Object, Object> {
                     return second != null;
                 return !first.equals(second);
             case GREATER_THAN:
-                if (null == first || second == null)
-                    return false;
-                return ((Comparable) first).compareTo(second) >= 1;
+                return !(null == first || second == null) && ((Comparable) first).compareTo(second) >= 1;
             case LESS_THAN:
-                if (null == first || second == null)
-                    return false;
-                return ((Comparable) first).compareTo(second) <= -1;
+                return !(null == first || second == null) && ((Comparable) first).compareTo(second) <= -1;
             case GREATER_THAN_EQUAL:
-                if (null == first || second == null)
-                    return false;
-                return ((Comparable) first).compareTo(second) >= 0;
+                return !(null == first || second == null) && ((Comparable) first).compareTo(second) >= 0;
             case LESS_THAN_EQUAL:
-                if (null == first || second == null)
-                    return false;
-                return ((Comparable) first).compareTo(second) <= 0;
+                return !(null == first || second == null) && ((Comparable) first).compareTo(second) <= 0;
             default:
                 throw new IllegalStateException("Invalid state as no valid compare was provided");
         }

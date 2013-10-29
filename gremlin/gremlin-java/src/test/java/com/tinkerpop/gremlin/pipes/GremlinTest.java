@@ -97,7 +97,7 @@ public class GremlinTest {
     @Test
     public void testLoop() {
 
-        TinkerGraph g = new TinkerGraph();
+        TinkerGraph g = TinkerGraph.open(null);
         Vertex a = g.addVertex(Property.of(Property.Key.ID, "1"));
         Vertex b = g.addVertex(Property.of(Property.Key.ID, "2"));
         Vertex c = g.addVertex(Property.of(Property.Key.ID, "3"));

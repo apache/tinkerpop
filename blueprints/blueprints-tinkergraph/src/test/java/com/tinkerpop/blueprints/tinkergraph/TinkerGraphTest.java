@@ -22,13 +22,13 @@ public class TinkerGraphTest {
 
     @Test
     public void testTinkerGraph() {
-        TinkerGraph g = new TinkerGraph();
+        final TinkerGraph g = TinkerGraph.open(null);
         g.createIndex("name", Vertex.class);
-        Vertex marko = g.addVertex(Property.of("name", "marko", "age", 33, "blah", "bloop"));
-        Vertex stephen = g.addVertex(Property.of("name", "stephen", "id", 12, "blah", "bloop"));
+        final Vertex marko = g.addVertex(Property.of("name", "marko", "age", 33, "blah", "bloop"));
+        final Vertex stephen = g.addVertex(Property.of("name", "stephen", "id", 12, "blah", "bloop"));
         stephen.setProperty(Property.Key.hidden("name"), "stephen");
         assertEquals("stephen", stephen.getProperty(Property.Key.hidden("name")).getValue());
-        Random r = new Random();
+        final Random r = new Random();
         Stream.generate(() -> g.addVertex(Property.of(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt()))).limit(100000).count();
         assertEquals(100002, g.vertices.size());
         marko.addEdge("knows", stephen);
@@ -39,8 +39,7 @@ public class TinkerGraphTest {
 
     @Test
     public void testLambdaProgram() {
-        //TinkerGraph g = TinkerFactory.createClassic();
-        TinkerGraph g = new TinkerGraph();
+        TinkerGraph g = TinkerGraph.open(null);
         Stream.generate(g::addVertex).limit(5000).count();
         ComputeResult result = g.compute().program(LambdaVertexProgram.create()
                 .setup(gm -> {

@@ -184,7 +184,7 @@ public class ResultSerializerTest {
 
     @Test
     public void serializeToJsonIteratorWithEmbeddedMap() throws Exception {
-        final Graph g = new TinkerGraph();
+        Graph g = TinkerGraph.open(null);
         final Vertex v = g.addVertex();
         final Map<String, Object> map = new HashMap<>();
         map.put("x", 500);

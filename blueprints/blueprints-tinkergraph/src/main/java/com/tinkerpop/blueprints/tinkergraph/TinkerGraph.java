@@ -24,6 +24,7 @@ import java.util.stream.Stream;
  * An in-memory, reference implementation of the property graph interfaces provided by Blueprints.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TinkerGraph implements Graph, Serializable {
 
@@ -35,22 +36,11 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
-    public TinkerGraph() {
+    private TinkerGraph() {
     }
 
-    public TinkerGraph(final Configuration configuration) {
-        if (configuration == null) {
-            throw new IllegalArgumentException("configuration cannot be null");
-        }
-
-        // for future use and compatibility with TinkerPop2...........
-        //this.directory = configuration.getString("blueprints.tg.directory", null);
-        //this.fileType = FileType.valueOf(configuration.getString("blueprints.tg.file-type", "JAVA"));
-        /*
-        if (directory != null) {
-            this.init();
-        }
-        */
+    public static <G extends Graph> G open(final Configuration configuration) {
+        return (G) new TinkerGraph();
     }
 
     ////////////// BLUEPRINTS API METHODS //////////////////
