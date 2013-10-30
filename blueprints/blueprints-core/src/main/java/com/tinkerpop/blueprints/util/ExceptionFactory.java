@@ -103,4 +103,8 @@ public class ExceptionFactory {
     public static IllegalStateException transactionMustBeOpenToReadWrite() {
         return new IllegalStateException("Open a transaction before attempting to read/write from the transaction");
     }
+
+    public static IllegalStateException openTransactionsOnClose() {
+        return new IllegalStateException("Commit or rollback all outstanding transactions before closing the graph");
+    }
 }
