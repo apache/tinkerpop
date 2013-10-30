@@ -35,6 +35,7 @@
         <module>blueprints-test</module>
         <module>blueprints-tinkergraph</module>
         <module>blueprints-neo4j-graph</module>
+        <module>blueprints-io</module>
     </modules>
 
     <properties>

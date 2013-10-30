@@ -24,6 +24,8 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add("com.tinkerpop.blueprints.*");
         imports.add("com.tinkerpop.blueprints.computer.*");
         imports.add("com.tinkerpop.blueprints.computer.util.*");
+        imports.add("com.tinkerpop.blueprints.io.*");
+        imports.add("com.tinkerpop.blueprints.io.graphml.*");
         imports.add("com.tinkerpop.blueprints.query.*");
         imports.add("com.tinkerpop.blueprints.query.util.*");
         imports.add("com.tinkerpop.blueprints.util.*");

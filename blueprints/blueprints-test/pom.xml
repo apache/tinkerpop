@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-core</artifactId>
+            <artifactId>blueprints-io</artifactId>
             <version>${blueprints.version}</version>
         </dependency>
         <!-- TESTING -->

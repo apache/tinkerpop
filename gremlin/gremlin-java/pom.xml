@@ -37,6 +37,11 @@
             <artifactId>blueprints-tinkergraph</artifactId>
             <version>${blueprints.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.tinkerpop.blueprints</groupId>
+            <artifactId>blueprints-io</artifactId>
+            <version>${blueprints.version}</version>
+        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>com.tinkerpop.gremlin</groupId>
