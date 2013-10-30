@@ -16,7 +16,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -27,7 +26,7 @@ public class GraphMLReader implements GraphReader {
 
     private final Graph graph;
 
-    private final String vertexIdKey;
+    private final Optional<String> vertexIdKey;
     private final String edgeIdKey;
     private final String edgeLabelKey;
     private final int batchSize;
@@ -35,7 +34,7 @@ public class GraphMLReader implements GraphReader {
     private GraphMLReader(final Graph graph, final String vertexIdKey, final String edgeIdKey,
                           final String edgeLabelKey, final int batchSize) {
         this.graph = graph;
-        this.vertexIdKey = vertexIdKey;
+        this.vertexIdKey = Optional.ofNullable(vertexIdKey);
         this.edgeIdKey = edgeIdKey;
         this.edgeLabelKey = edgeLabelKey;
         this.batchSize = batchSize;
@@ -84,7 +83,7 @@ public class GraphMLReader implements GraphReader {
                             break;
                         case GraphMLTokens.NODE:
                             vertexId = reader.getAttributeValue(null, GraphMLTokens.ID);
-                            if (vertexIdKey != null)
+                            if (vertexIdKey.isPresent())
                                 vertexMappedIdMap.put(vertexId, vertexId);
                             isInVertex = true;
                             vertexProps = new HashMap<>();
@@ -97,7 +96,7 @@ public class GraphMLReader implements GraphReader {
                             final String vertexIdOut = reader.getAttributeValue(null, GraphMLTokens.SOURCE);
                             final String vertexIdIn = reader.getAttributeValue(null, GraphMLTokens.TARGET);
 
-                            if (null == vertexIdKey)
+                            if (!vertexIdKey.isPresent())
                                 edgeOutVertex = StreamFactory.stream(graph.query().ids(vertexIdOut).vertices()).findFirst()
                                         .orElseGet(() -> graph.addVertex(Property.of(Property.Key.ID, vertexIdOut)));
                             else
@@ -105,10 +104,10 @@ public class GraphMLReader implements GraphReader {
                                         .orElseGet(() -> graph.addVertex(Property.of(Property.Key.ID, vertexIdOut)));
 
                             // Default to standard ID system (in case no mapped ID is found later)
-                            if (vertexIdKey != null)
+                            if (vertexIdKey.isPresent())
                                 vertexMappedIdMap.put(vertexIdOut, vertexIdOut);
 
-                            if (null == vertexIdKey)
+                            if (!vertexIdKey.isPresent())
                                 edgeInVertex = StreamFactory.stream(graph.query().ids(vertexIdIn).vertices()).findFirst()
                                         .orElseGet(() -> graph.addVertex(Property.of(Property.Key.ID, vertexIdIn)));
                             else
@@ -116,7 +115,7 @@ public class GraphMLReader implements GraphReader {
                                         .orElseGet(() -> graph.addVertex(Property.of(Property.Key.ID, vertexIdIn)));
 
                             // Default to standard ID system (in case no mapped ID is found later)
-                            if (vertexIdKey != null)
+                            if (vertexIdKey.isPresent())
                                 vertexMappedIdMap.put(vertexIdIn, vertexIdIn);
 
                             isInEdge = true;
@@ -131,7 +130,7 @@ public class GraphMLReader implements GraphReader {
                                 String value = reader.getElementText();
 
                                 if (isInVertex) {
-                                    if ((vertexIdKey != null) && (key.equals(vertexIdKey))) {
+                                    if ((vertexIdKey.isPresent()) && (key.equals(vertexIdKey.get()))) {
                                         // Should occur at most once per Vertex
                                         // Assumes single ID prop per Vertex
                                         vertexMappedIdMap.put(vertexId, value);
@@ -154,8 +153,9 @@ public class GraphMLReader implements GraphReader {
                     String elementName = reader.getName().getLocalPart();
 
                     if (elementName.equals(GraphMLTokens.NODE)) {
-                        Vertex currentVertex = StreamFactory.stream(graph.query().ids(vertexId).vertices()).findFirst()
-                                .orElse(graph.addVertex(Property.of(Property.Key.ID, vertexId)));
+                        final String currentVertexId = vertexId;
+                        final Vertex currentVertex = StreamFactory.stream(graph.query().ids(vertexId).vertices()).findFirst()
+                                .orElseGet(() -> graph.addVertex(Property.of(Property.Key.ID, currentVertexId)));
                         for (Map.Entry<String, Object> prop : vertexProps.entrySet()) {
                             currentVertex.setProperty(prop.getKey(), prop.getValue());
                         }
