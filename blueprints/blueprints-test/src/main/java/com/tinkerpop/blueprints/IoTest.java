@@ -13,13 +13,13 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IOTest {
+public class IoTest {
     @Test
     public void shouldReadGraphML() throws IOException {
         final Graph g = BlueprintsSuite.GraphManager.get().newTestGraph();
         final GraphReader reader = new GraphMLReader.Builder(g).build();
 
-        try (final InputStream stream = IOTest.class.getResourceAsStream("/com/tinkerpop/blueprints/util/io/graphml/graph-example-1.xml")) {
+        try (final InputStream stream = IoTest.class.getResourceAsStream("/com/tinkerpop/blueprints/util/io/graphml/graph-example-1.xml")) {
             reader.inputGraph(stream);
         }
 

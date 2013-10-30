@@ -41,7 +41,7 @@ public class BlueprintsSuite extends Suite {
      * This list of tests in the suite that will be executed.  Blueprints developers should add to this list
      * as needed to enforce tests upon implementations.
      */
-    private static final Class<?>[] testsToExecute = new Class<?>[]{GraphTest.class, IOTest.class};
+    private static final Class<?>[] testsToExecute = new Class<?>[]{GraphTest.class, IoTest.class};
 
     /**
      * The GraphProvider instance that will be used to generate a Graph instance.
