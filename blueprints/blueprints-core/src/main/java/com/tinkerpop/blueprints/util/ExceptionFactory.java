@@ -99,4 +99,8 @@ public class ExceptionFactory {
     public static IllegalStateException transactionAlreadyStarted() {
         return new IllegalStateException("Stop the current transaction before starting another");
     }
+
+    public static IllegalStateException transactionMustBeOpenToReadWrite() {
+        return new IllegalStateException("Open a transaction before attempting to read/write from the transaction");
+    }
 }
