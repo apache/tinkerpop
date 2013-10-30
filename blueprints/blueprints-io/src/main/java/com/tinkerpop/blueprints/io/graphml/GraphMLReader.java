@@ -18,6 +18,11 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
+ * GraphMLReader writes the data from a GraphML stream to a graph.
+ *
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Alex Averbuch (alex.averbuch@gmail.com)
+ * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphMLReader implements GraphReader {
@@ -187,8 +192,8 @@ public class GraphMLReader implements GraphReader {
         }
     }
 
-    private static Object typeCastValue(String key, String value, Map<String, String> keyTypes) {
-        String type = keyTypes.get(key);
+    private static Object typeCastValue(final String key, final String value, final Map<String, String> keyTypes) {
+        final String type = keyTypes.get(key);
         if (null == type || type.equals(GraphMLTokens.STRING))
             return value;
         else if (type.equals(GraphMLTokens.FLOAT))
@@ -205,6 +210,9 @@ public class GraphMLReader implements GraphReader {
             return value;
     }
 
+    /**
+     * Allows configuration and construction of the GraphMLReader instance.
+     */
     public static class Builder {
         private final Graph g;
         private String vertexIdKey = null;
@@ -213,6 +221,9 @@ public class GraphMLReader implements GraphReader {
         private int batchSize = DEFAULT_BATCH_SIZE;
 
         public Builder(final Graph g) {
+            if (null == g)
+                throw new IllegalArgumentException("Graph argument cannot be null");
+
             this.g = g;
         }
 
