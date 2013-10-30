@@ -27,16 +27,16 @@ public class GraphMLReader implements GraphReader {
     private final Graph graph;
 
     private final Optional<String> vertexIdKey;
-    private final String edgeIdKey;
-    private final String edgeLabelKey;
+    private final Optional<String> edgeIdKey;
+    private final Optional<String> edgeLabelKey;
     private final int batchSize;
 
     private GraphMLReader(final Graph graph, final String vertexIdKey, final String edgeIdKey,
                           final String edgeLabelKey, final int batchSize) {
         this.graph = graph;
         this.vertexIdKey = Optional.ofNullable(vertexIdKey);
-        this.edgeIdKey = edgeIdKey;
-        this.edgeLabelKey = edgeLabelKey;
+        this.edgeIdKey = Optional.ofNullable(edgeIdKey);
+        this.edgeLabelKey = Optional.ofNullable(edgeLabelKey);
         this.batchSize = batchSize;
     }
 
@@ -46,7 +46,7 @@ public class GraphMLReader implements GraphReader {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
 
             // todo: get BatchGraph in here when TinkerPop3 has it
-            //final BatchGraph graph = BatchGraph.wrap(inputGraph, bufferSize);
+            //final BatchGraph graph = BatchGraph.wrap(inputGraph, batchSize);
 
             final Map<String, String> keyIdMap = new HashMap<>();
             final Map<String, String> keyTypesMaps = new HashMap<>();
@@ -123,14 +123,14 @@ public class GraphMLReader implements GraphReader {
 
                             break;
                         case GraphMLTokens.DATA:
-                            String key = reader.getAttributeValue(null, GraphMLTokens.KEY);
-                            String dataAttributeName = keyIdMap.get(key);
+                            final String key = reader.getAttributeValue(null, GraphMLTokens.KEY);
+                            final String dataAttributeName = keyIdMap.get(key);
 
                             if (dataAttributeName != null) {
-                                String value = reader.getElementText();
+                                final String value = reader.getElementText();
 
                                 if (isInVertex) {
-                                    if ((vertexIdKey.isPresent()) && (key.equals(vertexIdKey.get()))) {
+                                    if (vertexIdKey.isPresent() && key.equals(vertexIdKey.get())) {
                                         // Should occur at most once per Vertex
                                         // Assumes single ID prop per Vertex
                                         vertexMappedIdMap.put(vertexId, value);
@@ -138,9 +138,9 @@ public class GraphMLReader implements GraphReader {
                                     } else
                                         vertexProps.put(dataAttributeName, typeCastValue(key, value, keyTypesMaps));
                                 } else if (isInEdge) {
-                                    if ((edgeLabelKey != null) && (key.equals(edgeLabelKey)))
+                                    if (edgeLabelKey.isPresent() && key.equals(edgeLabelKey.get()))
                                         edgeLabel = value;
-                                    else if ((edgeIdKey != null) && (key.equals(edgeIdKey)))
+                                    else if (edgeIdKey.isPresent() && key.equals(edgeIdKey.get()))
                                         edgeId = value;
                                     else
                                         edgeProps.put(dataAttributeName, typeCastValue(key, value, keyTypesMaps));
@@ -150,7 +150,7 @@ public class GraphMLReader implements GraphReader {
                             break;
                     }
                 } else if (eventType.equals(XMLEvent.END_ELEMENT)) {
-                    String elementName = reader.getName().getLocalPart();
+                    final String elementName = reader.getName().getLocalPart();
 
                     if (elementName.equals(GraphMLTokens.NODE)) {
                         final String currentVertexId = vertexId;
@@ -180,7 +180,8 @@ public class GraphMLReader implements GraphReader {
                 }
             }
 
-            graph.commit();
+            // todo: deal with transactions when the time is right
+            // graph.commit();
         } catch (XMLStreamException xse) {
             throw new IOException(xse);
         }
