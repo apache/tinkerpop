@@ -7,7 +7,7 @@ import java.util.function.Consumer;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author TinkerPop Community (http://tinkerpop.com)
  */
-public interface Transactions {
+public interface Transactions extends AutoCloseable {
 
     public void open();
 
@@ -19,16 +19,17 @@ public interface Transactions {
 
     public boolean isOpen();
 
-    public default Transactions onReadWrite(Consumer<Transactions> consumer) {
-        if (!this.isOpen())
-            this.open();
-        return this;
+    public default void readWrite() {
+        if (!this.isOpen()) this.open();
     }
 
-    public default Transactions onClose(Consumer<Transactions> consumer) {
-        this.commit();
-        return this;
+    public default void close() {
+        if (this.isOpen()) this.commit();
     }
+
+    public Transactions onReadWrite(Consumer<Transactions> consumer);
+
+    public Transactions onClose(Consumer<Transactions> consumer);
 
     public default Transactions configure(Consumer<Transactions> consumer) {
         consumer.accept(this);

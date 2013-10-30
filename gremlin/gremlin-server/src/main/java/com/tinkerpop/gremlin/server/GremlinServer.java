@@ -130,11 +130,11 @@ public class GremlinServer {
         }
 
         public void rollbackAll() {
-            graphs.entrySet().forEach(e->e.getValue().rollback());
+            graphs.entrySet().forEach(e->e.getValue().transactions().rollback());
         }
 
         public void commitAll() {
-            graphs.entrySet().forEach(e->e.getValue().commit());
+            graphs.entrySet().forEach(e->e.getValue().transactions().commit());
         }
     }
 }

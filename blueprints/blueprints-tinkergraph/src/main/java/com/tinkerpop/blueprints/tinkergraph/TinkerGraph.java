@@ -141,7 +141,8 @@ public class TinkerGraph implements Graph, Serializable {
 
 
     public Features getFeatures() {
-        return null;
+        return new Graph.Features() {
+        };
     }
 
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
