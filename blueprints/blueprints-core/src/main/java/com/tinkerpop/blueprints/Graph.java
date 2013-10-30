@@ -24,9 +24,7 @@ public interface Graph extends AutoCloseable, Thing {
 
     public GraphComputer compute();
 
-    public void commit();
-
-    public void rollback();
+    public Transactions transactions();
 
     public <V> Property<V, Graph> getProperty(String key);
 
