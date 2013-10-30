@@ -37,13 +37,26 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
+    /**
+     * All Graph implementations are to be constructed through the open() method and therefore Graph implementations
+     * should maintain a private or protected constructor.  This rule is enforced by the Blueprints Test suite.
+     */
     private TinkerGraph() {
     }
 
+    /**
+     * If a Graph implementation does not require a configuration (or perhaps has a default configuration) it can
+     * choose to implement a zero argument open() method.  This is not a requirement and is not enforced by the
+     * Blueprints test suite.
+     */
     public static TinkerGraph open() {
         return open(Optional.empty());
     }
 
+    /**
+     * All graphs require that this method be overridden from the Graph interface.  It is enforced by the Blueprints
+     * test suite.
+     */
     public static <G extends Graph> G open(final Optional<Configuration> configuration) {
         return (G) new TinkerGraph();
     }
