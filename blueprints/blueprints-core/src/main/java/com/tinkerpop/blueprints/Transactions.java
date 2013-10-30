@@ -31,9 +31,4 @@ public interface Transactions extends AutoCloseable {
 
     public Transactions onClose(Consumer<Transactions> consumer);
 
-    public default Transactions configure(Consumer<Transactions> consumer) {
-        consumer.accept(this);
-        return this;
-    }
-
 }
