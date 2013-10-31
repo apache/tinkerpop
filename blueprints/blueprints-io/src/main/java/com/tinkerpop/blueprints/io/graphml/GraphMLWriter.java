@@ -35,7 +35,7 @@ public class GraphMLWriter implements GraphWriter {
     private Map<String, String> vertexKeyTypes = null;
     private Map<String, String> edgeKeyTypes = null;
 
-    private String xmlSchemaLocation = null;
+    private Optional<String> xmlSchemaLocation;
     private Optional<String> edgeLabelKey;
 
     /**
@@ -48,7 +48,7 @@ public class GraphMLWriter implements GraphWriter {
         this.normalize = normalize;
         this.vertexKeyTypes = vertexKeyTypes;
         this.edgeKeyTypes = edgeKeyTypes;
-        this.xmlSchemaLocation = xmlSchemaLocation;
+        this.xmlSchemaLocation = Optional.ofNullable(xmlSchemaLocation);
         this.edgeLabelKey = Optional.ofNullable(edgeLabelKey);
     }
 
@@ -111,8 +111,7 @@ public class GraphMLWriter implements GraphWriter {
                     XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
             //XML Schema location
             writer.writeAttribute(GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG + ":" + GraphMLTokens.XML_SCHEMA_LOCATION_ATTRIBUTE,
-                    GraphMLTokens.GRAPHML_XMLNS + " " + (this.xmlSchemaLocation == null ?
-                            GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION : this.xmlSchemaLocation));
+                    GraphMLTokens.GRAPHML_XMLNS + " " + this.xmlSchemaLocation.orElse(GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION));
 
             // <key id="weight" for="edge" attr.name="weight" attr.type="float"/>
             Collection<String> keyset;
