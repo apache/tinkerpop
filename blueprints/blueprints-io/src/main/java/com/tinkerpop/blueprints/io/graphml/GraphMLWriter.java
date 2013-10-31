@@ -6,7 +6,6 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.io.GraphWriter;
-import com.tinkerpop.blueprints.io.LexicographicalElementComparator;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
 import javax.xml.XMLConstants;
@@ -18,6 +17,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphMLWriter implements GraphWriter {
+    private static final Comparator<Element> ELEMENT_COMPARATOR = Comparator.comparing(e -> e.getId().toString(), String.CASE_INSENSITIVE_ORDER);
     private final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
     private final Graph graph;
     private boolean normalize = false;
@@ -41,9 +42,6 @@ public class GraphMLWriter implements GraphWriter {
     private final Optional<String> xmlSchemaLocation;
     private final Optional<String> edgeLabelKey;
 
-    /**
-     * @param graph the Graph to pull the data from
-     */
     private GraphMLWriter(final Graph graph, final boolean normalize, final Map<String, String> vertexKeyTypes,
                           final Map<String, String> edgeKeyTypes, final String xmlSchemaLocation,
                           final String edgeLabelKey) {
@@ -137,7 +135,7 @@ public class GraphMLWriter implements GraphWriter {
     private void writeEdges(final XMLStreamWriter writer) throws XMLStreamException {
         if (normalize) {
             final List<Edge> edges =  StreamFactory.stream(graph.query().edges()).collect(Collectors.toList());
-            Collections.sort(edges, new LexicographicalElementComparator());
+            Collections.sort(edges, ELEMENT_COMPARATOR);
 
             for (Edge edge : edges) {
                 writer.writeStartElement(GraphMLTokens.EDGE);
@@ -230,7 +228,7 @@ public class GraphMLWriter implements GraphWriter {
             for (Vertex v : graph.query().vertices()) {
                 ((Collection<Vertex>) vertices).add(v);
             }
-            Collections.sort((List<Vertex>) vertices, new LexicographicalElementComparator());
+            Collections.sort((List<Vertex>) vertices, ELEMENT_COMPARATOR);
         } else {
             vertices = graph.query().vertices();
         }
@@ -325,6 +323,10 @@ public class GraphMLWriter implements GraphWriter {
         private String xmlSchemaLocation = null;
         private String edgeLabelKey = null;
 
+        /**
+         * Constructs a GraphMLWriter.
+         * @param g  The Graph instance to write out.
+         */
         public Builder(final Graph g) {
             if (null == g)
                 throw new IllegalArgumentException("Graph argument cannot be null");
