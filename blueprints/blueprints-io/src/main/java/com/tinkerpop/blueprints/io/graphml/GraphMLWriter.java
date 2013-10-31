@@ -32,8 +32,8 @@ public class GraphMLWriter implements GraphWriter {
 
     private final Graph graph;
     private boolean normalize = false;
-    private Map<String, String> vertexKeyTypes = null;
-    private Map<String, String> edgeKeyTypes = null;
+    private Optional<Map<String, String>> vertexKeyTypes;
+    private Optional<Map<String, String>> edgeKeyTypes = null;
 
     private Optional<String> xmlSchemaLocation;
     private Optional<String> edgeLabelKey;
@@ -46,8 +46,8 @@ public class GraphMLWriter implements GraphWriter {
                           final String edgeLabelKey) {
         this.graph = graph;
         this.normalize = normalize;
-        this.vertexKeyTypes = vertexKeyTypes;
-        this.edgeKeyTypes = edgeKeyTypes;
+        this.vertexKeyTypes = Optional.ofNullable(vertexKeyTypes);
+        this.edgeKeyTypes = Optional.ofNullable(edgeKeyTypes);
         this.xmlSchemaLocation = Optional.ofNullable(xmlSchemaLocation);
         this.edgeLabelKey = Optional.ofNullable(edgeLabelKey);
     }
@@ -60,39 +60,13 @@ public class GraphMLWriter implements GraphWriter {
      */
     @Override
     public void outputGraph(final OutputStream outputStream) throws IOException {
-
-        if (null == vertexKeyTypes || null == edgeKeyTypes) {
-            Map<String, String> vertexKeyTypes = new HashMap<>();
-            Map<String, String> edgeKeyTypes = new HashMap<>();
-
-            for (Vertex vertex : graph.query().vertices()) {
-                for (String key : vertex.getPropertyKeys()) {
-                    if (!vertexKeyTypes.containsKey(key)) {
-                        vertexKeyTypes.put(key, GraphMLWriter.getStringType(vertex.getProperty(key).getValue()));
-                    }
-                }
-                for (Edge edge : vertex.query().direction(Direction.OUT).edges()) {
-                    for (String key : edge.getPropertyKeys()) {
-                        if (!edgeKeyTypes.containsKey(key)) {
-                            edgeKeyTypes.put(key, GraphMLWriter.getStringType(edge.getProperty(key).getValue()));
-                        }
-                    }
-                }
-            }
-
-            if (null == this.vertexKeyTypes) {
-                this.vertexKeyTypes = vertexKeyTypes;
-            }
-
-            if (null == this.edgeKeyTypes) {
-                this.edgeKeyTypes = edgeKeyTypes;
-            }
-        }
+        final Map<String, String> identifiedVertexKeyTypes = this.vertexKeyTypes.orElseGet(this::determineVertexTypes);
+        final Map<String, String> identifiedEdgeKeyTypes = this.edgeKeyTypes.orElseGet(this::determineEdgeTypes);
 
         // adding the edge label key will push the label into the data portion of the graphml otherwise it
         // will live with the edge data itself (which won't validate against the graphml schema)
-        if (this.edgeLabelKey.isPresent() && null != this.edgeKeyTypes && null == this.edgeKeyTypes.get(this.edgeLabelKey.get()))
-            this.edgeKeyTypes.put(this.edgeLabelKey.get(), GraphMLTokens.STRING);
+        if (this.edgeLabelKey.isPresent() && null == identifiedEdgeKeyTypes.get(this.edgeLabelKey.get()))
+            identifiedEdgeKeyTypes.put(this.edgeLabelKey.get(), GraphMLTokens.STRING);
 
         final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
         try {
@@ -118,33 +92,33 @@ public class GraphMLWriter implements GraphWriter {
 
             if (normalize) {
                 keyset = new ArrayList<>();
-                keyset.addAll(vertexKeyTypes.keySet());
+                keyset.addAll(identifiedVertexKeyTypes.keySet());
                 Collections.sort((List<String>) keyset);
             } else {
-                keyset = vertexKeyTypes.keySet();
+                keyset = identifiedVertexKeyTypes.keySet();
             }
             for (String key : keyset) {
                 writer.writeStartElement(GraphMLTokens.KEY);
                 writer.writeAttribute(GraphMLTokens.ID, key);
                 writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.NODE);
                 writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
-                writer.writeAttribute(GraphMLTokens.ATTR_TYPE, vertexKeyTypes.get(key));
+                writer.writeAttribute(GraphMLTokens.ATTR_TYPE, identifiedVertexKeyTypes.get(key));
                 writer.writeEndElement();
             }
 
             if (normalize) {
                 keyset = new ArrayList<>();
-                keyset.addAll(edgeKeyTypes.keySet());
+                keyset.addAll(identifiedEdgeKeyTypes.keySet());
                 Collections.sort((List<String>) keyset);
             } else {
-                keyset = edgeKeyTypes.keySet();
+                keyset = identifiedEdgeKeyTypes.keySet();
             }
             for (String key : keyset) {
                 writer.writeStartElement(GraphMLTokens.KEY);
                 writer.writeAttribute(GraphMLTokens.ID, key);
                 writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.EDGE);
                 writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
-                writer.writeAttribute(GraphMLTokens.ATTR_TYPE, edgeKeyTypes.get(key));
+                writer.writeAttribute(GraphMLTokens.ATTR_TYPE, identifiedEdgeKeyTypes.get(key));
                 writer.writeEndElement();
             }
 
@@ -258,6 +232,32 @@ public class GraphMLWriter implements GraphWriter {
         } catch (XMLStreamException xse) {
             throw new IOException(xse);
         }
+    }
+
+    private Map<String,String> determineVertexTypes() {
+        final Map<String, String> vertexKeyTypes = new HashMap<>();
+        for (Vertex vertex : graph.query().vertices()) {
+            for (String key : vertex.getPropertyKeys()) {
+                if (!vertexKeyTypes.containsKey(key)) {
+                    vertexKeyTypes.put(key, GraphMLWriter.getStringType(vertex.getProperty(key).getValue()));
+                }
+            }
+        }
+
+        return vertexKeyTypes;
+    }
+
+    private Map<String,String> determineEdgeTypes() {
+        final Map<String, String> edgeKeyTypes = new HashMap<>();
+        for (Edge edge : graph.query().edges()) {
+            for (String key : edge.getPropertyKeys()) {
+                if (!edgeKeyTypes.containsKey(key)) {
+                    edgeKeyTypes.put(key, GraphMLWriter.getStringType(edge.getProperty(key).getValue()));
+                }
+            }
+        }
+
+        return edgeKeyTypes;
     }
 
     private static String getStringType(final Object object) {
