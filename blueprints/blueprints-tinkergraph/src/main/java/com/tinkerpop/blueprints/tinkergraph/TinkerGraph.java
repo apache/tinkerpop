@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Transactions;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
@@ -134,17 +135,14 @@ public class TinkerGraph implements Graph, Serializable {
 
     }
 
-    public void commit() {
-
-    }
-
-    public void rollback() {
-
+    public Transactions transactions() {
+        throw new UnsupportedOperationException();
     }
 
 
     public Features getFeatures() {
-        return null;
+        return new Graph.Features() {
+        };
     }
 
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
