@@ -35,11 +35,11 @@ public class GraphMLWriter implements GraphWriter {
     private final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
     private final Graph graph;
     private boolean normalize = false;
-    private Optional<Map<String, String>> vertexKeyTypes;
-    private Optional<Map<String, String>> edgeKeyTypes;
 
-    private Optional<String> xmlSchemaLocation;
-    private Optional<String> edgeLabelKey;
+    private final Optional<Map<String, String>> vertexKeyTypes;
+    private final Optional<Map<String, String>> edgeKeyTypes;
+    private final Optional<String> xmlSchemaLocation;
+    private final Optional<String> edgeLabelKey;
 
     /**
      * @param graph the Graph to pull the data from
