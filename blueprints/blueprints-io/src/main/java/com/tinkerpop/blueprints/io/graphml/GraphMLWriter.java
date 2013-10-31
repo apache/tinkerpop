@@ -7,6 +7,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.io.GraphWriter;
 import com.tinkerpop.blueprints.io.LexicographicalElementComparator;
+import com.tinkerpop.blueprints.util.StreamFactory;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLOutputFactory;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * GraphMLWriter writes a Graph to a GraphML OutputStream.
@@ -30,7 +32,7 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphMLWriter implements GraphWriter {
-
+    private final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
     private final Graph graph;
     private boolean normalize = false;
     private Optional<Map<String, String>> vertexKeyTypes;
@@ -69,122 +71,22 @@ public class GraphMLWriter implements GraphWriter {
         if (this.edgeLabelKey.isPresent() && null == identifiedEdgeKeyTypes.get(this.edgeLabelKey.get()))
             identifiedEdgeKeyTypes.put(this.edgeLabelKey.get(), GraphMLTokens.STRING);
 
-        final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
         try {
-            XMLStreamWriter writer = inputFactory.createXMLStreamWriter(outputStream, "UTF8");
-            if (normalize) {
-                writer = new GraphMLWriterHelper.IndentingXMLStreamWriter(writer);
-                ((GraphMLWriterHelper.IndentingXMLStreamWriter) writer).setIndentStep("    ");
-            }
+            final XMLStreamWriter writer;
+            writer = configureWriter(outputStream);
 
             writer.writeStartDocument();
             writer.writeStartElement(GraphMLTokens.GRAPHML);
             writeXmlNsAndSchema(writer);
 
-            // <key id="weight" for="edge" attr.name="weight" attr.type="float"/>
-            final Collection<String> vertexKeySet = getVertexKeysAndNormalizeIfRequired(identifiedVertexKeyTypes);
-            for (String key : vertexKeySet) {
-                writer.writeStartElement(GraphMLTokens.KEY);
-                writer.writeAttribute(GraphMLTokens.ID, key);
-                writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.NODE);
-                writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
-                writer.writeAttribute(GraphMLTokens.ATTR_TYPE, identifiedVertexKeyTypes.get(key));
-                writer.writeEndElement();
-            }
-
-            final Collection<String> edgeKeySet = getEdgeKeysAndNormalizeIfRequired(identifiedEdgeKeyTypes);
-            for (String key : edgeKeySet) {
-                writer.writeStartElement(GraphMLTokens.KEY);
-                writer.writeAttribute(GraphMLTokens.ID, key);
-                writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.EDGE);
-                writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
-                writer.writeAttribute(GraphMLTokens.ATTR_TYPE, identifiedEdgeKeyTypes.get(key));
-                writer.writeEndElement();
-            }
+            writeTypes(identifiedVertexKeyTypes, identifiedEdgeKeyTypes, writer);
 
             writer.writeStartElement(GraphMLTokens.GRAPH);
             writer.writeAttribute(GraphMLTokens.ID, GraphMLTokens.G);
             writer.writeAttribute(GraphMLTokens.EDGEDEFAULT, GraphMLTokens.DIRECTED);
 
-            final Iterable<Vertex> vertices = getVerticesAndNormalizeIfRequired();
-            for (Vertex vertex : vertices) {
-                writer.writeStartElement(GraphMLTokens.NODE);
-                writer.writeAttribute(GraphMLTokens.ID, vertex.getId().toString());
-                final Collection<String> keys = getElementKeysAndNormalizeIfRequired(vertex);
-                for (String key : keys) {
-                    writer.writeStartElement(GraphMLTokens.DATA);
-                    writer.writeAttribute(GraphMLTokens.KEY, key);
-                    // technically there can't be a null here as Blueprints forbids that occurrence even if Graph
-                    // implementations support it, but out to empty string just in case.
-                    writer.writeCharacters(vertex.getProperty(key).orElse("").toString());
-                    writer.writeEndElement();
-                }
-                writer.writeEndElement();
-            }
-
-            if (normalize) {
-                List<Edge> edges = new ArrayList<>();
-                for (Vertex vertex : graph.query().vertices()) {
-                    for (Edge edge : vertex.query().direction(Direction.OUT).edges()) {
-                        edges.add(edge);
-                    }
-                }
-                Collections.sort(edges, new LexicographicalElementComparator());
-
-                for (Edge edge : edges) {
-                    writer.writeStartElement(GraphMLTokens.EDGE);
-                    writer.writeAttribute(GraphMLTokens.ID, edge.getId().toString());
-                    writer.writeAttribute(GraphMLTokens.SOURCE, edge.getVertex(Direction.OUT).getId().toString());
-                    writer.writeAttribute(GraphMLTokens.TARGET, edge.getVertex(Direction.IN).getId().toString());
-
-                    if (this.edgeLabelKey.isPresent()) {
-                        writer.writeStartElement(GraphMLTokens.DATA);
-                        writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey.get());
-                        writer.writeCharacters(edge.getLabel());
-                        writer.writeEndElement();
-                    } else {
-                        // this will not comply with the graphml schema but is here so that the label is not
-                        // mixed up with properties.
-                        writer.writeAttribute(GraphMLTokens.LABEL, edge.getLabel());
-                    }
-
-                    final List<String> keys = new ArrayList<>();
-                    keys.addAll(edge.getPropertyKeys());
-                    Collections.sort(keys);
-
-                    for (String key : keys) {
-                        writer.writeStartElement(GraphMLTokens.DATA);
-                        writer.writeAttribute(GraphMLTokens.KEY, key);
-                        Object value = edge.getProperty(key).getValue();
-                        if (null != value) {
-                            writer.writeCharacters(value.toString());
-                        }
-                        writer.writeEndElement();
-                    }
-                    writer.writeEndElement();
-                }
-            } else {
-                for (Vertex vertex : graph.query().vertices()) {
-                    for (Edge edge : vertex.query().direction(Direction.OUT).edges()) {
-                        writer.writeStartElement(GraphMLTokens.EDGE);
-                        writer.writeAttribute(GraphMLTokens.ID, edge.getId().toString());
-                        writer.writeAttribute(GraphMLTokens.SOURCE, edge.getVertex(Direction.OUT).getId().toString());
-                        writer.writeAttribute(GraphMLTokens.TARGET, edge.getVertex(Direction.IN).getId().toString());
-                        writer.writeAttribute(GraphMLTokens.LABEL, edge.getLabel());
-
-                        for (String key : edge.getPropertyKeys()) {
-                            writer.writeStartElement(GraphMLTokens.DATA);
-                            writer.writeAttribute(GraphMLTokens.KEY, key);
-                            Object value = edge.getProperty(key).getValue();
-                            if (null != value) {
-                                writer.writeCharacters(value.toString());
-                            }
-                            writer.writeEndElement();
-                        }
-                        writer.writeEndElement();
-                    }
-                }
-            }
+            writeVertices(writer);
+            writeEdges(writer);
 
             writer.writeEndElement(); // graph
             writer.writeEndElement(); // graphml
@@ -194,6 +96,118 @@ public class GraphMLWriter implements GraphWriter {
             writer.close();
         } catch (XMLStreamException xse) {
             throw new IOException(xse);
+        }
+    }
+
+    private XMLStreamWriter configureWriter(final OutputStream outputStream) throws XMLStreamException {
+        final XMLStreamWriter utf8Writer = inputFactory.createXMLStreamWriter(outputStream, "UTF8");
+        if (normalize) {
+            final XMLStreamWriter writer = new GraphMLWriterHelper.IndentingXMLStreamWriter(utf8Writer);
+            ((GraphMLWriterHelper.IndentingXMLStreamWriter) writer).setIndentStep("    ");
+            return writer;
+        } else
+            return utf8Writer;
+    }
+
+    private void writeTypes(final Map<String, String> identifiedVertexKeyTypes,
+                            final Map<String, String> identifiedEdgeKeyTypes,
+                            final XMLStreamWriter writer) throws XMLStreamException {
+        // <key id="weight" for="edge" attr.name="weight" attr.type="float"/>
+        final Collection<String> vertexKeySet = getVertexKeysAndNormalizeIfRequired(identifiedVertexKeyTypes);
+        for (String key : vertexKeySet) {
+            writer.writeStartElement(GraphMLTokens.KEY);
+            writer.writeAttribute(GraphMLTokens.ID, key);
+            writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.NODE);
+            writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
+            writer.writeAttribute(GraphMLTokens.ATTR_TYPE, identifiedVertexKeyTypes.get(key));
+            writer.writeEndElement();
+        }
+
+        final Collection<String> edgeKeySet = getEdgeKeysAndNormalizeIfRequired(identifiedEdgeKeyTypes);
+        for (String key : edgeKeySet) {
+            writer.writeStartElement(GraphMLTokens.KEY);
+            writer.writeAttribute(GraphMLTokens.ID, key);
+            writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.EDGE);
+            writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
+            writer.writeAttribute(GraphMLTokens.ATTR_TYPE, identifiedEdgeKeyTypes.get(key));
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeEdges(final XMLStreamWriter writer) throws XMLStreamException {
+        if (normalize) {
+            final List<Edge> edges =  StreamFactory.stream(graph.query().edges()).collect(Collectors.toList());
+            Collections.sort(edges, new LexicographicalElementComparator());
+
+            for (Edge edge : edges) {
+                writer.writeStartElement(GraphMLTokens.EDGE);
+                writer.writeAttribute(GraphMLTokens.ID, edge.getId().toString());
+                writer.writeAttribute(GraphMLTokens.SOURCE, edge.getVertex(Direction.OUT).getId().toString());
+                writer.writeAttribute(GraphMLTokens.TARGET, edge.getVertex(Direction.IN).getId().toString());
+
+                if (this.edgeLabelKey.isPresent()) {
+                    writer.writeStartElement(GraphMLTokens.DATA);
+                    writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey.get());
+                    writer.writeCharacters(edge.getLabel());
+                    writer.writeEndElement();
+                } else {
+                    // this will not comply with the graphml schema but is here so that the label is not
+                    // mixed up with properties.
+                    writer.writeAttribute(GraphMLTokens.LABEL, edge.getLabel());
+                }
+
+                final List<String> keys = new ArrayList<>();
+                keys.addAll(edge.getPropertyKeys());
+                Collections.sort(keys);
+
+                for (String key : keys) {
+                    writer.writeStartElement(GraphMLTokens.DATA);
+                    writer.writeAttribute(GraphMLTokens.KEY, key);
+                    Object value = edge.getProperty(key).getValue();
+                    if (null != value) {
+                        writer.writeCharacters(value.toString());
+                    }
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+        } else {
+            for (Edge edge : graph.query().edges()) {
+                writer.writeStartElement(GraphMLTokens.EDGE);
+                writer.writeAttribute(GraphMLTokens.ID, edge.getId().toString());
+                writer.writeAttribute(GraphMLTokens.SOURCE, edge.getVertex(Direction.OUT).getId().toString());
+                writer.writeAttribute(GraphMLTokens.TARGET, edge.getVertex(Direction.IN).getId().toString());
+                writer.writeAttribute(GraphMLTokens.LABEL, edge.getLabel());
+
+                for (String key : edge.getPropertyKeys()) {
+                    writer.writeStartElement(GraphMLTokens.DATA);
+                    writer.writeAttribute(GraphMLTokens.KEY, key);
+                    Object value = edge.getProperty(key).getValue();
+                    if (null != value) {
+                        writer.writeCharacters(value.toString());
+                    }
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+        }
+    }
+
+    private void writeVertices(final XMLStreamWriter writer) throws XMLStreamException {
+        final Iterable<Vertex> vertices = getVerticesAndNormalizeIfRequired();
+        for (Vertex vertex : vertices) {
+            writer.writeStartElement(GraphMLTokens.NODE);
+            writer.writeAttribute(GraphMLTokens.ID, vertex.getId().toString());
+            final Collection<String> keys = getElementKeysAndNormalizeIfRequired(vertex);
+            for (String key : keys) {
+                writer.writeStartElement(GraphMLTokens.DATA);
+                writer.writeAttribute(GraphMLTokens.KEY, key);
+                // technically there can't be a null here as Blueprints forbids that occurrence even if Graph
+                // implementations support it, but out to empty string just in case.
+                writer.writeCharacters(vertex.getProperty(key).orElse("").toString());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
         }
     }
 
