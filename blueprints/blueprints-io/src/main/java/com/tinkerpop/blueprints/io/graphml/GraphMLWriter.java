@@ -36,7 +36,7 @@ public class GraphMLWriter implements GraphWriter {
     private final Graph graph;
     private boolean normalize = false;
     private Optional<Map<String, String>> vertexKeyTypes;
-    private Optional<Map<String, String>> edgeKeyTypes = null;
+    private Optional<Map<String, String>> edgeKeyTypes;
 
     private Optional<String> xmlSchemaLocation;
     private Optional<String> edgeLabelKey;
