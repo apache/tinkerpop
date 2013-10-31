@@ -161,10 +161,9 @@ public class GraphMLWriter implements GraphWriter {
                 for (String key : keys) {
                     writer.writeStartElement(GraphMLTokens.DATA);
                     writer.writeAttribute(GraphMLTokens.KEY, key);
-                    Object value = edge.getProperty(key).getValue();
-                    if (null != value) {
-                        writer.writeCharacters(value.toString());
-                    }
+                    // technically there can't be a null here as Blueprints forbids that occurrence even if Graph
+                    // implementations support it, but out to empty string just in case.
+                    writer.writeCharacters(edge.getProperty(key).orElse("").toString());
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
@@ -180,10 +179,9 @@ public class GraphMLWriter implements GraphWriter {
                 for (String key : edge.getPropertyKeys()) {
                     writer.writeStartElement(GraphMLTokens.DATA);
                     writer.writeAttribute(GraphMLTokens.KEY, key);
-                    Object value = edge.getProperty(key).getValue();
-                    if (null != value) {
-                        writer.writeCharacters(value.toString());
-                    }
+                    // technically there can't be a null here as Blueprints forbids that occurrence even if Graph
+                    // implementations support it, but out to empty string just in case.
+                    writer.writeCharacters(edge.getProperty(key).orElse("").toString());
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
@@ -209,29 +207,29 @@ public class GraphMLWriter implements GraphWriter {
         }
     }
 
-    private Collection<String> getElementKeysAndNormalizeIfRequired(Element element) {
-        Collection<String> keys;
+    private Collection<String> getElementKeysAndNormalizeIfRequired(final Element element) {
+        final Collection<String> keys;
         if (normalize) {
             keys = new ArrayList<>();
             keys.addAll(element.getPropertyKeys());
             Collections.sort((List<String>) keys);
-        } else {
+        } else
             keys = element.getPropertyKeys();
-        }
+
         return keys;
     }
 
     private Iterable<Vertex> getVerticesAndNormalizeIfRequired() {
-        Iterable<Vertex> vertices;
+        final Iterable<Vertex> vertices;
         if (normalize) {
             vertices = new ArrayList<>();
             for (Vertex v : graph.query().vertices()) {
                 ((Collection<Vertex>) vertices).add(v);
             }
             Collections.sort((List<Vertex>) vertices, ELEMENT_COMPARATOR);
-        } else {
+        } else
             vertices = graph.query().vertices();
-        }
+
         return vertices;
     }
 
@@ -241,9 +239,9 @@ public class GraphMLWriter implements GraphWriter {
             edgeKeySet = new ArrayList<>();
             edgeKeySet.addAll(identifiedEdgeKeyTypes.keySet());
             Collections.sort((List<String>) edgeKeySet);
-        } else {
+        } else
             edgeKeySet = identifiedEdgeKeyTypes.keySet();
-        }
+
         return edgeKeySet;
     }
 
@@ -253,9 +251,9 @@ public class GraphMLWriter implements GraphWriter {
             keyset = new ArrayList<>();
             keyset.addAll(identifiedVertexKeyTypes.keySet());
             Collections.sort((List<String>) keyset);
-        } else {
+        } else
             keyset = identifiedVertexKeyTypes.keySet();
-        }
+
         return keyset;
     }
 
@@ -287,9 +285,8 @@ public class GraphMLWriter implements GraphWriter {
         final Map<String, String> edgeKeyTypes = new HashMap<>();
         for (Edge edge : graph.query().edges()) {
             for (String key : edge.getPropertyKeys()) {
-                if (!edgeKeyTypes.containsKey(key)) {
+                if (!edgeKeyTypes.containsKey(key))
                     edgeKeyTypes.put(key, GraphMLWriter.getStringType(edge.getProperty(key).getValue()));
-                }
             }
         }
 
@@ -297,21 +294,20 @@ public class GraphMLWriter implements GraphWriter {
     }
 
     private static String getStringType(final Object object) {
-        if (object instanceof String) {
+        if (object instanceof String)
             return GraphMLTokens.STRING;
-        } else if (object instanceof Integer) {
+        else if (object instanceof Integer)
             return GraphMLTokens.INT;
-        } else if (object instanceof Long) {
+        else if (object instanceof Long)
             return GraphMLTokens.LONG;
-        } else if (object instanceof Float) {
+        else if (object instanceof Float)
             return GraphMLTokens.FLOAT;
-        } else if (object instanceof Double) {
+        else if (object instanceof Double)
             return GraphMLTokens.DOUBLE;
-        } else if (object instanceof Boolean) {
+        else if (object instanceof Boolean)
             return GraphMLTokens.BOOLEAN;
-        } else {
+        else
             return GraphMLTokens.STRING;
-        }
     }
 
     public static final class Builder {
