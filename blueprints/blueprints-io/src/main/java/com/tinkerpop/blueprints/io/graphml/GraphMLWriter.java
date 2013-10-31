@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints.io.graphml;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.io.GraphWriter;
@@ -105,34 +106,17 @@ public class GraphMLWriter implements GraphWriter {
             writer.writeAttribute(GraphMLTokens.ID, GraphMLTokens.G);
             writer.writeAttribute(GraphMLTokens.EDGEDEFAULT, GraphMLTokens.DIRECTED);
 
-            Iterable<Vertex> vertices;
-            if (normalize) {
-                vertices = new ArrayList<>();
-                for (Vertex v : graph.query().vertices()) {
-                    ((Collection<Vertex>) vertices).add(v);
-                }
-                Collections.sort((List<Vertex>) vertices, new LexicographicalElementComparator());
-            } else {
-                vertices = graph.query().vertices();
-            }
+            final Iterable<Vertex> vertices = getVerticesAndNormalizeIfRequired();
             for (Vertex vertex : vertices) {
                 writer.writeStartElement(GraphMLTokens.NODE);
                 writer.writeAttribute(GraphMLTokens.ID, vertex.getId().toString());
-                Collection<String> keys;
-                if (normalize) {
-                    keys = new ArrayList<>();
-                    keys.addAll(vertex.getPropertyKeys());
-                    Collections.sort((List<String>) keys);
-                } else {
-                    keys = vertex.getPropertyKeys();
-                }
+                final Collection<String> keys = getElementKeysAndNormalizeIfRequired(vertex);
                 for (String key : keys) {
                     writer.writeStartElement(GraphMLTokens.DATA);
                     writer.writeAttribute(GraphMLTokens.KEY, key);
-                    Object value = vertex.getProperty(key).getValue();
-                    if (null != value) {
-                        writer.writeCharacters(value.toString());
-                    }
+                    // technically there can't be a null here as Blueprints forbids that occurrence even if Graph
+                    // implementations support it, but out to empty string just in case.
+                    writer.writeCharacters(vertex.getProperty(key).orElse("").toString());
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
@@ -211,6 +195,32 @@ public class GraphMLWriter implements GraphWriter {
         } catch (XMLStreamException xse) {
             throw new IOException(xse);
         }
+    }
+
+    private Collection<String> getElementKeysAndNormalizeIfRequired(Element element) {
+        Collection<String> keys;
+        if (normalize) {
+            keys = new ArrayList<>();
+            keys.addAll(element.getPropertyKeys());
+            Collections.sort((List<String>) keys);
+        } else {
+            keys = element.getPropertyKeys();
+        }
+        return keys;
+    }
+
+    private Iterable<Vertex> getVerticesAndNormalizeIfRequired() {
+        Iterable<Vertex> vertices;
+        if (normalize) {
+            vertices = new ArrayList<>();
+            for (Vertex v : graph.query().vertices()) {
+                ((Collection<Vertex>) vertices).add(v);
+            }
+            Collections.sort((List<Vertex>) vertices, new LexicographicalElementComparator());
+        } else {
+            vertices = graph.query().vertices();
+        }
+        return vertices;
     }
 
     private Collection<String> getEdgeKeysAndNormalizeIfRequired(final Map<String, String> identifiedEdgeKeyTypes) {
