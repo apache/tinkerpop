@@ -78,26 +78,11 @@ public class GraphMLWriter implements GraphWriter {
 
             writer.writeStartDocument();
             writer.writeStartElement(GraphMLTokens.GRAPHML);
-            writer.writeAttribute(GraphMLTokens.XMLNS, GraphMLTokens.GRAPHML_XMLNS);
-
-            //XML Schema instance namespace definition (xsi)
-            writer.writeAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG,
-                    XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
-            //XML Schema location
-            writer.writeAttribute(GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG + ":" + GraphMLTokens.XML_SCHEMA_LOCATION_ATTRIBUTE,
-                    GraphMLTokens.GRAPHML_XMLNS + " " + this.xmlSchemaLocation.orElse(GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION));
+            writeXmlNsAndSchema(writer);
 
             // <key id="weight" for="edge" attr.name="weight" attr.type="float"/>
-            Collection<String> keyset;
-
-            if (normalize) {
-                keyset = new ArrayList<>();
-                keyset.addAll(identifiedVertexKeyTypes.keySet());
-                Collections.sort((List<String>) keyset);
-            } else {
-                keyset = identifiedVertexKeyTypes.keySet();
-            }
-            for (String key : keyset) {
+            final Collection<String> vertexKeySet = getVertexKeysAndNormalizeIfRequired(identifiedVertexKeyTypes);
+            for (String key : vertexKeySet) {
                 writer.writeStartElement(GraphMLTokens.KEY);
                 writer.writeAttribute(GraphMLTokens.ID, key);
                 writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.NODE);
@@ -106,14 +91,8 @@ public class GraphMLWriter implements GraphWriter {
                 writer.writeEndElement();
             }
 
-            if (normalize) {
-                keyset = new ArrayList<>();
-                keyset.addAll(identifiedEdgeKeyTypes.keySet());
-                Collections.sort((List<String>) keyset);
-            } else {
-                keyset = identifiedEdgeKeyTypes.keySet();
-            }
-            for (String key : keyset) {
+            final Collection<String> edgeKeySet = getEdgeKeysAndNormalizeIfRequired(identifiedEdgeKeyTypes);
+            for (String key : edgeKeySet) {
                 writer.writeStartElement(GraphMLTokens.KEY);
                 writer.writeAttribute(GraphMLTokens.ID, key);
                 writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.EDGE);
@@ -232,6 +211,41 @@ public class GraphMLWriter implements GraphWriter {
         } catch (XMLStreamException xse) {
             throw new IOException(xse);
         }
+    }
+
+    private Collection<String> getEdgeKeysAndNormalizeIfRequired(final Map<String, String> identifiedEdgeKeyTypes) {
+        final Collection<String> edgeKeySet;
+        if (normalize) {
+            edgeKeySet = new ArrayList<>();
+            edgeKeySet.addAll(identifiedEdgeKeyTypes.keySet());
+            Collections.sort((List<String>) edgeKeySet);
+        } else {
+            edgeKeySet = identifiedEdgeKeyTypes.keySet();
+        }
+        return edgeKeySet;
+    }
+
+    private Collection<String> getVertexKeysAndNormalizeIfRequired(final Map<String, String> identifiedVertexKeyTypes) {
+        final Collection<String> keyset;
+        if (normalize) {
+            keyset = new ArrayList<>();
+            keyset.addAll(identifiedVertexKeyTypes.keySet());
+            Collections.sort((List<String>) keyset);
+        } else {
+            keyset = identifiedVertexKeyTypes.keySet();
+        }
+        return keyset;
+    }
+
+    private void writeXmlNsAndSchema(final XMLStreamWriter writer) throws XMLStreamException {
+        writer.writeAttribute(GraphMLTokens.XMLNS, GraphMLTokens.GRAPHML_XMLNS);
+
+        //XML Schema instance namespace definition (xsi)
+        writer.writeAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG,
+                XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+        //XML Schema location
+        writer.writeAttribute(GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG + ":" + GraphMLTokens.XML_SCHEMA_LOCATION_ATTRIBUTE,
+                GraphMLTokens.GRAPHML_XMLNS + " " + this.xmlSchemaLocation.orElse(GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION));
     }
 
     private Map<String,String> determineVertexTypes() {
