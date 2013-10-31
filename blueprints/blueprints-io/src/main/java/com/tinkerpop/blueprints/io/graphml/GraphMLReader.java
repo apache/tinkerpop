@@ -213,7 +213,7 @@ public class GraphMLReader implements GraphReader {
     /**
      * Allows configuration and construction of the GraphMLReader instance.
      */
-    public static class Builder {
+    public static final class Builder {
         private final Graph g;
         private String vertexIdKey = null;
         private String edgeIdKey = null;

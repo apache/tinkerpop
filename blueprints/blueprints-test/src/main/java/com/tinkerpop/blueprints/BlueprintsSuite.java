@@ -79,6 +79,9 @@ public class BlueprintsSuite extends Suite {
      */
     public static interface GraphProvider {
 
+        /**
+         * // todo: maybe do defaultTestGraph to distinguish from a "new" and different instance.
+         */
         default public Graph newTestGraph() {
             return GraphFactory.open(newGraphConfiguration());
         }
@@ -110,7 +113,7 @@ public class BlueprintsSuite extends Suite {
             getBaseConfiguration().entrySet().stream()
                     .forEach(e -> conf.setProperty(e.getKey(), e.getValue()));
 
-            // assign overrides but don't allow blueprints.graph setting to be overriden.  the test suite should
+            // assign overrides but don't allow blueprints.graph setting to be overridden.  the test suite should
             // not be able to override that.
             configurationOverrides.entrySet().stream()
                     .filter(c -> !c.getKey().equals("blueprints.graph"))
