@@ -15,6 +15,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 /**
+ * Standard OpProcessor implementation that handles ScriptEngine configuration and script evaluation.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StandardOpProcessor implements OpProcessor {
@@ -36,16 +38,16 @@ public class StandardOpProcessor implements OpProcessor {
                         OpProcessor.text(Tokens.VERSION);
                 break;
             case ServerTokens.OPS_EVAL:
-                op = validateEvalMessage(message).orElse(evalOp());
+                op = validateEvalMessage(message).orElse(StandardOps::evalOp);
                 break;
             case ServerTokens.OPS_IMPORT:
-                op = validateImportMessage(message).orElse(importOp());
+                op = validateImportMessage(message).orElse(StandardOps::importOp);
                 break;
             case ServerTokens.OPS_USE:
-                op = validateUseMessage(message).orElse(useOp());
+                op = validateUseMessage(message).orElse(StandardOps::useOp);
                 break;
             case ServerTokens.OPS_DEPENDENCIES:
-                op = validateUseMessage(message).orElse(depsOp());
+                op = validateUseMessage(message).orElse(StandardOps::depsOp);
                 break;
             case ServerTokens.OPS_INVALID:
                 op = OpProcessor.error(String.format("Message could not be parsed.  Check the format of the request. [%s]", message));
@@ -110,94 +112,5 @@ public class StandardOpProcessor implements OpProcessor {
                 && m.containsKey(ServerTokens.ARGS_COORDINATES_VERSION);
     }
 
-    private static Consumer<Context> importOp() {
-        return (context) -> {
-            final RequestMessage msg = context.getRequestMessage();
-            final List<String> l = (List<String>) msg.args.get(ServerTokens.ARGS_IMPORTS);
-            context.getGremlinExecutor().select(msg).addImports(new HashSet<>(l));
-        };
-    }
 
-    private static Consumer<Context> depsOp() {
-        return (context) -> {
-            final RequestMessage msg = context.getRequestMessage();
-            final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-            final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
-            final Map dependencies = context.getGremlinExecutor().select(msg).dependencies();
-            try {
-                ctx.channel().write(new TextWebSocketFrame(serializer.serialize(dependencies, context)));
-            } catch (Exception ex) {
-                logger.warn("The result [{}] in the request {} could not be serialized and returned.",
-                        dependencies, context.getRequestMessage(), ex);
-            }
-        };
-    }
-
-    private static Consumer<Context> useOp() {
-        return (context) -> {
-            final RequestMessage msg = context.getRequestMessage();
-            final List<Map<String,String>> usings = (List<Map<String,String>>) msg.args.get(ServerTokens.ARGS_COORDINATES);
-            usings.forEach(c -> {
-                final String group = c.get(ServerTokens.ARGS_COORDINATES_GROUP);
-                final String artifact = c.get(ServerTokens.ARGS_COORDINATES_ARTIFACT);
-                final String version = c.get(ServerTokens.ARGS_COORDINATES_VERSION);
-                logger.info("Loading plugin [group={},artifact={},version={}]", group, artifact, version);
-                context.getGremlinExecutor().select(msg).use(group, artifact, version);
-                OpProcessor.text(String.format("Plugin loaded - [group=%s,artifact=%s,version=%s]", group, artifact, version)).accept(context);
-            });
-        };
-    }
-
-    private static Consumer<Context> evalOp() {
-        return (context) -> {
-            final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-            final RequestMessage msg = context.getRequestMessage();
-            Object o;
-            try {
-                o = context.getGremlinExecutor().eval(msg, context.getGraphs());
-            } catch (ScriptException se) {
-                logger.warn("Error while evaluating a script on request [{}]", msg);
-                logger.debug("Exception from ScriptException error.", se);
-                OpProcessor.error(se.getMessage()).accept(context);
-                return;
-            } catch (InterruptedException ie) {
-                logger.warn("Thread interrupted (perhaps script ran for too long) while processing this request [{}]", msg);
-                logger.debug("Exception from InterruptedException error.", ie);
-                OpProcessor.error(ie.getMessage()).accept(context);
-                return;
-            } catch (ExecutionException ee) {
-                logger.warn("Error while retrieving response from the script evaluated on request [{}]", msg);
-                logger.debug("Exception from ExecutionException error.", ee.getCause());
-                Throwable inner = ee.getCause();
-                if (inner instanceof ScriptException)
-                    inner = inner.getCause();
-
-                OpProcessor.error(inner.getMessage()).accept(context);
-                return;
-            }
-
-            Iterator itty;
-            if (o instanceof Iterable)
-                itty = ((Iterable) o).iterator();
-            else if (o instanceof Iterator)
-                itty = (Iterator) o;
-            else if (o instanceof Object[])
-                itty = new ArrayIterator(o);
-            else if (o instanceof Map)
-                itty = ((Map) o).entrySet().iterator();
-            else if (o instanceof Throwable)
-                itty = new SingleIterator<Object>(((Throwable) o).getMessage());
-            else
-                itty = new SingleIterator<>(o);
-
-            final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
-            itty.forEachRemaining(j -> {
-                try {
-                    ctx.channel().write(new TextWebSocketFrame(serializer.serialize(j, context)));
-                } catch (Exception ex) {
-                    logger.warn("The result [{}] in the request {} could not be serialized and returned.", j, context.getRequestMessage(), ex);
-                }
-            });
-        };
-    }
 }
