@@ -24,8 +24,6 @@ import java.util.function.Consumer;
 class OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(OpProcessor.class);
 
-    private static GremlinExecutor gremlinExecutor = new GremlinExecutor();
-
     public Consumer<Context> select(final RequestMessage message) {
         final Consumer<Context> op;
         switch (message.op) {
@@ -123,7 +121,7 @@ class OpProcessor {
         return (context) -> {
             final RequestMessage msg = context.getRequestMessage();
             final List<String> l = (List<String>) msg.args.get(ServerTokens.ARGS_IMPORTS);
-            gremlinExecutor.select(msg).addImports(new HashSet<>(l));
+            context.getGremlinExecutor().select(msg).addImports(new HashSet<>(l));
         };
     }
 
@@ -132,7 +130,7 @@ class OpProcessor {
             final RequestMessage msg = context.getRequestMessage();
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
-            final Map dependencies = gremlinExecutor.select(msg).dependencies();
+            final Map dependencies = context.getGremlinExecutor().select(msg).dependencies();
             try {
                 ctx.channel().write(new TextWebSocketFrame(serializer.serialize(dependencies, context)));
             } catch (Exception ex) {
@@ -151,7 +149,7 @@ class OpProcessor {
                 final String artifact = c.get(ServerTokens.ARGS_COORDINATES_ARTIFACT);
                 final String version = c.get(ServerTokens.ARGS_COORDINATES_VERSION);
                 logger.info("Loading plugin [group={},artifact={},version={}]", group, artifact, version);
-                gremlinExecutor.select(msg).use(group, artifact, version);
+                context.getGremlinExecutor().select(msg).use(group, artifact, version);
                 text(String.format("Plugin loaded - [group=%s,artifact=%s,version=%s]", group, artifact, version)).accept(context);
             });
         };
@@ -159,14 +157,11 @@ class OpProcessor {
 
     private static Consumer<Context> evalOp() {
         return (context) -> {
-            if (!gremlinExecutor.isInitialized())
-                gremlinExecutor.init(context.getSettings());
-
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final RequestMessage msg = context.getRequestMessage();
             Object o;
             try {
-                o = gremlinExecutor.eval(msg, context.getGraphs());
+                o = context.getGremlinExecutor().eval(msg, context.getGraphs());
             } catch (ScriptException se) {
                 logger.warn("Error while evaluating a script on request [{}]", msg);
                 logger.debug("Exception from ScriptException error.", se);

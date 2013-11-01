@@ -48,6 +48,8 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private final GremlinServer.Graphs graphs;
     private final OpProcessor opProcessor = new OpProcessor();
 
+    private static GremlinExecutor gremlinExecutor = new GremlinExecutor();
+
     public GremlinServerHandler(final Settings settings, final GremlinServer.Graphs graphs) {
         this.settings = settings;
         this.graphs = graphs;
@@ -113,7 +115,11 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             // todo: support both text and binary where binary allows for versioning of the messages.
             final String request = ((TextWebSocketFrame) frame).text();
             final RequestMessage requestMessage = RequestMessage.Serializer.parse(request).orElse(RequestMessage.INVALID);
-            this.opProcessor.select(requestMessage).accept(new Context(requestMessage, ctx, settings, graphs));
+
+            if (!gremlinExecutor.isInitialized())
+                gremlinExecutor.init(settings);
+
+            this.opProcessor.select(requestMessage).accept(new Context(requestMessage, ctx, settings, graphs, gremlinExecutor));
         }
         else
             throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
