@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,7 @@ public class RequestMessage {
     public UUID sessionId = null;
     public UUID requestId = null;
     public String op;
+    public String processor = StandardOpProcessor.OP_PROCESSOR_NAME;
     public Map<String, Object> args = new HashMap<>();
 
     public RequestMessage() {}
@@ -52,6 +54,7 @@ public class RequestMessage {
                 "sessionId=" + sessionId +
                 ", requestId=" + requestId +
                 ", op='" + op + '\'' +
+                ", processor='" + processor + '\'' +
                 ", args=" + args +
                 '}';
     }

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.op.OpLoader;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
@@ -40,13 +42,15 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
     private static final String WEBSOCKET_PATH = "/gremlin";
 
     private WebSocketServerHandshaker handshaker;
     private StaticFileHandler staticFileHandler;
     private final Settings settings;
     private final GremlinServer.Graphs graphs;
-    private final OpProcessor opProcessor = new OpProcessor();
+
+    private static GremlinExecutor gremlinExecutor = new GremlinExecutor();
 
     public GremlinServerHandler(final Settings settings, final GremlinServer.Graphs graphs) {
         this.settings = settings;
@@ -113,7 +117,15 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             // todo: support both text and binary where binary allows for versioning of the messages.
             final String request = ((TextWebSocketFrame) frame).text();
             final RequestMessage requestMessage = RequestMessage.Serializer.parse(request).orElse(RequestMessage.INVALID);
-            this.opProcessor.select(requestMessage).accept(new Context(requestMessage, ctx, settings, graphs));
+
+            if (!gremlinExecutor.isInitialized())
+                gremlinExecutor.init(settings);
+
+            final Optional<OpProcessor> processor = OpLoader.getProcessor(requestMessage.processor);
+            if (processor.isPresent())
+                processor.get().select(requestMessage).accept(new Context(requestMessage, ctx, settings, graphs, gremlinExecutor));
+            else
+                logger.warn("Invalid OpProcessor requested [{}]", requestMessage.processor);
         }
         else
             throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()

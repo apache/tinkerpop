@@ -32,7 +32,7 @@ import java.util.concurrent.Future;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GremlinExecutor {
+public class GremlinExecutor {
     private static final Logger logger = LoggerFactory.getLogger(GremlinExecutor.class);
 
     /**
