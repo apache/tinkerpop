@@ -30,6 +30,9 @@ public class StandardOpProcessor implements OpProcessor {
 
     @Override
     public Consumer<Context> select(final RequestMessage message) {
+        if (logger.isDebugEnabled())
+            logger.debug("Selecting processor for RequestMessage {}", message);
+
         final Consumer<Context> op;
         switch (message.op) {
             case ServerTokens.OPS_VERSION:
