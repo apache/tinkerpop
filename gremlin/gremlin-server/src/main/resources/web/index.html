@@ -15,83 +15,33 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
     <div style="margin-left: 10px">
         <div class="navbar-header">
-            <div style="line-height: 50px; font-size: x-large; color: #428BCA"><img src="img/gremlin-character.png" style="position: relative; top: -3px; height: 40px"/><span>&nbsp; Gremlin Workbench</span></div>
+            <div style="line-height: 50px; font-size: x-large; color: #428BCA"><img src="img/gremlin-character.png" style="position: relative; top: -3px; height: 40px"/><span>&nbsp; Gremlin Console</span></div>
         </div>
         <div class="navbar-right" style="margin: 2px 10px 0 0">
-            <div class="btn-group">
-                <button id="btnColumn" type="button" class="btn btn-sm navbar-btn btn-bordered" title="Column Layout"><i class="fa fa-columns"></i></button>
-                <button id="btnRow" type="button" class="btn btn-sm navbar-btn btn-bordered" title="Row Layout"><i class="fa fa-columns img-rotated"></i></button>
-                <button id="btnSwap" type="button" class="btn btn-sm navbar-btn btn-bordered" title="Swap Panels"><i class="fa fa-exchange"></i></button>
-                <button id="btnMenu" type="button" class="btn btn-sm navbar-btn btn-bordered dropdown-toggle" title="Menu" data-toggle="dropdown" ><i class="fa fa-ellipsis-vertical"></i></button>
-                <ul id="listMenu" class="dropdown-menu" role="menu">
-                    <li role="presentation"><a data-target="#" role="menuitem">New</a></li>
-                    <li role="presentation" class="divider"></li>
-                    <li role="presentation"><a data-target="#" role="menuitem">Import...</a></li>
-                    <li role="presentation"><a data-target="#" role="menuitem">Export...</a></li>
-                    <li role="presentation" class="divider"></li>
-                    <li role="presentation"><a data-target="#" role="menuitem">Reset Layout</a></li>
-                    <li role="presentation" class="divider"></li>
-                    <li role="presentation"><a data-target="#" role="menuitem">Gremlin Help</a></li>
-                    <li role="presentation"><a data-target="#" role="menuitem">Keyboard Shortcuts</a></li>
-                </ul>
-            </div>
+            <button id="btnMenu" type="button" class="btn btn-sm navbar-btn btn-bordered dropdown-toggle" title="Menu" data-toggle="dropdown" ><i class="fa fa-ellipsis-vertical" style="width: 10px"></i></button>
+            <ul id="listMenu" class="dropdown-menu" role="menu">
+                <li role="presentation"><a id="menuItemGremlin" data-target="#" role="menuitem">Gremlin Help</a></li>
+                <li role="presentation"><a id="menuItemKeyboard" data-target="#" role="menuitem" style="width: 250px"><span>Keyboard Shortcuts</span><span style="width: 60px; text-align: right; float: right">Ctrl+H</span></a></li>
+            </ul>
         </div>
     </div>
 </div>
 
-<div id="mainContainer" style="min-height: 100%">
-    <div class="pane ui-layout-center"></div>
-    <div class="pane ui-layout-east"></div>
-    <div class="pane ui-layout-south"></div>
-</div>
-
-<div id="components" style="display: none">
-    <div id="editorContainer" class="well" style="height: 100%; margin: 0">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-bordered" title="Header 1">h1</button>
-                    <button type="button" class="btn btn-sm btn-bordered" title="Header 2">h2</button>
-                    <button type="button" class="btn btn-sm btn-bordered" title="Header 3">h3</button>
-                </div>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-bordered" title="Bold"><i class="fa fa-bold"></i></button>
-                    <button type="button" class="btn btn-sm btn-bordered" title="Italic"><i class="fa fa-italic"></i></button>
-                    <button type="button" class="btn btn-sm btn-bordered"  title="Code"><i class="fa fa-code"></i></button>
-                </div>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-bordered" title="Unordered List"><i class="fa fa-list-ul"></i></button>
-                    <button type="button" class="btn btn-sm btn-bordered" title="Ordered List"><i class="fa fa-list-ol"></i></button>
-                    <button type="button" class="btn btn-sm btn-bordered" title="Blockquote"><i class="fa fa-quote-left"></i></button>
-                    <button type="button" class="btn btn-sm btn-bordered" title="Horizontal Rule"><i class="fa fa-minus"></i></button>
-                </div>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-sm" style="border: 1px solid #cccccc" title="Help"><i class="fa fa-question-circle"></i></button>
-                </div>
-            </div>
-        </div>
-        <div id="textContainer" class="row" style="height: 500px">
-            <div class="col-md-12" style="height: 100%; padding: 10px">
-                <textarea class="form-control" style="height: 100%; width: 100%"></textarea>
+<div id="replContainer" style="min-height: 100%; overflow: hidden">
+    <div id="replMain" class="repl-text" style="height: 100%; width: 100%; padding: 0; margin: 0; overflow: auto">
+        <div id="replConsole" class="repl-text" style="padding: 10px"></div>
+        <div id="replPrompt" class="repl-text" style="display: table; width: 100%; padding: 0 10px 10px 10px">
+            <div class="repl-text" style="display: table-cell; width: 70px; vertical-align: top">gremlin&gt;&nbsp;</div>
+            <div class="repl-text" style="display: table-cell; width: auto">
+                <textarea class="repl-text" style="width: 100%; border: 1px dashed #707070"></textarea>
             </div>
         </div>
     </div>
-    <div id="replContainer">
-        <div id="replMain" class="repl-text" style="height: 100%; width: 100%; padding: 0; margin: 0; overflow: auto">
-            <div id="replConsole" class="repl-text" style="padding: 10px"></div>
-            <div id="replPrompt" class="repl-text" style="display: table; width: 100%; padding: 0 10px 10px 10px">
-                <div class="repl-text" style="display: table-cell; width: 70px; vertical-align: top">gremlin&gt;&nbsp;</div>
-                <div class="repl-text" style="display: table-cell; width: auto">
-                    <textarea class="repl-text" style="width: 100%; border: 1px dashed #707070"></textarea>
-                </div>
-            </div>
-        </div>
-        <div id="replDetail" class="repl-text" style="height: 100%; width: 100%; padding: 0; margin: 0 0 0 0; overflow: auto; display: none"></div>
-        <div id="replStatus" class="repl-text-inverted" style="display: table; width: 100%; height: 20px; padding-left: 10px">
-            <div class="repl-text-inverted" style="display: table-cell; width: 120px"></div>
-            <div class="repl-text-inverted" style="display: table-cell; width: auto">
-                <input class="repl-text-inverted" type="text" style="background-color: #e2e2e2; width: 98%; display: none" />
-            </div>
+    <div id="replDetail" class="repl-text" style="height: 100%; width: 100%; padding: 0; margin: 0 0 0 0; overflow: auto; display: none"></div>
+    <div id="replStatus" class="repl-text-inverted" style="display: table; width: 100%; height: 23px; padding-left: 10px">
+        <div class="repl-text-inverted" style="display: table-cell; width: 120px"></div>
+        <div class="repl-text-inverted" style="display: table-cell; width: auto">
+            <input class="repl-text-inverted" type="text" style="background-color: #e2e2e2; width: 98%; display: none" />
         </div>
     </div>
 </div>
