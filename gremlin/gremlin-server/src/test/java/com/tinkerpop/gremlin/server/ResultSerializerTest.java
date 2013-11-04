@@ -183,7 +183,7 @@ public class ResultSerializerTest {
         assertEquals("b", innerJsonObject.optString("a"));
     }
 
-    @Test
+ /*   @Test
     public void serializeToJsonIteratorWithEmbeddedMap() throws Exception {
         Graph g = TinkerGraph.open(Optional.empty());
         final Vertex v = g.addVertex();
@@ -228,7 +228,7 @@ public class ResultSerializerTest {
         final JSONObject object3 = friendsProperty.getJSONObject(2);
         assertEquals(500, object3.getInt("x"));
         assertEquals("some", object3.getString("y"));
-    }
+    } */
 
     @Test
     public void serializeToJsonMapWithElementForKey() throws Exception {

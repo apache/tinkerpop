@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints;
 
+import java.io.Closeable;
 import java.util.function.Consumer;
 
 /**
@@ -7,7 +8,9 @@ import java.util.function.Consumer;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author TinkerPop Community (http://tinkerpop.com)
  */
-public interface Transactions extends AutoCloseable {
+public interface Transactions extends Closeable {
+
+    // TODO: create(), branch(), explicit(), context()
 
     public void open();
 

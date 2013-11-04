@@ -9,7 +9,7 @@ import java.util.function.BiPredicate;
 
 /**
  * For those graph engines that do not support the low-level querying of the edges of a vertex, then DefaultVertexQuery can be used.
- * DefaultVertexQuery assumes, at minimum, that Vertex.getOutEdges() and Vertex.getInEdges() is implemented by the respective Vertex.
+ * DefaultVertexQuery assumes, at minimum, that Vertex.query().edges() is implemented by the respective Vertex.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

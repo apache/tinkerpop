@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Property<V, T extends Thing> extends Thing {
+public interface Property<V, T extends Thing> extends Element {
 
     public enum Key {
         ID, LABEL;
@@ -64,6 +64,14 @@ public interface Property<V, T extends Thing> extends Thing {
     public <V2> Property<V2, Property> getProperty(String key) throws IllegalStateException;
 
     public <V2> Property<V2, Property> removeProperty(String key) throws IllegalStateException;
+
+    public default void remove() {
+        this.getThing().removeProperty(this.getKey());
+    }
+
+    public default Object getId() {
+        return this.hashCode();
+    }
 
     public static Property.Features getFeatures() {
         return new Features() {

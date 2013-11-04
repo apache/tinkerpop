@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 /**
  * For those graph engines that do not support the low-level querying of the vertices or edges, then DefaultGraphQuery can be used.
- * DefaultGraphQuery assumes, at minimum, that Graph.getVertices() and Graph.getEdges() is implemented by the respective Graph.
+ * DefaultGraphQuery assumes, at minimum, that Graph.query().vertices() and Graph.query().edges() is implemented by the respective Graph.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

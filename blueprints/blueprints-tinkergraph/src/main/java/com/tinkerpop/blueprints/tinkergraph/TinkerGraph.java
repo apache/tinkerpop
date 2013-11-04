@@ -135,7 +135,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     }
 
-    public Transactions transactions() {
+    public Transactions tx() {
         throw new UnsupportedOperationException();
     }
 
