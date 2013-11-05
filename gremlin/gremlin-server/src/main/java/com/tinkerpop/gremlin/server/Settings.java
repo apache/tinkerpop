@@ -27,7 +27,17 @@ public class Settings {
     public static Optional<Settings> read(final String file) {
         try {
             final InputStream input = new FileInputStream(new File(file));
+            return read(input);
+        } catch (Exception ex) {
+            return Optional.empty();
+        }
+    }
 
+    public static Optional<Settings> read(final InputStream stream) {
+        if (stream == null)
+            return Optional.empty();
+
+        try {
             final Constructor constructor = new Constructor(Settings.class);
             final TypeDescription settingsDescription = new TypeDescription(Settings.class);
             settingsDescription.putMapPropertyType("graphs", String.class, String.class);
@@ -42,8 +52,8 @@ public class Settings {
             constructor.addTypeDescription(settingsDescription);
 
             final Yaml yaml = new Yaml(constructor);
-            return Optional.of(yaml.loadAs(input, Settings.class));
-        } catch (FileNotFoundException fnfe) {
+            return Optional.of(yaml.loadAs(stream, Settings.class));
+        } catch (Exception fnfe) {
             return Optional.empty();
         }
     }
