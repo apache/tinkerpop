@@ -27,7 +27,7 @@
     </modules>
 
     <properties>
-        <blueprints.version>3.0.0-SNAPSHOT</blueprints.version>
+        <tinkerpop.version>3.0.0-SNAPSHOT</tinkerpop.version>
         <junit.version>4.11</junit.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

@@ -130,7 +130,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${gremlin.version}
+                    <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                     </argLine>
                 </configuration>
             </plugin>

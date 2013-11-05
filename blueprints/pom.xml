@@ -4,9 +4,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <groupId>com.tinkerpop</groupId>
+        <artifactId>tinkerpop3</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>com.tinkerpop.blueprints</groupId>
     <artifactId>blueprints</artifactId>
@@ -36,13 +37,6 @@
         <module>blueprints-tinkergraph</module>
         <module>blueprints-neo4j-graph</module>
     </modules>
-
-    <properties>
-        <blueprints.version>3.0.0-SNAPSHOT</blueprints.version>
-        <junit.version>4.11</junit.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    </properties>
 
     <build>
         <directory>${basedir}/target</directory>
