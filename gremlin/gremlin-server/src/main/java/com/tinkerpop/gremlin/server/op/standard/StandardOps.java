@@ -6,7 +6,11 @@ import com.tinkerpop.gremlin.server.OpProcessor;
 import com.tinkerpop.gremlin.server.RequestMessage;
 import com.tinkerpop.gremlin.server.ResultSerializer;
 import com.tinkerpop.gremlin.server.ServerTokens;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.EmptyByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.apache.commons.collections.iterators.ArrayIterator;
 import org.slf4j.Logger;
@@ -115,10 +119,15 @@ final class StandardOps {
         final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
         itty.forEachRemaining(j -> {
             try {
-                ctx.channel().write(new TextWebSocketFrame(serializer.serialize(j, context)));
+                ctx.channel().write(new TextWebSocketFrame(true, 0, serializer.serialize(j, context)));
             } catch (Exception ex) {
                 logger.warn("The result [{}] in the request {} could not be serialized and returned.", j, context.getRequestMessage(), ex);
             }
         });
+
+        final ByteBuf uuidBytes = Unpooled.directBuffer(16);
+        uuidBytes.writeLong(msg.requestId.getMostSignificantBits());
+        uuidBytes.writeLong(msg.requestId.getLeastSignificantBits());
+        ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
     }
 }

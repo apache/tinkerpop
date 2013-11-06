@@ -48,8 +48,9 @@ public class ScenarioGremlinAdditionTest extends AbstractGremlinServerPerformanc
         final String url = getWebSocketBaseUri();
         final WebSocketClient client = new WebSocketClient(url);
         client.open();
-        final Object o = client.eval("1+1");
-        assertEquals("2", (String) o);
+        final String result = client.<String>eval("[1,2,3,4,5,6,7]").findFirst().orElse("invalid");
+        //client.<String>eval("[1,2,3,4,5,6,7]").forEach(c-> System.out.println(c));
+        assertEquals("1", result);
         client.close();
     }
 }

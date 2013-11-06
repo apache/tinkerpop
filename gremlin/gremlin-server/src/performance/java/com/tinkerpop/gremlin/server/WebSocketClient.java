@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.tinkerpop.blueprints.util.StreamFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -16,11 +17,12 @@ import io.netty.handler.codec.http.websocketx.*;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * A temporary, basic and probably slightly flawed client from Gremlin Server. Not meant for use outside of testing.
@@ -33,13 +35,13 @@ class WebSocketClient {
     private Channel ch;
     private static final EventLoopGroup group = new NioEventLoopGroup();
 
-    protected static ConcurrentHashMap<UUID, ArrayBlockingQueue<JsonNode>> responses = new ConcurrentHashMap<>();
+    protected static ConcurrentHashMap<UUID, ArrayBlockingQueue<Optional<JsonNode>>> responses = new ConcurrentHashMap<>();
 
     public WebSocketClient(final String uri) {
         this.uri = URI.create(uri);
     }
 
-    static void putResponse(final UUID requestId, final JsonNode response) {
+    void putResponse(final UUID requestId, final Optional<JsonNode> response) {
         if (!responses.containsKey(requestId)) {
             // probably a timeout if we get here... ???
             System.out.println(String.format("No queue found in the response map: %s", requestId));
@@ -47,13 +49,13 @@ class WebSocketClient {
         }
 
         try {
-            final ArrayBlockingQueue<JsonNode> queue = responses.get(requestId);
+            final ArrayBlockingQueue<Optional<JsonNode>> queue = responses.get(requestId);
             if (queue != null) {
                 queue.put(response);
             }
             else {
                 // no queue for some reason....why ???
-                System.out.println(String.format("No queue found in the response map: %s", requestId));
+                System.out.println(String.format("No queue found in the response map*: %s", requestId));
             }
         }
         catch (InterruptedException e) {
@@ -102,7 +104,7 @@ class WebSocketClient {
         //group.shutdownGracefully();
     }
 
-    public <T> T eval(final String gremlin) throws IOException {
+    public <T> Stream<T> eval(final String gremlin) throws IOException {
         final RequestMessage msg = new RequestMessage(ServerTokens.OPS_EVAL);
         msg.requestId = UUID.randomUUID();
         msg.args = new HashMap<String, Object>() {{
@@ -110,28 +112,53 @@ class WebSocketClient {
             put(ServerTokens.ARGS_ACCEPT, "application/json");
         }};
 
-        final ArrayBlockingQueue<JsonNode> responseQueue = new ArrayBlockingQueue<>(1);
+        final ArrayBlockingQueue<Optional<JsonNode>> responseQueue = new ArrayBlockingQueue<>(256);
         final UUID requestId = msg.requestId;
         responses.put(requestId, responseQueue);
 
         ch.writeAndFlush(new TextWebSocketFrame(RequestMessage.Serializer.json(msg)));
 
-        JsonNode resultMessage;
-        try {
-            resultMessage = responseQueue.poll(8000, TimeUnit.MILLISECONDS);
-        } catch (Exception ex) {
-            responses.remove(requestId);
-            throw new IOException(ex);
+        return StreamSupport.stream(Spliterators.<T>spliteratorUnknownSize(new BlockingIterator<>(requestId), Spliterator.IMMUTABLE), false);
+    }
+
+    class BlockingIterator<T> implements Iterator<T> {
+        private final ArrayBlockingQueue<Optional<JsonNode>> queue;
+        private final UUID requestId;
+        private T current;
+
+        public BlockingIterator(final UUID requestId) {
+            this.requestId = requestId;
+            this.queue = responses.get(requestId);
         }
 
-        responses.remove(requestId);
+        @Override
+        public boolean hasNext() {
+            try {
+                final Optional<JsonNode> node = queue.poll(8000, TimeUnit.MILLISECONDS);
+                if (node == null) {
+                    System.out.println("time elapsed before a result was ready");
+                }
 
-        if (resultMessage == null)
-            throw new IOException(String.format("Message received response timeoutConnection (%s s)", 1000));
+                if (!node.isPresent()) {
+                    responses.remove(requestId);
+                    return false;
+                }
 
-        JsonNode o = resultMessage.get("result");
-        String tv = o.toString();
-        return (T) tv;
+                // todo: better job with types
+                this.current = (T) node.get().get("result").toString();
+                return true;
+            } catch (InterruptedException ie) {
+                //ie.printStackTrace();
+                System.out.println("hmmm...interrupted while waiting");
 
+                // todo: this isn't right...at least not exactly.  how do we terate out of a timeout.
+                return false;
+            }
+        }
+
+        @Override
+        public T next() {
+            return current;
+        }
     }
 }
