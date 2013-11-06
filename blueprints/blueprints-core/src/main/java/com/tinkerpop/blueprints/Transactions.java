@@ -10,15 +10,13 @@ import java.util.function.Consumer;
  */
 public interface Transactions extends Closeable {
 
-    // TODO: create(), branch(), explicit(), context()
-
     public void open();
 
     public void commit();
 
     public void rollback();
 
-    public <G extends Graph> G thread();
+    public <G extends Graph> G spawn();
 
     public boolean isOpen();
 
