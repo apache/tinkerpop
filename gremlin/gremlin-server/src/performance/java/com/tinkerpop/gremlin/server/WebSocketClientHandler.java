@@ -70,6 +70,10 @@ class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
         } else if (frame instanceof CloseWebSocketFrame)
             ch.close();
         else if (frame instanceof BinaryWebSocketFrame) {
+            // a binary frame witht he requestid in it basically represents the termination of a particular
+            // results sets serialization process.  at this point the iteration on the client side can be killed.
+            // pushing in an empty object to the stream will tell the client-side iterator to stop interpreting
+            // results on this request
             final ByteBuf bb = frame.content();
             final UUID requestId = new UUID(bb.readLong(), bb.readLong());
             client.putResponse(requestId, Optional.empty());

@@ -125,6 +125,7 @@ final class StandardOps {
             }
         });
 
+        // sending the requestId acts as a termination message for this request.
         final ByteBuf uuidBytes = Unpooled.directBuffer(16);
         uuidBytes.writeLong(msg.requestId.getMostSignificantBits());
         uuidBytes.writeLong(msg.requestId.getLeastSignificantBits());
