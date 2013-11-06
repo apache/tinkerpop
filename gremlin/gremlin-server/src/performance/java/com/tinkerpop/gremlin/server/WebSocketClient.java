@@ -121,6 +121,11 @@ class WebSocketClient {
         return StreamSupport.stream(Spliterators.<T>spliteratorUnknownSize(new BlockingIterator<>(requestId), Spliterator.IMMUTABLE), false);
     }
 
+    /**
+     * The BlockingIterator iterates over the queue of results returned from a request.  It will wait for a result
+     * to appear in the queue and block on hasNext() until it does.  It will watch for a termination event to
+     * learn that the results have finished streaming.
+     */
     class BlockingIterator<T> implements Iterator<T> {
         private final ArrayBlockingQueue<Optional<JsonNode>> queue;
         private final UUID requestId;
