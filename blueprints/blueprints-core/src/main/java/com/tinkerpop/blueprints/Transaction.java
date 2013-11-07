@@ -20,7 +20,7 @@ public interface Transaction extends Closeable {
 
     public void rollback();
 
-    public <G extends Graph, R> Workload<G, R> encapsulate(Function<G, R> work);
+    public <G extends Graph, R> Workload<G, R> submit(Function<G, R> work);
 
     public <G extends Graph> G spawn();
 
