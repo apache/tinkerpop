@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * Reader interface.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphReader {
