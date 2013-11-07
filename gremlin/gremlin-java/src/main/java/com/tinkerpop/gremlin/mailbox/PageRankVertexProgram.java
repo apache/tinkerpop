@@ -1,22 +1,26 @@
-package com.tinkerpop.gremlin.computer;
+package com.tinkerpop.gremlin.mailbox;
 
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.computer.GraphMemory;
-import com.tinkerpop.blueprints.computer.VertexProgram;
+import com.tinkerpop.blueprints.mailbox.GraphMemory;
+import com.tinkerpop.blueprints.mailbox.Mailbox;
+import com.tinkerpop.blueprints.mailbox.VertexProgram;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
+import com.tinkerpop.blueprints.util.StreamFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PageRankVertexProgram implements VertexProgram {
+public class PageRankVertexProgram implements VertexProgram<Double> {
 
     protected final Map<String, KeyType> computeKeys = new HashMap<String, KeyType>();
-    private VertexQueryBuilder outgoingQuery = new VertexQueryBuilder().direction(Direction.OUT);
-    private VertexQueryBuilder incomingQuery = new VertexQueryBuilder().direction(Direction.IN);
+    private VertexQueryBuilder adjacentQuery = new VertexQueryBuilder().direction(Direction.OUT);
 
     public static final String PAGE_RANK = PageRankVertexProgram.class.getName() + ".pageRank";
     public static final String EDGE_COUNT = PageRankVertexProgram.class.getName() + ".edgeCount";
@@ -28,6 +32,7 @@ public class PageRankVertexProgram implements VertexProgram {
     protected PageRankVertexProgram() {
         computeKeys.put(PAGE_RANK, VertexProgram.KeyType.VARIABLE);
         computeKeys.put(EDGE_COUNT, VertexProgram.KeyType.CONSTANT);
+        computeKeys.put(Property.Key.hidden("mailbox"), KeyType.VARIABLE);
     }
 
 
@@ -39,16 +44,22 @@ public class PageRankVertexProgram implements VertexProgram {
 
     }
 
-    public void execute(final Vertex vertex, final GraphMemory graphMemory) {
+    public void execute(final Vertex vertex, Mailbox<Double> mailbox, final GraphMemory graphMemory) {
         if (graphMemory.isInitialIteration()) {
-            vertex.setProperty(PAGE_RANK, 1.0d / this.vertexCountAsDouble);
-            vertex.setProperty(EDGE_COUNT, (double) this.outgoingQuery.build(vertex).count());
+            double newPageRank = 1.0d / this.vertexCountAsDouble;
+            List<Object> ids = StreamFactory.stream(this.adjacentQuery.build(vertex).vertices()).map(Vertex::getId).collect(Collectors.toList());
+            vertex.setProperty(PAGE_RANK, newPageRank);
+            vertex.setProperty(EDGE_COUNT, ids.size());
+            mailbox.sendMessage(vertex, ids, newPageRank / ids.size());
         } else {
             double newPageRank = 0.0d;
-            for (final Vertex adjacent : this.incomingQuery.build(vertex).vertices()) {
-                newPageRank += adjacent.<Double>getValue(PAGE_RANK) / adjacent.<Double>getValue(EDGE_COUNT);
+            for (final Double pageRank : mailbox.getMessages(vertex)) {
+                newPageRank += pageRank;
             }
-            vertex.setProperty(PAGE_RANK, (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble));
+            newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
+            vertex.setProperty(PAGE_RANK, newPageRank);
+            List<Object> ids = StreamFactory.stream(this.adjacentQuery.build(vertex).vertices()).map(Vertex::getId).collect(Collectors.toList());
+            mailbox.sendMessage(vertex, ids, newPageRank / ((Integer) vertex.getValue(EDGE_COUNT)).doubleValue());
         }
     }
 
@@ -76,13 +87,8 @@ public class PageRankVertexProgram implements VertexProgram {
             return this;
         }
 
-        public Builder outgoing(final VertexQueryBuilder outgoingQuery) {
-            this.vertexProgram.outgoingQuery = outgoingQuery;
-            return this;
-        }
-
-        public Builder incoming(final VertexQueryBuilder incomingQuery) {
-            this.vertexProgram.incomingQuery = incomingQuery;
+        public Builder adjacent(final VertexQueryBuilder adjacentQuery) {
+            this.vertexProgram.adjacentQuery = adjacentQuery;
             return this;
         }
 

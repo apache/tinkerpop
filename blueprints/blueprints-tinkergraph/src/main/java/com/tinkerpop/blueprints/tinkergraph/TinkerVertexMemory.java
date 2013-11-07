@@ -2,9 +2,9 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.computer.Isolation;
-import com.tinkerpop.blueprints.computer.VertexProgram;
-import com.tinkerpop.blueprints.computer.VertexSystemMemory;
+import com.tinkerpop.blueprints.mailbox.Isolation;
+import com.tinkerpop.blueprints.mailbox.VertexProgram;
+import com.tinkerpop.blueprints.mailbox.VertexSystemMemory;
 
 import java.util.HashMap;
 import java.util.Map;

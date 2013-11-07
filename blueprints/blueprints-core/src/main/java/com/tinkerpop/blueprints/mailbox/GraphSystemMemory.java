@@ -3,7 +3,7 @@ package com.tinkerpop.blueprints.mailbox;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface GraphSystemMemory {
+public interface GraphSystemMemory extends GraphMemory {
 
     public void incrIteration();
 
