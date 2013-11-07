@@ -38,7 +38,7 @@ public class TinkerGraphTest {
         g.createIndex("blah", Vertex.class);
     }
 
-    @Test
+    /*@Test
     public void testLambdaProgram() {
         TinkerGraph g = TinkerGraph.open(Optional.empty());
         Stream.generate(g::addVertex).limit(5000).count();
@@ -56,6 +56,6 @@ public class TinkerGraphTest {
         System.out.println("Runtime: " + result.getGraphMemory().getRuntime());
         StreamFactory.stream(g.query().vertices())
                 .forEach(v -> System.out.println(result.getVertexMemory().getProperty(v, "i").getValue()));
-    }
+    }*/
 
 }
