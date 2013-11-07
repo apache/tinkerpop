@@ -8,7 +8,7 @@ import java.util.function.Consumer;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author TinkerPop Community (http://tinkerpop.com)
  */
-public interface Transactions extends Closeable {
+public interface Transaction extends Closeable {
 
     public void open();
 
@@ -28,8 +28,8 @@ public interface Transactions extends Closeable {
         if (this.isOpen()) this.commit();
     }
 
-    public Transactions onReadWrite(Consumer<Transactions> consumer);
+    public Transaction onReadWrite(Consumer<Transaction> consumer);
 
-    public Transactions onClose(Consumer<Transactions> consumer);
+    public Transaction onClose(Consumer<Transaction> consumer);
 
 }
