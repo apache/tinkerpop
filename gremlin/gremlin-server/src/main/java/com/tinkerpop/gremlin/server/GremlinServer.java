@@ -29,6 +29,7 @@ public class GremlinServer {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
     private final Settings settings;
     private static Optional<Graphs> graphs = Optional.empty();
+    private Channel ch;
 
     public GremlinServer(final Settings settings) {
         this.settings = settings;
@@ -43,7 +44,7 @@ public class GremlinServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new WebSocketServerInitializer(this.settings));
 
-            final Channel ch = b.bind(settings.host, settings.port).sync().channel();
+            ch = b.bind(settings.host, settings.port).sync().channel();
             logger.info("Web socket server started at port {}.", settings.port);
             logger.info("Open your browser and navigate to http://localhost:{}/", settings.port);
 
@@ -52,6 +53,10 @@ public class GremlinServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+    }
+
+    public void stop() {
+        ch.close();
     }
 
     public static void main(final String[] args) throws Exception {
@@ -130,11 +135,23 @@ public class GremlinServer {
         }
 
         public void rollbackAll() {
-            graphs.entrySet().forEach(e->e.getValue().transactions().rollback());
+            graphs.entrySet().forEach(e-> {
+                try {
+                    e.getValue().tx().rollback();
+                } catch (UnsupportedOperationException uoe) {
+                    // TODO: use features when ready
+                }
+            });
         }
 
         public void commitAll() {
-            graphs.entrySet().forEach(e->e.getValue().transactions().commit());
+            graphs.entrySet().forEach(e->{
+                try {
+                    e.getValue().tx().commit();
+                } catch (UnsupportedOperationException uoe) {
+                    // TODO: use features when ready
+                }
+            });
         }
     }
 }

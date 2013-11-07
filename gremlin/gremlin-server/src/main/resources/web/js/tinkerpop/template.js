@@ -1,8 +1,6 @@
 define(
     [
         "jquery",
-        "dust",
-        "dust-helpers",
         "underscore"
     ],
     function () {
@@ -21,10 +19,6 @@ define(
                             type: "GET",
                             success: function (data) {
                                 _templates[name] = data;
-
-                                if (!data.match(/{{.*}}/)) {
-                                    dust.loadSource(dust.compile(data, name));
-                                }
                             },
                             error: function (jqXHR, textStatus, errorThrown) {
                             }

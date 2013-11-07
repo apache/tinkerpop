@@ -1,11 +1,12 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
-import com.tinkerpop.blueprints.computer.ComputeResult;
-import com.tinkerpop.blueprints.computer.GraphComputer;
-import com.tinkerpop.blueprints.computer.GraphMemory;
-import com.tinkerpop.blueprints.computer.Isolation;
-import com.tinkerpop.blueprints.computer.VertexMemory;
-import com.tinkerpop.blueprints.computer.VertexProgram;
+
+import com.tinkerpop.blueprints.mailbox.ComputeResult;
+import com.tinkerpop.blueprints.mailbox.GraphComputer;
+import com.tinkerpop.blueprints.mailbox.GraphMemory;
+import com.tinkerpop.blueprints.mailbox.Isolation;
+import com.tinkerpop.blueprints.mailbox.VertexMemory;
+import com.tinkerpop.blueprints.mailbox.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
 /**
@@ -17,6 +18,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
     private final TinkerGraphMemory graphMemory = new TinkerGraphMemory();
+    private final TinkerMailbox mailbox = new TinkerMailbox();
     private TinkerVertexMemory vertexMemory = new TinkerVertexMemory(this.isolation);
 
     public TinkerGraphComputer(final TinkerGraph graph) {
@@ -42,7 +44,7 @@ public class TinkerGraphComputer implements GraphComputer {
         boolean done = false;
         while (!done) {
             StreamFactory.parallelStream(this.graph.query().vertices()).forEach(vertex ->
-                    vertexProgram.execute(((TinkerVertex) vertex).createClone(TinkerVertex.State.CENTRIC, vertex.getId().toString(), vertexMemory), graphMemory));
+                    vertexProgram.execute(((TinkerVertex) vertex).createClone(TinkerVertex.State.CENTRIC, vertex.getId().toString(), vertexMemory), mailbox, graphMemory));
 
             this.vertexMemory.completeIteration();
             this.graphMemory.incrIteration();

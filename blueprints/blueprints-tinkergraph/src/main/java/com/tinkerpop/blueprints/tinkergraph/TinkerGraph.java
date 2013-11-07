@@ -5,9 +5,9 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Transactions;
+import com.tinkerpop.blueprints.Transaction;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.computer.GraphComputer;
+import com.tinkerpop.blueprints.mailbox.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
 import com.tinkerpop.blueprints.util.StringFactory;
@@ -135,7 +135,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     }
 
-    public Transactions transactions() {
+    public Transaction tx() {
         throw new UnsupportedOperationException();
     }
 

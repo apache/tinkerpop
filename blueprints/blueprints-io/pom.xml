@@ -3,9 +3,10 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>blueprints</artifactId>
         <groupId>com.tinkerpop.blueprints</groupId>
+        <artifactId>blueprints</artifactId>
         <version>3.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>blueprints-io</artifactId>
@@ -16,7 +17,7 @@
         <dependency>
             <groupId>com.tinkerpop.blueprints</groupId>
             <artifactId>blueprints-core</artifactId>
-            <version>${blueprints.version}</version>
+            <version>${parent.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

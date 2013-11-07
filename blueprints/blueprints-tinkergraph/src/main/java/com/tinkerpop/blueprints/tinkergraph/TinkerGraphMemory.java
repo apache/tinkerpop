@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
-import com.tinkerpop.blueprints.computer.GraphSystemMemory;
+import com.tinkerpop.blueprints.mailbox.GraphMemory;
+import com.tinkerpop.blueprints.mailbox.GraphSystemMemory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 
@@ -45,6 +46,10 @@ public class RequestMessage {
             } catch (Exception ex) {
                 return Optional.empty();
             }
+        }
+
+        public static String json(final RequestMessage msg) throws JsonProcessingException {
+            return mapper.writeValueAsString(msg);
         }
     }
 

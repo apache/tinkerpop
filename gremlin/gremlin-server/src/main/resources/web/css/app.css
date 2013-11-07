@@ -23,51 +23,15 @@ body {
     border-color: #cccccc;
 }
 
-.navbar-default {
-    /* Old browsers */
-    background-color: #eaeaea;
-
-    /* IE10 Consumer Preview */
-    background-image: -ms-linear-gradient(top, #eaeaea 0%, #fafafa 100%);
-
-    /* Mozilla Firefox */
-    background-image: -moz-linear-gradient(top, #eaeaea 0%, #fafafa 100%);
-
-    /* Opera */
-    background-image: -o-linear-gradient(top, #eaeaea 0%, #fafafa 100%);
-
-    /* Webkit (Safari/Chrome 10) */
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #eaeaea), color-stop(1, #fafafa));
-
-    /* Webkit (Chrome 11+) */
-    background-image: -webkit-linear-gradient(top, #eaeaea 0%, #fafafa 100%);
-
-    /* W3C Markup, IE10 Release Preview */
-    background-image: linear-gradient(to bottom, #eaeaea 0%, #fafafa 100%);
-}
-
-.navbar-default .navbar-nav > li > a {
-    color: #222222;
-}
-
 .dropdown-menu > li > a:hover {
     color: #ffffff;
     background-color: rgb(0, 129, 194);
     background-image: linear-gradient(rgb(0, 136, 204), rgb(0, 119, 179));
+    cursor: pointer;
 }
 
 .btn-bordered {
     border: 1px solid #cccccc;
-}
-
-#mainContainer {
-    background:	#999;
-    margin: 0 auto;
-    width: 100%;
-}
-
-.pane {
-    display: none; /* will appear when layout inits */
 }
 
 .repl-text {
