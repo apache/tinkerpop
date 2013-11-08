@@ -3,7 +3,7 @@ package com.tinkerpop.blueprints;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Element extends Thing {
+public interface Element extends Thing, Featureable {
 
     public Object getId();
 

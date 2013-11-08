@@ -1,7 +1,7 @@
 package com.tinkerpop.blueprints.mailbox;
 
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
+import com.tinkerpop.blueprints.query.util.QueryBuilder;
 
 import java.io.Serializable;
 
@@ -10,8 +10,8 @@ import java.io.Serializable;
  */
 public interface Mailbox<M extends Serializable> {
 
-    public Iterable<M> getMessages(Vertex vertex, VertexQueryBuilder query);
+    public Iterable<M> getMessages(Vertex vertex, QueryBuilder query);
 
-    public void sendMessage(Vertex vertex, VertexQueryBuilder query, M message);
+    public void sendMessage(Vertex vertex, QueryBuilder query, M message);
 
 }

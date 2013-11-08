@@ -12,7 +12,7 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Graph extends AutoCloseable, Thing {
+public interface Graph extends AutoCloseable, Thing, Featureable {
 
     public static <G extends Graph> G open(Optional<Configuration> configuration) {
         throw new UnsupportedOperationException("Implementations must override this method");

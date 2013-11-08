@@ -12,7 +12,7 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author TinkerPop Community (http://tinkerpop.com)
  */
-public interface Transaction extends Closeable {
+public interface Transaction extends Closeable, Featureable {
 
     public void open();
 
@@ -38,6 +38,15 @@ public interface Transaction extends Closeable {
 
     public Transaction onClose(Consumer<Transaction> consumer);
 
+    public static Transaction.Features getFeatures() {
+        return new Features() {
+        };
+    }
+
+    public interface Features extends com.tinkerpop.blueprints.Features {
+
+    }
+
     /**
      * A Workload represents a unit of work constructed by the encapsulate() method on the Transaction interface.
      * The unit of work is a Function typically containing mutations to the Graph.  The Workload is responsible for
@@ -57,7 +66,7 @@ public interface Transaction extends Closeable {
         /**
          * Creates a new Workload that will be tried to be executed within a transaction.
          *
-         * @param g The Graph instance on which the work will be performed.
+         * @param g    The Graph instance on which the work will be performed.
          * @param work The work to be executed on the Graph instance which will optionally return a value.
          */
         public Workload(final G g, final Function<G, R> work) {
@@ -139,7 +148,7 @@ public interface Transaction extends Closeable {
          * RuntimeException and immediately fail.
          */
         public R retry(final int tries, final long delay, final Set<Class> exceptionsToRetryOn) {
-            return attempt(retry(tries, exceptionsToRetryOn, i->delay));
+            return attempt(retry(tries, exceptionsToRetryOn, i -> delay));
         }
 
         /**
@@ -172,7 +181,7 @@ public interface Transaction extends Closeable {
          * will generate a RuntimeException and immediately fail.
          */
         public R exponentialBackoff(final int tries, final long initialDelay, final Set<Class> exceptionsToRetryOn) {
-            return attempt(retry(tries, exceptionsToRetryOn, retryCount-> (long) (initialDelay * Math.pow(2, retryCount))));
+            return attempt(retry(tries, exceptionsToRetryOn, retryCount -> (long) (initialDelay * Math.pow(2, retryCount))));
         }
 
         /**
@@ -192,7 +201,10 @@ public interface Transaction extends Closeable {
 
                     // increase time after each failed attempt though there is no delay on the first try
                     if (ix > 0)
-                        try { Thread.sleep(delay.apply(ix)); } catch (InterruptedException ie) { }
+                        try {
+                            Thread.sleep(delay.apply(ix));
+                        } catch (InterruptedException ie) {
+                        }
 
                     try {
                         returnValue = w.apply(g);

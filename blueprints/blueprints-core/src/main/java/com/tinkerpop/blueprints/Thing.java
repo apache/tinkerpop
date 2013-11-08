@@ -11,10 +11,6 @@ import java.util.Set;
  */
 public interface Thing {
 
-    public static Features getFeatures() {
-        throw new UnsupportedOperationException();
-    }
-
     public default Set<String> getPropertyKeys() {
         return this.getProperties().keySet();
     }

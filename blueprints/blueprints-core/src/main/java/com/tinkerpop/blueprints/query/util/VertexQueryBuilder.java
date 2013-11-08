@@ -10,7 +10,7 @@ import java.util.function.BiPredicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexQueryBuilder extends DefaultVertexQuery {
+public class VertexQueryBuilder extends DefaultVertexQuery implements QueryBuilder {
 
     public VertexQueryBuilder has(final String key) {
         super.has(key);
@@ -62,17 +62,6 @@ public class VertexQueryBuilder extends DefaultVertexQuery {
         return this;
     }
 
-    public Iterable<Edge> edges() {
-        throw new UnsupportedOperationException();
-    }
-
-    public Iterable<Vertex> vertices() {
-        throw new UnsupportedOperationException();
-    }
-
-    public long count() {
-        throw new UnsupportedOperationException();
-    }
 
     public VertexQuery build(final Vertex vertex) {
         VertexQuery query = vertex.query();
@@ -90,5 +79,17 @@ public class VertexQueryBuilder extends DefaultVertexQuery {
             query.has(hasContainer.key, hasContainer.predicate, hasContainer.value);
         }
         return query;
+    }
+
+    public Iterable<Edge> edges() {
+        throw new UnsupportedOperationException();
+    }
+
+    public Iterable<Vertex> vertices() {
+        throw new UnsupportedOperationException();
+    }
+
+    public long count() {
+        throw new UnsupportedOperationException();
     }
 }

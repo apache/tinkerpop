@@ -45,11 +45,11 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     public void execute(final Vertex vertex, Mailbox<Double> mailbox, final GraphMemory graphMemory) {
         if (graphMemory.isInitialIteration()) {
-            double newPageRank = 1.0d / this.vertexCountAsDouble;
+            double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(adjacentQuery.build(vertex).count()).doubleValue();
-            vertex.setProperty(PAGE_RANK, newPageRank);
+            vertex.setProperty(PAGE_RANK, initialPageRank);
             vertex.setProperty(EDGE_COUNT, edgeCount);
-            mailbox.sendMessage(vertex, adjacentQuery, newPageRank / edgeCount);
+            mailbox.sendMessage(vertex, adjacentQuery, initialPageRank / edgeCount);
         } else {
             double newPageRank = 0.0d;
             for (final Double pageRank : mailbox.getMessages(vertex, this.oppositeQuery)) {
