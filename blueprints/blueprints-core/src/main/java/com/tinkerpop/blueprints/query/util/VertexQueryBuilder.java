@@ -57,6 +57,11 @@ public class VertexQueryBuilder extends DefaultVertexQuery {
         return this;
     }
 
+    public VertexQueryBuilder reverse() {
+        this.direction = this.direction.opposite();
+        return this;
+    }
+
     public Iterable<Edge> edges() {
         throw new UnsupportedOperationException();
     }
@@ -75,5 +80,15 @@ public class VertexQueryBuilder extends DefaultVertexQuery {
             query = query.has(hasContainer.key, hasContainer.predicate, hasContainer.value);
         }
         return query.limit(this.limit).labels(this.labels).direction(this.direction);
+    }
+
+    public VertexQueryBuilder build() {
+        final VertexQueryBuilder query = new VertexQueryBuilder();
+        query.direction(this.direction);
+        query.labels(this.labels);
+        for (final HasContainer hasContainer : this.hasContainers) {
+            query.has(hasContainer.key, hasContainer.predicate, hasContainer.value);
+        }
+        return query;
     }
 }
