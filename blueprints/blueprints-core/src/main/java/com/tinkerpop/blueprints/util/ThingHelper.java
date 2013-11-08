@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Thing;
 
 /**
@@ -19,14 +20,14 @@ public class ThingHelper {
      */
     public static void validateProperty(final Thing thing, final String key, final Object value) throws IllegalArgumentException {
         if (null == value)
-            throw ExceptionFactory.propertyValueCanNotBeNull();
+            throw Property.Features.propertyValueCanNotBeNull();
         if (null == key)
-            throw ExceptionFactory.propertyKeyCanNotBeNull();
+            throw Property.Features.propertyKeyCanNotBeNull();
         if (key.equals(StringFactory.ID))
-            throw ExceptionFactory.propertyKeyIdIsReserved();
+            throw Property.Features.propertyKeyIdIsReserved();
         if (thing instanceof Edge && key.equals(StringFactory.LABEL))
-            throw ExceptionFactory.propertyKeyLabelIsReservedForEdges();
+            throw Property.Features.propertyKeyLabelIsReservedForEdges();
         if (key.isEmpty())
-            throw ExceptionFactory.propertyKeyCanNotBeEmpty();
+            throw Property.Features.propertyKeyCanNotBeEmpty();
     }
 }

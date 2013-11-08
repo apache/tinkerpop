@@ -21,7 +21,9 @@ public interface Edge extends Element {
     }
 
     public interface Features extends com.tinkerpop.blueprints.Features {
-
+        public static IllegalArgumentException edgeLabelCanNotBeNull() {
+            return new IllegalArgumentException("Edge label can not be null");
+        }
     }
 
 }

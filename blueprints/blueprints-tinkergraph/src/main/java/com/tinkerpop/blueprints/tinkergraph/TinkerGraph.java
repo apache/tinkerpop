@@ -9,7 +9,6 @@ import com.tinkerpop.blueprints.Transaction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.mailbox.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
-import com.tinkerpop.blueprints.util.ExceptionFactory;
 import com.tinkerpop.blueprints.util.StringFactory;
 import com.tinkerpop.blueprints.util.ThingHelper;
 import org.apache.commons.configuration.Configuration;
@@ -74,7 +73,7 @@ public class TinkerGraph implements Graph, Serializable {
 
         if (null != idString) {
             if (this.vertices.containsKey(idString))
-                throw ExceptionFactory.vertexWithIdAlreadyExists(idString);
+                throw Features.vertexWithIdAlreadyExists(idString);
         } else {
             idString = TinkerHelper.getNextId(this);
         }
@@ -136,7 +135,7 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
     public Transaction tx() {
-        throw new UnsupportedOperationException();
+        throw Graph.Features.transactionsNotSupported();
     }
 
 
@@ -148,41 +147,32 @@ public class TinkerGraph implements Graph, Serializable {
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
 
     public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
-        if (elementClass == null)
-            throw ExceptionFactory.classForElementCannotBeNull();
-
         if (Vertex.class.isAssignableFrom(elementClass)) {
             this.vertexIndex.createKeyIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
             this.edgeIndex.createKeyIndex(key);
         } else {
-            throw ExceptionFactory.classIsNotIndexable(elementClass);
+            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
     }
 
     public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
-        if (elementClass == null)
-            throw ExceptionFactory.classForElementCannotBeNull();
-
         if (Vertex.class.isAssignableFrom(elementClass)) {
             this.vertexIndex.dropKeyIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
             this.edgeIndex.dropKeyIndex(key);
         } else {
-            throw ExceptionFactory.classIsNotIndexable(elementClass);
+            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
     }
 
     public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
-        if (elementClass == null)
-            throw ExceptionFactory.classForElementCannotBeNull();
-
         if (Vertex.class.isAssignableFrom(elementClass)) {
             return this.vertexIndex.getIndexedKeys();
         } else if (Edge.class.isAssignableFrom(elementClass)) {
             return this.edgeIndex.getIndexedKeys();
         } else {
-            throw ExceptionFactory.classIsNotIndexable(elementClass);
+            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
     }
 }

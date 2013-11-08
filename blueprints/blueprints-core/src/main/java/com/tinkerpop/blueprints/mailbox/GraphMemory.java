@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints.mailbox;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -18,6 +20,8 @@ public interface GraphMemory {
     public long getRuntime();
 
     public boolean isInitialIteration();
+
+    //public <M extends Serializable> Mailbox<M> getMailbox();
 
     /*public void min(String key, double value);
 

@@ -2,9 +2,9 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.ExceptionFactory;
 import com.tinkerpop.blueprints.util.StringFactory;
 import com.tinkerpop.blueprints.util.ThingHelper;
 
@@ -57,7 +57,7 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
         else if (direction.equals(Direction.OUT))
             return this.outVertex;
         else
-            throw ExceptionFactory.bothIsNotSupported();
+            throw Element.Features.bothIsNotSupported();
     }
 
     public void remove() {

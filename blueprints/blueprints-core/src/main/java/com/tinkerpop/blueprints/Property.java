@@ -1,7 +1,5 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.util.ExceptionFactory;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -91,6 +89,38 @@ public interface Property<V, T extends Thing> extends Element {
         public default boolean supportsIntegerValues() {
             return true;
         }
+
+        public static IllegalArgumentException propertyKeyIsReserved(final String key) {
+            return new IllegalArgumentException("Property key is reserved for all elements: " + key);
+        }
+
+        public static IllegalArgumentException propertyKeyIdIsReserved() {
+            return new IllegalArgumentException("Property key is reserved for all elements: id");
+        }
+
+        public static IllegalArgumentException propertyKeyLabelIsReservedForEdges() {
+            return new IllegalArgumentException("Property key is reserved for all edges: label");
+        }
+
+        public static IllegalArgumentException propertyKeyCanNotBeEmpty() {
+            return new IllegalArgumentException("Property key can not be the empty string");
+        }
+
+        public static IllegalArgumentException propertyKeyCanNotBeNull() {
+            return new IllegalArgumentException("Property key can not be null");
+        }
+
+        public static IllegalArgumentException propertyValueCanNotBeNull() {
+            return new IllegalArgumentException("Property value can not be null");
+        }
+
+        public static IllegalStateException propertyPropertyCanNotHaveAProperty() {
+            throw new IllegalStateException("A property's property can not have a property");
+        }
+
+        public static NoSuchElementException propertyHasNoValue() {
+            throw new NoSuchElementException("The property has no value and thus, does not exist");
+        }
     }
 
     public static Property[] of(Object... keyValues) {
@@ -154,22 +184,22 @@ public interface Property<V, T extends Thing> extends Element {
 
                         @Override
                         public Property setProperty(String key, Object value) throws IllegalStateException {
-                            throw ExceptionFactory.propertyPropertyCanNotHaveAProperty();
+                            throw Features.propertyPropertyCanNotHaveAProperty();
                         }
 
                         @Override
                         public Property getProperty(String key) throws IllegalStateException {
-                            throw ExceptionFactory.propertyPropertyCanNotHaveAProperty();
+                            throw Features.propertyPropertyCanNotHaveAProperty();
                         }
 
                         @Override
                         public Property removeProperty(String key) throws IllegalStateException {
-                            throw ExceptionFactory.propertyPropertyCanNotHaveAProperty();
+                            throw Features.propertyPropertyCanNotHaveAProperty();
                         }
 
                         @Override
                         public Map<String, Property> getProperties() {
-                            throw ExceptionFactory.propertyPropertyCanNotHaveAProperty();
+                            throw Features.propertyPropertyCanNotHaveAProperty();
                         }
                     });
                     return null == property ? Property.empty() : property;
@@ -201,7 +231,7 @@ public interface Property<V, T extends Thing> extends Element {
 
             @Override
             public V getValue() throws NoSuchElementException {
-                throw ExceptionFactory.propertyHasNoValue();
+                throw Features.propertyHasNoValue();
             }
 
             @Override

@@ -1,6 +1,5 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
-import com.tinkerpop.blueprints.mailbox.GraphMemory;
 import com.tinkerpop.blueprints.mailbox.GraphSystemMemory;
 
 import java.util.Map;

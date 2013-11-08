@@ -1,8 +1,8 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.util.ExceptionFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +19,7 @@ class TinkerHelper {
 
     protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Property... properties) {
         if (label == null)
-            throw ExceptionFactory.edgeLabelCanNotBeNull();
+            throw Edge.Features.edgeLabelCanNotBeNull();
 
         String idString = Stream.of(properties)
                 .filter(p -> p.is(Property.Key.ID))
@@ -30,7 +30,7 @@ class TinkerHelper {
         final Edge edge;
         if (null != idString) {
             if (graph.edges.containsKey(idString))
-                throw ExceptionFactory.edgeWithIdAlreadyExist(idString);
+                throw Graph.Features.edgeWithIdAlreadyExist(idString);
         } else {
             idString = TinkerHelper.getNextId(graph);
         }

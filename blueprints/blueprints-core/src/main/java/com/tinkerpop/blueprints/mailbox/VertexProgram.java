@@ -10,17 +10,16 @@ import java.util.Objects;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface VertexProgram<T extends Serializable> {
+public interface VertexProgram<M extends Serializable> {
 
     public enum KeyType {
         VARIABLE,
         CONSTANT
     }
 
-
     public void setup(GraphMemory graphMemory);
 
-    public void execute(Vertex vertex, Mailbox<T> mailbox, GraphMemory graphMemory);
+    public void execute(Vertex vertex, Mailbox<M> mailbox, GraphMemory graphMemory);
 
     public boolean terminate(GraphMemory graphMemory);
 

@@ -44,7 +44,17 @@ public interface Transaction extends Closeable, Featureable {
     }
 
     public interface Features extends com.tinkerpop.blueprints.Features {
+        public static IllegalStateException transactionAlreadyOpen() {
+            return new IllegalStateException("Stop the current transaction before opening another");
+        }
 
+        public static IllegalStateException transactionMustBeOpenToReadWrite() {
+            return new IllegalStateException("Open a transaction before attempting to read/write the transaction");
+        }
+
+        public static IllegalStateException openTransactionsOnClose() {
+            return new IllegalStateException("Commit or rollback all outstanding transactions before closing the graph");
+        }
     }
 
     /**

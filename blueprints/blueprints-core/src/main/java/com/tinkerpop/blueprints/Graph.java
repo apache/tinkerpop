@@ -49,5 +49,29 @@ public interface Graph extends AutoCloseable, Thing, Featureable {
         public default boolean supportsComputer() {
             return true;
         }
+
+        public static UnsupportedOperationException transactionsNotSupported() {
+            return new UnsupportedOperationException("Graph does not support transactions");
+        }
+
+        public static IllegalArgumentException vertexIdCanNotBeNull() {
+            return new IllegalArgumentException("Vertex id can not be null");
+        }
+
+        public static IllegalArgumentException edgeIdCanNotBeNull() {
+            return new IllegalArgumentException("Edge id can not be null");
+        }
+
+        public static IllegalArgumentException vertexWithIdAlreadyExists(final Object id) {
+            return new IllegalArgumentException("Vertex with id already exists: " + id);
+        }
+
+        public static IllegalArgumentException edgeWithIdAlreadyExist(final Object id) {
+            return new IllegalArgumentException("Edge with id already exists: " + id);
+        }
+
+        public static IllegalStateException vertexWithIdDoesNotExist(final Object id) {
+            return new IllegalStateException("Vertex with id does not exist: " + id);
+        }
     }
 }
