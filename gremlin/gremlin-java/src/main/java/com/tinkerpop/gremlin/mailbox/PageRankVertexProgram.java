@@ -49,15 +49,15 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             double edgeCount = Long.valueOf(adjacentQuery.build(vertex).count()).doubleValue();
             vertex.setProperty(PAGE_RANK, newPageRank);
             vertex.setProperty(EDGE_COUNT, edgeCount);
-            mailbox.sendMessage(vertex, adjacentQuery.build(vertex), newPageRank / edgeCount);
+            mailbox.sendMessage(vertex, adjacentQuery, newPageRank / edgeCount);
         } else {
             double newPageRank = 0.0d;
-            for (final Double pageRank : mailbox.getMessages(this.oppositeQuery.build(vertex))) {
+            for (final Double pageRank : mailbox.getMessages(vertex, this.oppositeQuery)) {
                 newPageRank += pageRank;
             }
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.setProperty(PAGE_RANK, newPageRank);
-            mailbox.sendMessage(vertex, adjacentQuery.build(vertex), newPageRank / (Double) vertex.getValue(EDGE_COUNT));
+            mailbox.sendMessage(vertex, adjacentQuery, newPageRank / (Double) vertex.getValue(EDGE_COUNT));
         }
     }
 
