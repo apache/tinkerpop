@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints.query.util;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.query.GraphQuery;
 
 import java.util.function.BiPredicate;
 
@@ -9,6 +10,11 @@ import java.util.function.BiPredicate;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GraphQueryBuilder extends DefaultGraphQuery implements QueryBuilder {
+
+    public GraphQuery ids(final Object... ids) {
+        super.ids(ids);
+        return this;
+    }
 
     public GraphQueryBuilder has(final String key) {
         super.has(key);

@@ -10,7 +10,7 @@ import java.util.Objects;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface VertexProgram extends Serializable {
+public interface VertexProgram<M extends Serializable> extends Serializable {
 
     public enum KeyType {
         VARIABLE,
@@ -31,7 +31,7 @@ public interface VertexProgram extends Serializable {
      * @param vertex      the vertex to execute the VertexProgram on
      * @param graphMemory the shared state between all vertices in the computation
      */
-    public void execute(Vertex vertex, GraphMemory graphMemory);
+    public void execute(Vertex vertex, Mailbox<M> mailbox, GraphMemory graphMemory);
 
     /**
      * The method is called at the end of a round to determine if the computation is complete.

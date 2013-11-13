@@ -1,6 +1,6 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.mailbox.GraphComputer;
+import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import org.apache.commons.configuration.Configuration;
 

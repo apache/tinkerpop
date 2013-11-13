@@ -1,12 +1,12 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 
-import com.tinkerpop.blueprints.mailbox.ComputeResult;
-import com.tinkerpop.blueprints.mailbox.GraphComputer;
-import com.tinkerpop.blueprints.mailbox.GraphMemory;
-import com.tinkerpop.blueprints.mailbox.Isolation;
-import com.tinkerpop.blueprints.mailbox.VertexMemory;
-import com.tinkerpop.blueprints.mailbox.VertexProgram;
+import com.tinkerpop.blueprints.computer.ComputeResult;
+import com.tinkerpop.blueprints.computer.GraphComputer;
+import com.tinkerpop.blueprints.computer.GraphMemory;
+import com.tinkerpop.blueprints.computer.Isolation;
+import com.tinkerpop.blueprints.computer.VertexMemory;
+import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
 /**

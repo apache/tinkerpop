@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.computer;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphMemory;
+import com.tinkerpop.blueprints.computer.Mailbox;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.pipes.FilterPipe;
@@ -37,7 +38,7 @@ public class GremlinVertexProgram implements VertexProgram {
         graphMemory.setIfAbsent("gremlin", this.gremlin);
     }
 
-    public void execute(final Vertex vertex, final GraphMemory graphMemory) {
+    public void execute(final Vertex vertex, final Mailbox mailbox, final GraphMemory graphMemory) {
         if (graphMemory.isInitialIteration()) {
             vertex.setProperty(GREMLINS, Arrays.asList(new Holder<>(Pipe.NONE, vertex)));
         } else {
