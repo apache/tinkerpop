@@ -18,7 +18,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
     private final TinkerGraphMemory graphMemory = new TinkerGraphMemory();
-    private final TinkerMailbox mailbox = new TinkerMailbox();
+    private final TinkerMessenger messenger = new TinkerMessenger();
     private TinkerVertexMemory vertexMemory = new TinkerVertexMemory(this.isolation);
 
     public TinkerGraphComputer(final TinkerGraph graph) {
@@ -44,10 +44,11 @@ public class TinkerGraphComputer implements GraphComputer {
         boolean done = false;
         while (!done) {
             StreamFactory.parallelStream(this.graph.query().vertices()).forEach(vertex ->
-                    vertexProgram.execute(((TinkerVertex) vertex).createClone(TinkerVertex.State.CENTRIC, vertex.getId().toString(), vertexMemory), mailbox, graphMemory));
+                    vertexProgram.execute(((TinkerVertex) vertex).createClone(TinkerVertex.State.CENTRIC, vertex.getId().toString(), vertexMemory), messenger, graphMemory));
 
             this.vertexMemory.completeIteration();
             this.graphMemory.incrIteration();
+            this.messenger.completeIteration();
             done = this.vertexProgram.terminate(this.graphMemory);
         }
 

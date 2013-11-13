@@ -1,10 +1,9 @@
 package com.tinkerpop.gremlin.computer;
 
 import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphMemory;
-import com.tinkerpop.blueprints.computer.Mailbox;
+import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 import com.tinkerpop.blueprints.util.StreamFactory;
@@ -31,9 +30,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     protected PageRankVertexProgram() {
         computeKeys.put(PAGE_RANK, KeyType.VARIABLE);
         computeKeys.put(EDGE_COUNT, KeyType.CONSTANT);
-        computeKeys.put(Property.Key.hidden("mailbox"), KeyType.CONSTANT);
     }
-
 
     public Map<String, KeyType> getComputeKeys() {
         return computeKeys;
@@ -43,18 +40,18 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     }
 
-    public void execute(final Vertex vertex, Mailbox<Double> mailbox, final GraphMemory graphMemory) {
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphMemory graphMemory) {
         if (graphMemory.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(this.adjacentQuery.build(vertex).count()).doubleValue();
             vertex.setProperty(PAGE_RANK, initialPageRank);
             vertex.setProperty(EDGE_COUNT, edgeCount);
-            mailbox.sendMessage(vertex, this.adjacentQuery, initialPageRank / edgeCount);
+            messenger.sendMessage(vertex, this.adjacentQuery, initialPageRank / edgeCount);
         } else {
-            double newPageRank = StreamFactory.stream(mailbox.getMessages(vertex, this.oppositeQuery)).reduce(0.0d, (a, b) -> a + b);
+            double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.oppositeQuery)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.setProperty(PAGE_RANK, newPageRank);
-            mailbox.sendMessage(vertex, this.adjacentQuery, newPageRank / vertex.<Double>getValue(EDGE_COUNT));
+            messenger.sendMessage(vertex, this.adjacentQuery, newPageRank / vertex.<Double>getValue(EDGE_COUNT));
         }
     }
 

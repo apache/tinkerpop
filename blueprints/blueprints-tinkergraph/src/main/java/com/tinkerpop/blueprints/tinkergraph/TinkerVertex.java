@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.VertexQuery;
 import com.tinkerpop.blueprints.util.StringFactory;
 import com.tinkerpop.blueprints.util.ThingHelper;
@@ -55,10 +56,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
                 return (null == property) ? Property.empty() : property;
             }
         } else {
-            if (this.vertexMemory.isComputeKey(key))
-                return this.vertexMemory.getProperty(this, key);
-            else
-                throw new IllegalArgumentException("The provided key is not a compute key: " + key);
+            throw GraphComputer.Features.adjacentVertexPropertiesCanNotBeRead();
         }
     }
 
@@ -72,9 +70,9 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
             if (this.vertexMemory.isComputeKey(key))
                 return this.vertexMemory.setProperty(this, key, value);
             else
-                throw new IllegalArgumentException("The provided key is not a compute key: " + key);
+                throw GraphComputer.Features.providedKeyIsNotAComputeKey(key);
         } else {
-            throw new UnsupportedOperationException();
+            throw GraphComputer.Features.adjacentVertexPropertiesCanNotBeWritten();
         }
     }
 
@@ -87,9 +85,9 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
             if (this.vertexMemory.isComputeKey(key))
                 return this.vertexMemory.removeProperty(this, key);
             else
-                throw new IllegalArgumentException("The provided key is not a compute key: " + key);
+                throw GraphComputer.Features.providedKeyIsNotAComputeKey(key);
         } else {
-            throw new UnsupportedOperationException();
+            throw GraphComputer.Features.adjacentVertexPropertiesCanNotBeWritten();
         }
     }
 

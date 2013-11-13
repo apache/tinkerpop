@@ -8,7 +8,12 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * A VertexProgram represents one component of a distributed graph computation.
+ * Each applicable vertex (theoretically) maintains a VertexProgram instance.
+ * The collective behavior of all instances yields the computational result.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface VertexProgram<M extends Serializable> extends Serializable {
 
@@ -26,12 +31,13 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
     public void setup(GraphMemory graphMemory);
 
     /**
-     * This method denotes the main body of computation.
+     * This method denotes the main body of computation that is executed on each vertex in the graph.
      *
      * @param vertex      the vertex to execute the VertexProgram on
+     * @param messenger   moves data between vertices
      * @param graphMemory the shared state between all vertices in the computation
      */
-    public void execute(Vertex vertex, Mailbox<M> mailbox, GraphMemory graphMemory);
+    public void execute(Vertex vertex, Messenger<M> messenger, GraphMemory graphMemory);
 
     /**
      * The method is called at the end of a round to determine if the computation is complete.

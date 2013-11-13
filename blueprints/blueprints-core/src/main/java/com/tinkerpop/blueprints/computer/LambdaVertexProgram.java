@@ -2,7 +2,6 @@ package com.tinkerpop.blueprints.computer;
 
 import com.tinkerpop.blueprints.Vertex;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -33,7 +32,7 @@ public class LambdaVertexProgram implements VertexProgram {
         this.setupFunction.accept(graphMemory);
     }
 
-    public void execute(final Vertex vertex, final Mailbox mailbox, final GraphMemory graphMemory) {
+    public void execute(final Vertex vertex, final Messenger messenger, final GraphMemory graphMemory) {
         this.executeFunction.accept(vertex, graphMemory);
     }
 

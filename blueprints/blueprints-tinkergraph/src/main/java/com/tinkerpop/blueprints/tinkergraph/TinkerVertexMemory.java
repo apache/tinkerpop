@@ -8,7 +8,6 @@ import com.tinkerpop.blueprints.computer.VertexSystemMemory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -22,7 +21,7 @@ public class TinkerVertexMemory implements VertexSystemMemory {
 
     public TinkerVertexMemory(final Isolation isolation) {
         this.isolation = isolation;
-        this.memory = new ConcurrentHashMap<>();
+        this.memory = new HashMap<>();
     }
 
     public void setComputeKeys(final Map<String, VertexProgram.KeyType> computeKeys) {
@@ -81,7 +80,7 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         if (isConstantKey(key) && map.containsKey(bspKey))
             throw new IllegalStateException("The constant property " + bspKey + " has already been set for vertex " + vertex);
         else
-            return map.put(bspKey, new TinkerProperty(key, value, vertex));
+            return map.put(bspKey, new TinkerProperty<>(key, value, vertex));
     }
 
     public <T> Property<T, Vertex> getProperty(final Vertex vertex, final String key) {

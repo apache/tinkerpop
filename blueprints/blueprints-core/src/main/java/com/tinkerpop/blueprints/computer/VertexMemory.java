@@ -4,6 +4,8 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
 /**
+ * VertexMemory denotes the vertex properties that are used for the VertexProgram.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface VertexMemory {
