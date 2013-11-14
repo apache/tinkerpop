@@ -17,8 +17,7 @@ public class PageRankVertexProgramTest extends TestCase {
     public void testPageRankProgram() throws Exception {
         Graph graph = TinkerFactory.createClassic();
 
-        PageRankVertexProgram program = PageRankVertexProgram.create().vertexCount(6).iterations(3).build();
-        ComputeResult result = graph.compute().program(program).submit();
+        ComputeResult result = graph.compute().program(PageRankVertexProgram.create().vertexCount(6).iterations(3).build()).submit();
         double total = 0.0d;
         final Map<String, Double> map = new HashMap<>();
         for (Vertex vertex : graph.query().vertices()) {

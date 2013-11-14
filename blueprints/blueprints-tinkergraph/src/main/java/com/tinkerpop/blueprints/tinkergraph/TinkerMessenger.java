@@ -33,11 +33,10 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
                     .flatMap(l -> l.stream())
                     .collect(Collectors.<M>toList());
         } else {
-            final long fingerPrint = query.fingerPrint();
             return Arrays.asList(vertex).stream()
                     .map(v -> this.receiveMessages.get(v.getId()))
                     .filter(m -> null != m)
-                    .map(m -> m.get(fingerPrint))
+                    .map(m -> m.get(Long.MIN_VALUE))
                     .filter(l -> null != l)
                     .flatMap(l -> l.stream())
                     .collect(Collectors.<M>toList());
@@ -49,7 +48,7 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
             getMessageList(vertex.getId(), query.fingerPrint()).add(message);
         } else {
             query.vertices().forEach(v -> {
-                getMessageList(v.getId(), query.fingerPrint()).add(message);
+                getMessageList(v.getId(), Long.MIN_VALUE).add(message);
             });
         }
     }
