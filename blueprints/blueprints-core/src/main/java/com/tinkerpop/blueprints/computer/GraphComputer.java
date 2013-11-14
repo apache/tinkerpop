@@ -11,6 +11,19 @@ package com.tinkerpop.blueprints.computer;
  */
 public interface GraphComputer {
 
+    public enum Isolation {
+        /**
+         * Computations are carried out in a bulk synchronous manner.
+         * The results of a vertex property update are only visible after the round is complete.
+         */
+        BSP,
+        /**
+         * Computations are carried out in a bulk synchronous manner.
+         * The results of a vertex property update are visible before the end of the round.
+         */
+        DIRTY_BSP
+    }
+
     public GraphComputer isolation(Isolation isolation);
 
     public GraphComputer program(VertexProgram program);
@@ -32,7 +45,7 @@ public interface GraphComputer {
         }
 
         public static IllegalStateException adjacentVertexPropertiesCanNotBeRead() {
-            return new IllegalStateException("The properties of an adjacent vertex can not be accessed, only its id");
+            return new IllegalStateException("The properties of an adjacent vertex can not be read, only its id");
         }
 
         public static IllegalStateException adjacentVertexPropertiesCanNotBeWritten() {

@@ -2,7 +2,7 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.computer.Isolation;
+import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.computer.VertexSystemMemory;
 
@@ -15,11 +15,11 @@ import java.util.Map;
 public class TinkerVertexMemory implements VertexSystemMemory {
 
     protected Map<String, VertexProgram.KeyType> computeKeys;
-    protected final Isolation isolation;
+    protected final GraphComputer.Isolation isolation;
     protected boolean phase = true;
     private final Map<Object, Map<String, Property>> memory;
 
-    public TinkerVertexMemory(final Isolation isolation) {
+    public TinkerVertexMemory(final GraphComputer.Isolation isolation) {
         this.isolation = isolation;
         this.memory = new HashMap<>();
     }
@@ -48,7 +48,7 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         if (keyType.equals(VertexProgram.KeyType.CONSTANT))
             return key;
 
-        if (isolation.equals(Isolation.BSP))
+        if (isolation.equals(GraphComputer.Isolation.BSP))
             return key + !phase;
         else
             return key;
@@ -59,7 +59,7 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         if (this.computeKeys.get(key).equals(VertexProgram.KeyType.CONSTANT))
             return key;
 
-        if (isolation.equals(Isolation.BSP))
+        if (isolation.equals(GraphComputer.Isolation.BSP))
             return key + phase;
         else
             return key;

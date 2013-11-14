@@ -34,7 +34,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      * This method denotes the main body of computation that is executed on each vertex in the graph.
      *
      * @param vertex      the vertex to execute the VertexProgram on
-     * @param messenger   moves data between vertices
+     * @param messenger   the messenger that moves data between vertices
      * @param graphMemory the shared state between all vertices in the computation
      */
     public void execute(Vertex vertex, Messenger<M> messenger, GraphMemory graphMemory);
