@@ -16,9 +16,8 @@ import java.util.Map;
  */
 public class PageRankVertexProgram implements VertexProgram<Double> {
 
-    protected final Map<String, KeyType> computeKeys = new HashMap<String, KeyType>();
+    protected final Map<String, KeyType> computeKeys = new HashMap<>();
     private VertexQueryBuilder adjacentQuery = new VertexQueryBuilder().direction(Direction.OUT);
-    private VertexQueryBuilder oppositeQuery = new VertexQueryBuilder().direction(Direction.IN);
 
     public static final String PAGE_RANK = PageRankVertexProgram.class.getName() + ".pageRank";
     public static final String EDGE_COUNT = PageRankVertexProgram.class.getName() + ".edgeCount";
@@ -48,7 +47,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             vertex.setProperty(EDGE_COUNT, edgeCount);
             messenger.sendMessage(vertex, this.adjacentQuery, initialPageRank / edgeCount);
         } else {
-            double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.oppositeQuery)).reduce(0.0d, (a, b) -> a + b);
+            double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.adjacentQuery)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.setProperty(PAGE_RANK, newPageRank);
             messenger.sendMessage(vertex, this.adjacentQuery, newPageRank / vertex.<Double>getValue(EDGE_COUNT));
@@ -81,7 +80,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
         public Builder adjacent(final VertexQueryBuilder adjacentQuery) {
             this.vertexProgram.adjacentQuery = adjacentQuery;
-            this.vertexProgram.oppositeQuery = adjacentQuery.reverse();
             return this;
         }
 

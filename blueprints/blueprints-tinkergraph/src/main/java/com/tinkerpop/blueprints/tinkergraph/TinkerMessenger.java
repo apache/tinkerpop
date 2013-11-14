@@ -24,8 +24,8 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
 
     public Iterable<M> receiveMessages(final Vertex vertex, final QueryBuilder query) {
         if (query instanceof VertexQueryBuilder) {
-            final long fingerPrint = ((VertexQueryBuilder) query).build().reverse().fingerPrint();
-            return StreamFactory.stream(((VertexQueryBuilder) query).build(vertex).vertices())
+            final long fingerPrint = query.fingerPrint();
+            return StreamFactory.stream(((VertexQueryBuilder) query).build().reverse().build(vertex).vertices())
                     .map(v -> this.receiveMessages.get(v.getId()))
                     .filter(m -> null != m)
                     .map(m -> m.get(fingerPrint))
