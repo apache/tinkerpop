@@ -11,8 +11,8 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>blueprints-io</artifactId>
     <url>http://blueprints.tinkerpop.com</url>
-    <name>Blueprints-Core</name>
-    <description>Core interfaces and utilities for Blueprints</description>
+    <name>Blueprints-IO</name>
+    <description>Graph IO utilities for Blueprints</description>
     <dependencies>
         <dependency>
             <groupId>com.tinkerpop.blueprints</groupId>
