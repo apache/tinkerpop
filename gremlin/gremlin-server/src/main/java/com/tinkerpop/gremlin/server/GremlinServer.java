@@ -45,7 +45,9 @@ public class GremlinServer {
                     .childHandler(new WebSocketServerInitializer(this.settings));
 
             ch = b.bind(settings.host, settings.port).sync().channel();
-            logger.info("Web socket server started at port {}.", settings.port);
+            logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
+                    settings.threadPoolWorker, settings.threadPoolBoss);
+            logger.info("Websocket channel started at port {}.", settings.port);
             logger.info("Open your browser and navigate to http://localhost:{}/", settings.port);
 
             ch.closeFuture().sync();
