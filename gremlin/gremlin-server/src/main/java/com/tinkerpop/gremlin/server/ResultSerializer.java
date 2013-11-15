@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.tinkergraph.TinkerProperty;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -72,7 +73,10 @@ public interface ResultSerializer {
         private Object prepareOutput(final Object object) throws Exception {
             if (object == null)
                 return JSONObject.NULL;
-            else if (object instanceof Element) {
+            else if (object instanceof Property) {
+                final Property t = (Property) object;
+                return prepareOutput(t.orElse(null));
+            } else if (object instanceof Element) {
                 final Element element = (Element) object;
                 final JSONObject jsonObject = new JSONObject();
                 jsonObject.put(TOKEN_ID, element.getId());
@@ -116,9 +120,6 @@ public interface ResultSerializer {
                     jsonArray.put(prepareOutput(itty.next()));
                 }
                 return jsonArray;
-            } else if (object instanceof TinkerProperty) {
-                final TinkerProperty t = (TinkerProperty) object;
-                return prepareOutput(t.orElse(null));
             } else if (object instanceof Number || object instanceof Boolean)
                 return object;
             else if (object == JSONObject.NULL)

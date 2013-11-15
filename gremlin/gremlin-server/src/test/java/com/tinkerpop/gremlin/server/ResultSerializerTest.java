@@ -184,7 +184,6 @@ public class ResultSerializerTest {
     }
 
     @Test
-    @Ignore("Property is an Element now so the serializer treats it as such.")
     public void serializeToJsonIteratorWithEmbeddedMap() throws Exception {
         Graph g = TinkerGraph.open(Optional.empty());
         final Vertex v = g.addVertex();
