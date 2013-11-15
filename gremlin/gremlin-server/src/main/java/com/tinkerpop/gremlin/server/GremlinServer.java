@@ -36,8 +36,8 @@ public class GremlinServer {
     }
 
     public void run() throws Exception {
-        final EventLoopGroup bossGroup = new NioEventLoopGroup();
-        final EventLoopGroup workerGroup = new NioEventLoopGroup();
+        final EventLoopGroup bossGroup = new NioEventLoopGroup(settings.threadPoolBoss);
+        final EventLoopGroup workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
         try {
             final ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)

@@ -1,5 +1,7 @@
 host: localhost
 port: 8182
+threadPoolWorker: 16
+threadPoolBoss: 1
 graphs: {
   g: config/tinkergraph-empty.properties}
 use:

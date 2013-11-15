@@ -19,6 +19,8 @@ public class Settings {
 
     public String host;
     public int port;
+    public int threadPoolWorker;
+    public int threadPoolBoss;
     public Map<String, String> graphs;
     public Map<String, ScriptEngineSettings> scriptEngines;
     public String staticFilePath;
