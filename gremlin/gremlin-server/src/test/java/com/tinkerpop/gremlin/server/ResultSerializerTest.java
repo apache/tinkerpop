@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
@@ -184,8 +185,46 @@ public class ResultSerializerTest {
     }
 
     @Test
+    public void serializedHiddenProperties() throws Exception {
+        final Graph g = TinkerGraph.open();
+        final Vertex v = g.addVertex();
+        v.setProperty("abc", 123);
+        final Property withHidden = v.setProperty("xyz", 321);
+        withHidden.setProperty("audit", "stephen");
+
+        final Iterator iterable = g.query().vertices().iterator();
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(iterable, new Context(msg, null, null, null, null));
+        final JSONObject json = new JSONObject(results);
+
+        assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
+        final JSONArray converted = json.getJSONArray(ResultSerializer.JsonResultSerializer.TOKEN_RESULT);
+
+        assertNotNull(converted);
+        assertEquals(1, converted.length());
+
+        final JSONObject vertexAsJson = converted.optJSONObject(0);
+        assertNotNull(vertexAsJson);
+
+        final JSONObject properties = vertexAsJson.optJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_PROPERTIES);
+        assertNotNull(properties);
+
+        final JSONObject valAbcProperty = properties.optJSONObject("abc");
+        assertNotNull(valAbcProperty);
+        assertEquals(123, valAbcProperty.getInt(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
+
+        final JSONObject valXyzProperty = properties.optJSONObject("xyz");
+        assertNotNull(valXyzProperty);
+        assertEquals(321, valXyzProperty.getInt(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
+
+        final JSONObject hiddenProperties = valXyzProperty.getJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_HIDDEN);
+        assertNotNull(hiddenProperties);
+        assertEquals("stephen", hiddenProperties.getJSONObject("audit").getString(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
+    }
+
+    @Test
     public void serializeToJsonIteratorWithEmbeddedMap() throws Exception {
-        Graph g = TinkerGraph.open(Optional.empty());
+        final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex();
         final Map<String, Object> map = new HashMap<>();
         map.put("x", 500);
@@ -215,7 +254,7 @@ public class ResultSerializerTest {
         final JSONObject properties = vertexAsJson.optJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_PROPERTIES);
         assertNotNull(properties);
 
-        final JSONArray friendsProperty = properties.optJSONArray("friends");
+        final JSONArray friendsProperty = properties.optJSONObject("friends").optJSONArray(ResultSerializer.JsonResultSerializer.TOKEN_VALUE);
         assertNotNull(friendsProperty);
         assertEquals(3, friends.size());
 

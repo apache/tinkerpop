@@ -44,7 +44,8 @@ public class TinkerProperty<V, T extends Thing> implements Property<V, T> {
     }
 
     public <V2> Property<V2, Property> setProperty(String key, V2 value) throws IllegalStateException {
-        final Property<V2, Property> property = this.properties.put(key, new TinkerProperty<V2, TinkerProperty>(key, value, this));
+        final Property<V2, Property> property = new TinkerProperty<>(key, value, (Property) this);
+        this.properties.put(key, property);
         return null == property ? Property.empty() : property;
     }
 
