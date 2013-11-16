@@ -105,7 +105,7 @@ public class GremlinServer {
                 logger.warn("Error configuring the Ganglia Reporter.", ioe);
             }
         });
-
+        settings.optionalGraphiteReporter().ifPresent(config -> metrics.addGraphiteReporter(config.host, config.port, config.prefix, config.interval));
     }
 
     private static void printHeader() {

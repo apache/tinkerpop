@@ -78,6 +78,9 @@ public class Settings {
             final TypeDescription gangliaReporterDescription = new TypeDescription(GangliaReporterMetrics.class);
             constructor.addTypeDescription(gangliaReporterDescription);
 
+            final TypeDescription graphiteReporterDescription = new TypeDescription(GraphiteReporterMetrics.class);
+            constructor.addTypeDescription(graphiteReporterDescription);
+
             final Yaml yaml = new Yaml(constructor);
             return Optional.of(yaml.loadAs(stream, Settings.class));
         } catch (Exception fnfe) {
@@ -96,6 +99,7 @@ public class Settings {
         public JmxReporterMetrics jmxReporter = null;
         public Slf4jReporterMetrics slf4jReporter = null;
         public GangliaReporterMetrics gangliaReporter = null;
+        public GraphiteReporterMetrics graphiteReporter = null;
 
         public Optional<ConsoleReporterMetrics> optionalConsoleReporter() {
             return Optional.ofNullable(consoleReporter);
@@ -115,6 +119,10 @@ public class Settings {
 
         public Optional<GangliaReporterMetrics> optionalGangliaReporter() {
             return Optional.ofNullable(gangliaReporter);
+        }
+
+        public Optional<GraphiteReporterMetrics> optionalGraphiteReporter() {
+            return Optional.ofNullable(graphiteReporter);
         }
     }
 
@@ -155,6 +163,15 @@ public class Settings {
             } catch (IllegalArgumentException iae) {
                 return null;
             }
+        }
+    }
+
+    public static class GraphiteReporterMetrics extends HostPortIntervalMetrics {
+        public String prefix = "";
+
+        public GraphiteReporterMetrics() {
+            // default graphite port
+            this.port = 2003;
         }
     }
 
