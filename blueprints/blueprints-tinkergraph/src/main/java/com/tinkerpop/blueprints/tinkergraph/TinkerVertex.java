@@ -63,9 +63,10 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
     public <T> Property<T, Vertex> setProperty(final String key, final T value) {
         if (State.STANDARD == this.state) {
             ThingHelper.validateProperty(this, key, value);
-            final Property<T, Vertex> property = this.properties.put(key, new TinkerProperty<>(key, value, this));
-            this.graph.vertexIndex.autoUpdate(key, value, null == property ? null : property.getValue(), this);
-            return null == property ? Property.empty() : property;
+            final Property<T, Vertex> property = new TinkerProperty<>(key, value, (Vertex) this);
+            this.properties.put(key, property);
+            this.graph.vertexIndex.autoUpdate(key, value, property.getValue(), this);
+            return property;
         } else if (State.CENTRIC == this.state) {
             if (this.vertexMemory.isComputeKey(key))
                 return this.vertexMemory.setProperty(this, key, value);

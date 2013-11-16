@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.tinkergraph.TinkerProperty;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -57,6 +58,7 @@ public interface ResultSerializer {
         public static final String TOKEN_KEY = "key";
         public static final String TOKEN_VALUE = "value";
         public static final String TOKEN_PROPERTIES = "properties";
+        public static final String TOKEN_HIDDEN = "hidden";
         public static final String TOKEN_EDGE = "edge";
         public static final String TOKEN_VERTEX = "vertex";
         public static final String TOKEN_REQUEST = "requestId";
@@ -72,7 +74,26 @@ public interface ResultSerializer {
         private Object prepareOutput(final Object object) throws Exception {
             if (object == null)
                 return JSONObject.NULL;
-            else if (object instanceof Element) {
+            else if (object instanceof Property) {
+                final Property t = (Property) object;
+                final JSONObject jsonObject = new JSONObject();
+                jsonObject.put(TOKEN_VALUE, prepareOutput(t.orElse(null)));
+
+                if (t.getProperties().size() > 0) {
+                    final JSONObject hiddenProperties = new JSONObject();
+                    t.getPropertyKeys().forEach(k -> {
+                        try {
+                            hiddenProperties.put(k, prepareOutput(t.getProperty(k)));
+                        } catch (Exception ex) {
+                            // there can't be null keys on an element so don't think there is a need to launch
+                            // a JSONException here.
+                            throw new RuntimeException(ex);
+                        }
+                    });
+                    jsonObject.put(TOKEN_HIDDEN, hiddenProperties);
+                }
+                return jsonObject;
+            } else if (object instanceof Element) {
                 final Element element = (Element) object;
                 final JSONObject jsonObject = new JSONObject();
                 jsonObject.put(TOKEN_ID, element.getId());
@@ -116,9 +137,6 @@ public interface ResultSerializer {
                     jsonArray.put(prepareOutput(itty.next()));
                 }
                 return jsonArray;
-            } else if (object instanceof TinkerProperty) {
-                final TinkerProperty t = (TinkerProperty) object;
-                return prepareOutput(t.orElse(null));
             } else if (object instanceof Number || object instanceof Boolean)
                 return object;
             else if (object == JSONObject.NULL)
