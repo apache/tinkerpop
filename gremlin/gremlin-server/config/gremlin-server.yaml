@@ -13,5 +13,6 @@ scriptEngines: {
 metrics: {
   consoleReporter: {enabled: true, interval: 180000},
   csvReporter: {enabled: true, interval: 180000, fileName: /tmp/gremlin-server-metrics.csv},
-  jmxReporter: {enabled: true}}
+  jmxReporter: {enabled: true},
+  slf4jReporter: {enabled: true, interval: 180000}}
 staticFilePath: src/main/resources/web

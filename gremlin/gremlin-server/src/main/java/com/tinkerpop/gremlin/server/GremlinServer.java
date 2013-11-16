@@ -95,6 +95,7 @@ public class GremlinServer {
         settings.optionalConsoleReporter().ifPresent(config -> metrics.addConsoleReporter(config.interval));
         settings.optionalCsvReporter().ifPresent(config -> metrics.addCsvReporter(config.interval, config.fileName));
         settings.optionalJmxReporter().ifPresent(config -> metrics.addJmxReporter(config.domain, config.agentId));
+        settings.optionalSlf4jReporter().ifPresent(config -> metrics.addSlf4jReporter(config.interval, config.loggerName));
     }
 
     private static void printHeader() {

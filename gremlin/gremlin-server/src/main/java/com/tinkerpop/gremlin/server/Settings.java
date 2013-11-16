@@ -70,6 +70,9 @@ public class Settings {
             final TypeDescription jmxReporterDescription = new TypeDescription(JmxReporterMetrics.class);
             constructor.addTypeDescription(jmxReporterDescription);
 
+            final TypeDescription slf4jReporterDescription = new TypeDescription(Slf4jReporterMetrics.class);
+            constructor.addTypeDescription(slf4jReporterDescription);
+
             final Yaml yaml = new Yaml(constructor);
             return Optional.of(yaml.loadAs(stream, Settings.class));
         } catch (Exception fnfe) {
@@ -86,6 +89,7 @@ public class Settings {
         public ConsoleReporterMetrics consoleReporter = null;
         public CsvReporterMetrics csvReporter = null;
         public JmxReporterMetrics jmxReporter = null;
+        public Slf4jReporterMetrics slf4jReporter = null;
 
         public Optional<ConsoleReporterMetrics> optionalConsoleReporter() {
             return Optional.ofNullable(consoleReporter);
@@ -97,6 +101,10 @@ public class Settings {
 
         public Optional<JmxReporterMetrics> optionalJmxReporter() {
             return Optional.ofNullable(jmxReporter);
+        }
+
+        public Optional<Slf4jReporterMetrics> optionalSlf4jReporter() {
+            return Optional.ofNullable(slf4jReporter);
         }
     }
 
@@ -110,6 +118,10 @@ public class Settings {
     public static class JmxReporterMetrics extends BaseMetrics {
         public String domain = null;
         public String agentId = null;
+    }
+
+    public static class Slf4jReporterMetrics extends IntervalMetrics {
+        public String loggerName = Slf4jReporterMetrics.class.getName();
     }
 
     public static abstract class IntervalMetrics extends BaseMetrics {
