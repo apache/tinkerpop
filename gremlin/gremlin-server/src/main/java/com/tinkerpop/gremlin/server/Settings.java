@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -10,6 +11,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Server settings as configured by a YAML file.
@@ -73,6 +75,9 @@ public class Settings {
             final TypeDescription slf4jReporterDescription = new TypeDescription(Slf4jReporterMetrics.class);
             constructor.addTypeDescription(slf4jReporterDescription);
 
+            final TypeDescription gangliaReporterDescription = new TypeDescription(GangliaReporterMetrics.class);
+            constructor.addTypeDescription(gangliaReporterDescription);
+
             final Yaml yaml = new Yaml(constructor);
             return Optional.of(yaml.loadAs(stream, Settings.class));
         } catch (Exception fnfe) {
@@ -90,6 +95,7 @@ public class Settings {
         public CsvReporterMetrics csvReporter = null;
         public JmxReporterMetrics jmxReporter = null;
         public Slf4jReporterMetrics slf4jReporter = null;
+        public GangliaReporterMetrics gangliaReporter = null;
 
         public Optional<ConsoleReporterMetrics> optionalConsoleReporter() {
             return Optional.ofNullable(consoleReporter);
@@ -105,6 +111,10 @@ public class Settings {
 
         public Optional<Slf4jReporterMetrics> optionalSlf4jReporter() {
             return Optional.ofNullable(slf4jReporter);
+        }
+
+        public Optional<GangliaReporterMetrics> optionalGangliaReporter() {
+            return Optional.ofNullable(gangliaReporter);
         }
     }
 
@@ -122,6 +132,35 @@ public class Settings {
 
     public static class Slf4jReporterMetrics extends IntervalMetrics {
         public String loggerName = Slf4jReporterMetrics.class.getName();
+    }
+
+    public static class GangliaReporterMetrics extends HostPortIntervalMetrics {
+        public String addressingMode = null;
+        public int ttl = 1;
+        public boolean protocol31 = true;
+        public UUID hostUUID = null;
+        public String spoof = null;
+
+        public GangliaReporterMetrics() {
+            // default ganglia port
+            this.port = 8649;
+        }
+
+        public GMetric.UDPAddressingMode optionalAddressingMode() {
+            if (null == addressingMode)
+                return null;
+
+            try {
+                return GMetric.UDPAddressingMode.valueOf(addressingMode);
+            } catch (IllegalArgumentException iae) {
+                return null;
+            }
+        }
+    }
+
+    public static abstract class HostPortIntervalMetrics extends IntervalMetrics {
+        public String host = "localhost";
+        public int port;
     }
 
     public static abstract class IntervalMetrics extends BaseMetrics {

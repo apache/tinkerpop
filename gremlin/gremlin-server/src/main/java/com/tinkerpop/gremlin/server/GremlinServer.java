@@ -16,6 +16,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -96,6 +97,15 @@ public class GremlinServer {
         settings.optionalCsvReporter().ifPresent(config -> metrics.addCsvReporter(config.interval, config.fileName));
         settings.optionalJmxReporter().ifPresent(config -> metrics.addJmxReporter(config.domain, config.agentId));
         settings.optionalSlf4jReporter().ifPresent(config -> metrics.addSlf4jReporter(config.interval, config.loggerName));
+        settings.optionalGangliaReporter().ifPresent(config -> {
+            try {
+                metrics.addGangliaReporter(config.host, config.port,
+                        config.optionalAddressingMode(), config.ttl, config.protocol31, config.hostUUID, config.spoof, config.interval);
+            } catch (IOException ioe) {
+                logger.warn("Error configuring the Ganglia Reporter.", ioe);
+            }
+        });
+
     }
 
     private static void printHeader() {

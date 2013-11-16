@@ -61,7 +61,7 @@ public enum MetricManager {
         consoleReporter = ConsoleReporter.forRegistry(getRegistry()).build();
         consoleReporter.start(reportIntervalInMS, TimeUnit.MILLISECONDS);
 
-        log.info("Configured Metrics ConsoleReporter configured with report interval of {} ms", reportIntervalInMS);
+        log.info("Configured Metrics ConsoleReporter configured with report interval={}ms", reportIntervalInMS);
     }
 
     /**
@@ -108,7 +108,7 @@ public enum MetricManager {
         csvReporter = CsvReporter.forRegistry(getRegistry()).build(outputDir);
         csvReporter.start(reportIntervalInMS, TimeUnit.MILLISECONDS);
 
-        log.info("Configured Metrics CsvReporter configured with report interval of {} ms to [{}]", reportIntervalInMS, output);
+        log.info("Configured Metrics CsvReporter configured with report interval={}ms to fileName={}", reportIntervalInMS, output);
     }
 
     /**
@@ -164,7 +164,7 @@ public enum MetricManager {
         jmxReporter = b.build();
         jmxReporter.start();
 
-        log.info("Configured Metrics JmxReporter configured with domain of [{}] and agentId of [{}]",
+        log.info("Configured Metrics JmxReporter configured with domain={} and agentId={}",
                 Optional.ofNullable(domain).orElse(""), Optional.ofNullable(agentId).orElse(""));
     }
 
@@ -212,7 +212,7 @@ public enum MetricManager {
         slf4jReporter = b.build();
         slf4jReporter.start(reportIntervalInMS, TimeUnit.MILLISECONDS);
 
-        log.info("Configured Metrics Slf4jReporter configured with interval of {} ms and logger name of [{}]", reportIntervalInMS, loggerName);
+        log.info("Configured Metrics Slf4jReporter configured with interval={}ms and loggerName={}", reportIntervalInMS, loggerName);
     }
 
     /**
@@ -255,11 +255,10 @@ public enum MetricManager {
     public synchronized void addGangliaReporter(final String groupOrHost, final int port,
                                                 final GMetric.UDPAddressingMode addressingMode, final int ttl, final Boolean protocol31,
                                                 final UUID hostUUID, final String spoof, final long reportIntervalInMS) throws IOException {
-
-        if (groupOrHost == null || groupOrHost.isEmpty())
+        if (null  == groupOrHost || groupOrHost.isEmpty())
             throw new IllegalArgumentException("groupOrHost cannot be null or empty");
 
-        if (addressingMode == null)
+        if (null == addressingMode)
             throw new IllegalArgumentException("addressing mode cannot be null");
 
         if (null != gangliaReporter) {
