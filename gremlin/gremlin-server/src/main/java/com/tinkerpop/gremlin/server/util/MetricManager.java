@@ -59,6 +59,8 @@ public enum MetricManager {
 
         consoleReporter = ConsoleReporter.forRegistry(getRegistry()).build();
         consoleReporter.start(reportIntervalInMS, TimeUnit.MILLISECONDS);
+
+        log.info("Configured Metrics ConsoleReporter configured with report interval of {} ms", reportIntervalInMS);
     }
 
     /**
@@ -104,6 +106,8 @@ public enum MetricManager {
 
         csvReporter = CsvReporter.forRegistry(getRegistry()).build(outputDir);
         csvReporter.start(reportIntervalInMS, TimeUnit.MILLISECONDS);
+
+        log.info("Configured Metrics CsvReporter configured with report interval of {} ms to [{}]", reportIntervalInMS, output);
     }
 
     /**
@@ -158,6 +162,8 @@ public enum MetricManager {
 
         jmxReporter = b.build();
         jmxReporter.start();
+
+        log.info("Configured Metrics JmxReporter configured with domain of {} and agentId of [{}]", domain, agentId);
     }
 
     /**
@@ -203,6 +209,8 @@ public enum MetricManager {
 
         slf4jReporter = b.build();
         slf4jReporter.start(reportIntervalInMS, TimeUnit.MILLISECONDS);
+
+        log.info("Configured Metrics Slf4jReporter configured with interval of {} ms and logger name of [{}]", reportIntervalInMS, loggerName);
     }
 
     /**

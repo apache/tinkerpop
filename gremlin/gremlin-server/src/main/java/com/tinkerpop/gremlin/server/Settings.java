@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
+ * Server settings as configured by a YAML file.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Settings {
@@ -63,6 +65,9 @@ public class Settings {
             final TypeDescription consoleReporterDescription = new TypeDescription(ConsoleReporterMetrics.class);
             constructor.addTypeDescription(consoleReporterDescription);
 
+            final TypeDescription csvReporterDescription = new TypeDescription(CsvReporterMetrics.class);
+            constructor.addTypeDescription(csvReporterDescription);
+
             final Yaml yaml = new Yaml(constructor);
             return Optional.of(yaml.loadAs(stream, Settings.class));
         } catch (Exception fnfe) {
@@ -77,13 +82,25 @@ public class Settings {
 
     public static class ServerMetrics {
         public ConsoleReporterMetrics consoleReporter = null;
+        public CsvReporterMetrics csvReporter = null;
 
         public Optional<ConsoleReporterMetrics> optionalConsoleReporter() {
             return Optional.ofNullable(consoleReporter);
         }
+
+        public Optional<CsvReporterMetrics> optionalCsvReporter() {
+            return Optional.ofNullable(csvReporter);
+        }
     }
 
-    public static class ConsoleReporterMetrics {
+    public static class ConsoleReporterMetrics extends IntervalBasedMetrics {
+    }
+
+    public static class CsvReporterMetrics extends IntervalBasedMetrics {
+        public String fileName = "metrics.csv";
+    }
+
+    public static abstract class IntervalBasedMetrics {
         public long interval = 60000;
     }
 }

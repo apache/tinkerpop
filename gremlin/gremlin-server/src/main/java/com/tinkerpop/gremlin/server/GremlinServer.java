@@ -93,6 +93,7 @@ public class GremlinServer {
     private static void configureMetrics(final Settings.ServerMetrics settings) {
         final MetricManager metrics = MetricManager.INSTANCE;
         settings.optionalConsoleReporter().ifPresent(config -> metrics.addConsoleReporter(config.interval));
+        settings.optionalCsvReporter().ifPresent(config -> metrics.addCsvReporter(config.interval, config.fileName));
     }
 
     private static void printHeader() {
