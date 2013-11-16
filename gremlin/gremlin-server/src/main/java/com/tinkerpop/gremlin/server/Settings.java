@@ -21,10 +21,15 @@ public class Settings {
     public int port;
     public int threadPoolWorker;
     public int threadPoolBoss;
+    public ServerMetrics metrics = null;
     public Map<String, String> graphs;
     public Map<String, ScriptEngineSettings> scriptEngines;
     public String staticFilePath;
     public List<List<String>> use;
+
+    public Optional<ServerMetrics> optionalMetrics() {
+        return Optional.ofNullable(metrics);
+    }
 
     public static Optional<Settings> read(final String file) {
         try {
@@ -45,13 +50,18 @@ public class Settings {
             settingsDescription.putMapPropertyType("graphs", String.class, String.class);
             settingsDescription.putMapPropertyType("scriptEngines", String.class, ScriptEngineSettings.class);
             settingsDescription.putListPropertyType("use", List.class);
+            constructor.addTypeDescription(settingsDescription);
 
             final TypeDescription scriptEngineSettingsDescription = new TypeDescription(ScriptEngineSettings.class);
             scriptEngineSettingsDescription.putListPropertyType("imports", String.class);
             scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
             constructor.addTypeDescription(scriptEngineSettingsDescription);
 
-            constructor.addTypeDescription(settingsDescription);
+            final TypeDescription serverMetricsDescription = new TypeDescription(ServerMetrics.class);
+            constructor.addTypeDescription(serverMetricsDescription);
+
+            final TypeDescription consoleReporterDescription = new TypeDescription(ConsoleReporterMetrics.class);
+            constructor.addTypeDescription(consoleReporterDescription);
 
             final Yaml yaml = new Yaml(constructor);
             return Optional.of(yaml.loadAs(stream, Settings.class));
@@ -63,5 +73,17 @@ public class Settings {
     public static class ScriptEngineSettings {
         public List<String> imports;
         public List<String> staticImports;
+    }
+
+    public static class ServerMetrics {
+        public ConsoleReporterMetrics consoleReporter = null;
+
+        public Optional<ConsoleReporterMetrics> optionalConsoleReporter() {
+            return Optional.ofNullable(consoleReporter);
+        }
+    }
+
+    public static class ConsoleReporterMetrics {
+        public long interval = 60000;
     }
 }

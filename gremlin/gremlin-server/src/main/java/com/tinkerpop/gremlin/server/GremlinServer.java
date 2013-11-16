@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.util.GraphFactory;
+import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -73,7 +74,9 @@ public class GremlinServer {
         final Optional<Settings> settings = Settings.read(file);
         if (settings.isPresent()) {
             logger.info("Configuring Gremlin Server from {}", file);
-            new GremlinServer(settings.get()).run();
+            final Settings config = settings.get();
+            config.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
+            new GremlinServer(config).run();
         } else
             logger.error("Configuration file at {} could not be found or parsed properly.", file);
     }
@@ -85,6 +88,11 @@ public class GremlinServer {
         builder.append("         (o o)\r\n");
         builder.append("-----oOOo-(_)-oOOo-----\r\n");
         return builder.toString();
+    }
+
+    private static void configureMetrics(final Settings.ServerMetrics settings) {
+        final MetricManager metrics = MetricManager.INSTANCE;
+        settings.optionalConsoleReporter().ifPresent(config -> metrics.addConsoleReporter(config.interval));
     }
 
     private static void printHeader() {
