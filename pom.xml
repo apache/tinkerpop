@@ -29,6 +29,7 @@
     <properties>
         <tinkerpop.version>3.0.0-SNAPSHOT</tinkerpop.version>
         <junit.version>4.11</junit.version>
+        <metrics.version>3.0.0</metrics.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
@@ -54,7 +55,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.9.1</version>
                 <configuration>
-                    <!-- Default configuration for all reports -->
+                    <additionalparam>-Xdoclint:none</additionalparam>
                 </configuration>
                 <executions>
                     <execution>
@@ -64,7 +65,7 @@
                         </goals>
                         <phase>site</phase>
                         <configuration>
-                            <!-- Specific configuration for the aggregate report -->
+                            <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                     </execution>
                 </executions>
@@ -112,13 +113,13 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.9.1</version>
                 <configuration>
-                    <!-- Default configuration for all reports -->
+                    <additionalparam>-Xdoclint:none</additionalparam>
                 </configuration>
                 <reportSets>
                     <reportSet>
                         <id>non-aggregate</id>
                         <configuration>
-                            <!-- Specific configuration for the non aggregate report -->
+                            <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                         <reports>
                             <report>javadoc</report>
@@ -127,7 +128,7 @@
                     <reportSet>
                         <id>aggregate</id>
                         <configuration>
-                            <!-- Specific configuration for the aggregate report -->
+                            <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                         <reports>
                             <report>aggregate</report>
