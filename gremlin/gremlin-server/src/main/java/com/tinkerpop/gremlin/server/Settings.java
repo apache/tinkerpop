@@ -6,7 +6,6 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +67,9 @@ public class Settings {
             final TypeDescription csvReporterDescription = new TypeDescription(CsvReporterMetrics.class);
             constructor.addTypeDescription(csvReporterDescription);
 
+            final TypeDescription jmxReporterDescription = new TypeDescription(JmxReporterMetrics.class);
+            constructor.addTypeDescription(jmxReporterDescription);
+
             final Yaml yaml = new Yaml(constructor);
             return Optional.of(yaml.loadAs(stream, Settings.class));
         } catch (Exception fnfe) {
@@ -83,6 +85,7 @@ public class Settings {
     public static class ServerMetrics {
         public ConsoleReporterMetrics consoleReporter = null;
         public CsvReporterMetrics csvReporter = null;
+        public JmxReporterMetrics jmxReporter = null;
 
         public Optional<ConsoleReporterMetrics> optionalConsoleReporter() {
             return Optional.ofNullable(consoleReporter);
@@ -91,16 +94,29 @@ public class Settings {
         public Optional<CsvReporterMetrics> optionalCsvReporter() {
             return Optional.ofNullable(csvReporter);
         }
+
+        public Optional<JmxReporterMetrics> optionalJmxReporter() {
+            return Optional.ofNullable(jmxReporter);
+        }
     }
 
-    public static class ConsoleReporterMetrics extends IntervalBasedMetrics {
+    public static class ConsoleReporterMetrics extends IntervalMetrics {
     }
 
-    public static class CsvReporterMetrics extends IntervalBasedMetrics {
+    public static class CsvReporterMetrics extends IntervalMetrics {
         public String fileName = "metrics.csv";
     }
 
-    public static abstract class IntervalBasedMetrics {
+    public static class JmxReporterMetrics extends BaseMetrics {
+        public String domain = null;
+        public String agentId = null;
+    }
+
+    public static abstract class IntervalMetrics extends BaseMetrics {
         public long interval = 60000;
+    }
+
+    public static abstract class BaseMetrics {
+        public boolean enabled = false;
     }
 }

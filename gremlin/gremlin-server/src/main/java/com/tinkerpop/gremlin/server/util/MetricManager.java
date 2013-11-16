@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -163,7 +164,8 @@ public enum MetricManager {
         jmxReporter = b.build();
         jmxReporter.start();
 
-        log.info("Configured Metrics JmxReporter configured with domain of {} and agentId of [{}]", domain, agentId);
+        log.info("Configured Metrics JmxReporter configured with domain of [{}] and agentId of [{}]",
+                Optional.ofNullable(domain).orElse(""), Optional.ofNullable(agentId).orElse(""));
     }
 
     /**
