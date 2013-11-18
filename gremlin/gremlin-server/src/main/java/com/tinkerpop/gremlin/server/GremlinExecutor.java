@@ -226,6 +226,11 @@ public class GremlinExecutor {
             return scriptEngines.imports();
         }
 
+        @Override
+        public void reset() {
+            scriptEngines.reset();
+        }
+
         public Bindings getBindings() {
             return bindings;
         }

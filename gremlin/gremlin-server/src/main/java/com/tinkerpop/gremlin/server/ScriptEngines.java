@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ScriptEngines implements ScriptEngineOps{
+public class ScriptEngines implements ScriptEngineOps {
     /**
      * ScriptEngines configured for the server keyed on the language name.
      */
@@ -75,6 +75,11 @@ public class ScriptEngines implements ScriptEngineOps{
         getDependencyManagers().forEach(dm -> dm.use(group, artifact, version));
     }
 
+    @Override
+    public void reset() {
+        getDependencyManagers().forEach(dm -> dm.reset());
+    }
+
     /**
      * List dependencies for those ScriptEngines that implement the DependencyManager interface.
      */
@@ -95,6 +100,8 @@ public class ScriptEngines implements ScriptEngineOps{
                 .forEach(kv -> m.put(kv.getKey(), Arrays.asList(((DependencyManager) kv.getValue()).imports())));
         return m;
     }
+
+
 
     /**
      * Get the set of ScriptEngines that implement DependencyManager interface.

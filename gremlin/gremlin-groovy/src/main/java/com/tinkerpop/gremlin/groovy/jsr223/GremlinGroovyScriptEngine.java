@@ -138,7 +138,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         this.importCustomizerProvider = new DefaultImportCustomizerProvider(
                 this.importCustomizerProvider, imports, staticImports);
-        resetClassLoader();
+        reset();
     }
 
     public Set plugins() {
@@ -151,13 +151,16 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         this.loader = new GroovyClassLoader(getParentLoader(), conf);
     }
 
-    private void resetClassLoader() {
+    @Override
+    public void reset() {
         createClassLoader();
 
         // must clear the local cache here because the the classloader has been reset.  therefore, classes previously
         // referenced before that might no have evaluated might cleanly evaluate now.
         this.globalClosures.clear();
         this.classMap.clear();
+
+        this.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
     }
 
     private void checkClearCache() {
@@ -165,6 +168,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
             this.globalClosures.clear();
             this.classMap.clear();
             this.loader.clearCache();
+
+            this.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
         }
     }
 

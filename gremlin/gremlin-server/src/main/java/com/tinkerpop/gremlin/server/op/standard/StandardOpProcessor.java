@@ -40,11 +40,14 @@ public class StandardOpProcessor implements OpProcessor {
             case ServerTokens.OPS_IMPORT:
                 op = validateImportMessage(message).orElse(StandardOps::importOp);
                 break;
-            case ServerTokens.OPS_USE:
-                op = validateUseMessage(message).orElse(StandardOps::useOp);
+            case ServerTokens.OPS_RESET:
+                op = StandardOps::resetOp;
                 break;
             case ServerTokens.OPS_SHOW:
                 op = validateShowMessage(message).orElse(StandardOps::showOp);
+                break;
+            case ServerTokens.OPS_USE:
+                op = validateUseMessage(message).orElse(StandardOps::useOp);
                 break;
             case ServerTokens.OPS_INVALID:
                 op = OpProcessor.error(String.format("Message could not be parsed.  Check the format of the request. [%s]", message));

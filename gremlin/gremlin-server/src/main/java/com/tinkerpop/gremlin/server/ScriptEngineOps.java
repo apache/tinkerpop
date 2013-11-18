@@ -42,4 +42,11 @@ public interface ScriptEngineOps {
      * import list for that ScriptEngine.
      */
     public Map<String, List<String>> imports();
+
+    /**
+     * Resets the ScriptEngine which recreates the classloader and desstroys all caches of compiled scripts. Doing
+     * a reset will imply a potential slowdown to server operations as future executions will have to recompile
+     * scripts and potentially reload classes.
+     */
+    public void reset();
 }

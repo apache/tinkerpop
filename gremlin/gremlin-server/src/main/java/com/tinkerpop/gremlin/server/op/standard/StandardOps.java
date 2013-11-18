@@ -63,6 +63,14 @@ final class StandardOps {
     }
 
     /**
+     * Resets the ScriptEngine thus forcing a reload of scripts and classes.
+     */
+    public static void resetOp(final Context context) {
+        final RequestMessage msg = context.getRequestMessage();
+        context.getGremlinExecutor().select(msg).reset();
+    }
+
+    /**
      * Pull in maven based dependencies and load Gremlin plugins.
      */
     public static void useOp(final Context context) {

@@ -33,4 +33,9 @@ public interface DependencyManager {
      * List the imports in the ScriptEngine;
      */
     Set<String> imports();
+
+    /**
+     * Reset the ScriptEngine.  Clear caches and kill the classloader.
+     */
+    void reset();
 }
