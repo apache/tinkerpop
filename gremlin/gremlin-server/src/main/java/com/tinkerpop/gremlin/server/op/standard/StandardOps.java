@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.server.RequestMessage;
 import com.tinkerpop.gremlin.server.ResultSerializer;
 import com.tinkerpop.gremlin.server.ServerTokens;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.EmptyByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
