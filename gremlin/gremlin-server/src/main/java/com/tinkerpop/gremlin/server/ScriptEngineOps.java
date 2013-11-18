@@ -32,7 +32,14 @@ public interface ScriptEngineOps {
     public void use(final String group, final String artifact, final String version);
 
     /**
-     * Get a list of all dependencies loaded to the ScriptEngine.
+     * Get a list of all dependencies loaded to the ScriptEngine where the key is the ScriptEngine name and the value is the
+     * dependency list for that ScriptEngine.
      */
     public Map<String,List<Map>> dependencies();
+
+    /**
+     * Gets a list of all imports in the ScriptEngine where the key is the ScriptEngine name and the value is the
+     * import list for that ScriptEngine.
+     */
+    public Map<String, List<String>> imports();
 }

@@ -210,5 +210,10 @@ public class GremlinExecutor {
         public void use(final String group, final String artifact, final String version) {
             scriptEngines.use(group, artifact, version);
         }
+
+        @Override
+        public Map<String, List<String>> imports() {
+            return scriptEngines.imports();
+        }
     }
 }

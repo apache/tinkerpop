@@ -1,11 +1,7 @@
 package com.tinkerpop.gremlin.server.op.standard;
 
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
-import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.OpProcessor;
-import com.tinkerpop.gremlin.server.RequestMessage;
-import com.tinkerpop.gremlin.server.ResultSerializer;
-import com.tinkerpop.gremlin.server.ServerTokens;
+import com.tinkerpop.gremlin.server.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -16,10 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -40,18 +33,30 @@ final class StandardOps {
     }
 
     /**
-     * List the dependencies in the ScriptEngine ClassLoader.
+     * List the dependencies, imports, or variables in the ScriptEngine
      */
-    public static void depsOp(final Context context) {
+    public static void showOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
-        final Map dependencies = context.getGremlinExecutor().select(msg).dependencies();
+        final String infoType = msg.<String>optionalArgs(ServerTokens.ARGS_INFO_TYPE).get();
+        final ScriptEngineOps seo = context.getGremlinExecutor().select(msg);
+
+        final Object infoToShow;
+        if (infoType.equals(ServerTokens.ARGS_INFO_TYPE_DEPDENENCIES))
+            infoToShow = seo.dependencies();
+        else if (infoType.equals(ServerTokens.ARGS_INFO_TYPE_IMPORTS))
+            infoToShow  = seo.imports();
+        else if (infoType.equals(ServerTokens.ARGS_INFO_TYPE_VARIABLES))
+            infoToShow = "variables";
+        else
+            throw new RuntimeException(String.format("Validation for the show operation is not properly checking the %s", ServerTokens.ARGS_INFO_TYPE));
+
         try {
-            ctx.channel().write(new TextWebSocketFrame(serializer.serialize(dependencies, context)));
+            ctx.channel().write(new TextWebSocketFrame(serializer.serialize(infoToShow, context)));
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.",
-                    dependencies, context.getRequestMessage(), ex);
+                    infoToShow, context.getRequestMessage(), ex);
         }
     }
 

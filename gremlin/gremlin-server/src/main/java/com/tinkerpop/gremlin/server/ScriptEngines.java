@@ -87,6 +87,15 @@ public class ScriptEngines implements ScriptEngineOps{
         return m;
     }
 
+    @Override
+    public Map<String, List<String>> imports() {
+        final Map m = new HashMap();
+        scriptEngines.entrySet().stream()
+                .filter(kv -> kv.getValue() instanceof DependencyManager)
+                .forEach(kv -> m.put(kv.getKey(), Arrays.asList(((DependencyManager) kv.getValue()).imports())));
+        return m;
+    }
+
     /**
      * Get the set of ScriptEngines that implement DependencyManager interface.
      */

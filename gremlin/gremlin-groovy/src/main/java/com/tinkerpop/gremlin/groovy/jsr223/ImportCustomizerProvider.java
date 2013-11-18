@@ -15,4 +15,6 @@ public interface ImportCustomizerProvider {
     Set<String> getExtraImports();
 
     Set<String> getExtraStaticImports();
+
+    Set<String> getImports();
 }

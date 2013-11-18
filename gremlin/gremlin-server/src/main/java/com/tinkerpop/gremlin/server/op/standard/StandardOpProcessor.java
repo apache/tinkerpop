@@ -1,17 +1,11 @@
 package com.tinkerpop.gremlin.server.op.standard;
 
 import com.tinkerpop.gremlin.Tokens;
-import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 import com.tinkerpop.gremlin.server.*;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import org.apache.commons.collections.iterators.ArrayIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.script.ScriptException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 /**
@@ -49,8 +43,8 @@ public class StandardOpProcessor implements OpProcessor {
             case ServerTokens.OPS_USE:
                 op = validateUseMessage(message).orElse(StandardOps::useOp);
                 break;
-            case ServerTokens.OPS_DEPENDENCIES:
-                op = validateUseMessage(message).orElse(StandardOps::depsOp);
+            case ServerTokens.OPS_SHOW:
+                op = validateShowMessage(message).orElse(StandardOps::showOp);
                 break;
             case ServerTokens.OPS_INVALID:
                 op = OpProcessor.error(String.format("Message could not be parsed.  Check the format of the request. [%s]", message));
@@ -67,7 +61,7 @@ public class StandardOpProcessor implements OpProcessor {
         if (!message.optionalArgs(ServerTokens.ARGS_GREMLIN).isPresent())
             return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code requires a [%s] argument.",
                     ServerTokens.OPS_EVAL, ServerTokens.ARGS_GREMLIN)));
-        else
+
             return Optional.empty();
     }
 
@@ -81,8 +75,22 @@ public class StandardOpProcessor implements OpProcessor {
             return Optional.of(OpProcessor.error(String.format(
                     "A message with an [%s] op code requires that the [%s] argument has at least one import string specified.",
                     ServerTokens.OPS_IMPORT, ServerTokens.ARGS_IMPORTS)));
-        else
+
             return Optional.empty();
+    }
+
+    private static Optional<Consumer<Context>> validateShowMessage(final RequestMessage message) {
+        final Optional<String> infoType = message.optionalArgs(ServerTokens.ARGS_INFO_TYPE);
+        if (!infoType.isPresent())
+            return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code requires a [%s] argument.",
+                    ServerTokens.OPS_SHOW, ServerTokens.ARGS_INFO_TYPE)));
+
+        if (!ServerTokens.INFO_TYPES.contains(infoType.get()))
+            return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code requires a [%s] argument with one of the following values [%s].",
+                    ServerTokens.OPS_SHOW, ServerTokens.ARGS_INFO_TYPE, ServerTokens.INFO_TYPES)));
+
+        return Optional.empty();
+
     }
 
     private static Optional<Consumer<Context>> validateUseMessage(final RequestMessage message) {
@@ -101,7 +109,7 @@ public class StandardOpProcessor implements OpProcessor {
             return Optional.of(OpProcessor.error(String.format(
                     "A message with an [%s] op code requires that all [%s] specified are valid maven coordinates with a group, artifact, and version.",
                     ServerTokens.OPS_USE, ServerTokens.ARGS_COORDINATES)));
-        else
+
             return Optional.empty();
     }
 

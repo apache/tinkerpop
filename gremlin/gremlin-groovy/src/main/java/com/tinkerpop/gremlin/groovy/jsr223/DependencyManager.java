@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,4 +29,9 @@ public interface DependencyManager {
      * List the dependencies in the ScriptEngine classloader.
      */
     Map[] dependencies();
+
+    /**
+     * List the imports in the ScriptEngine;
+     */
+    Set<String> imports();
 }
