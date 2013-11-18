@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 /**
  * Operations to be used by the StandardOpProcessor.
@@ -114,6 +115,8 @@ final class StandardOps {
             itty = (Iterator) o;
         else if (o instanceof Object[])
             itty = new ArrayIterator(o);
+        else if (o instanceof Stream)
+            itty = ((Stream) o).iterator();
         else if (o instanceof Map)
             itty = ((Map) o).entrySet().iterator();
         else if (o instanceof Throwable)
