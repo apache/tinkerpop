@@ -136,6 +136,16 @@ public class GremlinExecutor {
             return sharedScriptEngines;
     }
 
+    /**
+     * Gets bindings from the session if this is an in-session requests.
+     */
+    public Optional<Map<String,Object>> getBindingsAsMap(final RequestMessage message) {
+        if (message.optionalSessionId().isPresent())
+            return Optional.<Map<String,Object>>of(getGremlinSession(message.sessionId).getBindings());
+        else
+            return Optional.empty();
+    }
+
     private static Map<String,Object> extractBindingsFromMessage(final RequestMessage msg) {
         final Map<String, Object> m = new HashMap<>();
         final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs(ServerTokens.ARGS_BINDINGS);
@@ -214,6 +224,10 @@ public class GremlinExecutor {
         @Override
         public Map<String, List<String>> imports() {
             return scriptEngines.imports();
+        }
+
+        public Bindings getBindings() {
+            return bindings;
         }
     }
 }

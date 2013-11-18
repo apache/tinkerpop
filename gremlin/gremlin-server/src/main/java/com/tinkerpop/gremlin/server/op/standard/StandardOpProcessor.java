@@ -89,6 +89,10 @@ public class StandardOpProcessor implements OpProcessor {
             return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code requires a [%s] argument with one of the following values [%s].",
                     ServerTokens.OPS_SHOW, ServerTokens.ARGS_INFO_TYPE, ServerTokens.INFO_TYPES)));
 
+        if (infoType.get().equals(ServerTokens.ARGS_INFO_TYPE_VARIABLES) && !message.optionalSessionId().isPresent())
+            return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code and [%s] value of [%s] is can only be used with in-session requests as bindings are not 'kept' on the server in non-session requests.",
+                    ServerTokens.OPS_SHOW, ServerTokens.ARGS_INFO_TYPE, ServerTokens.ARGS_INFO_TYPE_VARIABLES)));
+
         return Optional.empty();
 
     }

@@ -40,7 +40,8 @@ final class StandardOps {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
         final String infoType = msg.<String>optionalArgs(ServerTokens.ARGS_INFO_TYPE).get();
-        final ScriptEngineOps seo = context.getGremlinExecutor().select(msg);
+        final GremlinExecutor executor = context.getGremlinExecutor();
+        final ScriptEngineOps seo = executor.select(msg);
 
         final Object infoToShow;
         if (infoType.equals(ServerTokens.ARGS_INFO_TYPE_DEPDENENCIES))
@@ -48,7 +49,7 @@ final class StandardOps {
         else if (infoType.equals(ServerTokens.ARGS_INFO_TYPE_IMPORTS))
             infoToShow  = seo.imports();
         else if (infoType.equals(ServerTokens.ARGS_INFO_TYPE_VARIABLES))
-            infoToShow = "variables";
+            infoToShow = executor.getBindingsAsMap(msg);
         else
             throw new RuntimeException(String.format("Validation for the show operation is not properly checking the %s", ServerTokens.ARGS_INFO_TYPE));
 
