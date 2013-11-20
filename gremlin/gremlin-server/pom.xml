@@ -109,6 +109,10 @@
         </resources>
         <testResources>
             <testResource>
+                <directory>${basedir}/src/integration/resources
+                </directory>
+            </testResource>
+            <testResource>
                 <directory>${basedir}/src/performance/resources
                 </directory>
             </testResource>
@@ -153,6 +157,16 @@
         </plugins>
     </build>
     <profiles>
+        <profile>
+            <id>integration-tests</id>
+            <activation>
+                <!-- keep this setting false for commit purposes -->
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <srcdir>src/integration/java</srcdir>
+            </properties>
+        </profile>
         <profile>
             <id>performance-tests</id>
             <activation>

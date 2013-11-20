@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 /**
@@ -92,18 +93,20 @@ final class StandardOps {
     public static void evalOp(final Context context) {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
+        final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
+
         Object o;
         try {
             o = context.getGremlinExecutor().eval(msg, context.getGraphs());
         } catch (ScriptException se) {
             logger.warn("Error while evaluating a script on request [{}]", msg);
             logger.debug("Exception from ScriptException error.", se);
-            OpProcessor.error(se.getMessage()).accept(context);
+            OpProcessor.error(serializer.serialize(se.getMessage(), ResultCode.FAIL, context)).accept(context);
             return;
         } catch (InterruptedException ie) {
             logger.warn("Thread interrupted (perhaps script ran for too long) while processing this request [{}]", msg);
             logger.debug("Exception from InterruptedException error.", ie);
-            OpProcessor.error(ie.getMessage()).accept(context);
+            OpProcessor.error(serializer.serialize(ie.getMessage(), ResultCode.FAIL, context)).accept(context);
             return;
         } catch (ExecutionException ee) {
             logger.warn("Error while retrieving response from the script evaluated on request [{}]", msg);
@@ -112,7 +115,13 @@ final class StandardOps {
             if (inner instanceof ScriptException)
                 inner = inner.getCause();
 
-            OpProcessor.error(inner.getMessage()).accept(context);
+            OpProcessor.error(serializer.serialize(inner.getMessage(), ResultCode.FAIL, context)).accept(context);
+            return;
+        } catch (TimeoutException toe) {
+            final String errorMessage = String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", context.getSettings().scriptEvaluationTimeout, msg);
+            logger.warn(errorMessage, context.getSettings().scriptEvaluationTimeout, msg);
+            final String json = serializer.serialize(errorMessage, ResultCode.FAIL, context);
+            OpProcessor.error(json).accept(context);
             return;
         }
 
@@ -132,7 +141,6 @@ final class StandardOps {
         else
             itty = new SingleIterator<>(o);
 
-        final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
         itty.forEachRemaining(j -> {
             try {
                 ctx.channel().write(new TextWebSocketFrame(true, 0, serializer.serialize(j, context)));

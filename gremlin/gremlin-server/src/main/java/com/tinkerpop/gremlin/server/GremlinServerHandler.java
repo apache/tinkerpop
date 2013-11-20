@@ -122,8 +122,10 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
                 gremlinExecutor.init(settings);
 
             final Optional<OpProcessor> processor = OpLoader.getProcessor(requestMessage.processor);
-            if (processor.isPresent())
-                processor.get().select(requestMessage).accept(new Context(requestMessage, ctx, settings, graphs, gremlinExecutor));
+            if (processor.isPresent()) {
+                final Context gremlinServerContext = new Context(requestMessage, ctx, settings, graphs, gremlinExecutor);
+                processor.get().select(gremlinServerContext).accept(gremlinServerContext);
+            }
             else
                 logger.warn("Invalid OpProcessor requested [{}]", requestMessage.processor);
         }

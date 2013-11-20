@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.groovy.jsr223.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
+import io.netty.util.Timeout;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -35,7 +37,8 @@ public class ScriptEngines implements ScriptEngineOps {
      * Evaluate a script with Bindings for a particular language.
      */
     @Override
-    public Object eval(final String script, final Bindings bindings, final String language) throws ScriptException {
+    public Object eval(final String script, final Bindings bindings, final String language)
+            throws ScriptException, TimeoutException {
         if (!scriptEngines.containsKey(language))
             throw new IllegalArgumentException("Language [%s] not configured on this server.");
 

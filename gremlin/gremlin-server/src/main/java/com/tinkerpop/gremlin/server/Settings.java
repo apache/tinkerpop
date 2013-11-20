@@ -20,10 +20,30 @@ import java.util.UUID;
  */
 public class Settings {
 
-    public String host;
-    public int port;
-    public int threadPoolWorker;
-    public int threadPoolBoss;
+    /**
+     * Host to bind the server to. Defaults to localhost.
+     */
+    public String host = "localhost";
+
+    /**
+     * Port to bind the server to.  Defaults to 8182.
+     */
+    public int port = 8182;
+
+    /**
+     * Size of the worker thread pool.   Defaults to 16
+     */
+    public int threadPoolWorker = 16;
+
+    /**
+     * Size of the boss thread pool.  Defaults to 1.
+     */
+    public int threadPoolBoss = 1;
+
+    /**
+     * Time in milliseconds to wait for a script to complete execution.  Defaults to 30000.
+     */
+    public long scriptEvaluationTimeout = 30000l;
     public ServerMetrics metrics = null;
     public Map<String, String> graphs;
     public Map<String, ScriptEngineSettings> scriptEngines;

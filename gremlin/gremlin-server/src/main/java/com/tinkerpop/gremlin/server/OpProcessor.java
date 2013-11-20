@@ -13,7 +13,7 @@ public interface OpProcessor {
     static final Logger opProcessorLogger = LoggerFactory.getLogger(OpProcessor.class);
 
     public String getName();
-    public Consumer<Context> select(final RequestMessage message);
+    public Consumer<Context> select(final Context ctx);
 
     public static Consumer<Context> text(final String message) {
         return (context) -> context.getChannelHandlerContext().channel().write(
@@ -21,7 +21,7 @@ public interface OpProcessor {
     }
 
     public static Consumer<Context> error(final String message) {
-        opProcessorLogger.warn(message);
-        return text(message);
+        opProcessorLogger.warn("Error handled with this response: {}", message);
+        return (context) -> context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(message));
     }
 }

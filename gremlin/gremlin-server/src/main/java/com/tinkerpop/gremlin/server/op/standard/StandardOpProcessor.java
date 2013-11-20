@@ -23,9 +23,12 @@ public class StandardOpProcessor implements OpProcessor {
     }
 
     @Override
-    public Consumer<Context> select(final RequestMessage message) {
+    public Consumer<Context> select(final Context ctx) {
+        final RequestMessage message = ctx.getRequestMessage();
         if (logger.isDebugEnabled())
             logger.debug("Selecting processor for RequestMessage {}", message);
+
+        final ResultSerializer serializer = ResultSerializer.select(message.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
 
         final Consumer<Context> op;
         switch (message.op) {
@@ -35,72 +38,72 @@ public class StandardOpProcessor implements OpProcessor {
                         OpProcessor.text(Tokens.VERSION);
                 break;
             case ServerTokens.OPS_EVAL:
-                op = validateEvalMessage(message).orElse(StandardOps::evalOp);
+                op = validateEvalMessage(message, serializer, ctx).orElse(StandardOps::evalOp);
                 break;
             case ServerTokens.OPS_IMPORT:
-                op = validateImportMessage(message).orElse(StandardOps::importOp);
+                op = validateImportMessage(message, serializer, ctx).orElse(StandardOps::importOp);
                 break;
             case ServerTokens.OPS_RESET:
                 op = StandardOps::resetOp;
                 break;
             case ServerTokens.OPS_SHOW:
-                op = validateShowMessage(message).orElse(StandardOps::showOp);
+                op = validateShowMessage(message, serializer, ctx).orElse(StandardOps::showOp);
                 break;
             case ServerTokens.OPS_USE:
-                op = validateUseMessage(message).orElse(StandardOps::useOp);
+                op = validateUseMessage(message, serializer, ctx).orElse(StandardOps::useOp);
                 break;
             case ServerTokens.OPS_INVALID:
-                op = OpProcessor.error(String.format("Message could not be parsed.  Check the format of the request. [%s]", message));
+                op = OpProcessor.error(serializer.serialize(String.format("Message could not be parsed.  Check the format of the request. [%s]", message), ResultCode.FAIL_MALFORMED_REQUEST, ctx));
                 break;
             default:
-                op = OpProcessor.error(String.format("Message with op code [%s] is not recognized.", message.op));
+                op = OpProcessor.error(serializer.serialize(String.format("Message with op code [%s] is not recognized.", message.op), ResultCode.FAIL_MALFORMED_REQUEST, ctx));
                 break;
         }
 
         return op;
     }
 
-    private static Optional<Consumer<Context>> validateEvalMessage(final RequestMessage message) {
+    private static Optional<Consumer<Context>> validateEvalMessage(final RequestMessage message, final ResultSerializer serializer, final Context ctx) {
         if (!message.optionalArgs(ServerTokens.ARGS_GREMLIN).isPresent())
-            return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code requires a [%s] argument.",
-                    ServerTokens.OPS_EVAL, ServerTokens.ARGS_GREMLIN)));
+            return Optional.of(OpProcessor.error(serializer.serialize(String.format("A message with an [%s] op code requires a [%s] argument.",
+                    ServerTokens.OPS_EVAL, ServerTokens.ARGS_GREMLIN), ResultCode.FAIL_INVALID_REQUEST_ARGUMENTS, ctx)));
 
             return Optional.empty();
     }
 
-    private static Optional<Consumer<Context>> validateImportMessage(final RequestMessage message) {
+    private static Optional<Consumer<Context>> validateImportMessage(final RequestMessage message, final ResultSerializer serializer, final Context ctx) {
         final Optional<List> l = message.optionalArgs(ServerTokens.ARGS_IMPORTS);
         if (!l.isPresent())
-            return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code requires a [%s] argument.",
-                    ServerTokens.OPS_IMPORT, ServerTokens.ARGS_IMPORTS)));
+            return Optional.of(OpProcessor.error(serializer.serialize(String.format("A message with an [%s] op code requires a [%s] argument.",
+                    ServerTokens.OPS_IMPORT, ServerTokens.ARGS_IMPORTS), ResultCode.FAIL_INVALID_REQUEST_ARGUMENTS, ctx)));
 
         if (l.orElse(new ArrayList()).size() == 0)
-            return Optional.of(OpProcessor.error(String.format(
+            return Optional.of(OpProcessor.error(serializer.serialize(String.format(
                     "A message with an [%s] op code requires that the [%s] argument has at least one import string specified.",
-                    ServerTokens.OPS_IMPORT, ServerTokens.ARGS_IMPORTS)));
+                    ServerTokens.OPS_IMPORT, ServerTokens.ARGS_IMPORTS), ResultCode.FAIL_INVALID_REQUEST_ARGUMENTS, ctx)));
 
             return Optional.empty();
     }
 
-    private static Optional<Consumer<Context>> validateShowMessage(final RequestMessage message) {
+    private static Optional<Consumer<Context>> validateShowMessage(final RequestMessage message, final ResultSerializer serializer, final Context ctx) {
         final Optional<String> infoType = message.optionalArgs(ServerTokens.ARGS_INFO_TYPE);
         if (!infoType.isPresent())
-            return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code requires a [%s] argument.",
-                    ServerTokens.OPS_SHOW, ServerTokens.ARGS_INFO_TYPE)));
+            return Optional.of(OpProcessor.error(serializer.serialize(String.format("A message with an [%s] op code requires a [%s] argument.",
+                    ServerTokens.OPS_SHOW, ServerTokens.ARGS_INFO_TYPE), ResultCode.FAIL_INVALID_REQUEST_ARGUMENTS, ctx)));
 
         if (!ServerTokens.INFO_TYPES.contains(infoType.get()))
-            return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code requires a [%s] argument with one of the following values [%s].",
-                    ServerTokens.OPS_SHOW, ServerTokens.ARGS_INFO_TYPE, ServerTokens.INFO_TYPES)));
+            return Optional.of(OpProcessor.error(serializer.serialize(String.format("A message with an [%s] op code requires a [%s] argument with one of the following values [%s].",
+                    ServerTokens.OPS_SHOW, ServerTokens.ARGS_INFO_TYPE, ServerTokens.INFO_TYPES), ResultCode.FAIL_INVALID_REQUEST_ARGUMENTS, ctx)));
 
         if (infoType.get().equals(ServerTokens.ARGS_INFO_TYPE_VARIABLES) && !message.optionalSessionId().isPresent())
-            return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code and [%s] value of [%s] is can only be used with in-session requests as bindings are not 'kept' on the server in non-session requests.",
-                    ServerTokens.OPS_SHOW, ServerTokens.ARGS_INFO_TYPE, ServerTokens.ARGS_INFO_TYPE_VARIABLES)));
+            return Optional.of(OpProcessor.error(serializer.serialize(String.format("A message with an [%s] op code and [%s] value of [%s] is can only be used with in-session requests as bindings are not 'kept' on the server in non-session requests.",
+                    ServerTokens.OPS_SHOW, ServerTokens.ARGS_INFO_TYPE, ServerTokens.ARGS_INFO_TYPE_VARIABLES), ResultCode.FAIL_INVALID_REQUEST_ARGUMENTS, ctx)));
 
         return Optional.empty();
 
     }
 
-    private static Optional<Consumer<Context>> validateUseMessage(final RequestMessage message) {
+    private static Optional<Consumer<Context>> validateUseMessage(final RequestMessage message, final ResultSerializer serializer, final Context ctx) {
         final Optional<List> l = message.optionalArgs(ServerTokens.ARGS_COORDINATES);
         if (!l.isPresent())
             return Optional.of(OpProcessor.error(String.format("A message with an [%s] op code requires a [%s] argument.",

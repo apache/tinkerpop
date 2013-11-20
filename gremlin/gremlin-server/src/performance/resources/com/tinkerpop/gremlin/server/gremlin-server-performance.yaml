@@ -1,5 +1,8 @@
 host: localhost
 port: 8182
+threadPoolWorker: 16
+threadPoolBoss: 1
+scriptEvaluationTimeout: 30000
 graphs: {
   g: config/tinkergraph-empty.properties}
 use:
@@ -8,4 +11,11 @@ scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
     staticImports: [java.lang.Math.PI]}}
+metrics: {
+  consoleReporter: {enabled: true, interval: 180000},
+  csvReporter: {enabled: true, interval: 180000, fileName: /tmp/gremlin-server-metrics.csv},
+  jmxReporter: {enabled: true},
+  slf4jReporter: {enabled: true, interval: 180000},
+  gangliaReporter: {enabled: true, interval: 180000, addressingMode: MULTICAST},
+  graphiteReporter: {enabled: true, interval: 180000}}
 staticFilePath: src/main/resources/web

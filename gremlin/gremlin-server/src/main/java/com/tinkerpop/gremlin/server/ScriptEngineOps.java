@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Features that ScriptEngines expose regardless of whether they are in a session or shared.
@@ -17,7 +18,7 @@ public interface ScriptEngineOps {
      * Evaluate a script with Bindings for a particular language.
      */
     public Object eval(final String script, final Bindings bindings, final String language)
-            throws ScriptException, InterruptedException, ExecutionException;
+            throws ScriptException, InterruptedException, ExecutionException, TimeoutException;
 
     /**
      * Perform append to the existing import list for all ScriptEngine instances that implement the DependencyManager

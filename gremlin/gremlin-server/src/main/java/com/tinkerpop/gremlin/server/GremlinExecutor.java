@@ -13,12 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * Execute Gremlin scripts against a ScriptEngine instance.  The ScriptEngine maybe be a shared ScriptEngine in the
@@ -53,7 +48,7 @@ public class GremlinExecutor {
     private Settings settings = null;
 
     public Object eval(final RequestMessage message, final GremlinServer.Graphs graphs)
-            throws ScriptException, InterruptedException, ExecutionException {
+            throws ScriptException, InterruptedException, ExecutionException, TimeoutException {
         return selectForEval(message, graphs).apply(message);
     }
 
@@ -97,7 +92,7 @@ public class GremlinExecutor {
      * Determine whether to execute the script by way of a specific session or by the shared script engine in
      * a sessionless request.
      */
-    private FunctionThatThrows<RequestMessage, Object> selectForEval(final RequestMessage message, final GremlinServer.Graphs graphs) {
+    private EvalFunctionThatThrows<RequestMessage, Object> selectForEval(final RequestMessage message, final GremlinServer.Graphs graphs) {
         final Bindings bindings = new SimpleBindings();
         bindings.putAll(extractBindingsFromMessage(message));
 
@@ -117,10 +112,11 @@ public class GremlinExecutor {
                 try {
                     // do a safety cleanup of previous transaction...if any
                     graphs.rollbackAll();
-                    final Object o = sharedScriptEngines.eval(message.<String>optionalArgs(ServerTokens.ARGS_GREMLIN).get(), bindings, language);
+                    final FutureTask<Object> future = new FutureTask<>(() -> sharedScriptEngines.eval(message.<String>optionalArgs(ServerTokens.ARGS_GREMLIN).get(), bindings, language));
+                    final Object o = future.get(settings.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
                     graphs.commitAll();
                     return o;
-                } catch (ScriptException ex) {
+                } catch (Exception ex) {
                     // todo: gotta work on error handling for failed scripts..........
                     graphs.rollbackAll();
                     throw ex;
@@ -167,8 +163,8 @@ public class GremlinExecutor {
     }
 
     @FunctionalInterface
-    public interface FunctionThatThrows<T, R> {
-        R apply(T t) throws ScriptException, InterruptedException, ExecutionException;
+    public interface EvalFunctionThatThrows<T, R> {
+        R apply(T t) throws ScriptException, InterruptedException, ExecutionException, TimeoutException;
     }
 
     public class GremlinSession implements ScriptEngineOps {
@@ -187,23 +183,28 @@ public class GremlinExecutor {
          */
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
+        /**
+         * Time to wait for a script to evaluate.
+         */
+        private final long scriptEvaluationTimeout;
+
         public GremlinSession(final UUID session, final Settings settings) {
             logger.info("New session established for {}", session);
             this.bindings = new SimpleBindings();
             this.scriptEngines = createScriptEngine(settings);
             sessionedScriptEngines.put(session, this);
+            this.scriptEvaluationTimeout = settings.scriptEvaluationTimeout;
         }
 
         @Override
         public Object eval(final String script, final Bindings bindings, final String language)
-                throws ScriptException, InterruptedException, ExecutionException {
+                throws ScriptException, InterruptedException, ExecutionException, TimeoutException {
             // apply the submitted bindings to the server side ones.
             this.bindings.putAll(bindings);
             final Future<Object> future = executor.submit(
                     (Callable<Object>) () -> scriptEngines.eval(script, this.bindings, language));
 
-            // todo: do a configurable timeout here???
-            return future.get();
+            return future.get(this.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
         }
 
         @Override

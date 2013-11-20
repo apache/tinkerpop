@@ -20,7 +20,10 @@ public interface ResultSerializer {
     public static final ToStringResultSerializer TO_STRING_RESULT_SERIALIZER = new ToStringResultSerializer();
     public static final JsonResultSerializer JSON_RESULT_SERIALIZER = new JsonResultSerializer();
 
-    public String serialize(final Object o, final Context context) throws Exception;
+    public default String serialize(final Object o, final Context context) {
+        return this.serialize(o, ResultCode.SUCCESS, context);
+    }
+    public String serialize(final Object o, final ResultCode code, final Context context);
 
     /**
      * Choose a serializer based on the "accept" argument on the message, where "accept" is a mime type.
@@ -41,7 +44,7 @@ public interface ResultSerializer {
         private static final String TEXT_RESPONSE_FORMAT_WITH_NULL = "%s>>null";
 
         @Override
-        public String serialize(final Object o, final Context context) throws Exception{
+        public String serialize(final Object o, final ResultCode code, final Context context) {
             return o == null ?
                     String.format(TEXT_RESPONSE_FORMAT_WITH_NULL, context.getRequestMessage().requestId) :
                     String.format(TEXT_RESPONSE_FORMAT_WITH_RESULT, context.getRequestMessage().requestId, o.toString());
@@ -57,6 +60,7 @@ public interface ResultSerializer {
         public static final String TOKEN_TYPE = "type";
         public static final String TOKEN_KEY = "key";
         public static final String TOKEN_VALUE = "value";
+        public static final String TOKEN_CODE = "code";
         public static final String TOKEN_PROPERTIES = "properties";
         public static final String TOKEN_HIDDEN = "hidden";
         public static final String TOKEN_EDGE = "edge";
@@ -64,11 +68,20 @@ public interface ResultSerializer {
         public static final String TOKEN_REQUEST = "requestId";
 
         @Override
-        public String serialize(final Object o, final Context context) throws Exception {
-            final JSONObject result = new JSONObject();
-            result.put(TOKEN_RESULT, prepareOutput(o));
-            result.put(TOKEN_REQUEST, context.getRequestMessage().requestId);
-            return result.toString();
+        public String serialize(final Object o, final ResultCode code, final Context context){
+            try {
+                final JSONObject result = new JSONObject();
+                result.put(TOKEN_CODE, code.getValue());
+                result.put(TOKEN_RESULT, prepareOutput(o));
+
+                // a context may not be available
+                if (context != null)
+                    result.put(TOKEN_REQUEST, context.getRequestMessage().requestId);
+
+                return result.toString();
+            } catch (Exception ex) {
+                throw new RuntimeException("Error during serialization.", ex);
+            }
         }
 
         private Object prepareOutput(final Object object) throws Exception {

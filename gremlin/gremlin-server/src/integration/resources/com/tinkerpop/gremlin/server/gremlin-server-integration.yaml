@@ -2,7 +2,7 @@ host: localhost
 port: 8182
 threadPoolWorker: 16
 threadPoolBoss: 1
-scriptEvaluationTimeout: 30000
+scriptEvaluationTimeout: 10000
 graphs: {
   g: config/tinkergraph-empty.properties}
 use:
