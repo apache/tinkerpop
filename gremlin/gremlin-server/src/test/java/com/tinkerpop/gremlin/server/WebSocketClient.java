@@ -141,7 +141,7 @@ class WebSocketClient {
         @Override
         public boolean hasNext() {
             try {
-                final Optional<JsonNode> node = queue.poll(8000, TimeUnit.MILLISECONDS);
+                final Optional<JsonNode> node = queue.poll(30000, TimeUnit.MILLISECONDS);
                 if (node == null) {
                     System.out.println("time elapsed before a result was ready");
                 }
@@ -152,7 +152,7 @@ class WebSocketClient {
                 }
 
                 // todo: better job with types
-                this.current = (T) node.get().get("result").toString();
+                this.current = (T) node.get().get("result").asText();
                 return true;
             } catch (InterruptedException ie) {
                 //ie.printStackTrace();
