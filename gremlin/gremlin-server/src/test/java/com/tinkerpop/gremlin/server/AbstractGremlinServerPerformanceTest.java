@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.util.Optional;
 
 /**
+ * Starts and stops one instance for all tests that extend from this class.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinServerPerformanceTest {
