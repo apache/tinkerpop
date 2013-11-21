@@ -41,6 +41,11 @@ public class GremlinExecutor {
     private Map<UUID, GremlinSession> sessionedScriptEngines = new ConcurrentHashMap<>();
 
     /**
+     * Each worker thread gets its own evaluation thread so that it is possible to timeout a long run evaluation.
+     */
+    private ThreadLocal<ExecutorService> scriptEvaluationService = new ThreadLocal<>();
+
+    /**
      * True if initialized and false otherwise.
      */
     private boolean initialized = false;
@@ -109,20 +114,30 @@ public class GremlinExecutor {
                 // put all the preconfigured graphs on the bindings
                 bindings.putAll(graphs.getGraphs());
 
+                final ExecutorService executorService = this.getScriptEvaluationService();
                 try {
                     // do a safety cleanup of previous transaction...if any
-                    graphs.rollbackAll();
-                    final FutureTask<Object> future = new FutureTask<>(() -> sharedScriptEngines.eval(message.<String>optionalArgs(ServerTokens.ARGS_GREMLIN).get(), bindings, language));
+                    executorService.submit(graphs::rollbackAll).get();
+                    final Future<Object> future = executorService.submit((Callable<Object>) () -> sharedScriptEngines.eval(message.<String>optionalArgs(ServerTokens.ARGS_GREMLIN).get(), bindings, language));
                     final Object o = future.get(settings.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
-                    graphs.commitAll();
+                    executorService.submit(graphs::commitAll).get();
                     return o;
                 } catch (Exception ex) {
                     // todo: gotta work on error handling for failed scripts..........
-                    graphs.rollbackAll();
+                    executorService.submit(graphs::rollbackAll).get();
                     throw ex;
                 }
             };
         }
+    }
+
+    private ExecutorService getScriptEvaluationService() {
+        final ExecutorService executorService = this.scriptEvaluationService.get();
+        if (executorService != null)
+            return executorService;
+
+        this.scriptEvaluationService.set(Executors.newSingleThreadExecutor());
+        return this.scriptEvaluationService.get();
     }
 
     public ScriptEngineOps select(final RequestMessage message) {

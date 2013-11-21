@@ -95,12 +95,12 @@
         </dependency>
     </dependencies>
     <properties>
-        <srcdir>src/test/java</srcdir>
+        <skipLongTests>true</skipLongTests>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
-        <testSourceDirectory>${srcdir}</testSourceDirectory>
+        <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
         <resources>
             <resource>
                 <directory>${basedir}/src/main/resources
@@ -109,11 +109,7 @@
         </resources>
         <testResources>
             <testResource>
-                <directory>${basedir}/src/integration/resources
-                </directory>
-            </testResource>
-            <testResource>
-                <directory>${basedir}/src/performance/resources
+                <directory>${basedir}/src/test/resources
                 </directory>
             </testResource>
         </testResources>
@@ -149,33 +145,65 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.16</version>
                 <configuration>
-                    <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                    <argLine>-Dlog4j.configuration=file:config/log4j.properties
                     </argLine>
+                    <excludes>
+                        <exclude>**/*IntegrateTest.java</exclude>
+                        <exclude>**/*PerformanceTest.java</exclude>
+                    </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.16</version>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/*IntegrateTest.java</include>
+                            </includes>
+                            <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                            </argLine>
+                            <skipTests>${skipLongTests}</skipTests>
+                            <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>performance-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/*PerformanceTest.java</include>
+                            </includes>
+                            <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                            </argLine>
+                            <skipTests>${skipLongTests}</skipTests>
+                            <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify</id>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <summaryFiles>
+                                <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
+                                <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
+                            </summaryFiles>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>integration-tests</id>
-            <activation>
-                <!-- keep this setting false for commit purposes -->
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <srcdir>src/integration/java</srcdir>
-            </properties>
-        </profile>
-        <profile>
-            <id>performance-tests</id>
-            <activation>
-                <!-- keep this setting false for commit purposes -->
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <srcdir>src/performance/java</srcdir>
-            </properties>
-        </profile>
-    </profiles>
 </project>

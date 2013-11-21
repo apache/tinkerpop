@@ -6,9 +6,9 @@ import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
 
 import static org.junit.Assert.assertEquals;
@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 @AxisRange(min = 0, max = 1)
 @BenchmarkMethodChart(filePrefix = "gremlin-addition")
 @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-gremlin-addition")
-public class ScenarioGremlinAdditionTest extends AbstractGremlinServerPerformanceTest {
+public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerformanceTest {
 
     public final static int DEFAULT_BENCHMARK_ROUNDS = 50;
     public final static int DEFAULT_WARMUP_ROUNDS = 5;
