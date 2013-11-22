@@ -7,7 +7,6 @@ package com.tinkerpop.blueprints.computer;
  * Moreover, the GraphMemory maintains global information about the computation such as the iterations and runtime.
  *
  * @author Matthias Broecheler (me@matthiasb.com)
- * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphMemory {
