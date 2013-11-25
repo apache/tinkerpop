@@ -99,7 +99,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         } else {
             // Static file request
             if (staticFileHandler == null) {
-                staticFileHandler = new StaticFileHandler(settings);
+                staticFileHandler = new StaticFileHandler();
             }
 
             staticFileHandler.handleHttpStaticFileRequest(ctx, req);

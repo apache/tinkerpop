@@ -3,10 +3,14 @@ html {
 }
 
 body {
-    padding-top: 50px;
-    padding-bottom: 20px;
     background: #ffffff;
     height: 100%;
+}
+
+.horizontal {
+    float: left;
+    display: block;
+    margin-right: 10px;
 }
 
 .screen-centered {
@@ -15,12 +19,6 @@ body {
     left: 50%;
     z-index: 1000;
     padding: 10px;
-}
-
-.navbar-inverse {
-    color: #aaaaaa;
-    background-color: #ffffff;
-    border-color: #cccccc;
 }
 
 .dropdown-menu > li > a:hover {
@@ -44,12 +42,4 @@ body {
     font-family: "Courier New", Courier, monospace;
     background-color: #dddddd;
     color: #555555;
-}
-
-.img-rotated {
-    -webkit-transform: rotate(90deg);
-    -moz-transform: rotate(90deg);
-    -o-transform: rotate(90deg);
-    -ms-transform: rotate(90deg);
-    transform: rotate(90deg);
 }

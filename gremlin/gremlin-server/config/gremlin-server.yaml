@@ -18,4 +18,3 @@ metrics: {
   slf4jReporter: {enabled: true, interval: 180000},
   gangliaReporter: {enabled: true, interval: 180000, addressingMode: MULTICAST},
   graphiteReporter: {enabled: true, interval: 180000}}
-staticFilePath: src/main/resources/web

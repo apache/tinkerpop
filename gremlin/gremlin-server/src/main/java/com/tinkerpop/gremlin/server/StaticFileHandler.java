@@ -50,17 +50,12 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * @author Victor Su
  */
 class StaticFileHandler {
+    private static final String STATIC_FILE_PATH = "src/main/resources/web";
     private static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     private static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
     private static final int HTTP_CACHE_SECONDS = 60;
     private static final String HTTP_DEFAULT_CONTENT_TYPE = "text/plain";
     private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
-
-    private final Settings settings;
-
-    public StaticFileHandler(final Settings settings) {
-        this.settings = settings;
-    }
 
     public void handleHttpStaticFileRequest(final ChannelHandlerContext ctx, final FullHttpRequest req) throws Exception {
         final String uri = req.getUri();
@@ -175,7 +170,7 @@ class StaticFileHandler {
         }
 
         // Convert to absolute path.
-        return System.getProperty("user.dir") + File.separator + settings.staticFilePath + uri;
+        return System.getProperty("user.dir") + File.separator + STATIC_FILE_PATH + uri;
     }
 
     private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status) {
