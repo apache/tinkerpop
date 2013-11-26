@@ -2,6 +2,7 @@ tinkerpop.namespace("tinkerpop.mapping");
 tinkerpop.mapping = (function () {
     return {
         arg: {
+            accept: "accept",
             coordinates: "coordinates",
             gremlin: "gremlin",
             imports: "imports",
@@ -9,7 +10,7 @@ tinkerpop.mapping = (function () {
             verbose: "verbose"
         },
 
-        coordinates: {
+        coordinate: {
             artifact: "artifact",
             group: "group",
             version: "version"

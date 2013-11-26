@@ -1,14 +1,18 @@
-<div class="repl-text" style="padding: 10px; width: 100%">
+<div style="padding: 10px; width: 100%">
     <h4>Imports</h4>
     <br />
+    <div class="info-text" style="margin-bottom: 10px">
+        <span>Enter a namespace to add:</span>
+    </div>
     <div class="repl-text" style="display: table; width: 100%">
-        <div class="repl-text" style="display: table-cell; width: 70px; vertical-align: top">Import:&nbsp;</div>
         <div class="repl-text" style="display: table-cell; width: auto">
-            <input id="inputImport" class="repl-text" style="width: 100%; border: 1px dashed #707070" />
+            <input id="inputImport" class="repl-text" style="width: 100%; border: 1px dashed #707070; vertical-align: middle" />
         </div>
-        <div class="repl-text" style="display: table-cell; width: 70px; vertical-align: top">
-            <button id="buttonAddImport" class="btn btn-default btn-xs" style="margin-left: 10px" title="Add">+</button>
+        <div class="repl-text" style="display: table-cell; padding-left: 10px; width: 200px">
+            <input type="checkbox" id="checkStaticImport" title="Static" style="line-height: 1.4285; vertical-align: top" />
+            <span class="info-text" style="vertical-align: middle; margin-left: -5px; margin-right: 10px">Static</span>
+            <button type="button" id="buttonAddImport" class="btn btn-default btn-xs" title="Add" style="vertical-align: middle">+</button>
         </div>
     </div>
-    <div id="sectionImport" style="margin-top: 10px; height: 400px"></div>
+    <div class="repl-text" id="sectionImport" style="margin-top: 10px; height: 400px"></div>
 </div>

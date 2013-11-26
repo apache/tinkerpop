@@ -32,6 +32,12 @@ body {
     border: 1px solid #cccccc;
 }
 
+.info-text {
+    font-family: Arial, Helvetica, san-serif;
+    background-color: #555555;
+    color: #f8f8f8;
+}
+
 .repl-text {
     font-family: "Courier New", Courier, monospace;
     background-color: #555555;

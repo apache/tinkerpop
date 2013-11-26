@@ -11,13 +11,14 @@ var MODE = {
 };
 
 var COOKIE_NAME = "history";
+var MIME_TYPE_JSON = "application/json";
+var STATUS_BAR_HEIGHT = 23;
 
 var _template = new tinkerpop.util.Template();
 var _socket = null;
 var _sessionId = $.uuid();
 var _requestId;
 var _index = 0;
-var _ctrlKey = false;
 var _mode = MODE.input;
 
 function _getHistory() {
@@ -99,6 +100,9 @@ function _sendRequest(op, args, callback) {
         if (!_.isUndefined(callback) && (callback != null)) {
             _socket.onmessage = callback;
         }
+        else {
+            _socket.onmessage = undefined;
+        }
 
         _socket.send(JSON.stringify(request));
     }
@@ -106,6 +110,9 @@ function _sendRequest(op, args, callback) {
         _connectWebSocket(function () {
             if (!_.isUndefined(callback) && (callback != null)) {
                 _socket.onmessage = callback;
+            }
+            else {
+                _socket.onmessage = undefined;
             }
 
             _socket.send(JSON.stringify(request));
@@ -138,6 +145,8 @@ function _closeOverlay() {
     $("#overlay").hide();
     $("#main").show();
     $("#status").html("");
+    $("#statusInput").val("");
+    $("#statusInput").hide();
     $("#mainInput textarea").focus();
     $("#mainInput textarea").selectRange($("#mainInput textarea").val().length);
     _mode = MODE.input;
@@ -233,58 +242,70 @@ function _renderSearch(query) {
     });
 }
 
+function _processImport() {
+    var value = $("#inputImport").val().trim();
+    if (value != "") {
+        var static = $("#checkStaticImport").is(":checked");
+
+        if (value.toLowerCase().slice(0, 6) != "import") {
+            value = "import " + (static ?  "static " : "") + value;
+        }
+
+        var args = {};
+        args[tinkerpop.mapping.arg.imports] = [value];
+        args[tinkerpop.mapping.arg.accept] = MIME_TYPE_JSON;
+
+        _sendRequest(tinkerpop.mapping.op.import, args);
+
+        $("#sectionImport ul").append('<li>' + value.replace("import", "").replace("static", "").trim() + '</li>');
+
+        $("#inputImport").val("");
+        $("#checkStaticImport").removeAttr("checked");
+        $("#inputImport").focus();
+    }
+}
+
 function _renderImports() {
     $("#inputImport").focus();
 
     var args = {};
     args[tinkerpop.mapping.arg.infoType] = tinkerpop.mapping.infoType.imports;
+    args[tinkerpop.mapping.arg.accept] = MIME_TYPE_JSON;
 
     _sendRequest(
         tinkerpop.mapping.op.show,
         args,
         function (evt) {
             if (typeof evt.data === "string") {
-                // parse request id
-                var parts = evt.data.split(">>");
-                if (parts.length > 0) {
-                    var requestId = parts[0];
-
+                var response = JSON.parse(evt.data);
+                if (response.code == 200) {
+                    var requestId = response.requestId;
                     if (requestId == _requestId) {
-                        if (parts.length > 1) {
-                            var str = parts[1];
-                            var start = str.indexOf("[[");
-                            var end = str.indexOf("]]");
-                            var imports = str.substr(start + 2, end - start - 2).split(",");
+                        var data = _(response.result["gremlin-groovy"][0]).sortBy(function (item) {
+                            // sort java imports last
+                            if (item.slice(0, 4) == "java") {
+                                return "b" + item;
+                            }
+                            else {
+                                return "a" + item;
+                            }
+                        });
 
-                            $("#sectionImport").html(Mustache.render(_template.get("list"), { data: imports, cursor: "none" }));
+                        $("#sectionImport").html(Mustache.render(_template.get("list"), { data: data }));
 
-                            $("#inputImport").on("keyup", function (e) {
-                                var code = e.which;
-                                switch (code) {
-                                    case 13:    // enter
-                                        var value = $(this).val().trim();
-                                        if (value != "") {
-                                            args[tinkerpop.mapping.arg.imports] = value;
-                                            _sendRequest(tinkerpop.mapping.op.import, args, function (evt) {
-                                                $("#sectionImport").append('<li>' + value + '</li>');
-                                            });
-                                        }
-                                        break;
-                                }
-                            });
+                        $("#inputImport").on("keyup", function (e) {
+                            var code = e.which;
+                            switch (code) {
+                                case 13:    // enter
+                                    _processImport();
+                                    break;
+                            }
+                        });
 
-                            $("#buttonAddImport").off();
-                            $("#buttonAddImport").on("click", function () {
-                                var value = $("#inputImport").val().trim();
-                                if (value != "") {
-                                    var args = {};
-                                    args[tinkerpop.mapping.arg.imports] = value;
-                                    _sendRequest(tinkerpop.mapping.op.import, args, function (evt) {
-                                        $("#sectionImport").append('<li>' + value + '</li>');
-                                    });
-                                }
-                            });
-                        }
+                        $("#buttonAddImport").off();
+                        $("#buttonAddImport").on("click", function () {
+                            _processImport();
+                        });
                     }
                 }
             }
@@ -300,21 +321,19 @@ function _parseDependency(str) {
         var x2js = new X2JS();
 
         var json = x2js.xml_str2json(str);
-        if (!_.isUndefined(json.dependency.groupId)) {
+        if (_(json.dependency).has("groupId")) {
             // maven format
-            dependency = {
-                groupId: json.dependency.groupId,
-                artifactId: json.dependency.artifact,
-                version: json.dependency.version
-            };
+            dependency = {};
+            dependency[tinkerpop.mapping.coordinate.group] = json.dependency.groupId;
+            dependency[tinkerpop.mapping.coordinate.artifact] = json.dependency.artifactId;
+            dependency[tinkerpop.mapping.coordinate.version] = json.dependency.version;
         }
-        else if (!_.isUndefined(json.dependency._org)) {
+        else if (_(json.dependency).has("_org")) {
             // ivy format
-            dependency = {
-                groupId: json.dependency._org,
-                artifactId: json.dependency._name,
-                version: json.dependency._rev
-            };
+            dependency = {};
+            dependency[tinkerpop.mapping.coordinate.group] = json.dependency._org;
+            dependency[tinkerpop.mapping.coordinate.artifact] = json.dependency._name;
+            dependency[tinkerpop.mapping.coordinate.version] = json.dependency._rev;
         }
     }
     catch (error) {
@@ -325,11 +344,10 @@ function _parseDependency(str) {
     if (dependency == null) {
         var group = tinkerpop.util.parseGrape(str, "group");
         if (group != "") {
-            dependency = {
-                groupId: group,
-                artifactId: tinkerpop.util.parseGrape(str, "module"),
-                version: tinkerpop.util.parseGrape(str, "version")
-            }
+            dependency = {};
+            dependency[tinkerpop.mapping.coordinate.group] = group;
+            dependency[tinkerpop.mapping.coordinate.artifact] = tinkerpop.util.parseGrape(str, "module");
+            dependency[tinkerpop.mapping.coordinate.version] = tinkerpop.util.parseGrape(str, "version");
         }
     }
 
@@ -338,11 +356,19 @@ function _parseDependency(str) {
         str = str.replace(/'/g, "");
         var parts = str.split(":");
         if (parts.length >= 3) {
-            dependency = {
-                groupId: parts[0],
-                artifactId: parts[1],
-                version: parts[2]
-            }
+            dependency = {};
+            dependency[tinkerpop.mapping.coordinate.group] = parts[0];
+            dependency[tinkerpop.mapping.coordinate.artifact] = parts[1];
+            dependency[tinkerpop.mapping.coordinate.version] = parts[2];
+        }
+    }
+
+    // validate dependency
+    if (dependency != null) {
+        if (!_(dependency).has(tinkerpop.mapping.coordinate.group) ||
+            !_(dependency).has(tinkerpop.mapping.coordinate.artifact) ||
+            !_(dependency).has(tinkerpop.mapping.coordinate.version)) {
+            dependency = null;
         }
     }
 
@@ -354,45 +380,53 @@ function _renderDependencies() {
 
     var args = {};
     args[tinkerpop.mapping.arg.infoType] = tinkerpop.mapping.infoType.dependencies;
+    args[tinkerpop.mapping.arg.accept] = MIME_TYPE_JSON;
 
     _sendRequest(
         tinkerpop.mapping.op.show,
         args,
         function (evt) {
             if (typeof evt.data === "string") {
-                // parse request id
-                var parts = evt.data.split(">>");
-                if (parts.length > 0) {
-                    var requestId = parts[0];
-
+                var response = JSON.parse(evt.data);
+                if (response.code == 200) {
+                    var requestId = response.requestId;
                     if (requestId == _requestId) {
-                        if (parts.length > 1) {
-                            var str = parts[1];
-                            var start = str.indexOf("[");
-                            var end = str.indexOf("]");
-                            var dependencies = str.substr(start + 1, end - start - 1);
+                        var data = response.result["gremlin-groovy"];
 
-                            $("#sectionDependency").html(Mustache.render(_template.get("list"), { data: dependencies, cursor: "none" }));
+                        $("#sectionDependency").html(Mustache.render(_template.get("dependencyList"), { data: data }));
 
-                            $("#buttonAddDependency").off();
-                            $("#buttonAddDependency").on("click", function () {
-                                var str = $("#inputDependency").val().trim();
-                                if (str != "") {
-                                    var args = {};
-                                    var dependency = _parseDependency(str);
+                        $("#buttonAddDependency").off();
+                        $("#buttonAddDependency").on("click", function () {
+                            var str = $("#inputDependency").val().trim();
+                            if (str != "") {
+                                var dependency = _parseDependency(str);
 
-                                    if (dependency == null) {
-                                        alert("Could not parse dependency");
-                                    }
-                                    else {
-                                        args[tinkerpop.mapping.arg.dependencies] = dependency;
-                                        _sendRequest(tinkerpop.mapping.op.use, args, function (evt) {
-
-                                        });
-                                    }
+                                if (dependency == null) {
+                                    alert("Could not parse dependency");
                                 }
-                            });
-                        }
+                                else {
+                                    var args = {};
+                                    args[tinkerpop.mapping.arg.coordinates] = [dependency];
+                                    args[tinkerpop.mapping.arg.accept] = MIME_TYPE_JSON;
+
+                                    _sendRequest(tinkerpop.mapping.op.use, args, function (evt) {
+                                        if (typeof evt.data === "string") {
+                                            // parse request id
+                                            var parts = evt.data.split(">>");
+                                            if (parts.length > 0) {
+                                                var requestId = parts[0];
+
+                                                if (requestId == _requestId) {
+                                                    if (parts.length > 1) {
+                                                        $("#sectionDependency ul").append('<li>' + parts[1] + '</li>');
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        });
                     }
                 }
             }
@@ -401,12 +435,12 @@ function _renderDependencies() {
 }
 
 $(document).ready(function () {
-    $("#main").height(window.innerHeight - 20);
-    $("#overlay").height(window.innerHeight - 20);
+    $("#main").height(window.innerHeight - STATUS_BAR_HEIGHT);
+    $("#overlay").height(window.innerHeight - STATUS_BAR_HEIGHT);
 
     $(window).on("resize", function () {
-        $("#main").height(window.innerHeight - 20);
-        $("#overlay").height(window.innerHeight - 20);
+        $("#main").height(window.innerHeight - STATUS_BAR_HEIGHT);
+        $("#overlay").height(window.innerHeight - STATUS_BAR_HEIGHT);
     });
 
     $(window).on("beforeunload", function () {
@@ -424,72 +458,87 @@ $(document).ready(function () {
 
             case 17:    // ctrl
                 $("#status").html("Ctrl");
-                _ctrlKey = true;
                 break;
-        }
 
-        if (_ctrlKey) {
-            switch (code) {
-                case 67:    // ctrl-c
+           case 67:    // ctrl-c
+                if (e.ctrlKey) {
                     e.preventDefault();
                     _mode = MODE.cancel;
                     $(window).focus();
-                    $("#status").html("Ctrl-C Cancel query? [y/N]")
-                    break;
+                    $("#status").html("Ctrl-C Cancel query? [y/n]:");
+                    $("#statusInput").show();
+                    $("#statusInput").focus();
+                }
+                break;
 
-                case 72:    // ctrl-h
+            case 72:    // ctrl-h
+                if (e.ctrlKey) {
                     e.preventDefault();
                     _mode = MODE.help;
                     $("#status").html("Ctrl-H");
                     $("#main").hide();
-                    $("#overlay").html(_template.get("help"))
+                    $("#overlay").html(_template.get("help"));
                     $("#overlay").show();
-                    break;
+                }
+                break;
 
-                case 73:    // ctrl-i
+            case 73:    // ctrl-i
+                if (e.ctrlKey) {
                     e.preventDefault();
                     _mode = MODE.import;
                     $("#status").html("Ctrl-I");
                     $("#main").hide();
-                    $("#overlay").html(_template.get("import"))
+                    $("#overlay").html(_template.get("import"));
                     $("#overlay").show();
                     _renderImports();
-                    break;
+                }
+                break;
 
-                case 76:    // ctrl-l
+            case 76:    // ctrl-l
+                if (e.ctrlKey) {
                     e.preventDefault();
                     _mode = MODE.clear;
                     $(window).focus();
-                    $("#status").html("Ctrl-L Clear history? [y/N]")
-                    break;
+                    $("#status").html("Ctrl-L Clear history? [y/n]:");
+                    $("#statusInput").show();
+                    $("#statusInput").focus();
+                }
+                break;
 
-                case 82:    // ctrl-r
+            case 82:    // ctrl-r
+                if (e.ctrlKey) {
                     e.preventDefault();
                     _mode = MODE.reset;
                     $(window).focus();
-                    $("#status").html("Ctrl-R Reset? [y/N]");
-                    break;
+                    $("#status").html("Ctrl-R Reset? [y/n]:");
+                    $("#statusInput").show();
+                    $("#statusInput").focus();
+                }
+                break;
 
-                case 83:    // ctrl-s
+            case 83:    // ctrl-s
+                if (e.ctrlKey) {
                     e.preventDefault();
                     _mode = MODE.search;
                     $("#status").html("Ctrl-S");
                     $("#main").hide();
-                    $("#overlay").html(_template.get("search"))
+                    $("#overlay").html(_template.get("search"));
                     $("#overlay").show();
                     _renderSearch("");
-                    break;
+                }
+                break;
 
-                case 85:    // ctrl-u
+            case 85:    // ctrl-u
+                if (e.ctrlKey) {
                     e.preventDefault();
                     _mode = MODE.use;
                     $("#status").html("Ctrl-U");
                     $("#main").hide();
-                    $("#overlay").html(_template.get("dependency"))
+                    $("#overlay").html(_template.get("dependency"));
                     $("#overlay").show();
                     _renderDependencies();
-                    break;
-            }
+                }
+                break;
         }
     });
 
@@ -497,8 +546,6 @@ $(document).ready(function () {
         var code = e.which;
         switch (code) {
             case 17:    // ctrl
-                _ctrlKey = false;
-
                 if ($("#status").html() == "Ctrl") {
                     $("#status").html("");
                 }
@@ -507,42 +554,47 @@ $(document).ready(function () {
             case 27:    // escape
                 _closeOverlay();
                 break;
+       }
+    });
 
-            default:
-                switch (_mode) {
-                    case MODE.cancel:
-                        if (code == 89) {   // y key
-                            _sendRequest(tinkerpop.mapping.op.cancel, null, function (evt) {
+    $("#statusInput").on("keyup", function (e) {
+        var code = e.which;
 
-                            });
+        if (!e.ctrlKey) {
+            switch (_mode) {
+                case MODE.cancel:
+                    if (code == 89) {       // y key
+                        _sendRequest(tinkerpop.mapping.op.cancel, null, function (evt) {
+                        });
 
-                            _closeOverlay();
-                        } else if (code != 67) {    // need to filter out the c key from the ctrl-c hot key event
-                            _closeOverlay();
-                        }
-                        break;
+                        _closeOverlay();
+                    }
+                    else if (code == 78) {  // n key
+                        _closeOverlay();
+                    }
+                    break;
 
-                    case MODE.reset:
-                        if (code == 89) {   // y key
-                            _sendRequest(tinkerpop.mapping.op.reset);
-                            _closeOverlay();
-                        } else if (code != 82) {    // need to filter out the r key from the ctrl-r hot key event
-                            _closeOverlay();
-                        }
-                        break;
+                case MODE.reset:
+                    if (code == 89) {       // y key
+                        _sendRequest(tinkerpop.mapping.op.reset);
+                        _closeOverlay();
+                    }
+                    else if (code == 78) {  // n key
+                        _closeOverlay();
+                    }
+                    break;
 
-                    case MODE.clear:
-                        if (code == 89) {   // y key
-                            _clearHistory();
-                            _closeOverlay();
-                        } else if (code != 76) {    // need to filter out the l key from the ctrl-l hot key event
-                            _closeOverlay();
-                        }
-                        break;
-                }
-                break;
+                case MODE.clear:
+                    if (code == 89) {       // y key
+                        _clearHistory();
+                        _closeOverlay();
+                    }
+                    else if (code == 78) {  // n key
+                        _closeOverlay();
+                    }
+                    break;
+            }
         }
-
     });
 
     $("#mainInput textarea").on("keydown", function (e) {
@@ -612,7 +664,7 @@ $(document).ready(function () {
                 break;
 
             default:
-                if (!_ctrlKey) {
+                if (!e.ctrlKey) {
                     // index 0 holds the active command string
                     _setHistory($(this).val(), 0);
                 }
@@ -630,6 +682,7 @@ $(document).ready(function () {
 
         _sendRequest(tinkerpop.mapping.op.version, args, function (evt) {
             _processEval(evt);
+            $("#mainInput textarea").focus();
         });
 
     } else {
