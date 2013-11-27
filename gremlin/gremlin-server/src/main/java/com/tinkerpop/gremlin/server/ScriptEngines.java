@@ -96,7 +96,7 @@ public class ScriptEngines implements ScriptEngineOps {
     }
 
     @Override
-    public Map<String, List<String>> imports() {
+    public Map<String, List<Map>> imports() {
         final Map m = new HashMap();
         scriptEngines.entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof DependencyManager)

@@ -49,6 +49,10 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         return ic;
     }
 
+    public Set<String> getImports() {
+        return new HashSet<>(imports);
+    }
+
     public Set<String> getExtraImports() {
         return extraImports;
     }
@@ -57,7 +61,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         return extraStaticImports;
     }
 
-    public Set<String> getImports() {
+    public Set<String> getAllImports() {
         final Set<String> allImports = new HashSet<>();
         allImports.addAll(imports);
         allImports.addAll(extraImports);

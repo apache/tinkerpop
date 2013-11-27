@@ -118,8 +118,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     @Override
-    public Set<String> imports() {
-        return importCustomizerProvider.getImports();
+    public Map<String, Set<String>> imports() {
+        Map<String, Set<String>> m = new HashMap();
+        m.put("imports", importCustomizerProvider.getImports());
+        m.put("extraImports", importCustomizerProvider.getExtraImports());
+        m.put("extraStaticImports", importCustomizerProvider.getExtraStaticImports());
+        return m;
     }
 
     @Override
