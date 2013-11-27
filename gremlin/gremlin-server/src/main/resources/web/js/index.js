@@ -54,6 +54,7 @@ function _processEval(evt) {
             var requestId = tinkerpop.util.arrayToUuid(uint8Array);
 
             if (requestId == _requestId) {
+                $("#progress").hide();
                 $("#mainInput").show();
                 $("#mainInput textarea").focus();
                 _mode = MODE.input;
@@ -144,6 +145,7 @@ function _connectWebSocket(onOpen) {
 
     _socket.onerror = function (evt) {
         _clearStatus();
+        $("#progress").hide();
         $("#mainInput").show();
         alert("Unable to connect to the Gremlin server.");
         _showInput();
@@ -718,6 +720,7 @@ $(document).ready(function () {
                     $("#mainInput").hide();
                     $(this).val("");
 
+                    $("#progress").show();
                     _mode = MODE.execute;
                 }
                 break;
