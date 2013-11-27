@@ -16,21 +16,14 @@ import java.util.Set;
  */
 abstract class TinkerElement implements Element, Serializable {
 
-    protected Map<String, Property> properties = new HashMap<>();
     protected final String id;
+    protected final String label;
     protected final TinkerGraph graph;
 
-    protected TinkerElement(final String id, final TinkerGraph graph) {
+    protected TinkerElement(final String id, final String label, final TinkerGraph graph) {
         this.graph = graph;
         this.id = id;
-    }
-
-    public Set<String> getPropertyKeys() {
-        return new HashSet<>(this.properties.keySet());
-    }
-
-    public Map<String, Property> getProperties() {
-        return new HashMap<>(this.properties);
+        this.label = label;
     }
 
     public int hashCode() {
@@ -39,6 +32,10 @@ abstract class TinkerElement implements Element, Serializable {
 
     public String getId() {
         return this.id;
+    }
+
+    public String getLabel() {
+        return this.label;
     }
 
     public boolean equals(final Object object) {
