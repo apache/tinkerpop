@@ -42,7 +42,7 @@ public interface ScriptEngineOps {
      * Gets a list of all imports in the ScriptEngine where the key is the ScriptEngine name and the value is the
      * import list for that ScriptEngine.
      */
-    public Map<String, List<String>> imports();
+    public Map<String, List<Map>> imports();
 
     /**
      * Resets the ScriptEngine which recreates the classloader and desstroys all caches of compiled scripts. Doing

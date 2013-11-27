@@ -107,6 +107,8 @@ function _sendRequest(op, args, callback) {
         _socket.send(JSON.stringify(request));
     }
     else {
+
+
         _connectWebSocket(function () {
             if (!_.isUndefined(callback) && (callback != null)) {
                 _socket.onmessage = callback;
@@ -114,6 +116,10 @@ function _sendRequest(op, args, callback) {
             else {
                 _socket.onmessage = undefined;
             }
+
+            _socket.onerror = function (evt) {
+                $("#status").html("The connection to the Gremlin server was lost.");
+            };
 
             _socket.send(JSON.stringify(request));
         });
@@ -137,42 +143,34 @@ function _connectWebSocket(onOpen) {
     };
 
     _socket.onerror = function (evt) {
-        $("#status").html("The connection to the Gremlin server was lost.")
+        _clearStatus();
+        $("#mainInput").show();
+        alert("Unable to connect to the Gremlin server.");
+        _showInput();
     };
 }
 
-function _closeOverlay() {
-    $("#overlay").hide();
-    $("#main").show();
+function _clearStatus() {
     $("#status").html("");
     $("#statusInput").val("");
     $("#statusInput").hide();
+}
+
+function _showInput() {
     $("#mainInput textarea").focus();
     $("#mainInput textarea").selectRange($("#mainInput textarea").val().length);
     _mode = MODE.input;
 }
 
-function _renderSearch(query) {
+function _closeOverlay() {
+    $("#overlay").hide();
+    $("#main").show();
+    _clearStatus();
+    _showInput();
+}
+
+function _initSearch() {
     $("#inputSearch").focus();
-
-    var pattern = new RegExp(query.escapeRegExp(), "gi");
-    var data = _.chain(_getHistory())
-        .rest()
-        .filter(function (item) {
-            return item.match(pattern);
-        })
-        .value();
-
-    $("#sectionSearch").html(Mustache.render(_template.get("list"), { data: data, cursor: "pointer" }));
-
-    $("#sectionSearch li:first").removeClass("repl-text");
-    $("#sectionSearch li:first").addClass("repl-text-inverted");
-
-    $("#sectionSearch li").off();
-    $("#sectionSearch li").on("click", function () {
-        $("#mainInput textarea").val($(this).html());
-        _closeOverlay();
-    });
 
     $("#inputSearch").off();
 
@@ -242,12 +240,41 @@ function _renderSearch(query) {
     });
 }
 
+function _renderSearch(query) {
+    var pattern = new RegExp(query.escapeRegExp(), "gi");
+    var data = _.chain(_getHistory())
+        .rest()
+        .filter(function (item) {
+            return item.match(pattern);
+        })
+        .value();
+
+    $("#sectionSearch").html(Mustache.render(_template.get("list"), { data: data, cursor: "pointer" }));
+
+    $("#sectionSearch li:first").removeClass("repl-text");
+    $("#sectionSearch li:first").addClass("repl-text-inverted");
+
+    $("#sectionSearch li").off();
+    $("#sectionSearch li").on("click", function () {
+        $("#mainInput textarea").val($(this).html());
+        _closeOverlay();
+    });
+}
+
 function _processImport() {
     var value = $("#inputImport").val().trim();
     if (value != "") {
         var static = $("#checkStaticImport").is(":checked");
 
-        if (value.toLowerCase().slice(0, 6) != "import") {
+        if (value.toLowerCase().slice(0, 13) == "import static") {
+            // nothing to do
+        }
+        else if (value.toLowerCase().slice(0, 6) == "import") {
+            if (static) {
+                value = "import static " + value.substr(6);
+            }
+        }
+        else {
             value = "import " + (static ?  "static " : "") + value;
         }
 
@@ -257,17 +284,34 @@ function _processImport() {
 
         _sendRequest(tinkerpop.mapping.op.import, args);
 
-        $("#sectionImport ul").append('<li>' + value.replace("import", "").replace("static", "").trim() + '</li>');
-
         $("#inputImport").val("");
         $("#checkStaticImport").removeAttr("checked");
         $("#inputImport").focus();
+
+        _renderImports();
     }
 }
 
-function _renderImports() {
+function _initImports() {
     $("#inputImport").focus();
 
+    $("#inputImport").off();
+    $("#inputImport").on("keyup", function (e) {
+        var code = e.which;
+        switch (code) {
+            case 13:    // enter
+                _processImport();
+                break;
+        }
+    });
+
+    $("#buttonAddImport").off();
+    $("#buttonAddImport").on("click", function () {
+        _processImport();
+    });
+}
+
+function _renderImports() {
     var args = {};
     args[tinkerpop.mapping.arg.infoType] = tinkerpop.mapping.infoType.imports;
     args[tinkerpop.mapping.arg.accept] = MIME_TYPE_JSON;
@@ -281,31 +325,52 @@ function _renderImports() {
                 if (response.code == 200) {
                     var requestId = response.requestId;
                     if (requestId == _requestId) {
-                        var data = _(response.result["gremlin-groovy"][0]).sortBy(function (item) {
-                            // sort java imports last
-                            if (item.slice(0, 4) == "java") {
-                                return "b" + item;
-                            }
-                            else {
-                                return "a" + item;
-                            }
-                        });
+                        var data = response.result["gremlin-groovy"][0];
 
-                        $("#sectionImport").html(Mustache.render(_template.get("list"), { data: data }));
+                        // combine imports and extra imports
+                        var imports = data.imports.concat(data.extraImports);
 
-                        $("#inputImport").on("keyup", function (e) {
-                            var code = e.which;
-                            switch (code) {
-                                case 13:    // enter
-                                    _processImport();
-                                    break;
-                            }
-                        });
+                        // separate java imports
+                        var javaImports = _.chain(imports)
+                            .filter(function (item) { return item.slice(0, 4) == "java"; })
+                            .map(function (item) { return "import " + item; })
+                            .value();
 
-                        $("#buttonAddImport").off();
-                        $("#buttonAddImport").on("click", function () {
-                            _processImport();
-                        });
+                        var otherImports = _.chain(imports)
+                            .reject(function (item) { return item.slice(0, 4) == "java"; })
+                            .map(function (item) { return "import " + item; })
+                            .value();
+
+                        var staticJavaImports = _.chain(data.extraStaticImports)
+                            .filter(function (item) { return item.slice(0, 4) == "java"; })
+                            .map(function (item) { return "import static " + item; })
+                            .value();
+
+                        var staticOtherImports = _.chain(data.extraStaticImports)
+                            .reject(function (item) { return item.slice(0, 4) == "java"; })
+                            .map(function (item) { return "import static " + item; })
+                            .value();
+
+                        $("#sectionImport").empty();
+
+                        if (otherImports.length > 0) {
+                            $("#sectionImport").append(Mustache.render(_template.get("list"), { data: otherImports }));
+                            $("#sectionImport").append("<br />");
+                        }
+
+                        if (javaImports.length > 0) {
+                            $("#sectionImport").append(Mustache.render(_template.get("list"), { data: javaImports }));
+                            $("#sectionImport").append("<br />");
+                        }
+
+                        if (staticOtherImports.length > 0) {
+                            $("#sectionImport").append(Mustache.render(_template.get("list"), { data: staticOtherImports }));
+                            $("#sectionImport").append("<br />");
+                        }
+
+                        if (staticJavaImports.length > 0) {
+                            $("#sectionImport").append(Mustache.render(_template.get("list"), { data: staticJavaImports }));
+                        }
                     }
                 }
             }
@@ -375,9 +440,44 @@ function _parseDependency(str) {
     return dependency;
 }
 
-function _renderDependencies() {
+function _initDependencies() {
     $("#inputDependency").focus();
 
+    $("#buttonAddDependency").off();
+    $("#buttonAddDependency").on("click", function () {
+        var str = $("#inputDependency").val().trim();
+        if (str != "") {
+            var dependency = _parseDependency(str);
+
+            if (dependency == null) {
+                alert("Could not parse dependency");
+            }
+            else {
+                var args = {};
+                args[tinkerpop.mapping.arg.coordinates] = [dependency];
+                args[tinkerpop.mapping.arg.accept] = MIME_TYPE_JSON;
+
+                _sendRequest(tinkerpop.mapping.op.use, args, function (evt) {
+                    if (typeof evt.data === "string") {
+                        // parse request id
+                        var parts = evt.data.split(">>");
+                        if (parts.length > 0) {
+                            var requestId = parts[0];
+
+                            if (requestId == _requestId) {
+                                if (parts.length > 1) {
+                                    $("#sectionDependency ul").append('<li style="padding-left: 10px">' + parts[1] + '</li>');
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    });
+}
+
+function _renderDependencies() {
     var args = {};
     args[tinkerpop.mapping.arg.infoType] = tinkerpop.mapping.infoType.dependencies;
     args[tinkerpop.mapping.arg.accept] = MIME_TYPE_JSON;
@@ -392,41 +492,7 @@ function _renderDependencies() {
                     var requestId = response.requestId;
                     if (requestId == _requestId) {
                         var data = response.result["gremlin-groovy"];
-
                         $("#sectionDependency").html(Mustache.render(_template.get("dependencyList"), { data: data }));
-
-                        $("#buttonAddDependency").off();
-                        $("#buttonAddDependency").on("click", function () {
-                            var str = $("#inputDependency").val().trim();
-                            if (str != "") {
-                                var dependency = _parseDependency(str);
-
-                                if (dependency == null) {
-                                    alert("Could not parse dependency");
-                                }
-                                else {
-                                    var args = {};
-                                    args[tinkerpop.mapping.arg.coordinates] = [dependency];
-                                    args[tinkerpop.mapping.arg.accept] = MIME_TYPE_JSON;
-
-                                    _sendRequest(tinkerpop.mapping.op.use, args, function (evt) {
-                                        if (typeof evt.data === "string") {
-                                            // parse request id
-                                            var parts = evt.data.split(">>");
-                                            if (parts.length > 0) {
-                                                var requestId = parts[0];
-
-                                                if (requestId == _requestId) {
-                                                    if (parts.length > 1) {
-                                                        $("#sectionDependency ul").append('<li>' + parts[1] + '</li>');
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    });
-                                }
-                            }
-                        });
                     }
                 }
             }
@@ -461,7 +527,7 @@ $(document).ready(function () {
                 break;
 
            case 67:    // ctrl-c
-                if (e.ctrlKey) {
+                if (e.ctrlKey && _mode == MODE.execute) {
                     e.preventDefault();
                     _mode = MODE.cancel;
                     $(window).focus();
@@ -490,6 +556,7 @@ $(document).ready(function () {
                     $("#main").hide();
                     $("#overlay").html(_template.get("import"));
                     $("#overlay").show();
+                    _initImports();
                     _renderImports();
                 }
                 break;
@@ -524,6 +591,7 @@ $(document).ready(function () {
                     $("#main").hide();
                     $("#overlay").html(_template.get("search"));
                     $("#overlay").show();
+                    _initSearch();
                     _renderSearch("");
                 }
                 break;
@@ -536,6 +604,7 @@ $(document).ready(function () {
                     $("#main").hide();
                     $("#overlay").html(_template.get("dependency"));
                     $("#overlay").show();
+                    _initDependencies();
                     _renderDependencies();
                 }
                 break;
@@ -567,30 +636,36 @@ $(document).ready(function () {
                         _sendRequest(tinkerpop.mapping.op.cancel, null, function (evt) {
                         });
 
-                        _closeOverlay();
+                        _clearStatus();
+                        _showInput();
                     }
                     else if (code == 78) {  // n key
-                        _closeOverlay();
+                        _clearStatus();
+                        _mode = MODE.execute;
                     }
                     break;
 
                 case MODE.reset:
                     if (code == 89) {       // y key
                         _sendRequest(tinkerpop.mapping.op.reset);
-                        _closeOverlay();
+                        _clearStatus();
+                        _showInput();
                     }
                     else if (code == 78) {  // n key
-                        _closeOverlay();
+                        _clearStatus();
+                        _showInput();
                     }
                     break;
 
                 case MODE.clear:
                     if (code == 89) {       // y key
                         _clearHistory();
-                        _closeOverlay();
+                        _clearStatus();
+                        _showInput();
                     }
                     else if (code == 78) {  // n key
-                        _closeOverlay();
+                        _clearStatus();
+                        _showInput();
                     }
                     break;
             }

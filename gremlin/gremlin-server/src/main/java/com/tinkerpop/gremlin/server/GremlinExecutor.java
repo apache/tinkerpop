@@ -238,7 +238,7 @@ public class GremlinExecutor {
         }
 
         @Override
-        public Map<String, List<String>> imports() {
+        public Map<String, List<Map>> imports() {
             return scriptEngines.imports();
         }
 
