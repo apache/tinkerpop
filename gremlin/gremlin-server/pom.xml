@@ -169,9 +169,9 @@
                             <includes>
                                 <include>**/*IntegrateTest.java</include>
                             </includes>
+                            <skipTests>${skipLongTests}</skipTests>
                             <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                             </argLine>
-                            <skipTests>${skipLongTests}</skipTests>
                             <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
                         </configuration>
                     </execution>
@@ -184,9 +184,9 @@
                             <includes>
                                 <include>**/*PerformanceTest.java</include>
                             </includes>
+                            <skipTests>${skipLongTests}</skipTests>
                             <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                             </argLine>
-                            <skipTests>${skipLongTests}</skipTests>
                             <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                         </configuration>
                     </execution>
@@ -196,6 +196,7 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
+                            <skipTests>${skipLongTests}</skipTests>
                             <summaryFiles>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
                                 <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
