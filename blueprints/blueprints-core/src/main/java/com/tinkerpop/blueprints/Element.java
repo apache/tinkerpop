@@ -7,14 +7,9 @@ public interface Element extends Thing, Featureable {
 
     public Object getId();
 
-    public <V> Property<V, ? extends Element> getProperty(String key);
-
-    public <V> Property<V, ? extends Element> setProperty(String key, V value);
-
-    public <V> Property<V, ? extends Element> removeProperty(String key);
+    public String getLabel();
 
     public void remove();
-
 
     public interface Features extends com.tinkerpop.blueprints.Features {
 

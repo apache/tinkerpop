@@ -22,7 +22,7 @@ public interface Transaction extends Closeable, Featureable {
 
     public <G extends Graph, R> Workload<G, R> submit(Function<G, R> work);
 
-    public <G extends Graph> G spawn();
+    public <G extends Graph> G create();
 
     public boolean isOpen();
 

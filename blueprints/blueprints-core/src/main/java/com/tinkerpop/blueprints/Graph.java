@@ -7,7 +7,7 @@ import org.apache.commons.configuration.Configuration;
 import java.util.Optional;
 
 /**
- * An Graph is a container object for a collection of vertices and a collection edges.
+ * An Graph is a container object for a collection of vertices, edges, and properties.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -30,7 +30,7 @@ public interface Graph extends AutoCloseable, Thing, Featureable {
 
     public <V> Property<V, Graph> setProperty(String key, V value);
 
-    public <V> Property<V, Graph> removeProperty(String key);
+    public void removeProperty(String key);
 
     public static Graph.Features getFeatures() {
         return new Features() {

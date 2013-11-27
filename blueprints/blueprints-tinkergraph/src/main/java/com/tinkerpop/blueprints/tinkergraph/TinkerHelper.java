@@ -35,7 +35,7 @@ class TinkerHelper {
             idString = TinkerHelper.getNextId(graph);
         }
 
-        edge = new TinkerEdge(idString, outVertex, inVertex, label, graph);
+        edge = new TinkerEdge(idString, outVertex, label, inVertex, graph);
         Stream.of(properties)
                 .filter(p -> p.isPresent() & !p.is(Property.Key.ID) && !p.is(Property.Key.LABEL))
                 .forEach(p -> {

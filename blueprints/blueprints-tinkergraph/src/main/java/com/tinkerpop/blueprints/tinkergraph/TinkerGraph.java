@@ -70,6 +70,11 @@ public class TinkerGraph implements Graph, Serializable {
                 .map(p -> p.getValue().toString())
                 .findFirst()
                 .orElse(null);
+        String label = Stream.of(properties)
+                .filter(p -> p.is(Property.Key.LABEL))
+                .map(p -> p.getValue().toString())
+                .findFirst()
+                .orElse(Property.Key.DEFAULT_LABEL.toString());
 
         if (null != idString) {
             if (this.vertices.containsKey(idString))
@@ -78,7 +83,7 @@ public class TinkerGraph implements Graph, Serializable {
             idString = TinkerHelper.getNextId(this);
         }
 
-        final Vertex vertex = new TinkerVertex(idString, this);
+        final Vertex vertex = new TinkerVertex(idString, label, this);
         this.vertices.put(vertex.getId().toString(), vertex);
         Stream.of(properties)
                 .filter(p -> p.isPresent() & !p.is(Property.Key.ID))
@@ -101,6 +106,10 @@ public class TinkerGraph implements Graph, Serializable {
         return new HashMap<>(this.properties);
     }
 
+    public Set<String> getPropertyKeys() {
+        return this.properties.keySet();
+    }
+
     public <V> Property<V, Graph> getProperty(final String key) {
         final Property<V, Graph> property = this.properties.get(key);
         return (null == property) ? Property.empty() : property;
@@ -112,11 +121,9 @@ public class TinkerGraph implements Graph, Serializable {
         return null == property ? Property.empty() : property;
     }
 
-    public <V> Property<V, Graph> removeProperty(final String key) {
-        final Property<V, Graph> property = this.properties.remove(key);
-        return null == property ? Property.empty() : property;
+    public void removeProperty(final String key) {
+        this.properties.remove(key);
     }
-
 
     public String toString() {
         return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());
@@ -125,6 +132,7 @@ public class TinkerGraph implements Graph, Serializable {
     public void clear() {
         this.vertices.clear();
         this.edges.clear();
+        this.properties.clear();
         this.currentId = 0l;
         this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
         this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);

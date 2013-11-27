@@ -9,6 +9,8 @@ import com.tinkerpop.blueprints.util.StringFactory;
 import com.tinkerpop.blueprints.util.ThingHelper;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -17,20 +19,23 @@ import java.util.Set;
  */
 class TinkerEdge extends TinkerElement implements Edge, Serializable {
 
-    private final String label;
+    private final Map<String, Property<?, Edge>> properties = new HashMap<>();
     private final Vertex inVertex;
     private final Vertex outVertex;
 
-    protected TinkerEdge(final String id, final Vertex outVertex, final Vertex inVertex, final String label, final TinkerGraph graph) {
-        super(id, graph);
-        this.label = label;
+    protected TinkerEdge(final String id, final Vertex outVertex, final String label, final Vertex inVertex, final TinkerGraph graph) {
+        super(id, label, graph);
         this.outVertex = outVertex;
         this.inVertex = inVertex;
         this.graph.edgeIndex.autoUpdate(StringFactory.LABEL, this.label, null, this);
     }
 
+    public Map<String, Property<?, Edge>> getProperties() {
+        return new HashMap<>(this.properties);
+    }
+
     public <V> Property<V, Edge> getProperty(final String key) {
-        final Property<V, Edge> property = this.properties.get(key);
+        final Property<V, Edge> property = (Property) this.properties.get(key);
         return null == property ? Property.empty() : property;
     }
 
@@ -42,14 +47,13 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
         return property;
     }
 
-    public <V> Property<V, Edge> removeProperty(final String key) {
-        final Property<V, Edge> property = this.properties.remove(key);
+    public void removeProperty(final String key) {
+        final Property<?, Edge> property = this.properties.remove(key);
         this.graph.edgeIndex.autoRemove(key, null == property ? null : property.getValue(), this);
-        return null == property ? Property.empty() : property;
     }
 
-    public String getLabel() {
-        return this.label;
+    public Set<String> getPropertyKeys() {
+        return this.properties.keySet();
     }
 
     public Vertex getVertex(final Direction direction) throws IllegalArgumentException {
