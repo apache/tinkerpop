@@ -44,6 +44,8 @@ function _clearHistory() {
 }
 
 function _processEval(evt) {
+    $("#progress").hide();
+
     // determine the message type
     if (evt.data instanceof Blob) {
         // convert the blob into a uint8 array
@@ -54,7 +56,6 @@ function _processEval(evt) {
             var requestId = tinkerpop.util.arrayToUuid(uint8Array);
 
             if (requestId == _requestId) {
-                $("#progress").hide();
                 $("#mainInput").show();
                 $("#mainInput textarea").focus();
                 _mode = MODE.input;
@@ -108,8 +109,6 @@ function _sendRequest(op, args, callback) {
         _socket.send(JSON.stringify(request));
     }
     else {
-
-
         _connectWebSocket(function () {
             if (!_.isUndefined(callback) && (callback != null)) {
                 _socket.onmessage = callback;
@@ -119,6 +118,7 @@ function _sendRequest(op, args, callback) {
             }
 
             _socket.onerror = function (evt) {
+                $("#progress").hide();
                 $("#status").html("The connection to the Gremlin server was lost.");
             };
 
@@ -455,11 +455,15 @@ function _initDependencies() {
                 alert("Could not parse dependency");
             }
             else {
+                $("#progress").show();
+
                 var args = {};
                 args[tinkerpop.mapping.arg.coordinates] = [dependency];
                 args[tinkerpop.mapping.arg.accept] = MIME_TYPE_JSON;
 
                 _sendRequest(tinkerpop.mapping.op.use, args, function (evt) {
+                    $("#progress").hide();
+
                     if (typeof evt.data === "string") {
                         // parse request id
                         var parts = evt.data.split(">>");
