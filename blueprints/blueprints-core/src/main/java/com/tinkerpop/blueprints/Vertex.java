@@ -1,7 +1,9 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.query.VertexQuery;
+import com.tinkerpop.blueprints.util.StreamFactory;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,6 +19,15 @@ public interface Vertex extends Element {
     public Map<String, Iterable<Property<?, Vertex>>> getProperties();
 
     public <V> Iterable<Property<V, Vertex>> getProperties(String key);
+
+    public default <V> Iterable<V> getValues(String key) {
+        return new Iterable<V>() {
+            @Override
+            public Iterator<V> iterator() {
+                return StreamFactory.stream((Iterable<Property<V, Vertex>>) getProperties(key)).filter(p -> p.isPresent()).map(p -> p.getValue()).iterator();
+            }
+        };
+    }
 
     public <V> Property<V, Vertex> getProperty(String key);
 
