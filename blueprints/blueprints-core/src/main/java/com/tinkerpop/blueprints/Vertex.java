@@ -16,13 +16,11 @@ public interface Vertex extends Element {
 
     public Map<String, Iterable<Property<?, Vertex>>> getProperties();
 
+    public <V> Iterable<Property<V, Vertex>> getProperties(String key);
+
     public <V> Property<V, Vertex> getProperty(String key);
 
     public <V> Property<V, Vertex> setProperty(String key, V value);
-
-    public void removeProperty(String key);
-
-    public <V> Iterable<Property<V, Vertex>> getProperties(String key);
 
     public <V> Property<V, Vertex> addProperty(String key, V value);
 

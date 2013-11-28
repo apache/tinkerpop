@@ -67,11 +67,7 @@ public interface Property<V, T extends Thing> extends Thing {
 
     public <V2> Property<V2, Property> getProperty(String key) throws IllegalStateException;
 
-    public void removeProperty(String key) throws IllegalStateException;
-
-    public default void remove() {
-        this.getThing().removeProperty(this.getKey());
-    }
+    public void remove();
 
     public default Object getId() {
         return this.hashCode();
@@ -204,8 +200,8 @@ public interface Property<V, T extends Thing> extends Thing {
                         }
 
                         @Override
-                        public void removeProperty(String key) throws IllegalStateException {
-                            throw Features.propertyPropertyCanNotHaveAProperty();
+                        public void remove() throws IllegalStateException {
+                            properties.remove(aKey);
                         }
 
                         @Override
@@ -221,8 +217,8 @@ public interface Property<V, T extends Thing> extends Thing {
                     return null == property ? Property.empty() : property;
                 }
 
-                public void removeProperty(String key) throws IllegalStateException {
-                    this.properties.remove(key);
+                public void remove() {
+
                 }
 
                 @Override
@@ -275,7 +271,7 @@ public interface Property<V, T extends Thing> extends Thing {
             }
 
             @Override
-            public void removeProperty(String key) throws IllegalStateException {
+            public void remove() {
                 throw new IllegalStateException(EMPTY_MESSAGE);
             }
 

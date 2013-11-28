@@ -121,7 +121,7 @@ public class TinkerGraph implements Graph, Serializable {
         return null == property ? Property.empty() : property;
     }
 
-    public void removeProperty(final String key) {
+    protected void removeProperty(final String key) {
         this.properties.remove(key);
     }
 

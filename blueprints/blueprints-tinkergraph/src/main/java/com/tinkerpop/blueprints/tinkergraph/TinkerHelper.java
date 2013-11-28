@@ -3,6 +3,7 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.computer.GraphComputer;
 
 import java.util.HashSet;
 import java.util.Set;

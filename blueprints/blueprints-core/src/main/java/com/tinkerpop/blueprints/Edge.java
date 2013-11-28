@@ -20,8 +20,6 @@ public interface Edge extends Element {
 
     public <V> Property<V, Edge> setProperty(String key, V value);
 
-    public void removeProperty(String key);
-
     public static Edge.Features getFeatures() {
         return new Features() {
         };

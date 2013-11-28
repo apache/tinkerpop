@@ -107,7 +107,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         }
     }
 
-    public void removeProperty(final String key) {
+    protected void removeProperty(final String key) {
         if (State.STANDARD == this.state) {
             this.properties.remove(key).stream().forEach(p -> this.graph.vertexIndex.autoRemove(key, p.getValue(), this));
         } else if (State.CENTRIC == this.state) {

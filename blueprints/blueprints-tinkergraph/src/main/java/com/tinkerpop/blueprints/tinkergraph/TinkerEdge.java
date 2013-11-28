@@ -19,7 +19,7 @@ import java.util.Set;
  */
 class TinkerEdge extends TinkerElement implements Edge, Serializable {
 
-    private final Map<String, Property<?, Edge>> properties = new HashMap<>();
+    protected final Map<String, Property<?, Edge>> properties = new HashMap<>();
     private final Vertex inVertex;
     private final Vertex outVertex;
 
@@ -47,7 +47,7 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
         return property;
     }
 
-    public void removeProperty(final String key) {
+    protected void removeProperty(final String key) {
         final Property<?, Edge> property = this.properties.remove(key);
         this.graph.edgeIndex.autoRemove(key, null == property ? null : property.getValue(), this);
     }

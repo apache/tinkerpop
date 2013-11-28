@@ -30,8 +30,6 @@ public interface Graph extends AutoCloseable, Thing, Featureable {
 
     public <V> Property<V, Graph> setProperty(String key, V value);
 
-    public void removeProperty(String key);
-
     public static Graph.Features getFeatures() {
         return new Features() {
         };

@@ -14,8 +14,6 @@ public interface Thing {
 
     public <V> Property<V, ? extends Thing> setProperty(String key, V value);
 
-    public void removeProperty(String key);
-
     public default <V> V getValue(String key) throws NoSuchElementException {
         final Property<V, ? extends Thing> property = this.getProperty(key);
         if (property.isPresent())
