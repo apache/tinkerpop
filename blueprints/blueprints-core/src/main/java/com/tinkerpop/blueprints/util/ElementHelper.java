@@ -58,7 +58,7 @@ public class ElementHelper {
 
     public static void attachKeyValues(final Element element, final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (!keyValues[i].toString().equals(Property.Key.ID) && !keyValues[i].toString().equals(Property.Key.LABEL)) {
+            if (!keyValues[i].equals(Property.Key.ID) && !keyValues[i].equals(Property.Key.LABEL)) {
                 element.setProperty(keyValues[i].toString(), keyValues[i + 1]);
             }
         }
