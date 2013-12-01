@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -14,15 +15,50 @@ public interface Edge extends Element {
         return this.getProperties().keySet();
     }
 
-    public Map<String, Property<?, Edge>> getProperties();
+    public Map<String, Edge.Property> getProperties();
 
-    public <V> Property<V, Edge> getProperty(String key);
+    public <V> Edge.Property<V> getProperty(String key);
 
-    public <V> Property<V, Edge> setProperty(String key, V value);
+    public <V> Edge.Property<V> setProperty(String key, V value);
 
     public static Edge.Features getFeatures() {
         return new Features() {
         };
+    }
+
+    public interface Property<V> extends com.tinkerpop.blueprints.Property<V> {
+
+        public Edge getEdge();
+
+        public static <V> Edge.Property<V> empty() {
+            return new Edge.Property<V>() {
+                @Override
+                public String getKey() {
+                    throw com.tinkerpop.blueprints.Property.Features.propertyDoesNotExist();
+                }
+
+                @Override
+                public V getValue() throws NoSuchElementException {
+                    throw Features.propertyDoesNotExist();
+                }
+
+                @Override
+                public boolean isPresent() {
+                    return false;
+                }
+
+                @Override
+                public void remove() {
+                    throw Features.propertyDoesNotExist();
+                }
+
+                @Override
+                public Edge getEdge() {
+                    throw Features.propertyDoesNotExist();
+                }
+            };
+
+        }
     }
 
     public interface Features extends com.tinkerpop.blueprints.Features {
@@ -34,5 +70,4 @@ public interface Edge extends Element {
             return new IllegalStateException("Edge properties can not have properties");
         }
     }
-
 }

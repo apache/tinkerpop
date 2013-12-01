@@ -89,8 +89,8 @@ public class GremlinTest {
                         Gremlin.of().as("a").out("knows").has("name", "josh"),
                         Gremlin.of().as("a").out("created").has("name", "lop"),
                         Gremlin.of().as("a").out("created").as("b"),
-                        Gremlin.of().as("b").has("lang","java"),
-                        Gremlin.of().as("b").in("created").has("name","peter"))
+                        Gremlin.of().as("b").has("lang", "java"),
+                        Gremlin.of().as("b").in("created").has("name", "peter"))
                 .value("name").path()
                 .sideEffect(System.out::println).iterate();
     }
@@ -99,12 +99,12 @@ public class GremlinTest {
     public void testLoop() {
 
         TinkerGraph g = TinkerGraph.open(Optional.empty());
-        Vertex a = g.addVertex(Property.of(Property.Key.ID, "1"));
-        Vertex b = g.addVertex(Property.of(Property.Key.ID, "2"));
-        Vertex c = g.addVertex(Property.of(Property.Key.ID, "3"));
-        Vertex d = g.addVertex(Property.of(Property.Key.ID, "4"));
-        Vertex e = g.addVertex(Property.of(Property.Key.ID, "5"));
-        Vertex f = g.addVertex(Property.of(Property.Key.ID, "6"));
+        Vertex a = g.addVertex(Property.Key.ID, "1");
+        Vertex b = g.addVertex(Property.Key.ID, "2");
+        Vertex c = g.addVertex(Property.Key.ID, "3");
+        Vertex d = g.addVertex(Property.Key.ID, "4");
+        Vertex e = g.addVertex(Property.Key.ID, "5");
+        Vertex f = g.addVertex(Property.Key.ID, "6");
         a.addEdge("next", b);
         b.addEdge("next", c);
         c.addEdge("next", d);

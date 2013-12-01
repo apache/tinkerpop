@@ -76,7 +76,7 @@ public class IoTest {
     @Test
     public void shouldProperlyEncodeWithGraphML() throws Exception {
         final Graph g = BlueprintsSuite.GraphManager.get().newTestGraph();
-        final Vertex v = g.addVertex(Property.of(Property.Key.ID, "1"));
+        final Vertex v = g.addVertex(Property.Key.ID, "1");
         v.setProperty("text", "\u00E9");
 
         final GraphMLWriter w = new GraphMLWriter.Builder(g).build();

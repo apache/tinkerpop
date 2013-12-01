@@ -2,8 +2,7 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.computer.GraphComputer;
+import com.tinkerpop.blueprints.util.ElementHelper;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,31 +17,23 @@ class TinkerHelper {
         return Stream.generate(() -> ((Long) (++graph.currentId)).toString()).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findFirst().get();
     }
 
-    protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Property... properties) {
+    protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
         if (label == null)
             throw Edge.Features.edgeLabelCanNotBeNull();
+        ElementHelper.legalKeyValues(keyValues);
 
-        String idString = Stream.of(properties)
-                .filter(p -> p.is(Property.Key.ID))
-                .map(p -> p.getValue().toString())
-                .findFirst()
-                .orElse(null);
+        Object idString = ElementHelper.getIdValue(keyValues);
 
         final Edge edge;
         if (null != idString) {
-            if (graph.edges.containsKey(idString))
+            if (graph.edges.containsKey(idString.toString()))
                 throw Graph.Features.edgeWithIdAlreadyExist(idString);
         } else {
             idString = TinkerHelper.getNextId(graph);
         }
 
-        edge = new TinkerEdge(idString, outVertex, label, inVertex, graph);
-        Stream.of(properties)
-                .filter(p -> p.isPresent() & !p.is(Property.Key.ID) && !p.is(Property.Key.LABEL))
-                .forEach(p -> {
-                    edge.setProperty(p.getKey(), p.getValue());
-                });
-
+        edge = new TinkerEdge(idString.toString(), outVertex, label, inVertex, graph);
+        ElementHelper.attachKeyValues(edge, keyValues);
         graph.edges.put(edge.getId().toString(), edge);
         TinkerHelper.addOutEdge(outVertex, label, edge);
         TinkerHelper.addInEdge(inVertex, label, edge);

@@ -2,8 +2,7 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.tinkergraph.TinkerProperty;
+import com.tinkerpop.blueprints.Vertex;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -23,6 +22,7 @@ public interface ResultSerializer {
     public default String serialize(final Object o, final Context context) {
         return this.serialize(o, ResultCode.SUCCESS, context);
     }
+
     public String serialize(final Object o, final ResultCode code, final Context context);
 
     /**
@@ -68,7 +68,7 @@ public interface ResultSerializer {
         public static final String TOKEN_REQUEST = "requestId";
 
         @Override
-        public String serialize(final Object o, final ResultCode code, final Context context){
+        public String serialize(final Object o, final ResultCode code, final Context context) {
             try {
                 final JSONObject result = new JSONObject();
                 result.put(TOKEN_CODE, code.getValue());
@@ -87,8 +87,8 @@ public interface ResultSerializer {
         private Object prepareOutput(final Object object) throws Exception {
             if (object == null)
                 return JSONObject.NULL;
-            else if (object instanceof Property) {
-                final Property t = (Property) object;
+            else if (object instanceof Vertex.Property) {
+                final Vertex.Property t = (Vertex.Property) object;
                 final JSONObject jsonObject = new JSONObject();
                 jsonObject.put(TOKEN_VALUE, prepareOutput(t.orElse(null)));
 
@@ -96,7 +96,7 @@ public interface ResultSerializer {
                     final JSONObject hiddenProperties = new JSONObject();
                     t.getPropertyKeys().forEach(k -> {
                         try {
-                            hiddenProperties.put(k, prepareOutput(t.getProperty(k)));
+                            hiddenProperties.put(k.toString(), prepareOutput(t.getProperty(k.toString())));
                         } catch (Exception ex) {
                             // there can't be null keys on an element so don't think there is a need to launch
                             // a JSONException here.
@@ -124,7 +124,7 @@ public interface ResultSerializer {
                 });
                 jsonObject.put(TOKEN_PROPERTIES, jsonProperties);
                 return jsonObject;
-            //} else if (object instanceof Row) {} todo: get Table/Row in when implemented
+                //} else if (object instanceof Row) {} todo: get Table/Row in when implemented
             } else if (object instanceof Map) {
                 final JSONObject jsonObject = new JSONObject();
                 final Map map = (Map) object;

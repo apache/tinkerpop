@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.Query;
 
 import java.util.ArrayList;
@@ -72,10 +73,12 @@ public abstract class DefaultQuery implements Query {
         public boolean test(final Element element) {
             if (this.key.equals(Property.Key.ID.toString()))
                 return element.getId().equals(this.value);
-            else if (element instanceof Edge && this.key.equals(Property.Key.LABEL.toString()))
-                return ((Edge) element).getLabel().equals(this.value);
+            else if (this.key.equals(Property.Key.LABEL.toString()))
+                return element.getLabel().equals(this.value);
+            else if (element instanceof Vertex)
+                return this.predicate.test(((Vertex) element).getValue(this.key), this.value);
             else
-                return this.predicate.test(element.getValue(this.key), this.value);
+                return this.predicate.test(((Edge) element).getValue(this.key), this.value);
         }
 
         public static boolean testAll(final Element element, final List<HasContainer> hasContainers) {

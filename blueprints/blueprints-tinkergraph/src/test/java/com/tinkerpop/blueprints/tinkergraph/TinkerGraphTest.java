@@ -25,12 +25,12 @@ public class TinkerGraphTest {
     public void testTinkerGraph() {
         final TinkerGraph g = TinkerGraph.open(Optional.empty());
         g.createIndex("name", Vertex.class);
-        final Vertex marko = g.addVertex(Property.of("name", "marko", "age", 33, "blah", "bloop"));
-        final Vertex stephen = g.addVertex(Property.of("name", "stephen", "id", 12, "blah", "bloop"));
+        final Vertex marko = g.addVertex("name", "marko", "age", 33, "blah", "bloop");
+        final Vertex stephen = g.addVertex("name", "stephen", "id", 12, "blah", "bloop");
         stephen.setProperty(Property.Key.hidden("name"), "stephen");
         assertEquals("stephen", stephen.getProperty(Property.Key.hidden("name")).getValue());
         final Random r = new Random();
-        Stream.generate(() -> g.addVertex(Property.of(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt()))).limit(100000).count();
+        Stream.generate(() -> g.addVertex(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt())).limit(100000).count();
         assertEquals(100002, g.vertices.size());
         marko.addEdge("knows", stephen);
         System.out.println(g.query().has("name", Compare.EQUAL, "marko").vertices());

@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import org.apache.commons.configuration.Configuration;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -12,13 +13,13 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Graph extends AutoCloseable, Thing, Featureable {
+public interface Graph extends AutoCloseable, Featureable {
 
     public static <G extends Graph> G open(Optional<Configuration> configuration) {
         throw new UnsupportedOperationException("Implementations must override this method");
     }
 
-    public Vertex addVertex(Property... properties);
+    public Vertex addVertex(Object... keyValues);
 
     public GraphQuery query();
 
@@ -26,14 +27,50 @@ public interface Graph extends AutoCloseable, Thing, Featureable {
 
     public Transaction tx();
 
-    public <V> Property<V, Graph> getProperty(String key);
+    public <V> Graph.Property<V> getProperty(String key);
 
-    public <V> Property<V, Graph> setProperty(String key, V value);
+    public <V> Graph.Property<V> setProperty(String key, V value);
 
     public static Graph.Features getFeatures() {
         return new Features() {
         };
     }
+
+    public interface Property<V> extends com.tinkerpop.blueprints.Property<V> {
+
+        public Graph getGraph();
+
+        public static <V> Graph.Property<V> empty() {
+            return new Graph.Property<V>() {
+                @Override
+                public String getKey() {
+                    throw Features.propertyDoesNotExist();
+                }
+
+                @Override
+                public V getValue() throws NoSuchElementException {
+                    throw Features.propertyDoesNotExist();
+                }
+
+                @Override
+                public boolean isPresent() {
+                    return false;
+                }
+
+                @Override
+                public void remove() {
+                    throw Features.propertyDoesNotExist();
+                }
+
+                @Override
+                public Graph getGraph() {
+                    throw Features.propertyDoesNotExist();
+                }
+            };
+
+        }
+    }
+
 
     public interface Features extends com.tinkerpop.blueprints.Features {
         public default boolean supportsTransactions() {

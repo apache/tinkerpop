@@ -1,6 +1,5 @@
 package com.tinkerpop.blueprints.computer;
 
-import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
 /**
@@ -10,9 +9,8 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public interface VertexMemory {
 
-    public <T> Property<T, Vertex> setProperty(Vertex vertex, String key, T value);
+    public <T> Vertex.Property<T> setProperty(Vertex vertex, String key, T value);
 
-    public <T> Property<T, Vertex> getProperty(Vertex vertex, String key);
+    public <T> Vertex.Property<T> getProperty(Vertex vertex, String key);
 
-    public <T> Property<T, Vertex> removeProperty(Vertex vertex, String key);
 }

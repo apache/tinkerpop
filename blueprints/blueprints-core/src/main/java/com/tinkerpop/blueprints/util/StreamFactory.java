@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.util;
 
+import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;

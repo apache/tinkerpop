@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints.computer;
 
+import java.util.concurrent.Future;
+
 /**
  * The GraphComputer is responsible for the execution of a VertexProgram against the vertices in the Graph.
  * A GraphComputer maintains a VertexMemory (local vertex memory) and GraphMemory (global graph memory).
@@ -28,7 +30,7 @@ public interface GraphComputer {
 
     public GraphComputer program(VertexProgram program);
 
-    public ComputeResult submit();
+    public Future<ComputeResult> submit();
 
     public static GraphComputer.Features getFeatures() {
         return new Features() {

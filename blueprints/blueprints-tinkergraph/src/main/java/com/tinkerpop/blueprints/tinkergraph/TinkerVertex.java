@@ -2,12 +2,11 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.VertexQuery;
+import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
-import com.tinkerpop.blueprints.util.ThingHelper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ import java.util.Set;
  */
 class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
-    protected Map<String, List<Property<?, Vertex>>> properties = new HashMap<>();
+    protected Map<String, List<Vertex.Property>> properties = new HashMap<>();
 
     protected enum State {STANDARD, CENTRIC, ADJACENT}
 
@@ -50,9 +49,9 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         this.centricId = centricId;
     }
 
-    public <V> Property<V, Vertex> addProperty(final String key, final V value) {
-        final Property<V, Vertex> property = new TinkerProperty<V, Vertex>(key, value, this);
-        final List<Property<?, Vertex>> list = this.properties.getOrDefault(key, new ArrayList<>());
+    public <V> Vertex.Property<V> addProperty(final String key, final V value) {
+        final Vertex.Property<V> property = new Property<>(this, key, value);
+        final List<Vertex.Property> list = this.properties.getOrDefault(key, new ArrayList<>());
         list.add(property);
         this.properties.put(key, list);
         return property;
@@ -62,26 +61,26 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         return this.properties.keySet();
     }
 
-    public <V> Iterable<Property<V, Vertex>> getProperties(final String key) {
+    public <V> Iterable<Vertex.Property<V>> getProperties(final String key) {
         return (Iterable) this.properties.getOrDefault(key, Collections.EMPTY_LIST);
     }
 
-    public Map<String, Iterable<Property<?, Vertex>>> getProperties() {
+    public Map<String, Iterable<Vertex.Property>> getProperties() {
         return (Map) new HashMap<>(this.properties);
     }
 
-    public <V> Property<V, Vertex> getProperty(final String key) {
+    public <V> Vertex.Property<V> getProperty(final String key) {
         if (State.STANDARD == this.state) {
-            final List<Property<V, Vertex>> list = (List) this.properties.getOrDefault(key, Collections.EMPTY_LIST);
-            if (list.size() == 0) return Property.empty();
+            final List<Vertex.Property<V>> list = (List) this.properties.getOrDefault(key, Collections.EMPTY_LIST);
+            if (list.size() == 0) return Vertex.Property.empty();
             else if (list.size() > 1) throw Vertex.Features.propertyKeyReferencesMultipleProperties(key);
             else return list.get(0);
         } else if (State.CENTRIC == this.state) {
             if (this.vertexMemory.isComputeKey(key))
                 return this.vertexMemory.getProperty(this, key);
             else {
-                final List<Property<V, Vertex>> list = (List) this.properties.getOrDefault(key, Collections.EMPTY_LIST);
-                if (list.size() == 0) return Property.empty();
+                final List<Vertex.Property<V>> list = (List) this.properties.getOrDefault(key, Collections.EMPTY_LIST);
+                if (list.size() == 0) return Vertex.Property.empty();
                 else if (list.size() > 1) throw Vertex.Features.propertyKeyReferencesMultipleProperties(key);
                 else return list.get(0);
             }
@@ -90,10 +89,10 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         }
     }
 
-    public <T> Property<T, Vertex> setProperty(final String key, final T value) {
+    public <V> Vertex.Property<V> setProperty(final String key, final V value) {
         if (State.STANDARD == this.state) {
-            ThingHelper.validateProperty(this, key, value);
-            final Property<T, Vertex> property = new TinkerProperty<T, Vertex>(key, value, this);
+            ElementHelper.validateProperty(key, value);
+            final Vertex.Property<V> property = new Property<V>(this, key, value);
             this.properties.put(key, (List) Arrays.asList(property));
             this.graph.vertexIndex.autoUpdate(key, value, property.getValue(), this);
             return property;
@@ -112,7 +111,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
             this.properties.remove(key).stream().forEach(p -> this.graph.vertexIndex.autoRemove(key, p.getValue(), this));
         } else if (State.CENTRIC == this.state) {
             if (this.vertexMemory.isComputeKey(key))
-                this.vertexMemory.removeProperty(this, key);
+                this.vertexMemory.getProperty(this, key).remove();
             else
                 throw GraphComputer.Features.providedKeyIsNotAComputeKey(key);
         } else {
@@ -128,8 +127,8 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         return StringFactory.vertexString(this);
     }
 
-    public Edge addEdge(final String label, final Vertex vertex, final Property... properties) {
-        return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, properties);
+    public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
+        return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
     }
 
     public void remove() {
@@ -141,5 +140,80 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
     public TinkerVertex createClone(final State state, final String centricId, final TinkerVertexMemory vertexMemory) {
         return new TinkerVertex(this, state, centricId, vertexMemory);
+    }
+
+    public class Property<V> implements Vertex.Property<V> {
+
+        private Map<String, com.tinkerpop.blueprints.Property> properties = new HashMap<>();
+        private final TinkerVertex vertex;
+        private final String key;
+        private final V value;
+
+        public Property(final TinkerVertex vertex, final String key, final V value) {
+            this.vertex = vertex;
+            this.key = key;
+            this.value = value;
+
+        }
+
+        public boolean isPresent() {
+            return null != this.value;
+        }
+
+        public Vertex getVertex() {
+            return this.vertex;
+        }
+
+        public String getKey() {
+            return this.key;
+        }
+
+        public V getValue() {
+            return this.value;
+        }
+
+        public void remove() {
+            this.vertex.removeProperty(this.key);
+        }
+
+        public Set<String> getPropertyKeys() {
+            return this.properties.keySet();
+        }
+
+        public Map<String, com.tinkerpop.blueprints.Property> getProperties() {
+            return new HashMap<>(this.properties);
+        }
+
+        public <V2> com.tinkerpop.blueprints.Property<V2> getProperty(final String key) {
+            return this.properties.get(key);
+        }
+
+        public <V2> com.tinkerpop.blueprints.Property<V2> setProperty(final String key, final V2 value) {
+            final com.tinkerpop.blueprints.Property<V2> property = new com.tinkerpop.blueprints.Property<V2>() {
+                public boolean isPresent() {
+                    return null != value;
+                }
+
+                public void remove() {
+                    properties.remove(key);
+                }
+
+                public V2 getValue() {
+                    if (!isPresent())
+                        throw Property.Features.propertyDoesNotExist();
+                    return value;
+                }
+
+                public String getKey() {
+                    if (!isPresent())
+                        throw Property.Features.propertyDoesNotExist();
+                    return key;
+                }
+
+
+            };
+            this.properties.put(key, property);
+            return property;
+        }
     }
 }

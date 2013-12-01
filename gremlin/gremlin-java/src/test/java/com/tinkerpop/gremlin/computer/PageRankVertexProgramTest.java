@@ -8,6 +8,7 @@ import junit.framework.TestCase;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -17,7 +18,7 @@ public class PageRankVertexProgramTest extends TestCase {
     public void testPageRankProgram() throws Exception {
         Graph graph = TinkerFactory.createClassic();
 
-        ComputeResult result = graph.compute().program(PageRankVertexProgram.create().vertexCount(6).iterations(3).build()).submit();
+        ComputeResult result = graph.compute().program(PageRankVertexProgram.create().vertexCount(6).iterations(3).build()).submit().get();
         double total = 0.0d;
         final Map<String, Double> map = new HashMap<>();
         for (Vertex vertex : graph.query().vertices()) {

@@ -1,42 +1,26 @@
 package com.tinkerpop.blueprints;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Property<V, T extends Thing> extends Thing {
+public abstract interface Property<V> {
 
-    public enum Key {
-        ID, LABEL, DEFAULT_LABEL;
+    public class Key {
 
-        private static final String LABEL_STRING = "label";
-        private static final String ID_STRING = "id";
+        public static final String ID = "id";
+        public static final String LABEL = "label";
+        public static final String DEFAULT_LABEL = "default";
+
         private static final String HIDDEN_PREFIX = "%&%";
-        private static final String DEFAULT_LABEL_STRING = "default";
-
-        public String toString() {
-            if (this == ID) {
-                return ID_STRING;
-            } else if (this == LABEL) {
-                return LABEL_STRING;
-            } else {
-                return DEFAULT_LABEL_STRING;
-            }
-        }
 
         public static String hidden(final String key) {
             return HIDDEN_PREFIX.concat(key);
         }
     }
-
-    public T getThing();
 
     public String getKey();
 
@@ -61,17 +45,7 @@ public interface Property<V, T extends Thing> extends Thing {
         return this.getKey().equals(reservedKey.toString());
     }
 
-    public Map<String, Property> getProperties();
-
-    public <V2> Property<V2, Property> setProperty(String key, V2 value) throws IllegalStateException;
-
-    public <V2> Property<V2, Property> getProperty(String key) throws IllegalStateException;
-
     public void remove();
-
-    public default Object getId() {
-        return this.hashCode();
-    }
 
     public static Property.Features getFeatures() {
         return new Features() {
@@ -120,129 +94,21 @@ public interface Property<V, T extends Thing> extends Thing {
             throw new IllegalStateException("A property's property can not have a property");
         }
 
-        public static NoSuchElementException propertyHasNoValue() {
-            throw new NoSuchElementException("The property has no value and thus, does not exist");
+        public static IllegalStateException propertyDoesNotExist() {
+            throw new IllegalStateException("The property does not exist as it has no key, value, or associated element");
         }
     }
 
-    public static Property[] of(Object... keyValues) {
-        if (keyValues.length % 2 != 0)
-            throw new IllegalArgumentException("The provided arguments must have a size that is a factor of 2");
-        final Property[] properties = new Property[keyValues.length / 2];
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            final String key = Objects.requireNonNull(keyValues[i]).toString();
-            final Object value = Objects.requireNonNull(keyValues[i + 1]);
-
-            properties[i / 2] = new Property() {
-                final Map<String, Property> properties = new HashMap<>();
-                final Property p = this;
-
-                @Override
-                public Map<String, Property> getProperties() {
-                    return new HashMap<>(this.properties);
-                }
-
-                @Override
-                public String getKey() {
-                    return key;
-                }
-
-                @Override
-                public Object getValue() throws NoSuchElementException {
-                    return value;
-                }
-
-                @Override
-                public Thing getThing() {
-                    throw new IllegalStateException("The is a container and is not attached to anything");
-                }
-
-                @Override
-                public boolean isPresent() {
-                    return true;
-                }
-
-                public Property setProperty(String aKey, Object aValue) throws IllegalStateException {
-                    final Property property = this.properties.put(key, new Property() {
-                        @Override
-                        public Thing getThing() {
-                            return p;
-                        }
-
-                        @Override
-                        public String getKey() {
-                            return aKey;
-                        }
-
-                        @Override
-                        public Object getValue() throws NoSuchElementException {
-                            return aValue;
-                        }
-
-                        @Override
-                        public boolean isPresent() {
-                            return null != aValue;
-                        }
-
-                        @Override
-                        public Set<String> getPropertyKeys() throws IllegalStateException {
-                            throw Features.propertyPropertyCanNotHaveAProperty();
-                        }
-
-                        @Override
-                        public Property setProperty(String key, Object value) throws IllegalStateException {
-                            throw Features.propertyPropertyCanNotHaveAProperty();
-                        }
-
-                        @Override
-                        public Property getProperty(String key) throws IllegalStateException {
-                            throw Features.propertyPropertyCanNotHaveAProperty();
-                        }
-
-                        @Override
-                        public void remove() throws IllegalStateException {
-                            properties.remove(aKey);
-                        }
-
-                        @Override
-                        public Map<String, Property> getProperties() {
-                            throw Features.propertyPropertyCanNotHaveAProperty();
-                        }
-                    });
-                    return null == property ? Property.empty() : property;
-                }
-
-                public Property getProperty(String key) throws IllegalStateException {
-                    final Property property = this.properties.get(key);
-                    return null == property ? Property.empty() : property;
-                }
-
-                public void remove() {
-
-                }
-
-                @Override
-                public Set<String> getPropertyKeys() throws IllegalStateException {
-                    return this.getProperties().keySet();
-                }
-            };
-        }
-        return properties;
-    }
-
-    public static <V, T extends Thing> Property<V, T> empty() {
-        return new Property<V, T>() {
-            private static final String EMPTY_KEY = "empty";
-            private static final String EMPTY_MESSAGE = "This is an empty property";
-
+    public static <V> Property<V> empty() {
+        return new Property<V>() {
             @Override
             public String getKey() {
-                return EMPTY_KEY;
+                throw Features.propertyDoesNotExist();
             }
 
             @Override
             public V getValue() throws NoSuchElementException {
-                throw Features.propertyHasNoValue();
+                throw Features.propertyDoesNotExist();
             }
 
             @Override
@@ -251,33 +117,8 @@ public interface Property<V, T extends Thing> extends Thing {
             }
 
             @Override
-            public T getThing() {
-                throw new IllegalStateException(EMPTY_MESSAGE);
-            }
-
-            @Override
-            public Set<String> getPropertyKeys() throws IllegalStateException {
-                throw new IllegalStateException(EMPTY_MESSAGE);
-            }
-
-            @Override
-            public <V2> Property<V2, Property> setProperty(String key, V2 value) throws IllegalStateException {
-                throw new IllegalStateException(EMPTY_MESSAGE);
-            }
-
-            @Override
-            public <V2> Property<V2, Property> getProperty(String key) throws IllegalStateException {
-                throw new IllegalStateException(EMPTY_MESSAGE);
-            }
-
-            @Override
             public void remove() {
-                throw new IllegalStateException(EMPTY_MESSAGE);
-            }
-
-            @Override
-            public Map<String, Property> getProperties() throws IllegalStateException {
-                throw new IllegalStateException(EMPTY_MESSAGE);
+                throw Features.propertyDoesNotExist();
             }
         };
     }
