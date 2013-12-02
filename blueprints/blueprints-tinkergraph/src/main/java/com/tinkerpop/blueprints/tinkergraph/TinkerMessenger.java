@@ -38,7 +38,7 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
                     .map(m -> m.get(messageType.getLabel()))
                     .filter(l -> null != l)
                     .flatMap(l -> l.stream())
-                    .map(message -> adjacentMessageType.getFunction().apply(edge.get(0), message)));
+                    .map(message -> adjacentMessageType.getEdgeFunction().apply(edge.get(0), message)));
 
         } else {
             return StreamFactory.iterable(Arrays.asList(vertex).stream()

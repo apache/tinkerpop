@@ -54,18 +54,18 @@ public abstract class MessageType {
 
     public static class Adjacent<M1, M2> extends MessageType {
         public final VertexQueryBuilder query;
-        public final BiFunction<Edge, M1, M2> function;
+        public final BiFunction<Edge, M1, M2> edgeFunction;
 
         private Adjacent(final String label, final VertexQueryBuilder query) {
             super(label);
             this.query = query;
-            this.function = (Edge e, M1 m) -> (M2) m;
+            this.edgeFunction = (Edge e, M1 m) -> (M2) m;
         }
 
-        private Adjacent(final String label, final VertexQueryBuilder query, final BiFunction<Edge, M1, M2> function) {
+        private Adjacent(final String label, final VertexQueryBuilder query, final BiFunction<Edge, M1, M2> edgeFunction) {
             super(label);
             this.query = query;
-            this.function = function;
+            this.edgeFunction = edgeFunction;
         }
 
         public static Adjacent of(final String label, final VertexQueryBuilder query) {
@@ -80,8 +80,8 @@ public abstract class MessageType {
             return this.query.build(vertex).vertices();
         }
 
-        public BiFunction<Edge, M1, M2> getFunction() {
-            return this.function;
+        public BiFunction<Edge, M1, M2> getEdgeFunction() {
+            return this.edgeFunction;
         }
 
         public VertexQueryBuilder getQuery() {
