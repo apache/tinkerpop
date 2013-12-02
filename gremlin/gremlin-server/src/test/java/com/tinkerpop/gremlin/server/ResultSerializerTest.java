@@ -302,7 +302,7 @@ public class ResultSerializerTest {
         map.put("x", 500);
         map.put("y", "some");
 
-        final ArrayList friends = new ArrayList();
+        final ArrayList<Object> friends = new ArrayList<>();
         friends.add("x");
         friends.add(5);
         friends.add(map);
