@@ -91,7 +91,7 @@ public interface ResultSerializer {
         private Object prepareOutput(final Object object) throws Exception {
             if (object == null)
                 return JSONObject.NULL;
-            else if (object instanceof Vertex.Property) {
+            else if (object instanceof com.tinkerpop.blueprints.Vertex.Property) {
                 final Vertex.Property t = (Vertex.Property) object;
                 final JSONObject jsonObject = new JSONObject();
                 jsonObject.put(TOKEN_VALUE, prepareOutput(t.orElse(null)));
@@ -115,6 +115,8 @@ public interface ResultSerializer {
                 final JSONObject jsonObject = new JSONObject();
                 jsonObject.put(TOKEN_VALUE, prepareOutput(t.orElse(null)));
                 return jsonObject;
+            } else if (object instanceof com.tinkerpop.blueprints.Property) {
+                return prepareOutput(((com.tinkerpop.blueprints.Property) object).getValue());
             } else if (object instanceof Element) {
                 final Element element = (Element) object;
                 final JSONObject jsonObject = new JSONObject();

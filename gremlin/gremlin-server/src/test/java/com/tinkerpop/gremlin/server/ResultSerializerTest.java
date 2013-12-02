@@ -184,7 +184,7 @@ public class ResultSerializerTest {
     }
 
     @Test
-    @Ignore("Can't TinkerVertex.Property to be recognized as Vertex.Property which won't allow meta-properties.")
+    //@Ignore("Can't TinkerVertex.Property to be recognized as Vertex.Property which won't allow meta-properties.")
     public void serializedPropertiesOnProperties() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex();
@@ -207,7 +207,7 @@ public class ResultSerializerTest {
         assertNotNull(vertexAsJson);
 
         assertEquals(v.getId(), vertexAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_ID));
-        assertEquals(ResultSerializer.JsonResultSerializer.TOKEN_EDGE, vertexAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_TYPE));
+        assertEquals(ResultSerializer.JsonResultSerializer.TOKEN_VERTEX, vertexAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_TYPE));
 
         final JSONObject properties = vertexAsJson.optJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_PROPERTIES);
         assertNotNull(properties);
@@ -222,7 +222,7 @@ public class ResultSerializerTest {
 
         final JSONObject metaProperties = valXyzProperty.getJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_META);
         assertNotNull(metaProperties);
-        assertEquals("stephen", metaProperties.getJSONObject("audit").getString(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
+        assertEquals("stephen", metaProperties.getString("audit"));
     }
 
     @Test
