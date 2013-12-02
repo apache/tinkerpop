@@ -1,9 +1,8 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
-import com.tinkerpop.blueprints.query.util.QueryBuilder;
-import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
 import java.io.Serializable;
@@ -19,50 +18,51 @@ import java.util.stream.Collectors;
  */
 public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
 
-    public Map<Object, Map<Long, Queue<M>>> sendMessages = new HashMap<>();
-    public Map<Object, Map<Long, Queue<M>>> receiveMessages = new HashMap<>();
+    public Map<Object, Map<Class<? extends MessageType>, Queue<M>>> sendMessages = new HashMap<>();
+    public Map<Object, Map<Class<? extends MessageType>, Queue<M>>> receiveMessages = new HashMap<>();
 
-    public Iterable<M> receiveMessages(final Vertex vertex, final QueryBuilder query) {
-        if (query instanceof VertexQueryBuilder) {
-            final long fingerPrint = query.fingerPrint();
-            return StreamFactory.stream(((VertexQueryBuilder) query).build().reverse().build(vertex).vertices())
+    public Iterable<M> receiveMessages(final Vertex vertex, final MessageType messageType) {
+        if (messageType instanceof MessageType.Adjacent) {
+            return StreamFactory.stream(((MessageType.Adjacent) messageType).reverse().vertices(vertex))
                     .map(v -> this.receiveMessages.get(v.getId()))
                     .filter(m -> null != m)
-                    .map(m -> m.get(fingerPrint))
+                    .map(m -> m.get(messageType.getClass()))
                     .filter(l -> null != l)
                     .flatMap(l -> l.stream())
                     .collect(Collectors.<M>toList());
         } else {
-            return Arrays.asList(vertex).stream()
+            return null;
+            /*return Arrays.asList(vertex).stream()
                     .map(v -> this.receiveMessages.get(v.getId()))
                     .filter(m -> null != m)
-                    .map(m -> m.get(Long.MIN_VALUE))
+                    .map(m -> m.get(messageType.getClass()))
                     .filter(l -> null != l)
                     .flatMap(l -> l.stream())
-                    .collect(Collectors.<M>toList());
+                    .collect(Collectors.<M>toList()); */
         }
     }
 
-    public void sendMessage(final Vertex vertex, final QueryBuilder query, final M message) {
-        if (query instanceof VertexQueryBuilder) {
-            getMessageList(vertex.getId(), query.fingerPrint()).add(message);
+    public void sendMessage(final Vertex vertex, final MessageType messageType, final M message) {
+        if (messageType instanceof MessageType.Adjacent) {
+            getMessageList(vertex.getId(), messageType).add(message);
         } else {
-            query.vertices().forEach(v -> {
-                getMessageList(v.getId(), Long.MIN_VALUE).add(message);
-            });
+          System.out.println("BABABA!");
+           /* ((MessageType.Direct) messageType).vertices().forEach(v -> {
+                getMessageList(v.getId(), messageType).add(message);
+            });*/
         }
     }
 
-    private Queue<M> getMessageList(final Object vertexId, final long fingerPrint) {
-        Map<Long, Queue<M>> messages = this.sendMessages.get(vertexId);
+    private Queue<M> getMessageList(final Object vertexId, final MessageType messageType) {
+        Map<Class<? extends MessageType>, Queue<M>> messages = this.sendMessages.get(vertexId);
         if (null == messages) {
             messages = new HashMap<>();
             this.sendMessages.put(vertexId, messages);
         }
-        Queue<M> messageList = messages.get(fingerPrint);
+        Queue<M> messageList = messages.get(messageType.getClass());
         if (null == messageList) {
             messageList = new ConcurrentLinkedQueue<>();
-            messages.put(fingerPrint, messageList);
+            messages.put(messageType.getClass(), messageList);
         }
         return messageList;
     }

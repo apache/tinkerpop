@@ -57,10 +57,4 @@ public class GraphQueryBuilder extends DefaultGraphQuery implements QueryBuilder
     public long count() {
         throw new UnsupportedOperationException();
     }
-
-    public long fingerPrint() {
-        long id = 0l;
-        this.hasContainers.stream().map(h -> Long.valueOf(h.key.hashCode() + h.predicate.hashCode() + h.value.hashCode())).reduce(id, (a, b) -> a + b);
-        return id;
-    }
 }

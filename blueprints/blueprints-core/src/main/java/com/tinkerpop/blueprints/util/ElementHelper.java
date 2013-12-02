@@ -18,15 +18,17 @@ public class ElementHelper {
      *
      * @param key   the key of the property
      * @param value the value of the property
-     * @throws IllegalArgumentException whether the triple is legal and if not, a clear reason message is provided
+     * @throws IllegalArgumentException whether the key/value pair is legal and if not, a clear reason exception message is provided
      */
     public static void validateProperty(final String key, final Object value) throws IllegalArgumentException {
         if (null == value)
             throw Property.Features.propertyValueCanNotBeNull();
         if (null == key)
             throw Property.Features.propertyKeyCanNotBeNull();
-        if (key.equals(Property.Key.ID) || key.equals(Property.Key.LABEL))
+        if (key.equals(Property.Key.ID))
             throw Property.Features.propertyKeyIdIsReserved();
+        if (key.equals(Property.Key.LABEL))
+            throw Property.Features.propertyKeyLabelIsReserved();
         if (key.isEmpty())
             throw Property.Features.propertyKeyCanNotBeEmpty();
     }

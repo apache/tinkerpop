@@ -1,7 +1,6 @@
 package com.tinkerpop.blueprints.computer;
 
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.query.util.QueryBuilder;
 
 import java.io.Serializable;
 
@@ -11,11 +10,12 @@ import java.io.Serializable;
  * For single machine systems, the messenger can implement a "state sharing" engine (shared memory).
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface Messenger<M extends Serializable> {
 
-    public Iterable<M> receiveMessages(Vertex vertex, QueryBuilder query);
+    public Iterable<M> receiveMessages(Vertex vertex, MessageType messageType);
 
-    public void sendMessage(Vertex vertex, QueryBuilder query, M message);
+    public void sendMessage(Vertex vertex, MessageType messageType, M message);
 
 }

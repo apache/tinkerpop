@@ -106,14 +106,15 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         }
     }
 
-    protected void removeProperty(final String key) {
+    protected void removeProperty(final Vertex.Property property) {
         if (State.STANDARD == this.state) {
-            this.properties.remove(key).stream().forEach(p -> this.graph.vertexIndex.autoRemove(key, p.getValue(), this));
+            this.properties.get(property.getKey()).remove(property);
+            this.graph.vertexIndex.autoRemove(property.getKey(), property.getValue(), this);
         } else if (State.CENTRIC == this.state) {
-            if (this.vertexMemory.isComputeKey(key))
-                this.vertexMemory.getProperty(this, key).remove();
+            if (this.vertexMemory.isComputeKey(property.getKey()))
+                this.vertexMemory.getProperty(this, property.getKey()).remove();
             else
-                throw GraphComputer.Features.providedKeyIsNotAComputeKey(key);
+                throw GraphComputer.Features.providedKeyIsNotAComputeKey(property.getKey());
         } else {
             throw GraphComputer.Features.adjacentVertexPropertiesCanNotBeWritten();
         }
@@ -173,7 +174,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         }
 
         public void remove() {
-            this.vertex.removeProperty(this.key);
+            this.vertex.removeProperty(this);
         }
 
         public Set<String> getPropertyKeys() {

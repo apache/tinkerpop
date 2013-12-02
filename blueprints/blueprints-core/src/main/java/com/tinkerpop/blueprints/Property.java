@@ -41,10 +41,6 @@ public abstract interface Property<V> {
         return this.isPresent() ? this.getValue() : supplier.get();
     }
 
-    public default boolean is(Key reservedKey) {
-        return this.getKey().equals(reservedKey.toString());
-    }
-
     public void remove();
 
     public static Property.Features getFeatures() {
@@ -71,11 +67,11 @@ public abstract interface Property<V> {
         }
 
         public static IllegalArgumentException propertyKeyIdIsReserved() {
-            return new IllegalArgumentException("Property key is reserved for all elements: id");
+            return propertyKeyIsReserved(Property.Key.ID);
         }
 
-        public static IllegalArgumentException propertyKeyLabelIsReservedForEdges() {
-            return new IllegalArgumentException("Property key is reserved for all edges: label");
+        public static IllegalArgumentException propertyKeyLabelIsReserved() {
+            return propertyKeyIsReserved(Property.Key.LABEL);
         }
 
         public static IllegalArgumentException propertyKeyCanNotBeEmpty() {
@@ -88,10 +84,6 @@ public abstract interface Property<V> {
 
         public static IllegalArgumentException propertyValueCanNotBeNull() {
             return new IllegalArgumentException("Property value can not be null");
-        }
-
-        public static IllegalStateException propertyPropertyCanNotHaveAProperty() {
-            throw new IllegalStateException("A property's property can not have a property");
         }
 
         public static IllegalStateException propertyDoesNotExist() {

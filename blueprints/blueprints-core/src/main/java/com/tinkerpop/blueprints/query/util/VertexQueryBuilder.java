@@ -93,16 +93,4 @@ public class VertexQueryBuilder extends DefaultVertexQuery implements QueryBuild
     public long count() {
         throw new UnsupportedOperationException();
     }
-
-    public long fingerPrint() {
-        long id = 0l;
-        Stream.of(this.labels)
-                .map(s -> Long.valueOf(s.hashCode()))
-                .reduce(id, (a, b) -> a + b);
-        this.hasContainers.stream()
-                .map(h -> Long.valueOf(h.key.hashCode() + h.predicate.hashCode() + h.value.hashCode()))
-                .reduce(id, (a, b) -> a + b);
-        id += this.direction.hashCode();
-        return id;
-    }
 }
