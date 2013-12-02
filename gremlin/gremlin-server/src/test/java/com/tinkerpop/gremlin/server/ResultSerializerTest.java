@@ -251,6 +251,7 @@ public class ResultSerializerTest {
         assertEquals(e.getId(), edgeAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_ID));
         assertEquals(v1.getId(), edgeAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_OUT));
         assertEquals(v2.getId(), edgeAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_IN));
+        assertEquals(e.getLabel(), edgeAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_LABEL));
         assertEquals(ResultSerializer.JsonResultSerializer.TOKEN_EDGE, edgeAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_TYPE));
 
         final JSONObject properties = edgeAsJson.optJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_PROPERTIES);

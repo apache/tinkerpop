@@ -69,6 +69,7 @@ public interface ResultSerializer {
         public static final String TOKEN_REQUEST = "requestId";
         public static final String TOKEN_IN = "in";
         public static final String TOKEN_OUT = "out";
+        public static final String TOKEN_LABEL = "label";
 
         @Override
         public String serialize(final Object o, final ResultCode code, final Context context) {
@@ -124,6 +125,7 @@ public interface ResultSerializer {
                     final Edge e = (Edge) object;
                     jsonObject.put(TOKEN_IN, prepareOutput(e.getVertex(Direction.IN).getId()));
                     jsonObject.put(TOKEN_OUT, prepareOutput(e.getVertex(Direction.OUT).getId()));
+                    jsonObject.put(TOKEN_LABEL, e.getLabel());
                 }
 
                 final JSONObject jsonProperties = new JSONObject();
