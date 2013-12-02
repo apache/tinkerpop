@@ -18,4 +18,13 @@ public class StreamFactory {
     public static <T> Stream<T> parallelStream(final Iterable<T> iterable) {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterable.iterator(), Spliterator.IMMUTABLE), true);
     }
+
+    public static <T> Iterable<T> iterable(final Stream<T> stream) {
+        return new Iterable<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                return stream.iterator();
+            }
+        };
+    }
 }

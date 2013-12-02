@@ -5,53 +5,71 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 
+import java.util.function.BiFunction;
+
 /**
  * @author Matthias Broecheler (me@matthiasb.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class MessageType {
 
+    private final String label;
+
+    public MessageType(final String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return this.label;
+    }
+
     public static class Direct extends MessageType {
         private final GraphQuery query;
         private final Iterable<Vertex> vertices;
 
-        private Direct(final GraphQuery query) {
+        private Direct(final String label, final GraphQuery query) {
+            super(label);
             this.query = query;
             this.vertices = null;
         }
 
-        private Direct(final Iterable<Vertex> vertices) {
+        private Direct(final String label, final Iterable<Vertex> vertices) {
+            super(label);
             this.query = null;
             this.vertices = vertices;
         }
 
-        public static Direct of(final GraphQuery query) {
-            return new Direct(query);
+        public static Direct of(final String label, final GraphQuery query) {
+            return new Direct(label, query);
         }
 
-        public static Direct of(final Iterable<Vertex> vertices) {
-            return new Direct(vertices);
+        public static Direct of(final String label, final Iterable<Vertex> vertices) {
+            return new Direct(label, vertices);
         }
 
         public Iterable<Vertex> vertices() {
             return null == this.query ? this.vertices : this.query.vertices();
         }
-
-        @Override
-        public int hashCode() {
-            return Direct.class.hashCode();
-        }
     }
 
-    public static class Adjacent extends MessageType {
+    public static class Adjacent<M1, M2> extends MessageType {
         public final VertexQueryBuilder query;
+        public final BiFunction<Edge, M1, M2> function;
 
-        private Adjacent(final VertexQueryBuilder query) {
+        private Adjacent(final String label, final VertexQueryBuilder query) {
+            super(label);
             this.query = query;
+            this.function = (Edge e, M1 m) -> (M2) m;
         }
 
-        public static Adjacent of(final VertexQueryBuilder query) {
-            return new Adjacent(query);
+        private Adjacent(final String label, final VertexQueryBuilder query, final BiFunction<Edge, M1, M2> function) {
+            super(label);
+            this.query = query;
+            this.function = function;
+        }
+
+        public static Adjacent of(final String label, final VertexQueryBuilder query) {
+            return new Adjacent(label, query);
         }
 
         public Iterable<Edge> edges(final Vertex vertex) {
@@ -62,17 +80,12 @@ public abstract class MessageType {
             return this.query.build(vertex).vertices();
         }
 
-        public long count(final Vertex vertex) {
-            return this.query.build(vertex).count();
+        public BiFunction<Edge, M1, M2> getFunction() {
+            return this.function;
         }
 
-        public Adjacent reverse() {
-            return Adjacent.of(this.query.build().reverse());
-        }
-
-        @Override
-        public int hashCode() {
-            return Adjacent.class.hashCode();
+        public VertexQueryBuilder getQuery() {
+            return this.query;
         }
     }
 }

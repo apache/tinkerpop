@@ -18,7 +18,7 @@ import java.util.Map;
 public class PageRankVertexProgram implements VertexProgram<Double> {
 
     protected final Map<String, KeyType> computeKeys = new HashMap<>();
-    private MessageType.Adjacent messageType = MessageType.Adjacent.of(new VertexQueryBuilder().direction(Direction.OUT));
+    private MessageType.Adjacent messageType = MessageType.Adjacent.of("pageRank", new VertexQueryBuilder().direction(Direction.OUT));
 
     public static final String PAGE_RANK = PageRankVertexProgram.class.getName() + ".pageRank";
     public static final String EDGE_COUNT = PageRankVertexProgram.class.getName() + ".edgeCount";
@@ -43,7 +43,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphMemory graphMemory) {
         if (graphMemory.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
-            double edgeCount = Long.valueOf(this.messageType.count(vertex)).doubleValue();
+            double edgeCount = Long.valueOf(this.messageType.getQuery().build(vertex).count()).doubleValue();
             vertex.setProperty(PAGE_RANK, initialPageRank);
             vertex.setProperty(EDGE_COUNT, edgeCount);
             messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
@@ -80,7 +80,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         }
 
         public Builder adjacent(final VertexQueryBuilder adjacentQuery) {
-            this.vertexProgram.messageType = MessageType.Adjacent.of(adjacentQuery);
+            this.vertexProgram.messageType = MessageType.Adjacent.of("pageRank", adjacentQuery);
             return this;
         }
 
