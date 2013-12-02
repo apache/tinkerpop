@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
 
+    // Map<VertexId, Map<MessageLabel, MessageQueue>>>
     public Map<Object, Map<String, Queue<M>>> sendMessages = new HashMap<>();
     public Map<Object, Map<String, Queue<M>>> receiveMessages = new HashMap<>();
 
