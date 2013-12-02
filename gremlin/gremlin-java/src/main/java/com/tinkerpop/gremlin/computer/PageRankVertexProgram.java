@@ -26,6 +26,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private double vertexCountAsDouble = 1;
     private double alpha = 0.85d;
     private int totalIterations = 30;
+    private boolean weighted = false;
 
     protected PageRankVertexProgram() {
         computeKeys.put(PAGE_RANK, KeyType.VARIABLE);
@@ -46,12 +47,18 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             double edgeCount = Long.valueOf(this.messageType.getQuery().build(vertex).count()).doubleValue();
             vertex.setProperty(PAGE_RANK, initialPageRank);
             vertex.setProperty(EDGE_COUNT, edgeCount);
-            messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
+            if (this.weighted)
+                messenger.sendMessage(vertex, this.messageType, initialPageRank);
+            else
+                messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
         } else {
             double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.messageType)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.setProperty(PAGE_RANK, newPageRank);
-            messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getValue(EDGE_COUNT));
+            if (this.weighted)
+                messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getValue(EDGE_COUNT));
+            else
+                messenger.sendMessage(vertex, this.messageType, newPageRank);
         }
     }
 
@@ -81,6 +88,11 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
         public Builder messageType(final MessageType.Local messageType) {
             this.vertexProgram.messageType = messageType;
+            return this;
+        }
+
+        public Builder weighted(final boolean weighted) {
+            this.vertexProgram.weighted = weighted;
             return this;
         }
 

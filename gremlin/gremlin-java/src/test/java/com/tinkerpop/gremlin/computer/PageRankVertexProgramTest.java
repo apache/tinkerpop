@@ -50,6 +50,7 @@ public class PageRankVertexProgramTest extends TestCase {
         ComputeResult result = graph.compute().program(
                 PageRankVertexProgram.create()
                         .messageType(MessageType.Local.of("pageRank", new VertexQueryBuilder().direction(Direction.OUT), (Double m, Edge e) -> (m / (Float) e.getValue("weight"))))
+                        .weighted(true)
                         .vertexCount(6)
                         .iterations(3)
                         .build()).submit().get();
