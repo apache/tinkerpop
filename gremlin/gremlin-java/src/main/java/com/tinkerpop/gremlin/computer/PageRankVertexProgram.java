@@ -79,8 +79,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             return this;
         }
 
-        public Builder adjacent(final VertexQueryBuilder adjacentQuery) {
-            this.vertexProgram.messageType = MessageType.Local.of("pageRank", adjacentQuery);
+        public Builder messageType(final MessageType.Local messageType) {
+            this.vertexProgram.messageType = messageType;
             return this;
         }
 
