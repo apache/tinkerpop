@@ -88,6 +88,9 @@ public interface ResultSerializer {
             }
         }
 
+        /**
+         * Serializes results.  The order in which the "object" is evaluated has importance to proper serialization.
+         */
         private Object prepareOutput(final Object object) throws Exception {
             if (object == null)
                 return JSONObject.NULL;
