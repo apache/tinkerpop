@@ -184,7 +184,6 @@ public class ResultSerializerTest {
     }
 
     @Test
-    //@Ignore("Can't TinkerVertex.Property to be recognized as Vertex.Property which won't allow meta-properties.")
     public void serializedPropertiesOnProperties() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex();
