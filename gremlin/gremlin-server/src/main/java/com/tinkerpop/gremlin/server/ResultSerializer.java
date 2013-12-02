@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
@@ -62,10 +63,12 @@ public interface ResultSerializer {
         public static final String TOKEN_VALUE = "value";
         public static final String TOKEN_CODE = "code";
         public static final String TOKEN_PROPERTIES = "properties";
-        public static final String TOKEN_HIDDEN = "hidden";
+        public static final String TOKEN_META = "meta";
         public static final String TOKEN_EDGE = "edge";
         public static final String TOKEN_VERTEX = "vertex";
         public static final String TOKEN_REQUEST = "requestId";
+        public static final String TOKEN_IN = "in";
+        public static final String TOKEN_OUT = "out";
 
         @Override
         public String serialize(final Object o, final ResultCode code, final Context context) {
@@ -93,24 +96,35 @@ public interface ResultSerializer {
                 jsonObject.put(TOKEN_VALUE, prepareOutput(t.orElse(null)));
 
                 if (t.getProperties().size() > 0) {
-                    final JSONObject hiddenProperties = new JSONObject();
+                    final JSONObject metaProperties = new JSONObject();
                     t.getPropertyKeys().forEach(k -> {
                         try {
-                            hiddenProperties.put(k.toString(), prepareOutput(t.getProperty(k.toString())));
+                            metaProperties.put(k.toString(), prepareOutput(t.getProperty(k.toString())));
                         } catch (Exception ex) {
                             // there can't be null keys on an element so don't think there is a need to launch
                             // a JSONException here.
                             throw new RuntimeException(ex);
                         }
                     });
-                    jsonObject.put(TOKEN_HIDDEN, hiddenProperties);
+                    jsonObject.put(TOKEN_META, metaProperties);
                 }
+                return jsonObject;
+            } else if (object instanceof Edge.Property) {
+                final Edge.Property t = (Edge.Property) object;
+                final JSONObject jsonObject = new JSONObject();
+                jsonObject.put(TOKEN_VALUE, prepareOutput(t.orElse(null)));
                 return jsonObject;
             } else if (object instanceof Element) {
                 final Element element = (Element) object;
                 final JSONObject jsonObject = new JSONObject();
-                jsonObject.put(TOKEN_ID, element.getId());
+                jsonObject.put(TOKEN_ID, prepareOutput(element.getId()));
                 jsonObject.put(TOKEN_TYPE, element instanceof Edge ? TOKEN_EDGE : TOKEN_VERTEX);
+
+                if (object instanceof Edge) {
+                    final Edge e = (Edge) object;
+                    jsonObject.put(TOKEN_IN, prepareOutput(e.getVertex(Direction.IN).getId()));
+                    jsonObject.put(TOKEN_OUT, prepareOutput(e.getVertex(Direction.OUT).getId()));
+                }
 
                 final JSONObject jsonProperties = new JSONObject();
                 element.getPropertyKeys().forEach(k -> {

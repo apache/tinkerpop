@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.blueprints.Compare;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -185,7 +184,8 @@ public class ResultSerializerTest {
     }
 
     @Test
-    public void serializedHiddenProperties() throws Exception {
+    @Ignore("Can't TinkerVertex.Property to be recognized as Vertex.Property which won't allow meta-properties.")
+    public void serializedPropertiesOnProperties() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex();
         v.setProperty("abc", 123);
@@ -206,6 +206,9 @@ public class ResultSerializerTest {
         final JSONObject vertexAsJson = converted.optJSONObject(0);
         assertNotNull(vertexAsJson);
 
+        assertEquals(v.getId(), vertexAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_ID));
+        assertEquals(ResultSerializer.JsonResultSerializer.TOKEN_EDGE, vertexAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_TYPE));
+
         final JSONObject properties = vertexAsJson.optJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_PROPERTIES);
         assertNotNull(properties);
 
@@ -217,10 +220,46 @@ public class ResultSerializerTest {
         assertNotNull(valXyzProperty);
         assertEquals(321, valXyzProperty.getInt(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
 
-        // TODO
-        /*final JSONObject hiddenProperties = valXyzProperty.getJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_HIDDEN);
-        assertNotNull(hiddenProperties);
-        assertEquals("stephen", hiddenProperties.getJSONObject("audit").getString(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));*/
+        final JSONObject metaProperties = valXyzProperty.getJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_META);
+        assertNotNull(metaProperties);
+        assertEquals("stephen", metaProperties.getJSONObject("audit").getString(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
+    }
+
+    @Test
+    public void serializeEdge() throws Exception {
+        final Graph g = TinkerGraph.open();
+        final Vertex v1 = g.addVertex();
+        final Vertex v2 = g.addVertex();
+        final Edge e = v1.addEdge("test", v2);
+        e.setProperty("abc", 123);
+
+        final Iterable<Edge> iterable = g.query().edges();
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(iterable, new Context(msg, null, null, null, null));
+
+        final JSONObject json = new JSONObject(results);
+
+        assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
+        final JSONArray converted = json.getJSONArray(ResultSerializer.JsonResultSerializer.TOKEN_RESULT);
+
+        assertNotNull(converted);
+        assertEquals(1, converted.length());
+
+        final JSONObject edgeAsJson = converted.optJSONObject(0);
+        assertNotNull(edgeAsJson);
+
+        assertEquals(e.getId(), edgeAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_ID));
+        assertEquals(v1.getId(), edgeAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_OUT));
+        assertEquals(v2.getId(), edgeAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_IN));
+        assertEquals(ResultSerializer.JsonResultSerializer.TOKEN_EDGE, edgeAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_TYPE));
+
+        final JSONObject properties = edgeAsJson.optJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_PROPERTIES);
+        assertNotNull(properties);
+
+        final JSONObject valAbcProperty = properties.optJSONObject("abc");
+        assertNotNull(valAbcProperty);
+        assertEquals(123, valAbcProperty.getInt(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
+
     }
 
     @Test
