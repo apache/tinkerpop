@@ -1,7 +1,7 @@
 package com.tinkerpop.blueprints.computer;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface ComputeResult {
 

@@ -25,21 +25,21 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
     public Map<Object, Map<String, Queue<M>>> receiveMessages = new HashMap<>();
 
     public Iterable<M> receiveMessages(final Vertex vertex, final MessageType messageType) {
-        if (messageType instanceof MessageType.Adjacent) {
-            MessageType.Adjacent<Object, M> adjacentMessageType = (MessageType.Adjacent) messageType;
+        if (messageType instanceof MessageType.Local) {
+            MessageType.Local<Object, M> localMessageType = (MessageType.Local) messageType;
 
             final List<Edge> edge = new ArrayList<>(1); // simulates storage side-effects available in Gremlin, but not Java8 streams
-            return StreamFactory.iterable(StreamFactory.stream(adjacentMessageType.getQuery().build().reverse().build(vertex).edges())
+            return StreamFactory.iterable(StreamFactory.stream(localMessageType.getQuery().build().reverse().build(vertex).edges())
                     .map(e -> {
                         edge.clear();
                         edge.add(e);
-                        return receiveMessages.get(e.getVertex(adjacentMessageType.getQuery().direction).getId());
+                        return receiveMessages.get(e.getVertex(localMessageType.getQuery().direction).getId());
                     })
                     .filter(m -> null != m)
                     .map(m -> m.get(messageType.getLabel()))
                     .filter(l -> null != l)
                     .flatMap(l -> l.stream())
-                    .map(message -> adjacentMessageType.getEdgeFunction().apply(edge.get(0), message)));
+                    .map(message -> localMessageType.getEdgeFunction().apply(message, edge.get(0))));
 
         } else {
             return StreamFactory.iterable(Arrays.asList(vertex).stream()
@@ -52,10 +52,10 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
     }
 
     public void sendMessage(final Vertex vertex, final MessageType messageType, final M message) {
-        if (messageType instanceof MessageType.Adjacent) {
+        if (messageType instanceof MessageType.Local) {
             getMessageList(vertex.getId(), messageType).add(message);
         } else {
-            ((MessageType.Direct) messageType).vertices().forEach(v -> {
+            ((MessageType.Global) messageType).vertices().forEach(v -> {
                 getMessageList(v.getId(), messageType).add(message);
             });
         }

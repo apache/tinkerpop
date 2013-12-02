@@ -23,28 +23,28 @@ public abstract class MessageType {
         return this.label;
     }
 
-    public static class Direct extends MessageType {
+    public static class Global extends MessageType {
         private final GraphQuery query;
         private final Iterable<Vertex> vertices;
 
-        private Direct(final String label, final GraphQuery query) {
+        private Global(final String label, final GraphQuery query) {
             super(label);
             this.query = query;
             this.vertices = null;
         }
 
-        private Direct(final String label, final Iterable<Vertex> vertices) {
+        private Global(final String label, final Iterable<Vertex> vertices) {
             super(label);
             this.query = null;
             this.vertices = vertices;
         }
 
-        public static Direct of(final String label, final GraphQuery query) {
-            return new Direct(label, query);
+        public static Global of(final String label, final GraphQuery query) {
+            return new Global(label, query);
         }
 
-        public static Direct of(final String label, final Iterable<Vertex> vertices) {
-            return new Direct(label, vertices);
+        public static Global of(final String label, final Iterable<Vertex> vertices) {
+            return new Global(label, vertices);
         }
 
         public Iterable<Vertex> vertices() {
@@ -52,24 +52,28 @@ public abstract class MessageType {
         }
     }
 
-    public static class Adjacent<M1, M2> extends MessageType {
+    public static class Local<M1, M2> extends MessageType {
         public final VertexQueryBuilder query;
-        public final BiFunction<Edge, M1, M2> edgeFunction;
+        public final BiFunction<M1, Edge, M2> edgeFunction;
 
-        private Adjacent(final String label, final VertexQueryBuilder query) {
+        private Local(final String label, final VertexQueryBuilder query) {
             super(label);
             this.query = query;
-            this.edgeFunction = (Edge e, M1 m) -> (M2) m;
+            this.edgeFunction = (final M1 m, final Edge e) -> (M2) m;
         }
 
-        private Adjacent(final String label, final VertexQueryBuilder query, final BiFunction<Edge, M1, M2> edgeFunction) {
+        private Local(final String label, final VertexQueryBuilder query, final BiFunction<M1, Edge, M2> edgeFunction) {
             super(label);
             this.query = query;
             this.edgeFunction = edgeFunction;
         }
 
-        public static Adjacent of(final String label, final VertexQueryBuilder query) {
-            return new Adjacent(label, query);
+        public static Local of(final String label, final VertexQueryBuilder query) {
+            return new Local(label, query);
+        }
+
+        public static <M1, M2> Local of(final String label, final VertexQueryBuilder query, final BiFunction<M1, Edge, M2> edgeFunction) {
+            return new Local<>(label, query, edgeFunction);
         }
 
         public Iterable<Edge> edges(final Vertex vertex) {
@@ -80,7 +84,7 @@ public abstract class MessageType {
             return this.query.build(vertex).vertices();
         }
 
-        public BiFunction<Edge, M1, M2> getEdgeFunction() {
+        public BiFunction<M1, Edge, M2> getEdgeFunction() {
             return this.edgeFunction;
         }
 

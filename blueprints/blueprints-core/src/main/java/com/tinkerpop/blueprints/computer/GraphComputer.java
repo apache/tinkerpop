@@ -38,11 +38,51 @@ public interface GraphComputer {
     }
 
     public interface Features extends com.tinkerpop.blueprints.Features {
-        public default boolean supportsGraphQuery() {
+        public default boolean supportsGlobalMessageTypes() {
             return true;
         }
 
-        public default boolean supportsVertexQuery() {
+        public default boolean supportsLocalMessageTypes() {
+            return true;
+        }
+
+        public default boolean supportsVertexAddition() {
+            return true;
+        }
+
+        public default boolean supportsVertexRemoval() {
+            return true;
+        }
+
+        public default boolean supportsVertexPropertyAddition() {
+            return true;
+        }
+
+        public default boolean supportsVertexPropertyRemoval() {
+            return true;
+        }
+
+        public default boolean supportsVertexPropertyUpdates() {
+            return true;
+        }
+
+        public default boolean supportsEdgeAddition() {
+            return true;
+        }
+
+        public default boolean supportsEdgeRemoval() {
+            return true;
+        }
+
+        public default boolean supportsEdgePropertyAddition() {
+            return true;
+        }
+
+        public default boolean supportsEdgePropertyRemoval() {
+            return true;
+        }
+
+        public default boolean supportsEdgePropertyUpdates() {
             return true;
         }
 
