@@ -119,6 +119,7 @@ public interface ResultSerializer {
                 jsonObject.put(TOKEN_VALUE, prepareOutput(t.orElse(null)));
                 return jsonObject;
             } else if (object instanceof com.tinkerpop.blueprints.Property) {
+                // catches meta-properties on vertices
                 return prepareOutput(((com.tinkerpop.blueprints.Property) object).getValue());
             } else if (object instanceof Element) {
                 final Element element = (Element) object;
