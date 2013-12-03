@@ -256,7 +256,45 @@ public class ResultSerializerTest {
         assertEquals("stephen", valHiddenProperty.getString(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
     }
 
-        @Test
+    @Test
+    @Ignore("How do we recognize multi-properties programmatically?")
+    public void serializeMultiProperties() throws Exception {
+        final Graph g = TinkerGraph.open();
+        final Vertex v = g.addVertex("abc", 123);
+        v.addProperty("multi", 1);
+        v.addProperty("multi", 3);
+        v.addProperty("multi", 2);
+
+        final Iterator iterable = g.query().vertices().iterator();
+        final String results = ResultSerializer.JSON_RESULT_SERIALIZER.serialize(iterable, new Context(msg, null, null, null, null));
+        final JSONObject json = new JSONObject(results);
+
+        assertNotNull(json);
+        assertEquals(msg.requestId.toString(), json.getString(ResultSerializer.JsonResultSerializer.TOKEN_REQUEST));
+        final JSONArray converted = json.getJSONArray(ResultSerializer.JsonResultSerializer.TOKEN_RESULT);
+
+        assertNotNull(converted);
+        assertEquals(1, converted.length());
+
+        final JSONObject vertexAsJson = converted.optJSONObject(0);
+        assertNotNull(vertexAsJson);
+
+        assertEquals(v.getId(), vertexAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_ID));
+        assertEquals(ResultSerializer.JsonResultSerializer.TOKEN_VERTEX, vertexAsJson.get(ResultSerializer.JsonResultSerializer.TOKEN_TYPE));
+
+        final JSONObject properties = vertexAsJson.optJSONObject(ResultSerializer.JsonResultSerializer.TOKEN_PROPERTIES);
+        assertNotNull(properties);
+
+        final JSONObject valAbcProperty = properties.optJSONObject("abc");
+        assertNotNull(valAbcProperty);
+        assertEquals(123, valAbcProperty.getInt(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
+
+        final JSONObject valHiddenProperty = properties.optJSONObject(Property.Key.hidden("multi"));
+        assertNotNull(valHiddenProperty);
+        assertEquals("stephen", valHiddenProperty.getString(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
+    }
+
+    @Test
     public void serializeEdge() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v1 = g.addVertex();
