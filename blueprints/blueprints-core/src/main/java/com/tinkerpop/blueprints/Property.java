@@ -72,7 +72,7 @@ public abstract interface Property<V> {
         };
     }
 
-    public interface Features extends com.tinkerpop.blueprints.Features {
+    public interface Features {
 
         public default boolean supportsMetaProperties() {
             return true;

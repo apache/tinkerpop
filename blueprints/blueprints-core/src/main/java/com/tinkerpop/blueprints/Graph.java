@@ -72,7 +72,7 @@ public interface Graph extends AutoCloseable {
     }
 
 
-    public interface Features extends com.tinkerpop.blueprints.Features {
+    public interface Features {
         public default boolean supportsTransactions() {
             return true;
         }

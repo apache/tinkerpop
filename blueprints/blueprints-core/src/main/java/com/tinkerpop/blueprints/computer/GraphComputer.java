@@ -37,7 +37,7 @@ public interface GraphComputer {
         };
     }
 
-    public interface Features extends com.tinkerpop.blueprints.Features {
+    public interface Features {
         public default boolean supportsGlobalMessageTypes() {
             return true;
         }

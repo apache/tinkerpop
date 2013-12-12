@@ -43,7 +43,7 @@ public interface Transaction extends Closeable {
         };
     }
 
-    public interface Features extends com.tinkerpop.blueprints.Features {
+    public interface Features {
 
     }
 

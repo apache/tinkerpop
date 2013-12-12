@@ -106,7 +106,7 @@ public interface Vertex extends Element {
 
     }
 
-    public interface Features extends com.tinkerpop.blueprints.Features {
+    public interface Features {
         public default boolean supportsUserSuppliedIds() {
             return true;
         }

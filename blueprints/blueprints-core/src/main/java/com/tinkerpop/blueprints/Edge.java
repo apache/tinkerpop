@@ -57,11 +57,10 @@ public interface Edge extends Element {
                     throw Property.Exceptions.propertyDoesNotExist();
                 }
             };
-
         }
     }
 
-    public interface Features extends com.tinkerpop.blueprints.Features {
+    public interface Features {
 
     }
 
