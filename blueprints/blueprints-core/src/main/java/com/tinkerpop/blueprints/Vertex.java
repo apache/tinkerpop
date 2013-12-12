@@ -22,13 +22,9 @@ public interface Vertex extends Element {
     public <V> Iterable<Vertex.Property<V>> getProperties(String key);
 
     public default <V> Iterable<V> getValues(String key) {
-        return new Iterable<V>() {
-            @Override
-            public Iterator<V> iterator() {
-                return (Iterator) StreamFactory.stream(getProperties(key)).filter(p -> p.isPresent()).map(p -> p.<V>getValue()).iterator();
-            }
-        };
+        return () -> (Iterator) StreamFactory.stream(getProperties(key)).filter(p -> p.isPresent()).map(p -> p.<V>getValue()).iterator();
     }
+
 
     public <V> Vertex.Property<V> getProperty(String key);
 
@@ -117,6 +113,10 @@ public interface Vertex extends Element {
 
         public static IllegalArgumentException propertyKeyReferencesMultipleProperties(final String key) {
             return new IllegalArgumentException("Provided property key references multiple properties: " + key);
+        }
+
+        public static IllegalStateException adjacentVerticesCanNotBeQueried() {
+            return new IllegalStateException("It is not possible to query() an adjacent vertex in a vertex program");
         }
     }
 }

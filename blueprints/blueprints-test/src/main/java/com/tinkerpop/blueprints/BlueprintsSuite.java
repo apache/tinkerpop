@@ -1,6 +1,8 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.util.GraphFactory;
+import com.tinkerpop.blueprints.util.StreamFactory;
+import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runners.Suite;
@@ -25,6 +27,7 @@ import java.util.Map;
  * implements BlueprintsSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
  * <code>
  *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(BlueprintsSuite.class)
  * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsSuite.class) public class MsAccessBlueprintsSuite implements BlueprintsSuite.GraphProvider {
  * }
@@ -32,8 +35,6 @@ import java.util.Map;
  * Implementing BlueprintsSuite.GraphProvider provides a way for the BlueprintsSuite to instantiate Graph instances
  * from the implementation being tested to inject into tests in the suite.  The BlueprintsSuite will utilized
  * Features defined in the suite to determine which tests will be executed.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class BlueprintsSuite extends Suite {
 
@@ -41,7 +42,7 @@ public class BlueprintsSuite extends Suite {
      * This list of tests in the suite that will be executed.  Blueprints developers should add to this list
      * as needed to enforce tests upon implementations.
      */
-    private static final Class<?>[] testsToExecute = new Class<?>[]{GraphTest.class, IoTest.class};
+    private static final Class<?>[] testsToExecute = new Class<?>[]{GraphTest.class, VertexTest.class, IoTest.class};
 
     /**
      * The GraphProvider instance that will be used to generate a Graph instance.
@@ -137,5 +138,10 @@ public class BlueprintsSuite extends Suite {
         public static GraphProvider get() {
             return graphProvider;
         }
+    }
+
+    public static void assertVertexEdgeCounts(final Graph graph, final int expectedVertexCount, final int expectedEdgeCount) {
+        TestCase.assertEquals(expectedVertexCount, StreamFactory.stream(graph.query().vertices()).count());
+        TestCase.assertEquals(expectedEdgeCount, StreamFactory.stream(graph.query().edges()).count());
     }
 }

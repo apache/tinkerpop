@@ -4,13 +4,13 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.DefaultVertexQuery;
+import com.tinkerpop.blueprints.util.StreamFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -39,10 +39,13 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
     }
 
     public Iterable<Edge> edges() {
-        return this.makeStream().collect(Collectors.<Edge>toList());
+        return (Iterable) StreamFactory.iterable(this.makeStream());
     }
 
     public Iterable<Vertex> vertices() {
+        if (this.vertex.state.equals(TinkerVertex.State.ADJACENT))
+            throw Vertex.Features.adjacentVerticesCanNotBeQueried();
+
         Stream<TinkerVertex> vertices = Stream.empty();
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN)) {
             vertices = (Stream) Stream.concat(vertices, this.getInEdges(this.labels).stream().filter(e -> HasContainer.testAll(e, this.hasContainers)).map(e -> e.getVertex(Direction.OUT)));
@@ -55,10 +58,8 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
         // ADJACENCY REFERENCES DURING GRAPH COMPUTING
         if (TinkerVertex.State.CENTRIC == this.vertex.state)
             vertices = vertices.map(v -> v.createClone(TinkerVertex.State.ADJACENT, this.vertex.getId(), this.vertexMemory));
-        else if (TinkerVertex.State.ADJACENT == this.vertex.state)
-            vertices = vertices.filter(v -> v.id.equals(this.vertex.centricId)).map(v -> v.createClone(TinkerVertex.State.CENTRIC, this.vertex.centricId, this.vertexMemory));
 
-        return vertices.collect(Collectors.<Vertex>toList());
+        return (Iterable) StreamFactory.iterable(vertices);
     }
 
     public long count() {

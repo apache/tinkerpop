@@ -10,7 +10,6 @@ import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -92,8 +91,10 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
     public <V> Vertex.Property<V> setProperty(final String key, final V value) {
         if (State.STANDARD == this.state) {
             ElementHelper.validateProperty(key, value);
-            final Vertex.Property<V> property = new Property<V>(this, key, value);
-            this.properties.put(key, (List) Arrays.asList(property));
+            final Vertex.Property<V> property = new Property<>(this, key, value);
+            final List<Vertex.Property> list = new ArrayList<>();
+            list.add(property);
+            this.properties.put(key, list);
             this.graph.vertexIndex.autoUpdate(key, value, property.getValue(), this);
             return property;
         } else if (State.CENTRIC == this.state) {
@@ -108,7 +109,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
     protected void removeProperty(final Vertex.Property property) {
         if (State.STANDARD == this.state) {
-            this.properties.get(property.getKey()).remove(property);
+            new ArrayList<>(this.properties.get(property.getKey())).forEach(p -> this.properties.remove(p.getKey()));
             this.graph.vertexIndex.autoRemove(property.getKey(), property.getValue(), this);
         } else if (State.CENTRIC == this.state) {
             if (this.vertexMemory.isComputeKey(property.getKey()))
