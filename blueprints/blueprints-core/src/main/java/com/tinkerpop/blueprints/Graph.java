@@ -2,8 +2,10 @@ package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
+import com.tinkerpop.blueprints.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -73,16 +75,28 @@ public interface Graph extends AutoCloseable {
 
 
     public interface Features {
+        public static final String FEATURE_TRANSACTIONS = "Transactions";
+        public static final String FEATURE_QUERY = "Query";
+        public static final String FEATURE_COMPUTER = "Computer";
+
+        @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
         public default boolean supportsTransactions() {
             return true;
         }
 
+        @FeatureDescriptor(name = FEATURE_QUERY)
         public default boolean supportsQuery() {
             return true;
         }
 
+        @FeatureDescriptor(name = FEATURE_COMPUTER)
         public default boolean supportsComputer() {
             return true;
+        }
+
+        public default boolean supports(final String feature)
+                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            return (Boolean) this.getClass().getMethod("supports" + feature).invoke(this);
         }
     }
 

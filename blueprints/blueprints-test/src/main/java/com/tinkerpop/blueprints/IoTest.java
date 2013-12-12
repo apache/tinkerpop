@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IoTest {
+public class IoTest extends AbstractBlueprintsTest {
 
     // todo: should expand test here significantly.  see blueprints2
 
@@ -33,7 +33,6 @@ public class IoTest {
 
     @Test
     public void shouldReadGraphML() throws IOException {
-        final Graph g = BlueprintsSuite.GraphManager.get().newTestGraph();
         readGraphMLIntoGraph(g);
 
         assertEquals(6, StreamFactory.stream(g.query().vertices()).count());
@@ -42,7 +41,6 @@ public class IoTest {
 
     @Test
     public void shouldWriteNormalizedGraphML() throws Exception {
-        final Graph g = BlueprintsSuite.GraphManager.get().newTestGraph();
         readGraphMLIntoGraph(g);
 
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -55,7 +53,6 @@ public class IoTest {
 
     @Test
     public void shouldWriteNormalizedGraphMLWithEdgeLabel() throws Exception {
-        final Graph g = BlueprintsSuite.GraphManager.get().newTestGraph();
         readGraphMLIntoGraph(g);
 
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -75,7 +72,6 @@ public class IoTest {
      */
     @Test
     public void shouldProperlyEncodeWithGraphML() throws Exception {
-        final Graph g = BlueprintsSuite.GraphManager.get().newTestGraph();
         final Vertex v = g.addVertex(Property.Key.ID, "1");
         v.setProperty("text", "\u00E9");
 

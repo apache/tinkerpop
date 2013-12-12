@@ -19,7 +19,7 @@ import java.util.Map;
 
 /**
  * The BlueprintsSuite is a custom JUnit test runner that executes the Blueprints Test Suite over a Graph
- * implementation.  This specialized test suite and runner is for use by Blueprints implementors to test their
+ * implementation.  This specialized test suite and runner is for use by Blueprints implementers to test their
  * Graph implementations.  The BlueprintsSuite ensures consistency and validity of the implementations that they
  * test.
  * To use the BlueprintSuite define a class in a test module.  Standard naming would expect the name of the
@@ -45,6 +45,7 @@ public class BlueprintsSuite extends Suite {
     private static final Class<?>[] testsToExecute = new Class<?>[]{
             GraphTest.class,
             VertexTest.class,
+            FeatureSupportTest.class,
             GraphComputerTest.class,
             IoTest.class};
 
@@ -61,7 +62,7 @@ public class BlueprintsSuite extends Suite {
     public BlueprintsSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
         super(builder, klass, testsToExecute);
 
-        // figures out what the implementor assigned as the GraphProvider class and make it available to tests.
+        // figures out what the implementer assigned as the GraphProvider class and make it available to tests.
         final Class graphProviderClass = getGraphProviderClass(klass);
         try {
             GraphManager.set((GraphProvider) graphProviderClass.newInstance());
@@ -97,7 +98,7 @@ public class BlueprintsSuite extends Suite {
 
         /**
          * When implementing this method ensure that the BlueprintsSuite can override any settings EXCEPT the
-         * "blueprints.graph" setting which should be defined by the implementor.
+         * "blueprints.graph" setting which should be defined by the implementer.
          *
          * @param configurationOverrides Settings to override defaults with.
          */
@@ -105,7 +106,7 @@ public class BlueprintsSuite extends Suite {
     }
 
     /**
-     * A basic GraphProvider which simply requires the implementor to supply their base configuration for their
+     * A basic GraphProvider which simply requires the implementer to supply their base configuration for their
      * Graph instance.  Minimally this is just the setting for "blueprints.graph".
      */
     public static abstract class AbstractGraphProvider implements GraphProvider {
@@ -128,7 +129,7 @@ public class BlueprintsSuite extends Suite {
     }
 
     /**
-     * Holds the GraphProvider specified by the implementor using the BlueprintSuite.
+     * Holds the GraphProvider specified by the implementer using the BlueprintSuite.
      */
     public static class GraphManager {
         private static GraphProvider graphProvider;

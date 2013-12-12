@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -62,6 +63,10 @@ public interface Edge extends Element {
 
     public interface Features {
 
+        public default boolean supports(final String feature)
+                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            return (Boolean) this.getClass().getMethod("supports" + feature).invoke(this);
+        }
     }
 
     public static class Exceptions extends Element.Exceptions {

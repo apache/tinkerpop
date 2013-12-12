@@ -1,8 +1,10 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.query.VertexQuery;
+import com.tinkerpop.blueprints.util.FeatureDescriptor;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -107,8 +109,16 @@ public interface Vertex extends Element {
     }
 
     public interface Features {
+        public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+
+        @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
         public default boolean supportsUserSuppliedIds() {
             return true;
+        }
+
+        public default boolean supports(final String feature)
+                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            return (Boolean) this.getClass().getMethod("supports" + feature).invoke(this);
         }
     }
 

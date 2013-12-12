@@ -134,8 +134,14 @@ public class TinkerGraph implements Graph, Serializable {
 
 
     public Features getFeatures() {
-        return new Graph.Features() {
-        };
+        return new TinkerGraphFeatures();
+    }
+
+    public static class TinkerGraphFeatures implements Graph.Features {
+        @Override
+        public boolean supportsTransactions() {
+            return false;
+        }
     }
 
     public class Property<V> implements Graph.Property<V> {

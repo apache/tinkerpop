@@ -1,5 +1,8 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.util.FeatureDescriptor;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -74,16 +77,28 @@ public abstract interface Property<V> {
 
     public interface Features {
 
+        public static final String FEATURE_META_PROPERTIES = "MetaProperties";
+        public static final String FEATURE_STRING_VALUES = "StringValues";
+        public static final String FEATURE_INTEGER_VALUES = "IntegerValues";
+
+        @FeatureDescriptor(name = FEATURE_META_PROPERTIES)
         public default boolean supportsMetaProperties() {
             return true;
         }
 
+        @FeatureDescriptor(name = FEATURE_STRING_VALUES)
         public default boolean supportsStringValues() {
             return true;
         }
 
+        @FeatureDescriptor(name = FEATURE_INTEGER_VALUES)
         public default boolean supportsIntegerValues() {
             return true;
+        }
+
+        public default boolean supports(final String feature)
+                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            return (Boolean) this.getClass().getMethod("supports" + feature).invoke(this);
         }
     }
 

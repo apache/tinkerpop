@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints;
 
 import java.io.Closeable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -45,6 +46,10 @@ public interface Transaction extends Closeable {
 
     public interface Features {
 
+        public default boolean supports(final String feature)
+                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            return (Boolean) this.getClass().getMethod("supports" + feature).invoke(this);
+        }
     }
 
     public static class Exceptions {

@@ -1,21 +1,19 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.util.GraphFactory;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexTest {
+public class VertexTest extends AbstractBlueprintsTest {
 
     @Test
     public void shouldSupportBasicVertexManipulation() {
-        final Configuration conf = BlueprintsSuite.GraphManager.get().newGraphConfiguration();
-        final Graph g = GraphFactory.open(conf);
-
         // test graph counts with addition and removal of vertices
         BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
         Vertex v = g.addVertex();
