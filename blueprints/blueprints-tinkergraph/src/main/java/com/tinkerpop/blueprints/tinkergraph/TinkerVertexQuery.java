@@ -44,7 +44,7 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
 
     public Iterable<Vertex> vertices() {
         if (this.vertex.state.equals(TinkerVertex.State.ADJACENT))
-            throw Vertex.Features.adjacentVerticesCanNotBeQueried();
+            throw Vertex.Exceptions.adjacentVerticesCanNotBeQueried();
 
         Stream<TinkerVertex> vertices = Stream.empty();
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN)) {

@@ -13,7 +13,7 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Graph extends AutoCloseable, Featureable {
+public interface Graph extends AutoCloseable {
 
     public static <G extends Graph> G open(Optional<Configuration> configuration) {
         throw new UnsupportedOperationException("Implementations must override this method");
@@ -31,7 +31,7 @@ public interface Graph extends AutoCloseable, Featureable {
 
     public <V> Graph.Property<V> setProperty(String key, V value);
 
-    public static Graph.Features getFeatures() {
+    public default Graph.Features getFeatures() {
         return new Features() {
         };
     }
@@ -44,12 +44,12 @@ public interface Graph extends AutoCloseable, Featureable {
             return new Graph.Property<V>() {
                 @Override
                 public String getKey() {
-                    throw Features.propertyDoesNotExist();
+                    throw Property.Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
                 public V getValue() throws NoSuchElementException {
-                    throw Features.propertyDoesNotExist();
+                    throw Property.Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
@@ -59,12 +59,12 @@ public interface Graph extends AutoCloseable, Featureable {
 
                 @Override
                 public void remove() {
-                    throw Features.propertyDoesNotExist();
+                    throw Property.Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
                 public Graph getGraph() {
-                    throw Features.propertyDoesNotExist();
+                    throw Property.Exceptions.propertyDoesNotExist();
                 }
             };
 
@@ -84,9 +84,19 @@ public interface Graph extends AutoCloseable, Featureable {
         public default boolean supportsComputer() {
             return true;
         }
+    }
 
+    public static class Exceptions {
         public static UnsupportedOperationException transactionsNotSupported() {
             return new UnsupportedOperationException("Graph does not support transactions");
+        }
+
+        public static UnsupportedOperationException graphQueryNotSupported() {
+            return new UnsupportedOperationException("Graph does not support graph query");
+        }
+
+        public static UnsupportedOperationException graphComputerNotSupported() {
+            return new UnsupportedOperationException("Graph does not support graph computer");
         }
 
         public static IllegalArgumentException vertexIdCanNotBeNull() {

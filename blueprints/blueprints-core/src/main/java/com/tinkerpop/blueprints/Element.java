@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract interface Element extends Featureable {
+public abstract interface Element {
 
     public Object getId();
 
@@ -29,10 +29,10 @@ public abstract interface Element extends Featureable {
         final Property<V> property = this.getProperty(key);
         if (property.isPresent())
             return property.getValue();
-        else throw Property.Features.propertyDoesNotExist();
+        else throw Property.Exceptions.propertyDoesNotExist();
     }
 
-    public interface Features extends com.tinkerpop.blueprints.Features {
+    public static class Exceptions {
 
         public static IllegalArgumentException bothIsNotSupported() {
             return new IllegalArgumentException("A direction of BOTH is not supported");

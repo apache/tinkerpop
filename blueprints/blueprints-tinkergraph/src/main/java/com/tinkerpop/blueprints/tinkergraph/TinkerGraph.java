@@ -68,7 +68,7 @@ public class TinkerGraph implements Graph, Serializable {
 
         if (null != idString) {
             if (this.vertices.containsKey(idString.toString()))
-                throw Features.vertexWithIdAlreadyExists(idString);
+                throw Exceptions.vertexWithIdAlreadyExists(idString);
         } else {
             idString = TinkerHelper.getNextId(this);
         }
@@ -129,7 +129,7 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
     public Transaction tx() {
-        throw Graph.Features.transactionsNotSupported();
+        throw Graph.Exceptions.transactionsNotSupported();
     }
 
 

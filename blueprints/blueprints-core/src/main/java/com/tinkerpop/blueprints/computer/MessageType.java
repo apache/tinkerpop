@@ -8,6 +8,10 @@ import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 import java.util.function.BiFunction;
 
 /**
+ * A MessageType represents the "address" of a message.
+ * A message can have multiple receivers and message type allows the underlying graph computer to optimize the message passing.
+ * In many situations there is no need to create multiple of the same message (thus, index based on message type).
+ *
  * @author Matthias Broecheler (me@matthiasb.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

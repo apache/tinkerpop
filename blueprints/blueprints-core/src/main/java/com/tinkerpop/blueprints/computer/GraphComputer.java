@@ -86,6 +86,10 @@ public interface GraphComputer {
             return true;
         }
 
+        public default boolean supportsIsolation(final Isolation isolation) {
+            return true;
+        }
+
         public static IllegalStateException adjacentVertexPropertiesCanNotBeRead() {
             return new IllegalStateException("The properties of an adjacent vertex can not be read, only its id");
         }

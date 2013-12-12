@@ -48,6 +48,30 @@ public abstract interface Property<V> {
         };
     }
 
+    public static <V> Property<V> empty() {
+        return new Property<V>() {
+            @Override
+            public String getKey() {
+                throw Exceptions.propertyDoesNotExist();
+            }
+
+            @Override
+            public V getValue() throws NoSuchElementException {
+                throw Exceptions.propertyDoesNotExist();
+            }
+
+            @Override
+            public boolean isPresent() {
+                return false;
+            }
+
+            @Override
+            public void remove() {
+                throw Exceptions.propertyDoesNotExist();
+            }
+        };
+    }
+
     public interface Features extends com.tinkerpop.blueprints.Features {
 
         public default boolean supportsMetaProperties() {
@@ -61,7 +85,9 @@ public abstract interface Property<V> {
         public default boolean supportsIntegerValues() {
             return true;
         }
+    }
 
+    public static class Exceptions {
         public static IllegalArgumentException propertyKeyIsReserved(final String key) {
             return new IllegalArgumentException("Property key is reserved for all elements: " + key);
         }
@@ -91,27 +117,5 @@ public abstract interface Property<V> {
         }
     }
 
-    public static <V> Property<V> empty() {
-        return new Property<V>() {
-            @Override
-            public String getKey() {
-                throw Features.propertyDoesNotExist();
-            }
 
-            @Override
-            public V getValue() throws NoSuchElementException {
-                throw Features.propertyDoesNotExist();
-            }
-
-            @Override
-            public boolean isPresent() {
-                return false;
-            }
-
-            @Override
-            public void remove() {
-                throw Features.propertyDoesNotExist();
-            }
-        };
-    }
 }

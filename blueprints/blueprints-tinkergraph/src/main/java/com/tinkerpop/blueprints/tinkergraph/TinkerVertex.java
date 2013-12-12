@@ -72,7 +72,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         if (State.STANDARD == this.state) {
             final List<Vertex.Property<V>> list = (List) this.properties.getOrDefault(key, Collections.EMPTY_LIST);
             if (list.size() == 0) return Vertex.Property.empty();
-            else if (list.size() > 1) throw Vertex.Features.propertyKeyReferencesMultipleProperties(key);
+            else if (list.size() > 1) throw Vertex.Exceptions.propertyKeyReferencesMultipleProperties(key);
             else return list.get(0);
         } else if (State.CENTRIC == this.state) {
             if (this.vertexMemory.isComputeKey(key))
@@ -80,7 +80,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
             else {
                 final List<Vertex.Property<V>> list = (List) this.properties.getOrDefault(key, Collections.EMPTY_LIST);
                 if (list.size() == 0) return Vertex.Property.empty();
-                else if (list.size() > 1) throw Vertex.Features.propertyKeyReferencesMultipleProperties(key);
+                else if (list.size() > 1) throw Vertex.Exceptions.propertyKeyReferencesMultipleProperties(key);
                 else return list.get(0);
             }
         } else {
@@ -202,13 +202,13 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
                 public V2 getValue() {
                     if (!isPresent())
-                        throw Property.Features.propertyDoesNotExist();
+                        throw Property.Exceptions.propertyDoesNotExist();
                     return value;
                 }
 
                 public String getKey() {
                     if (!isPresent())
-                        throw Property.Features.propertyDoesNotExist();
+                        throw Property.Exceptions.propertyDoesNotExist();
                     return key;
                 }
 

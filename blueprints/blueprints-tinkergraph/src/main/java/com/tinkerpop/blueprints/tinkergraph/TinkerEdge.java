@@ -56,7 +56,7 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
         else if (direction.equals(Direction.OUT))
             return this.outVertex;
         else
-            throw Element.Features.bothIsNotSupported();
+            throw Element.Exceptions.bothIsNotSupported();
     }
 
     public void remove() {

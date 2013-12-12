@@ -34,12 +34,12 @@ public interface Edge extends Element {
             return new Edge.Property<V>() {
                 @Override
                 public String getKey() {
-                    throw com.tinkerpop.blueprints.Property.Features.propertyDoesNotExist();
+                    throw Property.Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
                 public V getValue() throws NoSuchElementException {
-                    throw Features.propertyDoesNotExist();
+                    throw Property.Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
@@ -49,12 +49,12 @@ public interface Edge extends Element {
 
                 @Override
                 public void remove() {
-                    throw Features.propertyDoesNotExist();
+                    throw Property.Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
                 public Edge getEdge() {
-                    throw Features.propertyDoesNotExist();
+                    throw Property.Exceptions.propertyDoesNotExist();
                 }
             };
 
@@ -62,6 +62,10 @@ public interface Edge extends Element {
     }
 
     public interface Features extends com.tinkerpop.blueprints.Features {
+
+    }
+
+    public static class Exceptions extends Element.Exceptions {
         public static IllegalArgumentException edgeLabelCanNotBeNull() {
             return new IllegalArgumentException("Edge label can not be null");
         }

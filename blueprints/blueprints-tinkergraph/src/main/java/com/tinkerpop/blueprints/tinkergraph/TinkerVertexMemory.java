@@ -125,13 +125,13 @@ public class TinkerVertexMemory implements VertexSystemMemory {
 
                         public V2 getValue() {
                             if (!isPresent())
-                                throw Vertex.Property.Features.propertyDoesNotExist();
+                                throw Vertex.Property.Exceptions.propertyDoesNotExist();
                             return value;
                         }
 
                         public String getKey() {
                             if (!isPresent())
-                                throw Vertex.Property.Features.propertyDoesNotExist();
+                                throw Vertex.Property.Exceptions.propertyDoesNotExist();
                             return key;
                         }
 

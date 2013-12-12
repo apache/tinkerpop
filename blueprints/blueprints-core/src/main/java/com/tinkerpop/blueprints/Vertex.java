@@ -36,7 +36,7 @@ public interface Vertex extends Element {
 
     public Edge addEdge(String label, Vertex inVertex, Object... keyValues);
 
-    public static Vertex.Features getFeatures() {
+    public default Vertex.Features getFeatures() {
         return new Features() {
         };
     }
@@ -57,12 +57,12 @@ public interface Vertex extends Element {
             return new Vertex.Property<V>() {
                 @Override
                 public String getKey() {
-                    throw Features.propertyDoesNotExist();
+                    throw Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
                 public V getValue() throws NoSuchElementException {
-                    throw Features.propertyDoesNotExist();
+                    throw Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
@@ -72,33 +72,33 @@ public interface Vertex extends Element {
 
                 @Override
                 public void remove() {
-                    throw Features.propertyDoesNotExist();
+                    throw Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
                 public Vertex getVertex() {
-                    throw Features.propertyDoesNotExist();
+                    throw Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
                 public Set<String> getPropertyKeys() {
-                    throw Features.propertyDoesNotExist();
+                    throw Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
                 public <V2> com.tinkerpop.blueprints.Property<V2> setProperty(String key, V2 value) {
-                    throw Features.propertyDoesNotExist();
+                    throw Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
                 public <V2> com.tinkerpop.blueprints.Property<V2> getProperty(String key) {
-                    throw Features.propertyDoesNotExist();
+                    throw Exceptions.propertyDoesNotExist();
                 }
 
 
                 @Override
                 public Map<String, com.tinkerpop.blueprints.Property> getProperties() {
-                    throw Features.propertyDoesNotExist();
+                    throw Exceptions.propertyDoesNotExist();
                 }
             };
 
@@ -110,7 +110,9 @@ public interface Vertex extends Element {
         public default boolean supportsUserSuppliedIds() {
             return true;
         }
+    }
 
+    public static class Exceptions extends Element.Exceptions {
         public static IllegalArgumentException propertyKeyReferencesMultipleProperties(final String key) {
             return new IllegalArgumentException("Provided property key references multiple properties: " + key);
         }
