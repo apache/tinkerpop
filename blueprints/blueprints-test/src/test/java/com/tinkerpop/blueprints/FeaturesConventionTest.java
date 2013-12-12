@@ -91,11 +91,6 @@ public class FeaturesConventionTest {
         try {
             final Field f = featuresClass.getField(FEATURE_FIELD_PREFIX + convertToUnderscore(annotation.name()).toUpperCase());
             assertEquals(annotation.name(), f.get(null));
-
-            final int modifier = f.getModifiers();
-            assertTrue(Modifier.isFinal(modifier));
-            assertTrue(Modifier.isPublic(modifier));
-            assertTrue(Modifier.isStatic(modifier));
         } catch (Exception e) {
             fail(String.format(ERROR_FIELD, annotation.name()));
         }
