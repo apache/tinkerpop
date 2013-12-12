@@ -12,5 +12,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface FeatureRequirement {
     String feature();
+    Class featureClass();
     boolean supported() default true;
 }

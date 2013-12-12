@@ -63,6 +63,9 @@ public interface Edge extends Element {
 
     public interface Features {
 
+        /**
+         * Implementers should generally not override this method.
+         */
         public default boolean supports(final String feature)
                 throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
             return (Boolean) this.getClass().getMethod("supports" + feature).invoke(this);

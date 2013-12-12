@@ -14,7 +14,7 @@ public class FeatureSupportTest extends AbstractBlueprintsTest {
     private static final String INVALID_FEATURE_SPECIFICATION = "Features specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
     @Test
-    @FeatureRequirement(feature = Graph.Features.FEATURE_COMPUTER, supported = false)
+    @FeatureRequirement(featureClass = Graph.Features.class, feature = Graph.Features.FEATURE_COMPUTER, supported = false)
     public void shouldEnableGraphFeatureSupportsComputer() throws Exception {
         try {
             g.compute();
@@ -25,7 +25,7 @@ public class FeatureSupportTest extends AbstractBlueprintsTest {
     }
 
     @Test
-    @FeatureRequirement(feature = Graph.Features.FEATURE_TRANSACTIONS, supported = false)
+    @FeatureRequirement(featureClass = Graph.Features.class, feature = Graph.Features.FEATURE_TRANSACTIONS, supported = false)
     public void shouldEnableGraphFeatureSupportsTransactions() throws Exception {
         try {
             g.tx();
