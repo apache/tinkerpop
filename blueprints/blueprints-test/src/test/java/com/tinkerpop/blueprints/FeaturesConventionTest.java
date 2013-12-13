@@ -2,15 +2,15 @@ package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.util.FeatureDescriptor;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -21,47 +21,29 @@ import static org.junit.Assert.fail;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@RunWith(Parameterized.class)
 public class FeaturesConventionTest {
     private static final String FEATURE_METHOD_PREFIX = "supports";
     private static final String FEATURE_FIELD_PREFIX = "FEATURE_";
 
-    private static final String ERROR_FIELD = "Feature [%s] must have a field decleared with the name of the feature as 'public static final'";
+    private static final String ERROR_FIELD = "Feature [%s] must have a field declared with the name of the feature as 'public static final'";
 
-    @Test
-    public void shouldFollowConventionsForGraphFeatures() {
-        final Class<Graph.Features> featuresClass = Graph.Features.class;
-        Arrays.asList(featuresClass.getMethods()).stream()
-                .filter(FeaturesConventionTest::chooseFeatureMethod)
-                .forEach(FeaturesConventionTest::assertFeatureConvention);
+    @Parameterized.Parameters(name = "{index}: {0}.test() = follows conventions")
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                {Graph.Features.class},
+                {Property.Features.class},
+                {Edge.Features.class},
+                {Vertex.Features.class},
+                {Transaction.Features.class}
+        });
     }
 
-    @Test
-    public void shouldFollowConventionsForPropertyFeatures() {
-        final Class<Property.Features> featuresClass = Property.Features.class;
-        Arrays.asList(featuresClass.getMethods()).stream()
-                .filter(FeaturesConventionTest::chooseFeatureMethod)
-                .forEach(FeaturesConventionTest::assertFeatureConvention);
-    }
+    @Parameterized.Parameter(value = 0)
+    public Class<?> featuresClass;
 
     @Test
-    public void shouldFollowConventionsForEdgeFeatures() {
-        final Class<Edge.Features> featuresClass = Edge.Features.class;
-        Arrays.asList(featuresClass.getMethods()).stream()
-                .filter(FeaturesConventionTest::chooseFeatureMethod)
-                .forEach(FeaturesConventionTest::assertFeatureConvention);
-    }
-
-    @Test
-    public void shouldFollowConventionsForTransactionFeatures() {
-        final Class<Transaction.Features> featuresClass = Transaction.Features.class;
-        Arrays.asList(featuresClass.getMethods()).stream()
-                .filter(FeaturesConventionTest::chooseFeatureMethod)
-                .forEach(FeaturesConventionTest::assertFeatureConvention);
-    }
-
-    @Test
-    public void shouldFollowConventionsForVertexFeatures() {
-        final Class<Vertex.Features> featuresClass = Vertex.Features.class;
+    public void shouldFollowConventionsForFeatures() {
         Arrays.asList(featuresClass.getMethods()).stream()
                 .filter(FeaturesConventionTest::chooseFeatureMethod)
                 .forEach(FeaturesConventionTest::assertFeatureConvention);
