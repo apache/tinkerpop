@@ -1,10 +1,8 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.query.VertexQuery;
-import com.tinkerpop.blueprints.util.FeatureDescriptor;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -37,11 +35,6 @@ public interface Vertex extends Element {
     public VertexQuery query();
 
     public Edge addEdge(String label, Vertex inVertex, Object... keyValues);
-
-    public default Vertex.Features getFeatures() {
-        return new Features() {
-        };
-    }
 
     public interface Property<V> extends com.tinkerpop.blueprints.Property<V> {
 
@@ -105,23 +98,6 @@ public interface Vertex extends Element {
 
         }
 
-    }
-
-    public interface Features {
-        public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
-
-        @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
-        public default boolean supportsUserSuppliedIds() {
-            return true;
-        }
-
-        /**
-         * Implementers should generally not override this method.
-         */
-        public default boolean supports(final String feature)
-                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-            return (Boolean) this.getClass().getMethod("supports" + feature).invoke(this);
-        }
     }
 
     public static class Exceptions extends Element.Exceptions {

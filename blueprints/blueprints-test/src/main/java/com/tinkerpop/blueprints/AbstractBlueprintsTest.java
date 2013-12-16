@@ -30,7 +30,7 @@ public abstract class AbstractBlueprintsTest {
         final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);
         final List<FeatureRequirement> frs = Arrays.asList(featureRequirement);
         for (FeatureRequirement fr : frs) {
-            assumeThat(g.getFeatures().supports(fr.feature()), is(fr.supported()));
+            assumeThat(g.getFeatures().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
         }
     }
 }

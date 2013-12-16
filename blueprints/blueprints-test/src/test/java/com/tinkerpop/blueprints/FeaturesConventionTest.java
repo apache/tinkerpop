@@ -31,11 +31,9 @@ public class FeaturesConventionTest {
     @Parameterized.Parameters(name = "{index}: {0}.test() = follows conventions")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                {Graph.Features.class},
-                {Property.Features.class},
-                {Edge.Features.class},
-                {Vertex.Features.class},
-                {Transaction.Features.class}
+                {Graph.Features.GraphFeatures.class},
+                {Graph.Features.PropertyFeatures.class},
+                {Graph.Features.VertexFeatures.class}
         });
     }
 

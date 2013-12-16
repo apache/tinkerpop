@@ -1,6 +1,5 @@
 package com.tinkerpop.blueprints;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -21,11 +20,6 @@ public interface Edge extends Element {
     public <V> Edge.Property<V> getProperty(String key);
 
     public <V> Edge.Property<V> setProperty(String key, V value);
-
-    public static Edge.Features getFeatures() {
-        return new Features() {
-        };
-    }
 
     public interface Property<V> extends com.tinkerpop.blueprints.Property<V> {
 
@@ -58,17 +52,6 @@ public interface Edge extends Element {
                     throw Property.Exceptions.propertyDoesNotExist();
                 }
             };
-        }
-    }
-
-    public interface Features {
-
-        /**
-         * Implementers should generally not override this method.
-         */
-        public default boolean supports(final String feature)
-                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-            return (Boolean) this.getClass().getMethod("supports" + feature).invoke(this);
         }
     }
 

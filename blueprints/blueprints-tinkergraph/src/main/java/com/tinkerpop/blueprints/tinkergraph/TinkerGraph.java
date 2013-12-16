@@ -139,8 +139,13 @@ public class TinkerGraph implements Graph, Serializable {
 
     public static class TinkerGraphFeatures implements Graph.Features {
         @Override
-        public boolean supportsTransactions() {
-            return false;
+        public GraphFeatures graph() {
+            return new GraphFeatures() {
+                @Override
+                public boolean supportsTransactions() {
+                    return false;
+                }
+            };
         }
     }
 

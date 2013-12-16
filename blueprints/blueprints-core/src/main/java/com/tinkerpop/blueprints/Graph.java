@@ -73,33 +73,93 @@ public interface Graph extends AutoCloseable {
         }
     }
 
-
     public interface Features {
-        public static final String FEATURE_TRANSACTIONS = "Transactions";
-        public static final String FEATURE_QUERY = "Query";
-        public static final String FEATURE_COMPUTER = "Computer";
-
-        @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
-        public default boolean supportsTransactions() {
-            return true;
+        public default GraphFeatures graph() {
+            return new GraphFeatures() { };
         }
 
-        @FeatureDescriptor(name = FEATURE_QUERY)
-        public default boolean supportsQuery() {
-            return true;
+        public default VertexFeatures vertex() {
+            return new VertexFeatures() { };
         }
 
-        @FeatureDescriptor(name = FEATURE_COMPUTER)
-        public default boolean supportsComputer() {
-            return true;
+        public default PropertyFeatures property() {
+            return new PropertyFeatures() { };
+        }
+
+        public interface GraphFeatures extends FeatureSet {
+            public static final String FEATURE_TRANSACTIONS = "Transactions";
+            public static final String FEATURE_QUERY = "Query";
+            public static final String FEATURE_COMPUTER = "Computer";
+
+            @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
+            public default boolean supportsTransactions() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_QUERY)
+            public default boolean supportsQuery() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_COMPUTER)
+            public default boolean supportsComputer() {
+                return true;
+            }
+        }
+
+        public interface VertexFeatures extends FeatureSet {
+            public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+
+            @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
+            public default boolean supportsUserSuppliedIds() {
+                return true;
+            }
+        }
+
+        public interface PropertyFeatures extends FeatureSet {
+            public static final String FEATURE_META_PROPERTIES = "MetaProperties";
+            public static final String FEATURE_STRING_VALUES = "StringValues";
+            public static final String FEATURE_INTEGER_VALUES = "IntegerValues";
+
+            @FeatureDescriptor(name = FEATURE_META_PROPERTIES)
+            public default boolean supportsMetaProperties() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_STRING_VALUES)
+            public default boolean supportsStringValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_INTEGER_VALUES)
+            public default boolean supportsIntegerValues() {
+                return true;
+            }
         }
 
         /**
-         * Implementers should generally not override this method.
+         * A marker interface to identify any set of Features. There is no need to implement this interface.
          */
-        public default boolean supports(final String feature)
+        public interface FeatureSet{}
+
+        /**
+         * Implementers should not override this method. Note that this method utilizes reflection to check for
+         * feature support.
+         */
+        default boolean supports(final Class<? extends FeatureSet> featureClass, final String feature)
                 throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-            return (Boolean) this.getClass().getMethod("supports" + feature).invoke(this);
+            final Object instance;
+            if (featureClass.equals(GraphFeatures.class))
+                instance = this.graph();
+            else if (featureClass.equals(PropertyFeatures.class))
+                instance = this.property();
+            else if (featureClass.equals(VertexFeatures.class))
+                instance = this.vertex();
+            else
+                throw new IllegalArgumentException(String.format(
+                        "Expecting featureClass to be a valid Feature instance and not %s", featureClass));
+
+            return (Boolean) featureClass.getMethod("supports" + feature).invoke(instance);
         }
     }
 

@@ -1,8 +1,5 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.util.FeatureDescriptor;
-
-import java.lang.reflect.InvocationTargetException;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -46,11 +43,6 @@ public abstract interface Property<V> {
 
     public void remove();
 
-    public static Property.Features getFeatures() {
-        return new Features() {
-        };
-    }
-
     public static <V> Property<V> empty() {
         return new Property<V>() {
             @Override
@@ -73,36 +65,6 @@ public abstract interface Property<V> {
                 throw Exceptions.propertyDoesNotExist();
             }
         };
-    }
-
-    public interface Features {
-
-        public static final String FEATURE_META_PROPERTIES = "MetaProperties";
-        public static final String FEATURE_STRING_VALUES = "StringValues";
-        public static final String FEATURE_INTEGER_VALUES = "IntegerValues";
-
-        @FeatureDescriptor(name = FEATURE_META_PROPERTIES)
-        public default boolean supportsMetaProperties() {
-            return true;
-        }
-
-        @FeatureDescriptor(name = FEATURE_STRING_VALUES)
-        public default boolean supportsStringValues() {
-            return true;
-        }
-
-        @FeatureDescriptor(name = FEATURE_INTEGER_VALUES)
-        public default boolean supportsIntegerValues() {
-            return true;
-        }
-
-        /**
-         * Implementers should generally not override this method.
-         */
-        public default boolean supports(final String feature)
-                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-            return (Boolean) this.getClass().getMethod("supports" + feature).invoke(this);
-        }
     }
 
     public static class Exceptions {
