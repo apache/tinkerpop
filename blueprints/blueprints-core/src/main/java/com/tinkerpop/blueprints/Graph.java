@@ -82,6 +82,10 @@ public interface Graph extends AutoCloseable {
             return new VertexFeatures() { };
         }
 
+        public default EdgeFeatures edge() {
+            return new EdgeFeatures() { };
+        }
+
         public default PropertyFeatures property() {
             return new PropertyFeatures() { };
         }
@@ -103,9 +107,24 @@ public interface Graph extends AutoCloseable {
 
         public interface VertexFeatures extends FeatureSet {
             public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+            public static final String FEATURE_PROPERTIES = "Properties";
 
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
             public default boolean supportsUserSuppliedIds() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_PROPERTIES)
+            public default boolean supportsProperties() {
+                return true;
+            }
+        }
+
+        public interface EdgeFeatures extends FeatureSet {
+            public static final String FEATURE_PROPERTIES = "Properties";
+
+            @FeatureDescriptor(name = FEATURE_PROPERTIES)
+            public default boolean supportsProperties() {
                 return true;
             }
         }
@@ -114,19 +133,25 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_META_PROPERTIES = "MetaProperties";
             public static final String FEATURE_STRING_VALUES = "StringValues";
             public static final String FEATURE_INTEGER_VALUES = "IntegerValues";
+            public static final String FEATURE_FLOAT_VALUES = "FloatValues";
 
             @FeatureDescriptor(name = FEATURE_META_PROPERTIES)
             public default boolean supportsMetaProperties() {
                 return true;
             }
 
-            @FeatureDescriptor(name = FEATURE_STRING_VALUES)
-            public default boolean supportsStringValues() {
+            @FeatureDescriptor(name = FEATURE_INTEGER_VALUES)
+            public default boolean supportsIntegerValues() {
                 return true;
             }
 
-            @FeatureDescriptor(name = FEATURE_INTEGER_VALUES)
-            public default boolean supportsIntegerValues() {
+            @FeatureDescriptor(name = FEATURE_FLOAT_VALUES)
+            public default boolean supportsFloatValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_STRING_VALUES)
+            public default boolean supportsStringValues() {
                 return true;
             }
         }

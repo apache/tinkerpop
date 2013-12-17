@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
@@ -25,6 +26,7 @@ public class VertexTest extends AbstractBlueprintsTest {
     @Test
     @FeatureRequirement(featureClass = PropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = PropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_PROPERTIES)
     public void shouldSupportBasicVertexManipulation() {
         // test property mutation behaviors
         final Vertex v = g.addVertex("name", "marko", "age", 34);
