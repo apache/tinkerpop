@@ -77,12 +77,16 @@ public class GraphTest extends AbstractBlueprintsTest {
         assertEquals(methods.size(), counter.get());
     }
 
+    @Test
+    public void shouldConstructAnEmptyGraph() {
+        BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
+    }
+
     /**
      * Test graph counts with addition and removal of vertices.
      */
     @Test
     public void shouldCountVerticesAndEdgesInTheGraph() {
-        BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
         final Vertex v = g.addVertex();
         BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0);
         assertEquals(v, g.query().vertices().iterator().next());
