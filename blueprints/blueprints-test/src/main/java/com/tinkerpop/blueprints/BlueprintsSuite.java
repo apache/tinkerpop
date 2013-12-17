@@ -87,7 +87,7 @@ public class BlueprintsSuite extends Suite {
     public static interface GraphProvider {
 
         /**
-         * Creats a new Graph instance from the Configuration object using GraphFactory.
+         * Creates a new Graph instance from the Configuration object using GraphFactory.
          */
         default public Graph newTestGraph(final Configuration config) {
             return GraphFactory.open(config);
