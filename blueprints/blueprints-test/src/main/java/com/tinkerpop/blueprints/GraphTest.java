@@ -56,8 +56,8 @@ public class GraphTest extends AbstractBlueprintsTest {
         final AtomicInteger counter = new AtomicInteger(0);
 
         // get all features.
-        final List<Method> methods = Arrays.asList(Graph.Features.class.getMethods()).stream()
-                .filter(m -> m.getReturnType().equals(Graph.Features.FeatureSet.class))
+        final List<Method> methods = Arrays.asList(features.getClass().getMethods()).stream()
+                .filter(m -> Graph.Features.FeatureSet.class.isAssignableFrom(m.getReturnType()))
                 .collect(Collectors.toList());
 
         methods.forEach(m -> {
@@ -77,9 +77,22 @@ public class GraphTest extends AbstractBlueprintsTest {
         assertEquals(methods.size(), counter.get());
     }
 
+    /**
+     * Graphs should be empty on creation.
+     */
     @Test
     public void shouldConstructAnEmptyGraph() {
         BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
+    }
+
+    /**
+     * Graphs should have a standard toString representation where the value starts with the lower case representation
+     * of the class name of the Graph instance.
+     */
+    @Test
+    public void shouldHaveStandardStringRepresentation() throws Exception {
+        assertNotNull(g.toString());
+        assertTrue(g.toString().startsWith(g.getClass().getSimpleName().toLowerCase()));
     }
 
     /**
