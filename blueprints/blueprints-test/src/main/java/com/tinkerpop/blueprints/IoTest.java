@@ -82,8 +82,8 @@ public class IoTest extends AbstractBlueprintsTest {
             w.outputGraph(out);
         }
 
-        // todo: this test won't work if a fresh graph instance isn't created
-        final Graph g2 = BlueprintsSuite.GraphManager.get().newTestGraph();
+        // reusing the same config used for creation of "g".
+        final Graph g2  = BlueprintsSuite.GraphManager.get().newTestGraph(config);
         final GraphMLReader r = new GraphMLReader.Builder(g2).build();
 
         try (final InputStream in = new FileInputStream(f)) {
@@ -92,6 +92,9 @@ public class IoTest extends AbstractBlueprintsTest {
 
         final Vertex v2 = g2.query().ids("1").vertices().iterator().next();
         assertEquals("\u00E9", v2.getProperty("text").getValue());
+
+        // need to manually close the "g2" instance
+        BlueprintsSuite.GraphManager.get().clear(g2, config);
     }
 
     private static void readGraphMLIntoGraph(final Graph g) throws IOException {

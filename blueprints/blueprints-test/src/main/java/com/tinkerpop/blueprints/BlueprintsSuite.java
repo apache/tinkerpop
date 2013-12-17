@@ -86,15 +86,25 @@ public class BlueprintsSuite extends Suite {
     public static interface GraphProvider {
 
         /**
-         * // todo: maybe do defaultTestGraph to distinguish from a "new" and different instance.
+         * Creats a new Graph instance from the Configuration object using GraphFactory.
          */
-        default public Graph newTestGraph() {
-            return GraphFactory.open(newGraphConfiguration());
+        default public Graph newTestGraph(final Configuration config) {
+            return GraphFactory.open(config);
         }
 
+        /**
+         * Creates a new base Configuration object that can construct a Graph instance from GraphFactory.
+         */
         default public Configuration newGraphConfiguration() {
             return newGraphConfiguration(Collections.<String, Object>emptyMap());
         }
+
+        /**
+         * Clears a graph of all data and settings.  Implementations will have different ways of handling this.  For
+         * a brute force approach, implementers can simply delete data directories provided in the configuration.
+         * Implementers may choose a more elegant approach if it exists.
+         */
+        public void clear(final Graph g, final Configuration configuration) throws Exception;
 
         /**
          * When implementing this method ensure that the BlueprintsSuite can override any settings EXCEPT the
@@ -102,7 +112,7 @@ public class BlueprintsSuite extends Suite {
          *
          * @param configurationOverrides Settings to override defaults with.
          */
-        public Configuration newGraphConfiguration(Map<String, Object> configurationOverrides);
+        public Configuration newGraphConfiguration(final Map<String, Object> configurationOverrides);
     }
 
     /**

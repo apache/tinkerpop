@@ -15,12 +15,11 @@ public class GraphTest extends AbstractBlueprintsTest{
      */
     @Test
     public void shouldOpenInMemoryGraphViaApacheConfig() {
-        final Configuration conf = BlueprintsSuite.GraphManager.get().newGraphConfiguration();
-        final Graph expectedGraph = BlueprintsSuite.GraphManager.get().newTestGraph();
-        final Graph g = GraphFactory.open(conf);
+        final Graph expectedGraph = g;
+        final Graph createdGraph = GraphFactory.open(config);
 
-        assertNotNull(g);
-        assertEquals(expectedGraph.getClass(), g.getClass());
+        assertNotNull(createdGraph);
+        assertEquals(expectedGraph.getClass(), createdGraph.getClass());
     }
 
     /**
@@ -29,8 +28,7 @@ public class GraphTest extends AbstractBlueprintsTest{
      */
     @Test
     public void shouldHavePrivateConstructor() {
-        final Graph expectedGraph = BlueprintsSuite.GraphManager.get().newTestGraph();
-        assertTrue(Arrays.asList(expectedGraph.getClass().getConstructors()).stream().allMatch(c -> {
+        assertTrue(Arrays.asList(g.getClass().getConstructors()).stream().allMatch(c -> {
             final int modifier = c.getModifiers();
             return Modifier.isPrivate(modifier) || Modifier.isPrivate(modifier);
         }));

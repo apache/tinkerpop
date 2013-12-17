@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints;
 
+import org.apache.commons.configuration.Configuration;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -18,13 +20,15 @@ import static org.junit.Assume.assumeThat;
  */
 public abstract class AbstractBlueprintsTest {
     protected Graph g;
+    protected Configuration config;
 
     @Rule
     public TestName name = new TestName();
 
     @Before
     public void setup() throws Exception {
-        g = BlueprintsSuite.GraphManager.get().newTestGraph();
+        config = BlueprintsSuite.GraphManager.get().newGraphConfiguration();
+        g = BlueprintsSuite.GraphManager.get().newTestGraph(config);
 
         final Method testMethod = this.getClass().getMethod(name.getMethodName());
         final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);
@@ -32,5 +36,10 @@ public abstract class AbstractBlueprintsTest {
         for (FeatureRequirement fr : frs) {
             assumeThat(g.getFeatures().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
         }
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        BlueprintsSuite.GraphManager.get().clear(g, config);
     }
 }
