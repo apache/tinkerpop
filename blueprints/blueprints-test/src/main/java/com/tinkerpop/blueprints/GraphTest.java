@@ -1,15 +1,20 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.util.GraphFactory;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-public class GraphTest extends AbstractBlueprintsTest{
+/**
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+public class GraphTest extends AbstractBlueprintsTest {
+
     /**
      * All Blueprints implementations should be constructable through GraphFactory.
      */
@@ -32,5 +37,25 @@ public class GraphTest extends AbstractBlueprintsTest{
             final int modifier = c.getModifiers();
             return Modifier.isPrivate(modifier) || Modifier.isPrivate(modifier);
         }));
+    }
+
+    /**
+     * Test graph counts with addition and removal of vertices.
+     */
+    @Test
+    public void shouldCountVerticesAndEdgesInTheGraph() {
+        BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
+        final Vertex v = g.addVertex();
+        BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0);
+        assertEquals(v, g.query().vertices().iterator().next());
+        assertEquals(v.getId(), g.query().vertices().iterator().next().getId());
+        assertEquals(v.getLabel(), g.query().vertices().iterator().next().getLabel());
+        v.remove();
+        BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
+        g.addVertex();
+        g.addVertex();
+        BlueprintsSuite.assertVertexEdgeCounts(g, 2, 0);
+        g.query().vertices().forEach(Vertex::remove);
+        BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
     }
 }

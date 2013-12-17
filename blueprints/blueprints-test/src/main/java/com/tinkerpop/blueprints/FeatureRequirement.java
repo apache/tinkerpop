@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -20,6 +21,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Repeatable(FeatureRequirements.class)
 public @interface FeatureRequirement {
     /**
      * The name of the feature as defined by the <code>public static final</code> member variable on each FeatureSet

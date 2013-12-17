@@ -1,7 +1,10 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.Graph.Features.PropertyFeatures;
 import org.junit.Test;
 
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -9,28 +12,16 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class VertexTest extends AbstractBlueprintsTest {
 
     @Test
+    @FeatureRequirement(featureClass = PropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = PropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     public void shouldSupportBasicVertexManipulation() {
-        // test graph counts with addition and removal of vertices
-        BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
-        Vertex v = g.addVertex();
-        BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0);
-        assertEquals(v, g.query().vertices().iterator().next());
-        assertEquals(v.getId(), g.query().vertices().iterator().next().getId());
-        assertEquals(v.getLabel(), g.query().vertices().iterator().next().getLabel());
-        v.remove();
-        BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
-        g.addVertex();
-        g.addVertex();
-        BlueprintsSuite.assertVertexEdgeCounts(g, 2, 0);
-        g.query().vertices().forEach(Vertex::remove);
-        BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
-
         // test property mutation behaviors
-        v = g.addVertex("name", "marko", "age", 34);
+        final Vertex v = g.addVertex("name", "marko", "age", 34);
         assertEquals(34, (int) v.getValue("age"));
         assertEquals("marko", v.<String>getValue("name"));
         assertEquals(34, (int) v.getProperty("age").getValue());
@@ -69,6 +60,5 @@ public class VertexTest extends AbstractBlueprintsTest {
         v.getProperties().values().stream().forEach(i -> i.forEach(Property::remove));
         assertEquals(0, v.getProperties().size());
         BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0);
-
     }
 }
