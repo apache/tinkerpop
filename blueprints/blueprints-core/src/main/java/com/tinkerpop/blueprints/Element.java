@@ -5,6 +5,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
+ * An Element is the base class for both vertices and edges. An element has an identifier that must be unique to its
+ * inheriting classes (vertex or edges). An element can maintain a collection of Property objects.  Typically, objects
+ * are Java primitives (e.g. String, long, int, boolean, etc.)
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract interface Element {
