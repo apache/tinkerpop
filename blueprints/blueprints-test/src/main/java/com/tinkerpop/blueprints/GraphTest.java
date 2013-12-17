@@ -3,12 +3,18 @@ package com.tinkerpop.blueprints;
 import com.tinkerpop.blueprints.util.GraphFactory;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -37,6 +43,38 @@ public class GraphTest extends AbstractBlueprintsTest {
             final int modifier = c.getModifiers();
             return Modifier.isPrivate(modifier) || Modifier.isPrivate(modifier);
         }));
+    }
+
+    /**
+     * Ensure compliance with Features by checking that all Features are exposed by the implementation.
+     */
+    @Test
+    public void shouldImplementAndExposeFeatures() {
+        final Graph.Features features = g.getFeatures();
+        assertNotNull(features);
+
+        final AtomicInteger counter = new AtomicInteger(0);
+
+        // get all features.
+        final List<Method> methods = Arrays.asList(Graph.Features.class.getMethods()).stream()
+                .filter(m -> m.getReturnType().equals(Graph.Features.FeatureSet.class))
+                .collect(Collectors.toList());
+
+        methods.forEach(m -> {
+                    try {
+                        assertNotNull(m.invoke(features));
+                        counter.incrementAndGet();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        fail("Exception while dynamically checking compliance on Feature implementation");
+                    }
+                });
+
+        // always should be some feature methods
+        assertTrue(methods.size() > 0);
+
+        // ensure that every method exposed was checked
+        assertEquals(methods.size(), counter.get());
     }
 
     /**
