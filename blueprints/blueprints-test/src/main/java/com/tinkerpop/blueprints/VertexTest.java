@@ -1,14 +1,20 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.Graph.Features.VertexFeatures;
 import com.tinkerpop.blueprints.Graph.Features.PropertyFeatures;
 import org.junit.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,5 +66,46 @@ public class VertexTest extends AbstractBlueprintsTest {
         v.getProperties().values().stream().forEach(i -> i.forEach(Property::remove));
         assertEquals(0, v.getProperties().size());
         BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+    public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
+        final Vertex v = g.addVertex(Property.Key.ID, BlueprintsSuite.GraphManager.get().convertId("1"));
+        final Vertex u = g.query().ids(BlueprintsSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
+        assertEquals(v, u);
+    }
+
+    @Test
+    public void shouldEvaluateEquivalentVerticesWithNoSuppliedIds() {
+        final Vertex v = g.addVertex();
+        assertNotNull(v);
+
+        final Vertex u = g.query().ids(v.getId()).vertices().iterator().next();
+        assertNotNull(u);
+        assertEquals(v, u);
+
+        assertEquals(g.query().ids(u.getId()).vertices().iterator().next(), g.query().ids(u.getId()).vertices().iterator().next());
+        assertEquals(g.query().ids(v.getId()).vertices().iterator().next(), g.query().ids(u.getId()).vertices().iterator().next());
+        assertEquals(g.query().ids(v.getId()).vertices().iterator().next(), g.query().ids(v.getId()).vertices().iterator().next());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+    public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
+        final Vertex v = g.addVertex(Property.Key.ID, BlueprintsSuite.GraphManager.get().convertId("1"));
+        final Vertex u = g.query().ids(BlueprintsSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
+        assertEquals(v, u);
+
+        final Set<Vertex> set = new HashSet<>();
+        set.add(v);
+        set.add(v);
+        set.add(u);
+        set.add(u);
+        set.add(g.query().ids(BlueprintsSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
+        set.add(g.query().ids(BlueprintsSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
+
+        assertEquals(1, set.size());
+        assertEquals(v.hashCode(), u.hashCode());
     }
 }
