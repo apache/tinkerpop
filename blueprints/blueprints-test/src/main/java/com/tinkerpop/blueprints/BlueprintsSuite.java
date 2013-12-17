@@ -2,7 +2,6 @@ package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.util.GraphFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import junit.framework.TestCase;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runners.Suite;
@@ -16,6 +15,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * The BlueprintsSuite is a custom JUnit test runner that executes the Blueprints Test Suite over a Graph
@@ -156,7 +157,7 @@ public class BlueprintsSuite extends Suite {
     }
 
     public static void assertVertexEdgeCounts(final Graph graph, final int expectedVertexCount, final int expectedEdgeCount) {
-        TestCase.assertEquals(expectedVertexCount, StreamFactory.stream(graph.query().vertices()).count());
-        TestCase.assertEquals(expectedEdgeCount, StreamFactory.stream(graph.query().edges()).count());
+        assertEquals(expectedVertexCount, StreamFactory.stream(graph.query().vertices()).count());
+        assertEquals(expectedEdgeCount, StreamFactory.stream(graph.query().edges()).count());
     }
 }
