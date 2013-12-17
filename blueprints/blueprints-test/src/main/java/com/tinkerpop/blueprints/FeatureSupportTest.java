@@ -46,18 +46,11 @@ public class FeatureSupportTest extends AbstractBlueprintsTest {
     @Test
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
     public void shouldEnableVertexFeatureUserSuppliedIds() throws Exception {
-        // create a vertex with a pretty random long identifier.  would be unlikely for a graph to come up with
-        // such an id.  Of course, this will only catch those graphs that allow any value as an ID to be explicitly
-        // set.  in other words it might yet be possible for a graph to have this value set to false, but only accept
-        // certain identifier formats (not a Long as is the case here in this test).  In that case, the test would
-        // simply fail and not allow the implementation to pass. of course, most all graphs simply use a long value
-        // for identifiers and only TinkerGraph supports this property as true, so this test is really just to
-        // protect tinkergraph from ever getting its feature switched accidentally
-        // todo: need to rectify this test given the above thoughts
-        final Vertex v = g.addVertex(Property.Key.ID, 99999943835l);
+        final Vertex v = g.addVertex(Property.Key.ID, BlueprintsSuite.GraphManager.get().convertId(99999943835l));
 
         // can't define this feature as a @FeatureRequirement because the test should run regardless of the
-        // transactional capability of the graph.
+        // transactional capability of the graph. need to potentially commit here because some graphs won't
+        // assign an permanent ID until after commit.
         if (g.getFeatures().graph().supportsTransactions())
             g.tx().commit();
 

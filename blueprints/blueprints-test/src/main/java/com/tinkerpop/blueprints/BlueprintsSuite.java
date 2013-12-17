@@ -108,6 +108,22 @@ public class BlueprintsSuite extends Suite {
         public void clear(final Graph g, final Configuration configuration) throws Exception;
 
         /**
+         * Converts an identifier from a test to an identifier accepted by the Graph instance.  Test that try to
+         * utilize an Element identifier will pass it to this method before usage.
+         */
+        default public Object convertId(final Object id) {
+            return id;
+        }
+
+        /**
+         * Converts an label from a test to an label accepted by the Graph instance.  Test that try to
+         * utilize a label will pass it to this method before usage.
+         */
+        default public String convertLabel(final String label) {
+            return label;
+        }
+
+        /**
          * When implementing this method ensure that the BlueprintsSuite can override any settings EXCEPT the
          * "blueprints.graph" setting which should be defined by the implementer.
          *
