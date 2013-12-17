@@ -99,18 +99,42 @@ public class GraphTest extends AbstractBlueprintsTest {
      * Test graph counts with addition and removal of vertices.
      */
     @Test
-    public void shouldCountVerticesAndEdgesInTheGraph() {
+    public void shouldProperlyCountVerticesAndEdgesOnAddRemove() {
         final Vertex v = g.addVertex();
         BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0);
         assertEquals(v, g.query().vertices().iterator().next());
         assertEquals(v.getId(), g.query().vertices().iterator().next().getId());
         assertEquals(v.getLabel(), g.query().vertices().iterator().next().getLabel());
         v.remove();
-        BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
+        tryCommit(g, graph->BlueprintsSuite.assertVertexEdgeCounts(graph, 0, 0));
         g.addVertex();
         g.addVertex();
-        BlueprintsSuite.assertVertexEdgeCounts(g, 2, 0);
+        tryCommit(g, graph->BlueprintsSuite.assertVertexEdgeCounts(g, 2, 0));
         g.query().vertices().forEach(Vertex::remove);
-        BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0);
+        tryCommit(g, graph->BlueprintsSuite.assertVertexEdgeCounts(g, 0, 0));
+
+        final String edgeLabel = BlueprintsSuite.GraphManager.get().convertLabel("test");
+        Vertex v1 = g.addVertex();
+        Vertex v2 = g.addVertex();
+        Edge e = v1.addEdge(edgeLabel, v2);
+        tryCommit(g, graph->BlueprintsSuite.assertVertexEdgeCounts(g, 2, 1));
+
+        // test removal of the edge itself
+        e.remove();
+        tryCommit(g, graph->BlueprintsSuite.assertVertexEdgeCounts(g, 2, 0));
+
+        v1.addEdge(edgeLabel, v2);
+        tryCommit(g, graph->BlueprintsSuite.assertVertexEdgeCounts(g, 2, 1));
+
+        // test removal of the out vertex to remove the edge
+        v1.remove();
+        tryCommit(g, graph->BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0));
+
+        // test removal of the in vertex to remove the edge
+        v1 = g.addVertex();
+        v1.addEdge(edgeLabel, v2);
+        tryCommit(g, graph->BlueprintsSuite.assertVertexEdgeCounts(g, 2, 1));
+        v2.remove();
+        tryCommit(g, graph->BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0));
     }
 }
