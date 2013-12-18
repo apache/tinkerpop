@@ -37,7 +37,6 @@ public abstract interface Element {
     }
 
     public static class Exceptions {
-
         public static IllegalArgumentException bothIsNotSupported() {
             return new IllegalArgumentException("A direction of BOTH is not supported");
         }
@@ -48,6 +47,10 @@ public abstract interface Element {
 
         public static IllegalArgumentException providedKeyValuesMustHaveALegalKeyOnEvenIndices() {
             return new IllegalArgumentException("The provided key/value array must have a String key or Property.Key on even array indices");
+        }
+
+        public static IllegalStateException elementHasAlreadyBeenRemoved() {
+            return new IllegalStateException("The vertex has already been removed");
         }
     }
 

@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.VertexQuery;
@@ -134,6 +135,9 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
     }
 
     public void remove() {
+        if (!graph.vertices.containsKey(this.id))
+            throw Element.Exceptions.elementHasAlreadyBeenRemoved();
+
         this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
         this.properties.clear();
         graph.vertexIndex.removeElement(this);

@@ -7,7 +7,6 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
@@ -16,6 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -108,5 +108,37 @@ public class VertexTest extends AbstractBlueprintsTest {
 
         assertEquals(1, set.size());
         assertEquals(v.hashCode(), u.hashCode());
+    }
+
+    @Test
+    public void shouldCauseExceptionIfVertexRemovedMoreThanOnce() {
+        Vertex v = g.addVertex();
+        assertNotNull(v);
+
+        final Object id = v.getId();
+        v.remove();
+        assertFalse(g.query().ids(id).vertices().iterator().hasNext());
+
+        // try second remove with no commit
+        try {
+            v.remove();
+            fail("Vertex cannot be removed twice.");
+        } catch (IllegalStateException ise) {
+            assertEquals(Element.Exceptions.elementHasAlreadyBeenRemoved().getMessage(), ise.getMessage());
+        }
+
+        v = g.addVertex();
+        assertNotNull(v);
+        v.remove();
+
+        // try second remove with a commit and then a second remove.  both should return the same exception
+        tryCommit(g);
+
+        try {
+            v.remove();
+            fail("Vertex cannot be removed twice.");
+        } catch (IllegalStateException ise) {
+            assertEquals(Element.Exceptions.elementHasAlreadyBeenRemoved().getMessage(), ise.getMessage());
+        }
     }
 }
