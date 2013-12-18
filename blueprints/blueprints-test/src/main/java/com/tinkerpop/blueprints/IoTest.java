@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
+import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.blueprints.io.GraphReader;
 import com.tinkerpop.blueprints.io.graphml.GraphMLReader;
 import com.tinkerpop.blueprints.io.graphml.GraphMLWriter;
@@ -22,7 +24,7 @@ import java.io.Writer;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_PROPERTIES;
+import static com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures.FEATURE_PROPERTIES;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -36,10 +38,12 @@ public class IoTest extends AbstractBlueprintsTest {
     private static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/blueprints/util/io/graphml/";
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_PROPERTIES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldReadGraphML() throws IOException {
         readGraphMLIntoGraph(g);
 
@@ -48,10 +52,12 @@ public class IoTest extends AbstractBlueprintsTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_PROPERTIES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldWriteNormalizedGraphML() throws Exception {
         readGraphMLIntoGraph(g);
 
@@ -64,10 +70,12 @@ public class IoTest extends AbstractBlueprintsTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_PROPERTIES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldWriteNormalizedGraphMLWithEdgeLabel() throws Exception {
         readGraphMLIntoGraph(g);
 
@@ -87,10 +95,12 @@ public class IoTest extends AbstractBlueprintsTest {
      * enough that is not yet known which characters those are.
      */
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.PropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_PROPERTIES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldProperlyEncodeWithGraphML() throws Exception {
         final Vertex v = g.addVertex(Property.Key.ID, "1");
         v.setProperty("text", "\u00E9");

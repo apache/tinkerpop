@@ -32,11 +32,17 @@ public abstract class AbstractBlueprintsTest {
         config = BlueprintsSuite.GraphManager.get().newGraphConfiguration();
         g = BlueprintsSuite.GraphManager.get().newTestGraph(config);
 
-        final Method testMethod = this.getClass().getMethod(name.getMethodName());
+        final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
         final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);
         final List<FeatureRequirement> frs = Arrays.asList(featureRequirement);
         for (FeatureRequirement fr : frs) {
-            assumeThat(g.getFeatures().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
+            try {
+                assumeThat(g.getFeatures().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
+            } catch (NoSuchMethodException nsme) {
+                throw new NoSuchMethodException(String.format("[supports%s] is not a valid feature on %s", fr.feature(), fr.featureClass()));
+            } catch (Exception ex) {
+                throw ex;
+            }
         }
     }
 
@@ -71,5 +77,17 @@ public abstract class AbstractBlueprintsTest {
     protected void tryRollback(final Graph g) {
         if (g.getFeatures().graph().supportsTransactions())
             g.tx().rollback();
+    }
+
+    /**
+     * If using "parameterized test" junit will append an identifier to the end of the method name which prevents it
+     * from being found via reflection.  This method removes that suffix.
+     */
+    private static String cleanMethodName(final String methodName) {
+        if (methodName.endsWith("]")) {
+            return methodName.substring(0, methodName.indexOf("["));
+        }
+
+        return methodName;
     }
 }

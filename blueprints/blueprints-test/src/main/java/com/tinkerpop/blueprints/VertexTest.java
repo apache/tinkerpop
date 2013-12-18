@@ -1,13 +1,13 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.Graph.Features.VertexFeatures;
-import com.tinkerpop.blueprints.Graph.Features.PropertyFeatures;
+import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
 import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_PROPERTIES;
+import static com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
@@ -24,9 +24,8 @@ import static org.junit.Assert.assertNotNull;
 public class VertexTest extends AbstractBlueprintsTest {
 
     @Test
-    @FeatureRequirement(featureClass = PropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = PropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_PROPERTIES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     public void shouldSupportBasicVertexManipulation() {
         // test property mutation behaviors
         final Vertex v = g.addVertex("name", "marko", "age", 34);

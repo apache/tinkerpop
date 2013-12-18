@@ -44,11 +44,11 @@ public class BlueprintsSuite extends Suite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            GraphTest.class,
-            VertexTest.class,
             FeatureSupportTest.class,
+            GraphTest.class,
             GraphComputerTest.class,
-            IoTest.class};
+            IoTest.class,
+            VertexTest.class,};
 
     /**
      * The GraphProvider instance that will be used to generate a Graph instance.

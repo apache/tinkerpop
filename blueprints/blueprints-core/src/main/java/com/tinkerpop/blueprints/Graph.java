@@ -86,62 +86,76 @@ public interface Graph extends AutoCloseable {
             return new EdgeFeatures() { };
         }
 
-        public default PropertyFeatures property() {
-            return new PropertyFeatures() { };
-        }
-
         public interface GraphFeatures extends FeatureSet {
-            public static final String FEATURE_TRANSACTIONS = "Transactions";
             public static final String FEATURE_COMPUTER = "Computer";
+            public static final String FEATURE_TRANSACTIONS = "Transactions";
+
+            @FeatureDescriptor(name = FEATURE_COMPUTER)
+            public default boolean supportsComputer() {
+                return true;
+            }
 
             @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
             public default boolean supportsTransactions() {
                 return true;
             }
 
-            @FeatureDescriptor(name = FEATURE_COMPUTER)
-            public default boolean supportsComputer() {
-                return true;
+            public default GraphPropertyFeatures properties() {
+                return new GraphPropertyFeatures() {
+                };
             }
         }
 
+        public interface GraphPropertyFeatures extends PropertyFeatures {}
+
         public interface VertexFeatures extends FeatureSet {
             public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
-            public static final String FEATURE_PROPERTIES = "Properties";
 
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
             public default boolean supportsUserSuppliedIds() {
                 return true;
             }
 
-            @FeatureDescriptor(name = FEATURE_PROPERTIES)
-            public default boolean supportsProperties() {
-                return true;
+            public default VertexPropertyFeatures properties() {
+                return new VertexPropertyFeatures() {
+                };
             }
         }
+
+        public interface VertexPropertyFeatures extends PropertyFeatures {}
 
         public interface EdgeFeatures extends FeatureSet {
-            public static final String FEATURE_PROPERTIES = "Properties";
 
-            @FeatureDescriptor(name = FEATURE_PROPERTIES)
-            public default boolean supportsProperties() {
-                return true;
+            public default EdgePropertyFeatures properties() {
+                return new EdgePropertyFeatures() {
+                };
             }
         }
 
-        public interface PropertyFeatures extends FeatureSet {
-            public static final String FEATURE_META_PROPERTIES = "MetaProperties";
-            public static final String FEATURE_STRING_VALUES = "StringValues";
-            public static final String FEATURE_INTEGER_VALUES = "IntegerValues";
-            public static final String FEATURE_FLOAT_VALUES = "FloatValues";
+        public interface EdgePropertyFeatures extends PropertyFeatures {}
 
-            @FeatureDescriptor(name = FEATURE_META_PROPERTIES)
-            public default boolean supportsMetaProperties() {
+        public interface PropertyFeatures extends FeatureSet {
+            public static final String FEATURE_BOOLEAN_VALUES = "BooleanValues";
+            public static final String FEATURE_DOUBLE_VALUES = "DoubleValues";
+            public static final String FEATURE_FLOAT_VALUES = "FloatValues";
+            public static final String FEATURE_INTEGER_VALUES = "IntegerValues";
+            public static final String FEATURE_LONG_VALUES = "LongValues";
+            public static final String FEATURE_MAP_VALUES = "MapValues";
+            public static final String FEATURE_META_PROPERTIES = "MetaProperties";
+            public static final String FEATURE_MIXED_LIST_VALUES = "MixedListValues";
+            public static final String FEATURE_PRIMITIVE_ARRAY_VALUES = "PrimitiveArrayValues";
+            public static final String FEATURE_SERIALIZABLE_VALUES = "SerializableValues";
+            public static final String FEATURE_STRING_VALUES = "StringValues";
+            public static final String FEATURE_UNIFORM_LIST_VALUES = "UniformListValues";
+            public static final String FEATURE_PROPERTIES = "Properties";
+
+            @FeatureDescriptor(name = FEATURE_BOOLEAN_VALUES)
+            public default boolean supportsBooleanValues() {
                 return true;
             }
 
-            @FeatureDescriptor(name = FEATURE_INTEGER_VALUES)
-            public default boolean supportsIntegerValues() {
+            @FeatureDescriptor(name = FEATURE_DOUBLE_VALUES)
+            public default boolean supportsDoubleValues() {
                 return true;
             }
 
@@ -150,9 +164,61 @@ public interface Graph extends AutoCloseable {
                 return true;
             }
 
+            @FeatureDescriptor(name = FEATURE_INTEGER_VALUES)
+            public default boolean supportsIntegerValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_LONG_VALUES)
+            public default boolean supportsLongValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_MAP_VALUES)
+            public default boolean supportsMapValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_META_PROPERTIES)
+            public default boolean supportsMetaProperties() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_MIXED_LIST_VALUES)
+            public default boolean supportsMixedListValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_PRIMITIVE_ARRAY_VALUES)
+            public default boolean supportsPrimitiveArrayValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_SERIALIZABLE_VALUES)
+            public default boolean supportsSerializableValues() {
+                return true;
+            }
+
             @FeatureDescriptor(name = FEATURE_STRING_VALUES)
             public default boolean supportsStringValues() {
                 return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_UNIFORM_LIST_VALUES)
+            public default boolean supportsUniformListValues() {
+                return true;
+            }
+
+            /**
+             * If any of the features on PropertyFeatures is true then this value must be true.
+             */
+            @FeatureDescriptor(name = FEATURE_PROPERTIES)
+            public default boolean supportsProperties() {
+                return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
+                       || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
+                       || supportsMetaProperties() || supportsMixedListValues() || supportsPrimitiveArrayValues()
+                       || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
+                       || supportsUniformListValues();
             }
         }
 
@@ -170,10 +236,20 @@ public interface Graph extends AutoCloseable {
             final Object instance;
             if (featureClass.equals(GraphFeatures.class))
                 instance = this.graph();
-            else if (featureClass.equals(PropertyFeatures.class))
-                instance = this.property();
+            else if (featureClass.equals(GraphPropertyFeatures.class))
+                instance = this.graph().properties();
             else if (featureClass.equals(VertexFeatures.class))
                 instance = this.vertex();
+            else if (featureClass.equals(VertexPropertyFeatures.class))
+                instance = this.vertex().properties();
+            else if (featureClass.equals(EdgeFeatures.class))
+                instance = this.edge();
+            else if (featureClass.equals(EdgePropertyFeatures.class))
+                instance = this.edge().properties();
+            else if (featureClass.equals(PropertyFeatures.class))
+                throw new IllegalArgumentException(String.format(
+                        "Do not reference PropertyFeatures directly in tests, utilize a specific instance: %s, %s, %s",
+                        EdgePropertyFeatures.class, GraphPropertyFeatures.class, VertexPropertyFeatures.class));
             else
                 throw new IllegalArgumentException(String.format(
                         "Expecting featureClass to be a valid Feature instance and not %s", featureClass));
