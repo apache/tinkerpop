@@ -28,16 +28,16 @@ public abstract interface Property<V> {
 
     public boolean isPresent();
 
-    public default void ifPresent(Consumer<? super V> consumer) {
+    public default void ifPresent(final Consumer<? super V> consumer) {
         if (this.isPresent())
             consumer.accept(this.getValue());
     }
 
-    public default V orElse(V otherValue) {
+    public default V orElse(final V otherValue) {
         return this.isPresent() ? this.getValue() : otherValue;
     }
 
-    public default V orElseGet(Supplier<? extends V> supplier) {
+    public default V orElseGet(final Supplier<? extends V> supplier) {
         return this.isPresent() ? this.getValue() : supplier.get();
     }
 

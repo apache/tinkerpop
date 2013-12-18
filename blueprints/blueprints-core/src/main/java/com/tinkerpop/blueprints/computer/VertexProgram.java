@@ -28,7 +28,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      *
      * @param graphMemory The global GraphMemory of the GraphComputer
      */
-    public void setup(GraphMemory graphMemory);
+    public void setup(final GraphMemory graphMemory);
 
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
@@ -37,7 +37,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      * @param messenger   the messenger that moves data between vertices
      * @param graphMemory the shared state between all vertices in the computation
      */
-    public void execute(Vertex vertex, Messenger<M> messenger, GraphMemory graphMemory);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory);
 
     /**
      * The method is called at the end of a round to determine if the computation is complete.
@@ -46,7 +46,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      * @param graphMemory The global GraphMemory of the GraphComputer
      * @return whether or not to halt the computation
      */
-    public boolean terminate(GraphMemory graphMemory);
+    public boolean terminate(final GraphMemory graphMemory);
 
     public Map<String, KeyType> getComputeKeys();
 

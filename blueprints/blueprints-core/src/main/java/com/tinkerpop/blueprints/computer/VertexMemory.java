@@ -9,8 +9,8 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public interface VertexMemory {
 
-    public <T> Vertex.Property<T> setProperty(Vertex vertex, String key, T value);
+    public <T> Vertex.Property<T> setProperty(final Vertex vertex, final String key, final T value);
 
-    public <T> Vertex.Property<T> getProperty(Vertex vertex, String key);
+    public <T> Vertex.Property<T> getProperty(final Vertex vertex, final String key);
 
 }

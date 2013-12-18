@@ -13,11 +13,11 @@ public interface GraphMemory {
 
     public <R> R get(final String key);
 
-    public void setIfAbsent(String key, Object value);
+    public void setIfAbsent(final String key, final Object value);
 
-    public long increment(String key, long delta);
+    public long increment(final String key, final long delta);
 
-    public long decrement(String key, long delta);
+    public long decrement(final String key, final long delta);
 
     public int getIteration();
 

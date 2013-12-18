@@ -26,9 +26,9 @@ public interface GraphComputer {
         DIRTY_BSP
     }
 
-    public GraphComputer isolation(Isolation isolation);
+    public GraphComputer isolation(final Isolation isolation);
 
-    public GraphComputer program(VertexProgram program);
+    public GraphComputer program(final VertexProgram program);
 
     public Future<ComputeResult> submit();
 

@@ -10,20 +10,20 @@ import java.util.function.BiPredicate;
  */
 public interface GraphQuery extends Query {
 
-    public GraphQuery ids(Object... ids);
+    public GraphQuery ids(final Object... ids);
 
     @Override
-    public GraphQuery has(String key);
+    public GraphQuery has(final String key);
 
     @Override
-    public GraphQuery hasNot(String key);
+    public GraphQuery hasNot(final String key);
 
     @Override
-    public GraphQuery has(String key, BiPredicate biPredicate, Object value);
+    public GraphQuery has(final String key, final BiPredicate biPredicate, final Object value);
 
     @Override
-    public <T extends Comparable<?>> GraphQuery interval(String key, T startValue, T endValue);
+    public <T extends Comparable<?>> GraphQuery interval(final String key, final T startValue, final T endValue);
 
     @Override
-    public GraphQuery limit(int limit);
+    public GraphQuery limit(final int limit);
 }

@@ -14,8 +14,8 @@ import java.io.Serializable;
  */
 public interface Messenger<M extends Serializable> {
 
-    public Iterable<M> receiveMessages(Vertex vertex, MessageType messageType);
+    public Iterable<M> receiveMessages(final Vertex vertex, final MessageType messageType);
 
-    public void sendMessage(Vertex vertex, MessageType messageType, M message);
+    public void sendMessage(final Vertex vertex, final MessageType messageType, final M message);
 
 }

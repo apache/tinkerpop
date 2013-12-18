@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public interface VertexSystemMemory extends VertexMemory {
 
-    public boolean isComputeKey(String key);
+    public boolean isComputeKey(final String key);
 
     public void completeIteration();
 

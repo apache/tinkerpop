@@ -25,9 +25,9 @@ public abstract interface Element {
 
     public Map<String, ?> getProperties();
 
-    public <V> Property<V> getProperty(String key);
+    public <V> Property<V> getProperty(final String key);
 
-    public <V> Property<V> setProperty(String key, V value);
+    public <V> Property<V> setProperty(final String key, final V value);
 
     public default <V> V getValue(String key) throws NoSuchElementException {
         final Property<V> property = this.getProperty(key);

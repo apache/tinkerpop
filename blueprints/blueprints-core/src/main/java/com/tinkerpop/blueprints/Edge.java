@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public interface Edge extends Element {
 
-    public Vertex getVertex(Direction direction) throws IllegalArgumentException;
+    public Vertex getVertex(final Direction direction) throws IllegalArgumentException;
 
     public default Set<String> getPropertyKeys() {
         return this.getProperties().keySet();
@@ -23,9 +23,9 @@ public interface Edge extends Element {
 
     public Map<String, Edge.Property> getProperties();
 
-    public <V> Edge.Property<V> getProperty(String key);
+    public <V> Edge.Property<V> getProperty(final String key);
 
-    public <V> Edge.Property<V> setProperty(String key, V value);
+    public <V> Edge.Property<V> setProperty(final String key, final V value);
 
     public interface Property<V> extends com.tinkerpop.blueprints.Property<V> {
 

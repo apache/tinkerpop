@@ -17,11 +17,11 @@ import java.util.Optional;
  */
 public interface Graph extends AutoCloseable {
 
-    public static <G extends Graph> G open(Optional<Configuration> configuration) {
+    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
         throw new UnsupportedOperationException("Implementations must override this method");
     }
 
-    public Vertex addVertex(Object... keyValues);
+    public Vertex addVertex(final Object... keyValues);
 
     public GraphQuery query();
 
@@ -29,9 +29,9 @@ public interface Graph extends AutoCloseable {
 
     public Transaction tx();
 
-    public <V> Graph.Property<V> getProperty(String key);
+    public <V> Graph.Property<V> getProperty(final String key);
 
-    public <V> Graph.Property<V> setProperty(String key, V value);
+    public <V> Graph.Property<V> setProperty(final String key, final V value);
 
     public default Graph.Features getFeatures() {
         return new Features() {

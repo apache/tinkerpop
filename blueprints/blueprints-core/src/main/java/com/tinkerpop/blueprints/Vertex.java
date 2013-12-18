@@ -24,22 +24,22 @@ public interface Vertex extends Element {
 
     public Map<String, Iterable<Vertex.Property>> getProperties();
 
-    public <V> Iterable<Vertex.Property<V>> getProperties(String key);
+    public <V> Iterable<Vertex.Property<V>> getProperties(final String key);
 
-    public default <V> Iterable<V> getValues(String key) {
+    public default <V> Iterable<V> getValues(final String key) {
         return () -> (Iterator) StreamFactory.stream(getProperties(key)).filter(p -> p.isPresent()).map(p -> p.<V>getValue()).iterator();
     }
 
 
-    public <V> Vertex.Property<V> getProperty(String key);
+    public <V> Vertex.Property<V> getProperty(final String key);
 
-    public <V> Vertex.Property<V> setProperty(String key, V value);
+    public <V> Vertex.Property<V> setProperty(final String key, V value);
 
-    public <V> Vertex.Property<V> addProperty(String key, V value);
+    public <V> Vertex.Property<V> addProperty(final String key, V value);
 
     public VertexQuery query();
 
-    public Edge addEdge(String label, Vertex inVertex, Object... keyValues);
+    public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
     public interface Property<V> extends com.tinkerpop.blueprints.Property<V> {
 
@@ -47,9 +47,9 @@ public interface Vertex extends Element {
 
         public Map<String, com.tinkerpop.blueprints.Property> getProperties();
 
-        public <V2> com.tinkerpop.blueprints.Property<V2> setProperty(String key, V2 value);
+        public <V2> com.tinkerpop.blueprints.Property<V2> setProperty(final String key, final V2 value);
 
-        public <V2> com.tinkerpop.blueprints.Property<V2> getProperty(String key);
+        public <V2> com.tinkerpop.blueprints.Property<V2> getProperty(final String key);
 
         public Vertex getVertex();
 
@@ -86,12 +86,12 @@ public interface Vertex extends Element {
                 }
 
                 @Override
-                public <V2> com.tinkerpop.blueprints.Property<V2> setProperty(String key, V2 value) {
+                public <V2> com.tinkerpop.blueprints.Property<V2> setProperty(final String key, final V2 value) {
                     throw Exceptions.propertyDoesNotExist();
                 }
 
                 @Override
-                public <V2> com.tinkerpop.blueprints.Property<V2> getProperty(String key) {
+                public <V2> com.tinkerpop.blueprints.Property<V2> getProperty(final String key) {
                     throw Exceptions.propertyDoesNotExist();
                 }
 

@@ -20,7 +20,7 @@ public interface Transaction extends Closeable {
 
     public void rollback();
 
-    public <G extends Graph, R> Workload<G, R> submit(Function<G, R> work);
+    public <G extends Graph, R> Workload<G, R> submit(final Function<G, R> work);
 
     public <G extends Graph> G create();
 
@@ -34,9 +34,9 @@ public interface Transaction extends Closeable {
         if (this.isOpen()) this.commit();
     }
 
-    public Transaction onReadWrite(Consumer<Transaction> consumer);
+    public Transaction onReadWrite(final Consumer<Transaction> consumer);
 
-    public Transaction onClose(Consumer<Transaction> consumer);
+    public Transaction onClose(final Consumer<Transaction> consumer);
 
     public static class Exceptions {
         public static IllegalStateException transactionAlreadyOpen() {
