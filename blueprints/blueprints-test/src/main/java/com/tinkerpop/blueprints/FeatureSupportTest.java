@@ -59,7 +59,7 @@ public class FeatureSupportTest  {
         @Test
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void ifAnIdCanBeAssignedToVertexThenItMustSupportUserSuppliedIds() throws Exception {
-            final Vertex v = g.addVertex(Property.Key.ID, BlueprintsSuite.GraphManager.get().convertId(99999943835l));
+            final Vertex v = g.addVertex(Property.Key.ID, BlueprintsStandardSuite.GraphManager.get().convertId(99999943835l));
 
             // can't define this feature as a @FeatureRequirement because the test should run regardless of the
             // transactional capability of the graph. need to potentially commit here because some graphs won't

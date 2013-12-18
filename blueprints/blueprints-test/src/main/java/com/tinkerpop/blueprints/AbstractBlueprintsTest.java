@@ -9,7 +9,6 @@ import org.junit.rules.TestName;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -29,8 +28,8 @@ public abstract class AbstractBlueprintsTest {
 
     @Before
     public void setup() throws Exception {
-        config = BlueprintsSuite.GraphManager.get().newGraphConfiguration();
-        g = BlueprintsSuite.GraphManager.get().newTestGraph(config);
+        config = BlueprintsStandardSuite.GraphManager.get().newGraphConfiguration();
+        g = BlueprintsStandardSuite.GraphManager.get().newTestGraph(config);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
         final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);
@@ -48,7 +47,7 @@ public abstract class AbstractBlueprintsTest {
 
     @After
     public void tearDown() throws Exception {
-        BlueprintsSuite.GraphManager.get().clear(g, config);
+        BlueprintsStandardSuite.GraphManager.get().clear(g, config);
     }
 
     /**

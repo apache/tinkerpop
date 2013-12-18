@@ -19,38 +19,11 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 /**
- * The BlueprintsSuite is a custom JUnit test runner that executes the Blueprints Test Suite over a Graph
- * implementation.  This specialized test suite and runner is for use by Blueprints implementers to test their
- * Graph implementations.  The BlueprintsSuite ensures consistency and validity of the implementations that they
- * test.
- * To use the BlueprintSuite define a class in a test module.  Standard naming would expect the name of the
- * implementation followed by "BlueprintsSuite".  This class should be annotated as follows (note that the "Suite"
- * implements BlueprintsSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
- * <code>
+ * Base Blueprints test suite from which different classes of tests can be exposed to implementers.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @RunWith(BlueprintsSuite.class)
- * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsSuite.class) public class MsAccessBlueprintsSuite implements BlueprintsSuite.GraphProvider {
- * }
- * </code>
- * Implementing BlueprintsSuite.GraphProvider provides a way for the BlueprintsSuite to instantiate Graph instances
- * from the implementation being tested to inject into tests in the suite.  The BlueprintsSuite will utilized
- * Features defined in the suite to determine which tests will be executed.
  */
-public class BlueprintsSuite extends Suite {
-
-    /**
-     * This list of tests in the suite that will be executed.  Blueprints developers should add to this list
-     * as needed to enforce tests upon implementations.
-     */
-    private static final Class<?>[] testsToExecute = new Class<?>[]{
-            EdgeTest.class,
-            FeatureSupportTest.class,
-            GraphTest.class,
-            GraphComputerTest.class,
-            IoTest.class,
-            PropertyTest.class,
-            VertexTest.class,};
+public abstract class AbstractBlueprintsSuite extends Suite {
 
     /**
      * The GraphProvider instance that will be used to generate a Graph instance.
@@ -62,7 +35,7 @@ public class BlueprintsSuite extends Suite {
         public Class<? extends GraphProvider> value();
     }
 
-    public BlueprintsSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
+    public AbstractBlueprintsSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
         super(builder, klass, testsToExecute);
 
         // figures out what the implementer assigned as the GraphProvider class and make it available to tests.
@@ -82,9 +55,14 @@ public class BlueprintsSuite extends Suite {
         return annotation.value();
     }
 
+    public static void assertVertexEdgeCounts(final Graph graph, final int expectedVertexCount, final int expectedEdgeCount) {
+        assertEquals(expectedVertexCount, StreamFactory.stream(graph.query().vertices()).count());
+        assertEquals(expectedEdgeCount, StreamFactory.stream(graph.query().edges()).count());
+    }
+
     /**
      * Those developing Blueprints implementations must provide a GraphProvider implementation so that the
-     * BlueprintsSuite knows how to instantiate their implementations.
+     * BlueprintsStandardSuite knows how to instantiate their implementations.
      */
     public static interface GraphProvider {
 
@@ -126,7 +104,7 @@ public class BlueprintsSuite extends Suite {
         }
 
         /**
-         * When implementing this method ensure that the BlueprintsSuite can override any settings EXCEPT the
+         * When implementing this method ensure that the BlueprintsStandardSuite can override any settings EXCEPT the
          * "blueprints.graph" setting which should be defined by the implementer.
          *
          * @param configurationOverrides Settings to override defaults with.
@@ -172,10 +150,5 @@ public class BlueprintsSuite extends Suite {
         public static GraphProvider get() {
             return graphProvider;
         }
-    }
-
-    public static void assertVertexEdgeCounts(final Graph graph, final int expectedVertexCount, final int expectedEdgeCount) {
-        assertEquals(expectedVertexCount, StreamFactory.stream(graph.query().vertices()).count());
-        assertEquals(expectedEdgeCount, StreamFactory.stream(graph.query().edges()).count());
     }
 }

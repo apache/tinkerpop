@@ -24,7 +24,6 @@ import java.io.Writer;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures.FEATURE_PROPERTIES;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -113,7 +112,7 @@ public class IoTest extends AbstractBlueprintsTest {
         }
 
         // reusing the same config used for creation of "g".
-        final Graph g2  = BlueprintsSuite.GraphManager.get().newTestGraph(config);
+        final Graph g2  = BlueprintsStandardSuite.GraphManager.get().newTestGraph(config);
         final GraphMLReader r = new GraphMLReader.Builder(g2).build();
 
         try (final InputStream in = new FileInputStream(f)) {
@@ -124,7 +123,7 @@ public class IoTest extends AbstractBlueprintsTest {
         assertEquals("\u00E9", v2.getProperty("text").getValue());
 
         // need to manually close the "g2" instance
-        BlueprintsSuite.GraphManager.get().clear(g2, config);
+        BlueprintsStandardSuite.GraphManager.get().clear(g2, config);
     }
 
     private static void readGraphMLIntoGraph(final Graph g) throws IOException {

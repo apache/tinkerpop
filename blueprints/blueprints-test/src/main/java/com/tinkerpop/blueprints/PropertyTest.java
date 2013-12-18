@@ -217,7 +217,7 @@ public class PropertyTest extends AbstractBlueprintsTest {
     private Edge createEdgeForPropertyFeatureTests() {
         final Vertex vertexA = g.addVertex();
         final Vertex vertexB = g.addVertex();
-        return vertexA.addEdge(BlueprintsSuite.GraphManager.get().convertLabel("knows"), vertexB);
+        return vertexA.addEdge(BlueprintsStandardSuite.GraphManager.get().convertLabel("knows"), vertexB);
     }
 
     public static class MockSerializable implements Serializable {

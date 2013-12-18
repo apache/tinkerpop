@@ -94,10 +94,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <properties>
-        <skipIntegrationTests>true</skipIntegrationTests>
-        <skipPerformanceTests>true</skipPerformanceTests>
-    </properties>
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>

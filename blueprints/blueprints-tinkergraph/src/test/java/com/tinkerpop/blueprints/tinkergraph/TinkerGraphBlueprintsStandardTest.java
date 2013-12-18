@@ -1,6 +1,6 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
-import com.tinkerpop.blueprints.BlueprintsSuite;
+import com.tinkerpop.blueprints.BlueprintsStandardSuite;
 import com.tinkerpop.blueprints.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runner.RunWith;
@@ -11,11 +11,13 @@ import java.util.Map;
 
 
 /**
+ * Executes the Standard Blueprints Test Suite using TinkerGraph.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(BlueprintsSuite.class)
-@BlueprintsSuite.GraphProviderClass(TinkerGraphBlueprintsSuite.class)
-public class TinkerGraphBlueprintsSuite extends BlueprintsSuite.AbstractGraphProvider {
+@RunWith(BlueprintsStandardSuite.class)
+@BlueprintsStandardSuite.GraphProviderClass(TinkerGraphBlueprintsStandardTest.class)
+public class TinkerGraphBlueprintsStandardTest extends BlueprintsStandardSuite.AbstractGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration() {
         return new HashMap<String, Object>() {{

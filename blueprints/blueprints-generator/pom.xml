@@ -25,18 +25,6 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-tinkergraph</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.tinkerpop.blueprints</groupId>
-                    <artifactId>blueprints-test</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>

@@ -34,10 +34,10 @@
     <modules>
         <module>blueprints-core</module>
         <module>blueprints-io</module>
+        <module>blueprints-generator</module>
         <module>blueprints-test</module>
         <module>blueprints-tinkergraph</module>
         <module>blueprints-neo4j-graph</module>
-        <module>blueprints-generator</module>
     </modules>
 
     <build>

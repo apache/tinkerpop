@@ -38,7 +38,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(v.getPropertyKeys().contains("name"));
         assertTrue(v.getPropertyKeys().contains("age"));
         assertFalse(v.getPropertyKeys().contains("location"));
-        BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0);
+        BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
 
         v.setProperty("name", "marko rodriguez");
         assertEquals(34, (int) v.getValue("age"));
@@ -50,7 +50,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(v.getPropertyKeys().contains("name"));
         assertTrue(v.getPropertyKeys().contains("age"));
         assertFalse(v.getPropertyKeys().contains("location"));
-        BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0);
+        BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
 
         v.setProperty("location", "santa fe");
         assertEquals(3, v.getProperties().size());
@@ -62,18 +62,18 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(v.getPropertyKeys().contains("age"));
         assertTrue(v.getPropertyKeys().contains("location"));
         v.getProperty("location").remove();
-        BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0);
+        BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
         assertEquals(2, v.getProperties().size());
         v.getProperties().values().stream().forEach(i -> i.forEach(Property::remove));
         assertEquals(0, v.getProperties().size());
-        BlueprintsSuite.assertVertexEdgeCounts(g, 1, 0);
+        BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
     }
 
     @Test
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
-        final Vertex v = g.addVertex(Property.Key.ID, BlueprintsSuite.GraphManager.get().convertId("1"));
-        final Vertex u = g.query().ids(BlueprintsSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
+        final Vertex v = g.addVertex(Property.Key.ID, BlueprintsStandardSuite.GraphManager.get().convertId("1"));
+        final Vertex u = g.query().ids(BlueprintsStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
         assertEquals(v, u);
     }
 
@@ -94,8 +94,8 @@ public class VertexTest extends AbstractBlueprintsTest {
     @Test
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
-        final Vertex v = g.addVertex(Property.Key.ID, BlueprintsSuite.GraphManager.get().convertId("1"));
-        final Vertex u = g.query().ids(BlueprintsSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
+        final Vertex v = g.addVertex(Property.Key.ID, BlueprintsStandardSuite.GraphManager.get().convertId("1"));
+        final Vertex u = g.query().ids(BlueprintsStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
         assertEquals(v, u);
 
         final Set<Vertex> set = new HashSet<>();
@@ -103,8 +103,8 @@ public class VertexTest extends AbstractBlueprintsTest {
         set.add(v);
         set.add(u);
         set.add(u);
-        set.add(g.query().ids(BlueprintsSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
-        set.add(g.query().ids(BlueprintsSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
+        set.add(g.query().ids(BlueprintsStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
+        set.add(g.query().ids(BlueprintsStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
 
         assertEquals(1, set.size());
         assertEquals(v.hashCode(), u.hashCode());
