@@ -1,10 +1,12 @@
 package com.tinkerpop.gremlin.pipes.util;
 
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Holder<T> {
+public class Holder<T> implements Serializable {
 
     private T t;
     private int loops = 0;

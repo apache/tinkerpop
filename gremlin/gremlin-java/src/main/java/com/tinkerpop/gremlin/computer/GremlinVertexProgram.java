@@ -1,31 +1,27 @@
 package com.tinkerpop.gremlin.computer;
 
-import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphMemory;
+import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.gremlin.pipes.FilterPipe;
-import com.tinkerpop.gremlin.pipes.FlatMapPipe;
 import com.tinkerpop.gremlin.pipes.Gremlin;
-import com.tinkerpop.gremlin.pipes.MapPipe;
 import com.tinkerpop.gremlin.pipes.Pipe;
 import com.tinkerpop.gremlin.pipes.util.Holder;
-import com.tinkerpop.gremlin.pipes.util.HolderIterator;
-import com.tinkerpop.gremlin.pipes.util.PipeHelper;
-import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GremlinVertexProgram implements VertexProgram {
+
+    private MessageType.Global global = MessageType.Global.of("gremlin");
 
     private static final String GREMLINS = "gremlins";
     private final Supplier<Gremlin> gremlin;
@@ -40,33 +36,25 @@ public class GremlinVertexProgram implements VertexProgram {
 
     public void execute(final Vertex vertex, final Messenger messenger, final GraphMemory graphMemory) {
         if (graphMemory.isInitialIteration()) {
-            vertex.setProperty(GREMLINS, Arrays.asList(new Holder<>(Pipe.NONE, vertex)));
+            messenger.sendMessage(vertex, MessageType.Global.of("gremlin", vertex), 1);
         } else {
             final Pipe pipe = getCurrentPipe(graphMemory);
-            if (pipe instanceof FilterPipe) {
-                pipe.addStarts(new SingleIterator<>(new Holder(pipe.getName(), vertex)));
-                vertex.setProperty(GREMLINS, PipeHelper.hasNextIteration(pipe) ?
-                        vertex.getValue(GREMLINS) :
-                        Collections.emptyList());
-            } else if (pipe instanceof FlatMapPipe) {
-                pipe.addStarts(new HolderIterator<>(StreamFactory.stream(vertex.query().direction(Direction.BOTH).vertices())
-                        .filter(v -> v.<List>getValue(GREMLINS).size() > 0).iterator()));
-                /*StreamFactory.stream(vertex.query().direction(Direction.BOTH).vertices())
-                        .filter(v -> v.<List>getValue(GREMLINS).size() > 0)
-                        .flatMap(v -> new HolderIterator(v.<List<Holder>>getValue(GREMLINS)).)
-                        .forEach(h -> pipe.addStarts(h)); */
-                vertex.setProperty(GREMLINS, PipeHelper.toList(pipe));
-            } else if (pipe instanceof MapPipe) {
-                // TODO
-            } else {
-                throw new IllegalStateException("There are no other pipe types -- how did you get here?");
-            }
+            // process vertices
+            List<Holder> holders = (List) StreamFactory.stream(messenger.receiveMessages(vertex,global))
+                    .map(m -> new Holder<>(pipe.getName(),vertex))
+                    .collect(Collectors.toList());
+            vertex.setProperty(GREMLINS, holders.size());
+
+            pipe.addStarts(holders.iterator());
+            StreamFactory.stream(pipe).forEach(h ->
+                    messenger.sendMessage(vertex,
+                            MessageType.Global.of("gremlin", (Vertex) ((Holder) h).get()), 1));
         }
     }
 
     public boolean terminate(final GraphMemory graphMemory) {
         Supplier<Gremlin> gremlin = graphMemory.get("gremlin");
-        return !(graphMemory.getIteration() < gremlin.get().getPipes().size());
+        return !(graphMemory.getIteration() <= gremlin.get().getPipes().size());
     }
 
     public Map<String, KeyType> getComputeKeys() {
@@ -75,7 +63,7 @@ public class GremlinVertexProgram implements VertexProgram {
 
     private Pipe getCurrentPipe(final GraphMemory graphMemory) {
         final Supplier<Gremlin> gremlin = graphMemory.get("gremlin");
-        return (Pipe) gremlin.get().getPipes().get(graphMemory.getIteration());
+        return (Pipe) gremlin.get().identity().getPipes().get(graphMemory.getIteration());
     }
 
     public static Builder create() {
