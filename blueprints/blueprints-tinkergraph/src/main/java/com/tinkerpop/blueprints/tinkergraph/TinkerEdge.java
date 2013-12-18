@@ -60,6 +60,9 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
     }
 
     public void remove() {
+        if (!this.graph.edges.containsKey(this.getId()))
+            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.getId());
+
         final TinkerVertex outVertex = (TinkerVertex) this.getVertex(Direction.OUT);
         final TinkerVertex inVertex = (TinkerVertex) this.getVertex(Direction.IN);
         if (null != outVertex && null != outVertex.outEdges) {

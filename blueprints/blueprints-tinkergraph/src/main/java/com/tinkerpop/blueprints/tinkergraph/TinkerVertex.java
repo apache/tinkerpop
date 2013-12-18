@@ -136,7 +136,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
     public void remove() {
         if (!graph.vertices.containsKey(this.id))
-            throw Element.Exceptions.elementHasAlreadyBeenRemoved();
+            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.getId());
 
         this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
         this.properties.clear();

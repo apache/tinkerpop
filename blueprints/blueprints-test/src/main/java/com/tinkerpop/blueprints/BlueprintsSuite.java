@@ -44,6 +44,7 @@ public class BlueprintsSuite extends Suite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+            EdgeTest.class,
             FeatureSupportTest.class,
             GraphTest.class,
             GraphComputerTest.class,

@@ -115,7 +115,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         Vertex v = g.addVertex();
         assertNotNull(v);
 
-        final Object id = v.getId();
+        Object id = v.getId();
         v.remove();
         assertFalse(g.query().ids(id).vertices().iterator().hasNext());
 
@@ -124,11 +124,13 @@ public class VertexTest extends AbstractBlueprintsTest {
             v.remove();
             fail("Vertex cannot be removed twice.");
         } catch (IllegalStateException ise) {
-            assertEquals(Element.Exceptions.elementHasAlreadyBeenRemoved().getMessage(), ise.getMessage());
+            assertEquals(Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, id).getMessage(), ise.getMessage());
         }
 
         v = g.addVertex();
         assertNotNull(v);
+
+        id = v.getId();
         v.remove();
 
         // try second remove with a commit and then a second remove.  both should return the same exception
@@ -138,7 +140,7 @@ public class VertexTest extends AbstractBlueprintsTest {
             v.remove();
             fail("Vertex cannot be removed twice.");
         } catch (IllegalStateException ise) {
-            assertEquals(Element.Exceptions.elementHasAlreadyBeenRemoved().getMessage(), ise.getMessage());
+            assertEquals(Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, id).getMessage(), ise.getMessage());
         }
     }
 }
