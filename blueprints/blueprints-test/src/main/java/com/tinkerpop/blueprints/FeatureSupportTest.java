@@ -73,32 +73,6 @@ public class FeatureSupportTest  {
         }
     }
 
-    /*
-
-    @Test
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_PROPERTIES)
-    public void shouldSetStringPropertyOnVertex() {
-        final Vertex v = g.addVertex("keyString", "value");
-        tryCommit(g, graph->assertEquals("value", v.getProperty("keyString").getValue()));
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgeFeatures.class, feature = EdgeFeatures.FEATURE_PROPERTIES)
-    public void shouldSetStringPropertyOnEdge() {
-        final Edge edge = createEdgeForPropertyFeatureTests();
-        edge.setProperty("keyString", "value");
-        tryCommit(g, graph->assertEquals("value", edge.getProperty("keyString").getValue()));
-    }
-
-    private Edge createEdgeForPropertyFeatureTests() {
-        final Vertex vertexA = g.addVertex();
-        final Vertex vertexB = g.addVertex();
-        return vertexA.addEdge(BlueprintsSuite.GraphManager.get().convertLabel("knows"), vertexB);
-    }
-    */
-
     /**
      * Feature checks that simply evaluate conflicting feature definitions without evaluating the actual implementation
      * itself.

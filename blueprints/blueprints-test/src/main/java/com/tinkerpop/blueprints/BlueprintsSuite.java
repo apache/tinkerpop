@@ -48,6 +48,7 @@ public class BlueprintsSuite extends Suite {
             GraphTest.class,
             GraphComputerTest.class,
             IoTest.class,
+            PropertyTest.class,
             VertexTest.class,};
 
     /**
