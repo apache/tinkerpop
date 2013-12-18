@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 
+import java.util.Arrays;
 import java.util.function.BiFunction;
 
 /**
@@ -31,6 +32,12 @@ public abstract class MessageType {
         private final GraphQuery query;
         private final Iterable<Vertex> vertices;
 
+        private Global(final String label) {
+            super(label);
+            this.query = null;
+            this.vertices = null;
+        }
+
         private Global(final String label, final GraphQuery query) {
             super(label);
             this.query = query;
@@ -49,6 +56,14 @@ public abstract class MessageType {
 
         public static Global of(final String label, final Iterable<Vertex> vertices) {
             return new Global(label, vertices);
+        }
+
+        public static Global of(final String label, final Vertex... vertices) {
+            return new Global(label, Arrays.asList(vertices));
+        }
+
+        public static Global of(final String label) {
+            return new Global(label);
         }
 
         public Iterable<Vertex> vertices() {
