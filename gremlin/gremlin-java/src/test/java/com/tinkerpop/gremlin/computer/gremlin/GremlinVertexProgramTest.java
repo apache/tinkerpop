@@ -1,9 +1,10 @@
-package com.tinkerpop.gremlin.computer;
+package com.tinkerpop.gremlin.computer.gremlin;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.computer.gremlin.GremlinVertexProgram;
 import com.tinkerpop.gremlin.pipes.Gremlin;
 import org.junit.Test;
 
@@ -21,7 +22,7 @@ public class GremlinVertexProgramTest {
         Graph g = TinkerFactory.createClassic();
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
-                        Gremlin.of().has("name", "marko").out("created").in("created").out("created"))
+                        Gremlin.of().has("name", "marko").outE("knows").inV().identity())
                         .build())
                         .submit().get();
 

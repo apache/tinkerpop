@@ -67,6 +67,8 @@ public abstract class MessageType {
         }
 
         public Iterable<Vertex> vertices() {
+            if (null == this.query && null == this.vertices)
+                throw new IllegalStateException("The message type can only be used for retrieving messages, not sending as no vertices are provided");
             return null == this.query ? this.vertices : this.query.vertices();
         }
     }
