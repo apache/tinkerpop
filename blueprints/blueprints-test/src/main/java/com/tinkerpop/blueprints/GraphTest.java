@@ -5,8 +5,11 @@ import org.junit.Test;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -135,5 +138,43 @@ public class GraphTest extends AbstractBlueprintsTest {
         tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(g, 2, 1));
         v2.remove();
         tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0));
+    }
+
+    /**
+     * Generate a graph with lots of edges and vertices, then test vertex/edge counts on removal of each edge.
+     */
+    @Test
+    public void shouldRemoveEdges() {
+        final int vertexCount = 100;
+        final int edgeCount = 200;
+        final List<Vertex> vertices = new ArrayList<>();
+        final List<Edge> edges = new ArrayList<>();
+        final Random random = new Random();
+
+        for (int i = 0; i < vertexCount; i++) {
+            vertices.add(g.addVertex(Property.Key.ID, i));
+        }
+
+        tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, 0));
+
+        for (int i = 0; i < edgeCount; i++) {
+            final Vertex a = vertices.get(random.nextInt(vertices.size()));
+            final Vertex b = vertices.get(random.nextInt(vertices.size()));
+            if (a != b)
+                edges.add(a.addEdge(AbstractBlueprintsSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
+            else
+                i--;
+        }
+
+        tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, edgeCount));
+
+        int counter = 0;
+        for (Edge e : edges) {
+            counter = counter + 1;
+            e.remove();
+
+            final int currentCounter = counter;
+            tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, edgeCount - currentCounter));
+        }
     }
 }
