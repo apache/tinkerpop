@@ -12,6 +12,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -151,20 +152,20 @@ public class GraphTest extends AbstractBlueprintsTest {
         final List<Edge> edges = new ArrayList<>();
         final Random random = new Random();
 
-        for (int i = 0; i < vertexCount; i++) {
-            vertices.add(g.addVertex(Property.Key.ID, i));
-        }
-
+        IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Property.Key.ID, i)));
         tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, 0));
 
-        for (int i = 0; i < edgeCount; i++) {
-            final Vertex a = vertices.get(random.nextInt(vertices.size()));
-            final Vertex b = vertices.get(random.nextInt(vertices.size()));
-            if (a != b)
-                edges.add(a.addEdge(AbstractBlueprintsSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
-            else
-                i--;
-        }
+        IntStream.range(0, edgeCount).forEach(i -> {
+            boolean created = false;
+            while (!created) {
+                final Vertex a = vertices.get(random.nextInt(vertices.size()));
+                final Vertex b = vertices.get(random.nextInt(vertices.size()));
+                if (a != b) {
+                    edges.add(a.addEdge(AbstractBlueprintsSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
+                    created = true;
+                }
+            }
+        });
 
         tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, edgeCount));
 
@@ -174,7 +175,7 @@ public class GraphTest extends AbstractBlueprintsTest {
             e.remove();
 
             final int currentCounter = counter;
-            tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, edgeCount - currentCounter));
+            tryCommit(g, graph -> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, edgeCount - currentCounter));
         }
     }
 }
