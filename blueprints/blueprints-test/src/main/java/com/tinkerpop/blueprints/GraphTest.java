@@ -178,4 +178,37 @@ public class GraphTest extends AbstractBlueprintsTest {
             tryCommit(g, graph -> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, edgeCount - currentCounter));
         }
     }
+
+    /**
+     * Generate a graph with lots of edges and vertices, then test vertex/edge counts on removal of each vertex.
+     */
+    @Test
+    public void testRemovingVertices() {
+        final int vertexCount = 500;
+        final List<Vertex> vertices = new ArrayList<>();
+        final List<Edge> edges = new ArrayList<>();
+
+        IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Property.Key.ID, i)));
+        tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, 0));
+
+        for (int i = 0; i < vertexCount; i = i + 2) {
+            final Vertex a = vertices.get(i);
+            final Vertex b = vertices.get(i + 1);
+            edges.add(a.addEdge(AbstractBlueprintsSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
+        }
+
+        tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, vertexCount / 2));
+
+        int counter = 0;
+        for (Vertex v : vertices) {
+            counter = counter + 1;
+            v.remove();
+
+            if ((counter + 1) % 2 == 0) {
+                final int currentCounter = counter;
+                tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(
+                        g, vertexCount - currentCounter, edges.size() - ((currentCounter + 1) / 2)));
+            }
+        }
+    }
 }
