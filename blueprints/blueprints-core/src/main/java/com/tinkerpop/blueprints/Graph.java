@@ -6,7 +6,6 @@ import com.tinkerpop.blueprints.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -29,61 +28,25 @@ public interface Graph extends AutoCloseable {
 
     public Transaction tx();
 
-    public <V> Graph.Property<V> getProperty(final String key);
-
-    public <V> Graph.Property<V> setProperty(final String key, final V value);
-
     public default Graph.Features getFeatures() {
         return new Features() {
         };
     }
 
-    public interface Property<V> extends com.tinkerpop.blueprints.Property<V> {
-
-        public Graph getGraph();
-
-        public static <V> Graph.Property<V> empty() {
-            return new Graph.Property<V>() {
-                @Override
-                public String getKey() {
-                    throw Property.Exceptions.propertyDoesNotExist();
-                }
-
-                @Override
-                public V getValue() throws NoSuchElementException {
-                    throw Property.Exceptions.propertyDoesNotExist();
-                }
-
-                @Override
-                public boolean isPresent() {
-                    return false;
-                }
-
-                @Override
-                public void remove() {
-                    throw Property.Exceptions.propertyDoesNotExist();
-                }
-
-                @Override
-                public Graph getGraph() {
-                    throw Property.Exceptions.propertyDoesNotExist();
-                }
-            };
-
-        }
-    }
-
     public interface Features {
         public default GraphFeatures graph() {
-            return new GraphFeatures() { };
+            return new GraphFeatures() {
+            };
         }
 
         public default VertexFeatures vertex() {
-            return new VertexFeatures() { };
+            return new VertexFeatures() {
+            };
         }
 
         public default EdgeFeatures edge() {
-            return new EdgeFeatures() { };
+            return new EdgeFeatures() {
+            };
         }
 
         public interface GraphFeatures extends FeatureSet {
@@ -106,7 +69,8 @@ public interface Graph extends AutoCloseable {
             }
         }
 
-        public interface GraphPropertyFeatures extends PropertyFeatures {}
+        public interface GraphPropertyFeatures extends PropertyFeatures {
+        }
 
         public interface VertexFeatures extends FeatureSet {
             public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
@@ -122,7 +86,8 @@ public interface Graph extends AutoCloseable {
             }
         }
 
-        public interface VertexPropertyFeatures extends PropertyFeatures {}
+        public interface VertexPropertyFeatures extends PropertyFeatures {
+        }
 
         public interface EdgeFeatures extends FeatureSet {
 
@@ -132,7 +97,8 @@ public interface Graph extends AutoCloseable {
             }
         }
 
-        public interface EdgePropertyFeatures extends PropertyFeatures {}
+        public interface EdgePropertyFeatures extends PropertyFeatures {
+        }
 
         public interface PropertyFeatures extends FeatureSet {
             public static final String FEATURE_BOOLEAN_VALUES = "BooleanValues";
@@ -215,17 +181,18 @@ public interface Graph extends AutoCloseable {
             @FeatureDescriptor(name = FEATURE_PROPERTIES)
             public default boolean supportsProperties() {
                 return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
-                       || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
-                       || supportsMetaProperties() || supportsMixedListValues() || supportsPrimitiveArrayValues()
-                       || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
-                       || supportsUniformListValues();
+                        || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
+                        || supportsMetaProperties() || supportsMixedListValues() || supportsPrimitiveArrayValues()
+                        || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
+                        || supportsUniformListValues();
             }
         }
 
         /**
          * A marker interface to identify any set of Features. There is no need to implement this interface.
          */
-        public interface FeatureSet{}
+        public interface FeatureSet {
+        }
 
         /**
          * Implementers should not override this method. Note that this method utilizes reflection to check for

@@ -23,13 +23,13 @@ public abstract interface Element {
         return this.getProperties().keySet();
     }
 
-    public Map<String, ?> getProperties();
+    public Map<String, Property> getProperties();
 
     public <V> Property<V> getProperty(final String key);
 
-    public <V> Property<V> setProperty(final String key, final V value);
+    public <V> void setProperty(final String key, final V value);
 
-    public default <V> V getValue(String key) throws NoSuchElementException {
+    public default <V> V getValue(final String key) throws NoSuchElementException {
         final Property<V> property = this.getProperty(key);
         if (property.isPresent())
             return property.getValue();

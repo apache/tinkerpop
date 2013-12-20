@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -8,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@Ignore
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
     @Test
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {

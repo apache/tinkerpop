@@ -3,6 +3,7 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
@@ -18,7 +19,6 @@ import java.util.Set;
  */
 class TinkerEdge extends TinkerElement implements Edge, Serializable {
 
-    protected final Map<String, Edge.Property> properties = new HashMap<>();
     private final Vertex inVertex;
     private final Vertex outVertex;
 
@@ -29,21 +29,20 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
         this.graph.edgeIndex.autoUpdate(StringFactory.LABEL, this.label, null, this);
     }
 
-    public Map<String, Edge.Property> getProperties() {
-        return new HashMap<>(this.properties);
-    }
-
-    public <V> Edge.Property<V> getProperty(final String key) {
-        final Edge.Property<V> property = this.properties.get(key);
-        return null == property ? Edge.Property.empty() : property;
-    }
-
-    public <V> Edge.Property<V> setProperty(final String key, final V value) {
+    public <V> void setProperty(final String key, final V value) {
         ElementHelper.validateProperty(key, value);
-        final Property<V> property = new Property<>(this, key, value);
-        this.properties.put(key, property);
-        this.graph.edgeIndex.autoUpdate(key, value, property.getValue(), this);
-        return property;
+        final TinkerEdge edge = this;
+        final Property oldProperty = super.getProperty(key);
+        this.properties.put(key, new TinkerProperty<V>(this, key, value) {
+            public void remove() {
+                edge.properties.remove(key);
+            }
+
+            public <E extends Element> E getElement() {
+                return (E) edge;
+            }
+        });
+        this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
     }
 
     public Set<String> getPropertyKeys() {
@@ -82,40 +81,6 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
 
     public String toString() {
         return StringFactory.edgeString(this);
-    }
 
-    public class Property<V> implements Edge.Property<V> {
-
-        private final TinkerEdge edge;
-        private final String key;
-        private final V value;
-
-        public Property(final TinkerEdge edge, final String key, final V value) {
-            this.edge = edge;
-            this.key = key;
-            this.value = value;
-
-        }
-
-        public Edge getEdge() {
-            return this.edge;
-        }
-
-        public String getKey() {
-            return this.key;
-        }
-
-        public V getValue() {
-            return this.value;
-        }
-
-        public void remove() {
-            this.edge.properties.remove(key);
-            this.edge.graph.edgeIndex.autoRemove(this.key, this.isPresent() ? this.value : null, this.edge);
-        }
-
-        public boolean isPresent() {
-            return null != this.value;
-        }
     }
 }

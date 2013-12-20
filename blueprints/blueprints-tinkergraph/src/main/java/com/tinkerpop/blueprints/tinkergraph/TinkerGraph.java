@@ -4,6 +4,7 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Transaction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
@@ -30,7 +31,6 @@ public class TinkerGraph implements Graph, Serializable {
     protected Long currentId = -1l;
     protected Map<String, Vertex> vertices = new HashMap<>();
     protected Map<String, Edge> edges = new HashMap<>();
-    protected Map<String, Graph.Property> properties = new HashMap<>();
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
@@ -62,7 +62,7 @@ public class TinkerGraph implements Graph, Serializable {
     ////////////// BLUEPRINTS API METHODS //////////////////
 
     public Vertex addVertex(final Object... keyValues) {
-        Objects.requireNonNull(properties);
+        Objects.requireNonNull(keyValues);
         Object idString = ElementHelper.getIdValue(keyValues);
         String label = ElementHelper.getLabelValue(keyValues);
 
@@ -88,29 +88,6 @@ public class TinkerGraph implements Graph, Serializable {
         return new TinkerGraphComputer(this);
     }
 
-    public Map<String, Graph.Property> getProperties() {
-        return new HashMap<>(this.properties);
-    }
-
-    public Set<String> getPropertyKeys() {
-        return this.properties.keySet();
-    }
-
-    public <V> Graph.Property<V> getProperty(final String key) {
-        final Graph.Property<V> property = this.properties.get(key);
-        return (null == property) ? Graph.Property.empty() : property;
-    }
-
-    public <V> Graph.Property<V> setProperty(final String key, final V value) {
-        ElementHelper.validateProperty(key, value);
-        final Graph.Property<V> property = this.properties.put(key, new Property<>(this, key, value));
-        return null == property ? Graph.Property.empty() : property;
-    }
-
-    protected void removeProperty(final String key) {
-        this.properties.remove(key);
-    }
-
     public String toString() {
         return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());
     }
@@ -118,7 +95,6 @@ public class TinkerGraph implements Graph, Serializable {
     public void clear() {
         this.vertices.clear();
         this.edges.clear();
-        this.properties.clear();
         this.currentId = 0l;
         this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
         this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
@@ -146,38 +122,6 @@ public class TinkerGraph implements Graph, Serializable {
                     return false;
                 }
             };
-        }
-    }
-
-    public class Property<V> implements Graph.Property<V> {
-        private final TinkerGraph graph;
-        private final String key;
-        private final V value;
-
-        public Property(final TinkerGraph graph, final String key, final V value) {
-            this.graph = graph;
-            this.key = key;
-            this.value = value;
-        }
-
-        public Graph getGraph() {
-            return this.graph;
-        }
-
-        public String getKey() {
-            return this.key;
-        }
-
-        public V getValue() {
-            return this.value;
-        }
-
-        public void remove() {
-            this.graph.properties.remove(key);
-        }
-
-        public boolean isPresent() {
-            return null != this.value;
         }
     }
 

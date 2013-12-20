@@ -6,6 +6,7 @@ import com.tinkerpop.blueprints.io.GraphReader;
 import com.tinkerpop.blueprints.io.graphml.GraphMLReader;
 import com.tinkerpop.blueprints.io.graphml.GraphMLWriter;
 import com.tinkerpop.blueprints.util.StreamFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -21,9 +22,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -50,7 +49,7 @@ public class IoTest extends AbstractBlueprintsTest {
         assertEquals(6, StreamFactory.stream(g.query().edges()).count());
     }
 
-    @Test
+    @Ignore
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
@@ -68,7 +67,7 @@ public class IoTest extends AbstractBlueprintsTest {
         assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
     }
 
-    @Test
+    @Ignore
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
@@ -112,7 +111,7 @@ public class IoTest extends AbstractBlueprintsTest {
         }
 
         // reusing the same config used for creation of "g".
-        final Graph g2  = BlueprintsStandardSuite.GraphManager.get().newTestGraph(config);
+        final Graph g2 = BlueprintsStandardSuite.GraphManager.get().newTestGraph(config);
         final GraphMLReader r = new GraphMLReader.Builder(g2).build();
 
         try (final InputStream in = new FileInputStream(f)) {

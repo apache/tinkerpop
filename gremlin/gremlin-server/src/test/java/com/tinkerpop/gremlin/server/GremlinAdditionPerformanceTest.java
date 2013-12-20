@@ -6,6 +6,7 @@ import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -18,6 +19,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@Ignore
 @AxisRange(min = 0, max = 1)
 @BenchmarkMethodChart(filePrefix = "gremlin-addition")
 @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-gremlin-addition")

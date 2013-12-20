@@ -7,15 +7,14 @@ import com.tinkerpop.blueprints.util.ElementHelper;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 abstract class TinkerElement implements Element, Serializable {
 
+    protected Map<String, Property> properties = new HashMap<>();
     protected final String id;
     protected final String label;
     protected final TinkerGraph graph;
@@ -37,6 +36,16 @@ abstract class TinkerElement implements Element, Serializable {
     public String getLabel() {
         return this.label;
     }
+
+    public Map<String, Property> getProperties() {
+        return new HashMap<>(this.properties);
+    }
+
+    public <V> Property<V> getProperty(final String key) {
+        return this.properties.getOrDefault(key, Property.empty());
+    }
+
+    public abstract <V> void setProperty(final String key, final V value);
 
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);

@@ -7,20 +7,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract interface Property<V> {
-
-    public class Key {
-
-        public static final String ID = "id";
-        public static final String LABEL = "label";
-        public static final String DEFAULT_LABEL = "default";
-
-        private static final String HIDDEN_PREFIX = "%&%";
-
-        public static String hidden(final String key) {
-            return HIDDEN_PREFIX.concat(key);
-        }
-    }
+public interface Annotation<V> {
 
     public String getKey();
 
@@ -41,20 +28,18 @@ public abstract interface Property<V> {
         return this.isPresent() ? this.getValue() : supplier.get();
     }
 
-    public <E extends Element> E getElement();
-
     public void remove();
 
-    public static <V> Property<V> empty() {
-        return new Property<V>() {
+    public static <V> Annotation<V> empty() {
+        return new Annotation<V>() {
             @Override
             public String getKey() {
-                throw Exceptions.propertyDoesNotExist();
+                throw Exceptions.annotationDoesNotExist();
             }
 
             @Override
             public V getValue() throws NoSuchElementException {
-                throw Exceptions.propertyDoesNotExist();
+                throw Exceptions.annotationDoesNotExist();
             }
 
             @Override
@@ -63,50 +48,32 @@ public abstract interface Property<V> {
             }
 
             @Override
-            public <E extends Element> E getElement() {
-                throw Exceptions.propertyDoesNotExist();
-            }
-
-            @Override
             public void remove() {
-                throw Exceptions.propertyDoesNotExist();
+                throw Exceptions.annotationDoesNotExist();
             }
         };
     }
 
     public static class Exceptions {
-        public static IllegalArgumentException propertyKeyIsReserved(final String key) {
-            return new IllegalArgumentException("Property key is reserved for all elements: " + key);
-        }
 
-        public static IllegalArgumentException propertyKeyIdIsReserved() {
-            return propertyKeyIsReserved(Property.Key.ID);
-        }
-
-        public static IllegalArgumentException propertyKeyLabelIsReserved() {
-            return propertyKeyIsReserved(Property.Key.LABEL);
-        }
-
-        public static IllegalArgumentException propertyKeyCanNotBeEmpty() {
+        public static IllegalArgumentException annotationKeyCanNotBeEmpty() {
             return new IllegalArgumentException("Property key can not be the empty string");
         }
 
-        public static IllegalArgumentException propertyKeyCanNotBeNull() {
+        public static IllegalArgumentException annotationKeyCanNotBeNull() {
             return new IllegalArgumentException("Property key can not be null");
         }
 
-        public static IllegalArgumentException propertyValueCanNotBeNull() {
+        public static IllegalArgumentException annotationValueCanNotBeNull() {
             return new IllegalArgumentException("Property value can not be null");
         }
 
-        public static IllegalStateException propertyDoesNotExist() {
+        public static IllegalStateException annotationDoesNotExist() {
             throw new IllegalStateException("The property does not exist as it has no key, value, or associated element");
         }
 
-        public static UnsupportedOperationException dataTypeOfPropertyValueNotSupported(final Object val) {
+        public static UnsupportedOperationException dataTypeOfAnnotationValueNotSupported(final Object val) {
             throw new UnsupportedOperationException(String.format("Property value [%s] is of type %s which is not supported by this Graph implementation", val, val.getClass()));
         }
     }
-
-
 }

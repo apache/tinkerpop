@@ -64,7 +64,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         v.getProperty("location").remove();
         BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
         assertEquals(2, v.getProperties().size());
-        v.getProperties().values().stream().forEach(i -> i.forEach(Property::remove));
+        v.getProperties().values().stream().forEach(Property::remove);
         assertEquals(0, v.getProperties().size());
         BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
     }
