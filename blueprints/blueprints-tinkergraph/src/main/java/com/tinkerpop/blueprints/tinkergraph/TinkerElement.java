@@ -45,8 +45,6 @@ abstract class TinkerElement implements Element, Serializable {
         return this.properties.getOrDefault(key, Property.empty());
     }
 
-    public abstract <V> void setProperty(final String key, final V value);
-
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
     }

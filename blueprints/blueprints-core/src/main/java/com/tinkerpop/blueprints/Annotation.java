@@ -57,23 +57,23 @@ public interface Annotation<V> {
     public static class Exceptions {
 
         public static IllegalArgumentException annotationKeyCanNotBeEmpty() {
-            return new IllegalArgumentException("Property key can not be the empty string");
+            return new IllegalArgumentException("Annotation key can not be the empty string");
         }
 
         public static IllegalArgumentException annotationKeyCanNotBeNull() {
-            return new IllegalArgumentException("Property key can not be null");
+            return new IllegalArgumentException("Annotation key can not be null");
         }
 
         public static IllegalArgumentException annotationValueCanNotBeNull() {
-            return new IllegalArgumentException("Property value can not be null");
+            return new IllegalArgumentException("Annotation value can not be null");
         }
 
         public static IllegalStateException annotationDoesNotExist() {
-            throw new IllegalStateException("The property does not exist as it has no key, value, or associated element");
+            throw new IllegalStateException("The annotation does not exist as it has no key or value");
         }
 
         public static UnsupportedOperationException dataTypeOfAnnotationValueNotSupported(final Object val) {
-            throw new UnsupportedOperationException(String.format("Property value [%s] is of type %s which is not supported by this Graph implementation", val, val.getClass()));
+            throw new UnsupportedOperationException(String.format("Annotation value [%s] is of type %s which is not supported by this Graph implementation", val, val.getClass()));
         }
     }
 }

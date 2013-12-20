@@ -7,14 +7,13 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract interface Property<V> {
+public abstract interface Property<V> extends Annotatable {
 
     public class Key {
 
         public static final String ID = "id";
         public static final String LABEL = "label";
         public static final String DEFAULT_LABEL = "default";
-
         private static final String HIDDEN_PREFIX = "%&%";
 
         public static String hidden(final String key) {
@@ -69,6 +68,16 @@ public abstract interface Property<V> {
 
             @Override
             public void remove() {
+                throw Exceptions.propertyDoesNotExist();
+            }
+
+            @Override
+            public <V> void setAnnotation(final String key, final V value) {
+                throw Exceptions.propertyDoesNotExist();
+            }
+
+            @Override
+            public <V> V getAnnotation(final String key) {
                 throw Exceptions.propertyDoesNotExist();
             }
         };
