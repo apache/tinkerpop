@@ -75,6 +75,8 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
 
         this.graph.edgeIndex.removeElement(this);
         this.graph.edges.remove(this.getId());
+        this.properties.clear();
+        this.annotations.clear();
     }
 
     public String toString() {

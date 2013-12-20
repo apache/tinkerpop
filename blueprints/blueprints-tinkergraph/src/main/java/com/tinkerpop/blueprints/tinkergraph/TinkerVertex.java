@@ -119,6 +119,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
         this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
         this.properties.clear();
+        this.annotations.clear();
         graph.vertexIndex.removeElement(this);
         graph.vertices.remove(this.id);
     }
