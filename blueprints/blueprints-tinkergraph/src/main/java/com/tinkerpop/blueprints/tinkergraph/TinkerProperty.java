@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Property;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,8 +45,8 @@ public abstract class TinkerProperty<V> implements Property<V> {
         this.annotations.put(key, value);
     }
 
-    public <V> V getAnnotation(final String key) {
-        return (V) this.annotations.get(key);
+    public <V> Optional<V> getAnnotation(final String key) {
+        return Optional.ofNullable((V)this.annotations.get(key));
     }
 
     public abstract void remove();

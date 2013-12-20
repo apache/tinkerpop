@@ -1,6 +1,5 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
-import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.computer.VertexProgram;
@@ -8,6 +7,7 @@ import com.tinkerpop.blueprints.computer.VertexSystemMemory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -17,7 +17,7 @@ public class TinkerVertexMemory implements VertexSystemMemory {
     protected Map<String, VertexProgram.KeyType> computeKeys;
     protected final GraphComputer.Isolation isolation;
     protected boolean phase = true;
-    private final Map<Object, Map<String, Property>> memory;
+    private final Map<Object, Map<String, Object>> memory;
 
     public TinkerVertexMemory(final GraphComputer.Isolation isolation) {
         this.isolation = isolation;
@@ -70,28 +70,19 @@ public class TinkerVertexMemory implements VertexSystemMemory {
     }
 
 
-    public <V> void setProperty(final Vertex vertex, final String key, final V value) {
-        final Map<String, Property> map = this.memory.getOrDefault(vertex.getId(), new HashMap<>());
+    public <V> void setAnnotation(final Vertex vertex, final String key, final V value) {
+        final Map<String, Object> map = this.memory.getOrDefault(vertex.getId(), new HashMap<>());
         this.memory.put(vertex.getId(), map);
 
         final String bspKey = generateSetKey(key);
         if (isConstantKey(key) && map.containsKey(bspKey))
             throw new IllegalStateException("The constant property " + bspKey + " has already been set for vertex " + vertex);
         else
-            map.put(bspKey, new TinkerProperty(vertex, key, value) {
-                @Override
-                public void remove() {
-                    map.remove(bspKey);
-                }
-            });
+            map.put(bspKey, value);
     }
 
-    public <V> Property<V> getProperty(final Vertex vertex, final String key) {
-        final Map<String, Property> map = this.memory.get(vertex.getId());
-        if (null == map)
-            return Property.empty();
-        else {
-            return map.getOrDefault(generateGetKey(key), Property.empty());
-        }
+    public <V> Optional<V> getAnnotation(final Vertex vertex, final String key) {
+        final Map<String, Object> map = this.memory.get(vertex.getId());
+        return null == map ? Optional.empty() : Optional.ofNullable((V)map.get(generateGetKey(key)));
     }
 }

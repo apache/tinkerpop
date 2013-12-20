@@ -31,6 +31,7 @@ public class TinkerGraph implements Graph, Serializable {
     protected Long currentId = -1l;
     protected Map<String, Vertex> vertices = new HashMap<>();
     protected Map<String, Edge> edges = new HashMap<>();
+    protected Map<String, Object> annotations = new HashMap<>();
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
@@ -86,6 +87,14 @@ public class TinkerGraph implements Graph, Serializable {
 
     public GraphComputer compute() {
         return new TinkerGraphComputer(this);
+    }
+
+    public <V> void setAnnotation(final String key, final V value) {
+        this.annotations.put(key, value);
+    }
+
+    public <V> Optional<V> getAnnotation(final String key) {
+        return Optional.<V>ofNullable((V)this.annotations.get(key));
     }
 
     public String toString() {

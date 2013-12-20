@@ -8,6 +8,7 @@ import com.tinkerpop.blueprints.util.ElementHelper;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -15,6 +16,7 @@ import java.util.Map;
 abstract class TinkerElement implements Element, Serializable {
 
     protected Map<String, Property> properties = new HashMap<>();
+    protected Map<String, Object> annotations = new HashMap<>();
     protected final String id;
     protected final String label;
     protected final TinkerGraph graph;
@@ -47,6 +49,14 @@ abstract class TinkerElement implements Element, Serializable {
 
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
+    }
+
+    public <V> Optional<V> getAnnotation(final String key) {
+        return Optional.ofNullable((V)this.annotations.get(key));
+    }
+
+    public <V> void setAnnotation(final String key, final V value) {
+        this.annotations.put(key, value);
     }
 
     public abstract void remove();

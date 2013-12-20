@@ -73,13 +73,13 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     }
 
     private void incrGremlins(final Element element) {
-        long counts = element.<Long>getProperty(GREMLINS).orElse(0l);
-        element.setProperty(GREMLINS, ++counts);
+        long counts = element.<Long>getAnnotation(GREMLINS).orElse(0l);
+        element.setAnnotation(GREMLINS, ++counts);
     }
 
     private void clearGremlin(final Vertex vertex) {
-        vertex.setProperty(GREMLINS, 0l);
-        vertex.query().direction(Direction.BOTH).edges().forEach(e -> e.setProperty(GREMLINS, 0l));
+        vertex.setAnnotation(GREMLINS, 0l);
+        vertex.query().direction(Direction.BOTH).edges().forEach(e -> e.setAnnotation(GREMLINS, 0l));
     }
 
     private Iterator<Holder<Edge>> getEdges(final Vertex vertex, final Object edgeId) {

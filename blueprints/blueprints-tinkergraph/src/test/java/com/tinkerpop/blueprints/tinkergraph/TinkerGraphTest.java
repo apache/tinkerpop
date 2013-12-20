@@ -34,8 +34,10 @@ public class TinkerGraphTest {
         System.out.println(marko.query().direction(Direction.OUT).labels("knows", "workedWith").vertices());
         g.createIndex("blah", Vertex.class);
 
-        edge.setProperty("weight",1.0f);
-        System.out.println(edge.getValue("weight").toString());
+        edge.setProperty("weight", 1.0f);
+        edge.setAnnotation("creator", "stephen");
+        assertEquals(edge.getValue("weight"), Float.valueOf(1.0f));
+        assertEquals(edge.getAnnotation("creator").get(), "stephen");
     }
 
     /*@Test

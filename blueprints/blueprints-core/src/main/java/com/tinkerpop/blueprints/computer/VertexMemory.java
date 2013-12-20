@@ -1,7 +1,8 @@
 package com.tinkerpop.blueprints.computer;
 
-import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+
+import java.util.Optional;
 
 /**
  * VertexMemory denotes the vertex properties that are used for the VertexProgram.
@@ -10,8 +11,8 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public interface VertexMemory {
 
-    public <V> void setProperty(final Vertex vertex, final String key, final V value);
+    public <V> void setAnnotation(final Vertex vertex, final String key, final V value);
 
-    public <V> Property<V> getProperty(final Vertex vertex, final String key);
+    public <V> Optional<V> getAnnotation(final Vertex vertex, final String key);
 
 }

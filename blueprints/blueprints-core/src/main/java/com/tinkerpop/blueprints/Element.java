@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract interface Element {
+public abstract interface Element extends Annotatable {
 
     public Object getId();
 

@@ -14,7 +14,7 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Graph extends AutoCloseable {
+public interface Graph extends AutoCloseable, Annotatable {
 
     public static <G extends Graph> G open(final Optional<Configuration> configuration) {
         throw new UnsupportedOperationException("Implementations must override this method");

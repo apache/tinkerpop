@@ -98,6 +98,14 @@ public interface GraphComputer {
             return new IllegalStateException("The properties of an adjacent vertex can not be written");
         }
 
+        public static IllegalStateException adjacentVertexAnnotationsCanNotBeRead() {
+            return new IllegalStateException("The annotations of an adjacent vertex can not be read, only its id");
+        }
+
+        public static IllegalStateException adjacentVertexAnnotationsCanNotBeWritten() {
+            return new IllegalStateException("The annotations of an adjacent vertex can not be written");
+        }
+
         public static IllegalArgumentException providedKeyIsNotAComputeKey(final String key) {
             return new IllegalArgumentException("The provided key is not a compute key: " + key);
         }

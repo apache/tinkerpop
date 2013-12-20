@@ -13,6 +13,7 @@ import com.tinkerpop.blueprints.util.StringFactory;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -45,28 +46,49 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         this.centricId = centricId;
     }
 
-    public <V> Property<V> getProperty(final String key) {
-        if (State.STANDARD == this.state) {
-            return super.getProperty(key);
-        } else if (State.CENTRIC == this.state) {
+    public <V> void setAnnotation(final String key, final V value) {
+        if (this.state == State.STANDARD) {
+            this.setAnnotation(key, value);
+        } else if (this.state == State.CENTRIC) {
             if (this.vertexMemory.isComputeKey(key))
-                return this.vertexMemory.getProperty(this, key);
-            else {
-                return super.getProperty(key);
-            }
+                this.vertexMemory.setAnnotation(this, key, value);
+            else
+                throw GraphComputer.Features.providedKeyIsNotAComputeKey(key);
+        } else {
+            throw GraphComputer.Features.adjacentVertexAnnotationsCanNotBeWritten();
+        }
+    }
+
+    public <V> Optional<V> getAnnotation(final String key) {
+        if (this.state == State.STANDARD) {
+            return super.getAnnotation(key);
+        } else if (this.state == State.CENTRIC) {
+            if (this.vertexMemory.isComputeKey(key))
+                return this.vertexMemory.getAnnotation(this, key);
+            else
+                return super.getAnnotation(key);
+        } else {
+            throw GraphComputer.Features.adjacentVertexAnnotationsCanNotBeRead();
+        }
+    }
+
+    public <V> Property<V> getProperty(final String key) {
+        if (this.state != State.ADJACENT) {
+            return super.getProperty(key);
         } else {
             throw GraphComputer.Features.adjacentVertexPropertiesCanNotBeRead();
         }
     }
 
     public <V> void setProperty(final String key, final V value) {
-        if (State.STANDARD == this.state) {
+        if (this.state != State.ADJACENT) {
             ElementHelper.validateProperty(key, value);
             final TinkerVertex vertex = this;
             final Property oldProperty = super.getProperty(key);
             this.properties.put(key, new TinkerProperty<V>(this, key, value) {
+                @Override
                 public void remove() {
-                    vertex.removeProperty(this);
+                    vertex.properties.remove(key);
                 }
 
                 public <E extends Element> E getElement() {
@@ -74,27 +96,8 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
                 }
             });
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
-        } else if (State.CENTRIC == this.state) {
-            if (this.vertexMemory.isComputeKey(key))
-                this.vertexMemory.setProperty(this, key, value);
-            else
-                throw GraphComputer.Features.providedKeyIsNotAComputeKey(key);
         } else {
-            throw GraphComputer.Features.adjacentVertexPropertiesCanNotBeWritten();
-        }
-    }
-
-    protected void removeProperty(final Property property) {
-        if (State.STANDARD == this.state) {
-            this.properties.remove(property.getKey());
-            this.graph.vertexIndex.autoRemove(property.getKey(), property.getValue(), this);
-        } else if (State.CENTRIC == this.state) {
-            if (this.vertexMemory.isComputeKey(property.getKey()))
-                this.vertexMemory.getProperty(this, property.getKey()).remove();
-            else
-                throw GraphComputer.Features.providedKeyIsNotAComputeKey(property.getKey());
-        } else {
-            throw GraphComputer.Features.adjacentVertexPropertiesCanNotBeWritten();
+            GraphComputer.Features.adjacentVertexPropertiesCanNotBeWritten();
         }
     }
 
