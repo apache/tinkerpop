@@ -21,7 +21,7 @@ public class GremlinVertexProgramTest {
         Graph g = TinkerFactory.createClassic();
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
-                        Gremlin.of().has("name", "marko").outE("knows").has("weight",1.0f).property("weight").identity())
+                        Gremlin.of().has("name", "marko").outE("knows").has("weight",1.0f).inV().property("name").identity())
                         .build())
                         .submit().get();
 
