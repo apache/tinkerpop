@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.computer.gremlin;
 
-import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Blueprints;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
 import java.io.Serializable;
@@ -12,38 +12,24 @@ import java.io.Serializable;
  */
 public class GremlinMessage implements Serializable {
 
-    public enum Destination {VERTEX, EDGE, PROPERTY}
-
     public final Object elementId;
-    public final Destination destination;
+    public final Blueprints destination;
+    public final String propertyKey;
 
-    public GremlinMessage(final Destination destination, final Object elementId) {
-        this.elementId = elementId;
+    private GremlinMessage(final Blueprints destination, final Object elementId, final String propertyKey) {
         this.destination = destination;
+        this.elementId = elementId;
+        this.propertyKey = propertyKey;
+
     }
 
-    public static GremlinMessage of(final Destination destination, final Object elementId) {
-        return new GremlinMessage(destination, elementId);
-    }
-
-    public static GremlinMessage of(final Element element) {
-        Destination d;
-        if (element instanceof Vertex)
-            d = Destination.VERTEX;
-        else if (element instanceof Edge)
-            d = Destination.EDGE;
+    public static GremlinMessage of(final Object object) {
+        Blueprints blueprints = Blueprints.of(object);
+        if (blueprints == Blueprints.VERTEX)
+            return new GremlinMessage(blueprints, ((Vertex) object).getId(), null);
+        else if (blueprints == Blueprints.EDGE)
+            return new GremlinMessage(blueprints, ((Edge) object).getId(), null);
         else
-            d = Destination.PROPERTY;
-        return new GremlinMessage(d, element.getId());
+            return new GremlinMessage(blueprints, ((Property) object).getElement().getId(), ((Property) object).getKey());
     }
-
-    public static Vertex getVertex(final Element element) {
-        if (element instanceof Vertex)
-            return (Vertex) element;
-        else if (element instanceof Edge)
-            return ((Edge) element).getVertex(Direction.IN);
-        else
-            throw new UnsupportedOperationException("Properties not supported yet");
-    }
-
 }

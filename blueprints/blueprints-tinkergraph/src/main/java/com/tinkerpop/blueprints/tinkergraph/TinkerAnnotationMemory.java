@@ -43,13 +43,13 @@ public class TinkerAnnotationMemory implements AnnotationSystemMemory {
     protected String generateGetKey(final String key) {
         final VertexProgram.KeyType keyType = this.computeKeys.get(key);
         if (null == keyType)
-            throw new IllegalArgumentException("The provided key is not a compute key: " + key);
+            throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
 
         if (keyType.equals(VertexProgram.KeyType.CONSTANT))
             return key;
 
-        if (isolation.equals(GraphComputer.Isolation.BSP))
-            return key + !phase;
+        if (this.isolation.equals(GraphComputer.Isolation.BSP))
+            return key + !this.phase;
         else
             return key;
 
@@ -59,8 +59,8 @@ public class TinkerAnnotationMemory implements AnnotationSystemMemory {
         if (this.computeKeys.get(key).equals(VertexProgram.KeyType.CONSTANT))
             return key;
 
-        if (isolation.equals(GraphComputer.Isolation.BSP))
-            return key + phase;
+        if (this.isolation.equals(GraphComputer.Isolation.BSP))
+            return key + this.phase;
         else
             return key;
     }

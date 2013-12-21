@@ -21,12 +21,21 @@ public class GremlinVertexProgramTest {
         Graph g = TinkerFactory.createClassic();
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
-                        Gremlin.of().has("name", "marko").outE("knows").inV().identity())
+                        Gremlin.of().has("name", "marko").outE("knows").inV().property("name").identity())
                         .build())
                         .submit().get();
 
+        System.out.println("---VERTICES---");
         StreamFactory.stream(g.query().vertices()).forEach(v -> {
-            System.out.println(v.getId() + ": " + result.getAnnotationMemory().getElementAnnotation(v, "gremlins").orElse(Long.MAX_VALUE));
+            System.out.println(v.getId() + "==>" + result.getAnnotationMemory().getElementAnnotation(v, "gremlins").orElse(null));
+            v.getProperties().values().forEach(p -> {
+                System.out.println("\t" + p.getKey() + ":" + p.getValue() + "==>" + p.getAnnotation("gremlins").orElse(null));
+            });
+        });
+
+        System.out.println("---EDGES---");
+        StreamFactory.stream(g.query().edges()).forEach(e -> {
+            System.out.println(e.getId() + "==>" + result.getAnnotationMemory().getElementAnnotation(e, "gremlins").orElse(null));
         });
 
 

@@ -3,6 +3,7 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.util.DefaultVertexQuery;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
@@ -26,16 +27,21 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
         this.annotationMemory = annotationMemory;
     }
 
-    private Stream<Edge> makeStream() {
-        Stream<Edge> edges = Stream.empty();
+    private Stream<TinkerEdge> makeStream() {
+        Stream<TinkerEdge> edges = Stream.empty();
 
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN)) {
-            edges = this.getInEdges(this.labels).stream();
+            edges = (Stream) this.getInEdges(this.labels).stream();
         }
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.OUT)) {
-            edges = Stream.concat(edges, this.getOutEdges(this.labels).stream());
+            edges = (Stream) Stream.concat(edges, this.getOutEdges(this.labels).stream());
         }
-        return edges.filter(e -> HasContainer.testAll(e, this.hasContainers)).limit(this.limit);
+        edges = edges.filter(e -> HasContainer.testAll(e, this.hasContainers)).limit(this.limit);
+
+        // GENERATE COMPUTE SHELLED EDGES DURING GRAPH COMPUTING
+        if (TinkerVertex.State.CENTRIC == this.vertex.state)
+            edges = edges.map(e -> e.createClone(TinkerElement.State.CENTRIC, this.vertex.getId(), this.annotationMemory));
+        return edges;
     }
 
     public Iterable<Edge> edges() {
@@ -44,7 +50,7 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
 
     public Iterable<Vertex> vertices() {
         if (this.vertex.state.equals(TinkerVertex.State.ADJACENT))
-            throw Vertex.Exceptions.adjacentVerticesCanNotBeQueried();
+            throw GraphComputer.Exceptions.adjacentVerticesCanNotBeQueried();
 
         Stream<TinkerVertex> vertices = Stream.empty();
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN)) {
@@ -55,7 +61,7 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
         }
         vertices = vertices.limit(this.limit);
 
-        // ADJACENCY REFERENCES DURING GRAPH COMPUTING
+        // GENERATE COMPUTE SHELLED ADJACENT VERTICES DURING GRAPH COMPUTING
         if (TinkerVertex.State.CENTRIC == this.vertex.state)
             vertices = vertices.map(v -> v.createClone(TinkerVertex.State.ADJACENT, this.vertex.getId(), this.annotationMemory));
 

@@ -13,19 +13,12 @@ import com.tinkerpop.blueprints.util.StringFactory;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 class TinkerVertex extends TinkerElement implements Vertex, Serializable {
-
-    protected enum State {STANDARD, CENTRIC, ADJACENT}
-
-    protected TinkerAnnotationMemory annotationMemory;
-    protected final State state;
-    protected String centricId;
 
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
@@ -44,32 +37,6 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         this.properties = vertex.properties;
         this.annotationMemory = annotationMemory;
         this.centricId = centricId;
-    }
-
-    public <V> void setAnnotation(final String key, final V value) {
-        if (this.state == State.STANDARD) {
-            this.setAnnotation(key, value);
-        } else if (this.state == State.CENTRIC) {
-            if (this.annotationMemory.isComputeKey(key))
-                this.annotationMemory.setElementAnnotation(this, key, value);
-            else
-                throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-        } else {
-            throw GraphComputer.Exceptions.adjacentVertexAnnotationsCanNotBeWritten();
-        }
-    }
-
-    public <V> Optional<V> getAnnotation(final String key) {
-        if (this.state == State.STANDARD) {
-            return super.getAnnotation(key);
-        } else if (this.state == State.CENTRIC) {
-            if (this.annotationMemory.isComputeKey(key))
-                return this.annotationMemory.getElementAnnotation(this, key);
-            else
-                return super.getAnnotation(key);
-        } else {
-            throw GraphComputer.Exceptions.adjacentVertexAnnotationsCanNotBeRead();
-        }
     }
 
     public <V> Property<V> getProperty(final String key) {

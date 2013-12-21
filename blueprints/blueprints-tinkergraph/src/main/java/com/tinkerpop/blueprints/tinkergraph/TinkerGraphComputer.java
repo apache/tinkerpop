@@ -1,10 +1,10 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 
+import com.tinkerpop.blueprints.computer.AnnotationMemory;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.computer.GraphMemory;
-import com.tinkerpop.blueprints.computer.AnnotationMemory;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
@@ -50,8 +50,8 @@ public class TinkerGraphComputer implements GraphComputer {
                         vertexProgram.execute(((TinkerVertex) vertex).createClone(TinkerVertex.State.CENTRIC, vertex.getId().toString(), annotationMemory), messenger, graphMemory));
 
                 this.annotationMemory.completeIteration();
-                this.graphMemory.incrIteration();
                 this.messenger.completeIteration();
+                this.graphMemory.incrIteration();
                 done = this.vertexProgram.terminate(this.graphMemory);
             }
 

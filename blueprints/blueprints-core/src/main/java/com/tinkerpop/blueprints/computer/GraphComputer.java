@@ -116,6 +116,10 @@ public interface GraphComputer {
         public static IllegalStateException constantAnnotationHasAlreadyBeenSet(final String key, final Object id) {
             return new IllegalStateException("The constant annotation " + key + " has already been set for annotation " + id + ":" + key);
         }
+
+        public static IllegalStateException adjacentVerticesCanNotBeQueried() {
+            return new IllegalStateException("It is not possible to query an adjacent vertex in a vertex program");
+        }
     }
 
 }

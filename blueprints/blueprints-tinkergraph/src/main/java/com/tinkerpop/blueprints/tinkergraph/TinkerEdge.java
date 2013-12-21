@@ -20,6 +20,16 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
     private final Vertex inVertex;
     private final Vertex outVertex;
 
+    protected TinkerEdge(final TinkerEdge edge, final State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+        super(edge.id, edge.label, edge.graph);
+        this.state = state;
+        this.inVertex = edge.inVertex;
+        this.outVertex = edge.outVertex;
+        this.properties = edge.properties;
+        this.annotationMemory = annotationMemory;
+        this.centricId = centricId;
+    }
+
     protected TinkerEdge(final String id, final Vertex outVertex, final String label, final Vertex inVertex, final TinkerGraph graph) {
         super(id, label, graph);
         this.outVertex = outVertex;
@@ -77,6 +87,10 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
         this.graph.edges.remove(this.getId());
         this.properties.clear();
         this.annotations.clear();
+    }
+
+    public TinkerEdge createClone(final State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+        return new TinkerEdge(this, state, centricId, annotationMemory);
     }
 
     public String toString() {

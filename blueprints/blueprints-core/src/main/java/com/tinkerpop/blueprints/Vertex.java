@@ -16,9 +16,4 @@ public interface Vertex extends Element {
 
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
-    public static class Exceptions extends Element.Exceptions {
-        public static IllegalStateException adjacentVerticesCanNotBeQueried() {
-            return new IllegalStateException("It is not possible to query() an adjacent vertex in a vertex program");
-        }
-    }
 }
