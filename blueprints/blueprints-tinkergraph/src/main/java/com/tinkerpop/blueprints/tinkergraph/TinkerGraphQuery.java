@@ -21,7 +21,13 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
     }
 
     public Iterable<Edge> edges() {
-        return graph.edges.values().parallelStream().filter(v -> HasContainer.testAll(v, this.hasContainers)).limit(this.limit).collect(Collectors.<Edge>toList());
+        final HasContainer indexedContainer = getIndexKey(Edge.class);
+        return ((null == indexedContainer) ?
+                this.graph.edges.values().parallelStream() :
+                this.graph.edgeIndex.get(indexedContainer.key, indexedContainer.value).parallelStream())
+                .filter(e -> HasContainer.testAll((Edge) e, this.hasContainers))
+                .limit(this.limit)
+                .collect(Collectors.<Edge>toList());
     }
 
     public Iterable<Vertex> vertices() {

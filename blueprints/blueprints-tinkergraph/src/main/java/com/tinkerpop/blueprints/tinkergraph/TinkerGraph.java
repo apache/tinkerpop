@@ -94,7 +94,7 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
     public <V> Optional<V> getAnnotation(final String key) {
-        return Optional.<V>ofNullable((V)this.annotations.get(key));
+        return Optional.ofNullable((V) this.annotations.get(key));
     }
 
     public String toString() {

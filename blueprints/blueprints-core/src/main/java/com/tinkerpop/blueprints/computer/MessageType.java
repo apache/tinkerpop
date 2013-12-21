@@ -13,8 +13,8 @@ import java.util.function.BiFunction;
  * A message can have multiple receivers and message type allows the underlying graph computer to optimize the message passing.
  * In many situations there is no need to create multiple of the same message (thus, index based on message type).
  *
- * @author Matthias Broecheler (me@matthiasb.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Matthias Broecheler (me@matthiasb.com)
  */
 public abstract class MessageType {
 
@@ -68,7 +68,7 @@ public abstract class MessageType {
 
         public Iterable<Vertex> vertices() {
             if (null == this.query && null == this.vertices)
-                throw new IllegalStateException("The message type can only be used for retrieving messages, not sending as no vertices are provided");
+                throw new IllegalStateException("This message type instance can only be used for retrieving messages, not sending as no vertices are provided");
             return null == this.query ? this.vertices : this.query.vertices();
         }
     }

@@ -19,11 +19,11 @@ import java.util.stream.Stream;
 public class TinkerVertexQuery extends DefaultVertexQuery {
 
     protected final TinkerVertex vertex;
-    protected final TinkerVertexMemory vertexMemory;
+    protected final TinkerAnnotationMemory annotationMemory;
 
-    public TinkerVertexQuery(final TinkerVertex vertex, final TinkerVertexMemory vertexMemory) {
+    public TinkerVertexQuery(final TinkerVertex vertex, final TinkerAnnotationMemory annotationMemory) {
         this.vertex = vertex;
-        this.vertexMemory = vertexMemory;
+        this.annotationMemory = annotationMemory;
     }
 
     private Stream<Edge> makeStream() {
@@ -57,7 +57,7 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
 
         // ADJACENCY REFERENCES DURING GRAPH COMPUTING
         if (TinkerVertex.State.CENTRIC == this.vertex.state)
-            vertices = vertices.map(v -> v.createClone(TinkerVertex.State.ADJACENT, this.vertex.getId(), this.vertexMemory));
+            vertices = vertices.map(v -> v.createClone(TinkerVertex.State.ADJACENT, this.vertex.getId(), this.annotationMemory));
 
         return (Iterable) StreamFactory.iterable(vertices);
     }

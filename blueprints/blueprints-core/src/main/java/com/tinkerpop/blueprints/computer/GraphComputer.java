@@ -4,7 +4,7 @@ import java.util.concurrent.Future;
 
 /**
  * The GraphComputer is responsible for the execution of a VertexProgram against the vertices in the Graph.
- * A GraphComputer maintains a VertexMemory (local vertex memory) and GraphMemory (global graph memory).
+ * A GraphComputer maintains a AnnotationMemory (local vertex memory) and GraphMemory (global graph memory).
  * It is up to the GraphComputer implementation to determine the appropriate memory structures given the computing substrate.
  * All GraphComputers also maintains levels of memory isolation: Bulk Synchronous Parallel and Dirty Bulk Synchronous Parallel.
  *
@@ -90,6 +90,9 @@ public interface GraphComputer {
             return true;
         }
 
+    }
+
+    public static class Exceptions {
         public static IllegalStateException adjacentVertexPropertiesCanNotBeRead() {
             return new IllegalStateException("The properties of an adjacent vertex can not be read, only its id");
         }
@@ -108,6 +111,10 @@ public interface GraphComputer {
 
         public static IllegalArgumentException providedKeyIsNotAComputeKey(final String key) {
             return new IllegalArgumentException("The provided key is not a compute key: " + key);
+        }
+
+        public static IllegalStateException constantAnnotationHasAlreadyBeenSet(final String key, final Object id) {
+            return new IllegalStateException("The constant annotation " + key + " has already been set for annotation " + id + ":" + key);
         }
     }
 

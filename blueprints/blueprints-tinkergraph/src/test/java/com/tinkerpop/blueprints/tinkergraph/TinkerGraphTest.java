@@ -57,7 +57,7 @@ public class TinkerGraphTest {
 
         System.out.println("Runtime: " + result.getGraphMemory().getRuntime());
         StreamFactory.stream(g.query().vertices())
-                .forEach(v -> System.out.println(result.getVertexMemory().getProperty(v, "i").getValue()));
+                .forEach(v -> System.out.println(result.getAnnotationMemory().getProperty(v, "i").getValue()));
     }*/
 
 }

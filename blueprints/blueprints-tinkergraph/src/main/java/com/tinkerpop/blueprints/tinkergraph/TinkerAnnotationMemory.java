@@ -1,9 +1,9 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.computer.AnnotationSystemMemory;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.computer.VertexProgram;
-import com.tinkerpop.blueprints.computer.VertexSystemMemory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,14 +12,14 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerVertexMemory implements VertexSystemMemory {
+public class TinkerAnnotationMemory implements AnnotationSystemMemory {
 
     protected Map<String, VertexProgram.KeyType> computeKeys;
     protected final GraphComputer.Isolation isolation;
     protected boolean phase = true;
     private final Map<Object, Map<String, Object>> memory;
 
-    public TinkerVertexMemory(final GraphComputer.Isolation isolation) {
+    public TinkerAnnotationMemory(final GraphComputer.Isolation isolation) {
         this.isolation = isolation;
         this.memory = new HashMap<>();
     }
@@ -69,20 +69,35 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         return VertexProgram.KeyType.CONSTANT.equals(this.computeKeys.get(key));
     }
 
+    public <V> void setElementAnnotation(final Element element, final String key, final V value) {
+        this.setAnnotation(element.getId().toString(), key, value);
+    }
 
-    public <V> void setAnnotation(final Vertex vertex, final String key, final V value) {
-        final Map<String, Object> map = this.memory.getOrDefault(vertex.getId(), new HashMap<>());
-        this.memory.put(vertex.getId(), map);
+    public <V> void setPropertyAnnotation(final Element element, final String propertyKey, final String key, final V value) {
+        this.setAnnotation(element.getId() + ":" + propertyKey, key, value);
+    }
+
+    public <V> Optional<V> getElementAnnotation(final Element element, final String key) {
+        return this.getAnnotation(element.getId().toString(), key);
+    }
+
+    public <V> Optional<V> getPropertyAnnotation(final Element element, final String propertyKey, final String key) {
+        return this.getAnnotation(element.getId() + ":" + propertyKey, key);
+    }
+
+    private <V> void setAnnotation(final String id, final String key, final V value) {
+        final Map<String, Object> map = this.memory.getOrDefault(id, new HashMap<>());
+        this.memory.put(id, map);
 
         final String bspKey = generateSetKey(key);
         if (isConstantKey(key) && map.containsKey(bspKey))
-            throw new IllegalStateException("The constant property " + bspKey + " has already been set for vertex " + vertex);
+            throw GraphComputer.Exceptions.constantAnnotationHasAlreadyBeenSet(key, id);
         else
             map.put(bspKey, value);
     }
 
-    public <V> Optional<V> getAnnotation(final Vertex vertex, final String key) {
-        final Map<String, Object> map = this.memory.get(vertex.getId());
-        return null == map ? Optional.empty() : Optional.ofNullable((V)map.get(generateGetKey(key)));
+    private <V> Optional<V> getAnnotation(final String id, final String key) {
+        final Map<String, Object> map = this.memory.get(id);
+        return null == map ? Optional.empty() : Optional.ofNullable((V) map.get(generateGetKey(key)));
     }
 }

@@ -9,7 +9,7 @@ import java.util.Map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface VertexSystemMemory extends VertexMemory {
+public interface AnnotationSystemMemory extends AnnotationMemory {
 
     public boolean isComputeKey(final String key);
 

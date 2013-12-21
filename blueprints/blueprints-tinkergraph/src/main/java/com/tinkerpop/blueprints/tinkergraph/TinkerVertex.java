@@ -23,7 +23,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
     protected enum State {STANDARD, CENTRIC, ADJACENT}
 
-    protected TinkerVertexMemory vertexMemory;
+    protected TinkerAnnotationMemory annotationMemory;
     protected final State state;
     protected String centricId;
 
@@ -36,13 +36,13 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         this.centricId = id;
     }
 
-    protected TinkerVertex(final TinkerVertex vertex, final State state, final String centricId, final TinkerVertexMemory vertexMemory) {
+    protected TinkerVertex(final TinkerVertex vertex, final State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
         super(vertex.id, vertex.label, vertex.graph);
         this.state = state;
         this.outEdges = vertex.outEdges;
         this.inEdges = vertex.inEdges;
         this.properties = vertex.properties;
-        this.vertexMemory = vertexMemory;
+        this.annotationMemory = annotationMemory;
         this.centricId = centricId;
     }
 
@@ -50,12 +50,12 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         if (this.state == State.STANDARD) {
             this.setAnnotation(key, value);
         } else if (this.state == State.CENTRIC) {
-            if (this.vertexMemory.isComputeKey(key))
-                this.vertexMemory.setAnnotation(this, key, value);
+            if (this.annotationMemory.isComputeKey(key))
+                this.annotationMemory.setElementAnnotation(this, key, value);
             else
-                throw GraphComputer.Features.providedKeyIsNotAComputeKey(key);
+                throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
         } else {
-            throw GraphComputer.Features.adjacentVertexAnnotationsCanNotBeWritten();
+            throw GraphComputer.Exceptions.adjacentVertexAnnotationsCanNotBeWritten();
         }
     }
 
@@ -63,12 +63,12 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         if (this.state == State.STANDARD) {
             return super.getAnnotation(key);
         } else if (this.state == State.CENTRIC) {
-            if (this.vertexMemory.isComputeKey(key))
-                return this.vertexMemory.getAnnotation(this, key);
+            if (this.annotationMemory.isComputeKey(key))
+                return this.annotationMemory.getElementAnnotation(this, key);
             else
                 return super.getAnnotation(key);
         } else {
-            throw GraphComputer.Features.adjacentVertexAnnotationsCanNotBeRead();
+            throw GraphComputer.Exceptions.adjacentVertexAnnotationsCanNotBeRead();
         }
     }
 
@@ -76,7 +76,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         if (this.state != State.ADJACENT) {
             return super.getProperty(key);
         } else {
-            throw GraphComputer.Features.adjacentVertexPropertiesCanNotBeRead();
+            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeRead();
         }
     }
 
@@ -97,12 +97,12 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
             });
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
         } else {
-            GraphComputer.Features.adjacentVertexPropertiesCanNotBeWritten();
+            GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeWritten();
         }
     }
 
     public VertexQuery query() {
-        return new TinkerVertexQuery(this, this.vertexMemory);
+        return new TinkerVertexQuery(this, this.annotationMemory);
     }
 
     public String toString() {
@@ -124,7 +124,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         graph.vertices.remove(this.id);
     }
 
-    public TinkerVertex createClone(final State state, final String centricId, final TinkerVertexMemory vertexMemory) {
-        return new TinkerVertex(this, state, centricId, vertexMemory);
+    public TinkerVertex createClone(final State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+        return new TinkerVertex(this, state, centricId, annotationMemory);
     }
 }

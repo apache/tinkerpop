@@ -26,7 +26,7 @@ public class GremlinVertexProgramTest {
                         .submit().get();
 
         StreamFactory.stream(g.query().vertices()).forEach(v -> {
-            System.out.println(v.getId() + ": " + result.getVertexMemory().getAnnotation(v, "gremlins").orElse(Long.MAX_VALUE));
+            System.out.println(v.getId() + ": " + result.getAnnotationMemory().getElementAnnotation(v, "gremlins").orElse(Long.MAX_VALUE));
         });
 
 
