@@ -26,8 +26,10 @@ import java.util.function.Supplier;
  */
 public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
 
-    private MessageType.Global global = MessageType.Global.of("gremlin");
+    private MessageType.Global global = MessageType.Global.of(GREMLIN_MESSAGE);
 
+    private static final String GREMLIN_MESSAGE = "gremlinMessage";
+    private static final String GREMLIN_PIPELINE = "gremlinPipeline";
     private static final String GREMLINS = "gremlins";
     private final Supplier<Gremlin> gremlin;
 
@@ -36,13 +38,13 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     }
 
     public void setup(final GraphMemory graphMemory) {
-        graphMemory.setIfAbsent("gremlin", this.gremlin);
+        graphMemory.setIfAbsent(GREMLIN_PIPELINE, this.gremlin);
     }
 
     public void execute(final Vertex vertex, final Messenger<GremlinMessage> messenger, final GraphMemory graphMemory) {
-        clearGremlin(vertex);
+        clearGremlins(vertex);
         if (graphMemory.isInitialIteration()) {
-            messenger.sendMessage(vertex, MessageType.Global.of("gremlin", vertex), GremlinMessage.of(vertex));
+            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex));
         } else {
             final Pipe pipe = getCurrentPipe(graphMemory);
             messenger.receiveMessages(vertex, global).forEach(m -> {
@@ -54,14 +56,14 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
                 } else if (m.destination.equals(Blueprints.PROPERTY)) {
                     pipe.addStarts(getProperty(vertex, m.elementId, m.propertyKey));
                 } else {
-                    throw new UnsupportedOperationException("No property support yet");
+                    throw new UnsupportedOperationException("This object type has not been handled yet: " + m);
                 }
 
                 pipe.forEachRemaining(h -> {
                     final Object object = ((Holder<Object>) h).get();
                     messenger.sendMessage(
                             vertex,
-                            MessageType.Global.of("gremlin", Messenger.getHostingVertex(object)),
+                            MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertex(object)),
                             GremlinMessage.of(object));
                 });
             });
@@ -75,8 +77,10 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
         annotatable.setAnnotation(GREMLINS, ++counts);
     }
 
-    private void clearGremlin(final Vertex vertex) {
-        vertex.setAnnotation(GREMLINS, null);  // TODO: THIS MAKES NO SENSE WHY I HAVE TO DO THIS
+    private void clearGremlins(final Vertex vertex) {
+        // TODO: WHY DO I HAVE TO DO THIS?
+        // TODO: THERE SHOULD BE A WAY TO DROP THE MEMORY STRUCTURE OF A BSP-CYCLE IN ONE FELL SWOOP.
+        vertex.setAnnotation(GREMLINS, null);
         vertex.getProperties().values().forEach(p -> p.setAnnotation(GREMLINS, null));
         vertex.query().direction(Direction.BOTH).edges().forEach(e -> {
             e.setAnnotation(GREMLINS, null);
@@ -109,13 +113,12 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
                         return true;
                     }).map(p -> new Holder<>(Pipe.NONE, p))
                     .iterator();
-
         }
     }
 
 
     public boolean terminate(final GraphMemory graphMemory) {
-        Supplier<Gremlin> gremlin = graphMemory.get("gremlin");
+        Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
         return !(graphMemory.getIteration() < gremlin.get().getPipes().size());
     }
 
@@ -124,7 +127,7 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     }
 
     private Pipe getCurrentPipe(final GraphMemory graphMemory) {
-        final Supplier<Gremlin> gremlin = graphMemory.get("gremlin");
+        final Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
         return (Pipe) gremlin.get().getPipes().get(graphMemory.getIteration());
     }
 

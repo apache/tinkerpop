@@ -25,30 +25,23 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
 
     protected TinkerVertex(final String id, final String label, final TinkerGraph graph) {
         super(id, label, graph);
-        this.state = State.STANDARD;
+        this.state = TinkerGraphComputer.State.STANDARD;
         this.centricId = id;
     }
 
-    protected TinkerVertex(final TinkerVertex vertex, final State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+    protected TinkerVertex(final TinkerVertex vertex, final TinkerGraphComputer.State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
         super(vertex.id, vertex.label, vertex.graph);
         this.state = state;
         this.outEdges = vertex.outEdges;
         this.inEdges = vertex.inEdges;
         this.properties = vertex.properties;
+        this.annotations = vertex.annotations;
         this.annotationMemory = annotationMemory;
         this.centricId = centricId;
     }
 
-    public <V> Property<V> getProperty(final String key) {
-        if (this.state != State.ADJACENT) {
-            return super.getProperty(key);
-        } else {
-            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeRead();
-        }
-    }
-
     public <V> void setProperty(final String key, final V value) {
-        if (this.state != State.ADJACENT) {
+        if (TinkerGraphComputer.State.ADJACENT != this.state) {
             ElementHelper.validateProperty(key, value);
             final TinkerVertex vertex = this;
             final Property oldProperty = super.getProperty(key);
@@ -64,7 +57,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
             });
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
         } else {
-            GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeWritten();
+            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeWritten();
         }
     }
 
@@ -91,7 +84,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         graph.vertices.remove(this.id);
     }
 
-    public TinkerVertex createClone(final State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+    public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
         return new TinkerVertex(this, state, centricId, annotationMemory);
     }
 }

@@ -20,12 +20,13 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
     private final Vertex inVertex;
     private final Vertex outVertex;
 
-    protected TinkerEdge(final TinkerEdge edge, final State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+    protected TinkerEdge(final TinkerEdge edge, final TinkerGraphComputer.State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
         super(edge.id, edge.label, edge.graph);
         this.state = state;
         this.inVertex = edge.inVertex;
         this.outVertex = edge.outVertex;
         this.properties = edge.properties;
+        this.annotations = edge.annotations;
         this.annotationMemory = annotationMemory;
         this.centricId = centricId;
     }
@@ -51,10 +52,6 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
             }
         });
         this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
-    }
-
-    public Set<String> getPropertyKeys() {
-        return this.properties.keySet();
     }
 
     public Vertex getVertex(final Direction direction) throws IllegalArgumentException {
@@ -89,7 +86,7 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
         this.annotations.clear();
     }
 
-    public TinkerEdge createClone(final State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+    public TinkerEdge createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
         return new TinkerEdge(this, state, centricId, annotationMemory);
     }
 

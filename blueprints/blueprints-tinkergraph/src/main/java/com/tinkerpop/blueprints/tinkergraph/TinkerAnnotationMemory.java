@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.computer.AnnotationSystemMemory;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.computer.VertexProgram;
@@ -69,20 +70,20 @@ public class TinkerAnnotationMemory implements AnnotationSystemMemory {
         return VertexProgram.KeyType.CONSTANT.equals(this.computeKeys.get(key));
     }
 
-    public <V> void setElementAnnotation(final Element element, final String key, final V value) {
+    public <V> void setAnnotation(final Element element, final String key, final V value) {
         this.setAnnotation(element.getId().toString(), key, value);
     }
 
-    public <V> void setPropertyAnnotation(final Element element, final String propertyKey, final String key, final V value) {
-        this.setAnnotation(element.getId() + ":" + propertyKey, key, value);
+    public <V> void setAnnotation(final Property property, final String key, final V value) {
+        this.setAnnotation(property.getElement().getId() + ":" + property.getKey(), key, value);
     }
 
-    public <V> Optional<V> getElementAnnotation(final Element element, final String key) {
+    public <V> Optional<V> getAnnotation(final Element element, final String key) {
         return this.getAnnotation(element.getId().toString(), key);
     }
 
-    public <V> Optional<V> getPropertyAnnotation(final Element element, final String propertyKey, final String key) {
-        return this.getAnnotation(element.getId() + ":" + propertyKey, key);
+    public <V> Optional<V> getAnnotation(final Property property, final String key) {
+        return this.getAnnotation(property.getElement().getId() + ":" + property.getKey(), key);
     }
 
     private <V> void setAnnotation(final String id, final String key, final V value) {

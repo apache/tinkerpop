@@ -16,6 +16,8 @@ import java.util.concurrent.Future;
  */
 public class TinkerGraphComputer implements GraphComputer {
 
+    protected enum State {STANDARD, CENTRIC, ADJACENT}
+
     private Isolation isolation = Isolation.BSP;
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
@@ -47,7 +49,7 @@ public class TinkerGraphComputer implements GraphComputer {
             boolean done = false;
             while (!done) {
                 StreamFactory.parallelStream(this.graph.query().vertices()).forEach(vertex ->
-                        vertexProgram.execute(((TinkerVertex) vertex).createClone(TinkerVertex.State.CENTRIC, vertex.getId().toString(), annotationMemory), messenger, graphMemory));
+                        vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC, vertex.getId().toString(), annotationMemory), messenger, graphMemory));
 
                 this.annotationMemory.completeIteration();
                 this.messenger.completeIteration();

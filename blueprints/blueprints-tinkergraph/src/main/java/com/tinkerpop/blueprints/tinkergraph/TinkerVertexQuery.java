@@ -39,8 +39,8 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
         edges = edges.filter(e -> HasContainer.testAll(e, this.hasContainers)).limit(this.limit);
 
         // GENERATE COMPUTE SHELLED EDGES DURING GRAPH COMPUTING
-        if (TinkerVertex.State.CENTRIC == this.vertex.state)
-            edges = edges.map(e -> e.createClone(TinkerElement.State.CENTRIC, this.vertex.getId(), this.annotationMemory));
+        if (TinkerGraphComputer.State.CENTRIC == this.vertex.state)
+            edges = edges.map(e -> e.createClone(TinkerGraphComputer.State.CENTRIC, this.vertex.getId(), this.annotationMemory));
         return edges;
     }
 
@@ -49,7 +49,7 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
     }
 
     public Iterable<Vertex> vertices() {
-        if (this.vertex.state.equals(TinkerVertex.State.ADJACENT))
+        if (this.vertex.state.equals(TinkerGraphComputer.State.ADJACENT))
             throw GraphComputer.Exceptions.adjacentVerticesCanNotBeQueried();
 
         Stream<TinkerVertex> vertices = Stream.empty();
@@ -62,8 +62,8 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
         vertices = vertices.limit(this.limit);
 
         // GENERATE COMPUTE SHELLED ADJACENT VERTICES DURING GRAPH COMPUTING
-        if (TinkerVertex.State.CENTRIC == this.vertex.state)
-            vertices = vertices.map(v -> v.createClone(TinkerVertex.State.ADJACENT, this.vertex.getId(), this.annotationMemory));
+        if (TinkerGraphComputer.State.CENTRIC == this.vertex.state)
+            vertices = vertices.map(v -> v.createClone(TinkerGraphComputer.State.ADJACENT, this.vertex.getId(), this.annotationMemory));
 
         return (Iterable) StreamFactory.iterable(vertices);
     }

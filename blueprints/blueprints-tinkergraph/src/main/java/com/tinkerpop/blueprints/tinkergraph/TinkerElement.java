@@ -16,16 +16,16 @@ import java.util.Optional;
  */
 abstract class TinkerElement implements Element, Serializable {
 
-    protected enum State {STANDARD, CENTRIC, ADJACENT}
-
-    protected String centricId;
-    protected State state = State.STANDARD;
     protected Map<String, Property> properties = new HashMap<>();
     protected Map<String, Object> annotations = new HashMap<>();
     protected final String id;
     protected final String label;
     protected final TinkerGraph graph;
+
+    protected String centricId;
+    protected TinkerGraphComputer.State state = TinkerGraphComputer.State.STANDARD;
     protected TinkerAnnotationMemory annotationMemory;
+
 
     protected TinkerElement(final String id, final String label, final TinkerGraph graph) {
         this.graph = graph;
@@ -50,7 +50,16 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public <V> Property<V> getProperty(final String key) {
-        return this.properties.getOrDefault(key, Property.empty());
+        if (TinkerGraphComputer.State.STANDARD == this.state) {
+            return this.properties.getOrDefault(key, Property.empty());
+        } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
+            final Property property = this.properties.getOrDefault(key, Property.empty());
+            return property.isPresent() ?
+                    ((TinkerProperty) property).createClone(TinkerGraphComputer.State.CENTRIC, this.annotationMemory) :
+                    property;
+        } else {
+            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeRead();
+        }
     }
 
     public boolean equals(final Object object) {
@@ -58,11 +67,11 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public <V> void setAnnotation(final String key, final V value) {
-        if (this.state == TinkerVertex.State.STANDARD) {
+        if (this.state == TinkerGraphComputer.State.STANDARD) {
             this.annotations.put(key, value);
-        } else if (this.state == TinkerVertex.State.CENTRIC) {
+        } else if (this.state == TinkerGraphComputer.State.CENTRIC) {
             if (this.annotationMemory.isComputeKey(key))
-                this.annotationMemory.setElementAnnotation(this, key, value);
+                this.annotationMemory.setAnnotation(this, key, value);
             else
                 throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
         } else {
@@ -71,11 +80,11 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public <V> Optional<V> getAnnotation(final String key) {
-        if (this.state == TinkerVertex.State.STANDARD) {
+        if (this.state == TinkerGraphComputer.State.STANDARD) {
             return Optional.ofNullable((V) this.annotations.get(key));
-        } else if (this.state == TinkerVertex.State.CENTRIC) {
+        } else if (this.state == TinkerGraphComputer.State.CENTRIC) {
             if (this.annotationMemory.isComputeKey(key))
-                return this.annotationMemory.getElementAnnotation(this, key);
+                return this.annotationMemory.getAnnotation(this, key);
             else
                 return Optional.ofNullable((V) this.annotations.get(key));
         } else {
