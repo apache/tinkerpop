@@ -96,7 +96,7 @@ public class PropertyTest extends AbstractBlueprintsTest {
     @Parameterized.Parameter(value = 1)
     public Object value;
 
-    @Ignore
+    @Test
     public void shouldSetValueOnEdge() throws Exception {
         assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(true));
         final Edge edge = createEdgeForPropertyFeatureTests();

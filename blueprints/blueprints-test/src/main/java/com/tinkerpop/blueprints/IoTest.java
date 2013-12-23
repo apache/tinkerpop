@@ -6,7 +6,6 @@ import com.tinkerpop.blueprints.io.GraphReader;
 import com.tinkerpop.blueprints.io.graphml.GraphMLReader;
 import com.tinkerpop.blueprints.io.graphml.GraphMLWriter;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -49,7 +48,7 @@ public class IoTest extends AbstractBlueprintsTest {
         assertEquals(6, StreamFactory.stream(g.query().edges()).count());
     }
 
-    @Ignore
+    @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
@@ -67,7 +66,7 @@ public class IoTest extends AbstractBlueprintsTest {
         assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
     }
 
-    @Ignore
+    @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
