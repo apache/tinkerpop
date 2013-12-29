@@ -257,6 +257,7 @@ public class ResultSerializerTest {
         assertEquals("stephen", valHiddenProperty.getString(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
     }
 
+    /*
     @Test
     @Ignore("How do we recognize multi-properties programmatically?")
     public void serializeMultiProperties() throws Exception {
@@ -294,6 +295,7 @@ public class ResultSerializerTest {
         assertNotNull(valHiddenProperty);
         assertEquals("stephen", valHiddenProperty.getString(ResultSerializer.JsonResultSerializer.TOKEN_VALUE));
     }
+    */
 
     @Test
     public void serializeEdge() throws Exception {
