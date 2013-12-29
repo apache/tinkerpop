@@ -94,9 +94,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <properties>
-        <skipLongTests>true</skipLongTests>
-    </properties>
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
@@ -169,7 +166,7 @@
                             <includes>
                                 <include>**/*IntegrateTest.java</include>
                             </includes>
-                            <skipTests>${skipLongTests}</skipTests>
+                            <skipTests>${skipIntegrationTests}</skipTests>
                             <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                             </argLine>
                             <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
@@ -184,21 +181,32 @@
                             <includes>
                                 <include>**/*PerformanceTest.java</include>
                             </includes>
-                            <skipTests>${skipLongTests}</skipTests>
+                            <skipTests>${skipPerformanceTests}</skipTests>
                             <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                             </argLine>
                             <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>verify</id>
+                        <id>verify-integration-test</id>
                         <goals>
                             <goal>verify</goal>
                         </goals>
                         <configuration>
-                            <skipTests>${skipLongTests}</skipTests>
+                            <skipTests>${skipIntegrationTests}</skipTests>
                             <summaryFiles>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
+                            </summaryFiles>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify-performance-test</id>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipTests>${skipPerformanceTests}</skipTests>
+                            <summaryFiles>
                                 <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                             </summaryFiles>
                         </configuration>

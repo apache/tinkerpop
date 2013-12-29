@@ -12,7 +12,7 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author TinkerPop Community (http://tinkerpop.com)
  */
-public interface Transaction extends Closeable, Featureable {
+public interface Transaction extends Closeable {
 
     public void open();
 
@@ -20,7 +20,7 @@ public interface Transaction extends Closeable, Featureable {
 
     public void rollback();
 
-    public <G extends Graph, R> Workload<G, R> submit(Function<G, R> work);
+    public <G extends Graph, R> Workload<G, R> submit(final Function<G, R> work);
 
     public <G extends Graph> G create();
 
@@ -34,16 +34,11 @@ public interface Transaction extends Closeable, Featureable {
         if (this.isOpen()) this.commit();
     }
 
-    public Transaction onReadWrite(Consumer<Transaction> consumer);
+    public Transaction onReadWrite(final Consumer<Transaction> consumer);
 
-    public Transaction onClose(Consumer<Transaction> consumer);
+    public Transaction onClose(final Consumer<Transaction> consumer);
 
-    public static Transaction.Features getFeatures() {
-        return new Features() {
-        };
-    }
-
-    public interface Features extends com.tinkerpop.blueprints.Features {
+    public static class Exceptions {
         public static IllegalStateException transactionAlreadyOpen() {
             return new IllegalStateException("Stop the current transaction before opening another");
         }

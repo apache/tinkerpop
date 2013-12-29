@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertTrue;
 

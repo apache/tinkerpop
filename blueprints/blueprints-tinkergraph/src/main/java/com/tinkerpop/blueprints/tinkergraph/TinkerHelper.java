@@ -19,7 +19,7 @@ class TinkerHelper {
 
     protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
         if (label == null)
-            throw Edge.Features.edgeLabelCanNotBeNull();
+            throw Edge.Exceptions.edgeLabelCanNotBeNull();
         ElementHelper.legalKeyValues(keyValues);
 
         Object idString = ElementHelper.getIdValue(keyValues);
@@ -27,7 +27,7 @@ class TinkerHelper {
         final Edge edge;
         if (null != idString) {
             if (graph.edges.containsKey(idString.toString()))
-                throw Graph.Features.edgeWithIdAlreadyExist(idString);
+                throw Graph.Exceptions.edgeWithIdAlreadyExist(idString);
         } else {
             idString = TinkerHelper.getNextId(graph);
         }

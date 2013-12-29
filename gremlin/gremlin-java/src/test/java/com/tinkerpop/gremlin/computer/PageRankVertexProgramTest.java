@@ -25,7 +25,7 @@ public class PageRankVertexProgramTest extends TestCase {
         double total = 0.0d;
         final Map<String, Double> map = new HashMap<>();
         for (Vertex vertex : graph.query().vertices()) {
-            double pageRank = Double.parseDouble(result.getVertexMemory().getProperty(vertex, PageRankVertexProgram.PAGE_RANK).getValue().toString());
+            double pageRank = Double.parseDouble(result.getAnnotationMemory().getAnnotation(vertex, PageRankVertexProgram.PAGE_RANK).orElse(Double.NaN).toString());
             assertTrue(pageRank > 0.0d);
             total = total + pageRank;
             map.put(vertex.getValue("name") + " ", pageRank);
@@ -57,7 +57,7 @@ public class PageRankVertexProgramTest extends TestCase {
         double total = 0.0d;
         final Map<String, Double> map = new HashMap<>();
         for (Vertex vertex : graph.query().vertices()) {
-            double pageRank = Double.parseDouble(result.getVertexMemory().getProperty(vertex, PageRankVertexProgram.PAGE_RANK).getValue().toString());
+            double pageRank = Double.parseDouble(result.getAnnotationMemory().getAnnotation(vertex, PageRankVertexProgram.PAGE_RANK).orElse(Double.NaN).toString());
             assertTrue(pageRank > 0.0d);
             total = total + pageRank;
             map.put(vertex.getValue("name") + " ", pageRank);

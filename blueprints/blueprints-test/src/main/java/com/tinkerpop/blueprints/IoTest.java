@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
+import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.blueprints.io.GraphReader;
 import com.tinkerpop.blueprints.io.graphml.GraphMLReader;
 import com.tinkerpop.blueprints.io.graphml.GraphMLWriter;
@@ -19,21 +21,27 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.*;
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IoTest {
+public class IoTest extends AbstractBlueprintsTest {
 
     // todo: should expand test here significantly.  see blueprints2
 
     private static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/blueprints/util/io/graphml/";
 
     @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldReadGraphML() throws IOException {
-        final Graph g = BlueprintsSuite.GraphManager.get().newTestGraph();
         readGraphMLIntoGraph(g);
 
         assertEquals(6, StreamFactory.stream(g.query().vertices()).count());
@@ -41,8 +49,13 @@ public class IoTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldWriteNormalizedGraphML() throws Exception {
-        final Graph g = BlueprintsSuite.GraphManager.get().newTestGraph();
         readGraphMLIntoGraph(g);
 
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -54,8 +67,13 @@ public class IoTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldWriteNormalizedGraphMLWithEdgeLabel() throws Exception {
-        final Graph g = BlueprintsSuite.GraphManager.get().newTestGraph();
         readGraphMLIntoGraph(g);
 
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -74,8 +92,13 @@ public class IoTest {
      * enough that is not yet known which characters those are.
      */
     @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldProperlyEncodeWithGraphML() throws Exception {
-        final Graph g = BlueprintsSuite.GraphManager.get().newTestGraph();
         final Vertex v = g.addVertex(Property.Key.ID, "1");
         v.setProperty("text", "\u00E9");
 
@@ -86,8 +109,8 @@ public class IoTest {
             w.outputGraph(out);
         }
 
-        // todo: this test won't work if a fresh graph instance isn't created
-        final Graph g2 = BlueprintsSuite.GraphManager.get().newTestGraph();
+        // reusing the same config used for creation of "g".
+        final Graph g2 = BlueprintsStandardSuite.GraphManager.get().newTestGraph(config);
         final GraphMLReader r = new GraphMLReader.Builder(g2).build();
 
         try (final InputStream in = new FileInputStream(f)) {
@@ -96,6 +119,9 @@ public class IoTest {
 
         final Vertex v2 = g2.query().ids("1").vertices().iterator().next();
         assertEquals("\u00E9", v2.getProperty("text").getValue());
+
+        // need to manually close the "g2" instance
+        BlueprintsStandardSuite.GraphManager.get().clear(g2, config);
     }
 
     private static void readGraphMLIntoGraph(final Graph g) throws IOException {

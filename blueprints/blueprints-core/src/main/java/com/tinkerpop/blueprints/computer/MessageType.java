@@ -5,11 +5,16 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 
+import java.util.Arrays;
 import java.util.function.BiFunction;
 
 /**
- * @author Matthias Broecheler (me@matthiasb.com)
+ * A MessageType represents the "address" of a message.
+ * A message can have multiple receivers and message type allows the underlying graph computer to optimize the message passing.
+ * In many situations there is no need to create multiple of the same message (thus, index based on message type).
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Matthias Broecheler (me@matthiasb.com)
  */
 public abstract class MessageType {
 
@@ -26,6 +31,12 @@ public abstract class MessageType {
     public static class Global extends MessageType {
         private final GraphQuery query;
         private final Iterable<Vertex> vertices;
+
+        private Global(final String label) {
+            super(label);
+            this.query = null;
+            this.vertices = null;
+        }
 
         private Global(final String label, final GraphQuery query) {
             super(label);
@@ -47,7 +58,17 @@ public abstract class MessageType {
             return new Global(label, vertices);
         }
 
+        public static Global of(final String label, final Vertex... vertices) {
+            return new Global(label, Arrays.asList(vertices));
+        }
+
+        public static Global of(final String label) {
+            return new Global(label);
+        }
+
         public Iterable<Vertex> vertices() {
+            if (null == this.query && null == this.vertices)
+                throw new IllegalStateException("This message type instance can only be used for retrieving messages, not sending as no vertices are provided");
             return null == this.query ? this.vertices : this.query.vertices();
         }
     }

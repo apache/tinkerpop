@@ -4,7 +4,7 @@ import java.util.concurrent.Future;
 
 /**
  * The GraphComputer is responsible for the execution of a VertexProgram against the vertices in the Graph.
- * A GraphComputer maintains a VertexMemory (local vertex memory) and GraphMemory (global graph memory).
+ * A GraphComputer maintains a AnnotationMemory (local vertex memory) and GraphMemory (global graph memory).
  * It is up to the GraphComputer implementation to determine the appropriate memory structures given the computing substrate.
  * All GraphComputers also maintains levels of memory isolation: Bulk Synchronous Parallel and Dirty Bulk Synchronous Parallel.
  *
@@ -26,9 +26,9 @@ public interface GraphComputer {
         DIRTY_BSP
     }
 
-    public GraphComputer isolation(Isolation isolation);
+    public GraphComputer isolation(final Isolation isolation);
 
-    public GraphComputer program(VertexProgram program);
+    public GraphComputer program(final VertexProgram program);
 
     public Future<ComputeResult> submit();
 
@@ -37,7 +37,7 @@ public interface GraphComputer {
         };
     }
 
-    public interface Features extends com.tinkerpop.blueprints.Features {
+    public interface Features {
         public default boolean supportsGlobalMessageTypes() {
             return true;
         }
@@ -86,6 +86,13 @@ public interface GraphComputer {
             return true;
         }
 
+        public default boolean supportsIsolation(final Isolation isolation) {
+            return true;
+        }
+
+    }
+
+    public static class Exceptions {
         public static IllegalStateException adjacentVertexPropertiesCanNotBeRead() {
             return new IllegalStateException("The properties of an adjacent vertex can not be read, only its id");
         }
@@ -94,8 +101,24 @@ public interface GraphComputer {
             return new IllegalStateException("The properties of an adjacent vertex can not be written");
         }
 
+        public static IllegalStateException adjacentVertexAnnotationsCanNotBeRead() {
+            return new IllegalStateException("The annotations of an adjacent vertex can not be read, only its id");
+        }
+
+        public static IllegalStateException adjacentVertexAnnotationsCanNotBeWritten() {
+            return new IllegalStateException("The annotations of an adjacent vertex can not be written");
+        }
+
         public static IllegalArgumentException providedKeyIsNotAComputeKey(final String key) {
             return new IllegalArgumentException("The provided key is not a compute key: " + key);
+        }
+
+        public static IllegalStateException constantAnnotationHasAlreadyBeenSet(final String key, final Object id) {
+            return new IllegalStateException("The constant annotation " + key + " has already been set for annotation " + id + ":" + key);
+        }
+
+        public static IllegalStateException adjacentVerticesCanNotBeQueried() {
+            return new IllegalStateException("It is not possible to query an adjacent vertex in a vertex program");
         }
     }
 

@@ -2,12 +2,9 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.computer.ComputeResult;
-import com.tinkerpop.blueprints.computer.LambdaVertexProgram;
-import com.tinkerpop.blueprints.computer.VertexProgram;
-import com.tinkerpop.blueprints.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -32,10 +29,15 @@ public class TinkerGraphTest {
         final Random r = new Random();
         Stream.generate(() -> g.addVertex(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt())).limit(100000).count();
         assertEquals(100002, g.vertices.size());
-        marko.addEdge("knows", stephen);
+        Edge edge = marko.addEdge("knows", stephen);
         System.out.println(g.query().has("name", Compare.EQUAL, "marko").vertices());
         System.out.println(marko.query().direction(Direction.OUT).labels("knows", "workedWith").vertices());
         g.createIndex("blah", Vertex.class);
+
+        edge.setProperty("weight", 1.0f);
+        edge.setAnnotation("creator", "stephen");
+        assertEquals(edge.getValue("weight"), Float.valueOf(1.0f));
+        assertEquals(edge.getAnnotation("creator").get(), "stephen");
     }
 
     /*@Test
@@ -55,7 +57,7 @@ public class TinkerGraphTest {
 
         System.out.println("Runtime: " + result.getGraphMemory().getRuntime());
         StreamFactory.stream(g.query().vertices())
-                .forEach(v -> System.out.println(result.getVertexMemory().getProperty(v, "i").getValue()));
+                .forEach(v -> System.out.println(result.getAnnotationMemory().getProperty(v, "i").getValue()));
     }*/
 
 }

@@ -13,15 +13,15 @@ import java.util.function.BiPredicate;
  */
 public interface Query {
 
-    public Query has(String key);
+    public Query has(final String key);
 
-    public Query hasNot(String key);
+    public Query hasNot(final String key);
 
-    public Query has(String key, BiPredicate biPredicate, Object value);
+    public Query has(final String key, final BiPredicate biPredicate, final Object value);
 
-    public <T extends Comparable<?>> Query interval(String key, T startValue, T endValue);
+    public <T extends Comparable<?>> Query interval(final String key, final T startValue, final T endValue);
 
-    public Query limit(int limit);
+    public Query limit(final int limit);
 
     public Iterable<Edge> edges();
 

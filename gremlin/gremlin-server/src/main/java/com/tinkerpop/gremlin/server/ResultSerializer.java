@@ -1,15 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Serializes a single result from the ScripEngine.  Typically this will be an item from an iterator.
@@ -76,7 +67,7 @@ public interface ResultSerializer {
             try {
                 final JSONObject result = new JSONObject();
                 result.put(TOKEN_CODE, code.getValue());
-                result.put(TOKEN_RESULT, prepareOutput(o));
+                //result.put(TOKEN_RESULT, prepareOutput(o));
 
                 // a context may not be available
                 if (context != null)
@@ -91,11 +82,11 @@ public interface ResultSerializer {
         /**
          * Serializes results.  The order in which the "object" is evaluated has importance to proper serialization.
          */
-        private Object prepareOutput(final Object object) throws Exception {
+        /*private Object prepareOutput(final Object object) throws Exception {
             if (object == null)
                 return JSONObject.NULL;
-            else if (object instanceof com.tinkerpop.blueprints.Vertex.Property) {
-                final Vertex.Property t = (Vertex.Property) object;
+            else if (object instanceof Property) {
+                final Property t = (Property) object;
                 final JSONObject jsonObject = new JSONObject();
                 jsonObject.put(TOKEN_VALUE, prepareOutput(t.orElse(null)));
 
@@ -179,5 +170,6 @@ public interface ResultSerializer {
             else
                 return object.toString();
         }
+    } */
     }
 }

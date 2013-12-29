@@ -22,23 +22,23 @@ public class ElementHelper {
      */
     public static void validateProperty(final String key, final Object value) throws IllegalArgumentException {
         if (null == value)
-            throw Property.Features.propertyValueCanNotBeNull();
+            throw Property.Exceptions.propertyValueCanNotBeNull();
         if (null == key)
-            throw Property.Features.propertyKeyCanNotBeNull();
+            throw Property.Exceptions.propertyKeyCanNotBeNull();
         if (key.equals(Property.Key.ID))
-            throw Property.Features.propertyKeyIdIsReserved();
+            throw Property.Exceptions.propertyKeyIdIsReserved();
         if (key.equals(Property.Key.LABEL))
-            throw Property.Features.propertyKeyLabelIsReserved();
+            throw Property.Exceptions.propertyKeyLabelIsReserved();
         if (key.isEmpty())
-            throw Property.Features.propertyKeyCanNotBeEmpty();
+            throw Property.Exceptions.propertyKeyCanNotBeEmpty();
     }
 
     public static void legalKeyValues(final Object... keyValues) throws IllegalArgumentException {
         if (keyValues.length % 2 != 0)
-            throw Element.Features.providedKeyValuesMustBeAMultipleOfTwo();
+            throw Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (!(keyValues[i] instanceof String) && !(keyValues[i] instanceof Property.Key))
-                throw Element.Features.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
+                throw Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
         }
     }
 

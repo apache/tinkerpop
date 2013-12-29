@@ -12,19 +12,22 @@ import java.util.stream.StreamSupport;
 public class StreamFactory {
 
     public static <T> Stream<T> stream(final Iterable<T> iterable) {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterable.iterator(), Spliterator.IMMUTABLE), false);
+        return StreamFactory.stream(iterable.iterator());
     }
 
     public static <T> Stream<T> parallelStream(final Iterable<T> iterable) {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterable.iterator(), Spliterator.IMMUTABLE), true);
+        return StreamFactory.parallelStream(iterable.iterator());
+    }
+
+    public static <T> Stream<T> stream(final Iterator<T> iterator) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE), false);
+    }
+
+    public static <T> Stream<T> parallelStream(final Iterator<T> iterator) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE), true);
     }
 
     public static <T> Iterable<T> iterable(final Stream<T> stream) {
-        return new Iterable<T>() {
-            @Override
-            public Iterator<T> iterator() {
-                return stream.iterator();
-            }
-        };
+        return () -> stream.iterator();
     }
 }

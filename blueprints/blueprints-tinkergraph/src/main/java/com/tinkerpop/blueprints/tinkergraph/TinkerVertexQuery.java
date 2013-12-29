@@ -3,14 +3,15 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.util.DefaultVertexQuery;
+import com.tinkerpop.blueprints.util.StreamFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -19,30 +20,38 @@ import java.util.stream.Stream;
 public class TinkerVertexQuery extends DefaultVertexQuery {
 
     protected final TinkerVertex vertex;
-    protected final TinkerVertexMemory vertexMemory;
+    protected final TinkerAnnotationMemory annotationMemory;
 
-    public TinkerVertexQuery(final TinkerVertex vertex, final TinkerVertexMemory vertexMemory) {
+    public TinkerVertexQuery(final TinkerVertex vertex, final TinkerAnnotationMemory annotationMemory) {
         this.vertex = vertex;
-        this.vertexMemory = vertexMemory;
+        this.annotationMemory = annotationMemory;
     }
 
-    private Stream<Edge> makeStream() {
-        Stream<Edge> edges = Stream.empty();
+    private Stream<TinkerEdge> makeStream() {
+        Stream<TinkerEdge> edges = Stream.empty();
 
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN)) {
-            edges = this.getInEdges(this.labels).stream();
+            edges = (Stream) this.getInEdges(this.labels).stream();
         }
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.OUT)) {
-            edges = Stream.concat(edges, this.getOutEdges(this.labels).stream());
+            edges = (Stream) Stream.concat(edges, this.getOutEdges(this.labels).stream());
         }
-        return edges.filter(e -> HasContainer.testAll(e, this.hasContainers)).limit(this.limit);
+        edges = edges.filter(e -> HasContainer.testAll(e, this.hasContainers)).limit(this.limit);
+
+        // GENERATE COMPUTE SHELLED EDGES DURING GRAPH COMPUTING
+        if (TinkerGraphComputer.State.CENTRIC == this.vertex.state)
+            edges = edges.map(e -> e.createClone(TinkerGraphComputer.State.CENTRIC, this.vertex.getId(), this.annotationMemory));
+        return edges;
     }
 
     public Iterable<Edge> edges() {
-        return this.makeStream().collect(Collectors.<Edge>toList());
+        return (Iterable) StreamFactory.iterable(this.makeStream());
     }
 
     public Iterable<Vertex> vertices() {
+        if (this.vertex.state.equals(TinkerGraphComputer.State.ADJACENT))
+            throw GraphComputer.Exceptions.adjacentVerticesCanNotBeQueried();
+
         Stream<TinkerVertex> vertices = Stream.empty();
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN)) {
             vertices = (Stream) Stream.concat(vertices, this.getInEdges(this.labels).stream().filter(e -> HasContainer.testAll(e, this.hasContainers)).map(e -> e.getVertex(Direction.OUT)));
@@ -52,13 +61,11 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
         }
         vertices = vertices.limit(this.limit);
 
-        // ADJACENCY REFERENCES DURING GRAPH COMPUTING
-        if (TinkerVertex.State.CENTRIC == this.vertex.state)
-            vertices = vertices.map(v -> v.createClone(TinkerVertex.State.ADJACENT, this.vertex.getId(), this.vertexMemory));
-        else if (TinkerVertex.State.ADJACENT == this.vertex.state)
-            vertices = vertices.filter(v -> v.id.equals(this.vertex.centricId)).map(v -> v.createClone(TinkerVertex.State.CENTRIC, this.vertex.centricId, this.vertexMemory));
+        // GENERATE COMPUTE SHELLED ADJACENT VERTICES DURING GRAPH COMPUTING
+        if (TinkerGraphComputer.State.CENTRIC == this.vertex.state)
+            vertices = vertices.map(v -> v.createClone(TinkerGraphComputer.State.ADJACENT, this.vertex.getId(), this.annotationMemory));
 
-        return vertices.collect(Collectors.<Vertex>toList());
+        return (Iterable) StreamFactory.iterable(vertices);
     }
 
     public long count() {

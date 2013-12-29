@@ -1,10 +1,10 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 
+import com.tinkerpop.blueprints.computer.AnnotationMemory;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.computer.GraphMemory;
-import com.tinkerpop.blueprints.computer.VertexMemory;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
@@ -16,12 +16,14 @@ import java.util.concurrent.Future;
  */
 public class TinkerGraphComputer implements GraphComputer {
 
+    protected enum State {STANDARD, CENTRIC, ADJACENT}
+
     private Isolation isolation = Isolation.BSP;
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
     private final TinkerGraphMemory graphMemory = new TinkerGraphMemory();
     private final TinkerMessenger messenger = new TinkerMessenger();
-    private TinkerVertexMemory vertexMemory = new TinkerVertexMemory(this.isolation);
+    private TinkerAnnotationMemory annotationMemory = new TinkerAnnotationMemory(this.isolation);
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -29,7 +31,7 @@ public class TinkerGraphComputer implements GraphComputer {
 
     public GraphComputer isolation(final Isolation isolation) {
         this.isolation = isolation;
-        this.vertexMemory = new TinkerVertexMemory(isolation);
+        this.annotationMemory = new TinkerAnnotationMemory(isolation);
         return this;
     }
 
@@ -41,17 +43,17 @@ public class TinkerGraphComputer implements GraphComputer {
     public Future<ComputeResult> submit() {
         return CompletableFuture.<ComputeResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
-            this.vertexMemory.setComputeKeys(this.vertexProgram.getComputeKeys());
+            this.annotationMemory.setComputeKeys(this.vertexProgram.getComputeKeys());
             this.vertexProgram.setup(this.graphMemory);
 
             boolean done = false;
             while (!done) {
                 StreamFactory.parallelStream(this.graph.query().vertices()).forEach(vertex ->
-                        vertexProgram.execute(((TinkerVertex) vertex).createClone(TinkerVertex.State.CENTRIC, vertex.getId().toString(), vertexMemory), messenger, graphMemory));
+                        vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC, vertex.getId().toString(), annotationMemory), messenger, graphMemory));
 
-                this.vertexMemory.completeIteration();
-                this.graphMemory.incrIteration();
+                this.annotationMemory.completeIteration();
                 this.messenger.completeIteration();
+                this.graphMemory.incrIteration();
                 done = this.vertexProgram.terminate(this.graphMemory);
             }
 
@@ -64,8 +66,8 @@ public class TinkerGraphComputer implements GraphComputer {
                 }
 
                 @Override
-                public VertexMemory getVertexMemory() {
-                    return vertexMemory;
+                public AnnotationMemory getAnnotationMemory() {
+                    return annotationMemory;
                 }
             };
         });

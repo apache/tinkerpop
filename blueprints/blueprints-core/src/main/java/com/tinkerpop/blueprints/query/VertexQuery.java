@@ -12,24 +12,26 @@ import java.util.function.BiPredicate;
  */
 public interface VertexQuery extends Query {
 
-    public VertexQuery direction(Direction direction);
+    public VertexQuery direction(final Direction direction);
 
-    public VertexQuery labels(String... labels);
+    public VertexQuery labels(final String... labels);
 
-    @Override
-    public VertexQuery has(String key);
-
-    @Override
-    public VertexQuery hasNot(String key);
+    // public VertexQuery adjacent(final Vertex vertex)
 
     @Override
-    public VertexQuery has(String key, BiPredicate biPredicate, Object value);
+    public VertexQuery has(final String key);
 
     @Override
-    public <T extends Comparable<?>> VertexQuery interval(String key, T startValue, T endValue);
+    public VertexQuery hasNot(final String key);
 
     @Override
-    public VertexQuery limit(int limit);
+    public VertexQuery has(final String key, final BiPredicate biPredicate, final Object value);
+
+    @Override
+    public <T extends Comparable<?>> VertexQuery interval(final String key, final T startValue, final T endValue);
+
+    @Override
+    public VertexQuery limit(final int limit);
 
     public long count();
 
