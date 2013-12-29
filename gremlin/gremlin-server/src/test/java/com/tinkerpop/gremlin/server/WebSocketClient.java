@@ -107,11 +107,11 @@ class WebSocketClient {
     }
 
     public <T> Stream<T> eval(final String gremlin) throws IOException {
-        final RequestMessage msg = new RequestMessage(ServerTokens.OPS_EVAL);
+        final RequestMessage msg = new RequestMessage(Tokens.OPS_EVAL);
         msg.requestId = UUID.randomUUID();
         msg.args = new HashMap<String, Object>() {{
-            put(ServerTokens.ARGS_GREMLIN, gremlin);
-            put(ServerTokens.ARGS_ACCEPT, "application/json");
+            put(Tokens.ARGS_GREMLIN, gremlin);
+            put(Tokens.ARGS_ACCEPT, "application/json");
         }};
 
         final ArrayBlockingQueue<Optional<JsonNode>> responseQueue = new ArrayBlockingQueue<>(256);

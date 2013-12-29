@@ -30,7 +30,7 @@ final class StandardOps {
      */
     public static void importOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
-        final List<String> l = (List<String>) msg.args.get(ServerTokens.ARGS_IMPORTS);
+        final List<String> l = (List<String>) msg.args.get(Tokens.ARGS_IMPORTS);
         context.getGremlinExecutor().select(msg).addImports(new HashSet<>(l));
     }
 
@@ -40,20 +40,20 @@ final class StandardOps {
     public static void showOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-        final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
-        final String infoType = msg.<String>optionalArgs(ServerTokens.ARGS_INFO_TYPE).get();
+        final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
+        final String infoType = msg.<String>optionalArgs(Tokens.ARGS_INFO_TYPE).get();
         final GremlinExecutor executor = context.getGremlinExecutor();
         final ScriptEngineOps seo = executor.select(msg);
 
         final Object infoToShow;
-        if (infoType.equals(ServerTokens.ARGS_INFO_TYPE_DEPDENENCIES))
+        if (infoType.equals(Tokens.ARGS_INFO_TYPE_DEPDENENCIES))
             infoToShow = seo.dependencies();
-        else if (infoType.equals(ServerTokens.ARGS_INFO_TYPE_IMPORTS))
+        else if (infoType.equals(Tokens.ARGS_INFO_TYPE_IMPORTS))
             infoToShow  = seo.imports();
-        else if (infoType.equals(ServerTokens.ARGS_INFO_TYPE_VARIABLES))
+        else if (infoType.equals(Tokens.ARGS_INFO_TYPE_VARIABLES))
             infoToShow = executor.getBindingsAsMap(msg);
         else
-            throw new RuntimeException(String.format("Validation for the show operation is not properly checking the %s", ServerTokens.ARGS_INFO_TYPE));
+            throw new RuntimeException(String.format("Validation for the show operation is not properly checking the %s", Tokens.ARGS_INFO_TYPE));
 
         try {
             ctx.channel().write(new TextWebSocketFrame(serializer.serialize(infoToShow, context)));
@@ -76,11 +76,11 @@ final class StandardOps {
      */
     public static void useOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
-        final List<Map<String,String>> usings = (List<Map<String,String>>) msg.args.get(ServerTokens.ARGS_COORDINATES);
+        final List<Map<String,String>> usings = (List<Map<String,String>>) msg.args.get(Tokens.ARGS_COORDINATES);
         usings.forEach(c -> {
-            final String group = c.get(ServerTokens.ARGS_COORDINATES_GROUP);
-            final String artifact = c.get(ServerTokens.ARGS_COORDINATES_ARTIFACT);
-            final String version = c.get(ServerTokens.ARGS_COORDINATES_VERSION);
+            final String group = c.get(Tokens.ARGS_COORDINATES_GROUP);
+            final String artifact = c.get(Tokens.ARGS_COORDINATES_ARTIFACT);
+            final String version = c.get(Tokens.ARGS_COORDINATES_VERSION);
             logger.info("Loading plugin [group={},artifact={},version={}]", group, artifact, version);
             context.getGremlinExecutor().select(msg).use(group, artifact, version);
             OpProcessor.text(String.format("Plugin loaded - [group=%s,artifact=%s,version=%s]", group, artifact, version)).accept(context);
@@ -93,7 +93,7 @@ final class StandardOps {
     public static void evalOp(final Context context) {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
-        final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(ServerTokens.ARGS_ACCEPT).orElse("text/plain"));
+        final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
 
         Object o;
         try {

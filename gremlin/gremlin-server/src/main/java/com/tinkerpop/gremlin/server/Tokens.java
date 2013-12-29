@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ServerTokens {
+public class Tokens {
     public static final String OPS_SHOW = "show";
     public static final String OPS_EVAL = "eval";
     public static final String OPS_IMPORT = "import";

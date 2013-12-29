@@ -101,12 +101,12 @@ public class GremlinExecutor {
         final Bindings bindings = new SimpleBindings();
         bindings.putAll(extractBindingsFromMessage(message));
 
-        final String language = message.<String>optionalArgs(ServerTokens.ARGS_LANGUAGE).orElse("gremlin-groovy");
+        final String language = message.<String>optionalArgs(Tokens.ARGS_LANGUAGE).orElse("gremlin-groovy");
 
         if (message.optionalSessionId().isPresent()) {
             final GremlinSession session = getGremlinSession(message.sessionId);
             if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
-            return s -> session.eval(message.<String>optionalArgs(ServerTokens.ARGS_GREMLIN).get(), bindings, language);
+            return s -> session.eval(message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language);
         } else {
             // a sessionless request
             if (logger.isDebugEnabled()) logger.debug("Using shared ScriptEngine to process {}", message);
@@ -118,7 +118,7 @@ public class GremlinExecutor {
                 try {
                     // do a safety cleanup of previous transaction...if any
                     executorService.submit(graphs::rollbackAll).get();
-                    final Future<Object> future = executorService.submit((Callable<Object>) () -> sharedScriptEngines.eval(message.<String>optionalArgs(ServerTokens.ARGS_GREMLIN).get(), bindings, language));
+                    final Future<Object> future = executorService.submit((Callable<Object>) () -> sharedScriptEngines.eval(message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language));
                     final Object o = future.get(settings.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
                     executorService.submit(graphs::commitAll).get();
                     return o;
@@ -159,7 +159,7 @@ public class GremlinExecutor {
 
     private static Map<String,Object> extractBindingsFromMessage(final RequestMessage msg) {
         final Map<String, Object> m = new HashMap<>();
-        final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs(ServerTokens.ARGS_BINDINGS);
+        final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs(Tokens.ARGS_BINDINGS);
         return bindingsInMessage.orElse(m);
     }
 
