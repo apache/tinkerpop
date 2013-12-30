@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.computer.gremlin;
 
-import com.tinkerpop.blueprints.Annotatable;
 import com.tinkerpop.blueprints.Blueprints;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphMemory;
@@ -72,19 +72,24 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
         }
     }
 
-    private void incrGremlins(final Annotatable annotatable) {
-        long counts = annotatable.<Long>getAnnotation(GREMLINS).orElse(0l);
-        annotatable.setAnnotation(GREMLINS, ++counts);
+    private void incrGremlins(final Element element) {
+        long counts = element.<Long>getProperty(GREMLINS).orElse(0l);
+        element.setProperty(GREMLINS, ++counts);
+    }
+
+    private void incrGremlins(final Property property) {
+        long counts = property.<Long>getAnnotation(GREMLINS).orElse(0l);
+        property.setAnnotation(GREMLINS, ++counts);
     }
 
     private void clearGremlins(final Vertex vertex) {
         // TODO: WHY DO I HAVE TO DO THIS?
         // TODO: THERE SHOULD BE A WAY TO DROP THE MEMORY STRUCTURE OF A BSP-CYCLE IN ONE FELL SWOOP.
-        vertex.setAnnotation(GREMLINS, null);
-        vertex.getProperties().values().forEach(p -> p.setAnnotation(GREMLINS, null));
+        vertex.setProperty(GREMLINS, 0l);
+        vertex.getProperties().values().forEach(p -> p.setAnnotation(GREMLINS, 0l));
         vertex.query().direction(Direction.BOTH).edges().forEach(e -> {
-            e.setAnnotation(GREMLINS, null);
-            e.getProperties().values().forEach(p -> p.setAnnotation(GREMLINS, null));
+            e.setProperty(GREMLINS, 0l);
+            e.getProperties().values().forEach(p -> p.setAnnotation(GREMLINS, 0l));
         });
     }
 

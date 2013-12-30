@@ -10,7 +10,6 @@ import com.tinkerpop.blueprints.query.VertexQuery;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +17,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class TinkerVertex extends TinkerElement implements Vertex, Serializable {
+class TinkerVertex extends TinkerElement implements Vertex {
 
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
@@ -29,19 +28,19 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         this.centricId = id;
     }
 
-    protected TinkerVertex(final TinkerVertex vertex, final TinkerGraphComputer.State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+    protected TinkerVertex(final TinkerVertex vertex, final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory annotationMemory) {
         super(vertex.id, vertex.label, vertex.graph);
         this.state = state;
         this.outEdges = vertex.outEdges;
         this.inEdges = vertex.inEdges;
         this.properties = vertex.properties;
         this.annotations = vertex.annotations;
-        this.annotationMemory = annotationMemory;
+        this.vertexMemory = annotationMemory;
         this.centricId = centricId;
     }
 
     public <V> void setProperty(final String key, final V value) {
-        if (TinkerGraphComputer.State.ADJACENT != this.state) {
+        if (TinkerGraphComputer.State.STANDARD == this.state) {
             ElementHelper.validateProperty(key, value);
             final TinkerVertex vertex = this;
             final Property oldProperty = super.getProperty(key);
@@ -56,13 +55,19 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
                 }
             });
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
+        } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
+            ElementHelper.validateProperty(key, value);
+            if (this.vertexMemory.getComputeKeys().containsKey(key))
+                this.vertexMemory.setProperty(this, key, value);
+            else
+                throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
         } else {
             throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeWritten();
         }
     }
 
     public VertexQuery query() {
-        return new TinkerVertexQuery(this, this.annotationMemory);
+        return new TinkerVertexQuery(this, this.vertexMemory);
     }
 
     public String toString() {
@@ -84,7 +89,7 @@ class TinkerVertex extends TinkerElement implements Vertex, Serializable {
         graph.vertices.remove(this.id);
     }
 
-    public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+    public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory annotationMemory) {
         return new TinkerVertex(this, state, centricId, annotationMemory);
     }
 }

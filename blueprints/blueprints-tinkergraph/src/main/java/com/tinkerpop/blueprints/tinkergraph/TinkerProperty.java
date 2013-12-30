@@ -19,7 +19,7 @@ public abstract class TinkerProperty<V> implements Property<V> {
     private final V value;
 
     protected TinkerGraphComputer.State state = TinkerGraphComputer.State.STANDARD;
-    private TinkerAnnotationMemory annotationMemory;
+    private TinkerVertexMemory annotationMemory;
 
     public TinkerProperty(final Element element, final String key, final V value) {
         this.element = element;
@@ -27,7 +27,7 @@ public abstract class TinkerProperty<V> implements Property<V> {
         this.value = value;
     }
 
-    protected TinkerProperty(final TinkerProperty<V> property, final TinkerGraphComputer.State state, final TinkerAnnotationMemory annotationMemory) {
+    protected TinkerProperty(final TinkerProperty<V> property, final TinkerGraphComputer.State state, final TinkerVertexMemory annotationMemory) {
         this(property.getElement(), property.getKey(), property.getValue());
         this.state = state;
         this.annotations = property.annotations;
@@ -59,7 +59,8 @@ public abstract class TinkerProperty<V> implements Property<V> {
             } else
                 throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
         } else {
-            throw GraphComputer.Exceptions.adjacentVertexAnnotationsCanNotBeWritten();
+            throw new IllegalStateException();
+            // throw GraphComputer.Exceptions.adjacentVertexAnnotationsCanNotBeWritten();
         }
     }
 
@@ -72,11 +73,12 @@ public abstract class TinkerProperty<V> implements Property<V> {
             else
                 return Optional.ofNullable((V) this.annotations.get(key));
         } else {
-            throw GraphComputer.Exceptions.adjacentVertexAnnotationsCanNotBeRead();
+            throw new IllegalStateException();
+            // TODO: throw GraphComputer.Exceptions.adjacentVertexAnnotationsCanNotBeRead();
         }
     }
 
-    public TinkerProperty<V> createClone(final TinkerGraphComputer.State state, final TinkerAnnotationMemory annotationMemory) {
+    public TinkerProperty<V> createClone(final TinkerGraphComputer.State state, final TinkerVertexMemory annotationMemory) {
         return new TinkerProperty<V>(this, state, annotationMemory) {
             @Override
             public void remove() {

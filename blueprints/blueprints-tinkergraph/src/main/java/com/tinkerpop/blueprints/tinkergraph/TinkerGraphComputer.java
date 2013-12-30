@@ -1,10 +1,10 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 
-import com.tinkerpop.blueprints.computer.AnnotationMemory;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.computer.GraphMemory;
+import com.tinkerpop.blueprints.computer.VertexMemory;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
@@ -23,7 +23,7 @@ public class TinkerGraphComputer implements GraphComputer {
     private final TinkerGraph graph;
     private final TinkerGraphMemory graphMemory = new TinkerGraphMemory();
     private final TinkerMessenger messenger = new TinkerMessenger();
-    private TinkerAnnotationMemory annotationMemory = new TinkerAnnotationMemory(this.isolation);
+    private TinkerVertexMemory vertexMemory = new TinkerVertexMemory(this.isolation);
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -31,7 +31,7 @@ public class TinkerGraphComputer implements GraphComputer {
 
     public GraphComputer isolation(final Isolation isolation) {
         this.isolation = isolation;
-        this.annotationMemory = new TinkerAnnotationMemory(isolation);
+        this.vertexMemory = new TinkerVertexMemory(isolation);
         return this;
     }
 
@@ -43,15 +43,17 @@ public class TinkerGraphComputer implements GraphComputer {
     public Future<ComputeResult> submit() {
         return CompletableFuture.<ComputeResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
-            this.annotationMemory.setComputeKeys(this.vertexProgram.getComputeKeys());
+            this.vertexMemory.setComputeKeys(this.vertexProgram.getComputeKeys());
             this.vertexProgram.setup(this.graphMemory);
 
             boolean done = false;
             while (!done) {
                 StreamFactory.parallelStream(this.graph.query().vertices()).forEach(vertex ->
-                        vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC, vertex.getId().toString(), annotationMemory), messenger, graphMemory));
+                        this.vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC,
+                                vertex.getId().toString(),
+                                this.vertexMemory), this.messenger, this.graphMemory));
 
-                this.annotationMemory.completeIteration();
+                this.vertexMemory.completeIteration();
                 this.messenger.completeIteration();
                 this.graphMemory.incrIteration();
                 done = this.vertexProgram.terminate(this.graphMemory);
@@ -66,8 +68,8 @@ public class TinkerGraphComputer implements GraphComputer {
                 }
 
                 @Override
-                public AnnotationMemory getAnnotationMemory() {
-                    return annotationMemory;
+                public VertexMemory getVertexMemory() {
+                    return vertexMemory;
                 }
             };
         });

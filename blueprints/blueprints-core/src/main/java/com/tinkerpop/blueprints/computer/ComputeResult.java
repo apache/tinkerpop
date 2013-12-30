@@ -10,5 +10,5 @@ public interface ComputeResult {
 
     public GraphMemory getGraphMemory();
 
-    public AnnotationMemory getAnnotationMemory();
+    public VertexMemory getVertexMemory();
 }

@@ -20,9 +20,9 @@ import java.util.stream.Stream;
 public class TinkerVertexQuery extends DefaultVertexQuery {
 
     protected final TinkerVertex vertex;
-    protected final TinkerAnnotationMemory annotationMemory;
+    protected final TinkerVertexMemory annotationMemory;
 
-    public TinkerVertexQuery(final TinkerVertex vertex, final TinkerAnnotationMemory annotationMemory) {
+    public TinkerVertexQuery(final TinkerVertex vertex, final TinkerVertexMemory annotationMemory) {
         this.vertex = vertex;
         this.annotationMemory = annotationMemory;
     }

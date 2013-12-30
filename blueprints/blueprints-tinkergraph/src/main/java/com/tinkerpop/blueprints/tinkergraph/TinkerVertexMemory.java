@@ -2,9 +2,9 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.computer.AnnotationSystemMemory;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.computer.VertexProgram;
+import com.tinkerpop.blueprints.computer.VertexSystemMemory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,14 +13,14 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerAnnotationMemory implements AnnotationSystemMemory {
+public class TinkerVertexMemory implements VertexSystemMemory {
 
     protected Map<String, VertexProgram.KeyType> computeKeys;
     protected final GraphComputer.Isolation isolation;
     protected boolean phase = true;
     private final Map<Object, Map<String, Object>> memory;
 
-    public TinkerAnnotationMemory(final GraphComputer.Isolation isolation) {
+    public TinkerVertexMemory(final GraphComputer.Isolation isolation) {
         this.isolation = isolation;
         this.memory = new HashMap<>();
     }
@@ -70,15 +70,15 @@ public class TinkerAnnotationMemory implements AnnotationSystemMemory {
         return VertexProgram.KeyType.CONSTANT.equals(this.computeKeys.get(key));
     }
 
-    public <V> void setAnnotation(final Element element, final String key, final V value) {
-        this.setAnnotation(element.getId().toString(), key, value);
+    public <V> void setProperty(final Element element, final String key, final V value) {
+        this.setValue(element.getId().toString(), key, value);
     }
 
     public <V> void setAnnotation(final Property property, final String key, final V value) {
-        this.setAnnotation(property.getElement().getId() + ":" + property.getKey(), key, value);
+        this.setValue(property.getElement().getId() + ":" + property.getKey(), key, value);
     }
 
-    public <V> Optional<V> getAnnotation(final Element element, final String key) {
+    public <V> Optional<V> getProperty(final Element element, final String key) {
         return this.getAnnotation(element.getId().toString(), key);
     }
 
@@ -86,15 +86,29 @@ public class TinkerAnnotationMemory implements AnnotationSystemMemory {
         return this.getAnnotation(property.getElement().getId() + ":" + property.getKey(), key);
     }
 
-    private <V> void setAnnotation(final String id, final String key, final V value) {
+    public void removeProperty(final Element element, final String key) {
+        this.removeValue(element.getId().toString(), key);
+    }
+
+    public void removeAnnotation(final Property property, final String key) {
+        this.removeValue(property.getElement().getId() + ":" + property.getKey(), key);
+    }
+
+    private <V> void setValue(final String id, final String key, final V value) {
         final Map<String, Object> map = this.memory.getOrDefault(id, new HashMap<>());
         this.memory.put(id, map);
 
         final String bspKey = generateSetKey(key);
         if (isConstantKey(key) && map.containsKey(bspKey))
-            throw GraphComputer.Exceptions.constantAnnotationHasAlreadyBeenSet(key, id);
+            throw GraphComputer.Exceptions.constantComputeKeyHasAlreadyBeenSet(key, id);
         else
             map.put(bspKey, value);
+    }
+
+    private void removeValue(final String id, final String key) {
+        final Map<String, Object> map = this.memory.get(id);
+        if (null != map)
+            map.remove(key);
     }
 
     private <V> Optional<V> getAnnotation(final String id, final String key) {

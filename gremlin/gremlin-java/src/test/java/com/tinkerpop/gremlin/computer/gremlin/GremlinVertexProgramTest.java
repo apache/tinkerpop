@@ -27,17 +27,17 @@ public class GremlinVertexProgramTest {
 
         System.out.println("---VERTICES---");
         StreamFactory.stream(g.query().vertices()).forEach(v -> {
-            System.out.println(v.getId() + " > " + result.getAnnotationMemory().getAnnotation(v, "gremlins").orElse("."));
+            System.out.println(v.getId() + " > " + result.getVertexMemory().getProperty(v, "gremlins").orElse("."));
             v.getProperties().values().forEach(p -> {
-                System.out.println("\t" + p.getKey() + ":" + p.getValue() + " > " + result.getAnnotationMemory().getAnnotation(p, "gremlins").orElse("."));
+                System.out.println("\t" + p.getKey() + ":" + p.getValue() + " > " + result.getVertexMemory().getAnnotation(p, "gremlins").orElse("."));
             });
         });
 
         System.out.println("---EDGES---");
         StreamFactory.stream(g.query().edges()).forEach(e -> {
-            System.out.println(e.getId() + " > " + result.getAnnotationMemory().getAnnotation(e, "gremlins").orElse("."));
+            System.out.println(e.getId() + " > " + result.getVertexMemory().getProperty(e, "gremlins").orElse("."));
             e.getProperties().values().forEach(p -> {
-                System.out.println("\t" + p.getKey() + ":" + p.getValue() + " > " + result.getAnnotationMemory().getAnnotation(p, "gremlins").orElse("."));
+                System.out.println("\t" + p.getKey() + ":" + p.getValue() + " > " + result.getVertexMemory().getAnnotation(p, "gremlins").orElse("."));
             });
         });
 

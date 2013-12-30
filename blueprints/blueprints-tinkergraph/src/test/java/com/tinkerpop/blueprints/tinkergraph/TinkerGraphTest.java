@@ -35,9 +35,9 @@ public class TinkerGraphTest {
         g.createIndex("blah", Vertex.class);
 
         edge.setProperty("weight", 1.0f);
-        edge.setAnnotation("creator", "stephen");
+        edge.setProperty("creator", "stephen");
         assertEquals(edge.getValue("weight"), Float.valueOf(1.0f));
-        assertEquals(edge.getAnnotation("creator").get(), "stephen");
+        assertEquals(edge.getProperty("creator").getValue(), "stephen");
     }
 
     /*@Test
@@ -57,7 +57,7 @@ public class TinkerGraphTest {
 
         System.out.println("Runtime: " + result.getGraphMemory().getRuntime());
         StreamFactory.stream(g.query().vertices())
-                .forEach(v -> System.out.println(result.getAnnotationMemory().getProperty(v, "i").getValue()));
+                .forEach(v -> System.out.println(result.getVertexMemory().getProperty(v, "i").getValue()));
     }*/
 
 }

@@ -45,8 +45,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         if (graphMemory.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(this.messageType.getQuery().build(vertex).count()).doubleValue();
-            vertex.setAnnotation(PAGE_RANK, initialPageRank);
-            vertex.setAnnotation(EDGE_COUNT, edgeCount);
+            vertex.setProperty(PAGE_RANK, initialPageRank);
+            vertex.setProperty(EDGE_COUNT, edgeCount);
             if (this.weighted)
                 messenger.sendMessage(vertex, this.messageType, initialPageRank);
             else
@@ -54,9 +54,9 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         } else {
             double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.messageType)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-            vertex.setAnnotation(PAGE_RANK, newPageRank);
+            vertex.setProperty(PAGE_RANK, newPageRank);
             if (this.weighted)
-                messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getAnnotation(EDGE_COUNT).orElse(0.0d));
+                messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getProperty(EDGE_COUNT).orElse(0.0d));
             else
                 messenger.sendMessage(vertex, this.messageType, newPageRank);
         }

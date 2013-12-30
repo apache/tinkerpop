@@ -5,29 +5,29 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
-import java.io.Serializable;
 import java.util.Set;
 
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class TinkerEdge extends TinkerElement implements Edge, Serializable {
+class TinkerEdge extends TinkerElement implements Edge {
 
     private final Vertex inVertex;
     private final Vertex outVertex;
 
-    protected TinkerEdge(final TinkerEdge edge, final TinkerGraphComputer.State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+    protected TinkerEdge(final TinkerEdge edge, final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory annotationMemory) {
         super(edge.id, edge.label, edge.graph);
         this.state = state;
         this.inVertex = edge.inVertex;
         this.outVertex = edge.outVertex;
         this.properties = edge.properties;
         this.annotations = edge.annotations;
-        this.annotationMemory = annotationMemory;
+        this.vertexMemory = annotationMemory;
         this.centricId = centricId;
     }
 
@@ -39,19 +39,30 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
     }
 
     public <V> void setProperty(final String key, final V value) {
-        ElementHelper.validateProperty(key, value);
-        final TinkerEdge edge = this;
-        final Property oldProperty = super.getProperty(key);
-        this.properties.put(key, new TinkerProperty<V>(this, key, value) {
-            public void remove() {
-                edge.properties.remove(key);
-            }
+        if (TinkerGraphComputer.State.STANDARD == this.state) {
+            ElementHelper.validateProperty(key, value);
+            final TinkerEdge edge = this;
+            final Property oldProperty = super.getProperty(key);
+            this.properties.put(key, new TinkerProperty<V>(this, key, value) {
+                @Override
+                public void remove() {
+                    edge.properties.remove(key);
+                }
 
-            public <E extends Element> E getElement() {
-                return (E) edge;
-            }
-        });
-        this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
+                public <E extends Element> E getElement() {
+                    return (E) edge;
+                }
+            });
+            this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
+        } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
+            ElementHelper.validateProperty(key, value);
+            if (this.vertexMemory.getComputeKeys().containsKey(key))
+                this.vertexMemory.setProperty(this, key, value);
+            else
+                throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
+        } else {
+            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeWritten();
+        }
     }
 
     public Vertex getVertex(final Direction direction) throws IllegalArgumentException {
@@ -86,7 +97,7 @@ class TinkerEdge extends TinkerElement implements Edge, Serializable {
         this.annotations.clear();
     }
 
-    public TinkerEdge createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerAnnotationMemory annotationMemory) {
+    public TinkerEdge createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory annotationMemory) {
         return new TinkerEdge(this, state, centricId, annotationMemory);
     }
 
