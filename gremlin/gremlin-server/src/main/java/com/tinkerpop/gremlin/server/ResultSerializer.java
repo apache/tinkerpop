@@ -1,6 +1,20 @@
 package com.tinkerpop.gremlin.server;
 
-import org.json.JSONObject;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
+import com.fasterxml.jackson.databind.ser.SerializerFactory;
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.tinkerpop.blueprints.*;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Serializes a single result from the ScripEngine.  Typically this will be an item from an iterator.
@@ -47,6 +61,8 @@ public interface ResultSerializer {
      * Converts a result to JSON.
      */
     public static class JsonResultSerializer implements ResultSerializer {
+        static final Version JSON_SERIALIZATION_VERSION = new Version(0,1,0,"","com.tinkerpop.gremlin", "gremlin-server");
+
         public static final String TOKEN_RESULT = "result";
         public static final String TOKEN_ID = "id";
         public static final String TOKEN_TYPE = "type";
@@ -56,120 +72,143 @@ public interface ResultSerializer {
         public static final String TOKEN_PROPERTIES = "properties";
         public static final String TOKEN_META = "meta";
         public static final String TOKEN_EDGE = "edge";
+        public static final String TOKEN_VERSION = "version";
         public static final String TOKEN_VERTEX = "vertex";
         public static final String TOKEN_REQUEST = "requestId";
         public static final String TOKEN_IN = "in";
         public static final String TOKEN_OUT = "out";
         public static final String TOKEN_LABEL = "label";
 
+        /**
+         * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write
+         * out Graph objects and toString for unknown objects.
+         */
+        private static final ObjectMapper mapper = new ObjectMapper() {{
+            // empty beans should be just toString'd
+            disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+
+            final DefaultSerializerProvider provider = new GremlinSerializerProvider();
+            provider.setDefaultKeySerializer(new GremlinJacksonKeySerializer());
+
+            setSerializerProvider(provider);
+
+            registerModules(new GremlinModule());
+        }};
+
         @Override
         public String serialize(final Object o, final ResultCode code, final Context context) {
             try {
-                final JSONObject result = new JSONObject();
+                final Map<String,Object> result = new HashMap<>();
                 result.put(TOKEN_CODE, code.getValue());
-                //result.put(TOKEN_RESULT, prepareOutput(o));
+                result.put(TOKEN_RESULT, o);
+                result.put(TOKEN_VERSION, JsonResultSerializer.JSON_SERIALIZATION_VERSION.toString());
 
                 // a context may not be available
                 if (context != null)
                     result.put(TOKEN_REQUEST, context.getRequestMessage().requestId);
 
-                return result.toString();
+                return mapper.writeValueAsString(result);
             } catch (Exception ex) {
                 throw new RuntimeException("Error during serialization.", ex);
             }
         }
 
         /**
-         * Serializes results.  The order in which the "object" is evaluated has importance to proper serialization.
+         * Serializer that converts unknown objects to values via toString().
          */
-        /*private Object prepareOutput(final Object object) throws Exception {
-            if (object == null)
-                return JSONObject.NULL;
-            else if (object instanceof Property) {
-                final Property t = (Property) object;
-                final JSONObject jsonObject = new JSONObject();
-                jsonObject.put(TOKEN_VALUE, prepareOutput(t.orElse(null)));
+        public final static class GremlinSerializerProvider extends DefaultSerializerProvider {
+            private static final long serialVersionUID = 1L;
+            private static final ToStringSerializer toStringSerializer = new ToStringSerializer();
 
-                if (t.getProperties().size() > 0) {
-                    final JSONObject metaProperties = new JSONObject();
-                    t.getPropertyKeys().forEach(k -> {
-                        try {
-                            metaProperties.put(k.toString(), prepareOutput(t.getProperty(k.toString())));
-                        } catch (Exception ex) {
-                            // there can't be null keys on an element so don't think there is a need to launch
-                            // a JSONException here.
-                            throw new RuntimeException(ex);
-                        }
-                    });
-                    jsonObject.put(TOKEN_META, metaProperties);
-                }
-                return jsonObject;
-            } else if (object instanceof Edge.Property) {
-                final Edge.Property t = (Edge.Property) object;
-                final JSONObject jsonObject = new JSONObject();
-                jsonObject.put(TOKEN_VALUE, prepareOutput(t.orElse(null)));
-                return jsonObject;
-            } else if (object instanceof com.tinkerpop.blueprints.Property) {
-                // catches meta-properties on vertices
-                return prepareOutput(((com.tinkerpop.blueprints.Property) object).getValue());
-            } else if (object instanceof Element) {
-                final Element element = (Element) object;
-                final JSONObject jsonObject = new JSONObject();
-                jsonObject.put(TOKEN_ID, prepareOutput(element.getId()));
-                jsonObject.put(TOKEN_TYPE, element instanceof Edge ? TOKEN_EDGE : TOKEN_VERTEX);
+            public GremlinSerializerProvider() {
+                super();
+            }
 
-                if (object instanceof Edge) {
-                    final Edge e = (Edge) object;
-                    jsonObject.put(TOKEN_IN, prepareOutput(e.getVertex(Direction.IN).getId()));
-                    jsonObject.put(TOKEN_OUT, prepareOutput(e.getVertex(Direction.OUT).getId()));
-                    jsonObject.put(TOKEN_LABEL, e.getLabel());
-                }
+            protected GremlinSerializerProvider(final SerializerProvider src,
+                           final SerializationConfig config, final SerializerFactory f) {
+                super(src, config, f);
+            }
 
-                final JSONObject jsonProperties = new JSONObject();
-                element.getPropertyKeys().forEach(k -> {
-                    try {
-                        jsonProperties.put(k, prepareOutput(element.getProperty(k)));
-                    } catch (Exception ex) {
-                        // there can't be null keys on an element so don't think there is a need to launch
-                        // a JSONException here.
-                        throw new RuntimeException(ex);
-                    }
-                });
-                jsonObject.put(TOKEN_PROPERTIES, jsonProperties);
-                return jsonObject;
-                //} else if (object instanceof Row) {} todo: get Table/Row in when implemented
-            } else if (object instanceof Map) {
-                final JSONObject jsonObject = new JSONObject();
-                final Map map = (Map) object;
-                for (Object key : map.keySet()) {
-                    // force an error here by passing in a null key to the JSONObject.  That way a good error message
-                    // gets back to the user.
-                    if (key instanceof Element) {
-                        final Element element = (Element) key;
-                        final HashMap<String, Object> m = new HashMap<>();
-                        m.put(TOKEN_KEY, this.prepareOutput(element));
-                        m.put(TOKEN_VALUE, this.prepareOutput(map.get(key)));
+            @Override
+            public JsonSerializer<Object> getUnknownTypeSerializer(final Class<?> aClass) {
+                return toStringSerializer;
+            }
 
-                        jsonObject.put(element.getId().toString(), new JSONObject(m));
-                    } else {
-                        jsonObject.put(key == null ? null : key.toString(), this.prepareOutput(map.get(key)));
-                    }
-                }
-                return jsonObject;
-            } else if (object instanceof Iterable || object instanceof Iterator) {
-                final JSONArray jsonArray = new JSONArray();
-                final Iterator itty = object instanceof Iterator ? (Iterator) object : ((Iterable) object).iterator();
-                while (itty.hasNext()) {
-                    jsonArray.put(prepareOutput(itty.next()));
-                }
-                return jsonArray;
-            } else if (object instanceof Number || object instanceof Boolean)
-                return object;
-            else if (object == JSONObject.NULL)
-                return JSONObject.NULL;
-            else
-                return object.toString();
+            @Override
+            public GremlinSerializerProvider createInstance(final SerializationConfig config,
+                                       final SerializerFactory jsf) {
+                return new GremlinSerializerProvider(this, config, jsf);
+            }
         }
-    } */
+
+        public static class GremlinModule extends SimpleModule {
+            public GremlinModule() {
+                super("gremlin", JsonResultSerializer.JSON_SERIALIZATION_VERSION);
+                addSerializer(Edge.class, new EdgeJacksonSerializer());
+                addSerializer(Property.class, new PropertyJacksonSerializer());
+                addSerializer(Vertex.class, new VertexJacksonSerializer());
+            }
+        }
+
+        public static class EdgeJacksonSerializer extends StdSerializer<Edge> {
+            public EdgeJacksonSerializer() {
+                super(Edge.class);
+            }
+
+            @Override
+            public void serialize(final Edge edge, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                    throws IOException, JsonGenerationException {
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeObjectField(TOKEN_ID, edge.getId());
+                jsonGenerator.writeStringField(TOKEN_LABEL, edge.getLabel());
+                jsonGenerator.writeStringField(TOKEN_TYPE, TOKEN_EDGE);
+                jsonGenerator.writeObjectField(TOKEN_IN, edge.getVertex(Direction.IN).getId());
+                jsonGenerator.writeObjectField(TOKEN_OUT, edge.getVertex(Direction.OUT).getId());
+                jsonGenerator.writeObjectField(TOKEN_PROPERTIES, edge.getProperties());
+                jsonGenerator.writeEndObject();
+            }
+        }
+
+
+        public static class VertexJacksonSerializer extends StdSerializer<Vertex> {
+            public VertexJacksonSerializer() {
+                super(Vertex.class);
+            }
+
+            @Override
+            public void serialize(final Vertex vertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                    throws IOException, JsonGenerationException {
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeObjectField(TOKEN_ID, vertex.getId());
+                jsonGenerator.writeStringField(TOKEN_LABEL, vertex.getLabel());
+                jsonGenerator.writeStringField(TOKEN_TYPE, TOKEN_VERTEX);
+                jsonGenerator.writeObjectField(TOKEN_PROPERTIES, vertex.getProperties());
+                jsonGenerator.writeEndObject();
+            }
+        }
+
+        public static class PropertyJacksonSerializer extends StdSerializer<Property> {
+            public PropertyJacksonSerializer() {
+                super(Property.class);
+            }
+
+            @Override
+            public void serialize(final Property property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                    throws IOException, JsonGenerationException {
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeObjectField(TOKEN_VALUE, property.getValue());
+                jsonGenerator.writeEndObject();
+            }
+        }
+
+        public static class GremlinJacksonKeySerializer extends StdKeySerializer {
+            @Override
+            public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+                if (Element.class.isAssignableFrom(o.getClass()))
+                    jsonGenerator.writeFieldName((((Element) o).getId()).toString());
+                else
+                    super.serialize(o, jsonGenerator, serializerProvider);
+            }
+        }
     }
 }
