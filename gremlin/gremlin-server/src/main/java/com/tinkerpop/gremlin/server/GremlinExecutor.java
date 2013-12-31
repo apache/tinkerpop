@@ -106,11 +106,11 @@ public class GremlinExecutor {
         if (message.optionalSessionId().isPresent()) {
             final GremlinSession session = getGremlinSession(message.sessionId);
             if (logger.isDebugEnabled()) logger.debug("Using session {} ScriptEngine to process {}", message.sessionId, message);
-            return s -> session.eval(message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language);
+            return (RequestMessage m) -> session.eval(m.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language);
         } else {
             // a sessionless request
             if (logger.isDebugEnabled()) logger.debug("Using shared ScriptEngine to process {}", message);
-            return s -> {
+            return (RequestMessage m) -> {
                 // put all the preconfigured graphs on the bindings
                 bindings.putAll(graphs.getGraphs());
 
@@ -118,7 +118,7 @@ public class GremlinExecutor {
                 try {
                     // do a safety cleanup of previous transaction...if any
                     executorService.submit(graphs::rollbackAll).get();
-                    final Future<Object> future = executorService.submit((Callable<Object>) () -> sharedScriptEngines.eval(message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language));
+                    final Future<Object> future = executorService.submit((Callable<Object>) () -> sharedScriptEngines.eval(m.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language));
                     final Object o = future.get(settings.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
                     executorService.submit(graphs::commitAll).get();
                     return o;

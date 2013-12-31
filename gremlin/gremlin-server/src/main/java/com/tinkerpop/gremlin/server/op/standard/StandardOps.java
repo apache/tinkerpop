@@ -144,8 +144,7 @@ final class StandardOps {
             logger.warn(errorMessage, context.getSettings().scriptEvaluationTimeout, msg);
             final String json = serializer.serialize(errorMessage, ResultCode.FAIL, context);
             OpProcessor.error(json).accept(context);
-        }
-        finally {
+        } finally {
             // sending the requestId acts as a termination message for this request.
             final ByteBuf uuidBytes = Unpooled.directBuffer(16);
             uuidBytes.writeLong(msg.requestId.getMostSignificantBits());
