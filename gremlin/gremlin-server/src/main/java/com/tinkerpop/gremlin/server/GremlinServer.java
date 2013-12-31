@@ -159,21 +159,17 @@ public class GremlinServer {
 
         public void rollbackAll() {
             graphs.entrySet().forEach(e-> {
-                try {
-                    e.getValue().tx().rollback();
-                } catch (UnsupportedOperationException uoe) {
-                    // TODO: use features when ready
-                }
+                final Graph g = e.getValue();
+                if (g.getFeatures().graph().supportsTransactions())
+                    g.tx().rollback();
             });
         }
 
         public void commitAll() {
             graphs.entrySet().forEach(e->{
-                try {
-                    e.getValue().tx().commit();
-                } catch (UnsupportedOperationException uoe) {
-                    // TODO: use features when ready
-                }
+                final Graph g = e.getValue();
+                if (g.getFeatures().graph().supportsTransactions())
+                    g.tx().commit();
             });
         }
     }
