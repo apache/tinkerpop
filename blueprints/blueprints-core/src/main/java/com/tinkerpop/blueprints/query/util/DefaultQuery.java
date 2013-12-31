@@ -58,7 +58,6 @@ public abstract class DefaultQuery implements Query {
 
     ////////////////////
 
-
     protected static class HasContainer implements Predicate<Element> {
         public String key;
         public Object value;
@@ -75,10 +74,8 @@ public abstract class DefaultQuery implements Query {
                 return element.getId().equals(this.value);
             else if (this.key.equals(Property.Key.LABEL.toString()))
                 return element.getLabel().equals(this.value);
-            else if (element instanceof Vertex)
-                return this.predicate.test(((Vertex) element).getValue(this.key), this.value);
             else
-                return this.predicate.test(((Edge) element).getValue(this.key), this.value);
+                return this.predicate.test(element.getValue(this.key), this.value);
         }
 
         public static boolean testAll(final Element element, final List<HasContainer> hasContainers) {

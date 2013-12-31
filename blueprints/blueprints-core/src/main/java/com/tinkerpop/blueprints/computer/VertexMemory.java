@@ -16,7 +16,7 @@ public interface VertexMemory {
 
     public <V> void setAnnotation(final Property property, final String key, final V value);
 
-    public <V> Optional<V> getProperty(final Element element, final String key);
+    public <V> Property<V> getProperty(final Element element, final String key);
 
     public <V> Optional<V> getAnnotation(final Property property, final String key);
 

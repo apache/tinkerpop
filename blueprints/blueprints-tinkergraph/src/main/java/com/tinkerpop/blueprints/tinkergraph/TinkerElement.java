@@ -9,7 +9,6 @@ import com.tinkerpop.blueprints.util.ElementHelper;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -17,7 +16,6 @@ import java.util.Optional;
 abstract class TinkerElement implements Element, Serializable {
 
     protected Map<String, Property> properties = new HashMap<>();
-    protected Map<String, Object> annotations = new HashMap<>();
     protected final String id;
     protected final String label;
     protected final TinkerGraph graph;
@@ -53,24 +51,11 @@ abstract class TinkerElement implements Element, Serializable {
         if (TinkerGraphComputer.State.STANDARD == this.state) {
             return this.properties.getOrDefault(key, Property.empty());
         } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
-            if (this.vertexMemory.getComputeKeys().containsKey(key)) {
-                final Element element = this;
-                final Optional<V> optional = this.vertexMemory.getProperty(this, key);
-                if (optional.isPresent())
-                    return new TinkerProperty<V>(element, key, optional.get()) {
-                        @Override
-                        public void remove() {
-                            vertexMemory.removeProperty(element, key);
-                        }
-                    };
-                else
-                    return Property.empty();
-            } else {
-                return this.properties.get(key);
-            }
-
+            return this.vertexMemory.getComputeKeys().containsKey(key) ?
+                    this.vertexMemory.getProperty(this, key) :
+                    ((TinkerProperty) this.properties.get(key)).createClone(TinkerGraphComputer.State.CENTRIC, vertexMemory);
         } else {
-            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeRead();
+            throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeRead();
         }
     }
 

@@ -2,7 +2,6 @@ package com.tinkerpop.blueprints.computer;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -24,15 +23,14 @@ public interface Messenger<M extends Serializable> {
 
     public void sendMessage(final Vertex vertex, final MessageType messageType, final M message);
 
-    public static List<Vertex> getHostingVertex(final Object object) {
+    public static List<Vertex> getHostingVertices(final Object object) {
         if (object instanceof Vertex)
             return Arrays.asList((Vertex) object);
         else if (object instanceof Edge)
             return Arrays.asList(((Edge) object).getVertex(Direction.OUT), ((Edge) object).getVertex(Direction.IN));
-        else if (object instanceof Property) {
-            final Element element = ((Property) object).getElement();
-            return getHostingVertex(element);
-        } else {
+        else if (object instanceof Property)
+            return getHostingVertices(((Property) object).getElement());
+        else {
             throw new IllegalStateException("The host of the object is unknown: " + object.toString());
         }
     }

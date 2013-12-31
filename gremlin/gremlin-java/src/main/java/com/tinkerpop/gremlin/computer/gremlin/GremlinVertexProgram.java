@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.computer.gremlin;
 
-import com.tinkerpop.blueprints.Blueprints;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -48,12 +47,12 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
         } else {
             final Pipe pipe = getCurrentPipe(graphMemory);
             messenger.receiveMessages(vertex, global).forEach(m -> {
-                if (m.destination.equals(Blueprints.VERTEX)) {
+                if (m.destination.equals(GremlinMessage.Destination.VERTEX)) {
                     incrGremlins(vertex);
                     pipe.addStarts(new SingleIterator<>(new Holder<>(pipe.getName(), vertex)));
-                } else if (m.destination.equals(Blueprints.EDGE)) {
+                } else if (m.destination.equals(GremlinMessage.Destination.EDGE)) {
                     pipe.addStarts(getEdges(vertex, m.elementId));
-                } else if (m.destination.equals(Blueprints.PROPERTY)) {
+                } else if (m.destination.equals(GremlinMessage.Destination.PROPERTY)) {
                     pipe.addStarts(getProperty(vertex, m.elementId, m.propertyKey));
                 } else {
                     throw new UnsupportedOperationException("This object type has not been handled yet: " + m);
@@ -63,7 +62,7 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
                     final Object object = ((Holder<Object>) h).get();
                     messenger.sendMessage(
                             vertex,
-                            MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertex(object)),
+                            MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertices(object)),
                             GremlinMessage.of(object));
                 });
             });

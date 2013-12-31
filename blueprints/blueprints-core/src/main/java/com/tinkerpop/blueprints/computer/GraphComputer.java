@@ -93,12 +93,12 @@ public interface GraphComputer {
     }
 
     public static class Exceptions {
-        public static IllegalStateException adjacentVertexPropertiesCanNotBeRead() {
-            return new IllegalStateException("The properties of an adjacent vertex can not be read, only its id");
+        public static IllegalStateException adjacentElementPropertiesCanNotBeRead() {
+            return new IllegalStateException("The properties of an adjacent element can not be read, only its id");
         }
 
-        public static IllegalStateException adjacentVertexPropertiesCanNotBeWritten() {
-            return new IllegalStateException("The properties of an adjacent vertex can not be written");
+        public static IllegalStateException adjacentElementPropertiesCanNotBeWritten() {
+            return new IllegalStateException("The properties of an adjacent element can not be written");
         }
 
         public static IllegalArgumentException providedKeyIsNotAComputeKey(final String key) {
@@ -111,6 +111,10 @@ public interface GraphComputer {
 
         public static IllegalStateException adjacentVerticesCanNotBeQueried() {
             return new IllegalStateException("It is not possible to query an adjacent vertex in a vertex program");
+        }
+
+        public static IllegalStateException adjacentAnnotationsCanNotBeReadOrWritten() {
+            return new IllegalStateException("The annotations of an adjacent elements properties can not be read or written");
         }
     }
 

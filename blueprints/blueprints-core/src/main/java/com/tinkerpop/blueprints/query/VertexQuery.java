@@ -16,7 +16,7 @@ public interface VertexQuery extends Query {
 
     public VertexQuery labels(final String... labels);
 
-    // public VertexQuery adjacent(final Vertex vertex)
+    // public VertexQuery adjacent(final Vertex vertex);
 
     @Override
     public VertexQuery has(final String key);

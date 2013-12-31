@@ -27,7 +27,7 @@ public abstract class TinkerProperty<V> implements Property<V> {
         this.value = value;
     }
 
-    protected TinkerProperty(final TinkerProperty<V> property, final TinkerGraphComputer.State state, final TinkerVertexMemory annotationMemory) {
+    private TinkerProperty(final TinkerProperty<V> property, final TinkerGraphComputer.State state, final TinkerVertexMemory annotationMemory) {
         this(property.getElement(), property.getKey(), property.getValue());
         this.state = state;
         this.annotations = property.annotations;
@@ -51,16 +51,15 @@ public abstract class TinkerProperty<V> implements Property<V> {
     }
 
     public <V> void setAnnotation(final String key, final V value) {
-        if (this.state == TinkerGraphComputer.State.STANDARD) {
+        if (TinkerGraphComputer.State.STANDARD == this.state) {
             this.annotations.put(key, value);
-        } else if (this.state == TinkerGraphComputer.State.CENTRIC) {
-            if (this.annotationMemory.isComputeKey(key)) {
+        } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
+            if (this.annotationMemory.isComputeKey(key))
                 this.annotationMemory.setAnnotation(this, key, value);
-            } else
+            else
                 throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
         } else {
-            throw new IllegalStateException();
-            // throw GraphComputer.Exceptions.adjacentVertexAnnotationsCanNotBeWritten();
+            throw GraphComputer.Exceptions.adjacentAnnotationsCanNotBeReadOrWritten();
         }
     }
 
@@ -73,13 +72,12 @@ public abstract class TinkerProperty<V> implements Property<V> {
             else
                 return Optional.ofNullable((V) this.annotations.get(key));
         } else {
-            throw new IllegalStateException();
-            // TODO: throw GraphComputer.Exceptions.adjacentVertexAnnotationsCanNotBeRead();
+            throw GraphComputer.Exceptions.adjacentAnnotationsCanNotBeReadOrWritten();
         }
     }
 
-    public TinkerProperty<V> createClone(final TinkerGraphComputer.State state, final TinkerVertexMemory annotationMemory) {
-        return new TinkerProperty<V>(this, state, annotationMemory) {
+    public TinkerProperty<V> createClone(final TinkerGraphComputer.State state, final TinkerVertexMemory vertexMemory) {
+        return new TinkerProperty<V>(this, state, vertexMemory) {
             @Override
             public void remove() {
                 throw new UnsupportedOperationException("Property removal is not supported");

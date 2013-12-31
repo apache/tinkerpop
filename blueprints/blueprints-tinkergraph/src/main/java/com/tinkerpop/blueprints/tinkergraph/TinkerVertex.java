@@ -28,13 +28,12 @@ class TinkerVertex extends TinkerElement implements Vertex {
         this.centricId = id;
     }
 
-    protected TinkerVertex(final TinkerVertex vertex, final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory annotationMemory) {
+    private TinkerVertex(final TinkerVertex vertex, final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory annotationMemory) {
         super(vertex.id, vertex.label, vertex.graph);
         this.state = state;
         this.outEdges = vertex.outEdges;
         this.inEdges = vertex.inEdges;
         this.properties = vertex.properties;
-        this.annotations = vertex.annotations;
         this.vertexMemory = annotationMemory;
         this.centricId = centricId;
     }
@@ -49,10 +48,6 @@ class TinkerVertex extends TinkerElement implements Vertex {
                 public void remove() {
                     vertex.properties.remove(key);
                 }
-
-                public <E extends Element> E getElement() {
-                    return (E) vertex;
-                }
             });
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
         } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
@@ -62,7 +57,7 @@ class TinkerVertex extends TinkerElement implements Vertex {
             else
                 throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
         } else {
-            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeWritten();
+            throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeWritten();
         }
     }
 
@@ -84,12 +79,11 @@ class TinkerVertex extends TinkerElement implements Vertex {
 
         this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
         this.properties.clear();
-        this.annotations.clear();
         graph.vertexIndex.removeElement(this);
         graph.vertices.remove(this.id);
     }
 
-    public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory annotationMemory) {
-        return new TinkerVertex(this, state, centricId, annotationMemory);
+    public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {
+        return new TinkerVertex(this, state, centricId, vertexMemory);
     }
 }

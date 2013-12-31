@@ -104,6 +104,7 @@ public class TinkerGraph implements Graph, Serializable {
     public void clear() {
         this.vertices.clear();
         this.edges.clear();
+        this.annotations.clear();
         this.currentId = 0l;
         this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
         this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);

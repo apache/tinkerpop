@@ -59,11 +59,8 @@ public class TinkerVertexMemory implements VertexSystemMemory {
     protected String generateSetKey(final String key) {
         if (this.computeKeys.get(key).equals(VertexProgram.KeyType.CONSTANT))
             return key;
-
-        if (this.isolation.equals(GraphComputer.Isolation.BSP))
-            return key + this.phase;
         else
-            return key;
+            return this.isolation.equals(GraphComputer.Isolation.BSP) ? key + this.phase : key;
     }
 
     protected boolean isConstantKey(final String key) {
@@ -71,15 +68,21 @@ public class TinkerVertexMemory implements VertexSystemMemory {
     }
 
     public <V> void setProperty(final Element element, final String key, final V value) {
-        this.setValue(element.getId().toString(), key, value);
+        final TinkerProperty<V> property = new TinkerProperty<V>(element, key, value) {
+            public void remove() {
+                removeProperty(element, key);
+            }
+        };
+        property.state = ((TinkerElement) element).state;
+        this.setValue(element.getId().toString(), key, property);
     }
 
     public <V> void setAnnotation(final Property property, final String key, final V value) {
         this.setValue(property.getElement().getId() + ":" + property.getKey(), key, value);
     }
 
-    public <V> Optional<V> getProperty(final Element element, final String key) {
-        return this.getAnnotation(element.getId().toString(), key);
+    public <V> Property<V> getProperty(final Element element, final String key) {
+        return this.getProperty(element.getId().toString(), key);
     }
 
     public <V> Optional<V> getAnnotation(final Property property, final String key) {
@@ -94,7 +97,7 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         this.removeValue(property.getElement().getId() + ":" + property.getKey(), key);
     }
 
-    private <V> void setValue(final String id, final String key, final V value) {
+    private void setValue(final String id, final String key, final Object value) {
         final Map<String, Object> map = this.memory.getOrDefault(id, new HashMap<>());
         this.memory.put(id, map);
 
@@ -114,5 +117,10 @@ public class TinkerVertexMemory implements VertexSystemMemory {
     private <V> Optional<V> getAnnotation(final String id, final String key) {
         final Map<String, Object> map = this.memory.get(id);
         return null == map ? Optional.empty() : Optional.ofNullable((V) map.get(generateGetKey(key)));
+    }
+
+    private <V> Property<V> getProperty(final String id, final String key) {
+        final Map<String, Object> map = this.memory.get(id);
+        return null == map ? Property.empty() : (Property<V>) map.get(generateGetKey(key));
     }
 }
