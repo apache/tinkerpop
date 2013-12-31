@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.server.op.standard;
 
+import com.codahale.metrics.Timer;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 import com.tinkerpop.gremlin.server.*;
+import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -12,10 +14,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * Operations to be used by the StandardOpProcessor.
@@ -24,6 +31,7 @@ import java.util.stream.Stream;
  */
 final class StandardOps {
     private static final Logger logger = LoggerFactory.getLogger(StandardOps.class);
+    private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
     /**
      * Modify the imports on the ScriptEngine.
@@ -91,6 +99,7 @@ final class StandardOps {
      * Evaluate a script in the script engine.
      */
     public static void evalOp(final Context context) {
+        final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
@@ -150,6 +159,8 @@ final class StandardOps {
             uuidBytes.writeLong(msg.requestId.getMostSignificantBits());
             uuidBytes.writeLong(msg.requestId.getLeastSignificantBits());
             ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
+
+            timerContext.stop();
         }
     }
 }

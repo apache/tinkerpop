@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.server;
 
+import com.codahale.metrics.Counter;
 import com.tinkerpop.gremlin.server.op.OpLoader;
+import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -25,6 +27,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
@@ -43,6 +46,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  */
 class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
+    static final Counter requestCounter = MetricManager.INSTANCE.getCounter(name(GremlinServer.class, "requests"));
     private static final String WEBSOCKET_PATH = "/gremlin";
 
     private WebSocketServerHandshaker handshaker;
@@ -107,6 +111,8 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) {
+        requestCounter.inc();
+
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame)
             handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
