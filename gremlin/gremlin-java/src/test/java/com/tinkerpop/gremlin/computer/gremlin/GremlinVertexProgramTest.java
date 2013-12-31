@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.computer.gremlin;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.computer.ComputeResult;
-import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.pipes.Gremlin;
@@ -22,7 +21,7 @@ public class GremlinVertexProgramTest {
         Graph g = TinkerFactory.createClassic();
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
-                        Gremlin.of().out("created").in("created").identity())
+                        Gremlin.of().out("created").inE("created").identity())
                         .build())
                         .submit().get();
 

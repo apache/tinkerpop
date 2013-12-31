@@ -46,8 +46,7 @@ public class TinkerGraphComputer implements GraphComputer {
             this.vertexMemory.setComputeKeys(this.vertexProgram.getComputeKeys());
             this.vertexProgram.setup(this.graphMemory);
 
-            boolean done = false;
-            while (!done) {
+            while (true) {
                 StreamFactory.parallelStream(this.graph.query().vertices()).forEach(vertex ->
                         this.vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC,
                                 vertex.getId().toString(),
@@ -56,7 +55,7 @@ public class TinkerGraphComputer implements GraphComputer {
                 this.vertexMemory.completeIteration();
                 this.messenger.completeIteration();
                 this.graphMemory.incrIteration();
-                done = this.vertexProgram.terminate(this.graphMemory);
+                if (this.vertexProgram.terminate(this.graphMemory)) break;
             }
 
             this.graphMemory.setRuntime(System.currentTimeMillis() - time);

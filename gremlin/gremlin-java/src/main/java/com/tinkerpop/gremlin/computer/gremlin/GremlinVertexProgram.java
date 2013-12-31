@@ -18,7 +18,6 @@ import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -42,8 +41,6 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     }
 
     public void execute(final Vertex vertex, final Messenger<GremlinMessage> messenger, final GraphMemory graphMemory) {
-        clearGremlins(vertex);
-        //final AtomicLong currentCounts = new AtomicLong(0l);
         if (graphMemory.isInitialIteration()) {
             messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex, 1l));
         } else {
@@ -51,7 +48,6 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
             messenger.receiveMessages(vertex, global).forEach(m -> {
                 if (m.destination.equals(GremlinMessage.Destination.VERTEX)) {
                     incrGremlins(vertex, m.counts);
-                    //currentCounts.incrementAndGet();
                     pipe.addStarts(new SingleIterator<>(new Holder<>(Pipe.NONE, vertex))); // TODO: use pipe name for paths
                 } else if (m.destination.equals(GremlinMessage.Destination.EDGE)) {
                     pipe.addStarts(getEdge(vertex, m));
@@ -62,13 +58,12 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
                 }
             });
 
-            //vertex.setProperty(GREMLINS,currentCounts.get());
             pipe.forEachRemaining(h -> {
                 final Object object = ((Holder<Object>) h).get();
                 messenger.sendMessage(
                         vertex,
                         MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertices(object)),
-                        GremlinMessage.of(object, getGremlins(vertex)));
+                        GremlinMessage.of(object, 1l));
             });
         }
     }
@@ -119,18 +114,6 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
         }
     }
 
-    private void clearGremlins(final Vertex vertex) {
-        // TODO: WHY DO I HAVE TO DO THIS?
-        // TODO: THERE SHOULD BE A WAY TO DROP THE MEMORY STRUCTURE OF A BSP-CYCLE IN ONE FELL SWOOP.
-        vertex.setProperty(GREMLINS, 0l);
-        vertex.getProperties().values().forEach(p -> p.setAnnotation(GREMLINS, 0l));
-        vertex.query().direction(Direction.BOTH).edges().forEach(e -> {
-            e.setProperty(GREMLINS, 0l);
-            e.getProperties().values().forEach(p -> p.setAnnotation(GREMLINS, 0l));
-        });
-    }
-
-
     public boolean terminate(final GraphMemory graphMemory) {
         Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
         return !(graphMemory.getIteration() < gremlin.get().getPipes().size());
@@ -144,7 +127,6 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
         final Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
         return (Pipe) gremlin.get().getPipes().get(graphMemory.getIteration());
     }
-
 
     public static Builder create() {
         return new Builder();
