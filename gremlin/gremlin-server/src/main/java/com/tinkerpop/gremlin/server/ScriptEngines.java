@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.groovy.jsr223.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
-import io.netty.util.Timeout;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;

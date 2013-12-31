@@ -1,10 +1,19 @@
 package com.tinkerpop.gremlin.server.op.standard;
 
-import com.tinkerpop.gremlin.server.*;
+import com.tinkerpop.gremlin.server.Context;
+import com.tinkerpop.gremlin.server.GremlinServer;
+import com.tinkerpop.gremlin.server.OpProcessor;
+import com.tinkerpop.gremlin.server.RequestMessage;
+import com.tinkerpop.gremlin.server.ResultCode;
+import com.tinkerpop.gremlin.server.ResultSerializer;
+import com.tinkerpop.gremlin.server.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**

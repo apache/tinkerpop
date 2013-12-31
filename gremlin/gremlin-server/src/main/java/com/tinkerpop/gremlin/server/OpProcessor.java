@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Timer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.slf4j.Logger;
