@@ -32,9 +32,13 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
 
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN)) {
             edges = (Stream) this.getInEdges(this.labels).stream();
+            if (!this.adjacents.isEmpty())
+                edges = edges.filter(e -> this.adjacents.contains(e.getVertex(Direction.OUT)));
         }
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.OUT)) {
             edges = (Stream) Stream.concat(edges, this.getOutEdges(this.labels).stream());
+            if (!this.adjacents.isEmpty())
+                edges = edges.filter(e -> this.adjacents.contains(e.getVertex(Direction.IN)));
         }
         edges = edges.filter(e -> HasContainer.testAll(e, this.hasContainers)).limit(this.limit);
 
@@ -53,12 +57,12 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
             throw GraphComputer.Exceptions.adjacentVerticesCanNotBeQueried();
 
         Stream<TinkerVertex> vertices = Stream.empty();
-        if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN)) {
+        if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN))
             vertices = (Stream) Stream.concat(vertices, this.getInEdges(this.labels).stream().filter(e -> HasContainer.testAll(e, this.hasContainers)).map(e -> e.getVertex(Direction.OUT)));
-        }
-        if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.OUT)) {
+        if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.OUT))
             vertices = (Stream) Stream.concat(vertices, this.getOutEdges(this.labels).stream().filter(e -> HasContainer.testAll(e, this.hasContainers)).map(e -> e.getVertex(Direction.IN)));
-        }
+        if (!this.adjacents.isEmpty())
+            vertices = vertices.filter(this.adjacents::contains);
         vertices = vertices.limit(this.limit);
 
         // GENERATE COMPUTE SHELLED ADJACENT VERTICES DURING GRAPH COMPUTING

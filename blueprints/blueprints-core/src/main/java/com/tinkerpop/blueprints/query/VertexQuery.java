@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.query;
 
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Vertex;
 
 import java.util.function.BiPredicate;
 
@@ -16,7 +17,7 @@ public interface VertexQuery extends Query {
 
     public VertexQuery labels(final String... labels);
 
-    // public VertexQuery adjacent(final Vertex vertex);
+    public VertexQuery adjacents(final Vertex... vertices);
 
     @Override
     public VertexQuery has(final String key);
