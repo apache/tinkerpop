@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
  */
 public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
 
-    protected String name = NONE;
+    protected String name = Pipe.NONE;
     protected final Pipeline pipeline;
     protected ExpandablePipeIterator<Holder<S>> starts = new ExpandablePipeIterator<>();
     private Holder<E> nextEnd;
@@ -26,9 +26,9 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
     }
 
     public void setName(final String name) {
-        if (name.equals(NONE))
+        if (name.equals(Pipe.NONE))
             throw new IllegalArgumentException("The name 'none' is reserved to denote no name");
-        if (!this.name.equals(NONE))
+        if (!this.name.equals(Pipe.NONE))
             throw new IllegalStateException("Pipe has already been named " + this.name);
         this.name = name;
     }

@@ -11,7 +11,17 @@ import java.util.Map;
  */
 public interface VertexSystemMemory extends VertexMemory {
 
-    public boolean isComputeKey(final String key);
+    public default boolean isComputeKey(final String key) {
+        return this.getComputeKeys().containsKey(key);
+    }
+
+    public default boolean isConstantKey(final String key) {
+        return VertexProgram.KeyType.CONSTANT.equals(this.getComputeKeys().get(key));
+    }
+
+    public default boolean isVariableKey(final String key) {
+        return VertexProgram.KeyType.VARIABLE.equals(this.getComputeKeys().get(key));
+    }
 
     public void completeIteration();
 
