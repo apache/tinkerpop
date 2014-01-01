@@ -56,17 +56,15 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
                     starts.add(vertex);
                     counters.incrValue(vertex, m.counts);
                 } else if (m.destination.equals(GremlinMessage.Destination.EDGE)) {
-                    final Optional<Edge> edge = this.getEdge(vertex, m);
-                    if (edge.isPresent()) {
-                        starts.add(edge.get());
-                        counters.incrValue(edge.get(), m.counts);
-                    }
+                    this.getEdge(vertex, m).ifPresent(e -> {
+                        starts.add(e);
+                        counters.incrValue(e, m.counts);
+                    });
                 } else if (m.destination.equals(GremlinMessage.Destination.PROPERTY)) {
-                    final Optional<Property> property = this.getProperty(vertex, m);
-                    if (property.isPresent()) {
-                        starts.add(property.get());
-                        counters.incrValue(property.get(), m.counts);
-                    }
+                    this.getProperty(vertex, m).ifPresent(p -> {
+                        starts.add(p);
+                        counters.incrValue(p, m.counts);
+                    });
                 } else {
                     throw new UnsupportedOperationException("This object type has not been handled yet: " + m);
                 }
