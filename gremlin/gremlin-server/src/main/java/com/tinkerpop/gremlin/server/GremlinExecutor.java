@@ -62,7 +62,7 @@ public class GremlinExecutor {
      * @param graphs the list of {@link com.tinkerpop.blueprints.Graph} instances configured for the server
      * @return the result from the evaluation
      */
-    public Object eval(final RequestMessage message, final GremlinServer.Graphs graphs)
+    public Object eval(final RequestMessage message, final Graphs graphs)
             throws ScriptException, InterruptedException, ExecutionException, TimeoutException {
         return selectForEval(message, graphs).apply(message);
     }
@@ -112,7 +112,7 @@ public class GremlinExecutor {
      * Determine whether to execute the script by way of a specific session or by the shared {@code ScriptEngine} in
      * a sessionless request.
      */
-    private EvalFunctionThatThrows<RequestMessage, Object> selectForEval(final RequestMessage message, final GremlinServer.Graphs graphs) {
+    private EvalFunctionThatThrows<RequestMessage, Object> selectForEval(final RequestMessage message, final Graphs graphs) {
         final Bindings bindings = new SimpleBindings();
         bindings.putAll(extractBindingsFromMessage(message));
 

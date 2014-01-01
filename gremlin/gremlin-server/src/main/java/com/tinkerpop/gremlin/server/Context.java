@@ -11,11 +11,11 @@ public class Context {
     private final RequestMessage requestMessage;
     private final ChannelHandlerContext channelHandlerContext;
     private final Settings settings;
-    private final GremlinServer.Graphs graphs;
+    private final Graphs graphs;
     private final GremlinExecutor gremlinExecutor;
 
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
-                   final Settings settings, final GremlinServer.Graphs graphs,
+                   final Settings settings, final Graphs graphs,
                    final GremlinExecutor gremlinExecutor) {
         this.requestMessage = requestMessage;
         this.channelHandlerContext = ctx;
@@ -50,7 +50,7 @@ public class Context {
     /**
      * Gets the set of {@link com.tinkerpop.blueprints.Graph} objects configured in Gremlin Server.
      */
-    public GremlinServer.Graphs getGraphs() {
+    public Graphs getGraphs() {
         return graphs;
     }
 
