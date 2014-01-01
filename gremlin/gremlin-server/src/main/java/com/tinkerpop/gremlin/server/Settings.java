@@ -70,7 +70,6 @@ public class Settings {
     public ServerMetrics metrics = null;
     public Map<String, String> graphs;
     public Map<String, ScriptEngineSettings> scriptEngines;
-    public String staticFilePath;
     public List<List<String>> use;
 
     public Optional<ServerMetrics> optionalMetrics() {
