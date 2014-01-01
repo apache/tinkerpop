@@ -21,7 +21,7 @@ public class GremlinVertexProgramTest {
         Graph g = TinkerFactory.createClassic();
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
-                        Gremlin.of().out("created").inE("created").identity())
+                        Gremlin.of().outE("created").inV().inE("created").outV().property("name").identity())
                         .build())
                         .submit().get();
 
@@ -33,7 +33,7 @@ public class GremlinVertexProgramTest {
             });
         });
 
-        System.out.println("[--EDGES--]");
+        System.out.println("\n[--EDGES--]");
         StreamFactory.stream(g.query().edges()).forEach(e -> {
             System.out.println(e.getId() + " > " + result.getVertexMemory().getProperty(e, "gremlins").orElse("."));
             e.getProperties().values().forEach(p -> {

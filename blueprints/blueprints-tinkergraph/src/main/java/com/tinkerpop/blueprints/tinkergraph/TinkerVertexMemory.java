@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.computer.VertexSystemMemory;
+import com.tinkerpop.blueprints.computer.util.VertexMemoryHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,20 +41,13 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         return this.computeKeys;
     }
 
-    public boolean isComputeKey(final String key) {
-        return this.computeKeys.containsKey(key);
-    }
-
-    protected boolean isConstantKey(final String key) {
-        return VertexProgram.KeyType.CONSTANT.equals(this.computeKeys.get(key));
-    }
-
     public void completeIteration() {
         this.getMap = this.setMap;
         this.setMap = new HashMap<>();
     }
 
     public <V> void setProperty(final Element element, final String key, final V value) {
+        VertexMemoryHelper.validateComputeKeyValue(this, key, value);
         final TinkerProperty<V> property = new TinkerProperty<V>(element, key, value) {
             public void remove() {
                 removeProperty(element, key);
@@ -64,6 +58,7 @@ public class TinkerVertexMemory implements VertexSystemMemory {
     }
 
     public <V> void setAnnotation(final Property property, final String key, final V value) {
+        VertexMemoryHelper.validateComputeKeyValue(this, key, value);
         this.setValue(property.getElement().getId() + ":" + property.getKey(), key, value);
     }
 
@@ -84,10 +79,6 @@ public class TinkerVertexMemory implements VertexSystemMemory {
     }
 
     private void setValue(final String id, final String key, final Object value) {
-        final VertexProgram.KeyType keyType = this.computeKeys.get(key);
-        if (null == keyType)
-            throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-
         final Map<Object, Map<String, Object>> map = isConstantKey(key) ? this.constantMap : this.setMap;
         final Map<String, Object> nextMap = map.getOrDefault(id, new HashMap<>());
         map.put(id, nextMap);

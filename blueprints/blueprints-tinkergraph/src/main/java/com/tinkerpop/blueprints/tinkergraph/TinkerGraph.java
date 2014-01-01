@@ -64,8 +64,8 @@ public class TinkerGraph implements Graph, Serializable {
 
     public Vertex addVertex(final Object... keyValues) {
         Objects.requireNonNull(keyValues);
-        Object idString = ElementHelper.getIdValue(keyValues);
-        String label = ElementHelper.getLabelValue(keyValues);
+        Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
+        String label = ElementHelper.getLabelValue(keyValues).orElse(null);
 
         if (null != idString) {
             if (this.vertices.containsKey(idString.toString()))

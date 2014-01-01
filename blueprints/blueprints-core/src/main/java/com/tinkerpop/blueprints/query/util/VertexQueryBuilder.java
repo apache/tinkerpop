@@ -6,12 +6,16 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.VertexQuery;
 
 import java.util.function.BiPredicate;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class VertexQueryBuilder extends DefaultVertexQuery implements QueryBuilder {
+
+    public VertexQueryBuilder adjacents(final Vertex... vertices) {
+        super.adjacents(vertices);
+        return this;
+    }
 
     public VertexQueryBuilder has(final String key) {
         super.has(key);

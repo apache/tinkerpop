@@ -53,8 +53,8 @@ public class TinkerGraphComputer implements GraphComputer {
                                 this.vertexMemory), this.messenger, this.graphMemory));
 
                 this.vertexMemory.completeIteration();
-                this.messenger.completeIteration();
                 this.graphMemory.incrIteration();
+                this.messenger.completeIteration();
                 if (this.vertexProgram.terminate(this.graphMemory)) break;
             }
 

@@ -22,7 +22,7 @@ class TinkerHelper {
             throw Edge.Exceptions.edgeLabelCanNotBeNull();
         ElementHelper.legalKeyValues(keyValues);
 
-        Object idString = ElementHelper.getIdValue(keyValues);
+        Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
 
         final Edge edge;
         if (null != idString) {
