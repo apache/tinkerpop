@@ -2,7 +2,10 @@ host: localhost
 port: 8182
 threadPoolWorker: 16
 threadPoolBoss: 1
-scriptEvaluationTimeout: 10000
+scriptEvaluationTimeout: 30000
+serializedResponseTimeout: 30000
+serializeResultTimeout: 200
+frameQueueSize: 256
 graphs: {
   g: config/tinkergraph-empty.properties}
 use:
@@ -18,4 +21,3 @@ metrics: {
   slf4jReporter: {enabled: true, interval: 180000},
   gangliaReporter: {enabled: true, interval: 180000, addressingMode: MULTICAST},
   graphiteReporter: {enabled: true, interval: 180000}}
-staticFilePath: src/main/resources/web

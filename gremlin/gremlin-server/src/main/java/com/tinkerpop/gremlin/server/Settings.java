@@ -44,6 +44,29 @@ public class Settings {
      * Time in milliseconds to wait for a script to complete execution.  Defaults to 30000.
      */
     public long scriptEvaluationTimeout = 30000l;
+
+    /**
+     * Time in milliseconds to wait while an evaluated script serializes its results. This value represents the
+     * total serialization time for the request.  Defaults to 30000.
+     */
+    public long serializedResponseTimeout = 30000l;
+
+    /**
+     * Time in milliseconds to wait while an individual item in a result set is serialized.  Defaults to 200.  If
+     * this value is exceeded then the iteration of the result set is aborted with error and no additional results
+     * are returned for that request.
+     */
+    public long serializeResultTimeout = 200l;
+
+    /**
+     * The size of the frame queue which contains an individual serialized result (a frame) to be written back
+     * to the client on each request. If the frame queue fills (i.e. the server serializes results far faster than
+     * it can write them back to the client) then serialization will cease until there is space in the queue.  Note
+     * that if there is excessive blocking then the serializedResponseTimeout will be exceeded and the response
+     * will produce an error.
+     */
+    public int frameQueueSize = 256;
+
     public ServerMetrics metrics = null;
     public Map<String, String> graphs;
     public Map<String, ScriptEngineSettings> scriptEngines;

@@ -3,6 +3,9 @@ port: 8182
 threadPoolWorker: 16
 threadPoolBoss: 1
 scriptEvaluationTimeout: 30000
+serializedResponseTimeout: 30000
+serializeResultTimeout: 200
+frameQueueSize: 256
 graphs: {
   g: config/tinkergraph-empty.properties}
 use:

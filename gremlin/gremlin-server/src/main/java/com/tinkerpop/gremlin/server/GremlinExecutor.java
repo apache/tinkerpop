@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.util.LocalExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +47,6 @@ public class GremlinExecutor {
      * Script engines are evaluated in a per session context where imports/scripts are isolated per session.
      */
     private Map<UUID, GremlinSession> sessionedScriptEngines = new ConcurrentHashMap<>();
-
-    /**
-     * Each worker thread gets its own evaluation thread so that it is possible to timeout a long run evaluation.
-     */
-    private ThreadLocal<ExecutorService> scriptEvaluationService = new ThreadLocal<>();
 
     /**
      * True if initialized and false otherwise.
@@ -121,7 +117,7 @@ public class GremlinExecutor {
                 // put all the preconfigured graphs on the bindings
                 bindings.putAll(graphs.getGraphs());
 
-                final ExecutorService executorService = this.getScriptEvaluationService();
+                final ExecutorService executorService = LocalExecutorService.getLocal();
                 try {
                     // do a safety cleanup of previous transaction...if any
                     executorService.submit(graphs::rollbackAll).get();
@@ -136,15 +132,6 @@ public class GremlinExecutor {
                 }
             };
         }
-    }
-
-    private ExecutorService getScriptEvaluationService() {
-        final ExecutorService executorService = this.scriptEvaluationService.get();
-        if (executorService != null)
-            return executorService;
-
-        this.scriptEvaluationService.set(Executors.newSingleThreadExecutor());
-        return this.scriptEvaluationService.get();
     }
 
     public ScriptEngineOps select(final RequestMessage message) {

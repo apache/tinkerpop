@@ -10,7 +10,9 @@ import com.tinkerpop.gremlin.server.RequestMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
 import com.tinkerpop.gremlin.server.ResultSerializer;
 import com.tinkerpop.gremlin.server.ScriptEngineOps;
+import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.Tokens;
+import com.tinkerpop.gremlin.server.util.LocalExecutorService;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -18,6 +20,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.apache.commons.collections.iterators.ArrayIterator;
+import org.apache.commons.lang.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +29,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -110,35 +120,90 @@ final class StandardOps {
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
+        final Settings settings = context.getSettings();
         final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
 
+        // a worker service bound to the current thread
+        final ExecutorService executorService = LocalExecutorService.getLocal();
+
+        // a marker to determine if the code has succeeded at evaluation of the script
+        boolean evaluated = false;
+
+        // the task that is doing the serialization work
+        Optional<Future<Void>> serializing = Optional.empty();
+
+        // timer for the total serialization time
+        final StopWatch stopWatch = new StopWatch();
+
+        // the result from the script evaluation
         Object o;
         try {
+            // evaluate the script
             o = context.getGremlinExecutor().eval(msg, context.getGraphs());
 
-            Iterator itty;
-            if (o instanceof Iterable)
-                itty = ((Iterable) o).iterator();
-            else if (o instanceof Iterator)
-                itty = (Iterator) o;
-            else if (o instanceof Object[])
-                itty = new ArrayIterator(o);
-            else if (o instanceof Stream)
-                itty = ((Stream) o).iterator();
-            else if (o instanceof Map)
-                itty = ((Map) o).entrySet().iterator();
-            else if (o instanceof Throwable)
-                itty = new SingleIterator<Object>(((Throwable) o).getMessage());
-            else
-                itty = new SingleIterator<>(o);
+            // make all results an iterator
+            Iterator itty = convertToIterator(o);
 
-            itty.forEachRemaining(j -> {
-                try {
-                    ctx.channel().write(new TextWebSocketFrame(true, 0, serializer.serialize(j, context)));
-                } catch (Exception ex) {
-                    logger.warn("The result [{}] in the request {} could not be serialized and returned.", j, context.getRequestMessage(), ex);
+            // mark this request as having its results evaluated
+            evaluated = true;
+            stopWatch.start();
+
+            // determines when the iteration of all results is complete and queue is full
+            final AtomicBoolean iterationComplete = new AtomicBoolean(false);
+
+            // need to queue results as the frames need to be written in the request that handled the response.
+            // hard to write a good integration test for the serialization/response timeouts.  add a Thread.sleep()
+            // into the Callable to force different scenarios or to throw exceptions.
+            final ArrayBlockingQueue<TextWebSocketFrame> frameQueue = new ArrayBlockingQueue<>(settings.frameQueueSize);
+            serializing = Optional.of(executorService.submit((Callable<Void>) () -> {
+                while (itty.hasNext()) {
+                    final Object individualResult = itty.next();
+                    try {
+                        if (logger.isDebugEnabled())
+                            logger.debug("Writing to frame queue [{}] for msg [{}]", individualResult, msg);
+
+                        frameQueue.put(new TextWebSocketFrame(true, 0, serializer.serialize(individualResult, context)));
+                    } catch (Exception ex) {
+                        // will catch an InterruptedException here if the the serialization of an individual element
+                        // exceeds the configured time for serializeResultTimeout.  If there are enough exceptions
+                        // per serialization round the (i.e. nothing is being put on the queue), then the
+                        // serializeResultTimeout will be exceeded anyway and this thread will be interrupted.
+                        logger.warn("The result [{}] in the request {} could not be serialized and returned.", individualResult, context.getRequestMessage(), ex);
+                    }
                 }
-            });
+
+                iterationComplete.set(true);
+
+                return null;
+            }));
+
+            do {
+                // poll for frames placed in the queue by the process in the executor service.  the poll is governed by
+                // the serializeResultTimeout and if it returns null and the iteration of all results is not yet
+                // finished then that means that the serialization of a single element is just taking too long and
+                // the timeout is exceeded so an exception is thrown.  the loop can get into state where a poll for
+                // the specified serializeResultTimeout will return null and iteration will be complete.  In such
+                // cases the logger is the only one that needs to know about it.
+                final Optional<TextWebSocketFrame> currentFrame
+                        = Optional.ofNullable(frameQueue.poll(settings.serializeResultTimeout, TimeUnit.MILLISECONDS));
+                if (currentFrame.isPresent()) {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Writing from frame queue to client [{}] for msg [{}]", currentFrame.get(), msg);
+
+                    ctx.channel().write(currentFrame.get());
+                } else {
+                    if (!iterationComplete.get())
+                        throw new TimeoutException("Serialization of an individual result exceeded the serializeResultTimeout setting");
+                    else
+                        logger.debug("The Frame queue was empty and iteration is complete.");
+                }
+
+                stopWatch.split();
+                if (stopWatch.getSplitTime() > settings.serializedResponseTimeout)
+                    throw new TimeoutException("Serialization of the entire response exceeded the serializeResponseTimeout setting");
+
+                stopWatch.unsplit();
+            } while (!iterationComplete.get() || frameQueue.size() > 0);
 
         } catch (ScriptException se) {
             logger.warn("Error while evaluating a script on request [{}]", msg);
@@ -149,7 +214,7 @@ final class StandardOps {
             logger.debug("Exception from InterruptedException error.", ie);
             OpProcessor.error(serializer.serialize(ie.getMessage(), ResultCode.FAIL, context)).accept(context);
         } catch (ExecutionException ee) {
-            logger.warn("Error while retrieving response from the script evaluated on request [{}]", msg);
+            logger.warn("Error while processing response from the script evaluated on request [{}]", msg);
             logger.debug("Exception from ExecutionException error.", ee.getCause());
             Throwable inner = ee.getCause();
             if (inner instanceof ScriptException)
@@ -157,8 +222,13 @@ final class StandardOps {
 
             OpProcessor.error(serializer.serialize(inner.getMessage(), ResultCode.FAIL, context)).accept(context);
         } catch (TimeoutException toe) {
-            final String errorMessage = String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", context.getSettings().scriptEvaluationTimeout, msg);
-            logger.warn(errorMessage, context.getSettings().scriptEvaluationTimeout, msg);
+            final String errorMessage;
+            if (!evaluated)
+                errorMessage = String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", settings.scriptEvaluationTimeout, msg);
+            else
+                errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, toe.getMessage());
+
+            logger.warn(errorMessage);
             final String json = serializer.serialize(errorMessage, ResultCode.FAIL, context);
             OpProcessor.error(json).accept(context);
         } finally {
@@ -168,7 +238,33 @@ final class StandardOps {
             uuidBytes.writeLong(msg.requestId.getLeastSignificantBits());
             ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
 
+            // try to cancel the serialization task if its still running somehow
+            serializing.ifPresent(f->f.cancel(true));
+
+            // the stopwatch was only started after a script was evaluated
+            if (evaluated)
+                stopWatch.stop();
+
             timerContext.stop();
         }
+    }
+
+    private static Iterator convertToIterator(Object o) {
+        Iterator itty;
+        if (o instanceof Iterable)
+            itty = ((Iterable) o).iterator();
+        else if (o instanceof Iterator)
+            itty = (Iterator) o;
+        else if (o instanceof Object[])
+            itty = new ArrayIterator(o);
+        else if (o instanceof Stream)
+            itty = ((Stream) o).iterator();
+        else if (o instanceof Map)
+            itty = ((Map) o).entrySet().iterator();
+        else if (o instanceof Throwable)
+            itty = new SingleIterator<Object>(((Throwable) o).getMessage());
+        else
+            itty = new SingleIterator<>(o);
+        return itty;
     }
 }

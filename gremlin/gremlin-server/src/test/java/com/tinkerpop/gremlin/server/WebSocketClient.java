@@ -85,7 +85,7 @@ class WebSocketClient {
         final WebSocketClientHandler handler =
                 new WebSocketClientHandler(
                         WebSocketClientHandshakerFactory.newHandshaker(
-                                uri, WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS), this);
+                                uri, WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, 1280000), this);
 
         b.group(group)
                 .channel(NioSocketChannel.class)
@@ -94,7 +94,7 @@ class WebSocketClient {
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         pipeline.addLast("http-codec", new HttpClientCodec());
-                        pipeline.addLast("aggregator", new HttpObjectAggregator(8192));
+                        pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
                         pipeline.addLast("ws-handler", handler);
                     }
                 });
