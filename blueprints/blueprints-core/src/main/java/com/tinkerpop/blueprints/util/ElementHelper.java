@@ -6,6 +6,7 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,20 +43,20 @@ public class ElementHelper {
         }
     }
 
-    public static Object getIdValue(final Object... keyValues) {
+    public static Optional<Object> getIdValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i].equals(Property.Key.ID))
-                return keyValues[i + 1];
+                return Optional.of(keyValues[i + 1]);
         }
-        return null;
+        return Optional.empty();
     }
 
-    public static String getLabelValue(final Object... keyValues) {
+    public static Optional<String> getLabelValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i].equals(Property.Key.LABEL))
-                return keyValues[i + 1].toString();
+                return Optional.of(keyValues[i + 1].toString());
         }
-        return null;
+        return Optional.empty();
     }
 
     public static void attachKeyValues(final Element element, final Object... keyValues) {
