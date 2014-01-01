@@ -15,13 +15,11 @@ import com.tinkerpop.gremlin.pipes.Pipe;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -49,28 +47,34 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
             messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex, 1l));
         } else {
             final CounterMap<Object> counters = new CounterMap<>();
-            final Set<Object> objects = new HashSet<>();
+            final Set<Object> starts = new HashSet<>();
             final Pipe pipe = getCurrentPipe(graphMemory);
 
+            // RECEIVE MESSAGES
             messenger.receiveMessages(vertex, global).forEach(m -> {
                 if (m.destination.equals(GremlinMessage.Destination.VERTEX)) {
-                    objects.add(vertex);
+                    starts.add(vertex);
                     counters.incrValue(vertex, m.counts);
                 } else if (m.destination.equals(GremlinMessage.Destination.EDGE)) {
-                    final List<Edge> edges = this.getEdges(vertex, m);
-                    objects.addAll(edges);
-                    edges.forEach(e -> counters.incrValue(e, m.counts));
+                    final Optional<Edge> edge = this.getEdge(vertex, m);
+                    if (edge.isPresent()) {
+                        starts.add(edge.get());
+                        counters.incrValue(edge.get(), m.counts);
+                    }
                 } else if (m.destination.equals(GremlinMessage.Destination.PROPERTY)) {
-                    final List<Property> properties = this.getProperties(vertex, m);
-                    objects.addAll(properties);
-                    properties.forEach(p -> counters.incrValue(p, m.counts));
+                    final Optional<Property> property = this.getProperty(vertex, m);
+                    if (property.isPresent()) {
+                        starts.add(property.get());
+                        counters.incrValue(property.get(), m.counts);
+                    }
                 } else {
                     throw new UnsupportedOperationException("This object type has not been handled yet: " + m);
                 }
             });
 
-            objects.forEach(start -> {
-                pipe.addStarts(new SingleIterator<Holder>(new Holder<>(Pipe.NONE, start)));
+            // EXECUTE PIPELINE WITH LOCAL STARTS AND SEND MESSAGES TO REMOTE ENDS
+            starts.forEach(start -> {
+                pipe.addStarts(new SingleIterator<>(new Holder<>(pipe.getName(), start)));
                 pipe.forEachRemaining(h -> {
                     final Object end = ((Holder<Object>) h).get();
                     // System.out.println(start + "-->" + end + " [" + counters.get(start) + "]");
@@ -80,6 +84,8 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
                             GremlinMessage.of(end, counters.get(start)));
                 });
             });
+
+            // UPDATE LOCAL STARTS WITH COUNTS
             counters.forEach((k, v) -> {
                 if (k instanceof Element) {
                     ((Element) k).setProperty(GREMLINS, v);
@@ -90,21 +96,23 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
         }
     }
 
-    private List<Edge> getEdges(final Vertex vertex, final GremlinMessage message) {
-        return StreamFactory.stream(vertex.query().direction(Direction.BOTH).edges())
+    private Optional<Edge> getEdge(final Vertex vertex, final GremlinMessage message) {
+        // TODO: WHY IS THIS NOT LIKE FAUNUS WITH A BOTH?
+        return StreamFactory.stream(vertex.query().direction(Direction.OUT).edges())
                 .filter(e -> e.getId().equals(message.elementId))
-                .collect(Collectors.toList());
+                .findFirst();
     }
 
-    private List<Property> getProperties(final Vertex vertex, final GremlinMessage message) {
+    private Optional<Property> getProperty(final Vertex vertex, final GremlinMessage message) {
         if (message.elementId.equals(vertex.getId())) {
             final Property property = vertex.getProperty(message.propertyKey);
-            return Arrays.asList(property);
+            return property.isPresent() ? Optional.of(property) : Optional.empty();
         } else {
-            return StreamFactory.stream(vertex.query().direction(Direction.BOTH).edges())
+            // TODO: WHY IS THIS NOT LIKE FAUNUS WITH A BOTH?
+            return (Optional) StreamFactory.stream(vertex.query().direction(Direction.OUT).edges())
                     .filter(e -> e.getId().equals(message.elementId))
                     .map(e -> e.getProperty(message.propertyKey))
-                    .collect(Collectors.toList());
+                    .findFirst();
         }
     }
 
