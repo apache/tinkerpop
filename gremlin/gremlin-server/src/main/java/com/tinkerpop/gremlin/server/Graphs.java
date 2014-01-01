@@ -10,14 +10,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Holder of {@link com.tinkerpop.blueprints.Graph} instances configured for the server to be passed to
- * sessionless bindings.
+ * Holder of {@link Graph} instances configured for the server to be passed to sessionless bindings. The
+ * {@link Graph} instances are read from the {@link Settings} for Gremlin Server as defined in the configuration
+ * file.
  */
 public class Graphs {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
 
     private final Map<String, Graph> graphs;
 
+    /**
+     * Create a new instance using the {@link Settings} from Gremlin Server.
+     */
     public Graphs(final Settings settings) {
         final Map<String, Graph> m = new HashMap<>();
         settings.graphs.entrySet().forEach(e -> {
@@ -34,6 +38,12 @@ public class Graphs {
         graphs = Collections.unmodifiableMap(m);
     }
 
+    /**
+     * Get a list of the {@link Graph} instances and their binding names as defined in the Gremlin Server
+     * configuration file.  This {@link Map} is immutable.
+     *
+     * @return a {@link Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
+     */
     public Map<String, Graph> getGraphs() {
         return graphs;
     }
