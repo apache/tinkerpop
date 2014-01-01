@@ -23,7 +23,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Adapted from https://github.com/netty/netty/tree/netty-4.0.10.Final/example/src/main/java/io/netty/example/http/websocketx/server
+ * Start and stop Gremlin Server.  Adapted from
+ * https://github.com/netty/netty/tree/netty-4.0.10.Final/example/src/main/java/io/netty/example/http/websocketx/server
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -37,6 +38,9 @@ public class GremlinServer {
         this.settings = settings;
     }
 
+    /**
+     * Start Gremlin Server with {@link Settings} provided to the constructor.
+     */
     public void run() throws Exception {
         final EventLoopGroup bossGroup = new NioEventLoopGroup(settings.threadPoolBoss);
         final EventLoopGroup workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
@@ -59,6 +63,9 @@ public class GremlinServer {
         }
     }
 
+    /**
+     * Stop Gremlin Server and free the port.
+     */
     public void stop() {
         ch.close();
     }
@@ -132,7 +139,8 @@ public class GremlinServer {
     }
 
     /**
-     * Holder of Graph instances configured for the server to be passed to sessionless bindings.
+     * Holder of {@link com.tinkerpop.blueprints.Graph} instances configured for the server to be passed to
+     * sessionless bindings.
      */
     public static class Graphs {
         private final Map<String, Graph> graphs;
@@ -157,6 +165,9 @@ public class GremlinServer {
             return graphs;
         }
 
+        /**
+         * Rollback transactions across all {@link com.tinkerpop.blueprints.Graph} objects.
+         */
         public void rollbackAll() {
             graphs.entrySet().forEach(e-> {
                 final Graph g = e.getValue();
@@ -165,6 +176,9 @@ public class GremlinServer {
             });
         }
 
+        /**
+         * Commit transactions across all {@link com.tinkerpop.blueprints.Graph} objects.
+         */
         public void commitAll() {
             graphs.entrySet().forEach(e->{
                 final Graph g = e.getValue();
