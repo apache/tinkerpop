@@ -24,14 +24,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Execute Gremlin scripts against a ScriptEngine instance.  The ScriptEngine maybe be a shared ScriptEngine in the
- * case of a sessionless request or a standalone ScriptEngine bound to a session that always executes within the same
- * thread for every request.
+ * Execute Gremlin scripts against a {@code ScriptEngine} instance.  The {@code ScriptEngine} maybe be a shared
+ * {@code ScriptEngine} in the case of a sessionless request or a standalone {@code ScriptEngine} bound to a session
+ * that always executes within the same thread for every request.
  * <p>
- * The shared ScriptEngine for sessionless requests can not be dynamically re-initialized as doing so essentially
- * equates to restarting the server.  It's easier to just do that.
- * <p>
- * The sessioned ScriptEngine is initialized with settings once per session and can be reset by the session itself.
+ * The shared {@code ScriptEngine} for sessionless requests can not be dynamically re-initialized as doing so
+ * essentially equates to restarting the server.  It's easier to just do that. The sessioned {@code ScriptEngine} is
+ * initialized with settings once per session and can be reset by the session itself.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -55,11 +54,24 @@ public class GremlinExecutor {
 
     private Settings settings = null;
 
+    /**
+     * Evaluate the {@link RequestMessage} after selecting the appropriate type (in-session or sessionless) of
+     * {@code ScriptEngine} instance.
+     *
+     * @param message the current message
+     * @param graphs the list of {@link com.tinkerpop.blueprints.Graph} instances configured for the server
+     * @return the result from the evaluation
+     */
     public Object eval(final RequestMessage message, final GremlinServer.Graphs graphs)
             throws ScriptException, InterruptedException, ExecutionException, TimeoutException {
         return selectForEval(message, graphs).apply(message);
     }
 
+    /**
+     * Initialize the {@link GremlinExecutor} given the provided {@link Settings}.  This method is idempotent.
+     *
+     * @param settings the Gremlin Server configuration
+     */
     public synchronized void init(final Settings settings) {
         if (!initialized) {
             if (logger.isDebugEnabled()) logger.debug("Initializing GremlinExecutor");
@@ -90,14 +102,14 @@ public class GremlinExecutor {
     }
 
     /**
-     * Determines whether or not the GremlinExecutor was initialized with the appropriate settings or not.
+     * Determines whether or not the {@link GremlinExecutor} was initialized with the appropriate settings or not.
      */
     public boolean isInitialized() {
         return initialized;
     }
 
     /**
-     * Determine whether to execute the script by way of a specific session or by the shared script engine in
+     * Determine whether to execute the script by way of a specific session or by the shared {@code ScriptEngine} in
      * a sessionless request.
      */
     private EvalFunctionThatThrows<RequestMessage, Object> selectForEval(final RequestMessage message, final GremlinServer.Graphs graphs) {
@@ -134,6 +146,13 @@ public class GremlinExecutor {
         }
     }
 
+    /**
+     * Selects a {@code ScriptEngine}, either shared or session-based, based on the {@link RequestMessage}. If a
+     * session identifier is present on the message then return a session-based {@link ScriptEngineOps} otherwise
+     * return the shared instance.
+     *
+     * @param message the current {@link RequestMessage} being processed
+     */
     public ScriptEngineOps select(final RequestMessage message) {
         if (message.optionalSessionId().isPresent())
             return getGremlinSession(message.sessionId);
@@ -171,11 +190,19 @@ public class GremlinExecutor {
         return session;
     }
 
+    /**
+     * An {@link FunctionalInterface} that throws {@code ScriptEngine} oriented exceptions.
+     * @param <T> value passed to the function
+     * @param <R> value returned from the function
+     */
     @FunctionalInterface
     public interface EvalFunctionThatThrows<T, R> {
         R apply(T t) throws ScriptException, InterruptedException, ExecutionException, TimeoutException;
     }
 
+    /**
+     * An in-session implementation of {@link ScriptEngineOps}.
+     */
     public class GremlinSession implements ScriptEngineOps {
         private final Bindings bindings;
 
