@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.ser.SerializerFactory;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 /**
- * Implementation of the {@code DefaultSerializerProvider} for Jackson that users the {@code ToStringSerializer} for unknown types.
+ * Implementation of the {@code DefaultSerializerProvider} for Jackson that users the {@code ToStringSerializer} for
+ * unknown types.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

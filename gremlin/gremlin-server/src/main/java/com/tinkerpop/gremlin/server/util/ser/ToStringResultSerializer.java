@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.server.ResultCode;
 import com.tinkerpop.gremlin.server.ResultSerializer;
 
 /**
- * Serialize results via toString.
+ * Serialize results via {@link Object#toString}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
