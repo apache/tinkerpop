@@ -49,7 +49,7 @@ public class JsonResultSerializerV1d0 implements ResultSerializer {
 
     /**
      * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write
-     * out Graph objects and toString for unknown objects.
+     * out {@link com.tinkerpop.blueprints.Graph} objects and {@code toString} for unknown objects.
      */
     private static final ObjectMapper mapper = new ObjectMapper() {{
         // empty beans should be just toString'd
@@ -153,7 +153,7 @@ public class JsonResultSerializerV1d0 implements ResultSerializer {
     }
 
     /**
-     * Maps in the JVM can have Object as a key, but in JSON they must be a String.
+     * Maps in the JVM can have {@link Object} as a key, but in JSON they must be a {@link String}.
      */
     public static class GremlinJacksonKeySerializer extends StdKeySerializer {
         @Override

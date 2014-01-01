@@ -43,7 +43,7 @@ import java.util.stream.Stream;
 import static com.codahale.metrics.MetricRegistry.name;
 
 /**
- * Operations to be used by the StandardOpProcessor.
+ * Operations to be used by the {@link StandardOpProcessor}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -52,7 +52,7 @@ final class StandardOps {
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
     /**
-     * Modify the imports on the ScriptEngine.
+     * Modify the imports on the {@code ScriptEngine}.
      */
     public static void importOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
@@ -61,7 +61,7 @@ final class StandardOps {
     }
 
     /**
-     * List the dependencies, imports, or variables in the ScriptEngine
+     * List the dependencies, imports, or variables in the {@code ScriptEngine}.
      */
     public static void showOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
@@ -90,7 +90,7 @@ final class StandardOps {
     }
 
     /**
-     * Resets the ScriptEngine thus forcing a reload of scripts and classes.
+     * Resets the {@code ScriptEngine} thus forcing a reload of scripts and classes.
      */
     public static void resetOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
@@ -114,7 +114,7 @@ final class StandardOps {
     }
 
     /**
-     * Evaluate a script in the script engine.
+     * Evaluate a script in the {@code ScriptEngine}.
      */
     public static void evalOp(final Context context) {
         final Timer.Context timerContext = evalOpTimer.time();

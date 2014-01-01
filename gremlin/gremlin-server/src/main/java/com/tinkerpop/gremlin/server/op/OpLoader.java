@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 
 /**
- * Uses ServiceLoader to load Processor instances into a cache.
+ * Uses {@code ServiceLoader} to load {@link OpProcessor} instances into a cache.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

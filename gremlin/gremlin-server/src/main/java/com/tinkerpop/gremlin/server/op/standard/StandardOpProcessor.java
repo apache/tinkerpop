@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
- * Standard OpProcessor implementation that handles ScriptEngine configuration and script evaluation.
+ * Standard {@link OpProcessor} implementation that handles {@code ScriptEngine} configuration and script evaluation.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
