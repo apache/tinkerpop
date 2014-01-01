@@ -8,30 +8,10 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Context {
-
-    /**
-     * The current request.
-     */
     private final RequestMessage requestMessage;
-
-    /**
-     * The Netty context.
-     */
     private final ChannelHandlerContext channelHandlerContext;
-
-    /**
-     * The current configuration of Gremlin Server.
-     */
     private final Settings settings;
-
-    /**
-     * The set of {@link com.tinkerpop.blueprints.Graph} objects configured in Gremlin Server.
-     */
     private final GremlinServer.Graphs graphs;
-
-    /**
-     * The executor chosen to evaluate incoming Gremlin scripts based on the request.
-     */
     private final GremlinExecutor gremlinExecutor;
 
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
@@ -44,22 +24,39 @@ public class Context {
         this.gremlinExecutor = gremlinExecutor;
     }
 
+
+    /**
+     * Gets the current request to Gremlin Server.
+     */
     public RequestMessage getRequestMessage() {
         return requestMessage;
     }
 
+    /**
+     * Gets the Netty context.
+     */
     public ChannelHandlerContext getChannelHandlerContext() {
         return channelHandlerContext;
     }
 
+
+    /**
+     * Gets the current configuration of Gremlin Server.
+     */
     public Settings getSettings() {
         return settings;
     }
 
+    /**
+     * Gets the set of {@link com.tinkerpop.blueprints.Graph} objects configured in Gremlin Server.
+     */
     public GremlinServer.Graphs getGraphs() {
         return graphs;
     }
 
+    /**
+     * Gets the executor chosen to evaluate incoming Gremlin scripts based on the request.
+     */
     public GremlinExecutor getGremlinExecutor() {
         return gremlinExecutor;
     }
