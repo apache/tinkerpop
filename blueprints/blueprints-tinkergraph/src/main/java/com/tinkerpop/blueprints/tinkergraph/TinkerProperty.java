@@ -3,6 +3,7 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.computer.GraphComputer;
+import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -83,6 +84,10 @@ public abstract class TinkerProperty<V> implements Property<V> {
                 throw new UnsupportedOperationException("Property removal is not supported");
             }
         };
+    }
+
+    public String toString() {
+        return StringFactory.propertyString(this);
     }
 
     public abstract void remove();

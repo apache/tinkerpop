@@ -16,9 +16,12 @@ import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,78 +44,76 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     }
 
     public void execute(final Vertex vertex, final Messenger<GremlinMessage> messenger, final GraphMemory graphMemory) {
+
         if (graphMemory.isInitialIteration()) {
             messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex, 1l));
         } else {
+            final CounterMap<Object> counters = new CounterMap<>();
+            final Set<Object> objects = new HashSet<>();
             final Pipe pipe = getCurrentPipe(graphMemory);
+
             messenger.receiveMessages(vertex, global).forEach(m -> {
                 if (m.destination.equals(GremlinMessage.Destination.VERTEX)) {
-                    incrGremlins(vertex, m.counts);
-                    pipe.addStarts(new SingleIterator<>(new Holder<>(Pipe.NONE, vertex))); // TODO: use pipe name for paths
+                    objects.add(vertex);
+                    counters.incrValue(vertex, m.counts);
                 } else if (m.destination.equals(GremlinMessage.Destination.EDGE)) {
-                    pipe.addStarts(getEdge(vertex, m));
+                    final List<Edge> edges = this.getEdges(vertex, m);
+                    objects.addAll(edges);
+                    edges.forEach(e -> counters.incrValue(e, m.counts));
                 } else if (m.destination.equals(GremlinMessage.Destination.PROPERTY)) {
-                    pipe.addStarts(getProperty(vertex, m));
+                    final List<Property> properties = this.getProperties(vertex, m);
+                    objects.addAll(properties);
+                    properties.forEach(p -> counters.incrValue(p, m.counts));
                 } else {
                     throw new UnsupportedOperationException("This object type has not been handled yet: " + m);
                 }
             });
 
-            pipe.forEachRemaining(h -> {
-                final Object object = ((Holder<Object>) h).get();
-                messenger.sendMessage(
-                        vertex,
-                        MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertices(object)),
-                        GremlinMessage.of(object, 1l));
+            objects.forEach(start -> {
+                pipe.addStarts(new SingleIterator<Holder>(new Holder<>(Pipe.NONE, start)));
+                pipe.forEachRemaining(h -> {
+                    final Object end = ((Holder<Object>) h).get();
+                    // System.out.println(start + "-->" + end + " [" + counters.get(start) + "]");
+                    messenger.sendMessage(
+                            vertex,
+                            MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertices(end)),
+                            GremlinMessage.of(end, counters.get(start)));
+                });
+            });
+            counters.forEach((k, v) -> {
+                if (k instanceof Element) {
+                    ((Element) k).setProperty(GREMLINS, v);
+                } else {
+                    ((Property) k).setAnnotation(GREMLINS, v);
+                }
             });
         }
     }
 
-    private void incrGremlins(final Object object, final long count) {
-        if (object instanceof Element) {
-            Element element = (Element) object;
-            long counts = element.<Long>getProperty(GREMLINS).orElse(0l);
-            element.setProperty(GREMLINS, count + counts);
-        } else {
-            Property property = (Property) object;
-            long counts = property.<Long>getAnnotation(GREMLINS).orElse(0l);
-            property.setAnnotation(GREMLINS, count + counts);
-        }
-    }
-
-    private long getGremlins(final Object object) {
-        return object instanceof Element ?
-                ((Element) object).<Long>getProperty(GREMLINS).orElse(0l) :
-                ((Property) object).<Long>getAnnotation(GREMLINS).orElse(0l);
-    }
-
-    private Iterator<Holder<Edge>> getEdge(final Vertex vertex, final GremlinMessage message) {
+    private List<Edge> getEdges(final Vertex vertex, final GremlinMessage message) {
         return StreamFactory.stream(vertex.query().direction(Direction.BOTH).edges())
                 .filter(e -> e.getId().equals(message.elementId))
-                .filter(e -> {
-                    incrGremlins(e, message.counts);
-                    return true;
-                })
-                .map(e -> new Holder<>(Pipe.NONE, e))
-                .iterator();
+                .collect(Collectors.toList());
     }
 
-    private Iterator<Holder<Property>> getProperty(final Vertex vertex, final GremlinMessage message) {
+    private List<Property> getProperties(final Vertex vertex, final GremlinMessage message) {
         if (message.elementId.equals(vertex.getId())) {
             final Property property = vertex.getProperty(message.propertyKey);
-            incrGremlins(property, message.counts);
-            return (Iterator) Arrays.asList(new Holder<>(Pipe.NONE, property)).iterator();
+            return Arrays.asList(property);
         } else {
-            return (Iterator) StreamFactory.stream(vertex.query().direction(Direction.BOTH).edges())
+            return StreamFactory.stream(vertex.query().direction(Direction.BOTH).edges())
                     .filter(e -> e.getId().equals(message.elementId))
                     .map(e -> e.getProperty(message.propertyKey))
-                    .filter(p -> {
-                        incrGremlins(p, message.counts);
-                        return true;
-                    }).map(p -> new Holder<>(Pipe.NONE, p))
-                    .iterator();
+                    .collect(Collectors.toList());
         }
     }
+
+    private Pipe getCurrentPipe(final GraphMemory graphMemory) {
+        final Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
+        return (Pipe) gremlin.get().getPipes().get(graphMemory.getIteration());
+    }
+
+    ////////// GRAPH COMPUTER METHODS
 
     public boolean terminate(final GraphMemory graphMemory) {
         Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
@@ -121,11 +122,6 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
 
     public Map<String, KeyType> getComputeKeys() {
         return VertexProgram.ofComputeKeys(GREMLINS, KeyType.VARIABLE);
-    }
-
-    private Pipe getCurrentPipe(final GraphMemory graphMemory) {
-        final Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
-        return (Pipe) gremlin.get().getPipes().get(graphMemory.getIteration());
     }
 
     public static Builder create() {
