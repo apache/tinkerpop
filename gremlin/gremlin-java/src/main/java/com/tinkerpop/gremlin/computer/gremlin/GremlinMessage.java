@@ -30,21 +30,22 @@ public class GremlinMessage implements Serializable {
     public final Object elementId;
     public final Destination destination;
     public final String propertyKey;
+    public final long counts;
 
-    private GremlinMessage(final Destination destination, final Object elementId, final String propertyKey) {
+    private GremlinMessage(final Destination destination, final Object elementId, final String propertyKey, final long counts) {
         this.destination = destination;
         this.elementId = elementId;
         this.propertyKey = propertyKey;
-
+        this.counts = counts;
     }
 
-    public static GremlinMessage of(final Object object) {
+    public static GremlinMessage of(final Object object, final long counts) {
         Destination blueprints = Destination.of(object);
         if (blueprints == Destination.VERTEX)
-            return new GremlinMessage(blueprints, ((Vertex) object).getId(), null);
+            return new GremlinMessage(blueprints, ((Vertex) object).getId(), null, counts);
         else if (blueprints == Destination.EDGE)
-            return new GremlinMessage(blueprints, ((Edge) object).getId(), null);
+            return new GremlinMessage(blueprints, ((Edge) object).getId(), null, counts);
         else
-            return new GremlinMessage(blueprints, ((Property) object).getElement().getId(), ((Property) object).getKey());
+            return new GremlinMessage(blueprints, ((Property) object).getElement().getId(), ((Property) object).getKey(), counts);
     }
 }

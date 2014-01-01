@@ -17,12 +17,19 @@ public class TinkerVertexMemory implements VertexSystemMemory {
 
     protected Map<String, VertexProgram.KeyType> computeKeys;
     protected final GraphComputer.Isolation isolation;
-    protected boolean phase = true;
-    private final Map<Object, Map<String, Object>> memory;
+    private Map<Object, Map<String, Object>> getMap;
+    private Map<Object, Map<String, Object>> setMap;
+    private Map<Object, Map<String, Object>> constantMap;
 
     public TinkerVertexMemory(final GraphComputer.Isolation isolation) {
         this.isolation = isolation;
-        this.memory = new HashMap<>();
+        this.constantMap = new HashMap<>();
+        if (this.isolation.equals(GraphComputer.Isolation.BSP)) {
+            this.getMap = new HashMap<>();
+            this.setMap = new HashMap<>();
+        } else {
+            this.getMap = this.setMap = new HashMap<>();
+        }
     }
 
     public void setComputeKeys(final Map<String, VertexProgram.KeyType> computeKeys) {
@@ -37,34 +44,13 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         return this.computeKeys.containsKey(key);
     }
 
-    public void completeIteration() {
-        this.phase = !this.phase;
-    }
-
-    protected String generateGetKey(final String key) {
-        final VertexProgram.KeyType keyType = this.computeKeys.get(key);
-        if (null == keyType)
-            throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-
-        if (keyType.equals(VertexProgram.KeyType.CONSTANT))
-            return key;
-
-        if (this.isolation.equals(GraphComputer.Isolation.BSP))
-            return key + !this.phase;
-        else
-            return key;
-
-    }
-
-    protected String generateSetKey(final String key) {
-        if (this.computeKeys.get(key).equals(VertexProgram.KeyType.CONSTANT))
-            return key;
-        else
-            return this.isolation.equals(GraphComputer.Isolation.BSP) ? key + this.phase : key;
-    }
-
     protected boolean isConstantKey(final String key) {
         return VertexProgram.KeyType.CONSTANT.equals(this.computeKeys.get(key));
+    }
+
+    public void completeIteration() {
+        this.getMap = this.setMap;
+        this.setMap = new HashMap<>();
     }
 
     public <V> void setProperty(final Element element, final String key, final V value) {
@@ -98,29 +84,37 @@ public class TinkerVertexMemory implements VertexSystemMemory {
     }
 
     private void setValue(final String id, final String key, final Object value) {
-        final Map<String, Object> map = this.memory.getOrDefault(id, new HashMap<>());
-        this.memory.put(id, map);
+        final VertexProgram.KeyType keyType = this.computeKeys.get(key);
+        if (null == keyType)
+            throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
 
-        final String bspKey = generateSetKey(key);
-        if (isConstantKey(key) && map.containsKey(bspKey))
+        final Map<Object, Map<String, Object>> map = isConstantKey(key) ? this.constantMap : this.setMap;
+        final Map<String, Object> nextMap = map.getOrDefault(id, new HashMap<>());
+        map.put(id, nextMap);
+        if (isConstantKey(key) && nextMap.containsKey(key))
             throw GraphComputer.Exceptions.constantComputeKeyHasAlreadyBeenSet(key, id);
-        else
-            map.put(bspKey, value);
+        nextMap.put(key, value);
     }
 
     private void removeValue(final String id, final String key) {
-        final Map<String, Object> map = this.memory.get(id);
+        final Map<String, Object> map = this.setMap.get(id);
         if (null != map)
             map.remove(key);
     }
 
     private <V> Optional<V> getAnnotation(final String id, final String key) {
-        final Map<String, Object> map = this.memory.get(id);
-        return null == map ? Optional.empty() : Optional.ofNullable((V) map.get(generateGetKey(key)));
+        final Map<String, Object> map = this.isConstantKey(key) ? this.constantMap.get(id) : this.getMap.get(id);
+        return null == map ? Optional.empty() : Optional.ofNullable((V) map.get(key));
     }
 
     private <V> Property<V> getProperty(final String id, final String key) {
-        final Map<String, Object> map = this.memory.get(id);
-        return null == map ? Property.empty() : (Property<V>) map.get(generateGetKey(key));
+        final Map<String, Object> map = this.isConstantKey(key) ? this.constantMap.get(id) : this.getMap.get(id);
+        if (null == map)
+            return Property.empty();
+        else {
+            final Property<V> property = (Property<V>) map.get(key);
+            return null == property ? Property.empty() : property;
+        }
     }
+
 }
