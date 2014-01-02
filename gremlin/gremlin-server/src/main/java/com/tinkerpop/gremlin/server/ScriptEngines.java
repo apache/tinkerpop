@@ -20,20 +20,20 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
- * Holds a batch of the configured ScriptEngines for the server.
+ * Holds a batch of the configured {@code ScriptEngine} objects for the server.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ScriptEngines implements ScriptEngineOps {
     /**
-     * ScriptEngines configured for the server keyed on the language name.
+     * {@code ScriptEngine} objects configured for the server keyed on the language name.
      */
     private Map<String,ScriptEngine> scriptEngines = new ConcurrentHashMap<>();
 
     private static final GremlinGroovyScriptEngineFactory gremlinGroovyScriptEngineFactory = new GremlinGroovyScriptEngineFactory();
 
     /**
-     * Evaluate a script with Bindings for a particular language.
+     * Evaluate a script with {@code Bindings} for a particular language.
      */
     @Override
     public Object eval(final String script, final Bindings bindings, final String language)
@@ -45,7 +45,7 @@ public class ScriptEngines implements ScriptEngineOps {
     }
 
     /**
-     * Reload a ScriptEngine with fresh imports.
+     * Reload a {@code ScriptEngine} with fresh imports.
      */
     public void reload(final String language, final Set<String> imports, final Set<String> staticImports) {
         // TODO: request a block on eval when reloading a language script engine.
@@ -60,8 +60,8 @@ public class ScriptEngines implements ScriptEngineOps {
     }
 
     /**
-     * Perform append to the existing import list for all ScriptEngine instances that implement the DependencyManager
-     * interface.
+     * Perform append to the existing import list for all {@code ScriptEngine} instances that implement the
+     * {@link DependencyManager} interface.
      */
     @Override
     public void addImports(final Set<String> imports) {
@@ -69,8 +69,9 @@ public class ScriptEngines implements ScriptEngineOps {
     }
 
     /**
-     * Pull in dependencies given some Maven coordinates.  Cycle through each ScriptEngine and determine if it
-     * implements DependencyManager.  For those that do call the DependencyManager.use() method to fire it up.
+     * Pull in dependencies given some Maven coordinates.  Cycle through each {@code ScriptEngine} and determine if it
+     * implements {@link DependencyManager}.  For those that do call the @{link DependencyManager#use} method to fire
+     * it up.
      */
     @Override
     public void use(final String group, final String artifact, final String version) {
@@ -83,7 +84,7 @@ public class ScriptEngines implements ScriptEngineOps {
     }
 
     /**
-     * List dependencies for those ScriptEngines that implement the DependencyManager interface.
+     * List dependencies for those {@code ScriptEngine} objects that implement the {@link DependencyManager} interface.
      */
     @Override
     public Map<String,List<Map>> dependencies() {
@@ -104,7 +105,7 @@ public class ScriptEngines implements ScriptEngineOps {
     }
 
     /**
-     * Get the set of ScriptEngines that implement DependencyManager interface.
+     * Get the set of {@code ScriptEngine} that implement {@link DependencyManager} interface.
      */
     private Set<DependencyManager> getDependencyManagers() {
         return scriptEngines.entrySet().stream()
