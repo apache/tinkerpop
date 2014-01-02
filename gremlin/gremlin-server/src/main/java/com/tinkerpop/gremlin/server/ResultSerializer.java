@@ -10,16 +10,19 @@ import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
 /**
- * Serializes a single result from the ScripEngine.  Typically this will be an item from an iterator.  ResultSerializer
- * instances are instantiated to a cache via ServiceLoader and indexed based on the mime types they support.  If
- * a mime type is supported more than once the last ResultSerializer instance loaded for that mime type is assigned.
- * If a mime type is not found the default ToStringResultSerializer is used to return the results.
+ * Serializes a single result from the {@code ScriptEngine}.  Typically this will be an item from an
+ * {@link java.util.Iterator}.  {@link ResultSerializer} instances are instantiated to a cache via
+ * {@link ServiceLoader} and indexed based on the mime types they support.  If a mime type is supported more than
+ * once, the last {@link ResultSerializer} instance loaded for that mime type is assigned. If a mime type is not
+ * found the default {@link ToStringResultSerializer} is used to return the results.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface ResultSerializer {
     /**
-     * Map of serializers to mime types.
+     * Map of serializers to mime types. Initialize {@link ResultSerializer} instances with {@link ServiceLoader}
+     * invoking {@link #mimeTypesSupported()} and mapping each mime type returned in that array back to the associated
+     * {@link ResultSerializer} in the @{link Map},
      */
     static final Map<String, ResultSerializer> resultSerializers = new HashMap<String, ResultSerializer>(){{
         final ServiceLoader<ResultSerializer> serviceLoader = ServiceLoader.load(ResultSerializer.class);
@@ -34,7 +37,7 @@ public interface ResultSerializer {
     static final ToStringResultSerializer TO_STRING_RESULT_SERIALIZER = new ToStringResultSerializer();
 
     /**
-     * Serialize a result with a SUCCESS result code.
+     * Serialize a result with a {@link ResultCode#SUCCESS} result code.
      */
     public default String serialize(final Object o, final Context context) {
         return this.serialize(o, ResultCode.SUCCESS, context);
@@ -42,6 +45,7 @@ public interface ResultSerializer {
 
     /**
      * Serialize a result.
+     *
      * @param o the result
      * @param code the response code
      * @param context the context of the server and request
