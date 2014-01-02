@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -44,7 +45,7 @@ public class RequestMessageTest {
     public void shouldParseMessageNicelyWithNoArgs() {
         final UUID session = UUID.fromString("7F5C73E3-CB3C-45A7-BF76-F6A68F944A8A");
         final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
-        final Optional<RequestMessage> msg = RequestMessage.Serializer.parse(String.format("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\"}", session, request));
+        final Optional<RequestMessage> msg = new JsonMessageSerializerV1d0().deserializeRequest(String.format("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\"}", session, request));
         assertTrue(msg.isPresent());
 
         final RequestMessage m = msg.get();
@@ -59,7 +60,7 @@ public class RequestMessageTest {
     public void shouldParseMessageNicelyWithArgs() {
         final UUID session = UUID.fromString("7F5C73E3-CB3C-45A7-BF76-F6A68F944A8A");
         final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
-        final Optional<RequestMessage> msg = RequestMessage.Serializer.parse(String.format("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}", session, request));
+        final Optional<RequestMessage> msg = new JsonMessageSerializerV1d0().deserializeRequest(String.format("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}", session, request));
         assertTrue(msg.isPresent());
 
         final RequestMessage m = msg.get();
@@ -72,7 +73,7 @@ public class RequestMessageTest {
 
     @Test
     public void shouldNotParseMessage() {
-        final Optional<RequestMessage> msg = RequestMessage.Serializer.parse("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}");
+        final Optional<RequestMessage> msg = new JsonMessageSerializerV1d0().deserializeRequest("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}");
         assertFalse(msg.isPresent());
     }
 }
