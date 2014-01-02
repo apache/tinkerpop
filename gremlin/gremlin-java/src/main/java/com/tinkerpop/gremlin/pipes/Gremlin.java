@@ -80,4 +80,8 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
         return (Holder<E>) this.pipes.get(this.pipes.size() - 1).next();
     }
 
+    public String toString() {
+        return this.getPipes().toString();
+    }
+
 }

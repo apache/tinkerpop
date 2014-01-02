@@ -13,8 +13,10 @@ import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.pipes.Pipe;
 import com.tinkerpop.gremlin.pipes.util.Holder;
+import com.tinkerpop.gremlin.pipes.util.MapHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +32,8 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
 
     private static final String GREMLIN_MESSAGE = "gremlinMessage";
     private static final String GREMLIN_PIPELINE = "gremlinPipeline";
-    private static final String GREMLINS = "gremlins";
+    public static final String GRAPH_GREMLINS = "gremlins";
+    public static final String OBJECT_GREMLINS = "others";
     private final Supplier<Gremlin> gremlin;
 
     public GremlinVertexProgram(Supplier<Gremlin> gremlin) {
@@ -46,7 +49,9 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
         if (graphMemory.isInitialIteration()) {
             messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex, 1l));
         } else {
-            final CounterMap<Object> counters = new CounterMap<>();
+            final Map<Object, Long> previousObjectCounters = vertex.<HashMap<Object, Long>>getProperty(OBJECT_GREMLINS).orElse(new HashMap<>());
+            final Map<Object, Long> graphCounters = new HashMap<>();
+            final Map<Object, Long> objectCounters = new HashMap<>();
             final Set<Object> starts = new HashSet<>();
             final Pipe pipe = getCurrentPipe(graphMemory);
 
@@ -54,43 +59,60 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
             messenger.receiveMessages(vertex, global).forEach(m -> {
                 if (m.destination.equals(GremlinMessage.Destination.VERTEX)) {
                     starts.add(vertex);
-                    counters.incrValue(vertex, m.counts);
+                    MapHelper.incr(graphCounters, vertex, m.counts);
                 } else if (m.destination.equals(GremlinMessage.Destination.EDGE)) {
                     this.getEdge(vertex, m).ifPresent(e -> {
                         starts.add(e);
-                        counters.incrValue(e, m.counts);
+                        MapHelper.incr(graphCounters, e, m.counts);
                     });
                 } else if (m.destination.equals(GremlinMessage.Destination.PROPERTY)) {
                     this.getProperty(vertex, m).ifPresent(p -> {
                         starts.add(p);
-                        counters.incrValue(p, m.counts);
+                        MapHelper.incr(graphCounters, p, m.counts);
                     });
                 } else {
-                    throw new UnsupportedOperationException("This object type has not been handled yet: " + m);
+                    throw new UnsupportedOperationException("The provided message can not be processed: " + m);
                 }
             });
+            // process local object messages
+            previousObjectCounters.forEach((a, b) -> {
+                starts.add(a);
+            });
 
-            // EXECUTE PIPELINE WITH LOCAL STARTS AND SEND MESSAGES TO REMOTE ENDS
+
+            // EXECUTE PIPELINE WITH LOCAL STARTS AND SEND MESSAGES TO ENDS
             starts.forEach(start -> {
                 pipe.addStarts(new SingleIterator<>(new Holder<>(pipe.getName(), start)));
                 pipe.forEachRemaining(h -> {
                     final Object end = ((Holder<Object>) h).get();
                     // System.out.println(start + "-->" + end + " [" + counters.get(start) + "]");
-                    messenger.sendMessage(
-                            vertex,
-                            MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertices(end)),
-                            GremlinMessage.of(end, counters.get(start)));
+
+                    if (end instanceof Element || end instanceof Property) {
+                        messenger.sendMessage(
+                                vertex,
+                                MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertices(end)),
+                                GremlinMessage.of(end, graphCounters.get(start)));
+                    } else {
+                        if (graphCounters.containsKey(start))
+                            MapHelper.incr(objectCounters, end, graphCounters.get(start));
+                        else if (previousObjectCounters.containsKey(start))
+                            MapHelper.incr(objectCounters, end, previousObjectCounters.get(start));
+                        else
+                            throw new IllegalStateException("The provided start does not have a recorded history: " + start);
+                    }
                 });
             });
 
             // UPDATE LOCAL STARTS WITH COUNTS
-            counters.forEach((k, v) -> {
+            graphCounters.forEach((k, v) -> {
                 if (k instanceof Element) {
-                    ((Element) k).setProperty(GREMLINS, v);
-                } else {
-                    ((Property) k).setAnnotation(GREMLINS, v);
+                    ((Element) k).setProperty(GRAPH_GREMLINS, v);
+                } else if (k instanceof Property) {
+                    ((Property) k).setAnnotation(GRAPH_GREMLINS, v);
                 }
             });
+            if (objectCounters.size() > 0)
+                vertex.setProperty(OBJECT_GREMLINS, objectCounters);
         }
     }
 
@@ -127,7 +149,9 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     }
 
     public Map<String, KeyType> getComputeKeys() {
-        return VertexProgram.ofComputeKeys(GREMLINS, KeyType.VARIABLE);
+        return VertexProgram.ofComputeKeys(
+                GRAPH_GREMLINS, KeyType.VARIABLE,
+                OBJECT_GREMLINS, KeyType.VARIABLE);
     }
 
     public static Builder create() {

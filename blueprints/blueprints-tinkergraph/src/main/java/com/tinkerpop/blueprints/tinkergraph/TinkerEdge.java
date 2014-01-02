@@ -26,27 +26,21 @@ class TinkerEdge extends TinkerElement implements Edge {
         this.graph.edgeIndex.autoUpdate(StringFactory.LABEL, this.label, null, this);
     }
 
-    private TinkerEdge(final TinkerEdge edge, final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory annotationMemory) {
+    private TinkerEdge(final TinkerEdge edge, final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {
         super(edge.id, edge.label, edge.graph);
         this.state = state;
         this.inVertex = edge.inVertex;
         this.outVertex = edge.outVertex;
         this.properties = edge.properties;
-        this.vertexMemory = annotationMemory;
+        this.vertexMemory = vertexMemory;
         this.centricId = centricId;
     }
 
     public <V> void setProperty(final String key, final V value) {
         if (TinkerGraphComputer.State.STANDARD == this.state) {
             ElementHelper.validateProperty(key, value);
-            final TinkerEdge edge = this;
             final Property oldProperty = super.getProperty(key);
-            this.properties.put(key, new TinkerProperty<V>(this, key, value) {
-                @Override
-                public void remove() {
-                    edge.properties.remove(key);
-                }
-            });
+            this.properties.put(key, new TinkerProperty<>(this, key, value));
             this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
         } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
             ElementHelper.validateProperty(key, value);

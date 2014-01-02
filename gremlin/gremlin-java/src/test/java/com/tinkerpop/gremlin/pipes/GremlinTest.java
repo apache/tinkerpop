@@ -21,6 +21,11 @@ import static org.junit.Assert.assertFalse;
 public class GremlinTest {
 
     @Test
+    public void testToString() {
+        System.out.println(Property.empty());
+    }
+
+    @Test
     public void testPipeline() {
 
         TinkerGraph g = TinkerFactory.createClassic();

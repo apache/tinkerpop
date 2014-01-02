@@ -20,11 +20,11 @@ import java.util.stream.Stream;
 public class TinkerVertexQuery extends DefaultVertexQuery {
 
     protected final TinkerVertex vertex;
-    protected final TinkerVertexMemory annotationMemory;
+    protected final TinkerVertexMemory vertexMemory;
 
-    public TinkerVertexQuery(final TinkerVertex vertex, final TinkerVertexMemory annotationMemory) {
+    public TinkerVertexQuery(final TinkerVertex vertex, final TinkerVertexMemory vertexMemory) {
         this.vertex = vertex;
-        this.annotationMemory = annotationMemory;
+        this.vertexMemory = vertexMemory;
     }
 
     private Stream<TinkerEdge> makeStream() {
@@ -44,7 +44,7 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
 
         // GENERATE COMPUTE SHELLED EDGES DURING GRAPH COMPUTING
         if (TinkerGraphComputer.State.CENTRIC == this.vertex.state)
-            edges = edges.map(e -> e.createClone(TinkerGraphComputer.State.CENTRIC, this.vertex.getId(), this.annotationMemory));
+            edges = edges.map(e -> e.createClone(TinkerGraphComputer.State.CENTRIC, this.vertex.getId(), this.vertexMemory));
         return edges;
     }
 
@@ -67,7 +67,7 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
 
         // GENERATE COMPUTE SHELLED ADJACENT VERTICES DURING GRAPH COMPUTING
         if (TinkerGraphComputer.State.CENTRIC == this.vertex.state)
-            vertices = vertices.map(v -> v.createClone(TinkerGraphComputer.State.ADJACENT, this.vertex.getId(), this.annotationMemory));
+            vertices = vertices.map(v -> v.createClone(TinkerGraphComputer.State.ADJACENT, this.vertex.getId(), this.vertexMemory));
 
         return (Iterable) StreamFactory.iterable(vertices);
     }
@@ -79,24 +79,18 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
     private List<Edge> getInEdges(final String... labels) {
         if (labels.length == 0) {
             final List<Edge> totalEdges = new ArrayList<>();
-            for (final Collection<Edge> edges : this.vertex.inEdges.values()) {
+            for (final Collection<Edge> edges : this.vertex.inEdges.values())
                 totalEdges.addAll(edges);
-            }
             return totalEdges;
         } else if (labels.length == 1) {
             final Set<Edge> edges = this.vertex.inEdges.get(labels[0]);
-            if (null == edges) {
-                return Collections.emptyList();
-            } else {
-                return new ArrayList<>(edges);
-            }
+            return null == edges ? Collections.emptyList() : new ArrayList<>(edges);
         } else {
             final List<Edge> totalEdges = new ArrayList<>();
             for (final String label : labels) {
                 final Set<Edge> edges = this.vertex.inEdges.get(label);
-                if (null != edges) {
+                if (null != edges)
                     totalEdges.addAll(edges);
-                }
             }
             return totalEdges;
         }
@@ -105,28 +99,20 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
     private List<Edge> getOutEdges(final String... labels) {
         if (labels.length == 0) {
             final List<Edge> totalEdges = new ArrayList<>();
-            for (final Collection<Edge> edges : this.vertex.outEdges.values()) {
+            for (final Collection<Edge> edges : this.vertex.outEdges.values())
                 totalEdges.addAll(edges);
-            }
             return totalEdges;
         } else if (labels.length == 1) {
             final Set<Edge> edges = this.vertex.outEdges.get(labels[0]);
-            if (null == edges) {
-                return Collections.emptyList();
-            } else {
-                return new ArrayList<>(edges);
-            }
+            return null == edges ? Collections.emptyList() : new ArrayList<>(edges);
         } else {
             final List<Edge> totalEdges = new ArrayList<>();
             for (final String label : labels) {
                 final Set<Edge> edges = this.vertex.outEdges.get(label);
-                if (null != edges) {
+                if (null != edges)
                     totalEdges.addAll(edges);
-                }
             }
             return totalEdges;
         }
     }
-
-
 }

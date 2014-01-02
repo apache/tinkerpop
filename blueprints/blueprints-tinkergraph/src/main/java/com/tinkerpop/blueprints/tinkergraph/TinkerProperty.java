@@ -2,7 +2,9 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
+import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.util.HashMap;
@@ -12,7 +14,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class TinkerProperty<V> implements Property<V> {
+public class TinkerProperty<V> implements Property<V> {
 
     private Map<String, Object> annotations = new HashMap<>();
     private final Element element;
@@ -20,7 +22,7 @@ public abstract class TinkerProperty<V> implements Property<V> {
     private final V value;
 
     protected TinkerGraphComputer.State state = TinkerGraphComputer.State.STANDARD;
-    private TinkerVertexMemory annotationMemory;
+    private TinkerVertexMemory vertexMemory;
 
     public TinkerProperty(final Element element, final String key, final V value) {
         this.element = element;
@@ -28,11 +30,11 @@ public abstract class TinkerProperty<V> implements Property<V> {
         this.value = value;
     }
 
-    private TinkerProperty(final TinkerProperty<V> property, final TinkerGraphComputer.State state, final TinkerVertexMemory annotationMemory) {
+    private TinkerProperty(final TinkerProperty<V> property, final TinkerGraphComputer.State state, final TinkerVertexMemory vertexMemory) {
         this(property.getElement(), property.getKey(), property.getValue());
         this.state = state;
         this.annotations = property.annotations;
-        this.annotationMemory = annotationMemory;
+        this.vertexMemory = vertexMemory;
     }
 
     public <E extends Element> E getElement() {
@@ -55,8 +57,8 @@ public abstract class TinkerProperty<V> implements Property<V> {
         if (TinkerGraphComputer.State.STANDARD == this.state) {
             this.annotations.put(key, value);
         } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
-            if (this.annotationMemory.isComputeKey(key))
-                this.annotationMemory.setAnnotation(this, key, value);
+            if (this.vertexMemory.isComputeKey(key))
+                this.vertexMemory.setAnnotation(this, key, value);
             else
                 throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
         } else {
@@ -68,8 +70,8 @@ public abstract class TinkerProperty<V> implements Property<V> {
         if (this.state == TinkerGraphComputer.State.STANDARD) {
             return Optional.ofNullable((V) this.annotations.get(key));
         } else if (this.state == TinkerGraphComputer.State.CENTRIC) {
-            if (this.annotationMemory.isComputeKey(key))
-                return this.annotationMemory.getAnnotation(this, key);
+            if (this.vertexMemory.isComputeKey(key))
+                return this.vertexMemory.getAnnotation(this, key);
             else
                 return Optional.ofNullable((V) this.annotations.get(key));
         } else {
@@ -90,5 +92,15 @@ public abstract class TinkerProperty<V> implements Property<V> {
         return StringFactory.propertyString(this);
     }
 
-    public abstract void remove();
+    public boolean equals(final Object object) {
+        return ElementHelper.areEqual(this, object);
+    }
+
+    public void remove() {
+        ((TinkerElement) this.element).properties.remove(key);
+        if (this.element instanceof Vertex)
+            ((TinkerVertex) this.element).graph.vertexIndex.remove(key, value, (TinkerVertex) this.element);
+        else
+            ((TinkerEdge) this.element).graph.edgeIndex.remove(key, value, (TinkerEdge) this.element);
+    }
 }

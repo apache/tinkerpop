@@ -41,14 +41,8 @@ class TinkerVertex extends TinkerElement implements Vertex {
     public <V> void setProperty(final String key, final V value) {
         if (TinkerGraphComputer.State.STANDARD == this.state) {
             ElementHelper.validateProperty(key, value);
-            final TinkerVertex vertex = this;
             final Property oldProperty = super.getProperty(key);
-            this.properties.put(key, new TinkerProperty<V>(this, key, value) {
-                @Override
-                public void remove() {
-                    vertex.properties.remove(key);
-                }
-            });
+            this.properties.put(key, new TinkerProperty<>(this, key, value));
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
         } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
             ElementHelper.validateProperty(key, value);
