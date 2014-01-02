@@ -1,5 +1,8 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.util.ElementHelper;
+import com.tinkerpop.blueprints.util.StringFactory;
+
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -80,6 +83,16 @@ public abstract interface Property<V> extends Annotatable {
             @Override
             public <V> Optional<V> getAnnotation(final String key) {
                 throw Exceptions.propertyDoesNotExist();
+            }
+
+            @Override
+            public String toString() {
+                return StringFactory.EMPTY_PROPERTY;
+            }
+
+            @Override
+            public boolean equals(final Object object) {
+                return ElementHelper.areEqual(this, object);
             }
         };
     }

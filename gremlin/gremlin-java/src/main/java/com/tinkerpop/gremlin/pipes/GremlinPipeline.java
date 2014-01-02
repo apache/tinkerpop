@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -91,6 +92,14 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     public default <P extends GremlinPipeline> P value(final String key) {
         return this.addPipe(new MapPipe<Element, Object>(this, e -> e.<Element>get().getValue(key)));
+    }
+
+    public default <P extends GremlinPipeline> P value(final String key, final Object defaultValue) {
+        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.<Element>get().getProperty(key).orElse(defaultValue)));
+    }
+
+    public default <P extends GremlinPipeline> P value(final String key, final Supplier defaultSupplier) {
+        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.<Element>get().getProperty(key).orElseGet(defaultSupplier)));
     }
 
     public default <P extends GremlinPipeline> P path() {

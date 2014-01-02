@@ -96,5 +96,20 @@ public class ElementHelper {
         return a.getId().equals(b.getId());
     }
 
+    public static boolean areEqual(final Property a, final Object b) {
+        Objects.requireNonNull(a);
+        Objects.requireNonNull(b);
+        if (a == b)
+            return true;
+        if (!(b instanceof Property))
+            return false;
+        if (!a.isPresent() && !((Property) b).isPresent())
+            return true;
+        if (!a.isPresent() && ((Property) b).isPresent() || a.isPresent() && !((Property) b).isPresent())
+            return false;
+        return a.getKey().equals(((Property) b).getKey()) && a.getValue().equals(((Property) b).getValue()) && areEqual(a.getElement(), ((Property) b).getElement());
+
+    }
+
 
 }
