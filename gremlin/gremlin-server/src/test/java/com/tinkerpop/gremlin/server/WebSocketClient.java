@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -43,6 +44,8 @@ class WebSocketClient {
     private static final EventLoopGroup group = new NioEventLoopGroup();
 
     protected static ConcurrentHashMap<UUID, ArrayBlockingQueue<Optional<JsonNode>>> responses = new ConcurrentHashMap<>();
+
+    private static MessageSerializer serializer = new JsonMessageSerializerV1d0();
 
     public WebSocketClient(final String uri) {
         this.uri = URI.create(uri);
@@ -122,7 +125,7 @@ class WebSocketClient {
         final UUID requestId = msg.requestId;
         responses.put(requestId, responseQueue);
 
-        ch.writeAndFlush(new TextWebSocketFrame(RequestMessage.Serializer.json(msg)));
+        ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + serializer.serialize(msg)));
 
         return StreamSupport.stream(Spliterators.<T>spliteratorUnknownSize(new BlockingIterator<>(requestId), Spliterator.IMMUTABLE), false);
     }

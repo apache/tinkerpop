@@ -45,14 +45,14 @@ public interface MessageSerializer {
     static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new JsonMessageSerializerV1d0();
 
     /**
-     * Serialize a result with a {@link ResultCode#SUCCESS} result code.
+     * Serialize a result message with a {@link ResultCode#SUCCESS} result code.
      */
     public default String serializeResult(final Object o, final Context context) {
         return this.serializeResult(o, ResultCode.SUCCESS, context);
     }
 
     /**
-     * Serialize a result.
+     * Serialize a result message.
      *
      * @param o the result
      * @param code the response code
@@ -60,6 +60,11 @@ public interface MessageSerializer {
      * @return the result serialized to a String
      */
     public String serializeResult(final Object o, final ResultCode code, final Context context);
+
+    /**
+     * Serialize an object.
+     */
+    public String serialize(final Object o);
 
     /**
      * Deserialize a {@link RequestMessage} into an object.

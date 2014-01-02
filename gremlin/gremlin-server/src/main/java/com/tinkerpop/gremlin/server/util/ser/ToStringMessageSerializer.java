@@ -20,6 +20,11 @@ public class ToStringMessageSerializer implements MessageSerializer {
     private static final String TEXT_RESPONSE_FORMAT_WITH_NULL = "%s>>null";
 
     @Override
+    public String serialize(final Object o) {
+        return o.toString();
+    }
+
+    @Override
     public String serializeResult(final Object o, final ResultCode code, final Context context) {
         return o == null ?
                 String.format(TEXT_RESPONSE_FORMAT_WITH_NULL, context.getRequestMessage().requestId) :

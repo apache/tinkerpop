@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 
 import java.util.HashMap;
@@ -62,23 +60,6 @@ public class RequestMessage {
     public <T> Optional<T> optionalArgs(final String key) {
         final Object o = args.get(key);
         return  o == null ? Optional.empty() : Optional.of((T) o);
-    }
-
-    public static class Serializer {
-
-        private static final ObjectMapper mapper = new ObjectMapper();
-
-        public static Optional<RequestMessage> parse(final String input) {
-            try {
-                return Optional.of(mapper.readValue(input, RequestMessage.class));
-            } catch (Exception ex) {
-                return Optional.empty();
-            }
-        }
-
-        public static String json(final RequestMessage msg) throws JsonProcessingException {
-            return mapper.writeValueAsString(msg);
-        }
     }
 
     /**

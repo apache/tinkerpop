@@ -20,6 +20,8 @@ import com.tinkerpop.gremlin.server.RequestMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
 import com.tinkerpop.gremlin.server.MessageSerializer;
 import groovy.json.JsonBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,6 +34,8 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class JsonMessageSerializerV1d0 implements MessageSerializer {
+    private static final Logger logger = LoggerFactory.getLogger(JsonMessageSerializerV1d0.class);
+
     static final Version JSON_SERIALIZATION_VERSION = new Version(1,0,0,"","com.tinkerpop.gremlin", "gremlin-server");
 
     public static final String TOKEN_RESULT = "result";
@@ -75,6 +79,16 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
     }
 
     @Override
+    public String serialize(final Object o) {
+        try {
+            return mapper.writeValueAsString(o);
+        } catch (Exception ex) {
+            logger.warn("Result [{}] could not be serialized by {}.", o.toString(), JsonMessageSerializerV1d0.class.getName());
+            throw new RuntimeException("Error during serialization.", ex);
+        }
+    }
+
+    @Override
     public String serializeResult(final Object o, final ResultCode code, final Context context) {
         try {
             final Map<String,Object> result = new HashMap<>();
@@ -88,6 +102,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
 
             return mapper.writeValueAsString(result);
         } catch (Exception ex) {
+            logger.warn("Result [{}] could not be serialized by {}.", o.toString(), JsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);
         }
     }
@@ -97,6 +112,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
         try {
             return Optional.of(mapper.readValue(msg, RequestMessage.class));
         } catch (Exception ex) {
+            logger.warn("The request message [{}] could not be deserialized by {}.", msg, JsonMessageSerializerV1d0.class.getName());
             return Optional.empty();
         }
     }
