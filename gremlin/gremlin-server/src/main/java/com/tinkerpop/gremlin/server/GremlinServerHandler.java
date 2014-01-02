@@ -121,7 +121,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             // second part is the message itself.  these two parts are separated by a "|-". if there aren't two parts
             // assume application/json and that the entire message is that format (i.e. there is no "mimetype|-")
             final String[] parts = segmentMessage(request);
-            final RequestMessage requestMessage = MessageSerializer.select(parts[0])
+            final RequestMessage requestMessage = MessageSerializer.select(parts[0], MessageSerializer.DEFAULT_REQUEST_SERIALIZER)
                     .deserializeRequest(parts[1]).orElse(RequestMessage.INVALID);
 
             if (!gremlinExecutor.isInitialized())

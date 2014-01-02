@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.server;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,6 +24,9 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface MessageSerializer {
+
+    static final Logger logger = LoggerFactory.getLogger(MessageSerializer.class);
+
     /**
      * Map of serializers to mime types. Initialize {@link MessageSerializer} instances with {@link ServiceLoader}
      * invoking {@link #mimeTypesSupported()} and mapping each mime type returned in that array back to the associated
@@ -77,9 +82,13 @@ public interface MessageSerializer {
     public String[] mimeTypesSupported();
 
     /**
-     * Choose a serializer based on the "accept" argument on the message, where "accept" is a mime type.
+     * Choose a serializer based on the mimetype.
      */
-    public static MessageSerializer select(final String accept) {
-        return serializers.getOrDefault(accept, DEFAULT_RESULT_SERIALIZER);
+    public static MessageSerializer select(final String mimeType, final MessageSerializer defaultSerializer) {
+        if (logger.isWarnEnabled() && !serializers.containsKey(mimeType))
+            logger.warn("Gremlin Server is not configured with a serializer for the requested mime type [{}] - using {} by default",
+                    mimeType, defaultSerializer.getClass().getName());
+
+        return serializers.getOrDefault(mimeType, defaultSerializer);
     }
 }

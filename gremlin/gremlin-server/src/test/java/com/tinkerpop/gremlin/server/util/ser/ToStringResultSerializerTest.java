@@ -24,7 +24,7 @@ public class ToStringResultSerializerTest {
 
     @Test
     public void serializeToStringNull() throws Exception {
-        final String results = MessageSerializer.DEFAULT_RESULT_SERIALIZER.serializeResult(null, new Context(msg, null, null, null, null));
+        final String results = serializer.serializeResult(null, new Context(msg, null, null, null, null));
         assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>null", results);
     }
 

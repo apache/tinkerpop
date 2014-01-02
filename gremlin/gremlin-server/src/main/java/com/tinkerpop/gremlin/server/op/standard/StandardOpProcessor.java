@@ -36,7 +36,9 @@ public class StandardOpProcessor implements OpProcessor {
         if (logger.isDebugEnabled())
             logger.debug("Selecting processor for RequestMessage {}", message);
 
-        final MessageSerializer serializer = MessageSerializer.select(message.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
+        final MessageSerializer serializer = MessageSerializer.select(
+                message.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
+                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
 
         final Consumer<Context> op;
         switch (message.op) {

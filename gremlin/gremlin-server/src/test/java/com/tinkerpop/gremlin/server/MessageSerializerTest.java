@@ -24,32 +24,32 @@ public class MessageSerializerTest {
 
     @Test
     public void shouldGetTextSerializer() {
-        final MessageSerializer serializer = MessageSerializer.select("text/plain");
+        final MessageSerializer serializer = MessageSerializer.select("text/plain", MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         assertNotNull(serializer);
         assertTrue(ToStringMessageSerializer.class.isAssignableFrom(serializer.getClass()));
     }
 
     @Test
     public void shouldGetJsonSerializer() {
-        final MessageSerializer serializerGremlinV1 = MessageSerializer.select("application/vnd.gremlin-v1.0+json");
+        final MessageSerializer serializerGremlinV1 = MessageSerializer.select("application/vnd.gremlin-v1.0+json", MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         assertNotNull(serializerGremlinV1);
         assertTrue(JsonMessageSerializerV1d0.class.isAssignableFrom(serializerGremlinV1.getClass()));
 
-        final MessageSerializer serializerJson = MessageSerializer.select("application/json");
+        final MessageSerializer serializerJson = MessageSerializer.select("application/json", MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         assertNotNull(serializerJson);
         assertTrue(JsonMessageSerializerV1d0.class.isAssignableFrom(serializerJson.getClass()));
     }
 
     @Test
     public void shouldGetTextSerializerAsDefault() {
-        final MessageSerializer serializer = MessageSerializer.select("not/real");
+        final MessageSerializer serializer = MessageSerializer.select("not/real", MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         assertNotNull(serializer);
         assertTrue(ToStringMessageSerializer.class.isAssignableFrom(serializer.getClass()));
     }
 
     @Test
     public void serializeToStringNull() throws Exception {
-        final String results = MessageSerializer.select("text/plain").serializeResult(null, new Context(msg, null, null, null, null));
+        final String results = MessageSerializer.select("text/plain", MessageSerializer.DEFAULT_RESULT_SERIALIZER).serializeResult(null, new Context(msg, null, null, null, null));
         assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>null", results);
     }
 
@@ -57,7 +57,7 @@ public class MessageSerializerTest {
     public void serializeToStringAVertex() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
         final Vertex v = g.query().has("name", Compare.EQUAL, "marko").vertices().iterator().next();
-        final String results = MessageSerializer.select("text/plain").serializeResult(v, new Context(msg, null, null, null, null));
+        final String results = MessageSerializer.select("text/plain", MessageSerializer.DEFAULT_RESULT_SERIALIZER).serializeResult(v, new Context(msg, null, null, null, null));
         assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>v[1]", results);
     }
 

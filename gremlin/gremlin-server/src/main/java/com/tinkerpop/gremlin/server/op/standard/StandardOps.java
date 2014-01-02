@@ -67,7 +67,9 @@ final class StandardOps {
     public static void showOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-        final MessageSerializer serializer = MessageSerializer.select(msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
+        final MessageSerializer serializer = MessageSerializer.select(
+                msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
+                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         final String infoType = msg.<String>optionalArgs(Tokens.ARGS_INFO_TYPE).get();
         final GremlinExecutor executor = context.getGremlinExecutor();
         final ScriptEngineOps seo = executor.select(msg);
@@ -122,7 +124,9 @@ final class StandardOps {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
-        final MessageSerializer serializer = MessageSerializer.select(msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
+        final MessageSerializer serializer = MessageSerializer.select(
+                msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
+                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
 
         // a worker service bound to the current thread
         final ExecutorService executorService = LocalExecutorService.getLocal();
