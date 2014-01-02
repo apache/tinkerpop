@@ -23,6 +23,7 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -43,6 +44,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
     static final Counter requestCounter = MetricManager.INSTANCE.getCounter(name(GremlinServer.class, "requests"));
     private static final String WEBSOCKET_PATH = "/gremlin";
+    private static final String[] defaultRequestMimeType = new String[] {"application/json", null};
 
     private WebSocketServerHandshaker handshaker;
     private StaticFileHandler staticFileHandler;
@@ -115,10 +117,14 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
         else if (frame instanceof PongWebSocketFrame) { } // nothing to do
         else if (frame instanceof TextWebSocketFrame) {
-            // todo: support both text and binary where binary allows for versioning of the messages.
             final String request = ((TextWebSocketFrame) frame).text();
-            final RequestMessage requestMessage = MessageSerializer.select("application/json")
-                    .deserializeRequest(request).orElse(RequestMessage.INVALID);
+
+            // message consists of two parts.  the first part has the mime type of the incoming message and the
+            // second part is the message itself.  these two parts are separated by a "|-". if there aren't two parts
+            // assume application/json and that the entire message is that format (i.e. there is no "mimetype|-")
+            final String[] parts = segmentMessage(request);
+            final RequestMessage requestMessage = MessageSerializer.select(parts[0])
+                    .deserializeRequest(parts[1]).orElse(RequestMessage.INVALID);
 
             if (!gremlinExecutor.isInitialized())
                 gremlinExecutor.init(settings);
@@ -134,6 +140,14 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         else
             throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
                     .getName()));
+    }
+
+    private static String[] segmentMessage(final String msg) {
+        final int splitter = msg.indexOf("|-");
+        if (splitter == -1)
+            return new String[] {"application/json", msg};
+
+        return new String[] {msg.substring(0, splitter), msg.substring(splitter + 2)};
     }
 
     private static void sendHttpResponse(final ChannelHandlerContext ctx,
