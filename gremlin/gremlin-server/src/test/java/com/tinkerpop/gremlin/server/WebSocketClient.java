@@ -112,8 +112,7 @@ class WebSocketClient {
     }
 
     public <T> Stream<T> eval(final String gremlin) throws IOException {
-        final RequestMessage msg = new RequestMessage(Tokens.OPS_EVAL);
-        msg.requestId = UUID.randomUUID();
+        final RequestMessage msg = new RequestMessage.Builder(Tokens.OPS_EVAL).build();
         msg.args = new HashMap<String, Object>() {{
             put(Tokens.ARGS_GREMLIN, gremlin);
             put(Tokens.ARGS_ACCEPT, "application/json");
