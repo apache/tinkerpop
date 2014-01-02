@@ -178,7 +178,7 @@ final class StandardOps {
                         logger.warn("The result [{}] in the request {} could not be serialized and returned.", individualResult, context.getRequestMessage(), ex);
                         final String errorMessage = String.format("Error during serialization: %s",
                                 ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-                        frameQueue.put(new TextWebSocketFrame(serializer.serialize(errorMessage, ResultCode.FAIL, context)));
+                        frameQueue.put(new TextWebSocketFrame(serializer.serialize(errorMessage, ResultCode.SERVER_ERROR_SERIALIZATION, context)));
                         break;
                     }
                 }
@@ -218,11 +218,11 @@ final class StandardOps {
         } catch (ScriptException se) {
             logger.warn("Error while evaluating a script on request [{}]", msg);
             logger.debug("Exception from ScriptException error.", se);
-            OpProcessor.error(serializer.serialize(se.getMessage(), ResultCode.FAIL, context)).accept(context);
+            OpProcessor.error(serializer.serialize(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context)).accept(context);
         } catch (InterruptedException ie) {
             logger.warn("Thread interrupted (perhaps script ran for too long) while processing this request [{}]", msg);
             logger.debug("Exception from InterruptedException error.", ie);
-            OpProcessor.error(serializer.serialize(ie.getMessage(), ResultCode.FAIL, context)).accept(context);
+            OpProcessor.error(serializer.serialize(ie.getMessage(), ResultCode.SERVER_ERROR, context)).accept(context);
         } catch (ExecutionException ee) {
             logger.warn("Error while processing response from the script evaluated on request [{}]", msg);
             logger.debug("Exception from ExecutionException error.", ee.getCause());
@@ -230,7 +230,7 @@ final class StandardOps {
             if (inner instanceof ScriptException)
                 inner = inner.getCause();
 
-            OpProcessor.error(serializer.serialize(inner.getMessage(), ResultCode.FAIL, context)).accept(context);
+            OpProcessor.error(serializer.serialize(inner.getMessage(), ResultCode.SERVER_ERROR, context)).accept(context);
         } catch (TimeoutException toe) {
             final String errorMessage;
             if (!evaluated)
@@ -239,7 +239,7 @@ final class StandardOps {
                 errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, toe.getMessage());
 
             logger.warn(errorMessage);
-            final String json = serializer.serialize(errorMessage, ResultCode.FAIL, context);
+            final String json = serializer.serialize(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context);
             OpProcessor.error(json).accept(context);
         } finally {
             // sending the requestId acts as a termination message for this request.
