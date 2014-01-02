@@ -93,7 +93,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @Ignore
+    @Ignore("This test needs to be fixed once we have a real client that can properly deserialize things other than String.")
     public void shouldDeserializeJsonBuilder() throws Exception {
         final String url = getWebSocketBaseUri();
         final WebSocketClient client = new WebSocketClient(url);
