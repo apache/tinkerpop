@@ -23,7 +23,6 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -43,8 +42,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
     static final Counter requestCounter = MetricManager.INSTANCE.getCounter(name(GremlinServer.class, "requests"));
-    private static final String WEBSOCKET_PATH = "/gremlin";
-    private static final String[] defaultRequestMimeType = new String[] {"application/json", null};
+    private static final String websocketPath = "/gremlin";
 
     private WebSocketServerHandshaker handshaker;
     private StaticFileHandler staticFileHandler;
@@ -87,7 +85,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
 
         final String uri = req.getUri();
 
-        if (uri.startsWith(WEBSOCKET_PATH)) {
+        if (uri.startsWith(websocketPath)) {
             // Web socket handshake
             final WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
                     getWebSocketLocation(req), null, false);
@@ -174,6 +172,6 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private String getWebSocketLocation(FullHttpRequest req) {
-        return "ws://" + req.headers().get(HOST) + WEBSOCKET_PATH;
+        return "ws://" + req.headers().get(HOST) + websocketPath;
     }
 }
