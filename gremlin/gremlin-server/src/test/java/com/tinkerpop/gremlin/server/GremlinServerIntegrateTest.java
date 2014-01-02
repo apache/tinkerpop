@@ -99,9 +99,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final WebSocketClient client = new WebSocketClient(url);
         client.open();
 
-        final String result = client.<String>eval("new JsonBuilder().people{person{name 'stephen'}}").findFirst().orElse("nothing");
+        final String result = client.<String>eval("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").findFirst().orElse("nothing");
         System.out.println(result);
-        //assertTrue(result.endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
+        assertTrue(result.endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
 
         client.close();
     }
