@@ -38,6 +38,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -151,6 +152,9 @@ final class StandardOps {
             // determines when the iteration of all results is complete and queue is full
             final AtomicBoolean iterationComplete = new AtomicBoolean(false);
 
+            // hold the serialization exception if one occurs duing result iteration
+            final AtomicReference<Optional<Exception>> serializationException = new AtomicReference<>(Optional.empty());
+
             // need to queue results as the frames need to be written in the request that handled the response.
             // hard to write a good integration test for the serialization/response timeouts.  add a Thread.sleep()
             // into the Callable to force different scenarios or to throw exceptions.
@@ -163,17 +167,23 @@ final class StandardOps {
                             logger.debug("Writing to frame queue [{}] for msg [{}]", individualResult, msg);
 
                         frameQueue.put(new TextWebSocketFrame(true, 0, serializer.serialize(individualResult, context)));
+                    } catch (InterruptedException ie) {
+                        // InterruptedException occurs here if the the serialization of an individual element exceeds
+                        // the configured time for serializeResultTimeout.  the loop will exit here and a failure
+                        // message was already written by a separate process to the client.
+                        logger.warn("Serialization cancelled as the total request size was exceeded.", ie);
                     } catch (Exception ex) {
-                        // will catch an InterruptedException here if the the serialization of an individual element
-                        // exceeds the configured time for serializeResultTimeout.  If there are enough exceptions
-                        // per serialization round the (i.e. nothing is being put on the queue), then the
-                        // serializeResultTimeout will be exceeded anyway and this thread will be interrupted.
+                        // this is generally just serialization exceptions. write back the error then exit the
+                        // serialization loop
                         logger.warn("The result [{}] in the request {} could not be serialized and returned.", individualResult, context.getRequestMessage(), ex);
+                        final String errorMessage = String.format("Error during serialization: %s",
+                                ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+                        frameQueue.put(new TextWebSocketFrame(serializer.serialize(errorMessage, ResultCode.SERVER_ERROR_SERIALIZATION, context)));
+                        break;
                     }
                 }
 
                 iterationComplete.set(true);
-
                 return null;
             }));
 
@@ -208,11 +218,11 @@ final class StandardOps {
         } catch (ScriptException se) {
             logger.warn("Error while evaluating a script on request [{}]", msg);
             logger.debug("Exception from ScriptException error.", se);
-            OpProcessor.error(serializer.serialize(se.getMessage(), ResultCode.FAIL, context)).accept(context);
+            OpProcessor.error(serializer.serialize(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context)).accept(context);
         } catch (InterruptedException ie) {
             logger.warn("Thread interrupted (perhaps script ran for too long) while processing this request [{}]", msg);
             logger.debug("Exception from InterruptedException error.", ie);
-            OpProcessor.error(serializer.serialize(ie.getMessage(), ResultCode.FAIL, context)).accept(context);
+            OpProcessor.error(serializer.serialize(ie.getMessage(), ResultCode.SERVER_ERROR, context)).accept(context);
         } catch (ExecutionException ee) {
             logger.warn("Error while processing response from the script evaluated on request [{}]", msg);
             logger.debug("Exception from ExecutionException error.", ee.getCause());
@@ -220,7 +230,7 @@ final class StandardOps {
             if (inner instanceof ScriptException)
                 inner = inner.getCause();
 
-            OpProcessor.error(serializer.serialize(inner.getMessage(), ResultCode.FAIL, context)).accept(context);
+            OpProcessor.error(serializer.serialize(inner.getMessage(), ResultCode.SERVER_ERROR, context)).accept(context);
         } catch (TimeoutException toe) {
             final String errorMessage;
             if (!evaluated)
@@ -229,7 +239,7 @@ final class StandardOps {
                 errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, toe.getMessage());
 
             logger.warn(errorMessage);
-            final String json = serializer.serialize(errorMessage, ResultCode.FAIL, context);
+            final String json = serializer.serialize(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context);
             OpProcessor.error(json).accept(context);
         } finally {
             // sending the requestId acts as a termination message for this request.

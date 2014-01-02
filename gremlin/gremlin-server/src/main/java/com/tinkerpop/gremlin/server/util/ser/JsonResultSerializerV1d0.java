@@ -18,6 +18,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.ResultCode;
 import com.tinkerpop.gremlin.server.ResultSerializer;
+import groovy.json.JsonBuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -95,9 +96,10 @@ public class JsonResultSerializerV1d0 implements ResultSerializer {
     public static class GremlinModule extends SimpleModule {
         public GremlinModule() {
             super("gremlin", JsonResultSerializerV1d0.JSON_SERIALIZATION_VERSION);
-            addSerializer(Edge.class, new JsonResultSerializerV1d0.EdgeJacksonSerializer());
-            addSerializer(Property.class, new JsonResultSerializerV1d0.PropertyJacksonSerializer());
-            addSerializer(Vertex.class, new JsonResultSerializerV1d0.VertexJacksonSerializer());
+            addSerializer(Edge.class, new EdgeJacksonSerializer());
+            addSerializer(Property.class, new PropertyJacksonSerializer());
+            addSerializer(Vertex.class, new VertexJacksonSerializer());
+            addSerializer(JsonBuilder.class, new JsonBuilderJacksonSerializer());
         }
     }
 
@@ -149,6 +151,22 @@ public class JsonResultSerializerV1d0 implements ResultSerializer {
             jsonGenerator.writeStartObject();
             jsonGenerator.writeObjectField(TOKEN_VALUE, property.getValue());
             jsonGenerator.writeEndObject();
+        }
+    }
+
+    public static class JsonBuilderJacksonSerializer extends StdSerializer<JsonBuilder> {
+        public JsonBuilderJacksonSerializer() {
+            super(JsonBuilder.class);
+        }
+
+        @Override
+        public void serialize(final JsonBuilder json, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException, JsonGenerationException {
+            // the JSON from the builder will already be started/ended as array or object...just need to surround it
+            // with appropriate chars to fit into the serialization pattern.
+            jsonGenerator.writeRaw(":");
+            jsonGenerator.writeRaw(json.toString());
+            jsonGenerator.writeRaw(",");
         }
     }
 

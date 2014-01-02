@@ -67,16 +67,44 @@ public class Settings {
      */
     public int frameQueueSize = 256;
 
+    /**
+     * Configured metrics for Gremlin Server.
+     */
     public ServerMetrics metrics = null;
+
+    /**
+     * {@link Map} of {@link com.tinkerpop.blueprints.Graph} objects keyed by their binding name.
+     */
     public Map<String, String> graphs;
+
+    /**
+     * {@link Map} of settings for {@code ScriptEngine} setting objects keyed by the name of the {@code ScriptEngine}
+     * implementation.
+     */
     public Map<String, ScriptEngineSettings> scriptEngines;
-    public String staticFilePath;
+
+    /**
+     * {@link List} of maven coordinates stored as a {@link List} of {@link String} objects to be used with the
+     * {@code ScriptEngine} instances.
+     */
     public List<List<String>> use;
+
+    /**
+     * Settings must be instantiated from {@link #read(String)} or {@link #read(java.io.InputStream)} methods.
+     */
+    private Settings() {}
 
     public Optional<ServerMetrics> optionalMetrics() {
         return Optional.ofNullable(metrics);
     }
 
+    /**
+     * Read configuration from a file into a new {@link Settings} object.
+     *
+     * @param file the location of a Gremlin Server YAML configuration file
+     * @return a new {@link Optional} object wrapping the created {@link Settings} or an empty {@link Optional} if
+     *         the file cannot be read
+     */
     public static Optional<Settings> read(final String file) {
         try {
             final InputStream input = new FileInputStream(new File(file));
@@ -86,6 +114,13 @@ public class Settings {
         }
     }
 
+    /**
+     * Read configuration from a file into a new {@link Settings} object.
+     *
+     * @param stream an input stream containing a Gremlin Server YAML configuration
+     * @return a new {@link Optional} object wrapping the created {@link Settings} or an empty {@link Optional} if
+     *         the file cannot be read
+     */
     public static Optional<Settings> read(final InputStream stream) {
         if (stream == null)
             return Optional.empty();
@@ -131,11 +166,17 @@ public class Settings {
         }
     }
 
+    /**
+     * Settings for the {@code ScriptEngine}.
+     */
     public static class ScriptEngineSettings {
         public List<String> imports;
         public List<String> staticImports;
     }
 
+    /**
+     * Settings for {@code Metrics} recorded by Gremlin Server.
+     */
     public static class ServerMetrics {
         public ConsoleReporterMetrics consoleReporter = null;
         public CsvReporterMetrics csvReporter = null;
@@ -169,22 +210,38 @@ public class Settings {
         }
     }
 
+    /**
+     * Settings for a {@code Metrics} reporter that writes to the console.
+     */
     public static class ConsoleReporterMetrics extends IntervalMetrics {
     }
 
+
+    /**
+     * Settings for a {@code Metrics} reporter that writes to a CSV file.
+     */
     public static class CsvReporterMetrics extends IntervalMetrics {
         public String fileName = "metrics.csv";
     }
 
+    /**
+     * Settings for a {@code Metrics} reporter that writes to JMX.
+     */
     public static class JmxReporterMetrics extends BaseMetrics {
         public String domain = null;
         public String agentId = null;
     }
 
+    /**
+     * Settings for a {@code Metrics} reporter that writes to the SL4J output.
+     */
     public static class Slf4jReporterMetrics extends IntervalMetrics {
         public String loggerName = Slf4jReporterMetrics.class.getName();
     }
 
+    /**
+     * Settings for a {@code Metrics} reporter that writes to Ganglia.
+     */
     public static class GangliaReporterMetrics extends HostPortIntervalMetrics {
         public String addressingMode = null;
         public int ttl = 1;
@@ -209,6 +266,9 @@ public class Settings {
         }
     }
 
+    /**
+     * Settings for a {@code Metrics} reporter that writes to Graphite.
+     */
     public static class GraphiteReporterMetrics extends HostPortIntervalMetrics {
         public String prefix = "";
 

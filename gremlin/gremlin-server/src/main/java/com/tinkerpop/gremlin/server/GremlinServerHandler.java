@@ -47,11 +47,11 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private WebSocketServerHandshaker handshaker;
     private StaticFileHandler staticFileHandler;
     private final Settings settings;
-    private final GremlinServer.Graphs graphs;
+    private final Graphs graphs;
 
     private static GremlinExecutor gremlinExecutor = new GremlinExecutor();
 
-    public GremlinServerHandler(final Settings settings, final GremlinServer.Graphs graphs) {
+    public GremlinServerHandler(final Settings settings, final Graphs graphs) {
         this.settings = settings;
         this.graphs = graphs;
     }

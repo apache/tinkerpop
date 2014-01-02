@@ -29,10 +29,8 @@ import static org.junit.Assert.assertNotNull;
 public class JsonResultSerializerV1d0Test {
 
     public static final JsonResultSerializerV1d0 JSON_RESULT_SERIALIZER = new JsonResultSerializerV1d0();
-    private static final RequestMessage msg = new RequestMessage();
-    static {
-        msg.requestId = UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595");
-    }
+    private static final RequestMessage msg = new RequestMessage.Builder("op")
+            .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).build();
 
     @Test
     public void serializeToJsonNullResultReturnsNull() throws Exception {

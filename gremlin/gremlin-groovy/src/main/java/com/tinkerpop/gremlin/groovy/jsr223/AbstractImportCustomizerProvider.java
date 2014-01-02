@@ -30,6 +30,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add("com.tinkerpop.blueprints.query.util.*");
         imports.add("com.tinkerpop.blueprints.util.*");
         imports.add("com.tinkerpop.blueprints.tinkergraph.*");
+        imports.add("groovy.json.*");
     }
 
     @Override
