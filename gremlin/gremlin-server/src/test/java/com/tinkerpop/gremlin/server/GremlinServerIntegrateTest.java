@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -71,6 +72,36 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
         final String result = client.<String>eval("[(0..<100000),'x']").findFirst().orElse("nothing");
         assertTrue(result.endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
+
+        client.close();
+    }
+
+    @Test
+    public void shouldReceiveFailureOnBadSerialization() throws Exception {
+        final String url = getWebSocketBaseUri();
+        final WebSocketClient client = new WebSocketClient(url);
+        client.open();
+
+        // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
+        final List<String> results = client.<String>eval("def class C { def C getC(){return this}}; new C()").collect(Collectors.toList());
+
+        // the last item in the list is the error
+        final String result = results.get(results.size() - 1);
+        assertTrue(result.equals("Error during serialization: Direct self-reference leading to cycle (through reference chain: java.util.HashMap[\"result\"]->C[\"c\"])"));
+
+        client.close();
+    }
+
+    @Test
+    @Ignore
+    public void shouldDeserializeJsonBuilder() throws Exception {
+        final String url = getWebSocketBaseUri();
+        final WebSocketClient client = new WebSocketClient(url);
+        client.open();
+
+        final String result = client.<String>eval("new JsonBuilder().people{person{name 'stephen'}}").findFirst().orElse("nothing");
+        System.out.println(result);
+        //assertTrue(result.endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
 
         client.close();
     }

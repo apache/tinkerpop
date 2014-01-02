@@ -57,13 +57,8 @@
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-            <version>2.1.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-jsr223</artifactId>
-            <version>2.1.7</version>
+            <artifactId>groovy-all</artifactId>
+            <version>2.2.1</version>
         </dependency>
         <!-- CONSOLE -->
         <dependency>
