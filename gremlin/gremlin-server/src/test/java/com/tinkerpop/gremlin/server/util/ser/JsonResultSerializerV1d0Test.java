@@ -18,23 +18,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class JsonResultSerializerV1d0Test {
 
-    public static final JsonMessageSerializerV1d0 JSON_RESULT_SERIALIZER = new JsonMessageSerializerV1d0();
+    public static final JsonMessageSerializerV1d0 SERIALIZER = new JsonMessageSerializerV1d0();
     private static final RequestMessage msg = new RequestMessage.Builder("op")
             .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).build();
 
     @Test
     public void serializeToJsonNullResultReturnsNull() throws Exception {
-        final String results = JSON_RESULT_SERIALIZER.serializeResult(null, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(null, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
         assertNotNull(json);
         assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
@@ -82,7 +85,7 @@ public class JsonResultSerializerV1d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = JSON_RESULT_SERIALIZER.serializeResult(funList, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(funList, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -101,7 +104,7 @@ public class JsonResultSerializerV1d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = JSON_RESULT_SERIALIZER.serializeResult(funList.iterator(), new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(funList.iterator(), new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -122,7 +125,7 @@ public class JsonResultSerializerV1d0Test {
         funList.add(null);
         funList.add(new FunObject("y"));
 
-        final String results = JSON_RESULT_SERIALIZER.serializeResult(funList.iterator(), new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(funList.iterator(), new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -146,7 +149,7 @@ public class JsonResultSerializerV1d0Test {
         map.put("y", "some");
         map.put("z", innerMap);
 
-        final String results = JSON_RESULT_SERIALIZER.serializeResult(map, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(map, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -171,7 +174,7 @@ public class JsonResultSerializerV1d0Test {
         ///// withMetaProperties.setProperty("audit", "stephen");
 
         final Iterator iterable = g.query().vertices().iterator();
-        final String results = JSON_RESULT_SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -212,7 +215,7 @@ public class JsonResultSerializerV1d0Test {
         v.setProperty(Property.Key.hidden("hidden"), "stephen");
 
         final Iterator iterable = g.query().vertices().iterator();
-        final String results = JSON_RESULT_SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -251,7 +254,7 @@ public class JsonResultSerializerV1d0Test {
         v.addProperty("multi", 2);
 
         final Iterator iterable = g.query().vertices().iterator();
-        final String results = MessageSerializer.JSON_RESULT_SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -289,7 +292,7 @@ public class JsonResultSerializerV1d0Test {
         e.setProperty("abc", 123);
 
         final Iterable<Edge> iterable = g.query().edges();
-        final String results = JSON_RESULT_SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
 
         final JSONObject json = new JSONObject(results);
 
@@ -334,7 +337,7 @@ public class JsonResultSerializerV1d0Test {
         v.setProperty("friends", friends);
 
         final Iterator iterable = g.query().vertices().iterator();
-        final String results = JSON_RESULT_SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -371,7 +374,7 @@ public class JsonResultSerializerV1d0Test {
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.query().has("name", Compare.EQUAL, "marko").vertices().iterator().next(), 1000);
 
-        final String results = JSON_RESULT_SERIALIZER.serializeResult(map, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(map, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -380,6 +383,7 @@ public class JsonResultSerializerV1d0Test {
 
         assertNotNull(converted);
 
+        // TODO: come back to fix this once we figure out how to nicely handle maps
         /*
         final JSONObject mapValue = converted.optJSONObject("1");
         assertEquals(1000, mapValue.optInt(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_VALUE));
@@ -389,6 +393,42 @@ public class JsonResultSerializerV1d0Test {
         assertEquals("1", element.optString("id"));
         assertEquals(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_VERTEX, element.optString(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_TYPE));
         */
+    }
+
+    @Test
+    public void deserializeRequestNicelyWithNoArgs() {
+        final UUID session = UUID.fromString("7F5C73E3-CB3C-45A7-BF76-F6A68F944A8A");
+        final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
+        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest(String.format("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\"}", session, request));
+        assertTrue(msg.isPresent());
+
+        final RequestMessage m = msg.get();
+        assertEquals(session, m.sessionId);
+        assertEquals(request, m.requestId);
+        assertEquals("eval", m.op);
+        assertNotNull(m.args);
+        assertEquals(0, m.args.size());
+    }
+
+    @Test
+    public void deserializeRequestNicelyWithArgs() {
+        final UUID session = UUID.fromString("7F5C73E3-CB3C-45A7-BF76-F6A68F944A8A");
+        final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
+        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest(String.format("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}", session, request));
+        assertTrue(msg.isPresent());
+
+        final RequestMessage m = msg.get();
+        assertEquals(session, m.sessionId);
+        assertEquals(request, m.requestId);
+        assertEquals("eval", m.op);
+        assertNotNull(m.args);
+        assertEquals("y", m.args.get("x"));
+    }
+
+    @Test
+    public void deserializeRequestParseMessage() {
+        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}");
+        assertFalse(msg.isPresent());
     }
 
     private class FunObject {
