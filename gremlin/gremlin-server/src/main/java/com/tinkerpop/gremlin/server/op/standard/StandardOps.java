@@ -5,10 +5,10 @@ import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
+import com.tinkerpop.gremlin.server.MessageSerializer;
 import com.tinkerpop.gremlin.server.OpProcessor;
 import com.tinkerpop.gremlin.server.RequestMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
-import com.tinkerpop.gremlin.server.ResultSerializer;
 import com.tinkerpop.gremlin.server.ScriptEngineOps;
 import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.Tokens;
@@ -67,7 +67,7 @@ final class StandardOps {
     public static void showOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-        final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
+        final MessageSerializer serializer = MessageSerializer.select(msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
         final String infoType = msg.<String>optionalArgs(Tokens.ARGS_INFO_TYPE).get();
         final GremlinExecutor executor = context.getGremlinExecutor();
         final ScriptEngineOps seo = executor.select(msg);
@@ -83,7 +83,7 @@ final class StandardOps {
             throw new RuntimeException(String.format("Validation for the show operation is not properly checking the %s", Tokens.ARGS_INFO_TYPE));
 
         try {
-            ctx.channel().write(new TextWebSocketFrame(serializer.serialize(infoToShow, context)));
+            ctx.channel().write(new TextWebSocketFrame(serializer.serializeResult(infoToShow, context)));
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.",
                     infoToShow, context.getRequestMessage(), ex);
@@ -122,7 +122,7 @@ final class StandardOps {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
-        final ResultSerializer serializer = ResultSerializer.select(msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
+        final MessageSerializer serializer = MessageSerializer.select(msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"));
 
         // a worker service bound to the current thread
         final ExecutorService executorService = LocalExecutorService.getLocal();
@@ -166,7 +166,7 @@ final class StandardOps {
                         if (logger.isDebugEnabled())
                             logger.debug("Writing to frame queue [{}] for msg [{}]", individualResult, msg);
 
-                        frameQueue.put(new TextWebSocketFrame(true, 0, serializer.serialize(individualResult, context)));
+                        frameQueue.put(new TextWebSocketFrame(true, 0, serializer.serializeResult(individualResult, context)));
                     } catch (InterruptedException ie) {
                         // InterruptedException occurs here if the the serialization of an individual element exceeds
                         // the configured time for serializeResultTimeout.  the loop will exit here and a failure
@@ -178,7 +178,7 @@ final class StandardOps {
                         logger.warn("The result [{}] in the request {} could not be serialized and returned.", individualResult, context.getRequestMessage(), ex);
                         final String errorMessage = String.format("Error during serialization: %s",
                                 ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-                        frameQueue.put(new TextWebSocketFrame(serializer.serialize(errorMessage, ResultCode.SERVER_ERROR_SERIALIZATION, context)));
+                        frameQueue.put(new TextWebSocketFrame(serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_SERIALIZATION, context)));
                         break;
                     }
                 }
@@ -218,11 +218,11 @@ final class StandardOps {
         } catch (ScriptException se) {
             logger.warn("Error while evaluating a script on request [{}]", msg);
             logger.debug("Exception from ScriptException error.", se);
-            OpProcessor.error(serializer.serialize(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context)).accept(context);
+            OpProcessor.error(serializer.serializeResult(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context)).accept(context);
         } catch (InterruptedException ie) {
             logger.warn("Thread interrupted (perhaps script ran for too long) while processing this request [{}]", msg);
             logger.debug("Exception from InterruptedException error.", ie);
-            OpProcessor.error(serializer.serialize(ie.getMessage(), ResultCode.SERVER_ERROR, context)).accept(context);
+            OpProcessor.error(serializer.serializeResult(ie.getMessage(), ResultCode.SERVER_ERROR, context)).accept(context);
         } catch (ExecutionException ee) {
             logger.warn("Error while processing response from the script evaluated on request [{}]", msg);
             logger.debug("Exception from ExecutionException error.", ee.getCause());
@@ -230,7 +230,7 @@ final class StandardOps {
             if (inner instanceof ScriptException)
                 inner = inner.getCause();
 
-            OpProcessor.error(serializer.serialize(inner.getMessage(), ResultCode.SERVER_ERROR, context)).accept(context);
+            OpProcessor.error(serializer.serializeResult(inner.getMessage(), ResultCode.SERVER_ERROR, context)).accept(context);
         } catch (TimeoutException toe) {
             final String errorMessage;
             if (!evaluated)
@@ -239,7 +239,7 @@ final class StandardOps {
                 errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, toe.getMessage());
 
             logger.warn(errorMessage);
-            final String json = serializer.serialize(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context);
+            final String json = serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context);
             OpProcessor.error(json).accept(context);
         } finally {
             // sending the requestId acts as a termination message for this request.

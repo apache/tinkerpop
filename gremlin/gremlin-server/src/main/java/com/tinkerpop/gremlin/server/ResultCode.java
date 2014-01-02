@@ -48,8 +48,8 @@ public enum ResultCode {
      * Either transform the object into something Gremlin Server can process within the script or install custom
      * serialization classes to Gremlin Server.
      *
-     * @see ResultSerializer
-     * @see com.tinkerpop.gremlin.server.util.ser.JsonResultSerializerV1d0
+     * @see MessageSerializer
+     * @see com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0
      */
     SERVER_ERROR_SERIALIZATION(599);
 

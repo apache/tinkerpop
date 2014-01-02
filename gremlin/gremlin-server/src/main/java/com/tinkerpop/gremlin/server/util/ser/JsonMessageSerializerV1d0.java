@@ -16,20 +16,22 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.server.Context;
+import com.tinkerpop.gremlin.server.RequestMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
-import com.tinkerpop.gremlin.server.ResultSerializer;
+import com.tinkerpop.gremlin.server.MessageSerializer;
 import groovy.json.JsonBuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Serialize results to JSON with version 1.0.x schema.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class JsonResultSerializerV1d0 implements ResultSerializer {
+public class JsonMessageSerializerV1d0 implements MessageSerializer {
     static final Version JSON_SERIALIZATION_VERSION = new Version(1,0,0,"","com.tinkerpop.gremlin", "gremlin-server");
 
     public static final String TOKEN_RESULT = "result";
@@ -73,7 +75,7 @@ public class JsonResultSerializerV1d0 implements ResultSerializer {
     }
 
     @Override
-    public String serialize(final Object o, final ResultCode code, final Context context) {
+    public String serializeResult(final Object o, final ResultCode code, final Context context) {
         try {
             final Map<String,Object> result = new HashMap<>();
             result.put(TOKEN_CODE, code.getValue());
@@ -90,12 +92,21 @@ public class JsonResultSerializerV1d0 implements ResultSerializer {
         }
     }
 
+    @Override
+    public Optional<RequestMessage> deserializeRequest(final String msg) {
+        try {
+            return Optional.of(mapper.readValue(msg, RequestMessage.class));
+        } catch (Exception ex) {
+            return Optional.empty();
+        }
+    }
+
     /**
      * Serializer mappings for Gremlin/Blueprints classes that will be serialized to JSON.
      */
     public static class GremlinModule extends SimpleModule {
         public GremlinModule() {
-            super("gremlin", JsonResultSerializerV1d0.JSON_SERIALIZATION_VERSION);
+            super("gremlin", JsonMessageSerializerV1d0.JSON_SERIALIZATION_VERSION);
             addSerializer(Edge.class, new EdgeJacksonSerializer());
             addSerializer(Property.class, new PropertyJacksonSerializer());
             addSerializer(Vertex.class, new VertexJacksonSerializer());

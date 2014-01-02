@@ -117,7 +117,8 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         else if (frame instanceof TextWebSocketFrame) {
             // todo: support both text and binary where binary allows for versioning of the messages.
             final String request = ((TextWebSocketFrame) frame).text();
-            final RequestMessage requestMessage = RequestMessage.Serializer.parse(request).orElse(RequestMessage.INVALID);
+            final RequestMessage requestMessage = MessageSerializer.select("application/json")
+                    .deserializeRequest(request).orElse(RequestMessage.INVALID);
 
             if (!gremlinExecutor.isInitialized())
                 gremlinExecutor.init(settings);
