@@ -15,9 +15,14 @@ public class Path {
     protected ArrayList<String> names = new ArrayList<>();
     protected ArrayList<Object> objects = new ArrayList<>();
 
-    public Path() {
-        super();
+    public Path(final Object... namesObjects) {
+        // TODO: modulo 2
+        for (int i = 0; i < namesObjects.length; i = i + 2) {
+            names.add((String) namesObjects[i]);
+            objects.add(namesObjects[i + 1]);
+        }
     }
+
 
     public int size() {
         return this.objects.size();
@@ -46,7 +51,7 @@ public class Path {
     }
 
     public boolean isSimple() {
-        return new LinkedHashSet(this.objects).size() == this.objects.size();
+        return new LinkedHashSet<>(this.objects).size() == this.objects.size();
     }
 
     public String toString() {

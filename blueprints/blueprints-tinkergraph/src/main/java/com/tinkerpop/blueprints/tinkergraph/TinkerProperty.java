@@ -96,6 +96,10 @@ public class TinkerProperty<V> implements Property<V> {
         return ElementHelper.areEqual(this, object);
     }
 
+    public int hashCode() {
+        return this.key.hashCode() + this.value.hashCode() + this.element.hashCode();
+    }
+
     public void remove() {
         ((TinkerElement) this.element).properties.remove(key);
         if (this.element instanceof Vertex)

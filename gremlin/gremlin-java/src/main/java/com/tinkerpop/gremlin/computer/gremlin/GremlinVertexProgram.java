@@ -14,10 +14,12 @@ import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.pipes.Pipe;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
+import com.tinkerpop.gremlin.pipes.util.Path;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -32,11 +34,11 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
 
     private static final String GREMLIN_MESSAGE = "gremlinMessage";
     private static final String GREMLIN_PIPELINE = "gremlinPipeline";
-    public static final String GRAPH_GREMLINS = "gremlins";
-    public static final String OBJECT_GREMLINS = "others";
+    public static final String GRAPH_GREMLINS = "graphGremlins";
+    public static final String OBJECT_GREMLINS = "objectGremlins";
     private final Supplier<Gremlin> gremlin;
 
-    public GremlinVertexProgram(Supplier<Gremlin> gremlin) {
+    public GremlinVertexProgram(final Supplier<Gremlin> gremlin) {
         this.gremlin = gremlin;
     }
 
@@ -47,28 +49,28 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     public void execute(final Vertex vertex, final Messenger<GremlinMessage> messenger, final GraphMemory graphMemory) {
 
         if (graphMemory.isInitialIteration()) {
-            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex, 1l));
+            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex, new Path(Pipe.NONE, vertex)));
         } else {
-            final Map<Object, Long> previousObjectCounters = vertex.<HashMap<Object, Long>>getProperty(OBJECT_GREMLINS).orElse(new HashMap<>());
-            final Map<Object, Long> graphCounters = new HashMap<>();
-            final Map<Object, Long> objectCounters = new HashMap<>();
+            final Map<Object, List<Path>> previousObjectCounters = vertex.<HashMap<Object, List<Path>>>getProperty(OBJECT_GREMLINS).orElse(new HashMap<>());
+            final Map<Object, List<Path>> graphCounters = new HashMap<>();
+            final Map<Object, List<Path>> objectCounters = new HashMap<>();
             final Set<Object> starts = new HashSet<>();
             final Pipe pipe = getCurrentPipe(graphMemory);
 
             // RECEIVE MESSAGES
-            messenger.receiveMessages(vertex, global).forEach(m -> {
+            messenger.receiveMessages(vertex, this.global).forEach(m -> {
                 if (m.destination.equals(GremlinMessage.Destination.VERTEX)) {
-                    starts.add(vertex);
-                    MapHelper.incr(graphCounters, vertex, m.counts);
+                    starts.add(new Holder<>(vertex, m.getPath()));
+                    MapHelper.incr(graphCounters, vertex, m.getPath());
                 } else if (m.destination.equals(GremlinMessage.Destination.EDGE)) {
-                    this.getEdge(vertex, m).ifPresent(e -> {
-                        starts.add(e);
-                        MapHelper.incr(graphCounters, e, m.counts);
+                    this.getEdge(vertex, m).ifPresent(edge -> {
+                        starts.add(new Holder<>(edge, m.getPath()));
+                        MapHelper.incr(graphCounters, edge, m.getPath());
                     });
                 } else if (m.destination.equals(GremlinMessage.Destination.PROPERTY)) {
-                    this.getProperty(vertex, m).ifPresent(p -> {
-                        starts.add(p);
-                        MapHelper.incr(graphCounters, p, m.counts);
+                    this.getProperty(vertex, m).ifPresent(property -> {
+                        starts.add(new Holder<>(property, m.getPath()));
+                        MapHelper.incr(graphCounters, property, m.getPath());
                     });
                 } else {
                     throw new UnsupportedOperationException("The provided message can not be processed: " + m);
@@ -76,27 +78,30 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
             });
             // process local object messages
             previousObjectCounters.forEach((a, b) -> {
-                starts.add(a);
+                b.forEach(path -> {
+                    starts.add(new Holder<>(a, path));
+                });
+
             });
 
 
             // EXECUTE PIPELINE WITH LOCAL STARTS AND SEND MESSAGES TO ENDS
             starts.forEach(start -> {
-                pipe.addStarts(new SingleIterator<>(new Holder<>(pipe.getName(), start)));
+                pipe.addStarts(new SingleIterator<>(start));
                 pipe.forEachRemaining(h -> {
-                    final Object end = ((Holder<Object>) h).get();
+                    Holder holder = (Holder) h;
+                    Object end = holder.get();
                     // System.out.println(start + "-->" + end + " [" + counters.get(start) + "]");
-
                     if (end instanceof Element || end instanceof Property) {
                         messenger.sendMessage(
                                 vertex,
                                 MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertices(end)),
-                                GremlinMessage.of(end, graphCounters.get(start)));
+                                GremlinMessage.of(end, holder.getPath()));
                     } else {
-                        if (graphCounters.containsKey(start))
-                            MapHelper.incr(objectCounters, end, graphCounters.get(start));
-                        else if (previousObjectCounters.containsKey(start))
-                            MapHelper.incr(objectCounters, end, previousObjectCounters.get(start));
+                        if (graphCounters.containsKey(((Holder)start).get()))
+                            MapHelper.incr(objectCounters, end, holder.getPath());
+                        else if (previousObjectCounters.containsKey(((Holder)start).get()))
+                            MapHelper.incr(objectCounters, end, holder.getPath());
                         else
                             throw new IllegalStateException("The provided start does not have a recorded history: " + start);
                     }

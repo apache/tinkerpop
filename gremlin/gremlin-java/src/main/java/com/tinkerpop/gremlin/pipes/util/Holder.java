@@ -10,11 +10,16 @@ public class Holder<T> implements Serializable {
 
     private T t;
     private int loops = 0;
-    private final Path path = new Path();
+    private Path path = new Path();
 
     public Holder(final String name, final T t) {
         this.t = t;
         this.path.add(name, t);
+    }
+
+    public Holder(final T t, final Path path) {
+        this.t = t;
+        this.path = path;
     }
 
     private Holder(final T t) {

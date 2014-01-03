@@ -5,9 +5,11 @@ import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.pipes.Gremlin;
+import com.tinkerpop.gremlin.pipes.util.Path;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -26,7 +28,7 @@ public class GremlinVertexProgramTest {
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
                         //Gremlin.of().out("created").in("created").value("name").map(h -> ((String) ((Holder) h).get()).length()).filter(h -> ((Integer) ((Holder) h).get() > 4)).identity())
-                        Gremlin.of().out("created").in("created").property("name").identity())
+                        Gremlin.of().out("created").value("name").path().identity())
                         .build())
                         .submit().get();
 
@@ -34,16 +36,16 @@ public class GremlinVertexProgramTest {
 
         System.out.println("gremlin> " + result.getGraphMemory().<Supplier>get("gremlinPipeline").get());
         StreamFactory.stream(g.query().vertices()).forEach(v -> {
-            result.getVertexMemory().getProperty(v, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(x -> Stream.generate(() -> 1).limit((Long) x).forEach(t -> System.out.println("==>" + v)));
-            result.getVertexMemory().getProperty(v, GremlinVertexProgram.OBJECT_GREMLINS).ifPresent(m -> ((HashMap<Object, Long>) m).forEach((a, b) -> Stream.generate(() -> 1).limit(b).forEach(t -> System.out.println("==>" + a))));
+            result.getVertexMemory().getProperty(v, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(x -> Stream.generate(() -> 1).limit(((List) x).size()).forEach(t -> System.out.println("==>" + v)));
+            result.getVertexMemory().getProperty(v, GremlinVertexProgram.OBJECT_GREMLINS).ifPresent(m -> ((HashMap<Object, List<Path>>) m).forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a))));
             v.getProperties().values().forEach(p -> {
-                result.getVertexMemory().getAnnotation(p, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(x -> Stream.generate(() -> 1).limit((Long) x).forEach(t -> System.out.println("==>" + p)));
+                result.getVertexMemory().getAnnotation(p, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(x -> Stream.generate(() -> 1).limit(((List) x).size()).forEach(t -> System.out.println("==>" + p)));
             });
         });
         StreamFactory.stream(g.query().edges()).forEach(e -> {
-            result.getVertexMemory().getProperty(e, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(x -> Stream.generate(() -> 1).limit((Long) x).forEach(t -> System.out.println("==>" + e)));
+            result.getVertexMemory().getProperty(e, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(x -> Stream.generate(() -> 1).limit(((List) x).size()).forEach(t -> System.out.println("==>" + e)));
             e.getProperties().values().forEach(p -> {
-                result.getVertexMemory().getAnnotation(p, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(x -> Stream.generate(() -> 1).limit((Long) x).forEach(t -> System.out.println("==>" + p)));
+                result.getVertexMemory().getAnnotation(p, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(x -> Stream.generate(() -> 1).limit(((List) x).size()).forEach(t -> System.out.println("==>" + p)));
             });
         });
 
