@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.computer.gremlin.util;
 
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.util.ElementHelper;
 
 import java.util.Map;
 
@@ -42,4 +43,11 @@ public abstract class MicroElement implements Element {
         throw new UnsupportedOperationException();
     }
 
+    public int hashCode() {
+        return this.id.hashCode();
+    }
+
+    public boolean equals(final Object object) {
+        return ElementHelper.areEqual(this, object);
+    }
 }

@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.util.Optional;
@@ -55,5 +56,13 @@ public class MicroProperty implements Property {
 
     public String toString() {
         return StringFactory.propertyString(this) + ".";
+    }
+
+    public boolean equals(final Object object) {
+        return ElementHelper.areEqual(this, object);
+    }
+
+    public int hashCode() {
+        return this.key.hashCode() + this.value.hashCode() + this.element.hashCode();
     }
 }

@@ -28,7 +28,7 @@ public class GremlinVertexProgramTest {
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
                         //Gremlin.of().out("created").in("created").value("name").map(h -> ((String) ((Holder) h).get()).length()).filter(h -> ((Integer) ((Holder) h).get() > 4)).identity())
-                        Gremlin.of().identity().as("a").outE("created").inV().property("name").path().identity())
+                        Gremlin.of().identity().as("a").outE("created").inV().property("name").select("a").path().identity())
                         .build())
                         .submit().get();
 
