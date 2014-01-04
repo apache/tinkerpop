@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.pipes.Pipe;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +54,14 @@ public class Path {
     public boolean isSimple() {
         return new LinkedHashSet<>(this.objects).size() == this.objects.size();
     }
+
+    public void forEach(final BiConsumer<String, Object> consumer) {
+        for (int i = 0; i < this.size(); i++) {
+            consumer.accept(this.names.get(i), this.objects.get(i));
+        }
+    }
+
+    // TODO: iterator() -> Iterator<Pair<String,Object>
 
     public String toString() {
         return this.objects.toString();

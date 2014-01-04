@@ -30,9 +30,9 @@ public interface Messenger<M extends Serializable> {
             return Arrays.asList(((Edge) object).getVertex(Direction.OUT), ((Edge) object).getVertex(Direction.IN));
         else if (object instanceof Property)
             return getHostingVertices(((Property) object).getElement());
-        else {
+        else
             throw new IllegalStateException("The host of the object is unknown: " + object.toString());
-        }
+
     }
 
 }

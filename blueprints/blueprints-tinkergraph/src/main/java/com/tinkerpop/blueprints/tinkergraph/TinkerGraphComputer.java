@@ -21,12 +21,13 @@ public class TinkerGraphComputer implements GraphComputer {
     private Isolation isolation = Isolation.BSP;
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
-    private final TinkerGraphMemory graphMemory = new TinkerGraphMemory();
+    private final TinkerGraphMemory graphMemory;
     private final TinkerMessenger messenger = new TinkerMessenger();
     private TinkerVertexMemory vertexMemory = new TinkerVertexMemory(this.isolation);
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
+        this.graphMemory = new TinkerGraphMemory(graph);
     }
 
     public GraphComputer isolation(final Isolation isolation) {

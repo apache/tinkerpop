@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.computer.GraphSystemMemory;
 
 import java.util.Map;
@@ -12,15 +13,17 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class TinkerGraphMemory implements GraphSystemMemory {
 
+    private final Graph graph;
     private final Map<String, Object> memory;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
 
-    public TinkerGraphMemory() {
-        this(new ConcurrentHashMap<>());
+    public TinkerGraphMemory(final Graph graph) {
+        this(graph, new ConcurrentHashMap<>());
     }
 
-    public TinkerGraphMemory(final Map<String, Object> state) {
+    public TinkerGraphMemory(final Graph graph, final Map<String, Object> state) {
+        this.graph = graph;
         this.memory = state;
     }
 
@@ -68,5 +71,9 @@ public class TinkerGraphMemory implements GraphSystemMemory {
         if (this.memory.containsKey(key))
             throw new IllegalStateException("The memory already has the a value for key " + key);
         this.memory.put(key, value);
+    }
+
+    public Graph getGraph() {
+        return this.graph;
     }
 }

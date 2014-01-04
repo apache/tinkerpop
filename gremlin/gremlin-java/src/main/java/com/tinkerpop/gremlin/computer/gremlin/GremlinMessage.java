@@ -50,12 +50,14 @@ public class GremlinMessage implements Serializable {
 
     public static GremlinMessage of(final Object object, final Path path) {
         Destination destination = Destination.of(object);
+
         if (destination == Destination.VERTEX)
             return new GremlinMessage(destination, ((Vertex) object).getId(), null, path);
         else if (destination == Destination.EDGE)
             return new GremlinMessage(destination, ((Edge) object).getId(), null, path);
         else
             return new GremlinMessage(destination, ((Property) object).getElement().getId(), ((Property) object).getKey(), path);
+
     }
 
     /*public static GremlinMessage of(final Object object, final long counts) {

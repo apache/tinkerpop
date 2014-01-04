@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints.computer;
 
+import com.tinkerpop.blueprints.Graph;
+
 /**
  * Each vertex in a vertex-centric graph computation can access itself and its neighbors' properties.
  * However, in many situations, a global backboard (or distributed cache) is desired.
@@ -24,6 +26,8 @@ public interface GraphMemory {
     public long getRuntime();
 
     public boolean isInitialIteration();
+
+    public Graph getGraph();
 
     /*public void min(String key, double value);
 
