@@ -12,9 +12,9 @@ public class Holder<T> implements Serializable {
     private int loops = 0;
     private Path path = new Path();
 
-    public Holder(final String name, final T t) {
+    public Holder(final String as, final T t) {
         this.t = t;
-        this.path.add(name, t);
+        this.path.add(as, t);
     }
 
     public Holder(final T t, final Path path) {
@@ -26,12 +26,20 @@ public class Holder<T> implements Serializable {
         this.t = t;
     }
 
-    public <T> T get() {
-        return (T) this.t;
+    public T get() {
+        return this.t;
+    }
+
+    public void set(T t) {
+        this.t = t;
     }
 
     public Path getPath() {
         return this.path;
+    }
+
+    public void setPath(final Path path) {
+        this.path = path;
     }
 
     public String toString() {
@@ -46,11 +54,11 @@ public class Holder<T> implements Serializable {
         this.loops++;
     }
 
-    public <R> Holder<R> makeChild(final String name, final R r) {
+    public <R> Holder<R> makeChild(final String as, final R r) {
         final Holder<R> holder = new Holder<>(r);
         holder.loops = this.loops;
         holder.path.add(this.path);
-        holder.path.add(name, r);
+        holder.path.add(as, r);
         return holder;
     }
 
@@ -61,12 +69,12 @@ public class Holder<T> implements Serializable {
         return holder;
     }
 
-    public Holder<T> makeSibling(final String name) {
+    public Holder<T> makeSibling(final String as) {
         final Holder<T> holder = new Holder<>(this.t);
         holder.loops = this.loops;
         holder.path.add(this.path);
         holder.path.asNames.remove(holder.path.asNames.size() - 1);
-        holder.path.asNames.add(name);
+        holder.path.asNames.add(as);
         return holder;
     }
 }

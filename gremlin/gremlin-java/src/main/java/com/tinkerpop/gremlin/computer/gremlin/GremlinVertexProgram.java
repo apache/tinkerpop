@@ -10,15 +10,10 @@ import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.gremlin.computer.gremlin.util.MicroEdge;
-import com.tinkerpop.gremlin.computer.gremlin.util.MicroElement;
-import com.tinkerpop.gremlin.computer.gremlin.util.MicroProperty;
-import com.tinkerpop.gremlin.computer.gremlin.util.MicroVertex;
 import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.pipes.Pipe;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
-import com.tinkerpop.gremlin.pipes.util.Path;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.ArrayList;
@@ -52,28 +47,31 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     public void execute(final Vertex vertex, final Messenger<GremlinMessage> messenger, final GraphMemory graphMemory) {
 
         if (graphMemory.isInitialIteration()) {
-            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex, new Path(Pipe.NONE, vertex)));
+            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex, new Holder<>(Pipe.NONE, vertex)));
         } else {
-            final Map<Object, List<Path>> previousObjectCounters = vertex.<HashMap<Object, List<Path>>>getProperty(OBJECT_GREMLINS).orElse(new HashMap<>());
-            final Map<Object, List<Path>> graphCounters = new HashMap<>();
-            final Map<Object, List<Path>> objectCounters = new HashMap<>();
+            final Map<Object, List<Holder>> previousObjectCounters = vertex.<HashMap<Object, List<Holder>>>getProperty(OBJECT_GREMLINS).orElse(new HashMap<>());
+            final Map<Object, List<Holder>> graphCounters = new HashMap<>();
+            final Map<Object, List<Holder>> objectCounters = new HashMap<>();
             final List<Object> starts = new ArrayList<>();
             final Pipe pipe = getCurrentPipe(graphMemory);
 
             // RECEIVE MESSAGES
             messenger.receiveMessages(vertex, this.global).forEach(m -> {
                 if (m.destination.equals(GremlinMessage.Destination.VERTEX)) {
-                    starts.add(new Holder<>(vertex, m.getPath()));
-                    MapHelper.incr(graphCounters, vertex, m.getPath());
+                    m.getHolder().set(vertex);
+                    starts.add(m.getHolder());
+                    MapHelper.incr(graphCounters, vertex, m.getHolder());
                 } else if (m.destination.equals(GremlinMessage.Destination.EDGE)) {
                     this.getEdge(vertex, m).ifPresent(edge -> {
-                        starts.add(new Holder<>(edge, m.getPath()));
-                        MapHelper.incr(graphCounters, edge, m.getPath());
+                        m.getHolder().set(edge);
+                        starts.add(m.getHolder());
+                        MapHelper.incr(graphCounters, edge, m.getHolder());
                     });
                 } else if (m.destination.equals(GremlinMessage.Destination.PROPERTY)) {
                     this.getProperty(vertex, m).ifPresent(property -> {
-                        starts.add(new Holder<>(property, m.getPath()));
-                        MapHelper.incr(graphCounters, property, m.getPath());
+                        m.getHolder().set(property);
+                        starts.add(m.getHolder());
+                        MapHelper.incr(graphCounters, property, m.getHolder());
                     });
                 } else {
                     throw new UnsupportedOperationException("The provided message can not be processed: " + m);
@@ -81,8 +79,8 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
             });
             // process local object messages
             previousObjectCounters.forEach((a, b) -> {
-                b.forEach(path -> {
-                    starts.add(new Holder<>(a, path));
+                b.forEach(holder -> {
+                    starts.add(holder);
                 });
             });
 
@@ -100,12 +98,12 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
                         messenger.sendMessage(
                                 vertex,
                                 MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertices(end)),
-                                GremlinMessage.of(end, this.createPath(holder.getPath())));
+                                GremlinMessage.of(end, holder));
                     } else {
                         if (graphCounters.containsKey(((Holder) start).get()))
-                            MapHelper.incr(objectCounters, end, this.createPath(holder.getPath()));
+                            MapHelper.incr(objectCounters, end, holder);
                         else if (previousObjectCounters.containsKey(((Holder) start).get()))
-                            MapHelper.incr(objectCounters, end, this.createPath(holder.getPath()));
+                            MapHelper.incr(objectCounters, end, holder);
                         else
                             throw new IllegalStateException("The provided start does not have a recorded history: " + start);
                     }
@@ -147,23 +145,6 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
         return (Pipe) gremlin.get().getPipes().get(graphMemory.getIteration());
     }
 
-    private Path createPath(final Path path) {
-        final Path newPath = new Path();
-        path.forEach((a, b) -> {
-            if (b instanceof MicroElement || b instanceof MicroProperty) {
-                newPath.add(a, b);
-            } else if (b instanceof Vertex) {
-                newPath.add(a, new MicroVertex((Vertex) b));
-            } else if (b instanceof Edge) {
-                newPath.add(a, new MicroEdge((Edge) b));
-            } else if (b instanceof Property) {
-                newPath.add(a, new MicroProperty((Property) b));
-            } else {
-                newPath.add(a, b);
-            }
-        });
-        return newPath;
-    }
 
     ////////// GRAPH COMPUTER METHODS
 

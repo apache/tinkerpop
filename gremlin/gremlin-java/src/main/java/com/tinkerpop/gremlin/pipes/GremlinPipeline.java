@@ -51,19 +51,19 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     public <P extends GremlinPipeline> P V();
 
     public default <P extends GremlinPipeline> P out(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.<Vertex>get().query().direction(Direction.OUT).labels(labels).vertices().iterator()));
+        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).vertices().iterator()));
     }
 
     public default <P extends GremlinPipeline> P in(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.<Vertex>get().query().direction(Direction.IN).labels(labels).vertices().iterator()));
+        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.IN).labels(labels).vertices().iterator()));
     }
 
     public default <P extends GremlinPipeline> P both(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.<Vertex>get().query().direction(Direction.BOTH).labels(labels).vertices().iterator()));
+        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.BOTH).labels(labels).vertices().iterator()));
     }
 
     public default <P extends GremlinPipeline> P outE(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.<Vertex>get().query().direction(Direction.OUT).labels(labels).edges().iterator())
+        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).edges().iterator())
         /*{
             public String toString() {
                 return "FlatMapPipe[out," + Arrays.asList(labels) + "]";
@@ -72,39 +72,39 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     }
 
     public default <P extends GremlinPipeline> P inE(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.<Vertex>get().query().direction(Direction.IN).labels(labels).edges().iterator()));
+        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.get().query().direction(Direction.IN).labels(labels).edges().iterator()));
     }
 
     public default <P extends GremlinPipeline> P bothE(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.<Vertex>get().query().direction(Direction.BOTH).labels(labels).edges().iterator()));
+        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.get().query().direction(Direction.BOTH).labels(labels).edges().iterator()));
     }
 
     public default <P extends GremlinPipeline> P inV() {
-        return this.addPipe(new MapPipe<Edge, Vertex>(this, e -> e.<Edge>get().getVertex(Direction.IN)));
+        return this.addPipe(new MapPipe<Edge, Vertex>(this, e -> e.get().getVertex(Direction.IN)));
     }
 
     public default <P extends GremlinPipeline> P outV() {
-        return this.addPipe(new MapPipe<Edge, Vertex>(this, e -> e.<Edge>get().getVertex(Direction.OUT)));
+        return this.addPipe(new MapPipe<Edge, Vertex>(this, e -> e.get().getVertex(Direction.OUT)));
     }
 
     public default <P extends GremlinPipeline> P bothV() {
-        return this.addPipe(new FlatMapPipe<Edge, Vertex>(this, e -> Arrays.asList(e.<Edge>get().getVertex(Direction.OUT), e.<Edge>get().getVertex(Direction.IN)).iterator()));
+        return this.addPipe(new FlatMapPipe<Edge, Vertex>(this, e -> Arrays.asList(e.get().getVertex(Direction.OUT), e.get().getVertex(Direction.IN)).iterator()));
     }
 
     public default <P extends GremlinPipeline> P property(final String key) {
-        return this.addPipe(new MapPipe<Element, Property>(this, e -> e.<Element>get().getProperty(key)));
+        return this.addPipe(new MapPipe<Element, Property>(this, e -> e.get().getProperty(key)));
     }
 
     public default <P extends GremlinPipeline> P value(final String key) {
-        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.<Element>get().getValue(key)));
+        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.get().getValue(key)));
     }
 
     public default <P extends GremlinPipeline> P value(final String key, final Object defaultValue) {
-        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.<Element>get().getProperty(key).orElse(defaultValue)));
+        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.get().getProperty(key).orElse(defaultValue)));
     }
 
     public default <P extends GremlinPipeline> P value(final String key, final Supplier defaultSupplier) {
-        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.<Element>get().getProperty(key).orElseGet(defaultSupplier)));
+        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.get().getProperty(key).orElseGet(defaultSupplier)));
     }
 
     public default <P extends GremlinPipeline> P path() {
@@ -139,16 +139,16 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     }
 
     public default <P extends GremlinPipeline> P has(final String key) {
-        return this.addPipe(new FilterPipe<Element>(this, e -> e.<Element>get().getProperty(key).isPresent()));
+        return this.addPipe(new FilterPipe<Element>(this, e -> e.get().getProperty(key).isPresent()));
     }
 
     public default <P extends GremlinPipeline> P hasNot(final String key) {
-        return this.addPipe(new FilterPipe<Element>(this, e -> !e.<Element>get().getProperty(key).isPresent()));
+        return this.addPipe(new FilterPipe<Element>(this, e -> !e.get().getProperty(key).isPresent()));
     }
 
     public default <P extends GremlinPipeline> P has(final String key, final Object value) {
         return this.addPipe(new FilterPipe<Element>(this, e -> {
-            final Property x = e.<Element>get().getProperty(key);
+            final Property x = e.get().getProperty(key);
             return x.isPresent() && Compare.EQUAL.test(x.getValue(), value);
         }));
     }

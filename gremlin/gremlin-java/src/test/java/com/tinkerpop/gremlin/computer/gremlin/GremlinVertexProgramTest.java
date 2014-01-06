@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.pipes.Gremlin;
+import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.Path;
 import org.junit.Test;
 
@@ -28,7 +29,7 @@ public class GremlinVertexProgramTest {
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
                         //Gremlin.of().out("created").in("created").value("name").map(h -> ((String) ((Holder) h).get()).length()).filter(h -> ((Integer) ((Holder) h).get() > 4)).identity())
-                        Gremlin.of().identity().as("a").out("created").in("created").path().identity())
+                        Gremlin.of().identity().as("a").outE("created").inV().value("name").map(s -> ((Holder)s).get().toString().length()).path().identity())
                         .build())
                         .submit().get();
 
