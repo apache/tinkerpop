@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.groovy
 import com.tinkerpop.gremlin.Tokens
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import com.tinkerpop.gremlin.groovy.loaders.GraphLoader
+import com.tinkerpop.gremlin.groovy.loaders.PipeLoader
 import com.tinkerpop.gremlin.pipes.GremlinPipeline
 import com.tinkerpop.gremlin.pipes.Pipe
 import groovy.grape.Grape
@@ -32,7 +33,7 @@ class GremlinLoader {
         GraphLoader.load()
         //IndexLoader.load()
         //ObjectLoader.load()
-        //PipeLoader.load()
+        PipeLoader.load()
 
         try {
             //SailGraphLoader.load()

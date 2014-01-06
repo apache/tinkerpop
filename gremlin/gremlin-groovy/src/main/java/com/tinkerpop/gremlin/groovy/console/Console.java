@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -27,7 +28,7 @@ public class Console {
     private static final IO STANDARD_IO = new IO(System.in, System.out, System.err);
     private static final Groovysh GROOVYSH = new Groovysh();
 
-    public Console(final String initScriptFile) {
+    public Console(final Optional<String> initScriptFile) {
         STANDARD_IO.out.println();
         STANDARD_IO.out.println("         \\,,,/");
         STANDARD_IO.out.println("         (o o)");
@@ -43,22 +44,18 @@ public class Console {
         GROOVYSH.execute("import com.tinkerpop.blueprints.tinkergraph.*");
         GROOVYSH.execute("import groovy.grape.Grape");
 
-        GROOVYSH.setResultHook(new ResultHookClosure(GROOVYSH, STANDARD_IO, STANDARD_RESULT_PROMPT));
-
-
-        final InteractiveShellRunner runner = new InteractiveShellRunner(GROOVYSH, new PromptClosure(GROOVYSH, STANDARD_INPUT_PROMPT));
-        runner.setErrorHandler(new ErrorHookClosure(runner, STANDARD_IO));
         try {
+            GROOVYSH.setResultHook(new ResultHookClosure(GROOVYSH, STANDARD_IO, STANDARD_RESULT_PROMPT));
+            GROOVYSH.setHistory(new FileHistory(new File(System.getProperty("user.home") + "/" + HISTORY_FILE)));
+            final InteractiveShellRunner runner = new InteractiveShellRunner(GROOVYSH, new PromptClosure(GROOVYSH, STANDARD_INPUT_PROMPT));
+            runner.setErrorHandler(new ErrorHookClosure(runner, STANDARD_IO));
             runner.setHistory(new FileHistory(new File(System.getProperty("user.home") + "/" + HISTORY_FILE)));
+            GremlinLoader.load();
+            if (initScriptFile.isPresent())
+                initializeShellWithScript(STANDARD_IO, initScriptFile.get());
+            runner.run();
         } catch (IOException e) {
             STANDARD_IO.err.println("Unable to create history file: " + HISTORY_FILE);
-        }
-
-        GremlinLoader.load();
-        initializeShellWithScript(STANDARD_IO, initScriptFile, GROOVYSH);
-
-        try {
-            runner.run();
         } catch (Error e) {
             //System.err.println(e.getMessage());
         }
@@ -78,28 +75,26 @@ public class Console {
         return STANDARD_IO;
     }
 
-    private void initializeShellWithScript(final IO io, final String initScriptFile, final Groovysh groovy) {
-        if (initScriptFile != null) {
-            String line = "";
-            try {
-                final BufferedReader reader = new BufferedReader(new InputStreamReader(
-                        new FileInputStream(initScriptFile), Charset.forName("UTF-8")));
-                while ((line = reader.readLine()) != null) {
-                    groovy.execute(line);
-                }
-
-                reader.close();
-            } catch (FileNotFoundException fnfe) {
-                io.err.println(String.format("Gremlin initialization file not found at [%s].", initScriptFile));
-                System.exit(1);
-            } catch (IOException ioe) {
-                io.err.println(String.format("Bad line in Gremlin initialization file at [%s].", line));
-                System.exit(1);
+    private void initializeShellWithScript(final IO io, final String initScriptFile) {
+        String line = "";
+        try {
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(initScriptFile), Charset.forName("UTF-8")));
+            while ((line = reader.readLine()) != null) {
+                GROOVYSH.execute(line);
             }
+
+            reader.close();
+        } catch (FileNotFoundException fnfe) {
+            io.err.println(String.format("Gremlin initialization file not found at [%s].", initScriptFile));
+            System.exit(1);
+        } catch (IOException ioe) {
+            io.err.println(String.format("Bad line in Gremlin initialization file at [%s].", line));
+            System.exit(1);
         }
     }
 
     public static void main(final String[] args) {
-        new Console(args.length == 1 ? args[0] : null);
+        new Console(args.length == 1 ? Optional.of(args[0]) : Optional.empty());
     }
 }
