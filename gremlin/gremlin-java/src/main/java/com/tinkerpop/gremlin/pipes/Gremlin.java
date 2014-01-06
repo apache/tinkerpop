@@ -48,6 +48,14 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
         return this;
     }
 
+    public Gremlin v(final Object... ids) {
+        Objects.requireNonNull(this.graph);
+        final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
+        this.addPipe(pipe);
+        this.addStarts(new HolderIterator(pipe, this.graph.query().ids(ids).vertices().iterator()));
+        return this;
+    }
+
     public void addStarts(final Iterator<Holder<S>> starts) {
         this.pipes.get(0).addStarts(starts);
     }

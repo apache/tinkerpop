@@ -28,16 +28,7 @@ class GraphLoader {
             }
         }
 
-        /*Graph.metaClass.v = { final Object... ids ->
-            if (ids.length == 1)
-                return ((Graph) delegate).getVertex(ids[0]);
-            else {
-                final Graph g = (Graph) delegate;
-                return Gremlin.of(g)ids.collect { g.getVertex(it) });
-            }
-        }
-
-        Graph.metaClass.e = { final Object... ids ->
+        /*Graph.metaClass.e = { final Object... ids ->
             if (ids.length == 1)
                 return ((Graph) delegate).getEdge(ids[0]);
             else {

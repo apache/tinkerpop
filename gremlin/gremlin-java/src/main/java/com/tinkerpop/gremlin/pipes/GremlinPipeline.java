@@ -50,6 +50,8 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     public <P extends GremlinPipeline> P V();
 
+    public <P extends GremlinPipeline> P v(final Object... ids);
+
     public default <P extends GremlinPipeline> P out(final String... labels) {
         return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).vertices().iterator()));
     }

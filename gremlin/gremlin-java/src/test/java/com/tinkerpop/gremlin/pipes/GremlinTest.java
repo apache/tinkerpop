@@ -41,7 +41,7 @@ public class GremlinTest {
 
         System.out.println("--------------");
 
-        new Gremlin<>(g.query().ids("1").vertices()).as("x").out()
+        Gremlin.of(g).v("1").as("x").out()
                 .loop("x", o -> ((Holder) o).getLoops() < 2, o -> false)
                 .path().sideEffect(System.out::println).iterate();
 
