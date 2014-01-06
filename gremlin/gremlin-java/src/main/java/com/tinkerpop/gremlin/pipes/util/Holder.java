@@ -65,8 +65,8 @@ public class Holder<T> implements Serializable {
         final Holder<T> holder = new Holder<>(this.t);
         holder.loops = this.loops;
         holder.path.add(this.path);
-        holder.path.names.remove(holder.path.names.size() - 1);
-        holder.path.names.add(name);
+        holder.path.asNames.remove(holder.path.asNames.size() - 1);
+        holder.path.asNames.add(name);
         return holder;
     }
 }

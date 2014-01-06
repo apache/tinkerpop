@@ -22,9 +22,9 @@ public class MapPipe<S, E> extends AbstractPipe<S, E> {
             final E temp = this.function.apply(holder);
             if (Pipe.NO_OBJECT != temp)
                 if (holder.get().equals(temp))
-                    return (Holder<E>) holder.makeSibling(this.getName()); // no path extension
+                    return (Holder<E>) holder.makeSibling(this.getAs()); // no path extension
                 else
-                    return holder.makeChild(this.getName(), temp);
+                    return holder.makeChild(this.getAs(), temp);
         }
     }
 }

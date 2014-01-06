@@ -33,18 +33,18 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
         this.pipelines = pipelines;
         for (final Pipeline p1 : this.pipelines) {
             final Pipe endPipe = PipelineHelper.getEnd(p1);
-            final String endPipeName = endPipe.getName();
+            final String endPipeName = endPipe.getAs();
             if (!endPipeName.equals(Pipe.NONE)) {
                 for (final Pipeline p2 : this.pipelines) {
                     final Pipe startPipe = PipelineHelper.getStart(p2);
-                    if (endPipe.getName().equals(startPipe.getName()))
+                    if (endPipe.getAs().equals(startPipe.getAs()))
                         startPipe.addStarts(endPipe);
                 }
             } else {
-                List<Pipeline> pipes = this.predicatePipelines.get(PipelineHelper.getStart(p1).getName());
+                List<Pipeline> pipes = this.predicatePipelines.get(PipelineHelper.getStart(p1).getAs());
                 if (null == pipes) {
                     pipes = new ArrayList<>();
-                    this.predicatePipelines.put(PipelineHelper.getStart(p1).getName(), pipes);
+                    this.predicatePipelines.put(PipelineHelper.getStart(p1).getAs(), pipes);
                 }
                 pipes.add(p1);
             }

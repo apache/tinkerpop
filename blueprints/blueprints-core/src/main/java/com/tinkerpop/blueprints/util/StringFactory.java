@@ -20,6 +20,7 @@ public class StringFactory {
     public static final String L_BRACKET = "[";
     public static final String R_BRACKET = "]";
     public static final String DASH = "-";
+    // public static final String COLON = ":";
     public static final String ARROW = "->";
     public static final String EMPTY_PROPERTY = "p[empty]";
 

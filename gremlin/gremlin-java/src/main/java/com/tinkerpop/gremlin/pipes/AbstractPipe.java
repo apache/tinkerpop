@@ -25,7 +25,7 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
         this.starts.add(starts);
     }
 
-    public void setName(final String name) {
+    public void setAs(final String name) {
         if (name.equals(Pipe.NONE))
             throw new IllegalArgumentException("The name 'none' is reserved to denote no name");
         if (!this.name.equals(Pipe.NONE))
@@ -33,7 +33,7 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
         this.name = name;
     }
 
-    public String getName() {
+    public String getAs() {
         return this.name;
     }
 

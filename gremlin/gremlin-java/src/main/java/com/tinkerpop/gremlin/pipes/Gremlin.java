@@ -63,13 +63,13 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
         return (P) this;
     }
 
-    public void setName(final String name) {
-        //this.pipes.get(0).setName(name);
+    public void setAs(final String name) {
+        //this.pipes.get(0).setAs(name);
     }
 
-    public String getName() {
+    public String getAs() {
         return "gremlin";
-        // return this.pipes.get(0).getName();
+        // return this.pipes.get(0).getAs();
     }
 
     public boolean hasNext() {

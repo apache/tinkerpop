@@ -13,14 +13,15 @@ import java.util.stream.Collectors;
  */
 public class Path {
 
-    protected ArrayList<String> names = new ArrayList<>();
+    protected ArrayList<String> asNames = new ArrayList<>();
     protected ArrayList<Object> objects = new ArrayList<>();
 
-    public Path(final Object... namesObjects) {
-        // TODO: modulo 2
-        for (int i = 0; i < namesObjects.length; i = i + 2) {
-            names.add((String) namesObjects[i]);
-            objects.add(namesObjects[i + 1]);
+    public Path(final Object... asObjects) {
+        if(asObjects.length % 2 != 0)
+          throw new IllegalArgumentException("The provided array must be a multiple of two");
+        for (int i = 0; i < asObjects.length; i = i + 2) {
+            this.asNames.add((String) asObjects[i]);
+            this.objects.add(asObjects[i + 1]);
         }
     }
 
@@ -29,26 +30,26 @@ public class Path {
         return this.objects.size();
     }
 
-    public void add(final String name, final Object object) {
-        this.names.add(name);
+    public void add(final String as, final Object object) {
+        this.asNames.add(as);
         this.objects.add(object);
     }
 
     public void add(final Path path) {
-        this.names.addAll(path.names);
+        this.asNames.addAll(path.asNames);
         this.objects.addAll(path.objects);
     }
 
-    public <T> T get(final String name) {
-        for (int i = 0; i < this.names.size(); i++) {
-            if (this.names.get(i).equals(name))
+    public <T> T get(final String asName) {
+        for (int i = 0; i < this.asNames.size(); i++) {
+            if (this.asNames.get(i).equals(asName))
                 return (T) this.objects.get(i);
         }
-        throw new IllegalArgumentException("The named step does not exist: " + name);
+        throw new IllegalArgumentException("The as-step does not exist: " + asName);
     }
 
-    public List<String> getNamedSteps() {
-        return this.names.stream().filter(s -> !s.equals(Pipe.NONE)).collect(Collectors.toList());
+    public List<String> getAsSteps() {
+        return this.asNames.stream().filter(s -> !s.equals(Pipe.NONE)).collect(Collectors.toList());
     }
 
     public boolean isSimple() {
@@ -57,7 +58,7 @@ public class Path {
 
     public void forEach(final BiConsumer<String, Object> consumer) {
         for (int i = 0; i < this.size(); i++) {
-            consumer.accept(this.names.get(i), this.objects.get(i));
+            consumer.accept(this.asNames.get(i), this.objects.get(i));
         }
     }
 

@@ -38,7 +38,7 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
 
     public Holder<T> next() {
         return null == this.head ?
-                new Holder<>(null == this.pipe ? Pipe.NONE : this.pipe.getName(), this.iterator.next()) :
-                this.head.makeChild(null == this.pipe ? Pipe.NONE : this.pipe.getName(), this.iterator.next());
+                new Holder<>(null == this.pipe ? Pipe.NONE : this.pipe.getAs(), this.iterator.next()) :
+                this.head.makeChild(null == this.pipe ? Pipe.NONE : this.pipe.getAs(), this.iterator.next());
     }
 }

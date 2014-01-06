@@ -17,9 +17,11 @@ public interface Pipe<S, E> extends Iterator<Holder<E>>, Serializable {
 
     public <P extends Pipeline> P getPipeline();
 
-    public String getName();
+    public String getAs();
 
-    public void setName(String name);
+    public void setAs(String as);
+
+    // public String getName();
 
     // TODO: public void reset();
 }

@@ -63,7 +63,12 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     }
 
     public default <P extends GremlinPipeline> P outE(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.<Vertex>get().query().direction(Direction.OUT).labels(labels).edges().iterator()));
+        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.<Vertex>get().query().direction(Direction.OUT).labels(labels).edges().iterator())
+        /*{
+            public String toString() {
+                return "FlatMapPipe[out," + Arrays.asList(labels) + "]";
+            }
+        }*/);
     }
 
     public default <P extends GremlinPipeline> P inE(final String... labels) {
@@ -118,7 +123,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         return this.addPipe(new MapPipe<Object, List>(this, h -> {
             final Path path = h.getPath();
             return names.length == 0 ?
-                    path.getNamedSteps().stream().map(s -> path.get(s)).collect(Collectors.toList()) :
+                    path.getAsSteps().stream().map(s -> path.get(s)).collect(Collectors.toList()) :
                     Stream.of(names).map(s -> path.get(s)).collect(Collectors.toList());
         }));
     }
@@ -205,7 +210,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         if (null != PipelineHelper.getAs(name, this))
             throw new IllegalStateException("The named pipe already exists");
         final List<Pipe> pipes = this.getPipes();
-        pipes.get(pipes.size() - 1).setName(name);
+        pipes.get(pipes.size() - 1).setAs(name);
         return (P) this;
 
     }
