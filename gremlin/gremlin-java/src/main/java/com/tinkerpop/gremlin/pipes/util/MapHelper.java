@@ -10,15 +10,11 @@ import java.util.Map;
 public class MapHelper {
 
     public static <T> void incr(final Map<T, Long> map, final T key, final Long value) {
-        Long temp = map.get(key);
-        temp = (null == temp) ? value : temp + value;
-        map.put(key, temp);
+        map.put(key, value + map.getOrDefault(key, 0l));
     }
 
     public static <T, U> void incr(final Map<T, List<U>> map, final T key, final U value) {
-        List<U> temp = map.get(key);
-        if (null == temp)
-            temp = new ArrayList<>();
+        final List<U> temp = map.getOrDefault(key, new ArrayList<>());
         temp.add(value);
         map.put(key, temp);
     }

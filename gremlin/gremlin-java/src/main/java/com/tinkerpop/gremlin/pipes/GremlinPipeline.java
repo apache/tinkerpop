@@ -187,8 +187,8 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default <P extends GremlinPipeline> P loop(final String name, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate) {
-        final Pipe loopStartPipe = PipelineHelper.getAs(name, getPipeline());
+    public default <P extends GremlinPipeline> P loop(final String as, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate) {
+        final Pipe loopStartPipe = PipelineHelper.getAs(as, getPipeline());
         return this.addPipe(new MapPipe<E, Object>(this, o -> {
             o.incrLoops();
             if (whilePredicate.test(o)) {
@@ -206,11 +206,11 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     ///////////////////// UTILITY STEPS /////////////////////
 
-    public default <P extends GremlinPipeline> P as(final String name) {
-        if (null != PipelineHelper.getAs(name, this))
+    public default <P extends GremlinPipeline> P as(final String as) {
+        if (null != PipelineHelper.getAs(as, this))
             throw new IllegalStateException("The named pipe already exists");
         final List<Pipe> pipes = this.getPipes();
-        pipes.get(pipes.size() - 1).setAs(name);
+        pipes.get(pipes.size() - 1).setAs(as);
         return (P) this;
 
     }
