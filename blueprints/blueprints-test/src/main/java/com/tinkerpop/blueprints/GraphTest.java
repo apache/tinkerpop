@@ -30,7 +30,7 @@ public class GraphTest extends AbstractBlueprintsTest {
      * All Blueprints implementations should be constructable through GraphFactory.
      */
     @Test
-    public void shouldOpenInMemoryGraphViaApacheConfig() {
+    public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() {
         final Graph expectedGraph = g;
         final Graph createdGraph = GraphFactory.open(config, Optional.<GraphStrategy>empty());
 
