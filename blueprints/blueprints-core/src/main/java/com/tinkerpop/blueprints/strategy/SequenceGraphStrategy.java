@@ -22,18 +22,8 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Object[]> getPreAddVertex() {
-        return this.composeStrategyUnaryOperator(s -> s.getPreAddVertex());
-    }
-
-    @Override
     public UnaryOperator<Function<Object[], Vertex>> getWrapAddVertex() {
         return this.composeStrategyUnaryOperator(s -> s.getWrapAddVertex());
-    }
-
-    @Override
-    public UnaryOperator<Vertex> getPostAddVertex() {
-        return this.composeStrategyUnaryOperator(s -> s.getPostAddVertex());
     }
 
     @Override

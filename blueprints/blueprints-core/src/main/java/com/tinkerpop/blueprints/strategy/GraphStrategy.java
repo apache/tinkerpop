@@ -12,15 +12,7 @@ import java.util.function.UnaryOperator;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphStrategy {
-    public default UnaryOperator<Object[]> getPreAddVertex() {
-        return UnaryOperator.identity();
-    }
-
     public default UnaryOperator<Function<Object[],Vertex>> getWrapAddVertex() {
-        return UnaryOperator.identity();
-    }
-
-    public default UnaryOperator<Vertex> getPostAddVertex() {
         return UnaryOperator.identity();
     }
 
