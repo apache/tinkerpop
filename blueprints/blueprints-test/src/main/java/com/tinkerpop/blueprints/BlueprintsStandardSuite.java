@@ -1,6 +1,6 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.strategy.PartitionStrategyTest;
+import com.tinkerpop.blueprints.strategy.PartitionGraphStrategyTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -37,7 +37,7 @@ public class BlueprintsStandardSuite extends AbstractBlueprintsSuite {
             GraphTest.class,
             GraphComputerTest.class,
             IoTest.class,
-            PartitionStrategyTest.class,
+            PartitionGraphStrategyTest.class,
             PropertyTest.class,
             VertexTest.class};
 

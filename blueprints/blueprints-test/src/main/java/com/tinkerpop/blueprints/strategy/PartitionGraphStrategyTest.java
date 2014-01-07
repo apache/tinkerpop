@@ -14,10 +14,10 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class PartitionStrategyTest extends AbstractBlueprintsTest {
+public class PartitionGraphStrategyTest extends AbstractBlueprintsTest {
     private static final String partition = Property.Key.hidden("partition");
 
-    public PartitionStrategyTest() {
+    public PartitionGraphStrategyTest() {
         super(Optional.of(new PartitionGraphStrategy(partition, "A")));
     }
 
