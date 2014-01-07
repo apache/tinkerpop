@@ -22,25 +22,33 @@ public class SequenceGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Object[]> getPreAddVertex() {
-        return this.graphStrategySequence.stream().map(s -> s.getPreAddVertex()).reduce(null,
-                (acc, next) -> acc == null ? next : toUnaryOp(acc.andThen(next)));
+        return this.computeStrategyFunction(s->s.getPreAddVertex());
     }
 
     @Override
     public UnaryOperator<Vertex> getPostAddVertex() {
-        return this.graphStrategySequence.stream().map(s -> s.getPostAddVertex()).reduce(null,
-                (acc, next) -> acc == null ? next : toUnaryOp(acc.andThen(next)));
+        return this.computeStrategyFunction(s->s.getPostAddVertex());
     }
 
     @Override
     public UnaryOperator<Triplet<String, Vertex, Object[]>> getPreAddEdge() {
-        return this.graphStrategySequence.stream().map(s -> s.getPreAddEdge()).reduce(null,
-                (acc, next) -> acc == null ? next : toUnaryOp(acc.andThen(next)));
+        return this.computeStrategyFunction(s->s.getPreAddEdge());
     }
 
     @Override
     public UnaryOperator<Edge> getPostAddEdge() {
-        return this.graphStrategySequence.stream().map(s -> s.getPostAddEdge()).reduce(null,
+        return this.computeStrategyFunction(s->s.getPostAddEdge());
+    }
+
+    /**
+     * Compute a new strategy function from the sequence of supplied {@link GraphStrategy} objects.
+     *
+     * @param f a {@link Function} that extracts a particular strategy implementation from a {@link GraphStrategy}
+     * @return a newly constructed {@link UnaryOperator} that applies each extracted strategy implementation in
+     *         the order supplied
+     */
+    private UnaryOperator computeStrategyFunction(final Function<GraphStrategy, UnaryOperator> f) {
+        return this.graphStrategySequence.stream().map(f).reduce(null,
                 (acc, next) -> acc == null ? next : toUnaryOp(acc.andThen(next)));
     }
 
