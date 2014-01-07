@@ -6,6 +6,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.pipes.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
 import com.tinkerpop.gremlin.pipes.util.Path;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -163,6 +165,23 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     public default <P extends GremlinPipeline> P dedup(final Function<Holder, Object> uniqueFunction) {
         final Set<Object> set = new LinkedHashSet<>();
         return this.addPipe(new FilterPipe<E>(this, o -> set.add(uniqueFunction.apply(o))));
+    }
+
+    public default <P extends GremlinPipeline> P range(final int low, final int high) {
+        if (low != -1 && high != -1 && low > high) {
+            throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + "]");
+        }
+        final AtomicInteger counter = new AtomicInteger(-1);
+        return this.addPipe(new FilterPipe<E>(this, o -> {
+            int newCounter = counter.incrementAndGet();
+            if ((low == -1 || newCounter >= low) && (high == -1 || newCounter <= high)) {
+                return true;
+            }
+            if (high != -1 && newCounter > high) {
+                throw FastNoSuchElementException.instance();
+            }
+            return true;
+        }));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
