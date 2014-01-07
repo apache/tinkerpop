@@ -11,18 +11,18 @@ import java.util.function.UnaryOperator;
  */
 public interface GraphStrategy {
     public default UnaryOperator<Object[]> getPreAddVertex() {
-        return (f) -> f;
+        return UnaryOperator.identity();
     }
 
     public default UnaryOperator<Vertex> getPostAddVertex() {
-        return (f) -> f;
+        return UnaryOperator.identity();
     }
 
     public default UnaryOperator<Triplet<String, Vertex, Object[]>> getPreAddEdge() {
-        return (f) -> f;
+        return UnaryOperator.identity();
     }
 
     public default UnaryOperator<Edge> getPostAddEdge() {
-        return (f) -> f;
+        return UnaryOperator.identity();
     }
 }
