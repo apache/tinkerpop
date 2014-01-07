@@ -4,22 +4,17 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import org.javatuples.Triplet;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphStrategy {
-    public default Function<Object[], Object[]> getPreAddVertex() {
+    public default UnaryOperator<Object[]> getPreAddVertex() {
         return (f) -> f;
     }
 
-    public default Function<Vertex, Vertex> getPostAddVertex() {
+    public default UnaryOperator<Vertex> getPostAddVertex() {
         return (f) -> f;
     }
 

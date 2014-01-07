@@ -6,7 +6,6 @@ import org.javatuples.Triplet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -20,15 +19,15 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public Function<Object[],Object[]> getPreAddVertex() {
+    public UnaryOperator<Object[]> getPreAddVertex() {
         return this.graphStrategySequence.stream().map(s -> s.getPreAddVertex()).reduce(null,
-                (acc, next) -> acc == null ? next : acc.andThen(next));
+                (acc, next) -> acc == null ? next : (UnaryOperator<Object[]>) acc.andThen(next));
     }
 
     @Override
-    public Function<Vertex,Vertex> getPostAddVertex() {
+    public UnaryOperator<Vertex> getPostAddVertex() {
         return this.graphStrategySequence.stream().map(s -> s.getPostAddVertex()).reduce(null,
-                (acc, next) -> acc == null ? next : acc.andThen(next));
+                (acc, next) -> acc == null ? next : (UnaryOperator<Vertex>) acc.andThen(next));
     }
 
     @Override
