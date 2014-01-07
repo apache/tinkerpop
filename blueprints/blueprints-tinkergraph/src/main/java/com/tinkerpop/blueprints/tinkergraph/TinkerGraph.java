@@ -77,7 +77,7 @@ public class TinkerGraph implements Graph, Serializable {
         return strategy.compose(s -> s.getAddVertexStrategy(), this::internalAddVertex).apply(keyValues);
     }
 
-    protected Vertex internalAddVertex(final Object... keyValues) {
+    private Vertex internalAddVertex(final Object... keyValues) {
         Objects.requireNonNull(keyValues);
         Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
         final String label = ElementHelper.getLabelValue(keyValues).orElse(null);
