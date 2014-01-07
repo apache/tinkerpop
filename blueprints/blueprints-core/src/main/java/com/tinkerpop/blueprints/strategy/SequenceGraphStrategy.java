@@ -7,6 +7,7 @@ import org.javatuples.Triplet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -22,22 +23,32 @@ public class SequenceGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Object[]> getPreAddVertex() {
-        return this.computeStrategyFunction(s->s.getPreAddVertex());
+        return this.computeStrategyUnaryOperator(s -> s.getPreAddVertex());
     }
 
     @Override
     public UnaryOperator<Vertex> getPostAddVertex() {
-        return this.computeStrategyFunction(s->s.getPostAddVertex());
+        return this.computeStrategyUnaryOperator(s -> s.getPostAddVertex());
     }
 
     @Override
     public UnaryOperator<Triplet<String, Vertex, Object[]>> getPreAddEdge() {
-        return this.computeStrategyFunction(s->s.getPreAddEdge());
+        return this.computeStrategyUnaryOperator(s -> s.getPreAddEdge());
     }
 
     @Override
     public UnaryOperator<Edge> getPostAddEdge() {
-        return this.computeStrategyFunction(s->s.getPostAddEdge());
+        return this.computeStrategyUnaryOperator(s -> s.getPostAddEdge());
+    }
+
+    @Override
+    public Consumer<Vertex> getPreRemoveVertex() {
+        return this.computeStrategyConsumer(s -> s.getPreRemoveVertex());
+    }
+
+    @Override
+    public Consumer<Vertex> getPostRemoveVertex() {
+        return this.computeStrategyConsumer(s -> s.getPostRemoveVertex());
     }
 
     /**
@@ -47,9 +58,14 @@ public class SequenceGraphStrategy implements GraphStrategy {
      * @return a newly constructed {@link UnaryOperator} that applies each extracted strategy implementation in
      *         the order supplied
      */
-    private UnaryOperator computeStrategyFunction(final Function<GraphStrategy, UnaryOperator> f) {
+    private UnaryOperator computeStrategyUnaryOperator(final Function<GraphStrategy, UnaryOperator> f) {
         return this.graphStrategySequence.stream().map(f).reduce(null,
                 (acc, next) -> acc == null ? next : toUnaryOp(acc.andThen(next)));
+    }
+
+    private Consumer computeStrategyConsumer(final Function<GraphStrategy, Consumer> f) {
+        return this.graphStrategySequence.stream().map(f).reduce(null,
+                (acc, next) -> acc == null ? next : acc.andThen(next));
     }
 
     /**

@@ -75,6 +75,8 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public void remove() {
+        this.graph.strategy().ifPresent(s->s.getPreRemoveVertex().accept(this));
+
         if (!graph.vertices.containsKey(this.id))
             throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.getId());
 
@@ -82,6 +84,8 @@ class TinkerVertex extends TinkerElement implements Vertex {
         this.properties.clear();
         graph.vertexIndex.removeElement(this);
         graph.vertices.remove(this.id);
+
+        this.graph.strategy().ifPresent(s->s.getPostRemoveVertex().accept(this));
     }
 
     public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {

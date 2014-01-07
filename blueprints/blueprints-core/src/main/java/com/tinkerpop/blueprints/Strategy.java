@@ -3,6 +3,7 @@ package com.tinkerpop.blueprints;
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -24,5 +25,9 @@ public interface Strategy {
      */
     public default <T> T ifPresent(final Function<GraphStrategy, T> f, final T defaultVal) {
         return get().isPresent() ? f.apply(get().get()) : defaultVal;
+    }
+
+    public default void ifPresent(final Consumer<GraphStrategy> f) {
+        get().ifPresent(f);
     }
 }
