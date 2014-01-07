@@ -9,7 +9,6 @@ import com.tinkerpop.blueprints.Transaction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
-import com.tinkerpop.blueprints.strategy.DefaultStrategy;
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
@@ -38,7 +37,7 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
-    protected final Strategy strategy = new DefaultStrategy();
+    protected final Strategy strategy = new Strategy.Simple();
 
     /**
      * All Graph implementations are to be constructed through the open() method and therefore Graph implementations

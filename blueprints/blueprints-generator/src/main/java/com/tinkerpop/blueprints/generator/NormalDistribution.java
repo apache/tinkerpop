@@ -17,7 +17,7 @@ public class NormalDistribution implements Distribution {
      *
      * Setting the standard deviation to 0 makes this a constant distribution.
      *
-     * @param stdDeviation Standard deviation of the distribution. Must be non-negative.
+     * @param stdDeviation Simple deviation of the distribution. Must be non-negative.
      */
     public NormalDistribution(final double stdDeviation) {
         this(stdDeviation,0.0);

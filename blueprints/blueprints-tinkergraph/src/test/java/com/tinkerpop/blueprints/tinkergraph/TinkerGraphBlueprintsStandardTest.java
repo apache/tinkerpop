@@ -11,7 +11,7 @@ import java.util.Map;
 
 
 /**
- * Executes the Standard Blueprints Test Suite using TinkerGraph.
+ * Executes the Simple Blueprints Test Suite using TinkerGraph.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

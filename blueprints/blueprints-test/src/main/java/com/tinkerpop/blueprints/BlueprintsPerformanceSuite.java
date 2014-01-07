@@ -9,7 +9,7 @@ import org.junit.runners.model.RunnerBuilder;
  * Graph implementations.  The BlueprintsPerformanceSuite runs more complex testing scenarios over Graph
  * implementations than the standard BlueprintsStandardSuite.
  * <p/>
- * To use the BlueprintsPerformanceSuite define a class in a test module.  Standard naming would expect the name of the
+ * To use the BlueprintsPerformanceSuite define a class in a test module.  Simple naming would expect the name of the
  * implementation followed by "BlueprintsPerformanceTest".  This class should be annotated as follows (note that
  * the "Suite" implements BlueprintsStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate
  * class file):

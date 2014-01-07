@@ -13,7 +13,7 @@ import org.junit.runners.model.RunnerBuilder;
  * Graph implementations.  The BlueprintsStandardSuite ensures consistency and validity of the implementations that they
  * test.
  * <p/>
- * To use the BlueprintSuite define a class in a test module.  Standard naming would expect the name of the
+ * To use the BlueprintSuite define a class in a test module.  Simple naming would expect the name of the
  * implementation followed by "BlueprintsStandardSuite".  This class should be annotated as follows (note that the "Suite"
  * implements BlueprintsStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
  * <code>

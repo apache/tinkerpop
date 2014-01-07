@@ -30,4 +30,49 @@ public interface Strategy {
     public default void ifPresent(final Consumer<GraphStrategy> f) {
         get().ifPresent(f);
     }
+
+    public static class Simple implements Strategy {
+        private Optional<GraphStrategy> strategy;
+
+        @Override
+        public void set(final Optional<GraphStrategy> strategy) {
+            this.strategy = strategy;
+        }
+
+        @Override
+        public Optional<GraphStrategy> get() {
+            return strategy;
+        }
+    }
+
+    public static class None implements Strategy {
+        @Override
+        public void set(final Optional<GraphStrategy> strategy) {
+            throw new UnsupportedOperationException("Strategy is not supported by this implementation");
+        }
+
+        @Override
+        public Optional<GraphStrategy> get() {
+            return Optional.empty();
+        }
+    }
+
+    public static class Local implements Strategy {
+        private ThreadLocal<Optional<GraphStrategy>> strategy = new ThreadLocal<Optional<GraphStrategy>>(){
+            @Override
+            protected Optional<GraphStrategy> initialValue() {
+                return Optional.empty();
+            }
+        };
+
+        @Override
+        public void set(final Optional<GraphStrategy> strategy) {
+            this.strategy.set(strategy);
+        }
+
+        @Override
+        public Optional<GraphStrategy> get() {
+            return this.strategy.get();
+        }
+    }
 }
