@@ -1,6 +1,8 @@
 package com.tinkerpop.blueprints.strategy;
 
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.TriFunction;
 import org.javatuples.Triplet;
 
 import java.util.ArrayList;
@@ -60,11 +62,11 @@ public class PartitionGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Triplet<String, Vertex, Object[]>> getPreAddEdge() {
-        return (t) -> {
-            final List<Object> o = new ArrayList<>(Arrays.asList(t.getValue2()));
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getWrapAddEdge() {
+        return (f) -> (label, v, args) -> {
+            final List<Object> o = new ArrayList<>(Arrays.asList(args));
             o.addAll(Arrays.asList(this.partitionKey, writePartition));
-            return Triplet.with(t.getValue0(), t.getValue1(), o.toArray());
+            return f.apply(label, v, o.toArray());
         };
     }
 }

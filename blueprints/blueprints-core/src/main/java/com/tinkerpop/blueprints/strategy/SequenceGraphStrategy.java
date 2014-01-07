@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.TriFunction;
 import org.javatuples.Triplet;
 
 import java.util.ArrayList;
@@ -27,13 +28,8 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Triplet<String, Vertex, Object[]>> getPreAddEdge() {
-        return this.composeStrategyUnaryOperator(s -> s.getPreAddEdge());
-    }
-
-    @Override
-    public UnaryOperator<Edge> getPostAddEdge() {
-        return this.composeStrategyUnaryOperator(s -> s.getPostAddEdge());
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getWrapAddEdge() {
+        return this.composeStrategyUnaryOperator(s -> s.getWrapAddEdge());
     }
 
     @Override

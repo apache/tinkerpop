@@ -2,7 +2,7 @@ package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import org.javatuples.Triplet;
+import com.tinkerpop.blueprints.util.TriFunction;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -16,11 +16,7 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
-    public default UnaryOperator<Triplet<String, Vertex, Object[]>> getPreAddEdge() {
-        return UnaryOperator.identity();
-    }
-
-    public default UnaryOperator<Edge> getPostAddEdge() {
+    public default UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getWrapAddEdge() {
         return UnaryOperator.identity();
     }
 

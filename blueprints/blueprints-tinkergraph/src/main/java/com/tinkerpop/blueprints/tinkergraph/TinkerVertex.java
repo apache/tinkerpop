@@ -65,13 +65,11 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        final Triplet<String, Vertex, Object[]> targs = Triplet.with(label, vertex, keyValues);
-        final Triplet<String, Vertex, Object[]> strategizedTargs = this.graph.strategy()
-                .ifPresent(s->s.getPreAddEdge().apply(targs), targs);
-        final Edge newEdge = TinkerHelper.addEdge(this.graph, this, (TinkerVertex) strategizedTargs.getValue1(),
-                strategizedTargs.getValue0(), strategizedTargs.getValue2());
+        return this.graph.strategy().ifPresent(s->s.getWrapAddEdge().apply(this::internalAddEdge), this::internalAddEdge).apply(label, vertex, keyValues);
+    }
 
-        return this.graph.strategy().ifPresent(s->s.getPostAddEdge().apply(newEdge), newEdge);
+    public Edge internalAddEdge(final String label, final Vertex vertex, final Object... keyValues) {
+        return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
     }
 
     public void remove() {
