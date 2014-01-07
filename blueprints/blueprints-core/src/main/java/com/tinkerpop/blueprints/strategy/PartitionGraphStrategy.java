@@ -54,8 +54,8 @@ public class PartitionGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Function<Object[], Vertex>> getWrapAddVertex() {
-        return (f) -> (args) -> {
-            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+        return (f) -> (keyValues) -> {
+            final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
             o.addAll(Arrays.asList(this.partitionKey, writePartition));
             return f.apply(o.toArray());
         };
@@ -63,8 +63,8 @@ public class PartitionGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getWrapAddEdge() {
-        return (f) -> (label, v, args) -> {
-            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+        return (f) -> (label, v, keyValues) -> {
+            final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
             o.addAll(Arrays.asList(this.partitionKey, writePartition));
             return f.apply(label, v, o.toArray());
         };

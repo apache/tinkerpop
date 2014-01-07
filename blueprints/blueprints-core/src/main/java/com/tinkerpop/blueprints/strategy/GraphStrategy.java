@@ -20,13 +20,7 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
-    public default Consumer<Vertex> getPreRemoveVertex() {
-        return GraphStrategy::noOpConsumer;
+    public default UnaryOperator<Consumer<Vertex>> getWrapRemoveVertex() {
+        return UnaryOperator.identity();
     }
-
-    public default Consumer<Vertex> getPostRemoveVertex() {
-        return GraphStrategy::noOpConsumer;
-    }
-
-    static <T> void noOpConsumer(final T arg) {}
 }

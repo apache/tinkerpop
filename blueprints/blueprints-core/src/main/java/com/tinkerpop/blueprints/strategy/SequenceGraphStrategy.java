@@ -33,13 +33,8 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public Consumer<Vertex> getPreRemoveVertex() {
-        return this.computeStrategyConsumer(s -> s.getPreRemoveVertex());
-    }
-
-    @Override
-    public Consumer<Vertex> getPostRemoveVertex() {
-        return this.computeStrategyConsumer(s -> s.getPostRemoveVertex());
+    public UnaryOperator<Consumer<Vertex>> getWrapRemoveVertex() {
+        return this.composeStrategyUnaryOperator(s -> s.getWrapRemoveVertex());
     }
 
     /**
@@ -52,11 +47,6 @@ public class SequenceGraphStrategy implements GraphStrategy {
     private UnaryOperator composeStrategyUnaryOperator(final Function<GraphStrategy, UnaryOperator> f) {
         return this.graphStrategySequence.stream().map(f).reduce(null,
                 (acc, next) -> acc == null ? next : toUnaryOp(acc.compose(next)));
-    }
-
-    private Consumer computeStrategyConsumer(final Function<GraphStrategy, Consumer> f) {
-        return this.graphStrategySequence.stream().map(f).reduce(null,
-                (acc, next) -> acc == null ? next : acc.andThen(next));
     }
 
     /**
