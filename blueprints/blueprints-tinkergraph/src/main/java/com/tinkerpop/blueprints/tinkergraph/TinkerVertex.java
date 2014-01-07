@@ -9,6 +9,7 @@ import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.VertexQuery;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
+import org.javatuples.Triplet;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,7 +65,11 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
+        final Triplet<String, Vertex, Object[]> targs = Triplet.with(label, vertex, keyValues);
+        final Triplet<String, Vertex, Object[]> strategizedTargs = this.graph.strategy()
+                .ifPresent(s->s.getPreAddEdge().apply(targs), targs);
+        return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) strategizedTargs.getValue1(),
+                strategizedTargs.getValue0(), strategizedTargs.getValue2());
     }
 
     public void remove() {

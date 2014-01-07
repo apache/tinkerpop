@@ -1,11 +1,13 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.Vertex;
+import org.javatuples.Triplet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -27,5 +29,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
     public Function<Vertex,Vertex> getPostAddVertex() {
         return this.graphStrategySequence.stream().map(s -> s.getPostAddVertex()).reduce(null,
                 (acc, next) -> acc == null ? next : acc.andThen(next));
+    }
+
+    @Override
+    public UnaryOperator<Triplet<String, Vertex, Object[]>> getPreAddEdge() {
+        return this.graphStrategySequence.stream().map(s -> s.getPreAddEdge()).reduce(null,
+                (acc, next) -> acc == null ? next : (UnaryOperator<Triplet<String, Vertex, Object[]>>) acc.andThen(next));
     }
 }
