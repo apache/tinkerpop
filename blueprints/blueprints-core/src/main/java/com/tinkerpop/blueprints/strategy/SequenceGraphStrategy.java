@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints.strategy;
 
+import com.tinkerpop.blueprints.Vertex;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +20,12 @@ public class SequenceGraphStrategy implements GraphStrategy {
     @Override
     public Function<Object[],Object[]> getPreAddVertex() {
         return this.graphStrategySequence.stream().map(s -> s.getPreAddVertex()).reduce(null,
+                (acc, next) -> acc == null ? next : acc.andThen(next));
+    }
+
+    @Override
+    public Function<Vertex,Vertex> getPostAddVertex() {
+        return this.graphStrategySequence.stream().map(s -> s.getPostAddVertex()).reduce(null,
                 (acc, next) -> acc == null ? next : acc.andThen(next));
     }
 }
