@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.strategy;
 
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import org.javatuples.Triplet;
 
@@ -34,5 +35,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
     public UnaryOperator<Triplet<String, Vertex, Object[]>> getPreAddEdge() {
         return this.graphStrategySequence.stream().map(s -> s.getPreAddEdge()).reduce(null,
                 (acc, next) -> acc == null ? next : (UnaryOperator<Triplet<String, Vertex, Object[]>>) acc.andThen(next));
+    }
+
+    @Override
+    public UnaryOperator<Edge> getPostAddEdge() {
+        return this.graphStrategySequence.stream().map(s -> s.getPostAddEdge()).reduce(null,
+                (acc, next) -> acc == null ? next : (UnaryOperator<Edge>) acc.andThen(next));
     }
 }
