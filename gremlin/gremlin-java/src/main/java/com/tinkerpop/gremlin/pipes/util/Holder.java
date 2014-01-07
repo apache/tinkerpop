@@ -9,6 +9,7 @@ import java.io.Serializable;
 public class Holder<T> implements Serializable {
 
     private T t;
+    private int pipeIndex = 0;
     private int loops = 0;
     private Path path = new Path();
 
@@ -40,6 +41,14 @@ public class Holder<T> implements Serializable {
 
     public void setPath(final Path path) {
         this.path = path;
+    }
+
+    public void setPipeIndex(final int index) {
+        this.pipeIndex = index;
+    }
+
+    public int getPipeIndex() {
+        return this.pipeIndex;
     }
 
     public String toString() {

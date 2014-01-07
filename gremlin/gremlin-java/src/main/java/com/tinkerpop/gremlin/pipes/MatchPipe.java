@@ -72,8 +72,8 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
 
     private List<Pipe> getAs(final String key) {
         return (List) Stream.of(this.pipelines)
+                .filter(p -> PipelineHelper.asExists(key, p))
                 .map(p -> PipelineHelper.getAs(key, p))
-                .filter(p -> null != p)
                 .collect(Collectors.toList());
     }
 

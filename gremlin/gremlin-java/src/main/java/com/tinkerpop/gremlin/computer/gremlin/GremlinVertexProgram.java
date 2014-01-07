@@ -149,7 +149,7 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     ////////// GRAPH COMPUTER METHODS
 
     public boolean terminate(final GraphMemory graphMemory) {
-        Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
+        final Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
         return !(graphMemory.getIteration() < gremlin.get().getPipes().size());
     }
 
