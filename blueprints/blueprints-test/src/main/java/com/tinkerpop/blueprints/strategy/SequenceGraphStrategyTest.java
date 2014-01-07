@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static org.junit.Assert.assertEquals;
@@ -26,11 +27,11 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
                 new PartitionGraphStrategy(partition, "A"),
                 new GraphStrategy() {
                     @Override
-                    public UnaryOperator<Object[]> getPreAddVertex() {
-                        return (args) -> {
+                    public UnaryOperator<Function<Object[], Vertex>> getWrapAddVertex() {
+                        return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working"));
-                            return o.toArray();
+                            return f.apply(o.toArray());
                         };
                     }
                 })));

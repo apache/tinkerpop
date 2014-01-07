@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Vertex;
 import org.javatuples.Triplet;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -12,6 +13,10 @@ import java.util.function.UnaryOperator;
  */
 public interface GraphStrategy {
     public default UnaryOperator<Object[]> getPreAddVertex() {
+        return UnaryOperator.identity();
+    }
+
+    public default UnaryOperator<Function<Object[],Vertex>> getWrapAddVertex() {
         return UnaryOperator.identity();
     }
 

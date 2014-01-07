@@ -76,11 +76,18 @@ public class TinkerGraph implements Graph, Serializable {
     public Vertex addVertex(final Object... keyValues) {
         // apply the PreAddVertex strategy if present. apply strategies prior to the parameter validation in case
         // the strategy does something good (or bad) to the keyValues that the implementation does not like.
-        final Object[] strategizedKeyValues = strategy.ifPresent(s->s.getPreAddVertex().apply(keyValues), keyValues);
+        //final Object[] strategizedKeyValues = strategy.ifPresent(s->s.getPreAddVertex().apply(keyValues), keyValues);
 
-        Objects.requireNonNull(strategizedKeyValues);
-        Object idString = ElementHelper.getIdValue(strategizedKeyValues).orElse(null);
-        final String label = ElementHelper.getLabelValue(strategizedKeyValues).orElse(null);
+        return strategy.ifPresent(s->s.getWrapAddVertex().apply(this::internalAddVertex), this::internalAddVertex).apply(keyValues);
+
+        // apply the PostAddVertex strategy if present
+        //return strategy.ifPresent(s->s.getPostAddVertex().apply(vertex), vertex);
+    }
+
+    protected Vertex internalAddVertex(final Object... keyValues) {
+        Objects.requireNonNull(keyValues);
+        Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
+        final String label = ElementHelper.getLabelValue(keyValues).orElse(null);
 
         if (null != idString) {
             if (this.vertices.containsKey(idString.toString()))
@@ -91,10 +98,8 @@ public class TinkerGraph implements Graph, Serializable {
 
         final Vertex vertex = new TinkerVertex(idString.toString(), null == label ? Property.Key.DEFAULT_LABEL.toString() : label, this);
         this.vertices.put(vertex.getId().toString(), vertex);
-        ElementHelper.attachKeyValues(vertex, strategizedKeyValues);
-
-        // apply the PostAddVertex strategy if present
-        return strategy.ifPresent(s->s.getPostAddVertex().apply(vertex), vertex);
+        ElementHelper.attachKeyValues(vertex, keyValues);
+        return vertex;
     }
 
     public GraphQuery query() {

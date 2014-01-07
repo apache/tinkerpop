@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -50,11 +51,11 @@ public class PartitionGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Object[]> getPreAddVertex() {
-        return (args) -> {
+    public UnaryOperator<Function<Object[], Vertex>> getWrapAddVertex() {
+        return (f) -> (args) -> {
             final List<Object> o = new ArrayList<>(Arrays.asList(args));
             o.addAll(Arrays.asList(this.partitionKey, writePartition));
-            return o.toArray();
+            return f.apply(o.toArray());
         };
     }
 
