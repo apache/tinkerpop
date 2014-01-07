@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.strategy;
 
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import org.javatuples.Triplet;
 
@@ -23,6 +24,10 @@ public interface GraphStrategy {
     }
 
     public default UnaryOperator<Triplet<String, Vertex, Object[]>> getPreAddEdge() {
+        return (f) -> f;
+    }
+
+    public default UnaryOperator<Edge> getPostAddEdge() {
         return (f) -> f;
     }
 }
