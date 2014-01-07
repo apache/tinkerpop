@@ -74,14 +74,7 @@ public class TinkerGraph implements Graph, Serializable {
     ////////////// BLUEPRINTS API METHODS //////////////////
 
     public Vertex addVertex(final Object... keyValues) {
-        // apply the PreAddVertex strategy if present. apply strategies prior to the parameter validation in case
-        // the strategy does something good (or bad) to the keyValues that the implementation does not like.
-        //final Object[] strategizedKeyValues = strategy.ifPresent(s->s.getPreAddVertex().apply(keyValues), keyValues);
-
         return strategy.ifPresent(s->s.getAddVertexStrategy().apply(this::internalAddVertex), this::internalAddVertex).apply(keyValues);
-
-        // apply the PostAddVertex strategy if present
-        //return strategy.ifPresent(s->s.getPostAddVertex().apply(vertex), vertex);
     }
 
     protected Vertex internalAddVertex(final Object... keyValues) {
