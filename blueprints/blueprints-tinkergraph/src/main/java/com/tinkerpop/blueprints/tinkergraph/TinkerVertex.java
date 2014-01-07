@@ -9,7 +9,6 @@ import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.VertexQuery;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
-import org.javatuples.Triplet;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +64,7 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        return this.graph.strategy().ifPresent(s->s.getWrapAddEdge().apply(this::internalAddEdge), this::internalAddEdge).apply(label, vertex, keyValues);
+        return this.graph.strategy().ifPresent(s->s.getAddEdgeStrategy().apply(this::internalAddEdge), this::internalAddEdge).apply(label, vertex, keyValues);
     }
 
     private Edge internalAddEdge(final String label, final Vertex vertex, final Object... keyValues) {
@@ -73,7 +72,7 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public void remove() {
-        this.graph.strategy().ifPresent(s->s.getWrapRemoveVertex().apply(this::internalRemove), this::internalRemove).accept(this);
+        this.graph.strategy().ifPresent(s->s.getRemoveVertexStrategy().apply(this::internalRemove), this::internalRemove).accept(this);
     }
 
     private void internalRemove(final Vertex toRemove) {

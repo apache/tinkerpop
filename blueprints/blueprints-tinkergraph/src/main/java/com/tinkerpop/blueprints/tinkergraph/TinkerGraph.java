@@ -78,7 +78,7 @@ public class TinkerGraph implements Graph, Serializable {
         // the strategy does something good (or bad) to the keyValues that the implementation does not like.
         //final Object[] strategizedKeyValues = strategy.ifPresent(s->s.getPreAddVertex().apply(keyValues), keyValues);
 
-        return strategy.ifPresent(s->s.getWrapAddVertex().apply(this::internalAddVertex), this::internalAddVertex).apply(keyValues);
+        return strategy.ifPresent(s->s.getAddVertexStrategy().apply(this::internalAddVertex), this::internalAddVertex).apply(keyValues);
 
         // apply the PostAddVertex strategy if present
         //return strategy.ifPresent(s->s.getPostAddVertex().apply(vertex), vertex);

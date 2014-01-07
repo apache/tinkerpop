@@ -13,17 +13,17 @@ import java.util.function.UnaryOperator;
  */
 public class ReadOnlyGraphStrategy implements GraphStrategy {
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getWrapAddVertex() {
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy() {
         return (f) -> (keyValues) -> { throw new UnsupportedOperationException("readonly"); };
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getWrapAddEdge() {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy() {
         return (f) -> (label, v, keyValues) -> { throw new UnsupportedOperationException("readonly"); };
     }
 
     @Override
-    public UnaryOperator<Consumer<Vertex>> getWrapRemoveVertex() {
+    public UnaryOperator<Consumer<Vertex>> getRemoveVertexStrategy() {
         return (f) -> (v) -> { throw new UnsupportedOperationException("readonly"); };
     }
 }

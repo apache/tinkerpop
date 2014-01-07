@@ -3,7 +3,6 @@ package com.tinkerpop.blueprints.strategy;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.TriFunction;
-import org.javatuples.Triplet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,18 +22,18 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getWrapAddVertex() {
-        return this.composeStrategyUnaryOperator(s -> s.getWrapAddVertex());
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy() {
+        return this.composeStrategyUnaryOperator(s -> s.getAddVertexStrategy());
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getWrapAddEdge() {
-        return this.composeStrategyUnaryOperator(s -> s.getWrapAddEdge());
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy() {
+        return this.composeStrategyUnaryOperator(s -> s.getAddEdgeStrategy());
     }
 
     @Override
-    public UnaryOperator<Consumer<Vertex>> getWrapRemoveVertex() {
-        return this.composeStrategyUnaryOperator(s -> s.getWrapRemoveVertex());
+    public UnaryOperator<Consumer<Vertex>> getRemoveVertexStrategy() {
+        return this.composeStrategyUnaryOperator(s -> s.getRemoveVertexStrategy());
     }
 
     /**

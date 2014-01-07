@@ -12,15 +12,15 @@ import java.util.function.UnaryOperator;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphStrategy {
-    public default UnaryOperator<Function<Object[],Vertex>> getWrapAddVertex() {
+    public default UnaryOperator<Function<Object[],Vertex>> getAddVertexStrategy() {
         return UnaryOperator.identity();
     }
 
-    public default UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getWrapAddEdge() {
+    public default UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy() {
         return UnaryOperator.identity();
     }
 
-    public default UnaryOperator<Consumer<Vertex>> getWrapRemoveVertex() {
+    public default UnaryOperator<Consumer<Vertex>> getRemoveVertexStrategy() {
         return UnaryOperator.identity();
     }
 }
