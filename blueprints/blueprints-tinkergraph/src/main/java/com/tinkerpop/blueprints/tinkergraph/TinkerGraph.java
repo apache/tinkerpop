@@ -74,7 +74,7 @@ public class TinkerGraph implements Graph, Serializable {
     ////////////// BLUEPRINTS API METHODS //////////////////
 
     public Vertex addVertex(final Object... keyValues) {
-        return strategy.ifPresent(s->s.getAddVertexStrategy().apply(this::internalAddVertex), this::internalAddVertex).apply(keyValues);
+        return strategy.compose(s -> s.getAddVertexStrategy(), this::internalAddVertex).apply(keyValues);
     }
 
     protected Vertex internalAddVertex(final Object... keyValues) {
