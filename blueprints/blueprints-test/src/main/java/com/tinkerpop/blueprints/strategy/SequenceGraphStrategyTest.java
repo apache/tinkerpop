@@ -6,7 +6,11 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -14,11 +18,22 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class PartitionGraphStrategyTest extends AbstractBlueprintsTest {
+public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
     private static final String partition = Property.Key.hidden("partition");
 
-    public PartitionGraphStrategyTest() {
-        super(Optional.of(new PartitionGraphStrategy(partition, "A")));
+    public SequenceGraphStrategyTest() {
+        super(Optional.of(new SequenceGraphStrategy(
+                new PartitionGraphStrategy(partition, "A"),
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Object[]> getPreAddVertex() {
+                        return (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.addAll(Arrays.asList("anonymous", "working"));
+                            return o.toArray();
+                        };
+                    }
+                })));
     }
 
     @Test
@@ -28,6 +43,7 @@ public class PartitionGraphStrategyTest extends AbstractBlueprintsTest {
         assertNotNull(v);
         assertEquals("thing", v.getProperty("any").getValue());
         assertEquals("A", v.getProperty(partition).getValue());
+        assertEquals("working", v.getProperty("anonymous").getValue());
     }
 
     @Test
