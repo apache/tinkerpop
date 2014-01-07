@@ -4,10 +4,12 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Transaction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
+import com.tinkerpop.blueprints.strategy.DefaultStrategy;
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
@@ -36,14 +38,14 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
-    protected Optional<GraphStrategy> strategy;
+    protected final Strategy strategy = new DefaultStrategy();
 
     /**
      * All Graph implementations are to be constructed through the open() method and therefore Graph implementations
      * should maintain a private or protected constructor.  This rule is enforced by the Blueprints Test suite.
      */
     private TinkerGraph(final Optional<GraphStrategy> strategy) {
-        this.strategy = strategy;
+        this.strategy.set(strategy);
     }
 
     /**
@@ -74,8 +76,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     public Vertex addVertex(final Object... keyValues) {
         // apply the PreAddVertex strategy if present
-        final Object[] strategizedKeyValues = strategy.isPresent() ?
-                strategy.get().getPreAddVertex().apply(keyValues) : keyValues;
+        final Object[] strategizedKeyValues = strategy.ifPresent(s->s.getPreAddVertex().apply(keyValues), keyValues);
 
         Objects.requireNonNull(strategizedKeyValues);
         Object idString = ElementHelper.getIdValue(strategizedKeyValues).orElse(null);
@@ -93,7 +94,7 @@ public class TinkerGraph implements Graph, Serializable {
         ElementHelper.attachKeyValues(vertex, strategizedKeyValues);
 
         // apply the PostAddVertex strategy if present
-        return strategy.isPresent() ? strategy.get().getPostAddVertex().apply(vertex) : vertex;
+        return strategy.ifPresent(s->s.getPostAddVertex().apply(vertex), vertex);
     }
 
     public GraphQuery query() {
@@ -102,6 +103,10 @@ public class TinkerGraph implements Graph, Serializable {
 
     public GraphComputer compute() {
         return new TinkerGraphComputer(this);
+    }
+
+    public Strategy strategy() {
+        return this.strategy;
     }
 
     public <V> void setAnnotation(final String key, final V value) {

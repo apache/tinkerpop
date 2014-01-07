@@ -29,6 +29,8 @@ public interface Graph extends AutoCloseable, Annotatable {
 
     public Transaction tx();
 
+    public Strategy strategy();
+
     public default Graph.Features getFeatures() {
         return new Features() {
         };
