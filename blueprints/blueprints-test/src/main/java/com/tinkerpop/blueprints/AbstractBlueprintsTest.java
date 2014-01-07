@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.strategy.Strategy;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -9,6 +10,7 @@ import org.junit.rules.TestName;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -22,14 +24,23 @@ import static org.junit.Assume.assumeThat;
 public abstract class AbstractBlueprintsTest {
     protected Graph g;
     protected Configuration config;
+    protected Optional<? extends Strategy> strategyToTest;
 
     @Rule
     public TestName name = new TestName();
 
+    public AbstractBlueprintsTest() {
+        this(Optional.empty());
+    }
+
+    public AbstractBlueprintsTest(final Optional<? extends Strategy> strategyToTest) {
+        this.strategyToTest = strategyToTest;
+    }
+
     @Before
     public void setup() throws Exception {
         config = BlueprintsStandardSuite.GraphManager.get().newGraphConfiguration();
-        g = BlueprintsStandardSuite.GraphManager.get().newTestGraph(config);
+        g = BlueprintsStandardSuite.GraphManager.get().newTestGraph(config, strategyToTest);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
         final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);

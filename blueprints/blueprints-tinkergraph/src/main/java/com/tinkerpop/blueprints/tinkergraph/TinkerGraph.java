@@ -1,6 +1,5 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
-
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -9,6 +8,7 @@ import com.tinkerpop.blueprints.Transaction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
+import com.tinkerpop.blueprints.strategy.Strategy;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
@@ -36,11 +36,14 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
+    protected Optional<Strategy> strategy;
+
     /**
      * All Graph implementations are to be constructed through the open() method and therefore Graph implementations
      * should maintain a private or protected constructor.  This rule is enforced by the Blueprints Test suite.
      */
-    private TinkerGraph() {
+    private TinkerGraph(final Optional<Strategy> strategy) {
+        this.strategy = strategy;
     }
 
     /**
@@ -49,23 +52,34 @@ public class TinkerGraph implements Graph, Serializable {
      * Blueprints test suite.
      */
     public static TinkerGraph open() {
-        return open(Optional.empty());
+        return open(Optional.empty(), Optional.empty());
+    }
+
+    /**
+     * This is an optional constructor for TinkerGraph.  It is not enforced by the Blueprints Test Suite.
+     */
+    public static TinkerGraph open(final Optional<Configuration> configuration) {
+        return open(configuration, Optional.empty());
     }
 
     /**
      * All graphs require that this method be overridden from the Graph interface.  It is enforced by the Blueprints
      * test suite.
      */
-    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
-        return (G) new TinkerGraph();
+    public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<Strategy> strategy) {
+        return (G) new TinkerGraph(strategy);
     }
 
     ////////////// BLUEPRINTS API METHODS //////////////////
 
     public Vertex addVertex(final Object... keyValues) {
-        Objects.requireNonNull(keyValues);
-        Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
-        String label = ElementHelper.getLabelValue(keyValues).orElse(null);
+        // apply the PreAddVertex strategy if present
+        final Object[] strategizedKeyValues = strategy.isPresent() ?
+                strategy.get().getPreAddVertex().apply(keyValues) : keyValues;
+
+        Objects.requireNonNull(strategizedKeyValues);
+        Object idString = ElementHelper.getIdValue(strategizedKeyValues).orElse(null);
+        final String label = ElementHelper.getLabelValue(strategizedKeyValues).orElse(null);
 
         if (null != idString) {
             if (this.vertices.containsKey(idString.toString()))
@@ -76,9 +90,10 @@ public class TinkerGraph implements Graph, Serializable {
 
         final Vertex vertex = new TinkerVertex(idString.toString(), null == label ? Property.Key.DEFAULT_LABEL.toString() : label, this);
         this.vertices.put(vertex.getId().toString(), vertex);
-        ElementHelper.attachKeyValues(vertex, keyValues);
-        return vertex;
+        ElementHelper.attachKeyValues(vertex, strategizedKeyValues);
 
+        // apply the PostAddVertex strategy if present
+        return strategy.isPresent() ? strategy.get().getPostAddVertex().apply(vertex) : vertex;
     }
 
     public GraphQuery query() {

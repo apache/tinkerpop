@@ -20,7 +20,7 @@ public class TinkerGraphTest {
 
     @Test
     public void testTinkerGraph() {
-        final TinkerGraph g = TinkerGraph.open(Optional.empty());
+        final TinkerGraph g = TinkerGraph.open();
         g.createIndex("name", Vertex.class);
         final Vertex marko = g.addVertex("name", "marko", "age", 33, "blah", "bloop");
         final Vertex stephen = g.addVertex("name", "stephen", "id", 12, "blah", "bloop");

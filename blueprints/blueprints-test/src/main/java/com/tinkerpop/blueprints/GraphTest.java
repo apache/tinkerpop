@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.util.GraphFactory;
+import com.tinkerpop.blueprints.strategy.Strategy;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -8,6 +9,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,7 +32,7 @@ public class GraphTest extends AbstractBlueprintsTest {
     @Test
     public void shouldOpenInMemoryGraphViaApacheConfig() {
         final Graph expectedGraph = g;
-        final Graph createdGraph = GraphFactory.open(config);
+        final Graph createdGraph = GraphFactory.open(config, Optional.<Strategy>empty());
 
         assertNotNull(createdGraph);
         assertEquals(expectedGraph.getClass(), createdGraph.getClass());

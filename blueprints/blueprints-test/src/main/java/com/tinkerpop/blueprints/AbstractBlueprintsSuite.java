@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.strategy.Strategy;
 import com.tinkerpop.blueprints.util.GraphFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -15,6 +16,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 
@@ -70,7 +72,14 @@ public abstract class AbstractBlueprintsSuite extends Suite {
          * Creates a new Graph instance from the Configuration object using GraphFactory.
          */
         default public Graph newTestGraph(final Configuration config) {
-            return GraphFactory.open(config);
+            return newTestGraph(config, Optional.empty());
+        }
+
+        /**
+         * Creates a new Graph instance from the Configuration object using GraphFactory.
+         */
+        default public Graph newTestGraph(final Configuration config, final Optional<? extends Strategy> strategy) {
+            return GraphFactory.open(config ,strategy);
         }
 
         /**

@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
+import com.tinkerpop.blueprints.strategy.Strategy;
 import com.tinkerpop.blueprints.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 
@@ -16,7 +17,7 @@ import java.util.Optional;
  */
 public interface Graph extends AutoCloseable, Annotatable {
 
-    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
+    public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<Strategy> strategy) {
         throw new UnsupportedOperationException("Implementations must override this method");
     }
 

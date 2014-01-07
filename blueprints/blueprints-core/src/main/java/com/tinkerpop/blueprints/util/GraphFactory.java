@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.strategy.Strategy;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.MapConfiguration;
@@ -22,9 +23,10 @@ public class GraphFactory {
      *
      * @param configuration A configuration object that specifies the minimally required properties for a Graph instance.
      *                      This minimum is determined by the Graph instance itself.
+     * @param strategy A {@link Strategy} to plug into the underlying {@link Graph} being constructed.
      * @return A Graph instance.
      */
-    public static Graph open(final Configuration configuration) {
+    public static Graph open(final Configuration configuration, final Optional<? extends Strategy> strategy) {
         if (null == configuration)
             throw new IllegalArgumentException("Configuration argument cannot be null");
 
@@ -43,7 +45,7 @@ public class GraphFactory {
         try {
             // will basically use Graph.open(Configuration c) to instantiate, but could technically use any method on
             // any class with the same signature.  that keeps things open for TitanFactory at the moment.
-            g = (Graph) graphClass.getMethod("open", Optional.class).invoke(null, Optional.of(configuration));
+            g = (Graph) graphClass.getMethod("open", Optional.class, Optional.class).invoke(null, Optional.of(configuration), strategy);
         } catch (final NoSuchMethodException e1) {
             throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument - [%s] does not seem to have one", clazz));
         } catch (final Exception e2) {
@@ -51,6 +53,10 @@ public class GraphFactory {
         }
 
         return g;
+    }
+
+    public static Graph open(final Configuration configuration) {
+        return open(configuration, Optional.empty());
     }
 
     /**
