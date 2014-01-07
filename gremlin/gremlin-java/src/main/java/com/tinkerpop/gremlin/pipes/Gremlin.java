@@ -15,7 +15,7 @@ import java.util.Objects;
  */
 public class Gremlin<S, E> implements GremlinPipeline<S, E> {
 
-    private final List<Pipe> pipes = new ArrayList<>();
+    private final List<Pipe<?, ?>> pipes = new ArrayList<>();
     private Graph graph = null;
 
     public Gremlin(final Graph graph) {
@@ -57,10 +57,10 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {
-        this.pipes.get(0).addStarts(starts);
+        ((Pipe<S, ?>) this.pipes.get(0)).addStarts(starts);
     }
 
-    public List<Pipe> getPipes() {
+    public List<Pipe<?, ?>> getPipes() {
         return this.pipes;
     }
 

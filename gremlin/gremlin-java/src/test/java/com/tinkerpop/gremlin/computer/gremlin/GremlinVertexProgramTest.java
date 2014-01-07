@@ -6,7 +6,6 @@ import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.pipes.util.Holder;
-import com.tinkerpop.gremlin.pipes.util.Path;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -29,7 +28,7 @@ public class GremlinVertexProgramTest {
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
                         //Gremlin.of().out("created").in("created").value("name").map(h -> ((String) ((Holder) h).get()).length()).filter(h -> ((Integer) ((Holder) h).get() > 4)).identity())
-                        Gremlin.of().identity().as("a").outE("created").inV().value("name").path().identity())
+                        Gremlin.of().identity().as("x").out().loop("x", o -> ((Holder)o).getLoops() < 2, o -> false))
                         .build())
                         .submit().get();
 
@@ -37,8 +36,8 @@ public class GremlinVertexProgramTest {
 
         System.out.println("gremlin> " + result.getGraphMemory().<Supplier>get("gremlinPipeline").get());
         StreamFactory.stream(g.query().vertices()).forEach(v -> {
-            result.getVertexMemory().getProperty(v, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(m -> ((HashMap<Object, List<Path>>) m).forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a))));
-            result.getVertexMemory().getProperty(v, GremlinVertexProgram.OBJECT_GREMLINS).ifPresent(m -> ((HashMap<Object, List<Path>>) m).forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a))));
+            result.getVertexMemory().getProperty(v, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(m -> ((HashMap<Object, List<Holder>>) m).forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a))));
+            result.getVertexMemory().getProperty(v, GremlinVertexProgram.OBJECT_GREMLINS).ifPresent(m -> ((HashMap<Object, List<Holder>>) m).forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a))));
         });
 
         /////////// FULL GRAPH LOOK

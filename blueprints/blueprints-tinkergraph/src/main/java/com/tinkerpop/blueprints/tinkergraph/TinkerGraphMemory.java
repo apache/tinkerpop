@@ -55,16 +55,28 @@ public class TinkerGraphMemory implements GraphSystemMemory {
         final Object value = this.memory.get(key);
         final long incremented = value == null ? delta : (Long) value + delta;
         this.memory.put(key, incremented);
-
         return incremented;
     }
 
     public long decrement(final String key, final long delta) {
         final Object value = this.memory.get(key);
-        final long incremented = value == null ? delta : (Long) value - delta;
-        this.memory.put(key, incremented);
+        final long decremented = value == null ? delta : (Long) value - delta;
+        this.memory.put(key, decremented);
+        return decremented;
+    }
 
-        return incremented;
+    public boolean and(final String key, final boolean bool) {
+        final boolean value = (Boolean) this.memory.getOrDefault(key, bool);
+        final boolean returnValue = value & bool;
+        this.memory.put(key, returnValue);
+        return returnValue;
+    }
+
+    public boolean or(final String key, final boolean bool) {
+        final boolean value = (Boolean) this.memory.getOrDefault(key, bool);
+        final boolean returnValue = value | bool;
+        this.memory.put(key, returnValue);
+        return returnValue;
     }
 
     public void setIfAbsent(final String key, final Object value) {

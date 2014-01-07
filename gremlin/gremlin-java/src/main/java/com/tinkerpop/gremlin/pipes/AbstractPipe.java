@@ -5,20 +5,22 @@ import com.tinkerpop.gremlin.pipes.util.Holder;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
 
-    protected String name = Pipe.NONE;
-    protected final Pipeline pipeline;
+    protected String as;
+    protected final Pipeline<?, ?> pipeline;
     protected ExpandablePipeIterator<Holder<S>> starts = new ExpandablePipeIterator<>();
     private Holder<E> nextEnd;
     private boolean available;
 
     public <P extends Pipeline> AbstractPipe(final P pipeline) {
         this.pipeline = pipeline;
+        this.as = "_" + (this.pipeline.getPipes().size());
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {
@@ -26,15 +28,11 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
     }
 
     public void setAs(final String name) {
-        if (name.equals(Pipe.NONE))
-            throw new IllegalArgumentException("The name 'none' is reserved to denote no name");
-        if (!this.name.equals(Pipe.NONE))
-            throw new IllegalStateException("Pipe has already been named " + this.name);
-        this.name = name;
+        this.as = name;
     }
 
     public String getAs() {
-        return this.name;
+        return this.as;
     }
 
     public Holder<E> next() {
@@ -61,7 +59,7 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
         }
     }
 
-    public <P extends Pipeline> P getPipeline() {
+    public <P extends Pipeline<?, ?>> P getPipeline() {
         return (P) this.pipeline;
     }
 

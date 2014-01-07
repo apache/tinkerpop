@@ -14,13 +14,14 @@ import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.pipes.Pipe;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
+import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 /**
@@ -32,6 +33,8 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
 
     private static final String GREMLIN_MESSAGE = "gremlinMessage";
     private static final String GREMLIN_PIPELINE = "gremlinPipeline";
+    private static final String VOTE_TO_HALT = "voteToHalt";
+
     public static final String GRAPH_GREMLINS = "graphGremlins";
     public static final String OBJECT_GREMLINS = "objectGremlins";
     private final Supplier<Gremlin> gremlin;
@@ -42,54 +45,69 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
 
     public void setup(final GraphMemory graphMemory) {
         graphMemory.setIfAbsent(GREMLIN_PIPELINE, this.gremlin);
+        graphMemory.setIfAbsent(VOTE_TO_HALT, true);
     }
 
     public void execute(final Vertex vertex, final Messenger<GremlinMessage> messenger, final GraphMemory graphMemory) {
 
         if (graphMemory.isInitialIteration()) {
-            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex, new Holder<>(Pipe.NONE, vertex)));
+            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(vertex, new Holder<>(((Pipe) this.gremlin.get().getPipes().get(0)).getAs(), vertex)));
+            graphMemory.and(VOTE_TO_HALT, false);
         } else {
             final Map<Object, List<Holder>> previousObjectCounters = vertex.<HashMap<Object, List<Holder>>>getProperty(OBJECT_GREMLINS).orElse(new HashMap<>());
             final Map<Object, List<Holder>> graphCounters = new HashMap<>();
             final Map<Object, List<Holder>> objectCounters = new HashMap<>();
-            final List<Object> starts = new ArrayList<>();
-            final Pipe pipe = getCurrentPipe(graphMemory);
+            //final Gremlin gremlin = graphMemory.<Supplier<Gremlin>>get(GREMLIN_PIPELINE).get();
 
             // RECEIVE MESSAGES
+            AtomicBoolean voteToHalt = new AtomicBoolean(true);
             messenger.receiveMessages(vertex, this.global).forEach(m -> {
                 if (m.destination.equals(GremlinMessage.Destination.VERTEX)) {
                     m.getHolder().set(vertex);
-                    starts.add(m.getHolder());
                     MapHelper.incr(graphCounters, vertex, m.getHolder());
-                } else if (m.destination.equals(GremlinMessage.Destination.EDGE)) {
+                    Optional<Pipe<?,?>> pipe = getCurrentPipe(graphMemory, m.getHolder());
+                    if (pipe.isPresent()) {
+                        pipe.get().addStarts(new SingleIterator(m.getHolder()));
+                        sendMessages(pipe.get(), vertex, messenger);
+                        voteToHalt.set(false);
+                    }
+                } /*else if (m.destination.equals(GremlinMessage.Destination.EDGE)) {
                     this.getEdge(vertex, m).ifPresent(edge -> {
                         m.getHolder().set(edge);
-                        starts.add(m.getHolder());
                         MapHelper.incr(graphCounters, edge, m.getHolder());
+                        Pipe<Edge, ?> pipe = getCurrentPipe(graphMemory, m.getHolder());
+                        pipe.addStarts(new SingleIterator<Holder<Edge>>(m.getHolder()));
+                        if (pipe.hasNext()) voteToHalt.set(false);
+                        sendMessages(pipe, vertex, messenger);
                     });
                 } else if (m.destination.equals(GremlinMessage.Destination.PROPERTY)) {
                     this.getProperty(vertex, m).ifPresent(property -> {
                         m.getHolder().set(property);
-                        starts.add(m.getHolder());
                         MapHelper.incr(graphCounters, property, m.getHolder());
+                        Pipe<Property, ?> pipe = getCurrentPipe(graphMemory, m.getHolder());
+                        pipe.addStarts(new SingleIterator<Holder<Property>>(m.getHolder()));
+                        if (pipe.hasNext()) voteToHalt.set(false);
+                        sendMessages(pipe, vertex, messenger);
                     });
                 } else {
                     throw new UnsupportedOperationException("The provided message can not be processed: " + m);
-                }
+                } */
+                //((List<Pipe>) gremlin.getPipes()).get(m.getHolder().getPipeIndex()).addStarts(new SingleIterator<>(m.getHolder()));
+                //System.out.println(((List<Pipe>) gremlin.getPipes()).get(m.getHolder().getPipeIndex()));
             });
             // process local object messages
-            previousObjectCounters.forEach((a, b) -> {
+            /*previousObjectCounters.forEach((a, b) -> {
                 b.forEach(holder -> {
-                    starts.add(holder);
+                    getCurrentPipe(graphMemory, holder).addStarts(new SingleIterator<>(holder));
                 });
-            });
+            });*/
 
 
             // EXECUTE PIPELINE WITH LOCAL STARTS AND SEND MESSAGES TO ENDS
-            starts.forEach(start -> {
-                pipe.addStarts(new SingleIterator<>(start));
-                pipe.forEachRemaining(h -> {
+            /*gremlin.getPipes().forEach(pipe -> {
+                ((Pipe) pipe).forEachRemaining(h -> {
                     final Holder holder = (Holder) h;
+                    holder.setPipeIndex(holder.getPipeIndex() + 1);
                     final Object end = holder.get();
                     // System.out.println(start + "-->" + end + " [" + counters.get(start) + "]");
                     if (end instanceof Element || end instanceof Property) {
@@ -100,21 +118,24 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
                                 MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertices(end)),
                                 GremlinMessage.of(end, holder));
                     } else {
-                        if (graphCounters.containsKey(((Holder) start).get()))
-                            MapHelper.incr(objectCounters, end, holder);
-                        else if (previousObjectCounters.containsKey(((Holder) start).get()))
-                            MapHelper.incr(objectCounters, end, holder);
-                        else
-                            throw new IllegalStateException("The provided start does not have a recorded history: " + start);
+                        //if (graphCounters.containsKey(((Holder) start).get()))
+                        //   MapHelper.incr(objectCounters, end, holder);
+                        //else if (previousObjectCounters.containsKey(((Holder) start).get()))
+                        // MapHelper.incr(objectCounters, end, holder);
+                        // else
+                        //    throw new IllegalStateException("The provided start does not have a recorded history: " + start);
                     }
                 });
-            });
+            });*/
 
             // UPDATE LOCAL STARTS WITH COUNTS
             if (graphCounters.size() > 0)
                 vertex.setProperty(GRAPH_GREMLINS, graphCounters);
-            if (objectCounters.size() > 0)
-                vertex.setProperty(OBJECT_GREMLINS, objectCounters);
+            /*if (objectCounters.size() > 0)
+                vertex.setProperty(OBJECT_GREMLINS, objectCounters);*/
+
+
+            graphMemory.and(VOTE_TO_HALT, voteToHalt.get());
         }
     }
 
@@ -140,17 +161,41 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
         }
     }
 
-    private Pipe getCurrentPipe(final GraphMemory graphMemory) {
+    private Optional<Pipe<?, ?>> getCurrentPipe(final GraphMemory graphMemory, final Holder holder) {
         final Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
-        return (Pipe) gremlin.get().getPipes().get(graphMemory.getIteration());
+        return holder.getPipe().equals("NONE") ? Optional.empty() : Optional.<Pipe<?, ?>>of(PipelineHelper.getAs(holder.getPipe(), gremlin.get()));
+    }
+
+    private void sendMessages(Pipe<?, ?> pipe, final Vertex vertex, final Messenger messenger) {
+        pipe.forEachRemaining(h -> {
+            final Object end = h.get();
+            // System.out.println(start + "-->" + end + " [" + counters.get(start) + "]");
+            if (end instanceof Element || end instanceof Property) {
+                // TODO: (OPTIMIZATION) IF THE ELEMENT IS ADJACENT USE LOCAL MESSAGE
+                // TODO: (OPTIMIZATION) IF THE ELEMENT IS INCIDENT USE OBJECT COUNTERS MAP
+                messenger.sendMessage(
+                        vertex,
+                        MessageType.Global.of(GREMLIN_MESSAGE, Messenger.getHostingVertices(end)),
+                        GremlinMessage.of(end, h));
+            }
+        });
     }
 
 
     ////////// GRAPH COMPUTER METHODS
 
     public boolean terminate(final GraphMemory graphMemory) {
-        final Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
-        return !(graphMemory.getIteration() < gremlin.get().getPipes().size());
+        //return graphMemory.get(VOTE_TO_HALT);
+        /*final Supplier<Gremlin> gremlin = graphMemory.get(GREMLIN_PIPELINE);
+        return !(graphMemory.getIteration() < gremlin.get().getPipes().size() + 1);*/
+        final boolean voteToHalt = graphMemory.get(VOTE_TO_HALT);
+        System.out.println(voteToHalt + "--" + graphMemory.getIteration());
+        if (voteToHalt)
+            return true;
+        else {
+            graphMemory.or(VOTE_TO_HALT, true);
+            return false;
+        }
     }
 
     public Map<String, KeyType> getComputeKeys() {
