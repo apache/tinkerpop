@@ -1,7 +1,7 @@
 package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.strategy.Strategy;
+import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.MapConfiguration;
@@ -23,10 +23,10 @@ public class GraphFactory {
      *
      * @param configuration A configuration object that specifies the minimally required properties for a Graph instance.
      *                      This minimum is determined by the Graph instance itself.
-     * @param strategy A {@link Strategy} to plug into the underlying {@link Graph} being constructed.
+     * @param strategy A {@link com.tinkerpop.blueprints.strategy.GraphStrategy} to plug into the underlying {@link Graph} being constructed.
      * @return A Graph instance.
      */
-    public static Graph open(final Configuration configuration, final Optional<? extends Strategy> strategy) {
+    public static Graph open(final Configuration configuration, final Optional<? extends GraphStrategy> strategy) {
         if (null == configuration)
             throw new IllegalArgumentException("Configuration argument cannot be null");
 

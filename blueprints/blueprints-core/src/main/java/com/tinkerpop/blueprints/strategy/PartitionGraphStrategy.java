@@ -11,13 +11,13 @@ import java.util.function.Function;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class PartitionStrategy implements Strategy {
+public class PartitionGraphStrategy implements GraphStrategy {
 
     private String writePartition;
     private final String partitionKey;
     private final Set<String> readPartitions = new HashSet<>();
 
-    public PartitionStrategy(final String partitionKey, final String partition) {
+    public PartitionGraphStrategy(final String partitionKey, final String partition) {
         this.writePartition = partition;
         this.partitionKey = partitionKey;
     }

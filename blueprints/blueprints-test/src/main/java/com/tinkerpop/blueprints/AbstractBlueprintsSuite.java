@@ -1,6 +1,6 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.strategy.Strategy;
+import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import com.tinkerpop.blueprints.util.GraphFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -78,7 +78,7 @@ public abstract class AbstractBlueprintsSuite extends Suite {
         /**
          * Creates a new Graph instance from the Configuration object using GraphFactory.
          */
-        default public Graph newTestGraph(final Configuration config, final Optional<? extends Strategy> strategy) {
+        default public Graph newTestGraph(final Configuration config, final Optional<? extends GraphStrategy> strategy) {
             return GraphFactory.open(config ,strategy);
         }
 

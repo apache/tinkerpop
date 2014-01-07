@@ -1,7 +1,7 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.util.GraphFactory;
-import com.tinkerpop.blueprints.strategy.Strategy;
+import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -32,7 +32,7 @@ public class GraphTest extends AbstractBlueprintsTest {
     @Test
     public void shouldOpenInMemoryGraphViaApacheConfig() {
         final Graph expectedGraph = g;
-        final Graph createdGraph = GraphFactory.open(config, Optional.<Strategy>empty());
+        final Graph createdGraph = GraphFactory.open(config, Optional.<GraphStrategy>empty());
 
         assertNotNull(createdGraph);
         assertEquals(expectedGraph.getClass(), createdGraph.getClass());
@@ -191,7 +191,7 @@ public class GraphTest extends AbstractBlueprintsTest {
         final List<Edge> edges = new ArrayList<>();
 
         IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Property.Key.ID, i)));
-        tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, 0));
+        tryCommit(g, graph -> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, 0));
 
         for (int i = 0; i < vertexCount; i = i + 2) {
             final Vertex a = vertices.get(i);
@@ -199,7 +199,7 @@ public class GraphTest extends AbstractBlueprintsTest {
             edges.add(a.addEdge(AbstractBlueprintsSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
         }
 
-        tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, vertexCount / 2));
+        tryCommit(g, graph -> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, vertexCount / 2));
 
         int counter = 0;
         for (Vertex v : vertices) {

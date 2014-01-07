@@ -8,16 +8,16 @@ import java.util.function.Function;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SequenceStrategy implements Strategy {
-    private final List<Strategy> strategySequence;
+public class SequenceGraphStrategy implements GraphStrategy {
+    private final List<GraphStrategy> graphStrategySequence;
 
-    public SequenceStrategy(final Strategy... strategies) {
-        this.strategySequence = new ArrayList<>(Arrays.asList(strategies));
+    public SequenceGraphStrategy(final GraphStrategy... strategies) {
+        this.graphStrategySequence = new ArrayList<>(Arrays.asList(strategies));
     }
 
     @Override
     public Function<Object[],Object[]> getPreAddVertex() {
-        return this.strategySequence.stream().map(s -> s.getPreAddVertex()).reduce(null,
+        return this.graphStrategySequence.stream().map(s -> s.getPreAddVertex()).reduce(null,
                 (acc, next) -> acc == null ? next : acc.andThen(next));
     }
 }

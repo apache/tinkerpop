@@ -1,16 +1,11 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.AbstractBlueprintsTest;
-import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -21,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
 public class PartitionStrategyTest extends AbstractBlueprintsTest {
 
     public PartitionStrategyTest() {
-        super(Optional.of(new PartitionStrategy(Property.Key.hidden("partition"), "A")));
+        super(Optional.of(new PartitionGraphStrategy(Property.Key.hidden("partition"), "A")));
     }
 
     @Test
@@ -34,7 +29,7 @@ public class PartitionStrategyTest extends AbstractBlueprintsTest {
         assertEquals("A", v.getProperty(partition).getValue());
 
         /*
-        final Strategy anonymousStrategy = new Strategy() {
+        final GraphStrategy anonymousStrategy = new GraphStrategy() {
             @Override
             public Function<Object[], Object[]> getPreAddVertex() {
                 return (args) -> {
@@ -45,7 +40,7 @@ public class PartitionStrategyTest extends AbstractBlueprintsTest {
             }
         };
 
-        final Strategy sequenceStrategy = new Strategy.SequenceStrategy(partitionStrategy, anonymousStrategy);
+        final GraphStrategy sequenceStrategy = new GraphStrategy.SequenceGraphStrategy(partitionStrategy, anonymousStrategy);
         final Graph sequencedGraph = new StrategyGraph(g, sequenceStrategy);
         final Vertex x = sequencedGraph.addVertex("some", "thing");
 

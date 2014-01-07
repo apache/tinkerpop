@@ -1,6 +1,6 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.strategy.Strategy;
+import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -24,7 +24,7 @@ import static org.junit.Assume.assumeThat;
 public abstract class AbstractBlueprintsTest {
     protected Graph g;
     protected Configuration config;
-    protected Optional<? extends Strategy> strategyToTest;
+    protected Optional<? extends GraphStrategy> strategyToTest;
 
     @Rule
     public TestName name = new TestName();
@@ -33,7 +33,7 @@ public abstract class AbstractBlueprintsTest {
         this(Optional.empty());
     }
 
-    public AbstractBlueprintsTest(final Optional<? extends Strategy> strategyToTest) {
+    public AbstractBlueprintsTest(final Optional<? extends GraphStrategy> strategyToTest) {
         this.strategyToTest = strategyToTest;
     }
 

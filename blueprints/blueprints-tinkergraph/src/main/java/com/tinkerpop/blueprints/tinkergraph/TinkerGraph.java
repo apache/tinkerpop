@@ -8,7 +8,7 @@ import com.tinkerpop.blueprints.Transaction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
-import com.tinkerpop.blueprints.strategy.Strategy;
+import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
@@ -36,13 +36,13 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
-    protected Optional<Strategy> strategy;
+    protected Optional<GraphStrategy> strategy;
 
     /**
      * All Graph implementations are to be constructed through the open() method and therefore Graph implementations
      * should maintain a private or protected constructor.  This rule is enforced by the Blueprints Test suite.
      */
-    private TinkerGraph(final Optional<Strategy> strategy) {
+    private TinkerGraph(final Optional<GraphStrategy> strategy) {
         this.strategy = strategy;
     }
 
@@ -66,7 +66,7 @@ public class TinkerGraph implements Graph, Serializable {
      * All graphs require that this method be overridden from the Graph interface.  It is enforced by the Blueprints
      * test suite.
      */
-    public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<Strategy> strategy) {
+    public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<GraphStrategy> strategy) {
         return (G) new TinkerGraph(strategy);
     }
 

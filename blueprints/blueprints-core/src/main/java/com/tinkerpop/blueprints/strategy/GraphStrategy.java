@@ -5,12 +5,13 @@ import com.tinkerpop.blueprints.Vertex;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Strategy {
+public interface GraphStrategy {
     public default Function<Object[], Object[]> getPreAddVertex() {
         return (f) -> f;
     }
