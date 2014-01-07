@@ -10,8 +10,8 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Strategy {
-    public void set(final Optional<GraphStrategy> strategy);
-    public Optional<GraphStrategy> get();
+    public void set(final Optional<? extends GraphStrategy> strategy);
+    public Optional<? extends GraphStrategy> get();
 
     /**
      * A variation on {@link Optional#ifPresent(java.util.function.Consumer)} where the argument is a
@@ -32,22 +32,22 @@ public interface Strategy {
     }
 
     public static class Simple implements Strategy {
-        private Optional<GraphStrategy> strategy;
+        private Optional<? extends GraphStrategy> strategy;
 
         @Override
-        public void set(final Optional<GraphStrategy> strategy) {
+        public void set(final Optional<? extends GraphStrategy> strategy) {
             this.strategy = strategy;
         }
 
         @Override
-        public Optional<GraphStrategy> get() {
+        public Optional<? extends GraphStrategy> get() {
             return strategy;
         }
     }
 
     public static class None implements Strategy {
         @Override
-        public void set(final Optional<GraphStrategy> strategy) {
+        public void set(final Optional<? extends GraphStrategy> strategy) {
             throw new UnsupportedOperationException("Strategy is not supported by this implementation");
         }
 
@@ -58,7 +58,7 @@ public interface Strategy {
     }
 
     public static class Local implements Strategy {
-        private ThreadLocal<Optional<GraphStrategy>> strategy = new ThreadLocal<Optional<GraphStrategy>>(){
+        private ThreadLocal<Optional<? extends GraphStrategy>> strategy = new ThreadLocal<Optional<? extends GraphStrategy>>(){
             @Override
             protected Optional<GraphStrategy> initialValue() {
                 return Optional.empty();
@@ -66,12 +66,12 @@ public interface Strategy {
         };
 
         @Override
-        public void set(final Optional<GraphStrategy> strategy) {
+        public void set(final Optional<? extends GraphStrategy> strategy) {
             this.strategy.set(strategy);
         }
 
         @Override
-        public Optional<GraphStrategy> get() {
+        public Optional<? extends GraphStrategy> get() {
             return this.strategy.get();
         }
     }

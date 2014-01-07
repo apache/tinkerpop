@@ -23,27 +23,27 @@ public class SequenceGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Object[]> getPreAddVertex() {
-        return this.computeStrategyUnaryOperator(s -> s.getPreAddVertex());
+        return this.composeStrategyUnaryOperator(s -> s.getPreAddVertex());
     }
 
     @Override
     public UnaryOperator<Function<Object[], Vertex>> getWrapAddVertex() {
-        return this.computeStrategyUnaryOperator(s -> s.getWrapAddVertex());
+        return this.composeStrategyUnaryOperator(s -> s.getWrapAddVertex());
     }
 
     @Override
     public UnaryOperator<Vertex> getPostAddVertex() {
-        return this.computeStrategyUnaryOperator(s -> s.getPostAddVertex());
+        return this.composeStrategyUnaryOperator(s -> s.getPostAddVertex());
     }
 
     @Override
     public UnaryOperator<Triplet<String, Vertex, Object[]>> getPreAddEdge() {
-        return this.computeStrategyUnaryOperator(s -> s.getPreAddEdge());
+        return this.composeStrategyUnaryOperator(s -> s.getPreAddEdge());
     }
 
     @Override
     public UnaryOperator<Edge> getPostAddEdge() {
-        return this.computeStrategyUnaryOperator(s -> s.getPostAddEdge());
+        return this.composeStrategyUnaryOperator(s -> s.getPostAddEdge());
     }
 
     @Override
@@ -63,9 +63,9 @@ public class SequenceGraphStrategy implements GraphStrategy {
      * @return a newly constructed {@link UnaryOperator} that applies each extracted strategy implementation in
      *         the order supplied
      */
-    private UnaryOperator computeStrategyUnaryOperator(final Function<GraphStrategy, UnaryOperator> f) {
+    private UnaryOperator composeStrategyUnaryOperator(final Function<GraphStrategy, UnaryOperator> f) {
         return this.graphStrategySequence.stream().map(f).reduce(null,
-                (acc, next) -> acc == null ? next : toUnaryOp(acc.andThen(next)));
+                (acc, next) -> acc == null ? next : toUnaryOp(acc.compose(next)));
     }
 
     private Consumer computeStrategyConsumer(final Function<GraphStrategy, Consumer> f) {
