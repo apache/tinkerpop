@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.pipes.util.Holder;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,7 +19,7 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
 
     public <P extends Pipeline> AbstractPipe(final P pipeline) {
         this.pipeline = pipeline;
-        this.as = "_" + (this.pipeline.getPipes().size());
+        this.as = "_" + this.pipeline.getPipes().size();
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {

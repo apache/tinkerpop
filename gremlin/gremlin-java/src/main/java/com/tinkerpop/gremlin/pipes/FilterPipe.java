@@ -19,10 +19,10 @@ public class FilterPipe<S> extends AbstractPipe<S, S> {
 
     public Holder<S> processNextStart() {
         while (true) {
-            final Holder<S> h = this.starts.next();
-            if (this.predicate.test(h)) {
-                h.setPipe(PipelineHelper.getNextPipeLabel(this.pipeline, this).orElse("NONE"));
-                return h;
+            final Holder<S> holder = this.starts.next();
+            if (this.predicate.test(holder)) {
+                holder.setFuture(PipelineHelper.getNextPipeLabel(this.pipeline, this));
+                return holder;
             }
         }
     }

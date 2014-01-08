@@ -26,7 +26,7 @@ public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
         while (true) {
             final Holder<E> holder = this.getNext();
             if (null != holder) {
-                holder.setPipe(PipelineHelper.getNextPipeLabel(this.pipeline, this).orElse("NONE"));
+                holder.setFuture(PipelineHelper.getNextPipeLabel(this.pipeline, this));
                 return holder;
             }
         }

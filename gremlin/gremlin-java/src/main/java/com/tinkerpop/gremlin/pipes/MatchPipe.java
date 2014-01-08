@@ -34,7 +34,7 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
         for (final Pipeline p1 : this.pipelines) {
             final Pipe endPipe = PipelineHelper.getEnd(p1);
             final String endPipeName = endPipe.getAs();
-            if (!endPipeName.equals(Pipe.NONE)) {
+            if (!endPipeName.equals(Holder.NONE)) {
                 for (final Pipeline p2 : this.pipelines) {
                     final Pipe startPipe = PipelineHelper.getStart(p2);
                     if (endPipe.getAs().equals(startPipe.getAs()))

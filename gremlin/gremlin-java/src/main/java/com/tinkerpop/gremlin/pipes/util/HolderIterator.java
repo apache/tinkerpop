@@ -14,12 +14,6 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
     private final Iterator<T> iterator;
     private final Pipe pipe;
 
-    public <P extends Pipeline> HolderIterator(final Iterator<T> iterator) {
-        this.iterator = iterator;
-        this.head = null;
-        this.pipe = null;
-    }
-
     public <P extends Pipeline> HolderIterator(final Pipe pipe, final Iterator<T> iterator) {
         this.iterator = iterator;
         this.head = null;
@@ -38,7 +32,7 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
 
     public Holder<T> next() {
         return null == this.head ?
-                new Holder<>(null == this.pipe ? Pipe.NONE : this.pipe.getAs(), this.iterator.next()) :
-                this.head.makeChild(null == this.pipe ? Pipe.NONE : this.pipe.getAs(), this.iterator.next());
+                new Holder<>(this.pipe.getAs(), this.iterator.next()) :
+                this.head.makeChild(this.pipe.getAs(), this.iterator.next());
     }
 }

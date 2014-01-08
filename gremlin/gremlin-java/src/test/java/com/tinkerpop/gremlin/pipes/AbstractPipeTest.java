@@ -1,21 +1,13 @@
 package com.tinkerpop.gremlin.pipes;
 
-import com.tinkerpop.gremlin.pipes.util.HolderIterator;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AbstractPipeTest {
 
-    @Ignore
+    /*@Ignore
     public void testExpansion() {
         Pipe filter = new FilterPipe<Object>(null, s -> true);
         assertFalse(filter.hasNext());
@@ -57,6 +49,11 @@ public class AbstractPipeTest {
         }
         assertEquals(3, counter);
         assertFalse(filter2.hasNext());
+
+    }*/
+
+    @Test
+    public void testTrue() {
 
     }
 }

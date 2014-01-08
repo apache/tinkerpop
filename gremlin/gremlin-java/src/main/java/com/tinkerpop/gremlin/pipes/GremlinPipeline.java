@@ -213,7 +213,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         return this.addPipe(new MapPipe<E, Object>(this, h -> {
             h.incrLoops();
             if (whilePredicate.test(h)) {
-                h.setPipe(as);
+                h.setFuture(as);
                 loopStartPipe.addStarts((Iterator)new SingleIterator<>(h));
                 return emitPredicate.test(h) ? h.get() : NO_OBJECT;
             } else {

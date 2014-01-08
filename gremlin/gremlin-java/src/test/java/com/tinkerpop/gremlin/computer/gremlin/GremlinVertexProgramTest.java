@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -27,8 +26,8 @@ public class GremlinVertexProgramTest {
         Graph g = TinkerFactory.createClassic();
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
-                        //Gremlin.of().out("created").in("created").value("name").map(h -> ((String) ((Holder) h).get()).length()).filter(h -> ((Integer) ((Holder) h).get() > 4)).identity())
-                        Gremlin.of().identity().as("x").out().loop("x", o -> ((Holder)o).getLoops() < 2, o -> false))
+                        //Gremlin.of().out("created").in("created").property("name"))
+                        Gremlin.of().as("x").out().loop("x", o -> ((Holder) o).getLoops() < 2, o -> false).value("name").path())
                         .build())
                         .submit().get();
 
@@ -36,8 +35,9 @@ public class GremlinVertexProgramTest {
 
         System.out.println("gremlin> " + result.getGraphMemory().<Supplier>get("gremlinPipeline").get());
         StreamFactory.stream(g.query().vertices()).forEach(v -> {
-            result.getVertexMemory().getProperty(v, GremlinVertexProgram.GRAPH_GREMLINS).ifPresent(m -> ((HashMap<Object, List<Holder>>) m).forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a))));
-            result.getVertexMemory().getProperty(v, GremlinVertexProgram.OBJECT_GREMLINS).ifPresent(m -> ((HashMap<Object, List<Holder>>) m).forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a))));
+            final GremlinTracker tracker = result.getVertexMemory().<GremlinTracker>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).getValue();
+            tracker.getDoneGraphHolders().forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a)));
+            tracker.getDoneObjectHolders().forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a)));
         });
 
         /////////// FULL GRAPH LOOK
