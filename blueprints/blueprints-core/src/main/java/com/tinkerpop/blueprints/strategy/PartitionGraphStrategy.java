@@ -1,8 +1,10 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.util.TriFunction;
 import org.javatuples.Triplet;
 
@@ -13,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
@@ -54,7 +57,7 @@ public class PartitionGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<Graph> ctx) {
         return (f) -> (keyValues) -> {
             final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
             o.addAll(Arrays.asList(this.partitionKey, writePartition));
@@ -63,11 +66,20 @@ public class PartitionGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context ctx) {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<Vertex> ctx) {
         return (f) -> (label, v, keyValues) -> {
             final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
             o.addAll(Arrays.asList(this.partitionKey, writePartition));
             return f.apply(label, v, o.toArray());
         };
     }
+
+    /*
+    @Override
+    public UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(final Strategy.Context<GraphQuery> ctx) {
+        return (f) -> () -> {
+
+        }
+    }
+    */
 }

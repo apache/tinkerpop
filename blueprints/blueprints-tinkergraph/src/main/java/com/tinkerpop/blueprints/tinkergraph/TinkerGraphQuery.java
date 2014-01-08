@@ -40,6 +40,16 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
                 .collect(Collectors.<Vertex>toList());
     }
 
+    private Iterable<Vertex> internalVertices() {
+        final HasContainer indexedContainer = getIndexKey(Vertex.class);
+        return ((null == indexedContainer) ?
+                this.graph.vertices.values().parallelStream() :
+                this.graph.vertexIndex.get(indexedContainer.key, indexedContainer.value).parallelStream())
+                .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers))
+                .limit(this.limit)
+                .collect(Collectors.<Vertex>toList());
+    }
+
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
         final Set<String> indexedKeys = this.graph.getIndexedKeys(indexedClass);
         return this.hasContainers.stream()

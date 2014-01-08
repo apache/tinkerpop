@@ -1,8 +1,10 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.util.TriFunction;
 
 import java.util.ArrayList;
@@ -24,18 +26,23 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<Graph> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getAddVertexStrategy(ctx));
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context ctx) {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<Vertex> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getAddEdgeStrategy(ctx));
     }
 
     @Override
-    public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context ctx) {
+    public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<Vertex> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getRemoveVertexStrategy(ctx));
+    }
+
+    @Override
+    public UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(Strategy.Context<GraphQuery> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getGraphQueryVerticesStrategy(ctx));
     }
 
     /**
