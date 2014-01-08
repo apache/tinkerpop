@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.pipes.util;
 
-import com.tinkerpop.gremlin.pipes.Pipe;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,14 +15,13 @@ public class Path {
     protected ArrayList<Object> objects = new ArrayList<>();
 
     public Path(final Object... asObjects) {
-        if(asObjects.length % 2 != 0)
-          throw new IllegalArgumentException("The provided array must be a multiple of two");
+        if (asObjects.length % 2 != 0)
+            throw new IllegalArgumentException("The provided array must be a multiple of two");
         for (int i = 0; i < asObjects.length; i = i + 2) {
             this.asNames.add((String) asObjects[i]);
             this.objects.add(asObjects[i + 1]);
         }
     }
-
 
     public int size() {
         return this.objects.size();
@@ -40,16 +37,16 @@ public class Path {
         this.objects.addAll(path.objects);
     }
 
-    public <T> T get(final String asName) {
+    public <T> T get(final String as) {
         for (int i = 0; i < this.asNames.size(); i++) {
-            if (this.asNames.get(i).equals(asName))
+            if (this.asNames.get(i).equals(as))
                 return (T) this.objects.get(i);
         }
-        throw new IllegalArgumentException("The as-step does not exist: " + asName);
+        throw new IllegalArgumentException("The as-step does not exist: " + as);
     }
 
     public List<String> getAsSteps() {
-        return this.asNames.stream().filter(s -> !s.equals(Pipe.NONE)).collect(Collectors.toList());
+        return this.asNames.stream().collect(Collectors.toList());
     }
 
     public boolean isSimple() {
@@ -61,8 +58,6 @@ public class Path {
             consumer.accept(this.asNames.get(i), this.objects.get(i));
         }
     }
-
-    // TODO: iterator() -> Iterator<Pair<String,Object>
 
     public String toString() {
         return this.objects.toString();

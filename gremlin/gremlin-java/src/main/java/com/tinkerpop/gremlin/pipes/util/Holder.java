@@ -8,20 +8,16 @@ import java.io.Serializable;
  */
 public class Holder<T> implements Serializable {
 
+    public static final String NONE = "none";
+
     private T t;
-    private String pipeAs = "";
     private int loops = 0;
     private Path path = new Path();
+    private String future = NONE;
 
     public Holder(final String as, final T t) {
         this.t = t;
         this.path.add(as, t);
-        this.pipeAs = as;
-    }
-
-    public Holder(final T t, final Path path) {
-        this.t = t;
-        this.path = path;
     }
 
     private Holder(final T t) {
@@ -32,7 +28,7 @@ public class Holder<T> implements Serializable {
         return this.t;
     }
 
-    public void set(T t) {
+    public void set(final T t) {
         this.t = t;
     }
 
@@ -44,16 +40,16 @@ public class Holder<T> implements Serializable {
         this.path = path;
     }
 
-    public void setPipe(final String as) {
-        this.pipeAs = as;
+    public boolean isDone() {
+        return this.future.equals(NONE);
     }
 
-    public String getPipe() {
-        return this.pipeAs;
+    public String getFuture() {
+        return this.future;
     }
 
-    public String toString() {
-        return t.toString();
+    public void setFuture(final String as) {
+        this.future = as;
     }
 
     public int getLoops() {
@@ -69,7 +65,7 @@ public class Holder<T> implements Serializable {
         holder.loops = this.loops;
         holder.path.add(this.path);
         holder.path.add(as, r);
-        holder.pipeAs = this.pipeAs;
+        holder.future = this.future;
         return holder;
     }
 
@@ -77,7 +73,7 @@ public class Holder<T> implements Serializable {
         final Holder<T> holder = new Holder<>(this.t);
         holder.loops = this.loops;
         holder.path.add(this.path);
-        holder.pipeAs = this.pipeAs;
+        holder.future = this.future;
         return holder;
     }
 
@@ -87,7 +83,11 @@ public class Holder<T> implements Serializable {
         holder.path.add(this.path);
         holder.path.asNames.remove(holder.path.asNames.size() - 1);
         holder.path.asNames.add(as);
-        holder.pipeAs = this.pipeAs;
+        holder.future = this.future;
         return holder;
+    }
+
+    public String toString() {
+        return t.toString();
     }
 }

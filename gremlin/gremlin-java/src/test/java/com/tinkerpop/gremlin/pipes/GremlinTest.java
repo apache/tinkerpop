@@ -124,14 +124,14 @@ public class GremlinTest {
                 .simplePath().path().sideEffect(System.out::println).iterate();
     }
 
-    @Test
+    /*@Test
     public void testMultiStarts() {
         Graph graph = TinkerFactory.createClassic();
         Gremlin g = (Gremlin) Gremlin.of().has("name", "lop");
         assertFalse(g.hasNext());
         g.addStarts(new HolderIterator(graph.query().vertices().iterator()));
         g.next();
-    }
+    }*/
 
     @Test
     public void testRange() {
