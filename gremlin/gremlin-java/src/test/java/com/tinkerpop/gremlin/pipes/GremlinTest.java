@@ -8,12 +8,12 @@ import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
-import junit.framework.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Optional;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 /**
@@ -118,8 +118,8 @@ public class GremlinTest {
         e.addEdge("next", f);
         f.addEdge("next", a);
 
-        new Gremlin(Arrays.asList(a)).as("x").out()
-                .loop("x", o -> ((Holder) o).getLoops() < 8, (o -> true))
+        new Gremlin<>(Arrays.asList(a)).as("x").out()
+                .loop("x", o -> ((Holder)o).getLoops() < 8, o -> true)
                 .sideEffect(o -> System.out.println(((Holder) o).getLoops()))
                 .simplePath().path().sideEffect(System.out::println).iterate();
     }
@@ -137,6 +137,6 @@ public class GremlinTest {
     public void testRange() {
         Graph graph = TinkerFactory.createClassic();
         Gremlin g = (Gremlin) Gremlin.of(graph);
-        Assert.assertEquals(3l, g.V().range(0, 2).count());
+        assertEquals(3l, g.V().range(0, 2).count());
     }
 }

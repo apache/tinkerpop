@@ -15,7 +15,7 @@ public interface Pipe<S, E> extends Iterator<Holder<E>>, Serializable {
 
     public void addStarts(Iterator<Holder<S>> iterator);
 
-    public <P extends Pipeline> P getPipeline();
+    public <P extends Pipeline<?,?>> P getPipeline();
 
     public String getAs();
 

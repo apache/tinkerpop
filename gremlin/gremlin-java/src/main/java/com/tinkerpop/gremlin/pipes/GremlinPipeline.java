@@ -195,8 +195,8 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     // TODO: What is the state of groupCount/groupBy --- sideEffects/endPoints (the cap() dilema ensues).
 
-    public default Map<E, Long> groupCount() {
-        final Map<E, Long> map = new HashMap<>();
+    public default Map<Object, Long> groupCount() {
+        final Map<Object, Long> map = new HashMap<>();
         try {
             while (true) {
                 MapHelper.incr(map, this.next().get(), 1l);
@@ -209,18 +209,15 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     ///////////////////// BRANCH STEPS /////////////////////
 
     public default <P extends GremlinPipeline> P loop(final String as, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate) {
-        final Pipe loopStartPipe = PipelineHelper.getAs(as, getPipeline());
-        return this.addPipe(new MapPipe<E, Object>(this, o -> {
-            o.incrLoops();
-            if (whilePredicate.test(o)) {
-                final Holder holder = o.makeSibling();
-                loopStartPipe.addStarts(new SingleIterator<>(holder));
-                if (emitPredicate.test(o))
-                    return o.get();
-                else
-                    return NO_OBJECT;
+        final Pipe<?,?> loopStartPipe = PipelineHelper.getAs(as, getPipeline());
+        return this.addPipe(new MapPipe<E, Object>(this, h -> {
+            h.incrLoops();
+            if (whilePredicate.test(h)) {
+                h.setPipe(as);
+                loopStartPipe.addStarts((Iterator)new SingleIterator<>(h));
+                return emitPredicate.test(h) ? h.get() : NO_OBJECT;
             } else {
-                return o.get();
+                return h.get();
             }
         }));
     }
@@ -228,9 +225,9 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default <P extends GremlinPipeline> P as(final String as) {
-        if (null != PipelineHelper.getAs(as, this))
+        if (PipelineHelper.asExists(as, this))
             throw new IllegalStateException("The named pipe already exists");
-        final List<Pipe> pipes = this.getPipes();
+        final List<Pipe<?, ?>> pipes = this.getPipes();
         pipes.get(pipes.size() - 1).setAs(as);
         return (P) this;
 

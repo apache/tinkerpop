@@ -21,6 +21,10 @@ public interface GraphMemory {
 
     public long decrement(final String key, final long delta);
 
+    public boolean and(final String key, final boolean bool);
+
+    public boolean or(final String key, final boolean bool);
+
     public int getIteration();
 
     public long getRuntime();
