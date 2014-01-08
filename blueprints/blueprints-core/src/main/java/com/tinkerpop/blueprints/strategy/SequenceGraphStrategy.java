@@ -10,7 +10,6 @@ import com.tinkerpop.blueprints.util.TriFunction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -43,6 +42,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(Strategy.Context<GraphQuery> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getGraphQueryVerticesStrategy(ctx));
+    }
+
+    @Override
+    public UnaryOperator<Function<Object[], GraphQuery>> getGraphQueryIdsStrategy(Strategy.Context<GraphQuery> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getGraphQueryIdsStrategy(ctx));
     }
 
     /**

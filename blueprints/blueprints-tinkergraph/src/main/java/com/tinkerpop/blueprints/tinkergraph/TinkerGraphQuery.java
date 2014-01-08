@@ -23,6 +23,11 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
         this.graph = graph;
     }
 
+    @Override
+    public GraphQuery ids(final Object... ids) {
+        return this.graph.strategy().compose(s -> s.getGraphQueryIdsStrategy(new Strategy.Context<GraphQuery>(this.graph, this)), super::ids).apply(ids);
+    }
+
     public Iterable<Edge> edges() {
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         return ((null == indexedContainer) ?

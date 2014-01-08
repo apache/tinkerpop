@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.strategy.IdGraphStrategyTest;
 import com.tinkerpop.blueprints.strategy.PartitionGraphStrategyTest;
 import com.tinkerpop.blueprints.strategy.ReadOnlyGraphStrategy;
 import com.tinkerpop.blueprints.strategy.ReadOnlyGraphStrategyTest;
@@ -39,6 +40,7 @@ public class BlueprintsStandardSuite extends AbstractBlueprintsSuite {
             FeatureSupportTest.class,
             GraphTest.class,
             GraphComputerTest.class,
+            IdGraphStrategyTest.class,
             IoTest.class,
             PartitionGraphStrategyTest.class,
             PropertyTest.class,

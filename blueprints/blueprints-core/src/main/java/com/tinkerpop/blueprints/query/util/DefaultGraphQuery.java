@@ -10,8 +10,10 @@ import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 /**
- * For those graph engines that do not support the low-level querying of the vertices or edges, then DefaultGraphQuery can be used.
- * DefaultGraphQuery assumes, at minimum, that Graph.query().vertices() and Graph.query().edges() is implemented by the respective Graph.
+ * For those graph engines that do not support the low-level querying of the vertices or edges, then
+ * {@link DefaultGraphQuery} can be used. {@link DefaultGraphQuery} assumes, at minimum, that
+ * {@link com.tinkerpop.blueprints.Graph#query#vertices()}  and {@link com.tinkerpop.blueprints.Graph#query#edges()} is
+ * implemented by the respective {@link com.tinkerpop.blueprints.Graph}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

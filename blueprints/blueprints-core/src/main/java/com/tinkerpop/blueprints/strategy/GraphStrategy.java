@@ -30,4 +30,8 @@ public interface GraphStrategy {
     public default UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(final Strategy.Context<GraphQuery> ctx) {
         return UnaryOperator.identity();
     }
+
+    public default UnaryOperator<Function<Object[], GraphQuery>> getGraphQueryIdsStrategy(final Strategy.Context<GraphQuery> ctx) {
+        return UnaryOperator.identity();
+    }
 }
