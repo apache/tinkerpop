@@ -29,20 +29,26 @@ public interface Strategy {
         return get().isPresent() ? f.apply(get().get()).apply(impl) : impl;
     }
 
-    public static class Context {
+    public static class Context<T> {
         private final Graph g;
         private final Map<String,Object> environment;
+        private final T current;
 
-        public Context(final Graph g) {
-            this(g, Optional.empty());
+        public Context(final Graph g, final T current) {
+            this(g, current, Optional.empty());
         }
 
-        public Context(final Graph g, final Optional<Map<String,Object>> environment) {
+        public Context(final Graph g, final T current, final Optional<Map<String,Object>> environment) {
             if (null == g)
                 throw new IllegalArgumentException("g");
 
             this.g = g;
+            this.current = current;
             this.environment = environment.orElse(new HashMap<>());
+        }
+
+        public T getCurrent() {
+            return current;
         }
 
         public Graph getG() {

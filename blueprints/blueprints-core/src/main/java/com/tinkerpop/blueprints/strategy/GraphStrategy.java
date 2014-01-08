@@ -3,10 +3,12 @@ package com.tinkerpop.blueprints.strategy;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.util.TriFunction;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
@@ -21,7 +23,11 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
-    public default UnaryOperator<Consumer<Vertex>> getRemoveVertexStrategy(final Strategy.Context ctx) {
+    public default UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context ctx) {
+        return UnaryOperator.identity();
+    }
+
+    public default UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(final Strategy.Context ctx) {
         return UnaryOperator.identity();
     }
 }

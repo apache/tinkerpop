@@ -65,7 +65,7 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        return this.graph.strategy().compose(s -> s.getAddEdgeStrategy(new Strategy.Context(this.graph)),
+        return this.graph.strategy().compose(s -> s.getAddEdgeStrategy(new Strategy.Context<Vertex>(this.graph, this)),
                 this::internalAddEdge).apply(label, vertex, keyValues);
     }
 
@@ -74,18 +74,18 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public void remove() {
-        this.graph.strategy().compose(s -> s.getRemoveVertexStrategy(new Strategy.Context(this.graph)),
-                this::internalRemove).accept(this);
+        this.graph.strategy().compose(s -> s.getRemoveVertexStrategy(new Strategy.Context<Vertex>(this.graph, this)), this::internalRemove).get();
     }
 
-    private void internalRemove(final Vertex toRemove) {
-        if (!graph.vertices.containsKey(toRemove.getId().toString()))
-            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.getId());
+    private Void internalRemove() {
+        if (!graph.vertices.containsKey(this.id))
+            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
 
-        toRemove.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
-        toRemove.getProperties().clear();
+        this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
+        this.getProperties().clear();
         graph.vertexIndex.removeElement(this);
         graph.vertices.remove(this.id);
+        return null;
     }
 
     public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {

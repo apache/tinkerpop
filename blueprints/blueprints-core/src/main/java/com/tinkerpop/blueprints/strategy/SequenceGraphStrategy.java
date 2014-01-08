@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
@@ -33,7 +34,7 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Consumer<Vertex>> getRemoveVertexStrategy(final Strategy.Context ctx) {
+    public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getRemoveVertexStrategy(ctx));
     }
 
