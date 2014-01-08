@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.VertexQuery;
@@ -64,7 +65,8 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        return this.graph.strategy().compose(s -> s.getAddEdgeStrategy(), this::internalAddEdge).apply(label, vertex, keyValues);
+        return this.graph.strategy().compose(s -> s.getAddEdgeStrategy(new Strategy.Context(this.graph)),
+                this::internalAddEdge).apply(label, vertex, keyValues);
     }
 
     private Edge internalAddEdge(final String label, final Vertex vertex, final Object... keyValues) {
@@ -72,7 +74,8 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public void remove() {
-        this.graph.strategy().compose(s -> s.getRemoveVertexStrategy(), this::internalRemove).accept(this);
+        this.graph.strategy().compose(s -> s.getRemoveVertexStrategy(new Strategy.Context(this.graph)),
+                this::internalRemove).accept(this);
     }
 
     private void internalRemove(final Vertex toRemove) {

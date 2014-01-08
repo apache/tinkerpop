@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.TriFunction;
 
@@ -22,18 +23,18 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy() {
-        return this.composeStrategyUnaryOperator(s -> s.getAddVertexStrategy());
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getAddVertexStrategy(ctx));
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy() {
-        return this.composeStrategyUnaryOperator(s -> s.getAddEdgeStrategy());
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getAddEdgeStrategy(ctx));
     }
 
     @Override
-    public UnaryOperator<Consumer<Vertex>> getRemoveVertexStrategy() {
-        return this.composeStrategyUnaryOperator(s -> s.getRemoveVertexStrategy());
+    public UnaryOperator<Consumer<Vertex>> getRemoveVertexStrategy(final Strategy.Context ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getRemoveVertexStrategy(ctx));
     }
 
     /**

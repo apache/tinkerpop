@@ -2,8 +2,10 @@ package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -25,6 +27,31 @@ public interface Strategy {
      */
     public default <T> T compose(final Function<GraphStrategy, UnaryOperator<T>> f, final T impl) {
         return get().isPresent() ? f.apply(get().get()).apply(impl) : impl;
+    }
+
+    public static class Context {
+        private final Graph g;
+        private final Map<String,Object> environment;
+
+        public Context(final Graph g) {
+            this(g, Optional.empty());
+        }
+
+        public Context(final Graph g, final Optional<Map<String,Object>> environment) {
+            if (null == g)
+                throw new IllegalArgumentException("g");
+
+            this.g = g;
+            this.environment = environment.orElse(new HashMap<>());
+        }
+
+        public Graph getG() {
+            return g;
+        }
+
+        public Map<String, Object> getEnvironment() {
+            return Collections.unmodifiableMap(environment);
+        }
     }
 
     public static class Simple implements Strategy {
