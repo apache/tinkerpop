@@ -3,7 +3,10 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.query.util.DefaultGraphQuery;
 
 import java.util.Set;
@@ -31,13 +34,7 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
     }
 
     public Iterable<Vertex> vertices() {
-        final HasContainer indexedContainer = getIndexKey(Vertex.class);
-        return ((null == indexedContainer) ?
-                this.graph.vertices.values().parallelStream() :
-                this.graph.vertexIndex.get(indexedContainer.key, indexedContainer.value).parallelStream())
-                .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers))
-                .limit(this.limit)
-                .collect(Collectors.<Vertex>toList());
+        return this.graph.strategy().compose(s -> s.getGraphQueryVerticesStrategy(new Strategy.Context<GraphQuery>(this.graph, this)), this::internalVertices).get();
     }
 
     private Iterable<Vertex> internalVertices() {

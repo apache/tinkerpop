@@ -14,7 +14,7 @@ import java.util.function.UnaryOperator;
  */
 public interface Strategy {
     public void set(final Optional<? extends GraphStrategy> strategy);
-    public Optional<? extends GraphStrategy> get();
+    public Optional<? extends GraphStrategy> getGraphStrategy();
 
     /**
      * If a {@link Strategy} is present, then return a {@link GraphStrategy} function that takes the function of the
@@ -26,7 +26,7 @@ public interface Strategy {
      * @return a function that will be applied in the Blueprints implementation
      */
     public default <T> T compose(final Function<GraphStrategy, UnaryOperator<T>> f, final T impl) {
-        return get().isPresent() ? f.apply(get().get()).apply(impl) : impl;
+        return getGraphStrategy().isPresent() ? f.apply(getGraphStrategy().get()).apply(impl) : impl;
     }
 
     public static class Context<T> {
@@ -51,7 +51,7 @@ public interface Strategy {
             return current;
         }
 
-        public Graph getG() {
+        public Graph getGraph() {
             return g;
         }
 
@@ -69,7 +69,7 @@ public interface Strategy {
         }
 
         @Override
-        public Optional<? extends GraphStrategy> get() {
+        public Optional<? extends GraphStrategy> getGraphStrategy() {
             return strategy;
         }
     }
@@ -81,7 +81,7 @@ public interface Strategy {
         }
 
         @Override
-        public Optional<GraphStrategy> get() {
+        public Optional<GraphStrategy> getGraphStrategy() {
             return Optional.empty();
         }
     }
@@ -100,7 +100,7 @@ public interface Strategy {
         }
 
         @Override
-        public Optional<? extends GraphStrategy> get() {
+        public Optional<? extends GraphStrategy> getGraphStrategy() {
             return this.strategy.get();
         }
     }

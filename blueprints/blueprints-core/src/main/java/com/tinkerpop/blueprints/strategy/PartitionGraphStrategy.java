@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.strategy;
 
+import com.tinkerpop.blueprints.Contains;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Strategy;
@@ -74,12 +75,11 @@ public class PartitionGraphStrategy implements GraphStrategy {
         };
     }
 
-    /*
     @Override
     public UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(final Strategy.Context<GraphQuery> ctx) {
         return (f) -> () -> {
-
-        }
+            ctx.getCurrent().has(this.partitionKey, Contains.IN, this.readPartitions);
+            return f.get();
+        };
     }
-    */
 }
