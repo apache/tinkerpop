@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.computer.gremlin.util;
+package com.tinkerpop.blueprints.util.micro;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;

@@ -6,15 +6,10 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.gremlin.computer.gremlin.util.MicroEdge;
-import com.tinkerpop.gremlin.computer.gremlin.util.MicroElement;
-import com.tinkerpop.gremlin.computer.gremlin.util.MicroProperty;
-import com.tinkerpop.gremlin.computer.gremlin.util.MicroVertex;
 import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.pipes.Pipe;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
-import com.tinkerpop.gremlin.pipes.util.Path;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
@@ -52,7 +47,7 @@ public class GremlinMessage implements Serializable {
         this.elementId = elementId;
         this.propertyKey = propertyKey;
         this.holder = holder;
-        this.microSizePath();
+        this.holder.getPath().microSize();
     }
 
     public static GremlinMessage of(final Object object, final Holder holder) {
@@ -87,12 +82,14 @@ public class GremlinMessage implements Serializable {
                 this.holder.set(edgeOptional.get());
             else
                 return false;
+            //throw new IllegalStateException("The local edge is not present: " + this.elementId);
         } else if (this.getProperty(vertex).isPresent()) {
             final Optional<Property> propertyOptional = this.getProperty(vertex);
             if (propertyOptional.isPresent())
                 this.holder.set(propertyOptional.get());
             else
                 return false;
+            //throw new IllegalStateException("The local property is not present: " + this.elementId + ":" + this.propertyKey);
         } else
             return false;
 
@@ -119,23 +116,5 @@ public class GremlinMessage implements Serializable {
                     .map(e -> e.getProperty(this.propertyKey))
                     .findFirst();
         }
-    }
-
-    private void microSizePath() {
-        final Path newPath = new Path();
-        this.holder.getPath().forEach((a, b) -> {
-            if (b instanceof MicroElement || b instanceof MicroProperty) {
-                newPath.add(a, b);
-            } else if (b instanceof Vertex) {
-                newPath.add(a, new MicroVertex((Vertex) b));
-            } else if (b instanceof Edge) {
-                newPath.add(a, new MicroEdge((Edge) b));
-            } else if (b instanceof Property) {
-                newPath.add(a, new MicroProperty((Property) b));
-            } else {
-                newPath.add(a, b);
-            }
-        });
-        this.holder.setPath(newPath);
     }
 }

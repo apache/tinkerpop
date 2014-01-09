@@ -1,5 +1,13 @@
 package com.tinkerpop.gremlin.pipes.util;
 
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.micro.MicroEdge;
+import com.tinkerpop.blueprints.util.micro.MicroElement;
+import com.tinkerpop.blueprints.util.micro.MicroProperty;
+import com.tinkerpop.blueprints.util.micro.MicroVertex;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -12,8 +20,8 @@ import java.util.stream.Collectors;
  */
 public class Path {
 
-    protected ArrayList<String> asNames = new ArrayList<>();
-    protected ArrayList<Object> objects = new ArrayList<>();
+    protected List<String> asNames = new ArrayList<>();
+    protected List<Object> objects = new ArrayList<>();
 
     public Path(final Object... asObjects) {
         if (asObjects.length % 2 != 0)
@@ -55,15 +63,31 @@ public class Path {
     }
 
     public void forEach(final Consumer<Object> consumer) {
-        for (int i = 0; i < this.size(); i++) {
-            consumer.accept(this.objects.get(i));
-        }
+        this.objects.forEach(consumer);
     }
 
     public void forEach(final BiConsumer<String, Object> consumer) {
         for (int i = 0; i < this.size(); i++) {
             consumer.accept(this.asNames.get(i), this.objects.get(i));
         }
+    }
+
+    public void microSize() {
+        final List<Object> newObjects = new ArrayList<>();
+        this.objects.forEach(a -> {
+            if (a instanceof MicroElement || a instanceof MicroProperty) {
+                newObjects.add(a);
+            } else if (a instanceof Vertex) {
+                newObjects.add(new MicroVertex((Vertex) a));
+            } else if (a instanceof Edge) {
+                newObjects.add(new MicroEdge((Edge) a));
+            } else if (a instanceof Property) {
+                newObjects.add(new MicroProperty((Property) a));
+            } else {
+                newObjects.add(a);
+            }
+        });
+        this.objects = newObjects;
     }
 
     public String toString() {
