@@ -8,7 +8,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -16,46 +18,64 @@ import java.util.stream.Collectors;
  */
 public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
 
-    final List<AnnotatedValue<V>> values = new ArrayList<>();
+    final List<AnnotatedValue<V>> annotatedValues = new ArrayList<>();
 
-    public DefaultAnnotatedList(final List<V> initialValues) {
-        initialValues.forEach(v -> this.values.add(new DefaultAnnotatedValue<>(v)));
+    public DefaultAnnotatedList(final V... values) {
+        for (V value : values) {
+            this.annotatedValues.add(new DefaultAnnotatedValue<>(value));
+        }
+    }
+
+    public DefaultAnnotatedList(final AnnotatedValue<V>... annotatedValues) {
+        for (AnnotatedValue<V> annotatedValue : annotatedValues) {
+            this.annotatedValues.add(new DefaultAnnotatedValue<>(annotatedValue.getValue(), annotatedValue.getAnnotations()));
+        }
     }
 
     public void add(final V value, final Object... keyValues) {
         final Annotations annotation = new DefaultAnnotations();
         // TODO: Module 2 check
         for (int i = 0; i < keyValues.length; i = i + 2) {
-            annotation.put((String) keyValues[i], Optional.of(keyValues[i + 1]));
+            annotation.set((String) keyValues[i], keyValues[i + 1]);
         }
-        this.values.add(new DefaultAnnotatedValue<>(value, annotation));
+        this.annotatedValues.add(new DefaultAnnotatedValue<>(value, annotation));
     }
 
     public String toString() {
-        final List<V> list = new ArrayList<>();
-        this.values.forEach(a -> list.add(a.getValue()));
+        final List<String> list = new ArrayList<>();
+        this.annotatedValues.forEach(a -> list.add(a.getValue().toString()));
         return list.toString();
     }
 
-    public AnnotatedListQuery query() {
+    public AnnotatedListQuery<V> query() {
         return new DefaultAnnotatedListQuery<V>(this) {
             @Override
             public Iterable<AnnotatedValue<V>> values() {
-                return (Iterable) StreamFactory.stream(values.iterator())
+                return (Iterable) StreamFactory.stream(annotatedValues.iterator())
                         .filter(p -> HasContainer.testAllAnnotations((AnnotatedValue) p, this.hasContainers))
                         .collect(Collectors.toList());
             }
         };
     }
 
-    public class DefaultAnnotations extends HashMap<String, Optional<Object>> implements Annotations {
+    public class DefaultAnnotations implements Annotations {
 
-        @Override
-        public Optional<Object> get(final Object key) {
-            if (this.containsKey(key))
-                return super.get(key);
-            else
-                return Optional.empty();
+        private final Map<String, Object> annotations = new HashMap<>();
+
+        public <T> Optional<T> get(final String key) {
+            return Optional.ofNullable((T) this.annotations.get(key));
+        }
+
+        public void set(final String key, final Object value) {
+            this.annotations.put(key, value);
+        }
+
+        public Set<String> getKeys() {
+            return this.annotations.keySet();
+        }
+
+        public String toString() {
+            return this.annotations.toString();
         }
     }
 
@@ -66,7 +86,8 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
 
         public DefaultAnnotatedValue(final V value, final Annotations annotations) {
             this.value = value;
-            this.annotations = annotations;
+            this.annotations = new DefaultAnnotations();
+            annotations.getKeys().forEach(k -> this.annotations.set(k, annotations.get(k).get()));
         }
 
         public DefaultAnnotatedValue(final V value) {

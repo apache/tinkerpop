@@ -88,6 +88,7 @@ public abstract class DefaultQuery implements Query {
 
             if (null == annotatedValue.getAnnotations() || !annotatedValue.getAnnotations().get(this.key).isPresent())
                 return false;
+
             return this.predicate.test(annotatedValue.getAnnotations().get(this.key).get(), this.value);
         }
 

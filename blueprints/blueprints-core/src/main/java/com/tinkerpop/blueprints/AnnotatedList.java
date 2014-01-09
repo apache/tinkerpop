@@ -3,9 +3,8 @@ package com.tinkerpop.blueprints;
 import com.tinkerpop.blueprints.query.AnnotatedListQuery;
 import com.tinkerpop.blueprints.util.DefaultAnnotatedList;
 
-import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -17,10 +16,20 @@ public interface AnnotatedList<V> {
     public AnnotatedListQuery<V> query();
 
     public static <V> AnnotatedList of(final V... values) {
-        return new DefaultAnnotatedList<>(Arrays.asList(values));
+        return new DefaultAnnotatedList<>(values);
     }
 
-    public interface Annotations extends Map<String, Optional<Object>> {
+    public static <V> AnnotatedList of(final AnnotatedValue<V>... annotatedValues) {
+        return new DefaultAnnotatedList<>(annotatedValues);
+    }
+
+    public interface Annotations {
+
+        public void set(final String key, final Object value);
+
+        public <T> Optional<T> get(final String key);
+
+        public Set<String> getKeys();
 
     }
 
