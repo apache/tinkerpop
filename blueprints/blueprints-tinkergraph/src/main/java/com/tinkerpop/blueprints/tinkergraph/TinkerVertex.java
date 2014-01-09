@@ -65,27 +65,35 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        return this.graph.strategy().compose(s -> s.getAddEdgeStrategy(new Strategy.Context<Vertex>(this.graph, this)),
-                this::internalAddEdge).apply(label, vertex, keyValues);
-    }
-
-    private Edge internalAddEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
+        // The first argument to compose() gets the GraphStrategy to use and provides it the Context of the addEdge
+        // call. The second argument to compose() is the TinkerGraph implementation of addEdge as a lambda where
+        // the argument refer to the arguments to addEdge. Note that arguments passes through the GraphStrategy
+        // implementations first so at this point the values within them may not be the same as they originally were.
+        // The composed function must then be applied with the arguments originally passed to addEdge.
+        return this.graph.strategy().compose(
+                s -> s.getAddEdgeStrategy(new Strategy.Context<Vertex>(this.graph, this)),
+                (l, v, kvs) -> TinkerHelper.addEdge(this.graph, this, (TinkerVertex) v, l, kvs))
+                .apply(label, vertex, keyValues);
     }
 
     public void remove() {
-        this.graph.strategy().compose(s -> s.getRemoveVertexStrategy(new Strategy.Context<Vertex>(this.graph, this)), this::internalRemove).get();
-    }
+        // The first argument to compose() gets the GraphStrategy to use and provides it the Context of the remove
+        // call. The second argument to compose() is the TinkerGraph implementation of remove as a lambda where
+        // the argument refer to the arguments to remove. Note that arguments passes through the GraphStrategy
+        // implementations first so at this point the values within them may not be the same as they originally were.
+        // The composed function must then be applied with the arguments originally passed to remove.
+        this.graph.strategy().compose(
+                s -> s.getRemoveVertexStrategy(new Strategy.Context<Vertex>(this.graph, this)),
+                () -> {
+                    if (!graph.vertices.containsKey(this.id))
+                        throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
 
-    private Void internalRemove() {
-        if (!graph.vertices.containsKey(this.id))
-            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
-
-        this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
-        this.getProperties().clear();
-        graph.vertexIndex.removeElement(this);
-        graph.vertices.remove(this.id);
-        return null;
+                    this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
+                    this.getProperties().clear();
+                    graph.vertexIndex.removeElement(this);
+                    graph.vertices.remove(this.id);
+                    return null;
+                }).get();
     }
 
     public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {
