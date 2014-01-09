@@ -23,7 +23,4 @@ public interface Query {
 
     public Query limit(final int limit);
 
-    public Iterable<Edge> edges();
-
-    public Iterable<Vertex> vertices();
 }

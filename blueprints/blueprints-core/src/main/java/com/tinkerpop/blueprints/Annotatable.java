@@ -16,4 +16,5 @@ public interface Annotatable {
     // public Map<String,Object> getAnnotations();
 
     // public void removeAnnotation(final String key);
+
 }

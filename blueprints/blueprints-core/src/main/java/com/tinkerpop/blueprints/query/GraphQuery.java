@@ -1,5 +1,8 @@
 package com.tinkerpop.blueprints.query;
 
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
+
 import java.util.function.BiPredicate;
 
 /**
@@ -26,4 +29,8 @@ public interface GraphQuery extends Query {
 
     @Override
     public GraphQuery limit(final int limit);
+
+    public Iterable<Edge> edges();
+
+    public Iterable<Vertex> vertices();
 }

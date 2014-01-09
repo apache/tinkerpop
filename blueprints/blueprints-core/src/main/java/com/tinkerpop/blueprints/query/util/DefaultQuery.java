@@ -1,9 +1,12 @@
 package com.tinkerpop.blueprints.query.util;
 
+import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.query.Query;
+import com.tinkerpop.blueprints.util.Pair;
+import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,15 +72,28 @@ public abstract class DefaultQuery implements Query {
 
         public boolean test(final Element element) {
             if (this.key.equals(Property.Key.ID.toString()))
-                return element.getId().equals(this.value);
+                return this.predicate.test(element.getId(), this.value);
             else if (this.key.equals(Property.Key.LABEL.toString()))
-                return element.getLabel().equals(this.value);
-            else
+                return this.predicate.test(element.getLabel(), this.value);
+            else // TODO: Optional
                 return this.predicate.test(element.getValue(this.key), this.value);
         }
 
         public static boolean testAll(final Element element, final List<HasContainer> hasContainers) {
             return hasContainers.size() == 0 || hasContainers.stream().filter(c -> c.test(element)).count() == hasContainers.size();
+        }
+
+        public <V> boolean testAnnotations(final Pair<V, AnnotatedList.Annotations> pair) {
+            if (this.key.equals(StringFactory.VALUE))
+                return this.predicate.test(pair.getA(), this.value);
+
+            if (null == pair.getB() || !pair.getB().get(this.key).isPresent())
+                return false;
+            return this.predicate.test(pair.getB().get(this.key).get(), this.value);
+        }
+
+        public static <V> boolean testAllAnnotations(final Pair<V, AnnotatedList.Annotations> pair, final List<HasContainer> hasContainers) {
+            return hasContainers.size() == 0 || hasContainers.stream().filter(c -> c.testAnnotations(pair)).count() == hasContainers.size();
         }
     }
 }

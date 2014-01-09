@@ -5,7 +5,6 @@ import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.pipes.Gremlin;
-import com.tinkerpop.gremlin.pipes.util.Holder;
 import org.junit.Test;
 
 import java.util.function.Supplier;
@@ -26,7 +25,7 @@ public class GremlinVertexProgramTest {
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
                         //Gremlin.of().out("created").in("created").property("name"))
-                        Gremlin.of().as("x").outE().inV().loop("x", o -> o.getLoops() < 2, o -> false).value("name").map(s -> s.toString().length()).path())
+                        Gremlin.of().as("x").outE().inV().loop("x", o -> o.getLoops() < 2).value("name").map(s -> s.toString().length()).path())
                         .build())
                         .submit().get();
 
