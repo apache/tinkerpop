@@ -31,11 +31,11 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
         this.values.add(new Pair<V, Annotations>(value, new DefaultAnnotations()));
     }
 
-    public void add(final V value, final Object... attributeKeyValues) {
+    public void add(final V value, final Object... annotationKeyValues) {
         final Annotations annotation = new DefaultAnnotations();
         // TODO: Module 2 check
-        for (int i = 0; i < attributeKeyValues.length; i = i + 2) {
-            annotation.put((String) attributeKeyValues[i], Optional.of(attributeKeyValues[i + 1]));
+        for (int i = 0; i < annotationKeyValues.length; i = i + 2) {
+            annotation.put((String) annotationKeyValues[i], Optional.of(annotationKeyValues[i + 1]));
         }
         this.values.add(new Pair<>(value, annotation));
     }
