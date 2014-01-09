@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.query;
 
+import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -40,5 +41,12 @@ public interface VertexQuery extends Query {
     public Iterable<Edge> edges();
 
     public Iterable<Vertex> vertices();
+
+    // Default
+
+    @Override
+    public default VertexQuery has(final String key, final Object value) {
+        return this.has(key, Compare.EQUAL, value);
+    }
 
 }

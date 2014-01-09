@@ -1,24 +1,37 @@
 package com.tinkerpop.blueprints.query;
 
 import com.tinkerpop.blueprints.AnnotatedList;
+import com.tinkerpop.blueprints.Compare;
 
 import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface AnnotatedListQuery extends Query {
+public interface AnnotatedListQuery<V> extends Query {
 
-    public AnnotatedListQuery has(final String key);
+    @Override
+    public AnnotatedListQuery<V> has(final String key);
 
-    public AnnotatedListQuery hasNot(final String key);
+    @Override
+    public AnnotatedListQuery<V> hasNot(final String key);
 
-    public AnnotatedListQuery has(final String key, final BiPredicate biPredicate, final Object value);
+    @Override
+    public AnnotatedListQuery<V> has(final String key, final BiPredicate biPredicate, final Object value);
 
-    public <T extends Comparable<?>> AnnotatedListQuery interval(final String key, final T startValue, final T endValue);
+    @Override
+    public <T extends Comparable<?>> AnnotatedListQuery<V> interval(final String key, final T startValue, final T endValue);
 
-    public AnnotatedListQuery limit(final int limit);
+    @Override
+    public AnnotatedListQuery<V> limit(final int limit);
 
-    public <V> Iterable<AnnotatedList.AnnotatedValue<V>> values();
+    public Iterable<AnnotatedList.AnnotatedValue<V>> values();
+
+    // Defaults
+
+    @Override
+    public default AnnotatedListQuery<V> has(final String key, final Object value) {
+        return this.has(key, Compare.EQUAL, value);
+    }
 
 }

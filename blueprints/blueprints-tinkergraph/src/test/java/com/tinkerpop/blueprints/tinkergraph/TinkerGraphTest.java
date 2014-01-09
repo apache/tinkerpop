@@ -48,11 +48,11 @@ public class TinkerGraphTest {
         System.out.println(marko.getProperty("names"));
         marko.<AnnotatedList>getProperty("names").getValue().add("mArKo", "time", 1);
 
-        marko.<AnnotatedList>getProperty("names").getValue().valueIterator().forEachRemaining(System.out::println);
+        marko.<AnnotatedList>getProperty("names").getValue().query().values().forEach(System.out::println);
 
         System.out.println("----");
 
-        marko.<AnnotatedList>getProperty("names").getValue().query().has("time", Compare.EQUAL, 1).values().forEach(p -> System.out.println(p.getValue()));
+        marko.<AnnotatedList<String>>getProperty("names").getValue().query().has("time", Compare.EQUAL, 1).values().forEach(p -> System.out.println(p.getValue()));
 
     }
 

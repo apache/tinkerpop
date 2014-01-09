@@ -1,7 +1,6 @@
 package com.tinkerpop.blueprints.query;
 
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.Compare;
 
 import java.util.function.BiPredicate;
 
@@ -18,6 +17,10 @@ public interface Query {
     public Query hasNot(final String key);
 
     public Query has(final String key, final BiPredicate biPredicate, final Object value);
+
+    public default Query has(final String key, final Object value) {
+        return this.has(key, Compare.EQUAL, value);
+    }
 
     public <T extends Comparable<?>> Query interval(final String key, final T startValue, final T endValue);
 

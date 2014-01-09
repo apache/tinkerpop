@@ -7,7 +7,6 @@ import com.tinkerpop.blueprints.query.util.DefaultAnnotatedListQuery;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,30 +37,11 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
         return list.toString();
     }
 
-    public Iterator<AnnotatedValue<V>> iterator() {
-        return this.values.iterator();
-    }
-
-    public Iterator<V> valueIterator() {
-        final Iterator<AnnotatedValue<V>> itty = values.iterator();
-        return new Iterator<V>() {
-            @Override
-            public boolean hasNext() {
-                return itty.hasNext();
-            }
-
-            @Override
-            public V next() {
-                return itty.next().getValue();
-            }
-        };
-    }
-
     public AnnotatedListQuery query() {
-        return new DefaultAnnotatedListQuery(this) {
+        return new DefaultAnnotatedListQuery<V>(this) {
             @Override
-            public <V> Iterable<AnnotatedValue<V>> values() {
-                return (Iterable) StreamFactory.stream(this.annotatedList.iterator())
+            public Iterable<AnnotatedValue<V>> values() {
+                return (Iterable) StreamFactory.stream(values.iterator())
                         .filter(p -> HasContainer.testAllAnnotations((AnnotatedValue) p, this.hasContainers))
                         .collect(Collectors.toList());
             }
@@ -99,6 +79,10 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
 
         public Annotations getAnnotations() {
             return this.annotations;
+        }
+
+        public String toString() {
+            return "[" + this.value + ":" + this.annotations + "]";
         }
     }
 }
