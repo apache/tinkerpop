@@ -2,7 +2,6 @@ package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.strategy.IdGraphStrategyTest;
 import com.tinkerpop.blueprints.strategy.PartitionGraphStrategyTest;
-import com.tinkerpop.blueprints.strategy.ReadOnlyGraphStrategy;
 import com.tinkerpop.blueprints.strategy.ReadOnlyGraphStrategyTest;
 import com.tinkerpop.blueprints.strategy.SequenceGraphStrategyTest;
 import org.junit.runners.model.InitializationError;

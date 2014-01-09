@@ -1,9 +1,9 @@
 package com.tinkerpop.blueprints.generator;
 
+import com.tinkerpop.blueprints.Vertex;
+
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * VertexAnnotator is used to assign properties to generated edges.

@@ -1,10 +1,9 @@
 package com.tinkerpop.blueprints.generator;
 
-import java.util.Map;
-
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
+
+import java.util.Map;
 
 /**
  * Base class for all synthetic network generators.

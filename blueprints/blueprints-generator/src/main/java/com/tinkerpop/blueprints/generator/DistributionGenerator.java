@@ -1,11 +1,11 @@
 package com.tinkerpop.blueprints.generator;
 
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * Generates a synthetic network for a given out- and (optionally) in-degree distribution.

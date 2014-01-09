@@ -4,7 +4,6 @@ import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.GraphPropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.PropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

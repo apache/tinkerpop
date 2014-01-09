@@ -1,8 +1,5 @@
 package com.tinkerpop.gremlin
 
-import groovy.grape.Grape
-import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl
 import org.junit.Ignore
 import org.junit.Test

@@ -7,7 +7,6 @@ import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.util.TriFunction;
-import org.javatuples.Triplet;
 
 import java.util.ArrayList;
 import java.util.Arrays;

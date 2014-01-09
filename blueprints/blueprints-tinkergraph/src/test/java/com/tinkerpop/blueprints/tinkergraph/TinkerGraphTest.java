@@ -7,7 +7,6 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import org.junit.Test;
 
-import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Stream;
 

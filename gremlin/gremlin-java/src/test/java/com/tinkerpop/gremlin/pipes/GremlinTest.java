@@ -7,14 +7,12 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import com.tinkerpop.gremlin.pipes.util.Holder;
-import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

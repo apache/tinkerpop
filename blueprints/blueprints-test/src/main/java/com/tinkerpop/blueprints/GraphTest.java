@@ -1,7 +1,7 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.util.GraphFactory;
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
+import com.tinkerpop.blueprints.util.GraphFactory;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -16,8 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 

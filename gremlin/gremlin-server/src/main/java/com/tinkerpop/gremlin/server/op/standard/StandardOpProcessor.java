@@ -2,10 +2,10 @@ package com.tinkerpop.gremlin.server.op.standard;
 
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.GremlinServer;
+import com.tinkerpop.gremlin.server.MessageSerializer;
 import com.tinkerpop.gremlin.server.OpProcessor;
 import com.tinkerpop.gremlin.server.RequestMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
-import com.tinkerpop.gremlin.server.MessageSerializer;
 import com.tinkerpop.gremlin.server.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
