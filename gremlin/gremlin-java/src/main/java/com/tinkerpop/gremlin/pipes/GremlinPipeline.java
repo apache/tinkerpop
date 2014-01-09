@@ -208,7 +208,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default <P extends GremlinPipeline> P loop(final String as, final Predicate<Holder> whilePredicate, final Predicate<Holder> emitPredicate) {
+    public default <P extends GremlinPipeline<S,E>> P loop(final String as, final Predicate<Holder<?>> whilePredicate, final Predicate<Holder<?>> emitPredicate) {
         final Pipe<?,?> loopStartPipe = PipelineHelper.getAs(as, getPipeline());
         return this.addPipe(new MapPipe<E, Object>(this, h -> {
             h.incrLoops();

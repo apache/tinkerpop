@@ -81,10 +81,20 @@ public class GremlinMessage implements Serializable {
         final Pipe<?, ?> pipe = PipelineHelper.getAs(this.holder.getFuture(), gremlin);
         if (this.destination.equals(Destination.VERTEX))
             this.holder.set(vertex);
-        else if (this.destination.equals(Destination.EDGE))
-            this.holder.set(this.getEdge(vertex));
-        else
-            this.holder.set(this.getProperty(vertex));
+        else if (this.destination.equals(Destination.EDGE)) {
+            final Optional<Edge> edgeOptional = this.getEdge(vertex);
+            if (edgeOptional.isPresent())
+                this.holder.set(edgeOptional.get());
+            else
+                return false;
+        } else if (this.getProperty(vertex).isPresent()) {
+            final Optional<Property> propertyOptional = this.getProperty(vertex);
+            if (propertyOptional.isPresent())
+                this.holder.set(propertyOptional.get());
+            else
+                return false;
+        } else
+            return false;
 
         MapHelper.incr(tracker.getGraphHolders(), this.holder.get(), this.holder);
         pipe.addStarts(new SingleIterator(this.holder));

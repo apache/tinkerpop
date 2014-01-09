@@ -61,13 +61,13 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
             // process local object messages
             tracker.getPreviousObjectHolders().forEach((a, b) -> {
                 b.forEach(holder -> {
-                    if (!holder.isDone()) {
+                    if (holder.isDone()) {
+                        MapHelper.incr(tracker.getDoneObjectHolders(), a, holder);
+                    } else {
                         final Pipe<?, ?> pipe = PipelineHelper.getAs(holder.getFuture(), gremlin);
                         pipe.addStarts(new SingleIterator(holder));
                         if (processPipe(pipe, vertex, messenger, tracker))
                             voteToHalt.set(false);
-                    } else {
-                        MapHelper.incr(tracker.getDoneObjectHolders(), a, holder);
                     }
                 });
             });
