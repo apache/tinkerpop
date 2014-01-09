@@ -26,6 +26,7 @@ public class StringFactory {
 
     public static final String ID = "id";
     public static final String LABEL = "label";
+    public static final String VALUE = "value";
 
     public static String vertexString(final Vertex vertex) {
         return V + L_BRACKET + vertex.getId() + R_BRACKET;

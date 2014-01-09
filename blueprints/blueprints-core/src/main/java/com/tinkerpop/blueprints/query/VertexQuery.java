@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.query;
 
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 import java.util.function.BiPredicate;
@@ -35,5 +36,9 @@ public interface VertexQuery extends Query {
     public VertexQuery limit(final int limit);
 
     public long count();
+
+    public Iterable<Edge> edges();
+
+    public Iterable<Vertex> vertices();
 
 }

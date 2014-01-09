@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
 
     public default GremlinPipeline<S, E> identity() {
-        return this.addPipe(new MapPipe<E, E>(this, o -> o.get()));
+        return this.addPipe(new MapPipe<E, E>(this, Holder::get));
     }
 
     ///////////////////// TRANSFORM STEPS /////////////////////
@@ -112,7 +112,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     }
 
     public default GremlinPipeline<S, Path> path() {
-        return this.addPipe(new MapPipe<Object, Path>(this, o -> o.getPath()));
+        return this.addPipe(new MapPipe<Object, Path>(this, Holder::getPath));
     }
 
     public default <E2> GremlinPipeline<S, E2> back(final String name) {
@@ -220,6 +220,10 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
                 return holder.get();
             }
         }));
+    }
+
+    public default GremlinPipeline<S, E> loop(final String as, final Predicate<Holder<E>> whilePredicate) {
+        return this.loop(as, whilePredicate, o -> false);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

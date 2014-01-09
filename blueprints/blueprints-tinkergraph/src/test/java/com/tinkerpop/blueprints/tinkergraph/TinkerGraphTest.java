@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
+import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -37,6 +38,22 @@ public class TinkerGraphTest {
         edge.setProperty("creator", "stephen");
         assertEquals(edge.getValue("weight"), Float.valueOf(1.0f));
         assertEquals(edge.getProperty("creator").getValue(), "stephen");
+    }
+
+    @Test
+    public void testListing() {
+        final TinkerGraph g = TinkerGraph.open();
+        Vertex marko = g.addVertex();
+        marko.setProperty("names", AnnotatedList.of("marko", "mrodriguez"));
+        System.out.println(marko.getProperty("names"));
+        marko.<AnnotatedList>getProperty("names").getValue().add("mArKo", "time", 1);
+
+        marko.<AnnotatedList>getProperty("names").getValue().valueIterator().forEachRemaining(System.out::println);
+
+        System.out.println("----");
+
+        marko.<AnnotatedList>getProperty("names").getValue().query().has("time", Compare.EQUAL, 1).values().forEach(p -> System.out.println(p.getA()));
+
     }
 
     /*@Test
