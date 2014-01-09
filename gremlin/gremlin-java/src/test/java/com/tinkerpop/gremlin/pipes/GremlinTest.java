@@ -52,7 +52,7 @@ public class GremlinTest {
 
         Gremlin.of(g).V()
                 .both()
-                .dedup(e -> ((Element) ((Holder) e).get()).getProperty("name").isPresent())
+                .dedup(e -> e.get().getProperty("name").isPresent())
                 .sideEffect(System.out::println)
                 .iterate();
 
@@ -117,8 +117,8 @@ public class GremlinTest {
         f.addEdge("next", a);
 
         new Gremlin<>(Arrays.asList(a)).as("x").out()
-                .loop("x", o -> ((Holder)o).getLoops() < 8, o -> true)
-                .sideEffect(o -> System.out.println(((Holder) o).getLoops()))
+                .loop("x", o -> o.getLoops() < 8, o -> true)
+                .sideEffect(o -> System.out.println(o.getLoops()))
                 .simplePath().path().sideEffect(System.out::println).iterate();
     }
 

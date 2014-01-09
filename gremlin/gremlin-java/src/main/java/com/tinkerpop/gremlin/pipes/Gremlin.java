@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 
@@ -32,28 +33,28 @@ public class Gremlin<S, E> implements GremlinPipeline<S, E> {
         this(starts.iterator());
     }
 
-    public static Gremlin of() {
+    public static Gremlin<?,?> of() {
         return new Gremlin(Collections.emptyIterator());
     }
 
-    public static Gremlin of(final Graph graph) {
+    public static Gremlin<?,?> of(final Graph graph) {
         return new Gremlin(graph);
     }
 
-    public Gremlin V() {
+    public Gremlin<Vertex,Vertex> V() {
         Objects.requireNonNull(this.graph);
         final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
         this.addPipe(pipe);
         this.addStarts(new HolderIterator(pipe, this.graph.query().vertices().iterator()));
-        return this;
+        return (Gremlin)this;
     }
 
-    public Gremlin v(final Object... ids) {
+    public Gremlin<Vertex,Vertex> v(final Object... ids) {
         Objects.requireNonNull(this.graph);
         final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
         this.addPipe(pipe);
         this.addStarts(new HolderIterator(pipe, this.graph.query().ids(ids).vertices().iterator()));
-        return this;
+        return (Gremlin)this;
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {

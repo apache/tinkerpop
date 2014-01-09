@@ -26,7 +26,7 @@ public class GremlinVertexProgramTest {
         ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
                         //Gremlin.of().out("created").in("created").property("name"))
-                        Gremlin.of().as("x").outE().inV().loop("x", o -> ((Holder) o).getLoops() < 2, o -> false).value("name").map(s -> s.toString().length()).path())
+                        Gremlin.of().as("x").outE().inV().loop("x", o -> o.getLoops() < 2, o -> false).value("name").map(s -> s.toString().length()).path())
                         .build())
                         .submit().get();
 
