@@ -23,6 +23,8 @@ class TinkerVertex extends TinkerElement implements Vertex {
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
 
+    private final Strategy.Context<Vertex> strategyContext = new Strategy.Context<Vertex>(this.graph, this);
+
     protected TinkerVertex(final String id, final String label, final TinkerGraph graph) {
         super(id, label, graph);
         this.state = TinkerGraphComputer.State.STANDARD;
@@ -71,9 +73,9 @@ class TinkerVertex extends TinkerElement implements Vertex {
         // implementations first so at this point the values within them may not be the same as they originally were.
         // The composed function must then be applied with the arguments originally passed to addEdge.
         return this.graph.strategy().compose(
-                s -> s.getAddEdgeStrategy(new Strategy.Context<Vertex>(this.graph, this)),
-                (l, v, kvs) -> TinkerHelper.addEdge(this.graph, this, (TinkerVertex) v, l, kvs))
-                .apply(label, vertex, keyValues);
+            s -> s.getAddEdgeStrategy(strategyContext),
+            (l, v, kvs) -> TinkerHelper.addEdge(this.graph, this, (TinkerVertex) v, l, kvs))
+            .apply(label, vertex, keyValues);
     }
 
     public void remove() {
@@ -83,17 +85,17 @@ class TinkerVertex extends TinkerElement implements Vertex {
         // implementations first so at this point the values within them may not be the same as they originally were.
         // The composed function must then be applied with the arguments originally passed to remove.
         this.graph.strategy().compose(
-                s -> s.getRemoveVertexStrategy(new Strategy.Context<Vertex>(this.graph, this)),
-                () -> {
-                    if (!graph.vertices.containsKey(this.id))
-                        throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
+            s -> s.getRemoveVertexStrategy(strategyContext),
+            () -> {
+                if (!graph.vertices.containsKey(this.id))
+                    throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
 
-                    this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
-                    this.getProperties().clear();
-                    graph.vertexIndex.removeElement(this);
-                    graph.vertices.remove(this.id);
-                    return null;
-                }).get();
+                this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
+                this.getProperties().clear();
+                graph.vertexIndex.removeElement(this);
+                graph.vertices.remove(this.id);
+                return null;
+            }).get();
     }
 
     public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {

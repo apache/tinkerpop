@@ -38,6 +38,7 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
     protected final Strategy strategy = new Strategy.Simple();
+    private final Strategy.Context<Graph> graphContext = new Strategy.Context<Graph>(this, this);
 
     /**
      * All Graph implementations are to be constructed through the open() method and therefore Graph implementations
@@ -80,24 +81,24 @@ public class TinkerGraph implements Graph, Serializable {
         // implementations first so at this point the values within them may not be the same as they originally were.
         // The composed function must then be applied with the arguments originally passed to addVertex.
         return strategy.compose(
-                s -> s.getAddVertexStrategy(new Strategy.Context<Graph>(this, this)),
-                (kvs) -> {
-                    Objects.requireNonNull(kvs);
-                    Object idString = ElementHelper.getIdValue(kvs).orElse(null);
-                    final String label = ElementHelper.getLabelValue(kvs).orElse(null);
+            s -> s.getAddVertexStrategy(graphContext),
+            (kvs) -> {
+                Objects.requireNonNull(kvs);
+                Object idString = ElementHelper.getIdValue(kvs).orElse(null);
+                final String label = ElementHelper.getLabelValue(kvs).orElse(null);
 
-                    if (null != idString) {
-                        if (this.vertices.containsKey(idString.toString()))
-                            throw Exceptions.vertexWithIdAlreadyExists(idString);
-                    } else {
-                        idString = TinkerHelper.getNextId(this);
-                    }
+                if (null != idString) {
+                    if (this.vertices.containsKey(idString.toString()))
+                        throw Exceptions.vertexWithIdAlreadyExists(idString);
+                } else {
+                    idString = TinkerHelper.getNextId(this);
+                }
 
-                    final Vertex vertex = new TinkerVertex(idString.toString(), null == label ? Property.Key.DEFAULT_LABEL.toString() : label, this);
-                    this.vertices.put(vertex.getId().toString(), vertex);
-                    ElementHelper.attachKeyValues(vertex, kvs);
-                    return vertex;
-                }).apply(keyValues);
+                final Vertex vertex = new TinkerVertex(idString.toString(), null == label ? Property.Key.DEFAULT_LABEL.toString() : label, this);
+                this.vertices.put(vertex.getId().toString(), vertex);
+                ElementHelper.attachKeyValues(vertex, kvs);
+                return vertex;
+            }).apply(keyValues);
     }
 
     public GraphQuery query() {
