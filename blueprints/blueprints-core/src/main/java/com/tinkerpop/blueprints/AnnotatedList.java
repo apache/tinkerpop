@@ -15,10 +15,6 @@ import java.util.function.BiConsumer;
  */
 public interface AnnotatedList<V> {
 
-    public Pair<V, Annotations> get(int index);
-
-    public void add(final V value);
-
     public void add(final V value, final Object... annotationKeyValues);
 
     public Iterator<Pair<V, Annotations>> iterator();
@@ -36,7 +32,7 @@ public interface AnnotatedList<V> {
     }
 
     public static <V> AnnotatedList of(final V... values) {
-        return new DefaultAnnotatedList(Arrays.asList(values));
+        return new DefaultAnnotatedList<>(Arrays.asList(values));
     }
 
     public interface Annotations extends Map<String, Optional<Object>> {

@@ -24,8 +24,6 @@ public class StringFactory {
     public static final String ARROW = "->";
     public static final String EMPTY_PROPERTY = "p[empty]";
 
-    public static final String ID = "id";
-    public static final String LABEL = "label";
     public static final String VALUE = "value";
 
     public static String vertexString(final Vertex vertex) {

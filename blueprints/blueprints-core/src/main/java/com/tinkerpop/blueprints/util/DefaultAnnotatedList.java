@@ -23,14 +23,6 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
         initialValues.forEach(v -> this.values.add(new Pair<V, Annotations>(v, new DefaultAnnotations())));
     }
 
-    public Pair<V, Annotations> get(int index) {
-        return this.values.get(index);
-    }
-
-    public void add(final V value) {
-        this.values.add(new Pair<V, Annotations>(value, new DefaultAnnotations()));
-    }
-
     public void add(final V value, final Object... annotationKeyValues) {
         final Annotations annotation = new DefaultAnnotations();
         // TODO: Module 2 check
