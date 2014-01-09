@@ -17,33 +17,33 @@ import java.util.stream.Collectors;
  */
 public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
 
-    final List<Pair<V, Annotations>> values = new ArrayList<>();
+    final List<AnnotatedValue<V>> values = new ArrayList<>();
 
     public DefaultAnnotatedList(final List<V> initialValues) {
-        initialValues.forEach(v -> this.values.add(new Pair<V, Annotations>(v, new DefaultAnnotations())));
+        initialValues.forEach(v -> this.values.add(new DefaultAnnotatedValue<>(v)));
     }
 
-    public void add(final V value, final Object... annotationKeyValues) {
+    public void add(final V value, final Object... keyValues) {
         final Annotations annotation = new DefaultAnnotations();
         // TODO: Module 2 check
-        for (int i = 0; i < annotationKeyValues.length; i = i + 2) {
-            annotation.put((String) annotationKeyValues[i], Optional.of(annotationKeyValues[i + 1]));
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            annotation.put((String) keyValues[i], Optional.of(keyValues[i + 1]));
         }
-        this.values.add(new Pair<>(value, annotation));
+        this.values.add(new DefaultAnnotatedValue<>(value, annotation));
     }
 
     public String toString() {
         final List<V> list = new ArrayList<>();
-        this.values.forEach(p -> list.add(p.getA()));
+        this.values.forEach(a -> list.add(a.getValue()));
         return list.toString();
     }
 
-    public Iterator<Pair<V, Annotations>> iterator() {
+    public Iterator<AnnotatedValue<V>> iterator() {
         return this.values.iterator();
     }
 
     public Iterator<V> valueIterator() {
-        final Iterator<Pair<V, Annotations>> itty = values.iterator();
+        final Iterator<AnnotatedValue<V>> itty = values.iterator();
         return new Iterator<V>() {
             @Override
             public boolean hasNext() {
@@ -52,7 +52,7 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
 
             @Override
             public V next() {
-                return itty.next().getA();
+                return itty.next().getValue();
             }
         };
     }
@@ -60,9 +60,9 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
     public AnnotatedListQuery query() {
         return new DefaultAnnotatedListQuery(this) {
             @Override
-            public <V> Iterable<Pair<V, Annotations>> values() {
+            public <V> Iterable<AnnotatedValue<V>> values() {
                 return (Iterable) StreamFactory.stream(this.annotatedList.iterator())
-                        .filter(p -> HasContainer.testAllAnnotations((Pair) p, this.hasContainers))
+                        .filter(p -> HasContainer.testAllAnnotations((AnnotatedValue) p, this.hasContainers))
                         .collect(Collectors.toList());
             }
         };
@@ -76,6 +76,29 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
                 return super.get(key);
             else
                 return Optional.empty();
+        }
+    }
+
+    public class DefaultAnnotatedValue<V> implements AnnotatedValue<V> {
+
+        private final V value;
+        private final Annotations annotations;
+
+        public DefaultAnnotatedValue(final V value, final Annotations annotations) {
+            this.value = value;
+            this.annotations = annotations;
+        }
+
+        public DefaultAnnotatedValue(final V value) {
+            this(value, new DefaultAnnotations());
+        }
+
+        public V getValue() {
+            return this.value;
+        }
+
+        public Annotations getAnnotations() {
+            return this.annotations;
         }
     }
 }

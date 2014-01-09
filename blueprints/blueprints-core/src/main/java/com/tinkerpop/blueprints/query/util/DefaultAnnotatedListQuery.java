@@ -3,7 +3,6 @@ package com.tinkerpop.blueprints.query.util;
 import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.query.AnnotatedListQuery;
-import com.tinkerpop.blueprints.util.Pair;
 
 import java.util.function.BiPredicate;
 
@@ -55,7 +54,7 @@ public abstract class DefaultAnnotatedListQuery extends DefaultQuery implements 
         return this;
     }
 
-    public abstract <V> Iterable<Pair<V, AnnotatedList.Annotations>> values();
+    public abstract <V> Iterable<AnnotatedList.AnnotatedValue<V>> values();
 
 
 }

@@ -2,7 +2,6 @@ package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.query.AnnotatedListQuery;
 import com.tinkerpop.blueprints.util.DefaultAnnotatedList;
-import com.tinkerpop.blueprints.util.Pair;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -15,19 +14,19 @@ import java.util.function.BiConsumer;
  */
 public interface AnnotatedList<V> {
 
-    public void add(final V value, final Object... annotationKeyValues);
+    public void add(final V value, final Object... keyValues);
 
-    public Iterator<Pair<V, Annotations>> iterator();
+    public Iterator<AnnotatedValue<V>> iterator();
 
     public Iterator<V> valueIterator();
 
     public AnnotatedListQuery query();
 
     public default void forEach(final BiConsumer<V, Annotations> consumer) {
-        final Iterator<Pair<V, Annotations>> itty = this.iterator();
+        final Iterator<AnnotatedValue<V>> itty = this.iterator();
         while (itty.hasNext()) {
-            final Pair<V, Annotations> pair = itty.next();
-            consumer.accept(pair.getA(), pair.getB());
+            final AnnotatedValue<V> value = itty.next();
+            consumer.accept(value.getValue(), value.getAnnotations());
         }
     }
 
@@ -37,6 +36,13 @@ public interface AnnotatedList<V> {
 
     public interface Annotations extends Map<String, Optional<Object>> {
 
+    }
+
+    public interface AnnotatedValue<V> {
+
+        public V getValue();
+
+        public Annotations getAnnotations();
     }
 
 }

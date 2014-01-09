@@ -5,7 +5,6 @@ import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.query.Query;
-import com.tinkerpop.blueprints.util.Pair;
 import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.util.ArrayList;
@@ -83,17 +82,17 @@ public abstract class DefaultQuery implements Query {
             return hasContainers.size() == 0 || hasContainers.stream().filter(c -> c.test(element)).count() == hasContainers.size();
         }
 
-        public <V> boolean testAnnotations(final Pair<V, AnnotatedList.Annotations> pair) {
+        public <V> boolean testAnnotations(final AnnotatedList.AnnotatedValue<V> annotatedValue) {
             if (this.key.equals(StringFactory.VALUE))
-                return this.predicate.test(pair.getA(), this.value);
+                return this.predicate.test(annotatedValue.getValue(), this.value);
 
-            if (null == pair.getB() || !pair.getB().get(this.key).isPresent())
+            if (null == annotatedValue.getAnnotations() || !annotatedValue.getAnnotations().get(this.key).isPresent())
                 return false;
-            return this.predicate.test(pair.getB().get(this.key).get(), this.value);
+            return this.predicate.test(annotatedValue.getAnnotations().get(this.key).get(), this.value);
         }
 
-        public static <V> boolean testAllAnnotations(final Pair<V, AnnotatedList.Annotations> pair, final List<HasContainer> hasContainers) {
-            return hasContainers.size() == 0 || hasContainers.stream().filter(c -> c.testAnnotations(pair)).count() == hasContainers.size();
+        public static <V> boolean testAllAnnotations(final AnnotatedList.AnnotatedValue<V> annotatedValue, final List<HasContainer> hasContainers) {
+            return hasContainers.size() == 0 || hasContainers.stream().filter(c -> c.testAnnotations(annotatedValue)).count() == hasContainers.size();
         }
     }
 }

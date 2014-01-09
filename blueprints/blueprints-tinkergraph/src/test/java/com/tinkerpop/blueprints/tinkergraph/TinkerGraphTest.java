@@ -41,7 +41,7 @@ public class TinkerGraphTest {
     }
 
     @Test
-    public void testListing() {
+    public void testAnnotatedList() {
         final TinkerGraph g = TinkerGraph.open();
         Vertex marko = g.addVertex();
         marko.setProperty("names", AnnotatedList.of("marko", "mrodriguez"));
@@ -52,7 +52,7 @@ public class TinkerGraphTest {
 
         System.out.println("----");
 
-        marko.<AnnotatedList>getProperty("names").getValue().query().has("time", Compare.EQUAL, 1).values().forEach(p -> System.out.println(p.getA()));
+        marko.<AnnotatedList>getProperty("names").getValue().query().has("time", Compare.EQUAL, 1).values().forEach(p -> System.out.println(p.getValue()));
 
     }
 
