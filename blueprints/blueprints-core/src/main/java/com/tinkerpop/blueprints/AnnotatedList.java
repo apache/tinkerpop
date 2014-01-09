@@ -19,7 +19,7 @@ public interface AnnotatedList<V> {
 
     public void add(final V value);
 
-    public void add(final V value, final Object... attributeKeyValues);
+    public void add(final V value, final Object... annotationKeyValues);
 
     public Iterator<Pair<V, Annotations>> iterator();
 
