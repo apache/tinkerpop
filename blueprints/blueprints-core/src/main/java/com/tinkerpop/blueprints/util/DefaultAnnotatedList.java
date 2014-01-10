@@ -7,11 +7,7 @@ import com.tinkerpop.blueprints.query.util.DefaultAnnotatedListQuery;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -32,16 +28,13 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
         return annotatedValue;
     }
 
-    public boolean isEmpty() {
-        return this.annotatedValues.isEmpty();
-    }
-
     public AnnotatedListQuery<V> query() {
         return new DefaultAnnotatedListQuery<V>(this) {
             @Override
             public Iterable<AnnotatedValue<V>> annotatedValues() {
                 return (Iterable) StreamFactory.stream(annotatedValues.iterator())
                         .filter(p -> HasContainer.testAllOfAnnotatedValue((AnnotatedValue) p, this.hasContainers))
+                        .limit(this.limit)
                         .collect(Collectors.toList());
             }
 
@@ -67,10 +60,6 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
             annotations.getKeys().forEach(k -> this.annotations.set(k, annotations.get(k).get()));
         }
 
-        public DefaultAnnotatedValue(final V value) {
-            this(value, new DefaultAnnotations());
-        }
-
         public V getValue() {
             return this.value;
         }
@@ -79,8 +68,13 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
             return this.annotations;
         }
 
-        public String toString() {
-            return "[" + this.value + ":" + this.annotations + "]";
+        public void remove() {
+            annotatedValues.remove(this);
         }
+
+        public String toString() {
+            return StringFactory.annotatedValueString(this);
+        }
+
     }
 }
