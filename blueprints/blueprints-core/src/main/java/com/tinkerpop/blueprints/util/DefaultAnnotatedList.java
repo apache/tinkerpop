@@ -73,7 +73,7 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
         }
 
         public String toString() {
-            return "[" + this.value + ":" + this.annotations + "]";
+            return StringFactory.annotatedValueString(this);
         }
 
     }

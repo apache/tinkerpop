@@ -46,7 +46,7 @@ public class TinkerGraphTest {
         Vertex marko = g.addVertex();
         marko.setProperty("names", AnnotatedList.make());
         Property<AnnotatedList<String>> names = marko.getProperty("names");
-        names.get().addValue("marko", "time", 1);
+        System.out.println(names.get().addValue("marko", "time", 1));
         names.get().addValue("antonio", "time", 2);
         names.get().addValue("mrodriguez", "time", 7);
         System.out.println(names);

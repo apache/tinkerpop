@@ -21,6 +21,8 @@ public class StringFactory {
     public static final String L_BRACKET = "[";
     public static final String R_BRACKET = "]";
     public static final String COMMA_SPACE = ", ";
+    public static final String COLON = ":";
+    public static final String EMPTY_MAP = "{}";
     public static final String DOTS = "...";
     public static final String DASH = "-";
     public static final String ARROW = "->";
@@ -51,5 +53,9 @@ public class StringFactory {
             builder.append(DOTS);
         builder.append(R_BRACKET);
         return builder.toString();
+    }
+
+    public static String annotatedValueString(final AnnotatedList.AnnotatedValue annotatedValue) {
+        return L_BRACKET + annotatedValue.getValue() + COLON + EMPTY_MAP + R_BRACKET;
     }
 }
