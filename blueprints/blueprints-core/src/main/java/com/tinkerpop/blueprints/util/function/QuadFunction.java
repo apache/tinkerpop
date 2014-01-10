@@ -38,7 +38,7 @@ public interface QuadFunction<A,B,C,D,R> {
      *
      * @param after the function to apply after this function is applied
      * @param <V> the type of the output of the {@code after} function, and of the composed function
-     * @return a composed function that first applies this functiona nd then applies the {@code after} function.
+     * @return a composed function that first applies this function and then applies the {@code after} function.
      */
     public default <V> QuadFunction<A, B, C, D, V> andThen(final Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
