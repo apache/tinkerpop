@@ -9,7 +9,8 @@ import com.tinkerpop.blueprints.Vertex;
 
 
 /**
- * A collection of helpful methods for creating standard toString() representations of graph-related objects.
+ * A collection of helpful methods for creating standard {@link Object#toString()} representations of graph-related
+ * objects.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

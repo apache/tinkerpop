@@ -68,12 +68,12 @@ public class ElementHelper {
     }
 
     /**
-     * A standard method for determining if two elements are equal.
-     * This method should be used by any Element.equals() implementation to ensure consistent behavior.
+     * A standard method for determining if two elements are equal. This method should be used by any
+     * {@link Element#equals(Object)} implementation to ensure consistent behavior.
      *
-     * @param a The first element
-     * @param b The second element (as an object)
-     * @return Whether the two elements are equal
+     * @param a The first {@link Element}
+     * @param b The second {@link Element} (as an {@link Object})
+     * @return true if elements and equal and false otherwise
      */
     public static boolean areEqual(final Element a, final Object b) {
         Objects.requireNonNull(a);
@@ -86,11 +86,11 @@ public class ElementHelper {
     }
 
     /**
-     * Simply tests if the element ids are equal().
+     * Simply tests if the value returned from {@link com.tinkerpop.blueprints.Element#getId()} are {@code equal()}.
      *
-     * @param a the first element
-     * @param b the second element
-     * @return Whether the two elements have equal ids
+     * @param a the first {@link Element}
+     * @param b the second {@link Element}
+     * @return true if ids are equal and false otherwise
      */
     public static boolean haveEqualIds(final Element a, final Element b) {
         return a.getId().equals(b.getId());

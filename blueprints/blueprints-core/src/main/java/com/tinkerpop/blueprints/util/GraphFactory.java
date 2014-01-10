@@ -12,19 +12,19 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Factory to construct new Graph instances from a Configuration object or properties file.
+ * Factory to construct new {@link Graph} instances from a {@link Configuration} object or properties file.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphFactory {
 
     /**
-     * Open a graph.  See each Graph instance for its configuration options.
+     * Open a graph.  See each {@link Graph} instance for its configuration options.
      *
-     * @param configuration A configuration object that specifies the minimally required properties for a Graph instance.
-     *                      This minimum is determined by the Graph instance itself.
+     * @param configuration A configuration object that specifies the minimally required properties for a {@link Graph}
+     *                      instance. This minimum is determined by the {@link Graph} instance itself.
      * @param strategy A {@link com.tinkerpop.blueprints.strategy.GraphStrategy} to plug into the underlying {@link Graph} being constructed.
-     * @return A Graph instance.
+     * @return A {@link Graph} instance.
      */
     public static Graph open(final Configuration configuration, final Optional<? extends GraphStrategy> strategy) {
         if (null == configuration)
@@ -60,21 +60,22 @@ public class GraphFactory {
     }
 
     /**
-     * Open a graph.  See each Graph instance for its configuration options.
+     * Open a graph.  See each {@link Graph} instance for its configuration options.
      *
      * @param configurationFile The location of a configuration file that specifies the minimally required properties
-     *                          for a Graph instance. This minimum is determined by the Graph instance itself.
-     * @return A Graph instance.
+     *                          for a {@link Graph} instance. This minimum is determined by the {@link Graph} instance
+     *                          itself.
+     * @return A {@link Graph} instance.
      */
     public static Graph open(final String configurationFile) {
         return open(getConfiguration(new File(configurationFile)));
     }
 
     /**
-     * Open a graph. See each Graph instance for its configuration options.
+     * Open a graph. See each {@link Graph} instance for its configuration options.
      *
-     * @param configuration A Map based configuration that will be converted to an Apache configuration object
-     *                      via MapConfiguration and passed to the appropriate overload.
+     * @param configuration A {@link Map} based configuration that will be converted to an {@link Configuration} object
+     *                      via {@link MapConfiguration} and passed to the appropriate overload.
      * @return A Graph instance.
      */
     public static Graph open(final Map configuration) {
