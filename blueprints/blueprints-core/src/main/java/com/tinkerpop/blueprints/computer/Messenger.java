@@ -10,9 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * The Messenger serves as the routing system for messages between vertices.
- * For distributed systems, the messenger can implement a "message passing" engine (distributed memory).
- * For single machine systems, the messenger can implement a "state sharing" engine (shared memory).
+ * The {@link Messenger} serves as the routing system for messages between vertices. For distributed systems,
+ * the messenger can implement a "message passing" engine (distributed memory). For single machine systems, the
+ * messenger can implement a "state sharing" engine (shared memory).
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)

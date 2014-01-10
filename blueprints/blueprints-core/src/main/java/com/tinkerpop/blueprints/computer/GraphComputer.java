@@ -3,10 +3,11 @@ package com.tinkerpop.blueprints.computer;
 import java.util.concurrent.Future;
 
 /**
- * The GraphComputer is responsible for the execution of a VertexProgram against the vertices in the Graph.
- * A GraphComputer maintains a VertexMemory (local vertex memory) and GraphMemory (global graph memory).
- * It is up to the GraphComputer implementation to determine the appropriate memory structures given the computing substrate.
- * All GraphComputers also maintains levels of memory isolation: Bulk Synchronous Parallel and Dirty Bulk Synchronous Parallel.
+ * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} against the vertices in the
+ * {@link Graph}. A {@link GraphComputer} maintains a {@link VertexMemory} (local vertex memory) and
+ * {@link GraphMemory} (global graph memory). It is up to the {@link GraphComputer} implementation to determine the
+ * appropriate memory structures given the computing substrate. All {@link GraphComputer} implementations also
+ * maintains levels of memory isolation: Bulk Synchronous Parallel and Dirty Bulk Synchronous Parallel.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)

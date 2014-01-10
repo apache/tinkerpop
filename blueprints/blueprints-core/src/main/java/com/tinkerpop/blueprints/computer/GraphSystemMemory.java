@@ -1,7 +1,7 @@
 package com.tinkerpop.blueprints.computer;
 
 /**
- * These methods are not intended to be available to the developer of a VertexProgram.
+ * These methods are not intended to be available to the developer of a {@link VertexProgram}.
  * As such, they are in an extending interface with the parent interface being the typical cast.
  *
  * @author Matthias Broecheler (me@matthiasb.com)

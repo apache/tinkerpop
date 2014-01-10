@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * A VertexProgram represents one component of a distributed graph computation.
- * Each applicable vertex (theoretically) maintains a VertexProgram instance.
- * The collective behavior of all instances yields the computational result.
+ * A {@link VertexProgram} represents one component of a distributed graph computation. Each applicable vertex
+ * (theoretically) maintains a {@link VertexProgram} instance. The collective behavior of all instances yields
+ * the computational result.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
@@ -23,8 +23,8 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
     }
 
     /**
-     * The method is called at the beginning of the computation.
-     * The method is global to the GraphComputer and as such, is not called for each vertex.
+     * The method is called at the beginning of the computation. The method is global to the {@link GraphComputer}
+     * and as such, is not called for each vertex.
      *
      * @param graphMemory The global GraphMemory of the GraphComputer
      */
@@ -33,17 +33,17 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
      *
-     * @param vertex      the vertex to execute the VertexProgram on
+     * @param vertex      the {@link Vertex} to execute the {@link VertexProgram} on
      * @param messenger   the messenger that moves data between vertices
      * @param graphMemory the shared state between all vertices in the computation
      */
     public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory);
 
     /**
-     * The method is called at the end of a round to determine if the computation is complete.
-     * The method is global to the GraphComputer and as such, is not called for each vertex.
+     * The method is called at the end of a round to determine if the computation is complete. The method is global
+     * to the {@link GraphComputer} and as such, is not called for each {@link Vertex}.
      *
-     * @param graphMemory The global GraphMemory of the GraphComputer
+     * @param graphMemory The global {@link GraphMemory} of the {@link GraphComputer}
      * @return whether or not to halt the computation
      */
     public boolean terminate(final GraphMemory graphMemory);
