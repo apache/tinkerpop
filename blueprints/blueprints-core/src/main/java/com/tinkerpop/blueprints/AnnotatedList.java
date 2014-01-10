@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.query.AnnotatedListQuery;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
+ * @author Sridhar Ramachandran (lambdazen@gmail.com)
  */
 public interface AnnotatedList<V> {
 

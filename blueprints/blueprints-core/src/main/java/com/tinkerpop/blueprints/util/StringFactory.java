@@ -16,20 +16,19 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public class StringFactory {
 
-    public static final String V = "v";
-    public static final String E = "e";
-    public static final String P = "p";
-    public static final String L_BRACKET = "[";
-    public static final String R_BRACKET = "]";
-    public static final String COMMA_SPACE = ", ";
-    public static final String COLON = ":";
-    public static final String EMPTY_MAP = "{}";
-    public static final String DOTS = "...";
-    public static final String DASH = "-";
-    public static final String ARROW = "->";
-    public static final String EMPTY_PROPERTY = "p[empty]";
-
-    public static final String VALUE = "value";
+    private static final String V = "v";
+    private static final String E = "e";
+    private static final String P = "p";
+    private static final String L_BRACKET = "[";
+    private static final String R_BRACKET = "]";
+    private static final String COMMA_SPACE = ", ";
+    private static final String COLON = ":";
+    private static final String EMPTY_MAP = "{}";
+    private static final String DOTS = "...";
+    private static final String DASH = "-";
+    private static final String ARROW = "->";
+    private static final String EMPTY_PROPERTY = "p[empty]";
+    private static final String VALUE = "value";
 
     public static String vertexString(final Vertex vertex) {
         return V + L_BRACKET + vertex.getId() + R_BRACKET;
@@ -40,7 +39,7 @@ public class StringFactory {
     }
 
     public static String propertyString(final Property property) {
-        return P + L_BRACKET + property.getKey() + ARROW + property.get() + R_BRACKET;
+        return property.isPresent() ? P + L_BRACKET + property.getKey() + ARROW + property.get() + R_BRACKET : EMPTY_PROPERTY;
     }
 
     public static String graphString(final Graph graph, final String internalString) {

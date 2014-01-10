@@ -16,12 +16,18 @@ import java.util.function.BiPredicate;
  * @author Pierre De Wilde
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum Contains implements BiPredicate<Object, Collection> {
+public enum Contains implements BiPredicate<Object, Object> {
 
     IN, NOT_IN;
 
-    public boolean test(final Object first, final Collection second) {
-        return this.equals(IN) ? second.contains(first) : !second.contains(first);
+    public boolean test(final Object first, final Object second) {
+        if (second instanceof Collection)
+            return this.equals(IN) ? ((Collection) second).contains(first) : !((Collection) second).contains(first);
+        else if (second instanceof AnnotatedList) {
+            final boolean exists = ((AnnotatedList) second).query().has(Annotations.Key.VALUE, first).limit(1).values().iterator().hasNext();
+            return this.equals(IN) ? exists : !exists;
+        } else
+            throw new IllegalArgumentException("The provide argument must be either a Collection or AnnotatedList: " + second.getClass());
     }
 
     public Contains opposite() {
