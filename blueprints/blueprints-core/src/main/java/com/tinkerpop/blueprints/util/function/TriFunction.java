@@ -1,4 +1,4 @@
-package com.tinkerpop.blueprints.util;
+package com.tinkerpop.blueprints.util.function;
 
 import java.util.Objects;
 import java.util.function.Function;

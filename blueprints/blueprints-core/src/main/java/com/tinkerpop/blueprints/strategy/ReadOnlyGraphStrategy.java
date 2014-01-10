@@ -4,7 +4,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.TriFunction;
+import com.tinkerpop.blueprints.util.function.TriFunction;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
