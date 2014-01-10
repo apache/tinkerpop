@@ -13,7 +13,7 @@ import java.util.Objects;
  * @param <B> the type of the second argument to the operation
  * @param <C> the type of the third argument to the operation
  * @param <D> the type of the fourth argument to the operation
- * @param <E> the type of the fourth argument to the operation
+ * @param <E> the type of the fifth argument to the operation
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -26,7 +26,7 @@ public interface QuintConsumer<A,B,C,D,E> {
      * @param b the second argument to the operation
      * @param c the third argument to the operation
      * @param d the fourth argument to the operation
-     * @param e the fourth argument to the operation
+     * @param e the fifth argument to the operation
      */
     public void accept(final A a, final B b, final C c, final D d, final E e);
 
