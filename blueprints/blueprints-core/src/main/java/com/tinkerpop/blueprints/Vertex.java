@@ -3,10 +3,14 @@ package com.tinkerpop.blueprints;
 import com.tinkerpop.blueprints.query.VertexQuery;
 
 /**
- * A vertex maintains pointers to both a set of incoming and outgoing edges. The outgoing edges are those edges for
- * which the vertex is the tail. The incoming edges are those edges for which the vertex is the head.
+ * A {@link Vertex} maintains pointers to both a set of incoming and outgoing {@link Edge} objects. The outgoing edges
+ * are those edges for  which the {@link Vertex} is the tail. The incoming edges are those edges for which the
+ * {@link Vertex} is the head.
  * <p/>
- * Diagrammatically, ---inEdges---> vertex ---outEdges--->.
+ * Diagrammatically:
+ * <pre>
+ * ---inEdges---> vertex ---outEdges--->.
+ * </pre>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

@@ -69,7 +69,7 @@ public class ElementHelper {
 
     /**
      * A standard method for determining if two elements are equal. This method should be used by any
-     * {@link Element#equals(Object)} implementation to ensure consistent behavior.
+     * {@link Object#equals(Object)} implementation to ensure consistent behavior.
      *
      * @param a The first {@link Element}
      * @param b The second {@link Element} (as an {@link Object})

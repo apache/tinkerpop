@@ -15,8 +15,8 @@ import java.util.function.UnaryOperator;
  * Defines a collection of functions that plug-in to Blueprints API methods to enhance or alter the functionality of
  * the implementation. The methods defined in {@link GraphStrategy} follow a common pattern where each method
  * represents some injection point for new logic in the Blueprints API.  A method always accepts a
- * {@link Strategy.Context} which contains the context of the call being made and will have a different
- * {@link com.tinkerpop.blueprints.Strategy.Context#getCurrent()} object depending on that context (e.g the
+ * {@link com.tinkerpop.blueprints.Strategy.Context} which contains the context of the call being made and will have
+ * a different {@link com.tinkerpop.blueprints.Strategy.Context#getCurrent()} object depending on that context (e.g the
  * {@link Vertex#addEdge(String, com.tinkerpop.blueprints.Vertex, Object...)} method will send the instance of
  * the {@link Vertex} that was the object of that method call).
  * <p/>

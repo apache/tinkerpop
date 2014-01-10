@@ -12,8 +12,9 @@ import java.util.stream.Stream;
 /**
  * For those graph engines that do not support the low-level querying of the vertices or edges, then
  * {@link DefaultGraphQuery} can be used. {@link DefaultGraphQuery} assumes, at minimum, that
- * {@link com.tinkerpop.blueprints.Graph#query#vertices()}  and {@link com.tinkerpop.blueprints.Graph#query#edges()} is
- * implemented by the respective {@link com.tinkerpop.blueprints.Graph}.
+ * {@link com.tinkerpop.blueprints.query.GraphQuery#vertices()} and
+ * {@link com.tinkerpop.blueprints.query.GraphQuery#edges()} is implemented by the respective
+ * {@link com.tinkerpop.blueprints.Graph}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
