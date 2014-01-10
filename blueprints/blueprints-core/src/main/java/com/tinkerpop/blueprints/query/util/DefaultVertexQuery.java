@@ -11,8 +11,9 @@ import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
- * For those graph engines that do not support the low-level querying of the edges of a vertex, then DefaultVertexQuery can be used.
- * DefaultVertexQuery assumes, at minimum, that Vertex.query().edges() is implemented by the respective Vertex.
+ * For those graph engines that do not support the low-level querying of the edges of a vertex, then
+ * {@link DefaultVertexQuery} can be used. It assumes, at minimum, that
+ * {@link com.tinkerpop.blueprints.query.VertexQuery#vertices()} is implemented by the respective {@link Vertex}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
