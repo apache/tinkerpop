@@ -58,6 +58,7 @@ public interface Graph extends AutoCloseable {
         public interface GraphFeatures extends FeatureSet {
             public static final String FEATURE_COMPUTER = "Computer";
             public static final String FEATURE_TRANSACTIONS = "Transactions";
+            public static final String FEATURE_ANNOTATIONS = "Annotations";
 
             @FeatureDescriptor(name = FEATURE_COMPUTER)
             public default boolean supportsComputer() {
@@ -66,6 +67,11 @@ public interface Graph extends AutoCloseable {
 
             @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
             public default boolean supportsTransactions() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_ANNOTATIONS)
+            public default boolean supportsAnnotations() {
                 return true;
             }
 
