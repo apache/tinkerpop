@@ -55,32 +55,6 @@ public class TinkerProperty<V> implements Property<V> {
         return null != this.value;
     }
 
-    public <V> void setAnnotation(final String key, final V value) {
-        if (TinkerGraphComputer.State.STANDARD == this.state) {
-            this.annotations.put(key, value);
-        } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
-            if (this.vertexMemory.isComputeKey(key))
-                this.vertexMemory.setAnnotation(this, key, value);
-            else
-                throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-        } else {
-            throw GraphComputer.Exceptions.adjacentAnnotationsCanNotBeReadOrWritten();
-        }
-    }
-
-    public <V> Optional<V> getAnnotation(final String key) {
-        if (this.state == TinkerGraphComputer.State.STANDARD) {
-            return Optional.ofNullable((V) this.annotations.get(key));
-        } else if (this.state == TinkerGraphComputer.State.CENTRIC) {
-            if (this.vertexMemory.isComputeKey(key))
-                return this.vertexMemory.getAnnotation(this, key);
-            else
-                return Optional.ofNullable((V) this.annotations.get(key));
-        } else {
-            throw GraphComputer.Exceptions.adjacentAnnotationsCanNotBeReadOrWritten();
-        }
-    }
-
     public TinkerProperty<V> createClone(final TinkerGraphComputer.State state, final TinkerVertexMemory vertexMemory) {
         return new TinkerProperty<V>(this, state, vertexMemory) {
             @Override

@@ -4,14 +4,13 @@ import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract interface Property<V> extends Annotatable {
+public abstract interface Property<V> {
 
     public class Key {
 
@@ -28,34 +27,6 @@ public abstract interface Property<V> extends Annotatable {
     public String getKey();
 
     public V get() throws NoSuchElementException;
-
-    /*public default String getString() {
-        return (String) get();
-    }
-
-    public default Boolean getBoolean() {
-        return (Boolean) get();
-    }
-
-    public default Integer getInt() {
-        return (Integer) get();
-    }
-
-    public default Long getLong() {
-        return (Long) get();
-    }
-
-    public default Float getFloat() {
-        return (Float) get();
-    }
-
-    public default Double getDouble() {
-        return (Double) get();
-    }
-
-    public default <T> AnnotatedList<T> getAnnotatedList() {
-        return (AnnotatedList<T>) get();
-    }*/
 
     public boolean isPresent();
 
@@ -100,16 +71,6 @@ public abstract interface Property<V> extends Annotatable {
 
             @Override
             public void remove() {
-                throw Exceptions.propertyDoesNotExist();
-            }
-
-            @Override
-            public <V> void setAnnotation(final String key, final V value) {
-                throw Exceptions.propertyDoesNotExist();
-            }
-
-            @Override
-            public <V> Optional<V> getAnnotation(final String key) {
                 throw Exceptions.propertyDoesNotExist();
             }
 

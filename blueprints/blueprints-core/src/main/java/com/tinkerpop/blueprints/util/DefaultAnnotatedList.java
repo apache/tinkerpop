@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.AnnotatedList;
+import com.tinkerpop.blueprints.Annotations;
 import com.tinkerpop.blueprints.query.AnnotatedListQuery;
 import com.tinkerpop.blueprints.query.util.DefaultAnnotatedListQuery;
 
@@ -53,28 +54,6 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
 
     public String toString() {
         return StringFactory.annotatedListString(this);
-    }
-
-
-    public class DefaultAnnotations implements Annotations {
-
-        private final Map<String, Object> annotations = new HashMap<>();
-
-        public <T> Optional<T> get(final String key) {
-            return Optional.ofNullable((T) this.annotations.get(key));
-        }
-
-        public void set(final String key, final Object value) {
-            this.annotations.put(key, value);
-        }
-
-        public Set<String> getKeys() {
-            return this.annotations.keySet();
-        }
-
-        public String toString() {
-            return this.annotations.toString();
-        }
     }
 
     public class DefaultAnnotatedValue<V> implements AnnotatedValue<V> {

@@ -15,7 +15,7 @@ import java.util.Optional;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Graph extends AutoCloseable, Annotatable {
+public interface Graph extends AutoCloseable {
 
     public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<GraphStrategy> strategy) {
         throw new UnsupportedOperationException("Implementations must override this method");
@@ -30,6 +30,8 @@ public interface Graph extends AutoCloseable, Annotatable {
     public Transaction tx();
 
     public Strategy strategy();
+
+    public Annotations annotations();
 
     public default Graph.Features getFeatures() {
         return new Features() {

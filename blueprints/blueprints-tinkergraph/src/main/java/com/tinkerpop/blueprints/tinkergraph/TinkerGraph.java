@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
+import com.tinkerpop.blueprints.Annotations;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -10,6 +11,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
+import com.tinkerpop.blueprints.util.DefaultAnnotations;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
@@ -32,7 +34,7 @@ public class TinkerGraph implements Graph, Serializable {
     protected Long currentId = -1l;
     protected Map<String, Vertex> vertices = new HashMap<>();
     protected Map<String, Edge> edges = new HashMap<>();
-    protected Map<String, Object> annotations = new HashMap<>();
+    protected Annotations annotations = new DefaultAnnotations();
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
@@ -81,24 +83,24 @@ public class TinkerGraph implements Graph, Serializable {
         // implementations first so at this point the values within them may not be the same as they originally were.
         // The composed function must then be applied with the arguments originally passed to addVertex.
         return strategy.compose(
-            s -> s.getAddVertexStrategy(graphContext),
-            (kvs) -> {
-                Objects.requireNonNull(kvs);
-                Object idString = ElementHelper.getIdValue(kvs).orElse(null);
-                final String label = ElementHelper.getLabelValue(kvs).orElse(null);
+                s -> s.getAddVertexStrategy(graphContext),
+                (kvs) -> {
+                    Objects.requireNonNull(kvs);
+                    Object idString = ElementHelper.getIdValue(kvs).orElse(null);
+                    final String label = ElementHelper.getLabelValue(kvs).orElse(null);
 
-                if (null != idString) {
-                    if (this.vertices.containsKey(idString.toString()))
-                        throw Exceptions.vertexWithIdAlreadyExists(idString);
-                } else {
-                    idString = TinkerHelper.getNextId(this);
-                }
+                    if (null != idString) {
+                        if (this.vertices.containsKey(idString.toString()))
+                            throw Exceptions.vertexWithIdAlreadyExists(idString);
+                    } else {
+                        idString = TinkerHelper.getNextId(this);
+                    }
 
-                final Vertex vertex = new TinkerVertex(idString.toString(), null == label ? Property.Key.DEFAULT_LABEL.toString() : label, this);
-                this.vertices.put(vertex.getId().toString(), vertex);
-                ElementHelper.attachKeyValues(vertex, kvs);
-                return vertex;
-            }).apply(keyValues);
+                    final Vertex vertex = new TinkerVertex(idString.toString(), null == label ? Property.Key.DEFAULT_LABEL.toString() : label, this);
+                    this.vertices.put(vertex.getId().toString(), vertex);
+                    ElementHelper.attachKeyValues(vertex, kvs);
+                    return vertex;
+                }).apply(keyValues);
     }
 
     public GraphQuery query() {
@@ -113,12 +115,8 @@ public class TinkerGraph implements Graph, Serializable {
         return this.strategy;
     }
 
-    public <V> void setAnnotation(final String key, final V value) {
-        this.annotations.put(key, value);
-    }
-
-    public <V> Optional<V> getAnnotation(final String key) {
-        return Optional.ofNullable((V) this.annotations.get(key));
+    public Annotations annotations() {
+        return this.annotations;
     }
 
     public String toString() {
@@ -128,7 +126,7 @@ public class TinkerGraph implements Graph, Serializable {
     public void clear() {
         this.vertices.clear();
         this.edges.clear();
-        this.annotations.clear();
+        this.annotations = new DefaultAnnotations();
         this.currentId = 0l;
         this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
         this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);

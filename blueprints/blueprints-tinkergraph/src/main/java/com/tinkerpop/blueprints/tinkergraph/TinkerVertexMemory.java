@@ -9,7 +9,6 @@ import com.tinkerpop.blueprints.computer.util.VertexMemoryHelper;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -57,25 +56,14 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         this.setValue(element.getId().toString(), key, property);
     }
 
-    public <V> void setAnnotation(final Property property, final String key, final V value) {
-        VertexMemoryHelper.validateComputeKeyValue(this, key, value);
-        this.setValue(property.getElement().getId() + ":" + property.getKey(), key, value);
-    }
 
     public <V> Property<V> getProperty(final Element element, final String key) {
         return this.getProperty(element.getId().toString(), key);
     }
 
-    public <V> Optional<V> getAnnotation(final Property property, final String key) {
-        return this.getAnnotation(property.getElement().getId() + ":" + property.getKey(), key);
-    }
 
-    public void removeProperty(final Element element, final String key) {
+    private void removeProperty(final Element element, final String key) {
         this.removeValue(element.getId().toString(), key);
-    }
-
-    public void removeAnnotation(final Property property, final String key) {
-        this.removeValue(property.getElement().getId() + ":" + property.getKey(), key);
     }
 
     private void setValue(final String id, final String key, final Object value) {
@@ -91,11 +79,6 @@ public class TinkerVertexMemory implements VertexSystemMemory {
         final Map<String, Object> map = this.setMap.get(id);
         if (null != map)
             map.remove(key);
-    }
-
-    private <V> Optional<V> getAnnotation(final String id, final String key) {
-        final Map<String, Object> map = this.isConstantKey(key) ? this.constantMap.get(id) : this.getMap.get(id);
-        return null == map ? Optional.empty() : Optional.ofNullable((V) map.get(key));
     }
 
     private <V> Property<V> getProperty(final String id, final String key) {
