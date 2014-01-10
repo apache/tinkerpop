@@ -7,11 +7,7 @@ import com.tinkerpop.blueprints.query.util.DefaultAnnotatedListQuery;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -30,10 +26,6 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
         final AnnotatedValue<V> annotatedValue = new DefaultAnnotatedValue<>(value, annotation);
         this.annotatedValues.add(annotatedValue);
         return annotatedValue;
-    }
-
-    public boolean isEmpty() {
-        return this.annotatedValues.isEmpty();
     }
 
     public AnnotatedListQuery<V> query() {
@@ -65,10 +57,6 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
             this.value = value;
             this.annotations = new DefaultAnnotations();
             annotations.getKeys().forEach(k -> this.annotations.set(k, annotations.get(k).get()));
-        }
-
-        public DefaultAnnotatedValue(final V value) {
-            this(value, new DefaultAnnotations());
         }
 
         public V getValue() {
