@@ -53,12 +53,14 @@ public interface Transaction extends Closeable {
     }
 
     /**
-     * A Workload represents a unit of work constructed by the encapsulate() method on the Transaction interface.
-     * The unit of work is a Function typically containing mutations to the Graph.  The Workload is responsible for
-     * executing the unit of work in the context of a retry strategy, such that a failed unit of work is rolled
-     * back and executed again until retries are exhausted or the unit of work succeeds with a commit operation.
+     * A {@link Workload} represents a unit of work constructed by the
+     * {@link Workload#submit(java.util.function.Function)} method on the {@link Transaction} interface.
+     * The unit of work is a {@link Function} typically containing mutations to the {@link Graph}.  The
+     * {@link Workload} is responsible for executing the unit of work in the context of a retry strategy, such that a
+     * failed unit of work is rolled back and executed again until retries are exhausted or the unit of work succeeds
+     * with a commit operation.
      *
-     * @param <G> The Graph instance.
+     * @param <G> The {@link Graph} instance.
      * @param <R> The type of the result from the unit of work.
      */
     public static class Workload<G extends Graph, R> {
@@ -69,9 +71,9 @@ public interface Transaction extends Closeable {
         private final G g;
 
         /**
-         * Creates a new Workload that will be tried to be executed within a transaction.
+         * Creates a new {@link Workload} that will be tried to be executed within a transaction.
          *
-         * @param g    The Graph instance on which the work will be performed.
+         * @param g    The {@link Graph} instance on which the work will be performed.
          * @param work The work to be executed on the Graph instance which will optionally return a value.
          */
         public Workload(final G g, final Function<G, R> work) {
@@ -80,7 +82,7 @@ public interface Transaction extends Closeable {
         }
 
         /**
-         * Try to execute a workload with a custom retry strategy.
+         * Try to execute a {@link Workload} with a custom retry strategy.
          *
          * @param retryStrategy The first argument to this function is the Graph instance and the second is
          *                      the encapsulated work to be performed.  The function should ultimately return the
@@ -92,7 +94,8 @@ public interface Transaction extends Closeable {
         }
 
         /**
-         * Executes the work committing if possible and rolling back on failure.  On failure, an exception is reported.
+         * Executes the {@link Workload} committing if possible and rolling back on failure.  On failure, an exception
+         * is reported.
          */
         public R oneAndDone() {
             return attempt((g, w) -> {
@@ -109,7 +112,8 @@ public interface Transaction extends Closeable {
         }
 
         /**
-         * Executes the work committing if possible and rolling back on failure.  On failure no exception is reported.
+         * Executes the {@link Workload} committing if possible and rolling back on failure.  On failure no exception
+         * is reported.
          */
         public R fireAndForget() {
             return attempt((g, w) -> {
@@ -126,30 +130,32 @@ public interface Transaction extends Closeable {
         }
 
         /**
-         * Executes the work with the default number of retries and with the default number of milliseconds delay
-         * between each try.
+         * Executes the {@link Workload} with the default number of retries and with the default number of
+         * milliseconds delay between each try.
          */
         public R retry() {
             return retry(DEFAULT_TRIES);
         }
 
         /**
-         * Executes the work with a number of retries and with the default number of milliseconds delay between each try.
+         * Executes the {@link Workload} with a number of retries and with the default number of milliseconds delay
+         * between each try.
          */
         public R retry(final int tries) {
             return retry(tries, DEFAULT_DELAY_MS);
         }
 
         /**
-         * Executes the work with a number of retries and with a number of milliseconds delay between each try.
+         * Executes the {@link Workload} with a number of retries and with a number of milliseconds delay between
+         * each try.
          */
         public R retry(final int tries, final long delay) {
             return retry(tries, delay, Collections.emptySet());
         }
 
         /**
-         * Executes the work with a number of retries and with a number of milliseconds delay between each try and
-         * will only retry on the set of supplied exceptions.  Exceptions outside of that set will generate a
+         * Executes the {@link Workload} with a number of retries and with a number of milliseconds delay between each
+         * try and will only retry on the set of supplied exceptions.  Exceptions outside of that set will generate a
          * RuntimeException and immediately fail.
          */
         public R retry(final int tries, final long delay, final Set<Class> exceptionsToRetryOn) {
@@ -157,15 +163,15 @@ public interface Transaction extends Closeable {
         }
 
         /**
-         * Executes the work with the default number of retries and with a exponentially increasing number of
-         * milliseconds between each retry using the default retry delay.
+         * Executes the {@link Workload} with the default number of retries and with a exponentially increasing
+         * number of milliseconds between each retry using the default retry delay.
          */
         public R exponentialBackoff() {
             return exponentialBackoff(DEFAULT_TRIES);
         }
 
         /**
-         * Executes the work with a number of retries and with a exponentially increasing number of
+         * Executes the {@link Workload} with a number of retries and with a exponentially increasing number of
          * milliseconds between each retry using the default retry delay.
          */
         public R exponentialBackoff(final int tries) {
@@ -173,24 +179,25 @@ public interface Transaction extends Closeable {
         }
 
         /**
-         * Executes the work with a number of retries and with a exponentially increasing number of milliseconds
-         * between each retry.
+         * Executes the {@link Workload} with a number of retries and with a exponentially increasing number of
+         * milliseconds between each retry.
          */
         public R exponentialBackoff(final int tries, final long initialDelay) {
             return exponentialBackoff(tries, initialDelay, Collections.emptySet());
         }
 
         /**
-         * Executes the work with a number of retries and with a exponentially increasing number of milliseconds
-         * between each retry.  It will only retry on the set of supplied exceptions.  Exceptions outside of that set
-         * will generate a RuntimeException and immediately fail.
+         * Executes the {@link Workload} with a number of retries and with a exponentially increasing number of
+         * milliseconds between each retry.  It will only retry on the set of supplied exceptions.  Exceptions outside
+         * of that set will generate a {@link RuntimeException} and immediately fail.
          */
         public R exponentialBackoff(final int tries, final long initialDelay, final Set<Class> exceptionsToRetryOn) {
             return attempt(retry(tries, exceptionsToRetryOn, retryCount -> (long) (initialDelay * Math.pow(2, retryCount))));
         }
 
         /**
-         * Creates a generic retry function to be passed to the attempt() method.
+         * Creates a generic retry function to be passed to the {@link Workload#attempt(java.util.function.BiFunction)}
+         * method.
          */
         private static <G extends Graph, R> BiFunction<G, Function<G, R>, R> retry(final int tries,
                                                                                    final Set<Class> exceptionsToRetryOn,

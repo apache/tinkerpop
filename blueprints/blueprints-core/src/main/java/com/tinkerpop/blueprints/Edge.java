@@ -1,11 +1,16 @@
 package com.tinkerpop.blueprints;
 
 /**
- * An Edge links two vertices. Along with its Property objects, an edge has both a directionality and a label.
- * The directionality determines which vertex is the tail vertex (out vertex) and which vertex is the head vertex
- * (in vertex). The edge label determines the type of relationship that exists between the two vertices.
+ * An {@link Edge} links two {@link Vertex} objects. Along with its {@link Property} objects, an {@link Edge} has both
+ * a {@link Direction} and a {@code label}. The {@link Direction} determines which {@link Vertex} is the tail
+ * {@link Vertex} (out {@link Vertex}) and which {@link Vertex} is the head {@link Vertex}
+ * (in {@link Vertex}). The {@link Edge} {@code label} determines the type of relationship that exists between the
+ * two vertices.
  * <p/>
- * Diagrammatically, outVertex ---label---> inVertex.
+ * Diagrammatically:
+ * <pre>
+ * outVertex ---label---> inVertex.
+ * </pre>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

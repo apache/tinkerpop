@@ -4,11 +4,14 @@ import java.util.Collection;
 import java.util.function.BiPredicate;
 
 /**
- * Contains is a predicate that evaluates whether the first object is contained within (or not within) the second collection object.
- * For example:
+ * {@link Contains} is a {@link BiPredicate} that evaluates whether the first object is contained within (or not
+ * within) the second collection object. For example:
+ * <p/>
+ * <pre>
  * gremlin IN [gremlin, blueprints, furnace] == true
  * gremlin NOT_IN [gremlin, rexster] == false
  * rexster NOT_IN [gremlin, blueprints, furnace] == true
+ * </pre>
  *
  * @author Pierre De Wilde
  * @author Marko A. Rodriguez (http://markorodriguez.com)

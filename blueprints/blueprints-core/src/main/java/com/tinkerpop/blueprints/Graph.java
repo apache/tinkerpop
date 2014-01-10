@@ -10,7 +10,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 /**
- * An Graph is a container object for a collection of vertices, edges, and properties.
+ * An {@link Graph} is a container object for a collection of {@link Vertex}, {@link Edge}, and {@link Property}
+ * objects.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)

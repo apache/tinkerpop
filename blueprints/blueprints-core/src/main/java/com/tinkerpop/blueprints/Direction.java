@@ -1,9 +1,15 @@
 package com.tinkerpop.blueprints;
 
 /**
- * Direction is used to denote the direction of an edge or location of a vertex on an edge.
- * For example, gremlin--knows-->rexster is an OUT edge for Gremlin and an IN edge for Rexster.
- * Moreover, given that edge, Gremlin is the OUT vertex and Rexster is the IN vertex.
+ * {@link Direction} is used to denote the direction of an {@link Edge} or location of a {@link Vertex} on an
+ * {@link Edge}. For example:
+ * <p/>
+ * <pre>
+ * gremlin--knows-->rexster
+ * </pre>
+ * is an {@link Direction#OUT} {@link Edge} for Gremlin and an {@link Direction#IN} edge for Rexster. Moreover, given
+ * that {@link Edge}, Gremlin is the {@link Direction#OUT} {@link Vertex} and Rexster is the {@link Direction#IN}
+ * {@link Vertex}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

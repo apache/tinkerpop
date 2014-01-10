@@ -3,7 +3,8 @@ package com.tinkerpop.blueprints;
 import java.util.function.BiPredicate;
 
 /**
- * Compare is a predicate that determines whether the first argument is ==, !=, &gt;, &gt;=, &lt;, &lt;= to the second argument.
+ * {@link Compare} is a {@link BiPredicate} that determines whether the first argument is {@code ==}, {@code !=},
+ * {@code >}, {@code >=}, {@code <}, {@code <=} to the second argument.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
