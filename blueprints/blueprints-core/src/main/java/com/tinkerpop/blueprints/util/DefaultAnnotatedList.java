@@ -34,6 +34,7 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
             public Iterable<AnnotatedValue<V>> annotatedValues() {
                 return (Iterable) StreamFactory.stream(annotatedValues.iterator())
                         .filter(p -> HasContainer.testAllOfAnnotatedValue((AnnotatedValue) p, this.hasContainers))
+                        .limit(this.limit)
                         .collect(Collectors.toList());
             }
 
