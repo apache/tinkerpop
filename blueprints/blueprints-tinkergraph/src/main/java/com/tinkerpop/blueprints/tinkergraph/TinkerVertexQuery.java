@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.util.DefaultVertexQuery;
+import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
             if (!this.adjacents.isEmpty())
                 edges = edges.filter(e -> this.adjacents.contains(e.getVertex(Direction.IN)));
         }
-        edges = edges.filter(e -> HasContainer.testAllOfElement(e, this.hasContainers)).limit(this.limit);
+        edges = edges.filter(e -> HasContainer.testAll(e, this.hasContainers)).limit(this.limit);
 
         // GENERATE COMPUTE SHELLED EDGES DURING GRAPH COMPUTING
         if (TinkerGraphComputer.State.CENTRIC == this.vertex.state)
@@ -58,9 +59,9 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
 
         Stream<TinkerVertex> vertices = Stream.empty();
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.IN))
-            vertices = (Stream) Stream.concat(vertices, this.getInEdges(this.labels).stream().filter(e -> HasContainer.testAllOfElement(e, this.hasContainers)).map(e -> e.getVertex(Direction.OUT)));
+            vertices = (Stream) Stream.concat(vertices, this.getInEdges(this.labels).stream().filter(e -> HasContainer.testAll(e, this.hasContainers)).map(e -> e.getVertex(Direction.OUT)));
         if (this.direction.equals(Direction.BOTH) || this.direction.equals(Direction.OUT))
-            vertices = (Stream) Stream.concat(vertices, this.getOutEdges(this.labels).stream().filter(e -> HasContainer.testAllOfElement(e, this.hasContainers)).map(e -> e.getVertex(Direction.IN)));
+            vertices = (Stream) Stream.concat(vertices, this.getOutEdges(this.labels).stream().filter(e -> HasContainer.testAll(e, this.hasContainers)).map(e -> e.getVertex(Direction.IN)));
         if (!this.adjacents.isEmpty())
             vertices = vertices.filter(this.adjacents::contains);
         vertices = vertices.limit(this.limit);

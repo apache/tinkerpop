@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.Annotations;
 import com.tinkerpop.blueprints.query.AnnotatedListQuery;
 import com.tinkerpop.blueprints.query.util.DefaultAnnotatedListQuery;
+import com.tinkerpop.blueprints.query.util.HasContainer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
             @Override
             public Iterable<AnnotatedValue<V>> annotatedValues() {
                 return (Iterable) StreamFactory.stream(annotatedValues.iterator())
-                        .filter(p -> HasContainer.testAllOfAnnotatedValue((AnnotatedValue) p, this.hasContainers))
+                        .filter(p -> HasContainer.testAll((AnnotatedValue) p, this.hasContainers))
                         .limit(this.limit)
                         .collect(Collectors.toList());
             }

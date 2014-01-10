@@ -76,7 +76,7 @@ public abstract interface Property<V> {
 
             @Override
             public String toString() {
-                return StringFactory.EMPTY_PROPERTY;
+                return StringFactory.propertyString(this);
             }
 
             @Override

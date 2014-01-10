@@ -22,9 +22,5 @@ public interface Edge extends Element {
         public static IllegalArgumentException edgeLabelCanNotBeNull() {
             return new IllegalArgumentException("Edge label can not be null");
         }
-
-        public static IllegalStateException edgePropertiesCanNotHaveProperties() {
-            return new IllegalStateException("Edge properties can not have properties");
-        }
     }
 }

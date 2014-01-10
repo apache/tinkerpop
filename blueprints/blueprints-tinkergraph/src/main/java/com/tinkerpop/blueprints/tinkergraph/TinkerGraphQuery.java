@@ -7,6 +7,7 @@ import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.query.util.DefaultGraphQuery;
+import com.tinkerpop.blueprints.query.util.HasContainer;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
         return ((null == indexedContainer) ?
                 this.graph.edges.values().parallelStream() :
                 this.graph.edgeIndex.get(indexedContainer.key, indexedContainer.value).parallelStream())
-                .filter(e -> HasContainer.testAllOfElement((Edge) e, this.hasContainers))
+                .filter(e -> HasContainer.testAll((Edge) e, this.hasContainers))
                 .limit(this.limit)
                 .collect(Collectors.<Edge>toList());
     }
@@ -46,7 +47,7 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
         return ((null == indexedContainer) ?
                 this.graph.vertices.values().parallelStream() :
                 this.graph.vertexIndex.get(indexedContainer.key, indexedContainer.value).parallelStream())
-                .filter(v -> HasContainer.testAllOfElement((Vertex) v, this.hasContainers))
+                .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers))
                 .limit(this.limit)
                 .collect(Collectors.<Vertex>toList());
     }
