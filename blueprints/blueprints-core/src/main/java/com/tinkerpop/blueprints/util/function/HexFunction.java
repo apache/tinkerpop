@@ -43,6 +43,7 @@ public interface HexFunction<A,B,C,D,E,F,R> {
      * @param after the function to apply after this function is applied
      * @param <V> the type of the output of the {@code after} function, and of the composed function
      * @return a composed function that first applies this function and then applies the {@code after} function.
+     * @throws NullPointerException if {@code after} is null
      */
     public default <V> HexFunction<A, B, C, D, E, F, V> andThen(final Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
