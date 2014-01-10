@@ -54,7 +54,7 @@ public abstract class DefaultAnnotatedListQuery<V> extends DefaultQuery implemen
         return this;
     }
 
-    public abstract Iterable<AnnotatedList.AnnotatedValue<V>> values();
+    public abstract Iterable<AnnotatedList.AnnotatedValue<V>> annotatedValues();
 
-
+    public abstract Iterable<V> values();
 }

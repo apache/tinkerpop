@@ -120,7 +120,7 @@ public class IoTest extends AbstractBlueprintsTest {
         }
 
         final Vertex v2 = g2.query().ids("1").vertices().iterator().next();
-        assertEquals("\u00E9", v2.getProperty("text").getValue());
+        assertEquals("\u00E9", v2.getProperty("text").get());
 
         // need to manually close the "g2" instance
         BlueprintsStandardSuite.GraphManager.get().clear(g2, config);

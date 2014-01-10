@@ -23,7 +23,7 @@ public class GremlinTracker implements Serializable {
 
     public GremlinTracker(final Vertex vertex) {
         final Property<GremlinTracker> tracker = vertex.getProperty(GremlinVertexProgram.GREMLIN_TRACKER);
-        this.previousObjectHolders = tracker.isPresent() ? tracker.getValue().objectHolders : new HashMap<>();
+        this.previousObjectHolders = tracker.isPresent() ? tracker.get().objectHolders : new HashMap<>();
     }
 
     public Map<Object, List<Holder>> getDoneGraphHolders() {

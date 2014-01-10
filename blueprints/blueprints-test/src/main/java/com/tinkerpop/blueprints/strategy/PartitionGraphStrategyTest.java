@@ -26,8 +26,8 @@ public class PartitionGraphStrategyTest extends AbstractBlueprintsTest {
         final Vertex v = g.addVertex("any", "thing");
 
         assertNotNull(v);
-        assertEquals("thing", v.getProperty("any").getValue());
-        assertEquals("A", v.getProperty(partition).getValue());
+        assertEquals("thing", v.getProperty("any").get());
+        assertEquals("A", v.getProperty(partition).get());
     }
 
     @Test
@@ -37,17 +37,17 @@ public class PartitionGraphStrategyTest extends AbstractBlueprintsTest {
         final Edge e = v1.addEdge("connectsTo", v2, "every", "thing");
 
         assertNotNull(v1);
-        assertEquals("thing", v1.getProperty("any").getValue());
-        assertEquals("A", v2.getProperty(partition).getValue());
+        assertEquals("thing", v1.getProperty("any").get());
+        assertEquals("A", v2.getProperty(partition).get());
 
         assertNotNull(v2);
-        assertEquals("thing", v2.getProperty("some").getValue());
-        assertEquals("A", v2.getProperty(partition).getValue());
+        assertEquals("thing", v2.getProperty("some").get());
+        assertEquals("A", v2.getProperty(partition).get());
 
         assertNotNull(e);
-        assertEquals("thing", e.getProperty("every").getValue());
+        assertEquals("thing", e.getProperty("every").get());
         assertEquals("connectsTo", e.getLabel());
-        assertEquals("A", e.getProperty(partition).getValue());
+        assertEquals("A", e.getProperty(partition).get());
     }
 
     @Test
@@ -58,18 +58,18 @@ public class PartitionGraphStrategyTest extends AbstractBlueprintsTest {
         final Vertex vB = g.addVertex("any", "b");
 
         assertNotNull(vA);
-        assertEquals("a", vA.getProperty("any").getValue());
-        assertEquals("A", vA.getProperty(partition).getValue());
+        assertEquals("a", vA.getProperty("any").get());
+        assertEquals("A", vA.getProperty(partition).get());
 
         assertNotNull(vB);
-        assertEquals("b", vB.getProperty("any").getValue());
-        assertEquals("B", vB.getProperty(partition).getValue());
+        assertEquals("b", vB.getProperty("any").get());
+        assertEquals("B", vB.getProperty(partition).get());
 
-        g.query().vertices().forEach(v->assertEquals("a", v.getProperty("any").getValue()));
+        g.query().vertices().forEach(v->assertEquals("a", v.getProperty("any").get()));
 
         strategy.removeReadPartition("A");
         strategy.addReadPartition("B");
 
-        g.query().vertices().forEach(v->assertEquals("b", v.getProperty("any").getValue()));
+        g.query().vertices().forEach(v->assertEquals("b", v.getProperty("any").get()));
     }
 }

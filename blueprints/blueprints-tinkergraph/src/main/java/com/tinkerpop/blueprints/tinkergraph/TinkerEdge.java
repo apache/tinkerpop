@@ -41,7 +41,7 @@ class TinkerEdge extends TinkerElement implements Edge {
             ElementHelper.validateProperty(key, value);
             final Property oldProperty = super.getProperty(key);
             this.properties.put(key, new TinkerProperty<>(this, key, value));
-            this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
+            this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
         } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
             ElementHelper.validateProperty(key, value);
             if (this.vertexMemory.getComputeKeys().containsKey(key))

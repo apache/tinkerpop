@@ -26,8 +26,8 @@ public class IdGraphStrategyTest extends AbstractBlueprintsTest {
 
         assertNotNull(v);
         assertEquals("test", v.getId());
-        assertEquals("test", v.getProperty(Property.Key.hidden(idKey)).getValue());
-        assertEquals("else", v.getProperty("something").getValue());
+        assertEquals("test", v.getProperty(Property.Key.hidden(idKey)).get());
+        assertEquals("else", v.getProperty("something").get());
 
         final Vertex found = g.query().ids("test").vertices().iterator().next();
         assertEquals(v, found);

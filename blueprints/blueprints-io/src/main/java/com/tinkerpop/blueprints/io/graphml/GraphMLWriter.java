@@ -273,7 +273,7 @@ public class GraphMLWriter implements GraphWriter {
         for (Vertex vertex : graph.query().vertices()) {
             for (String key : vertex.getPropertyKeys()) {
                 if (!vertexKeyTypes.containsKey(key)) {
-                    vertexKeyTypes.put(key, GraphMLWriter.getStringType(vertex.getProperty(key).getValue()));
+                    vertexKeyTypes.put(key, GraphMLWriter.getStringType(vertex.getProperty(key).get()));
                 }
             }
         }
@@ -286,7 +286,7 @@ public class GraphMLWriter implements GraphWriter {
         for (Edge edge : graph.query().edges()) {
             for (String key : edge.getPropertyKeys()) {
                 if (!edgeKeyTypes.containsKey(key))
-                    edgeKeyTypes.put(key, GraphMLWriter.getStringType(edge.getProperty(key).getValue()));
+                    edgeKeyTypes.put(key, GraphMLWriter.getStringType(edge.getProperty(key).get()));
             }
         }
 

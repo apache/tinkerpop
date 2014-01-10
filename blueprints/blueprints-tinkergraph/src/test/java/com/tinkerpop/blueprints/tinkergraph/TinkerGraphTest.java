@@ -25,7 +25,7 @@ public class TinkerGraphTest {
         final Vertex marko = g.addVertex("name", "marko", "age", 33, "blah", "bloop");
         final Vertex stephen = g.addVertex("name", "stephen", "id", 12, "blah", "bloop");
         stephen.setProperty(Property.Key.hidden("name"), "stephen");
-        assertEquals("stephen", stephen.getProperty(Property.Key.hidden("name")).getValue());
+        assertEquals("stephen", stephen.getProperty(Property.Key.hidden("name")).get());
         final Random r = new Random();
         Stream.generate(() -> g.addVertex(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt())).limit(100000).count();
         assertEquals(100002, g.vertices.size());
@@ -37,43 +37,25 @@ public class TinkerGraphTest {
         edge.setProperty("weight", 1.0f);
         edge.setProperty("creator", "stephen");
         assertEquals(edge.getValue("weight"), Float.valueOf(1.0f));
-        assertEquals(edge.getProperty("creator").getValue(), "stephen");
+        assertEquals(edge.getProperty("creator").get(), "stephen");
     }
 
     @Test
     public void testAnnotatedList() {
         final TinkerGraph g = TinkerGraph.open();
         Vertex marko = g.addVertex();
-        marko.setProperty("names", AnnotatedList.of("marko", "mrodriguez"));
+        marko.setProperty("names", AnnotatedList.make());
         System.out.println(marko.getProperty("names"));
-        marko.<AnnotatedList>getProperty("names").getValue().add("mArKo", "time", 1);
+        marko.<AnnotatedList>getProperty("names").get().addValue("mArKo", "time", 1);
+        marko.<AnnotatedList>getProperty("names").get().addValue("mrodriguez", "time", 2);
+        marko.<AnnotatedList>getProperty("names").get().addValue("marko", "time", 3);
+        System.out.println(marko.getProperty("names"));
 
-        marko.<AnnotatedList>getProperty("names").getValue().query().values().forEach(System.out::println);
 
         System.out.println("----");
-
-        marko.<AnnotatedList<String>>getProperty("names").getValue().query().has("time", Compare.EQUAL, 1).values().forEach(p -> System.out.println(p.getValue()));
+        marko.<AnnotatedList>getProperty("names").get().query().has("time", Compare.GREATER_THAN, 1).annotatedValues().forEach(System.out::println);
+        System.out.println("----");
+        marko.<AnnotatedList<String>>getProperty("names").get().query().has("time", 1).values().forEach(System.out::println);
 
     }
-
-    /*@Test
-    public void testLambdaProgram() {
-        TinkerGraph g = TinkerGraph.open(Optional.empty());
-        Stream.generate(g::addVertex).limit(5000).count();
-        ComputeResult result = g.compute().program(LambdaVertexProgram.create()
-                .setup(gm -> {
-                })
-                .execute((v, gm) -> {
-                    v.setProperty("i", gm.getIteration());
-                })
-                .terminate(gm -> gm.getIteration() > 20)
-                .computeKeys(VertexProgram.ofComputeKeys("i", VertexProgram.KeyType.VARIABLE))
-                .build())
-                .submit();
-
-        System.out.println("Runtime: " + result.getGraphMemory().getRuntime());
-        StreamFactory.stream(g.query().vertices())
-                .forEach(v -> System.out.println(result.getVertexMemory().getProperty(v, "i").getValue()));
-    }*/
-
 }

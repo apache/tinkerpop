@@ -33,7 +33,7 @@ public class GremlinVertexProgramTest {
 
         System.out.println("gremlin> " + result.getGraphMemory().<Supplier>get("gremlinPipeline").get());
         StreamFactory.stream(g.query().vertices()).forEach(v -> {
-            final GremlinTracker tracker = result.getVertexMemory().<GremlinTracker>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).getValue();
+            final GremlinTracker tracker = result.getVertexMemory().<GremlinTracker>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).get();
             tracker.getDoneGraphHolders().forEach((a, b) -> Stream.generate(() -> 1).limit(b.size()).forEach(t -> System.out.println("==>" + a)));
             tracker.getDoneObjectHolders().forEach((a, b) -> Stream.generate(() -> 1).limit(b.size()).forEach(t -> System.out.println("==>" + a)));
         });

@@ -119,7 +119,7 @@ class TinkerIndex<T extends Element> implements Serializable {
                 this.graph.edges.values().<T>parallelStream())
                 .map(e -> new Object[]{((T) e).getProperty(key), e})
                 .filter(a -> ((Property) a[0]).isPresent())
-                .forEach(a -> this.put(key, ((Property) a[0]).getValue(), (T) a[1]));
+                .forEach(a -> this.put(key, ((Property) a[0]).get(), (T) a[1]));
     }
 
     public void dropKeyIndex(final String key) {

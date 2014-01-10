@@ -1,9 +1,11 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
+import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
+import com.tinkerpop.blueprints.util.DefaultAnnotatedList;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
@@ -19,7 +21,7 @@ public class TinkerProperty<V> implements Property<V> {
     private Map<String, Object> annotations = new HashMap<>();
     private final Element element;
     private final String key;
-    private final V value;
+    private V value;
 
     protected TinkerGraphComputer.State state = TinkerGraphComputer.State.STANDARD;
     private TinkerVertexMemory vertexMemory;
@@ -31,7 +33,7 @@ public class TinkerProperty<V> implements Property<V> {
     }
 
     private TinkerProperty(final TinkerProperty<V> property, final TinkerGraphComputer.State state, final TinkerVertexMemory vertexMemory) {
-        this(property.getElement(), property.getKey(), property.getValue());
+        this(property.getElement(), property.getKey(), property.get());
         this.state = state;
         this.annotations = property.annotations;
         this.vertexMemory = vertexMemory;
@@ -45,7 +47,7 @@ public class TinkerProperty<V> implements Property<V> {
         return this.key;
     }
 
-    public V getValue() {
+    public V get() {
         return this.value;
     }
 

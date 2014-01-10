@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.util;
 
+import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
@@ -19,8 +20,9 @@ public class StringFactory {
     public static final String P = "p";
     public static final String L_BRACKET = "[";
     public static final String R_BRACKET = "]";
+    public static final String COMMA_SPACE = ", ";
+    public static final String DOTS = "...";
     public static final String DASH = "-";
-    // public static final String COLON = ":";
     public static final String ARROW = "->";
     public static final String EMPTY_PROPERTY = "p[empty]";
 
@@ -35,10 +37,19 @@ public class StringFactory {
     }
 
     public static String propertyString(final Property property) {
-        return P + L_BRACKET + property.getKey() + ARROW + property.getValue() + R_BRACKET;
+        return P + L_BRACKET + property.getKey() + ARROW + property.get() + R_BRACKET;
     }
 
     public static String graphString(final Graph graph, final String internalString) {
         return graph.getClass().getSimpleName().toLowerCase() + L_BRACKET + internalString + R_BRACKET;
+    }
+
+    public static String annotatedListString(final AnnotatedList annotatedList) {
+        final StringBuilder builder = new StringBuilder(L_BRACKET);
+        annotatedList.query().limit(2).values().forEach(v -> builder.append(v).append(COMMA_SPACE));
+        if (builder.length() > 1)
+            builder.append(DOTS);
+        builder.append(R_BRACKET);
+        return builder.toString();
     }
 }

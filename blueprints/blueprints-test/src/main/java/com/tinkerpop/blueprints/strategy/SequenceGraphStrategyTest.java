@@ -58,9 +58,9 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
         final Vertex v = g.addVertex("any", "thing");
 
         assertNotNull(v);
-        assertEquals("thing", v.getProperty("any").getValue());
-        assertEquals("working3", v.getProperty("anonymous").getValue());
-        assertEquals("anything", v.getProperty("try").getValue());
+        assertEquals("thing", v.getProperty("any").get());
+        assertEquals("working3", v.getProperty("anonymous").get());
+        assertEquals("anything", v.getProperty("try").get());
     }
 
     @Test(expected = RuntimeException.class)
@@ -153,7 +153,7 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
 
                             // this  means that the next strategy and those below it executed including
                             // the implementation
-                            assertEquals("working3", v.getProperty("anonymous").getValue());
+                            assertEquals("working3", v.getProperty("anonymous").get());
 
                             // now do something with that vertex after the fact
                             v.setProperty("anonymous", "working2");
@@ -176,7 +176,7 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
         final Vertex v = g.addVertex("any", "thing");
 
         assertNotNull(v);
-        assertEquals("thing", v.getProperty("any").getValue());
-        assertEquals("working2", v.getProperty("anonymous").getValue());
+        assertEquals("thing", v.getProperty("any").get());
+        assertEquals("working2", v.getProperty("anonymous").get());
     }
 }

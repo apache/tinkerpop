@@ -25,7 +25,9 @@ public interface AnnotatedListQuery<V> extends Query {
     @Override
     public AnnotatedListQuery<V> limit(final int limit);
 
-    public Iterable<AnnotatedList.AnnotatedValue<V>> values();
+    public Iterable<AnnotatedList.AnnotatedValue<V>> annotatedValues();
+
+    public Iterable<V> values();
 
     // Defaults
 

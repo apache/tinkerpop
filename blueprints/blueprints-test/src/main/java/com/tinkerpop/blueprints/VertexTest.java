@@ -31,8 +31,8 @@ public class VertexTest extends AbstractBlueprintsTest {
         final Vertex v = g.addVertex("name", "marko", "age", 34);
         assertEquals(34, (int) v.getValue("age"));
         assertEquals("marko", v.<String>getValue("name"));
-        assertEquals(34, (int) v.getProperty("age").getValue());
-        assertEquals("marko", v.<String>getProperty("name").getValue());
+        assertEquals(34, (int) v.getProperty("age").get());
+        assertEquals("marko", v.<String>getProperty("name").get());
         assertEquals(2, v.getProperties().size());
         assertEquals(2, v.getPropertyKeys().size());
         assertTrue(v.getPropertyKeys().contains("name"));
@@ -43,8 +43,8 @@ public class VertexTest extends AbstractBlueprintsTest {
         v.setProperty("name", "marko rodriguez");
         assertEquals(34, (int) v.getValue("age"));
         assertEquals("marko rodriguez", v.<String>getValue("name"));
-        assertEquals(34, (int) v.getProperty("age").getValue());
-        assertEquals("marko rodriguez", v.<String>getProperty("name").getValue());
+        assertEquals(34, (int) v.getProperty("age").get());
+        assertEquals("marko rodriguez", v.<String>getProperty("name").get());
         assertEquals(2, v.getProperties().size());
         assertEquals(2, v.getPropertyKeys().size());
         assertTrue(v.getPropertyKeys().contains("name"));
@@ -55,7 +55,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         v.setProperty("location", "santa fe");
         assertEquals(3, v.getProperties().size());
         assertEquals(3, v.getPropertyKeys().size());
-        assertEquals("santa fe", v.getProperty("location").getValue());
+        assertEquals("santa fe", v.getProperty("location").get());
         assertEquals(v.getProperty("location"), v.getProperty("location"));
         assertNotEquals(v.getProperty("location"), v.getProperty("name"));
         assertTrue(v.getPropertyKeys().contains("name"));

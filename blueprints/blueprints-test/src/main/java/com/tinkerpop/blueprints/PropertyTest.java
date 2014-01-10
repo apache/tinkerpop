@@ -103,13 +103,13 @@ public class PropertyTest extends AbstractBlueprintsTest {
 
         if (value instanceof Map)
             tryCommit(g, graph -> {
-                final Map map = edge.<Map>getProperty("key").getValue();
+                final Map map = edge.<Map>getProperty("key").get();
                 assertEquals(((Map) value).size(), map.size());
                 ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
             });
         else if (value instanceof List)
             tryCommit(g, graph -> {
-                final List l = edge.<List>getProperty("key").getValue();
+                final List l = edge.<List>getProperty("key").get();
                 assertEquals(((List) value).size(), l.size());
                 for (int ix = 0; ix < ((List) value).size(); ix++) {
                     assertEquals(((List) value).get(ix), l.get(ix));
@@ -117,11 +117,11 @@ public class PropertyTest extends AbstractBlueprintsTest {
             });
         else if (value instanceof MockSerializable)
             tryCommit(g, graph -> {
-                final MockSerializable mock = edge.<MockSerializable>getProperty("key").getValue();
+                final MockSerializable mock = edge.<MockSerializable>getProperty("key").get();
                 assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
             });
         else
-            tryCommit(g, graph -> assertEquals(value, edge.getProperty("key").getValue()));
+            tryCommit(g, graph -> assertEquals(value, edge.getProperty("key").get()));
     }
 
     /*@Test
@@ -159,13 +159,13 @@ public class PropertyTest extends AbstractBlueprintsTest {
 
         if (value instanceof Map)
             tryCommit(g, graph -> {
-                final Map map = v.<Map>getProperty("key").getValue();
+                final Map map = v.<Map>getProperty("key").get();
                 assertEquals(((Map) value).size(), map.size());
                 ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
             });
         else if (value instanceof List)
             tryCommit(g, graph -> {
-                final List l = v.<List>getProperty("key").getValue();
+                final List l = v.<List>getProperty("key").get();
                 assertEquals(((List) value).size(), l.size());
                 for (int ix = 0; ix < ((List) value).size(); ix++) {
                     assertEquals(((List) value).get(ix), l.get(ix));
@@ -173,11 +173,11 @@ public class PropertyTest extends AbstractBlueprintsTest {
             });
         else if (value instanceof MockSerializable)
             tryCommit(g, graph -> {
-                final MockSerializable mock = v.<MockSerializable>getProperty("key").getValue();
+                final MockSerializable mock = v.<MockSerializable>getProperty("key").get();
                 assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
             });
         else
-            tryCommit(g, graph->assertEquals(value, v.getProperty("key").getValue()));
+            tryCommit(g, graph->assertEquals(value, v.getProperty("key").get()));
     }
 
     /*@Test

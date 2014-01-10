@@ -20,7 +20,7 @@ public class MicroProperty implements Property {
 
     public MicroProperty(final Property property) {
         this.key = property.getKey();
-        this.value = property.getValue();
+        this.value = property.get();
         this.element = property.getElement() instanceof Vertex ?
                 new MicroVertex((Vertex) property.getElement()) :
                 new MicroEdge((Edge) property.getElement());
@@ -34,7 +34,7 @@ public class MicroProperty implements Property {
         return this.key;
     }
 
-    public Object getValue() {
+    public Object get() {
         return this.value;
     }
 

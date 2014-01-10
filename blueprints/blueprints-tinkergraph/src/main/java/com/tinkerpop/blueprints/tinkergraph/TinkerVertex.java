@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
+import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -8,6 +9,7 @@ import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.VertexQuery;
+import com.tinkerpop.blueprints.util.DefaultAnnotatedList;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
@@ -45,8 +47,12 @@ class TinkerVertex extends TinkerElement implements Vertex {
         if (TinkerGraphComputer.State.STANDARD == this.state) {
             ElementHelper.validateProperty(key, value);
             final Property oldProperty = super.getProperty(key);
-            this.properties.put(key, new TinkerProperty<>(this, key, value));
-            this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.getValue() : null, this);
+            if (value == AnnotatedList.make()) {
+                if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList))
+                    this.properties.put(key, new TinkerProperty<>(this, key, new DefaultAnnotatedList<>()));
+            } else
+                this.properties.put(key, new TinkerProperty<>(this, key, value));
+            this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
         } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
             ElementHelper.validateProperty(key, value);
             if (this.vertexMemory.getComputeKeys().containsKey(key))
@@ -73,9 +79,9 @@ class TinkerVertex extends TinkerElement implements Vertex {
         // implementations first so at this point the values within them may not be the same as they originally were.
         // The composed function must then be applied with the arguments originally passed to addEdge.
         return this.graph.strategy().compose(
-            s -> s.getAddEdgeStrategy(strategyContext),
-            (l, v, kvs) -> TinkerHelper.addEdge(this.graph, this, (TinkerVertex) v, l, kvs))
-            .apply(label, vertex, keyValues);
+                s -> s.getAddEdgeStrategy(strategyContext),
+                (l, v, kvs) -> TinkerHelper.addEdge(this.graph, this, (TinkerVertex) v, l, kvs))
+                .apply(label, vertex, keyValues);
     }
 
     public void remove() {
@@ -85,17 +91,17 @@ class TinkerVertex extends TinkerElement implements Vertex {
         // implementations first so at this point the values within them may not be the same as they originally were.
         // The composed function must then be applied with the arguments originally passed to remove.
         this.graph.strategy().compose(
-            s -> s.getRemoveVertexStrategy(strategyContext),
-            () -> {
-                if (!graph.vertices.containsKey(this.id))
-                    throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
+                s -> s.getRemoveVertexStrategy(strategyContext),
+                () -> {
+                    if (!graph.vertices.containsKey(this.id))
+                        throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
 
-                this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
-                this.getProperties().clear();
-                graph.vertexIndex.removeElement(this);
-                graph.vertices.remove(this.id);
-                return null;
-            }).get();
+                    this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
+                    this.getProperties().clear();
+                    graph.vertexIndex.removeElement(this);
+                    graph.vertices.remove(this.id);
+                    return null;
+                }).get();
     }
 
     public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {

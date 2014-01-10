@@ -20,43 +20,41 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
 
     final List<AnnotatedValue<V>> annotatedValues = new ArrayList<>();
 
-    public DefaultAnnotatedList(final V... values) {
-        for (V value : values) {
-            this.annotatedValues.add(new DefaultAnnotatedValue<>(value));
-        }
-    }
-
-    public DefaultAnnotatedList(final AnnotatedValue<V>... annotatedValues) {
-        for (AnnotatedValue<V> annotatedValue : annotatedValues) {
-            this.annotatedValues.add(new DefaultAnnotatedValue<>(annotatedValue.getValue(), annotatedValue.getAnnotations()));
-        }
-    }
-
-    public void add(final V value, final Object... keyValues) {
+    public AnnotatedValue<V> addValue(final V value, final Object... keyValues) {
         final Annotations annotation = new DefaultAnnotations();
         // TODO: Module 2 check
         for (int i = 0; i < keyValues.length; i = i + 2) {
             annotation.set((String) keyValues[i], keyValues[i + 1]);
         }
-        this.annotatedValues.add(new DefaultAnnotatedValue<>(value, annotation));
+        final AnnotatedValue<V> annotatedValue = new DefaultAnnotatedValue<>(value, annotation);
+        this.annotatedValues.add(annotatedValue);
+        return annotatedValue;
     }
 
-    public String toString() {
-        final List<String> list = new ArrayList<>();
-        this.annotatedValues.forEach(a -> list.add(a.getValue().toString()));
-        return list.toString();
+    public boolean isEmpty() {
+        return this.annotatedValues.isEmpty();
     }
 
     public AnnotatedListQuery<V> query() {
         return new DefaultAnnotatedListQuery<V>(this) {
             @Override
-            public Iterable<AnnotatedValue<V>> values() {
+            public Iterable<AnnotatedValue<V>> annotatedValues() {
                 return (Iterable) StreamFactory.stream(annotatedValues.iterator())
-                        .filter(p -> HasContainer.testAllAnnotations((AnnotatedValue) p, this.hasContainers))
+                        .filter(p -> HasContainer.testAllOfAnnotatedValue((AnnotatedValue) p, this.hasContainers))
                         .collect(Collectors.toList());
+            }
+
+            @Override
+            public Iterable<V> values() {
+                return (Iterable) StreamFactory.stream(this.annotatedValues()).map(a -> a.getValue()).collect(Collectors.toList());
             }
         };
     }
+
+    public String toString() {
+        return StringFactory.annotatedListString(this);
+    }
+
 
     public class DefaultAnnotations implements Annotations {
 

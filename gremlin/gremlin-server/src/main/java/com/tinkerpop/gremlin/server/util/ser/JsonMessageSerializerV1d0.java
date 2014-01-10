@@ -176,7 +176,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
         public void serialize(final Property property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField(TOKEN_VALUE, property.getValue());
+            jsonGenerator.writeObjectField(TOKEN_VALUE, property.get());
             jsonGenerator.writeEndObject();
         }
     }

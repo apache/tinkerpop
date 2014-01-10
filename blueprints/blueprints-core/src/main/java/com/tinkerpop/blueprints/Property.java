@@ -27,21 +27,49 @@ public abstract interface Property<V> extends Annotatable {
 
     public String getKey();
 
-    public V getValue() throws NoSuchElementException;
+    public V get() throws NoSuchElementException;
+
+    /*public default String getString() {
+        return (String) get();
+    }
+
+    public default Boolean getBoolean() {
+        return (Boolean) get();
+    }
+
+    public default Integer getInt() {
+        return (Integer) get();
+    }
+
+    public default Long getLong() {
+        return (Long) get();
+    }
+
+    public default Float getFloat() {
+        return (Float) get();
+    }
+
+    public default Double getDouble() {
+        return (Double) get();
+    }
+
+    public default <T> AnnotatedList<T> getAnnotatedList() {
+        return (AnnotatedList<T>) get();
+    }*/
 
     public boolean isPresent();
 
     public default void ifPresent(final Consumer<? super V> consumer) {
         if (this.isPresent())
-            consumer.accept(this.getValue());
+            consumer.accept(this.get());
     }
 
     public default V orElse(final V otherValue) {
-        return this.isPresent() ? this.getValue() : otherValue;
+        return this.isPresent() ? this.get() : otherValue;
     }
 
     public default V orElseGet(final Supplier<? extends V> supplier) {
-        return this.isPresent() ? this.getValue() : supplier.get();
+        return this.isPresent() ? this.get() : supplier.get();
     }
 
     public <E extends Element> E getElement();
@@ -56,7 +84,7 @@ public abstract interface Property<V> extends Annotatable {
             }
 
             @Override
-            public V getValue() throws NoSuchElementException {
+            public V get() throws NoSuchElementException {
                 throw Exceptions.propertyDoesNotExist();
             }
 

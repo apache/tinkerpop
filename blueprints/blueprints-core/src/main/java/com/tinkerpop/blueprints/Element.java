@@ -32,7 +32,7 @@ public abstract interface Element {
     public default <V> V getValue(final String key) throws NoSuchElementException {
         final Property<V> property = this.getProperty(key);
         if (property.isPresent())
-            return property.getValue();
+            return property.get();
         else throw Property.Exceptions.propertyDoesNotExist();
     }
 

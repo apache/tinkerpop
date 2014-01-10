@@ -10,7 +10,6 @@ import com.tinkerpop.blueprints.util.StringFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -58,7 +57,7 @@ public abstract class DefaultQuery implements Query {
 
     ////////////////////
 
-    protected static class HasContainer implements Predicate<Element> {
+    protected static class HasContainer {
         public String key;
         public Object value;
         public BiPredicate predicate;
@@ -69,20 +68,22 @@ public abstract class DefaultQuery implements Query {
             this.predicate = predicate;
         }
 
-        public boolean test(final Element element) {
-            if (this.key.equals(Property.Key.ID.toString()))
+        public boolean testElement(final Element element) {
+            if (this.key.equals(Property.Key.ID))
                 return this.predicate.test(element.getId(), this.value);
-            else if (this.key.equals(Property.Key.LABEL.toString()))
+            else if (this.key.equals(Property.Key.LABEL))
                 return this.predicate.test(element.getLabel(), this.value);
-            else // TODO: Optional
+            else // TODO: Optional validation // TODO: if value is AnnotatedList && CONTAINS.IN, check list.
                 return this.predicate.test(element.getValue(this.key), this.value);
         }
 
-        public static boolean testAll(final Element element, final List<HasContainer> hasContainers) {
-            return hasContainers.size() == 0 || hasContainers.stream().filter(c -> c.test(element)).count() == hasContainers.size();
+        public static boolean testAllOfElement(final Element element, final List<HasContainer> hasContainers) {
+            return hasContainers.size() == 0 || hasContainers.stream().filter(c -> c.testElement(element)).count() == hasContainers.size();
         }
 
-        public <V> boolean testAnnotations(final AnnotatedList.AnnotatedValue<V> annotatedValue) {
+        //////////////
+
+        public <V> boolean testAnnotatedValue(final AnnotatedList.AnnotatedValue<V> annotatedValue) {
             if (this.key.equals(StringFactory.VALUE))
                 return this.predicate.test(annotatedValue.getValue(), this.value);
 
@@ -92,8 +93,8 @@ public abstract class DefaultQuery implements Query {
             return this.predicate.test(annotatedValue.getAnnotations().get(this.key).get(), this.value);
         }
 
-        public static <V> boolean testAllAnnotations(final AnnotatedList.AnnotatedValue<V> annotatedValue, final List<HasContainer> hasContainers) {
-            return hasContainers.size() == 0 || hasContainers.stream().filter(c -> c.testAnnotations(annotatedValue)).count() == hasContainers.size();
+        public static <V> boolean testAllOfAnnotatedValue(final AnnotatedList.AnnotatedValue<V> annotatedValue, final List<HasContainer> hasContainers) {
+            return hasContainers.size() == 0 || hasContainers.stream().filter(c -> c.testAnnotatedValue(annotatedValue)).count() == hasContainers.size();
         }
     }
 }

@@ -153,7 +153,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     public default GremlinPipeline<S, E> has(final String key, final Object value) {
         return this.addPipe(new FilterPipe<Element>(this, e -> {
             final Property x = e.get().getProperty(key);
-            return x.isPresent() && Compare.EQUAL.test(x.getValue(), value);
+            return x.isPresent() && Compare.EQUAL.test(x.get(), value);
         }));
     }
 
