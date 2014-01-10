@@ -67,8 +67,13 @@ public class DefaultAnnotatedList<V> implements AnnotatedList<V>, Serializable {
             return this.annotations;
         }
 
+        public void remove() {
+            annotatedValues.remove(this);
+        }
+
         public String toString() {
             return "[" + this.value + ":" + this.annotations + "]";
         }
+
     }
 }

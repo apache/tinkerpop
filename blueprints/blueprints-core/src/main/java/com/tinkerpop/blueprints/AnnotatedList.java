@@ -23,5 +23,7 @@ public interface AnnotatedList<V> {
         public V getValue();
 
         public Annotations getAnnotations();
+
+        public void remove();
     }
 }

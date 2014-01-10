@@ -42,20 +42,18 @@ public class TinkerGraphTest {
 
     @Test
     public void testAnnotatedList() {
-        final TinkerGraph g = TinkerGraph.open();
+        TinkerGraph g = TinkerGraph.open();
         Vertex marko = g.addVertex();
         marko.setProperty("names", AnnotatedList.make());
-        System.out.println(marko.getProperty("names"));
-        marko.<AnnotatedList>getProperty("names").get().addValue("mArKo", "time", 1);
-        marko.<AnnotatedList>getProperty("names").get().addValue("mrodriguez", "time", 2);
-        marko.<AnnotatedList>getProperty("names").get().addValue("marko", "time", 3);
-        System.out.println(marko.getProperty("names"));
-
-
-        System.out.println("----");
-        marko.<AnnotatedList>getProperty("names").get().query().has("time", Compare.GREATER_THAN, 1).annotatedValues().forEach(System.out::println);
-        System.out.println("----");
-        marko.<AnnotatedList<String>>getProperty("names").get().query().has("time", 1).values().forEach(System.out::println);
-
+        Property<AnnotatedList<String>> names = marko.getProperty("names");
+        names.get().addValue("marko", "time", 1);
+        names.get().addValue("antonio", "time", 2);
+        names.get().addValue("mrodriguez", "time", 7);
+        System.out.println(names);
+        System.out.println("-------");
+        names.get().query().has("time", 2).values().forEach(System.out::println);
+        System.out.println("-------");
+        names.get().query().has("time", 1).annotatedValues().forEach(a -> a.remove());
+        names.get().query().values().forEach(System.out::println);
     }
 }
