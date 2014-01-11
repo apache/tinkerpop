@@ -17,4 +17,10 @@ public class TriFunctionTest {
         final UnaryOperator<String> after = (s) -> s + "last";
         assertEquals("123last", f.andThen(after).apply("1", "2", "3"));
     }
+
+    @Test(expected = NullPointerException.class)
+    public void shouldThrowIfAfterFunctionIsNull() {
+        final TriFunction<String, String, String, String> f = (a,b,c) -> a + b + c;
+        f.andThen(null);
+    }
 }
