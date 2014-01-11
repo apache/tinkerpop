@@ -1,7 +1,5 @@
-package com.tinkerpop.blueprints.util;
+package com.tinkerpop.blueprints.util.function;
 
-import com.tinkerpop.blueprints.util.function.HexConsumer;
-import com.tinkerpop.blueprints.util.function.TriConsumer;
 import org.junit.Test;
 
 import java.util.ArrayList;

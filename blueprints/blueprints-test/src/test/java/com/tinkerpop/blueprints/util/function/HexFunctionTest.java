@@ -1,6 +1,5 @@
-package com.tinkerpop.blueprints.util;
+package com.tinkerpop.blueprints.util.function;
 
-import com.tinkerpop.blueprints.util.function.HexFunction;
 import org.junit.Test;
 
 import java.util.function.UnaryOperator;
