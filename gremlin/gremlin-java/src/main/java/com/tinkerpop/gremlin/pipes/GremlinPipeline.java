@@ -95,24 +95,28 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
         return this.addPipe(new FlatMapPipe<Edge, Vertex>(this, e -> Arrays.asList(e.get().getVertex(Direction.OUT), e.get().getVertex(Direction.IN)).iterator()));
     }
 
-    public default GremlinPipeline<S, Property> property(final String key) {
-        return this.addPipe(new MapPipe<Element, Property>(this, e -> e.get().getProperty(key)));
+    public default <E2> GremlinPipeline<S, Property<E2>> property(final String key) {
+        return this.addPipe(new MapPipe<Element, Property>(this, e -> e.get().<E2>getProperty(key)));
+    }
+
+    public default <E2> GremlinPipeline<S, E2> value() {
+        return this.addPipe(new MapPipe<Property, E2>(this, p -> (E2) (p.get()).get()));
     }
 
     public default <E2> GremlinPipeline<S, E2> value(final String key) {
-        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.get().getValue(key)));
+        return this.addPipe(new MapPipe<Element, E2>(this, e -> e.get().<E2>getValue(key)));
     }
 
-    public default <E2> GremlinPipeline<S, E2> value(final String key, final Object defaultValue) {
-        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.get().getProperty(key).orElse(defaultValue)));
+    public default <E2> GremlinPipeline<S, E2> value(final String key, final E2 defaultValue) {
+        return this.addPipe(new MapPipe<Element, E2>(this, e -> e.get().<E2>getProperty(key).orElse(defaultValue)));
     }
 
-    public default <E2> GremlinPipeline<S, E2> value(final String key, final Supplier defaultSupplier) {
-        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.get().getProperty(key).orElseGet(defaultSupplier)));
+    public default <E2> GremlinPipeline<S, E2> value(final String key, final Supplier<E2> defaultSupplier) {
+        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.get().<E2>getProperty(key).orElseGet(defaultSupplier)));
     }
 
     public default GremlinPipeline<S, Path> path() {
-        return this.addPipe(new MapPipe<Object, Path>(this, Holder::getPath));
+        return this.addPipe(new MapPipe<>(this, Holder::getPath));
     }
 
     public default <E2> GremlinPipeline<S, E2> back(final String name) {

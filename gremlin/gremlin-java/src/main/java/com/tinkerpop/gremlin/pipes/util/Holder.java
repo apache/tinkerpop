@@ -90,4 +90,15 @@ public class Holder<T> implements Serializable {
     public String toString() {
         return t.toString();
     }
+
+    public int hashCode() {
+        return this.t.hashCode();
+    }
+
+    public boolean equals(Object object) {
+        if (object instanceof Holder)
+            return this.t.equals(((Holder) object).get());
+        else
+            return false;
+    }
 }

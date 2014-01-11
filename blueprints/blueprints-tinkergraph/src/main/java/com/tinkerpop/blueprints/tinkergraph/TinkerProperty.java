@@ -18,13 +18,11 @@ import java.util.Optional;
  */
 public class TinkerProperty<V> implements Property<V> {
 
-    private Map<String, Object> annotations = new HashMap<>();
     private final Element element;
     private final String key;
     private V value;
 
     protected TinkerGraphComputer.State state = TinkerGraphComputer.State.STANDARD;
-    private TinkerVertexMemory vertexMemory;
 
     public TinkerProperty(final Element element, final String key, final V value) {
         this.element = element;
@@ -35,8 +33,6 @@ public class TinkerProperty<V> implements Property<V> {
     private TinkerProperty(final TinkerProperty<V> property, final TinkerGraphComputer.State state, final TinkerVertexMemory vertexMemory) {
         this(property.getElement(), property.getKey(), property.get());
         this.state = state;
-        this.annotations = property.annotations;
-        this.vertexMemory = vertexMemory;
     }
 
     public <E extends Element> E getElement() {
