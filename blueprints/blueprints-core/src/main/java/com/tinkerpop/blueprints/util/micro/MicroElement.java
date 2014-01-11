@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.util.ElementHelper;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -15,6 +16,7 @@ public abstract class MicroElement implements Element {
     final String label;
 
     public MicroElement(final Element element) {
+        Objects.requireNonNull(element);
         this.id = element.getId();
         this.label = element.getLabel();
     }
