@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
+public class GremlinVertexProgram<M extends GremlinMessage> implements VertexProgram<M> {
 
     private MessageType.Global global = MessageType.Global.of(GREMLIN_MESSAGE);
 
@@ -24,7 +24,6 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     private static final String VOTE_TO_HALT = "voteToHalt";
     public static final String TRACK_PATHS = "trackPaths";
     // TODO: public static final String MESSAGES_SENT = "messagesSent";
-
     public static final String GREMLIN_TRACKER = "gremlinTracker";
     private final Supplier<Gremlin> gremlin;
 
@@ -35,24 +34,27 @@ public class GremlinVertexProgram implements VertexProgram<GremlinMessage> {
     public void setup(final GraphMemory graphMemory) {
         graphMemory.setIfAbsent(GREMLIN_PIPELINE, this.gremlin);
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
-        graphMemory.setIfAbsent(TRACK_PATHS, true);
+        graphMemory.setIfAbsent(TRACK_PATHS, false);
     }
 
-    public void execute(final Vertex vertex, final Messenger<GremlinMessage> messenger, final GraphMemory graphMemory) {
+    public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
         final Gremlin gremlin = graphMemory.<Supplier<Gremlin>>get(GREMLIN_PIPELINE).get();
         if (graphMemory.isInitialIteration()) {
             final Holder holder = new Holder<>(Holder.NONE, vertex);
             holder.setFuture(PipelineHelper.getStart(gremlin).getAs());
-            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(holder));
+            if (graphMemory.<Boolean>get(TRACK_PATHS))
+                messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), (M) GremlinPathMessage.of(holder));
+            else
+                messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), (M) GremlinCounterMessage.of(holder));
             graphMemory.and(VOTE_TO_HALT, false);
         } else {
             if (graphMemory.<Boolean>get(TRACK_PATHS)) {
                 final GremlinPaths tracker = new GremlinPaths(vertex);
-                graphMemory.and(VOTE_TO_HALT, GremlinMessage.executePaths(vertex, messenger.receiveMessages(vertex, this.global), messenger, tracker, gremlin));
+                graphMemory.and(VOTE_TO_HALT, GremlinPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, gremlin));
                 vertex.setProperty(GREMLIN_TRACKER, tracker);
             } else {
-                final GremlinCounter tracker = new GremlinCounter(vertex);
-                graphMemory.and(VOTE_TO_HALT, GremlinMessage.executeCounts(vertex, messenger.receiveMessages(vertex, this.global), messenger, tracker, gremlin));
+                final GremlinCounters tracker = new GremlinCounters(vertex);
+                graphMemory.and(VOTE_TO_HALT, GremlinCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, gremlin));
                 vertex.setProperty(GREMLIN_TRACKER, tracker);
             }
         }

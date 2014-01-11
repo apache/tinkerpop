@@ -22,8 +22,8 @@ public class GremlinVertexProgramTest {
 
     @Test
     public void testGremlinOLAP() throws Exception {
-        Graph g = TinkerFactory.createClassic();
-        ComputeResult result =
+        final Graph g = TinkerFactory.createClassic();
+        final ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
                         //Gremlin.of().out("created").in("created").value("name").map(o -> o.toString().length()))
                         Gremlin.of().out().out().property("name").value().path())
@@ -43,7 +43,7 @@ public class GremlinVertexProgramTest {
         } else {
             System.out.println("gremlin> " + result.getGraphMemory().<Supplier>get("gremlinPipeline").get());
             StreamFactory.stream(g.query().vertices()).forEach(v -> {
-                final GremlinCounter tracker = result.getVertexMemory().<GremlinCounter>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).get();
+                final GremlinCounters tracker = result.getVertexMemory().<GremlinCounters>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).get();
                 tracker.getDoneGraphTracks().forEach((a, b) -> Stream.generate(() -> 1).limit(b).forEach(t -> System.out.println("==>" + a)));
                 tracker.getDoneObjectTracks().forEach((a, b) -> Stream.generate(() -> 1).limit(b).forEach(t -> System.out.println("==>" + a)));
             });

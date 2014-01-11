@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinCounter implements Serializable {
+public class GremlinCounters implements Serializable {
 
     protected final Map<Holder, Long> previousObjectTracks;
     protected final Map<Holder, Long> graphTracks = new HashMap<>();
@@ -20,8 +20,8 @@ public class GremlinCounter implements Serializable {
     protected final Map<Holder, Long> doneGraphTracks = new HashMap<>();
     protected final Map<Holder, Long> doneObjectTracks = new HashMap<>();
 
-    public GremlinCounter(final Vertex vertex) {
-        final Property<GremlinCounter> tracker = vertex.getProperty(GremlinVertexProgram.GREMLIN_TRACKER);
+    public GremlinCounters(final Vertex vertex) {
+        final Property<GremlinCounters> tracker = vertex.getProperty(GremlinVertexProgram.GREMLIN_TRACKER);
         this.previousObjectTracks = tracker.isPresent() ? tracker.get().objectTracks : new HashMap<>();
     }
 
