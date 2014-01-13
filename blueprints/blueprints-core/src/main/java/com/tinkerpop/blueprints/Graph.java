@@ -18,6 +18,13 @@ import java.util.Optional;
  */
 public interface Graph extends AutoCloseable {
 
+    /**
+     * Creates a new {@link Graph} instance.  All graphs require that this method be overridden.  It is enforced by the
+     * Blueprints test suite.  Note that if the implementation does not implement the {@link Strategy} feature then
+     * it should call {@link com.tinkerpop.blueprints.Graph.Exceptions#graphStrategyNotSupported()} if the
+     * {@code strategy} argument is non-empty.  The exception thrown by this method is enforced by the Blueprints test
+     * suite.
+     */
     public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<GraphStrategy> strategy) {
         throw new UnsupportedOperationException("Implementations must override this method");
     }

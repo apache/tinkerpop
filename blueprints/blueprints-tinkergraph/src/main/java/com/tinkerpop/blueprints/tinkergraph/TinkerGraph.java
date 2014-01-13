@@ -43,35 +43,49 @@ public class TinkerGraph implements Graph, Serializable {
     private final Strategy.Context<Graph> graphContext = new Strategy.Context<Graph>(this, this);
 
     /**
-     * All Graph implementations are to be constructed through the open() method and therefore Graph implementations
-     * should maintain a private or protected constructor.  This rule is enforced by the Blueprints Test suite.
+     * Internally create a new {@link TinkerGraph} instance.
+     * <p/>
+     * <b>Reference Implementation Help:</b> All Graph implementations are to be constructed through the open() method
+     * and therefore {@link Graph} implementations should maintain a private or protected constructor.  This rule is
+     * enforced by the Blueprints Test suite.
      */
     private TinkerGraph(final Optional<GraphStrategy> strategy) {
         this.strategy.set(strategy);
     }
 
     /**
-     * If a Graph implementation does not require a configuration (or perhaps has a default configuration) it can
-     * choose to implement a zero argument open() method.  This is not a requirement and is not enforced by the
-     * Blueprints test suite.
+     * Open a new {@link TinkerGraph} instance.
+     * <p/>
+     * <b>Reference Implementation Help:</b> If a {@link Graph } implementation does not require a
+     * {@link Configuration} (or perhaps has a default configuration) it can choose to implement a zero argument
+     * open() method. This is an optional constructor method for TinkerGraph. It is not enforced by the Blueprints
+     * Test Suite.
      */
     public static TinkerGraph open() {
         return open(Optional.empty(), Optional.empty());
     }
 
     /**
-     * This is an optional constructor for TinkerGraph.  It is not enforced by the Blueprints Test Suite.
+     * Open a new {@link TinkerGraph} instance.
+     * <p/>
+     * <b>Reference Implementation Help:</b> This is an optional constructor method for {@link TinkerGraph}. It is not
+     * enforced by the Blueprints Test Suite.
      */
     public static TinkerGraph open(final Optional<Configuration> configuration) {
         return open(configuration, Optional.empty());
     }
 
     /**
-     * All graphs require that this method be overridden from the {@lnk Graph} interface.  It is enforced by the
-     * Blueprints test suite.  Note that if the implementation does not implement the {@link Strategy} feature then
-     * it should call {@link com.tinkerpop.blueprints.Graph.Exceptions#graphStrategyNotSupported()} if the
-     * {@code strategy} argument is non-empty.  The exception thrown by this method is enforced by the Blueprints test
-     * suite.
+     * Open a new {@link TinkerGraph} instance.
+     * <p/>
+     * <b>Reference Implementation Help:</b> This method is the one use by the
+     * {@link com.tinkerpop.blueprints.util.GraphFactory} to instantiate {@link Graph} instances.  This method must
+     * be overridden for the Blueprint Test Suite to pass.
+     *
+     * @param configuration the configuration for the instance
+     * @param strategy a strategy to apply
+     * @param <G> the {@link Graph} instance
+     * @return a newly opened {@link Graph}
      */
     public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<GraphStrategy> strategy) {
         return (G) new TinkerGraph(strategy);
