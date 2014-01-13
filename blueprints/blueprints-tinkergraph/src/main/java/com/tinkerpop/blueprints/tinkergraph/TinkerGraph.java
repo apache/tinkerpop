@@ -67,8 +67,11 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
     /**
-     * All graphs require that this method be overridden from the Graph interface.  It is enforced by the Blueprints
-     * test suite.
+     * All graphs require that this method be overridden from the {@lnk Graph} interface.  It is enforced by the
+     * Blueprints test suite.  Note that if the implementation does not implement the {@link Strategy} feature then
+     * it should call {@link com.tinkerpop.blueprints.Graph.Exceptions#graphStrategyNotSupported()} if the
+     * {@code strategy} argument is non-empty.  The exception thrown by this method is enforced by the Blueprints test
+     * suite.
      */
     public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<GraphStrategy> strategy) {
         return (G) new TinkerGraph(strategy);

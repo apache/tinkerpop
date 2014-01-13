@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
+import com.tinkerpop.blueprints.strategy.PartitionGraphStrategy;
 import com.tinkerpop.blueprints.util.GraphFactory;
 import org.junit.Test;
 
@@ -16,6 +17,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
+import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -36,6 +39,24 @@ public class GraphTest extends AbstractBlueprintsTest {
 
         assertNotNull(createdGraph);
         assertEquals(expectedGraph.getClass(), createdGraph.getClass());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+    public void shouldNotThrowUnsupportedIfStrategyIsEmptyAndStrategyFeatureDisabled() {
+        assertNotNull(GraphFactory.open(config, Optional.<GraphStrategy>empty()));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+    public void shouldThrowUnsupportedIfStrategyIsNonEmptyAndStrategyFeatureDisabled() {
+        try {
+            GraphFactory.open(config, Optional.<GraphStrategy>of(new PartitionGraphStrategy("k","v")));
+            fail("Strategy feature is not supported but accepts a GraphStrategy instance on construction.");
+        } catch (UnsupportedOperationException ex) {
+            assertEquals(Graph.Exceptions.graphStrategyNotSupported().getMessage(), ex.getMessage());
+        }
+
     }
 
     /**

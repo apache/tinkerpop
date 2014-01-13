@@ -12,6 +12,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.hamcrest.CoreMatchers.is;
@@ -34,6 +35,11 @@ public class FeatureSupportTest  {
      * Feature checks that test functionality to determine if a feature should be on or off.
      */
     public static class FunctionalityTest extends AbstractBlueprintsTest {
+
+        /**
+         * A {@link Graph} that does not support {@link GraphFeatures#FEATURE_COMPUTER} must call
+         * {@link com.tinkerpop.blueprints.Graph.Exceptions#graphComputerNotSupported()}.
+         */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_COMPUTER, supported = false)
         public void ifAGraphCanComputeThenItMustSupportComputer() throws Exception {
@@ -45,6 +51,10 @@ public class FeatureSupportTest  {
             }
         }
 
+        /**
+         * A {@link Graph} that does not support {@link GraphFeatures#FEATURE_TRANSACTIONS} must call
+         * {@link com.tinkerpop.blueprints.Graph.Exceptions#transactionsNotSupported()}.
+         */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_TRANSACTIONS, supported = false)
         public void ifAGraphConstructsATxThenItMustSupportTransactions() throws Exception {
@@ -70,6 +80,21 @@ public class FeatureSupportTest  {
             assertThat(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS),
                     v.getId().toString(),
                     is(not("99999943835")));
+        }
+
+        /**
+         * A {@link Graph} that does not support {@link GraphFeatures#FEATURE_STRATEGY} must call
+         * {@link com.tinkerpop.blueprints.Graph.Exceptions#graphStrategyNotSupported()}.
+         */
+        @Test
+        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_STRATEGY, supported = false)
+        public void ifAGraphAcceptsStrategyThenItMustSupportStrategy() throws Exception {
+            try {
+                g.strategy();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_STRATEGY));
+            } catch (UnsupportedOperationException e) {
+                assertEquals(Graph.Exceptions.graphStrategyNotSupported().getMessage(), e.getMessage());
+            }
         }
     }
 

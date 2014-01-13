@@ -26,11 +26,17 @@ public interface Graph extends AutoCloseable {
 
     public GraphQuery query();
 
-    public GraphComputer compute();
+    public default GraphComputer compute() {
+        throw Exceptions.graphComputerNotSupported();
+    }
 
-    public Transaction tx();
+    public default Transaction tx() {
+        throw Exceptions.transactionsNotSupported();
+    }
 
-    public Strategy strategy();
+    public default Strategy strategy() {
+        throw Exceptions.graphStrategyNotSupported();
+    }
 
     public Annotations annotations();
 
@@ -254,6 +260,10 @@ public interface Graph extends AutoCloseable {
 
         public static UnsupportedOperationException graphComputerNotSupported() {
             return new UnsupportedOperationException("Graph does not support graph computer");
+        }
+
+        public static UnsupportedOperationException graphStrategyNotSupported() {
+            return new UnsupportedOperationException("Graph does not support graph strategy");
         }
 
         public static IllegalArgumentException vertexIdCanNotBeNull() {

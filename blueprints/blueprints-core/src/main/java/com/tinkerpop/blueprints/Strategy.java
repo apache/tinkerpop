@@ -94,22 +94,6 @@ public interface Strategy {
     }
 
     /**
-     * A {@link Strategy} implementation that does not allow the {@link GraphStrategy} to be set and returns an
-     * {@link Optional#EMPTY}.
-     */
-    public static class None implements Strategy {
-        @Override
-        public void set(final Optional<? extends GraphStrategy> strategy) {
-            throw new UnsupportedOperationException("Strategy is not supported by this implementation");
-        }
-
-        @Override
-        public Optional<GraphStrategy> getGraphStrategy() {
-            return Optional.empty();
-        }
-    }
-
-    /**
      * A {@link Strategy} implementation where the {@link GraphStrategy} can be get or set as {@link ThreadLocal}.
      */
     public static class Local implements Strategy {
