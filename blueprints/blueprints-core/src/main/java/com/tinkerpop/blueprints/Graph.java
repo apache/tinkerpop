@@ -33,17 +33,11 @@ public interface Graph extends AutoCloseable {
 
     public GraphQuery query();
 
-    public default GraphComputer compute() {
-        throw Exceptions.graphComputerNotSupported();
-    }
+    public GraphComputer compute();
 
-    public default Transaction tx() {
-        throw Exceptions.transactionsNotSupported();
-    }
+    public Transaction tx();
 
-    public default Strategy strategy() {
-        throw Exceptions.graphStrategyNotSupported();
-    }
+    public Strategy strategy();
 
     public Annotations annotations();
 
