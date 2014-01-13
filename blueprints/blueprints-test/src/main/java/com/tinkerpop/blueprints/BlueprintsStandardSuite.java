@@ -39,6 +39,7 @@ public class BlueprintsStandardSuite extends AbstractBlueprintsSuite {
             FeatureSupportTest.class,
             GraphTest.class,
             GraphComputerTest.class,
+            GraphConstructionTest.class,
             IdGraphStrategyTest.class,
             IoTest.class,
             PartitionGraphStrategyTest.class,

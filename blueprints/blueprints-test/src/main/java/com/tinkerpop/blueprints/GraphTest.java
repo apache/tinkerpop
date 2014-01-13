@@ -1,24 +1,17 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.strategy.GraphStrategy;
-import com.tinkerpop.blueprints.strategy.PartitionGraphStrategy;
-import com.tinkerpop.blueprints.util.GraphFactory;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
-import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -28,48 +21,6 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphTest extends AbstractBlueprintsTest {
-
-    /**
-     * All Blueprints implementations should be constructable through GraphFactory.
-     */
-    @Test
-    public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() {
-        final Graph expectedGraph = g;
-        final Graph createdGraph = GraphFactory.open(config, Optional.<GraphStrategy>empty());
-
-        assertNotNull(createdGraph);
-        assertEquals(expectedGraph.getClass(), createdGraph.getClass());
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-    public void shouldNotThrowUnsupportedIfStrategyIsEmptyAndStrategyFeatureDisabled() {
-        assertNotNull(GraphFactory.open(config, Optional.<GraphStrategy>empty()));
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-    public void shouldThrowUnsupportedIfStrategyIsNonEmptyAndStrategyFeatureDisabled() {
-        try {
-            GraphFactory.open(config, Optional.<GraphStrategy>of(new PartitionGraphStrategy("k","v")));
-            fail("Strategy feature is not supported but accepts a GraphStrategy instance on construction.");
-        } catch (UnsupportedOperationException ex) {
-            assertEquals(Graph.Exceptions.graphStrategyNotSupported().getMessage(), ex.getMessage());
-        }
-
-    }
-
-    /**
-     * Blueprints implementations should have private constructor as all graphs.  They should be only instantiated
-     * through the GraphFactory or the static open() method on the Graph implementation itself.
-     */
-    @Test
-    public void shouldHavePrivateConstructor() {
-        assertTrue(Arrays.asList(g.getClass().getConstructors()).stream().allMatch(c -> {
-            final int modifier = c.getModifiers();
-            return Modifier.isPrivate(modifier) || Modifier.isPrivate(modifier);
-        }));
-    }
 
     /**
      * Ensure compliance with Features by checking that all Features are exposed by the implementation.
@@ -101,14 +52,6 @@ public class GraphTest extends AbstractBlueprintsTest {
 
         // ensure that every method exposed was checked
         assertEquals(methods.size(), counter.get());
-    }
-
-    /**
-     * Graphs should be empty on creation.
-     */
-    @Test
-    public void shouldConstructAnEmptyGraph() {
-        BlueprintsStandardSuite.assertVertexEdgeCounts(g, 0, 0);
     }
 
     /**
