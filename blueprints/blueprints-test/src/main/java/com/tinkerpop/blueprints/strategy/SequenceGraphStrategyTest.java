@@ -1,6 +1,8 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.AbstractBlueprintsTest;
+import com.tinkerpop.blueprints.FeatureRequirement;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import org.junit.Test;
@@ -12,6 +14,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -21,6 +24,7 @@ import static org.junit.Assert.assertNull;
  */
 public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldAppendPropertyValuesInOrderToVertex() {
         g.strategy().set(Optional.of(new SequenceGraphStrategy(
             new GraphStrategy() {
@@ -64,6 +68,7 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
     }
 
     @Test(expected = RuntimeException.class)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldShortCircuitStrategyWithException() {
         g.strategy().set(Optional.of(new SequenceGraphStrategy(
             new GraphStrategy() {
@@ -99,6 +104,7 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldShortCircuitStrategyWithNoOp() {
         g.strategy().set(Optional.of(new SequenceGraphStrategy(
                 new GraphStrategy() {
@@ -133,6 +139,7 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldDoSomethingBeforeAndAfter() {
         g.strategy().set(Optional.of(new SequenceGraphStrategy(
                 new GraphStrategy() {

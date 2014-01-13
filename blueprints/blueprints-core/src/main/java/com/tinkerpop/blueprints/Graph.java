@@ -59,19 +59,25 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_COMPUTER = "Computer";
             public static final String FEATURE_TRANSACTIONS = "Transactions";
             public static final String FEATURE_ANNOTATIONS = "Annotations";
+            public static final String FEATURE_STRATEGY = "Strategy";
+
+            @FeatureDescriptor(name = FEATURE_ANNOTATIONS)
+            public default boolean supportsAnnotations() {
+                return true;
+            }
 
             @FeatureDescriptor(name = FEATURE_COMPUTER)
             public default boolean supportsComputer() {
                 return true;
             }
 
-            @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
-            public default boolean supportsTransactions() {
+            @FeatureDescriptor(name = FEATURE_STRATEGY)
+            public default boolean supportsStrategy() {
                 return true;
             }
 
-            @FeatureDescriptor(name = FEATURE_ANNOTATIONS)
-            public default boolean supportsAnnotations() {
+            @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
+            public default boolean supportsTransactions() {
                 return true;
             }
 

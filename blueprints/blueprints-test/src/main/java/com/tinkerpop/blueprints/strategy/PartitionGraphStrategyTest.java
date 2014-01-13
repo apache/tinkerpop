@@ -2,12 +2,15 @@ package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.AbstractBlueprintsTest;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.FeatureRequirement;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import org.junit.Test;
 
 import java.util.Optional;
 
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -22,6 +25,7 @@ public class PartitionGraphStrategyTest extends AbstractBlueprintsTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldAppendPartitionToVertex() {
         final Vertex v = g.addVertex("any", "thing");
 
@@ -31,6 +35,7 @@ public class PartitionGraphStrategyTest extends AbstractBlueprintsTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldAppendPartitionToEdge() {
         final Vertex v1 = g.addVertex("any", "thing");
         final Vertex v2 = g.addVertex("some", "thing");
@@ -51,6 +56,7 @@ public class PartitionGraphStrategyTest extends AbstractBlueprintsTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldWriteVerticesToMultiplePartitions() {
         final Vertex vA = g.addVertex("any", "a");
         final PartitionGraphStrategy strategy = (PartitionGraphStrategy) g.strategy().getGraphStrategy().get();
