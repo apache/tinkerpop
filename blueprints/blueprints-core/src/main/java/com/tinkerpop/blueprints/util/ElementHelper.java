@@ -65,6 +65,12 @@ public class ElementHelper {
         return Optional.empty();
     }
 
+    /**
+     * Extracts the value of the {@link Property.Key#LABEL} key from the list of arguments.
+     *
+     * @param keyValues a list of key/value pairs
+     * @return the value associated with {@link Property.Key#LABEL}
+     */
     public static Optional<String> getLabelValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i].equals(Property.Key.LABEL))
