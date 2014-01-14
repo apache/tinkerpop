@@ -6,8 +6,10 @@ import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.gremlin.pipes.Gremlin;
-import com.tinkerpop.gremlin.pipes.util.Holder;
+import com.tinkerpop.gremlin.pipes.Holder;
+import com.tinkerpop.gremlin.pipes.util.PathHolder;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
+import com.tinkerpop.gremlin.pipes.util.SimpleHolder;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -34,13 +36,14 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     public void setup(final GraphMemory graphMemory) {
         graphMemory.setIfAbsent(GREMLIN_PIPELINE, this.gremlin);
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
-        graphMemory.setIfAbsent(TRACK_PATHS, false);
+        graphMemory.setIfAbsent(TRACK_PATHS, this.gremlin.get().getTrackPaths());
     }
 
     public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
         final Gremlin gremlin = graphMemory.<Supplier<Gremlin>>get(GREMLIN_PIPELINE).get();
         if (graphMemory.isInitialIteration()) {
-            final Holder holder = new Holder<>(Holder.NONE, vertex);
+
+            final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ? new PathHolder<>(Holder.NONE, vertex) : new SimpleHolder<>(Holder.NONE, vertex);
             holder.setFuture(PipelineHelper.getStart(gremlin).getAs());
             if (graphMemory.<Boolean>get(TRACK_PATHS))
                 messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), (M) GremlinPathMessage.of(holder));

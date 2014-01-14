@@ -5,7 +5,8 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.gremlin.pipes.util.Holder;
+import com.tinkerpop.gremlin.pipes.Holder;
+import com.tinkerpop.gremlin.pipes.util.PathHolder;
 
 import java.io.Serializable;
 import java.util.Optional;
@@ -41,7 +42,8 @@ public abstract class GremlinMessage implements Serializable {
         this.elementId = elementId;
         this.propertyKey = propertyKey;
         this.holder = holder;
-        this.holder.getPath().microSize();
+        if (this.holder instanceof PathHolder)
+            this.holder.getPath().microSize();
     }
 
     ///////////////////////////////////

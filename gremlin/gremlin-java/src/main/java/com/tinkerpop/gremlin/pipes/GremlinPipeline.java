@@ -7,7 +7,6 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.pipes.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
 import com.tinkerpop.gremlin.pipes.util.Path;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
@@ -53,6 +52,10 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     public GremlinPipeline<Vertex, Vertex> V();
 
     public GremlinPipeline<Vertex, Vertex> v(final Object... ids);
+
+    public GremlinPipeline trackPaths(final boolean trackPaths);
+
+    public boolean getTrackPaths();
 
     public default GremlinPipeline<S, Vertex> out(final String... labels) {
         return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).vertices().iterator()));
@@ -116,18 +119,22 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     }
 
     public default GremlinPipeline<S, Path> path() {
-        return this.addPipe(new MapPipe<>(this, Holder::getPath));
+        this.trackPaths(true);
+        return this.addPipe(new MapPipe<S, Path>(this, Holder::getPath));
     }
 
     public default <E2> GremlinPipeline<S, E2> back(final String name) {
+        this.trackPaths(true);
         return this.addPipe(new MapPipe<E, Object>(this, o -> o.getPath().get(name)));
     }
 
     public default <E2> GremlinPipeline<S, E2> match(final String inAs, final String outAs, final Pipeline... pipelines) {
+        this.trackPaths(true);
         return this.addPipe(new MatchPipe(inAs, outAs, this, pipelines));
     }
 
     public default GremlinPipeline<S, List> select(final String... names) {
+        this.trackPaths(true);
         return this.addPipe(new MapPipe<Object, List>(this, h -> {
             final Path path = h.getPath();
             return names.length == 0 ?
@@ -143,6 +150,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     }
 
     public default GremlinPipeline<S, E> simplePath() {
+        this.trackPaths(true);
         return this.addPipe(new FilterPipe<Object>(this, o -> o.getPath().isSimple()));
     }
 
@@ -213,6 +221,7 @@ public interface GremlinPipeline<S, E> extends Pipeline<S, E> {
     ///////////////////// BRANCH STEPS /////////////////////
 
     public default GremlinPipeline<S, E> loop(final String as, final Predicate<Holder<E>> whilePredicate, final Predicate<Holder<E>> emitPredicate) {
+        this.trackPaths(true);
         final Pipe<?, ?> loopStartPipe = PipelineHelper.getAs(as, getPipeline());
         return this.addPipe(new MapPipe<E, Object>(this, holder -> {
             holder.incrLoops();

@@ -1,28 +1,25 @@
 package com.tinkerpop.gremlin.pipes.util;
 
+import com.tinkerpop.gremlin.pipes.GremlinPipeline;
+import com.tinkerpop.gremlin.pipes.Holder;
 import com.tinkerpop.gremlin.pipes.Pipe;
 import com.tinkerpop.gremlin.pipes.Pipeline;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class HolderIterator<T> implements Iterator<Holder<T>> {
 
-    private final Holder head;
+    private final Optional<Holder<T>> headOptional;
     private final Iterator<T> iterator;
     private final Pipe pipe;
 
-    public <P extends Pipeline> HolderIterator(final Pipe pipe, final Iterator<T> iterator) {
+    public <P extends Pipeline> HolderIterator(final Optional<Holder<T>> headOptional, final Pipe pipe, final Iterator<T> iterator) {
         this.iterator = iterator;
-        this.head = null;
-        this.pipe = pipe;
-    }
-
-    public <P extends Pipeline> HolderIterator(final Holder head, final Pipe pipe, final Iterator<T> iterator) {
-        this.iterator = iterator;
-        this.head = head.makeSibling();
+        this.headOptional = headOptional;
         this.pipe = pipe;
     }
 
@@ -31,8 +28,18 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
     }
 
     public Holder<T> next() {
-        return null == this.head ?
-                new Holder<>(this.pipe.getAs(), this.iterator.next()) :
-                this.head.makeChild(this.pipe.getAs(), this.iterator.next());
+        if (((GremlinPipeline) this.pipe.getPipeline()).getTrackPaths()) {
+            return this.headOptional.isPresent() ?
+                    this.headOptional.get().makeChild(this.pipe.getAs(), this.iterator.next()) :
+                    new PathHolder<>(this.pipe.getAs(), this.iterator.next());
+
+        } else {
+            return this.headOptional.isPresent() ?
+                    this.headOptional.get().makeChild(this.pipe.getAs(), this.iterator.next()) :
+                    new SimpleHolder<>(this.pipe.getAs(), this.iterator.next());
+
+        }
+
+
     }
 }

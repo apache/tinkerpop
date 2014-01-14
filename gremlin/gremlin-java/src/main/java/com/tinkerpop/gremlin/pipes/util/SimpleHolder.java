@@ -1,0 +1,92 @@
+package com.tinkerpop.gremlin.pipes.util;
+
+
+import com.tinkerpop.gremlin.pipes.Holder;
+
+/**
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ */
+public class SimpleHolder<T> implements Holder<T> {
+
+    private static final String PATH_ERROR_MESSAGE = "Path tracking is not supported by this Holder: " + SimpleHolder.class;
+
+    protected T t;
+    protected String future = NONE;
+
+    public SimpleHolder(final T t) {
+        this.t = t;
+    }
+
+    public SimpleHolder(final String as, final T t) {
+        this.t = t;
+    }
+
+    public T get() {
+        return this.t;
+    }
+
+    public void set(final T t) {
+        this.t = t;
+    }
+
+    public boolean isDone() {
+        return this.future.equals(NONE);
+    }
+
+    public String getFuture() {
+        return this.future;
+    }
+
+    public void setFuture(final String as) {
+        this.future = as;
+    }
+
+    public Path getPath() {
+        throw new IllegalStateException(PATH_ERROR_MESSAGE);
+    }
+
+    public void setPath(final Path path) {
+        throw new IllegalStateException(PATH_ERROR_MESSAGE);
+    }
+
+    public int getLoops() {
+        throw new IllegalStateException(PATH_ERROR_MESSAGE);
+    }
+
+    public void incrLoops() {
+        throw new IllegalStateException(PATH_ERROR_MESSAGE);
+    }
+
+    public <R> SimpleHolder<R> makeChild(final String as, final R r) {
+        final SimpleHolder<R> holder = new SimpleHolder<>(r);
+        holder.future = this.future;
+        return holder;
+    }
+
+    public SimpleHolder<T> makeSibling() {
+        final SimpleHolder<T> holder = new SimpleHolder<>(this.t);
+        holder.future = this.future;
+        return holder;
+    }
+
+    public SimpleHolder<T> makeSibling(final String as) {
+        final SimpleHolder<T> holder = new SimpleHolder<>(this.t);
+        holder.future = this.future;
+        return holder;
+    }
+
+    public String toString() {
+        return t.toString();
+    }
+
+    public int hashCode() {
+        return this.t.hashCode();
+    }
+
+    public boolean equals(final Object object) {
+        if (object instanceof SimpleHolder)
+            return this.t.equals(((SimpleHolder) object).get());
+        else
+            return false;
+    }
+}
