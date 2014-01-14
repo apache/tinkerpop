@@ -107,4 +107,19 @@ public class ElementHelperTest {
     public void shouldNotFindAnIdValue() {
         assertFalse(ElementHelper.getIdValue("test", 321, "xyz", 123l, "testagain", "that").isPresent());
     }
+
+    @Test
+    public void shouldFindTheLabelValueAlone() {
+        assertEquals("friend", ElementHelper.getLabelValue(Property.Key.LABEL, "friend").get());
+    }
+
+    @Test
+    public void shouldFindTheLabelValueInSet() {
+        assertEquals("friend", ElementHelper.getLabelValue("test", 321, Property.Key.LABEL, "friend", "testagain", "that").get());
+    }
+
+    @Test
+    public void shouldNotFindAnLabelValue() {
+        assertFalse(ElementHelper.getLabelValue("test", 321, "xyz", "friend", "testagain", "that").isPresent());
+    }
 }
