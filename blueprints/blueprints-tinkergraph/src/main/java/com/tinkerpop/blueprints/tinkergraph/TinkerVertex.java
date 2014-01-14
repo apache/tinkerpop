@@ -9,7 +9,6 @@ import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.VertexQuery;
-import com.tinkerpop.blueprints.util.DefaultAnnotatedList;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
@@ -49,7 +48,7 @@ class TinkerVertex extends TinkerElement implements Vertex {
             final Property oldProperty = super.getProperty(key);
             if (value == AnnotatedList.make()) {
                 if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList))
-                    this.properties.put(key, new TinkerProperty<>(this, key, new DefaultAnnotatedList<>()));
+                    this.properties.put(key, new TinkerProperty<>(this, key, new TinkerAnnotatedList<>()));
             } else
                 this.properties.put(key, new TinkerProperty<>(this, key, value));
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);

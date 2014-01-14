@@ -1,4 +1,4 @@
-package com.tinkerpop.blueprints.util;
+package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Annotations;
 
@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultAnnotations implements Annotations {
+public class TinkerAnnotations implements Annotations {
 
     private final Map<String, Object> annotations = new HashMap<>();
 

@@ -18,13 +18,4 @@ public interface AnnotatedList<V> {
     public static Object make() {
         return MAKE;
     }
-
-    public interface AnnotatedValue<V> {
-
-        public V getValue();
-
-        public Annotations getAnnotations();
-
-        public void remove();
-    }
 }

@@ -1,6 +1,6 @@
 package com.tinkerpop.blueprints.query;
 
-import com.tinkerpop.blueprints.AnnotatedList;
+import com.tinkerpop.blueprints.AnnotatedValue;
 import com.tinkerpop.blueprints.Compare;
 
 import java.util.function.BiPredicate;
@@ -25,7 +25,7 @@ public interface AnnotatedListQuery<V> extends Query {
     @Override
     public AnnotatedListQuery<V> limit(final int limit);
 
-    public Iterable<AnnotatedList.AnnotatedValue<V>> annotatedValues();
+    public Iterable<AnnotatedValue<V>> annotatedValues();
 
     public Iterable<V> values();
 
