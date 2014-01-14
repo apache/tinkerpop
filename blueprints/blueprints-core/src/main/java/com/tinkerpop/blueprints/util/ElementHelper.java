@@ -70,11 +70,12 @@ public class ElementHelper {
      *
      * @param keyValues a list of key/value pairs
      * @return the value associated with {@link Property.Key#LABEL}
+     * @throws ClassCastException if the value of the label is not a {@link String}
      */
     public static Optional<String> getLabelValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i].equals(Property.Key.LABEL))
-                return Optional.of(keyValues[i + 1].toString());
+                return Optional.of((String) keyValues[i + 1]);
         }
         return Optional.empty();
     }

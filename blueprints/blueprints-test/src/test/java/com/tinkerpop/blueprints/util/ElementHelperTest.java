@@ -122,4 +122,9 @@ public class ElementHelperTest {
     public void shouldNotFindAnLabelValue() {
         assertFalse(ElementHelper.getLabelValue("test", 321, "xyz", "friend", "testagain", "that").isPresent());
     }
+
+    @Test(expected = ClassCastException.class)
+    public void shouldErrorIfLabelIsNotString() {
+        assertFalse(ElementHelper.getLabelValue("test", 321, Property.Key.LABEL, 4545, "testagain", "that").isPresent());
+    }
 }
