@@ -51,6 +51,12 @@ public class ElementHelper {
         }
     }
 
+    /**
+     * Extracts the value of the {@link Property.Key#ID} key from the list of arguments.
+     *
+     * @param keyValues a list of key/value pairs
+     * @return the value associated with {@link Property.Key#ID}
+     */
     public static Optional<Object> getIdValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i].equals(Property.Key.ID))
