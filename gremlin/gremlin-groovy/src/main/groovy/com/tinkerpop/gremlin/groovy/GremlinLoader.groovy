@@ -4,8 +4,9 @@ import com.tinkerpop.gremlin.Tokens
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import com.tinkerpop.gremlin.groovy.loaders.GraphLoader
 import com.tinkerpop.gremlin.groovy.loaders.PipeLoader
-import com.tinkerpop.gremlin.pipes.GremlinPipeline
+import com.tinkerpop.gremlin.pipes.Pipeline
 import com.tinkerpop.gremlin.pipes.Pipe
+import com.tinkerpop.gremlin.pipes.Pipeline
 import groovy.grape.Grape
 
 /**
@@ -23,8 +24,8 @@ class GremlinLoader {
 
     public static void load() {
 
-        GremlinPipeline.getMethods().each {
-            if (it.getReturnType().equals(GremlinPipeline.class)) {
+        Pipeline.getMethods().each {
+            if (it.getReturnType().equals(Pipeline.class)) {
                 GremlinLoader.addStep(it.getName())
             }
         }

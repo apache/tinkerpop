@@ -2,12 +2,9 @@ package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import org.junit.Test;
-
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 

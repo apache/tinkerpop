@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.GremlinLoader
-import com.tinkerpop.gremlin.pipes.GremlinPipeline
+import com.tinkerpop.gremlin.pipes.Pipeline
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -10,11 +10,11 @@ class PipeLoader {
 
     public static void load() {
 
-        GremlinPipeline.metaClass.propertyMissing = { final String name ->
+        Pipeline.metaClass.propertyMissing = { final String name ->
             if (GremlinLoader.isStep(name)) {
                 return delegate."$name"();
             } else {
-                return ((GremlinPipeline) delegate).value(name);
+                return ((Pipeline) delegate).value(name);
             }
         }
 
@@ -33,13 +33,13 @@ class PipeLoader {
             }
         }
 
-        GremlinPipeline.metaClass.getAt = { final Integer index ->
-            return ((GremlinPipeline) delegate).range(index, index);
+        Pipeline.metaClass.getAt = { final Integer index ->
+            return ((Pipeline) delegate).range(index, index);
         }
 
 
-        GremlinPipeline.metaClass.getAt = { final Range range ->
-            return ((GremlinPipeline) delegate).range(range.getFrom() as Integer, range.getTo() as Integer);
+        Pipeline.metaClass.getAt = { final Range range ->
+            return ((Pipeline) delegate).range(range.getFrom() as Integer, range.getTo() as Integer);
         }
     }
 }

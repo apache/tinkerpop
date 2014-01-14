@@ -14,7 +14,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Gremlin<S, E> implements GremlinPipeline<S, E> {
+public class Gremlin<S, E> implements Pipeline<S, E> {
 
     private final List<Pipe<?, ?>> pipes = new ArrayList<>();
     private Graph graph = null;
