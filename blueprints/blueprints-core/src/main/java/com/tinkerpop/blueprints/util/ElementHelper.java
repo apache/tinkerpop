@@ -14,12 +14,13 @@ import java.util.Optional;
 public class ElementHelper {
 
     /**
-     * Determines whether the property key/value for the specified thing can be legally set.
-     * This is typically used as a pre-condition check prior to setting a property.
+     * Determines whether the property key/value for the specified thing can be legally set. This is typically used as
+     * a pre-condition check prior to setting a property.
      *
      * @param key   the key of the property
      * @param value the value of the property
-     * @throws IllegalArgumentException whether the key/value pair is legal and if not, a clear reason exception message is provided
+     * @throws IllegalArgumentException whether the key/value pair is legal and if not, a clear reason exception
+     *         message is provided
      */
     public static void validateProperty(final String key, final Object value) throws IllegalArgumentException {
         if (null == value)
@@ -34,6 +35,13 @@ public class ElementHelper {
             throw Property.Exceptions.propertyKeyCanNotBeEmpty();
     }
 
+    /**
+     * Determines whether a list of key/values are legal, ensuring that there are an even number of values submitted
+     * and that the key values in the list of arguments are {@link String} or {@link Property.Key} objects.
+     *
+     * @param keyValues a list of key/value pairs
+     * @throws IllegalArgumentException if something in the pairs is illegal
+     */
     public static void legalKeyValues(final Object... keyValues) throws IllegalArgumentException {
         if (keyValues.length % 2 != 0)
             throw Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
