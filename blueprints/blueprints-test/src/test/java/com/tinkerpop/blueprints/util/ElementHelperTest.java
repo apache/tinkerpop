@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -90,5 +91,20 @@ public class ElementHelperTest {
     @Test
     public void shouldAllowEvenNumberOfKeyValuesAndValidKeys() {
         ElementHelper.legalKeyValues("key", "test", "value-for-this-one", 1, Property.Key.hidden("1"), "none");
+    }
+
+    @Test
+    public void shouldFindTheIdValueAlone() {
+        assertEquals(123l, ElementHelper.getIdValue(Property.Key.ID, 123l).get());
+    }
+
+    @Test
+    public void shouldFindTheIdValueInSet() {
+        assertEquals(123l, ElementHelper.getIdValue("test", 321, Property.Key.ID, 123l, "testagain", "that").get());
+    }
+
+    @Test
+    public void shouldNotFindAnIdValue() {
+        assertFalse(ElementHelper.getIdValue("test", 321, "xyz", 123l, "testagain", "that").isPresent());
     }
 }
