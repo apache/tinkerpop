@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.util;
 
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import org.junit.Test;
 
@@ -59,5 +60,35 @@ public class ElementHelperTest {
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyKeyLabelIsReserved().getMessage(), iae.getMessage());
         }
+    }
+
+    @Test
+    public void shouldHaveValidProperty() {
+        ElementHelper.validateProperty("key", "value");
+    }
+
+    @Test
+    public void shouldAllowEvenNumberOfKeyValues() {
+        try {
+            ElementHelper.legalKeyValues("key", "test", "no-value-for-this-one");
+            fail("Should fail as there is an odd number of key-values");
+        } catch (IllegalArgumentException iae) {
+            assertEquals(Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo().getMessage(), iae.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldNotAllowEvenNumberOfKeyValuesAndInvalidKeys() {
+        try {
+            ElementHelper.legalKeyValues("key", "test", "value-for-this-one", 1, 1, "none");
+            fail("Should fail as there is an even number of key-values, but a bad key");
+        } catch (IllegalArgumentException iae) {
+            assertEquals(Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices().getMessage(), iae.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldAllowEvenNumberOfKeyValuesAndValidKeys() {
+        ElementHelper.legalKeyValues("key", "test", "value-for-this-one", 1, Property.Key.hidden("1"), "none");
     }
 }
