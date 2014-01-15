@@ -20,15 +20,11 @@ public interface Pipe<S, E> extends Iterator<Holder<E>>, Serializable {
         }
     };
 
-    public void addStarts(Iterator<Holder<S>> iterator);
+    public void addStarts(final Iterator<Holder<S>> iterator);
 
     public <P extends Pipeline<?, ?>> P getPipeline();
 
     public String getAs();
 
     public void setAs(String as);
-
-    // public String getName();
-
-    // TODO: public void reset();
 }

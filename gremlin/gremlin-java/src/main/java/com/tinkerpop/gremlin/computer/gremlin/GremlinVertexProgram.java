@@ -8,7 +8,7 @@ import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.PathHolder;
-import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 import com.tinkerpop.gremlin.SimpleHolder;
 
 import java.util.Map;
@@ -44,7 +44,7 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
         if (graphMemory.isInitialIteration()) {
 
             final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ? new PathHolder<>(Holder.NONE, vertex) : new SimpleHolder<>(Holder.NONE, vertex);
-            holder.setFuture(PipelineHelper.getStart(gremlin).getAs());
+            holder.setFuture(GremlinHelper.getStart(gremlin).getAs());
             if (graphMemory.<Boolean>get(TRACK_PATHS))
                 messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), (M) GremlinPathMessage.of(holder));
             else

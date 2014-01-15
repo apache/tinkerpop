@@ -27,8 +27,8 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
         this.starts.add(starts);
     }
 
-    public void setAs(final String name) {
-        this.as = name;
+    public void setAs(final String as) {
+        this.as = as;
     }
 
     public String getAs() {

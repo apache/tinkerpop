@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.gremlin.Holder;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
-import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -27,7 +27,7 @@ public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
         while (true) {
             final Holder<E> holder = this.getNext();
             if (null != holder) {
-                holder.setFuture(PipelineHelper.getNextPipeLabel(this.pipeline, this));
+                holder.setFuture(GremlinHelper.getNextPipeLabel(this.pipeline, this));
                 return holder;
             }
         }

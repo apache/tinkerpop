@@ -9,8 +9,8 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Path;
 import com.tinkerpop.gremlin.pipes.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
-import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.ArrayList;
@@ -34,11 +34,18 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Pipeline<S, E> extends Pipe<S, E> {
+public interface Pipeline<S, E> extends Iterator<E> {
 
-    public default Pipeline<S, E> identity() {
-        return this.addPipe(new MapPipe<E, E>(this, Holder::get));
-    }
+    public Pipeline<Vertex, Vertex> V();
+
+    public Pipeline<Vertex, Vertex> v(final Object... ids);
+
+    public Pipeline trackPaths(final boolean trackPaths);
+
+    public boolean getTrackPaths();
+
+    public void addStarts(final Iterator<Holder<S>> starts);
+
 
     ///////////////////// TRANSFORM STEPS /////////////////////
 
@@ -50,13 +57,9 @@ public interface Pipeline<S, E> extends Pipe<S, E> {
         return this.addPipe(new FlatMapPipe<>(this, function));
     }
 
-    public Pipeline<Vertex, Vertex> V();
-
-    public Pipeline<Vertex, Vertex> v(final Object... ids);
-
-    public Pipeline trackPaths(final boolean trackPaths);
-
-    public boolean getTrackPaths();
+    public default Pipeline<S, E> identity() {
+        return this.addPipe(new MapPipe<E, E>(this, Holder::get));
+    }
 
     public default Pipeline<S, Vertex> out(final String... labels) {
         return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).vertices().iterator()));
@@ -223,7 +226,7 @@ public interface Pipeline<S, E> extends Pipe<S, E> {
         final Map<Object, Long> map = new HashMap<>();
         try {
             while (true) {
-                MapHelper.incr(map, this.next().get(), 1l);
+                MapHelper.incr(map, this.next(), 1l);
             }
         } catch (final NoSuchElementException e) {
             return map;
@@ -234,13 +237,13 @@ public interface Pipeline<S, E> extends Pipe<S, E> {
 
     public default Pipeline<S, E> loop(final String as, final Predicate<Holder<E>> whilePredicate, final Predicate<Holder<E>> emitPredicate) {
         this.trackPaths(true);
-        final Pipe<?, ?> loopStartPipe = PipelineHelper.getAs(as, getPipeline());
+        final Pipe<?, ?> loopStartPipe = GremlinHelper.getAs(as, getPipeline());
         return this.addPipe(new MapPipe<E, Object>(this, holder -> {
             holder.incrLoops();
             if (whilePredicate.test(holder)) {
                 holder.setFuture(as);
                 loopStartPipe.addStarts((Iterator) new SingleIterator<>(holder));
-                return emitPredicate.test(holder) ? holder.get() : NO_OBJECT;
+                return emitPredicate.test(holder) ? holder.get() : Pipe.NO_OBJECT;
             } else {
                 return holder.get();
             }
@@ -254,7 +257,7 @@ public interface Pipeline<S, E> extends Pipe<S, E> {
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default Pipeline<S, E> as(final String as) {
-        if (PipelineHelper.asExists(as, this))
+        if (GremlinHelper.asExists(as, this))
             throw new IllegalStateException("The named pipe already exists");
         final List<Pipe<?, ?>> pipes = this.getPipes();
         pipes.get(pipes.size() - 1).setAs(as);
@@ -262,8 +265,8 @@ public interface Pipeline<S, E> extends Pipe<S, E> {
 
     }
 
-    public default List<Holder> next(final int amount) {
-        final List<Holder> result = new ArrayList<>();
+    public default List<E> next(final int amount) {
+        final List<E> result = new ArrayList<>();
         int counter = 0;
         while (counter++ < amount && this.hasNext()) {
             result.add(this.next());
@@ -275,7 +278,7 @@ public interface Pipeline<S, E> extends Pipe<S, E> {
         return (List<Holder>) this.fill(new ArrayList<>());
     }
 
-    public default Collection<Holder> fill(final Collection<Holder> collection) {
+    public default Collection<E> fill(final Collection<E> collection) {
         try {
             while (true) {
                 collection.add(this.next());

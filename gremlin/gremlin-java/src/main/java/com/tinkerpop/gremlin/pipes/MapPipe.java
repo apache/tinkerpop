@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.SimpleHolder;
-import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 
 import java.util.function.Function;
 
@@ -21,7 +21,7 @@ public class MapPipe<S, E> extends AbstractPipe<S, E> {
     public Holder<E> processNextStart() {
         while (true) {
             final Holder<S> holder = this.starts.next();
-            holder.setFuture(PipelineHelper.getNextPipeLabel(this.pipeline, this));
+            holder.setFuture(GremlinHelper.getNextPipeLabel(this.pipeline, this));
 
             final E temp = this.function.apply(holder);
             if (Pipe.NO_OBJECT != temp)

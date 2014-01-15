@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.gremlin.Holder;
-import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 
 import java.util.function.Predicate;
 
@@ -21,7 +21,7 @@ public class FilterPipe<S> extends AbstractPipe<S, S> {
         while (true) {
             final Holder<S> holder = this.starts.next();
             if (this.predicate.test(holder)) {
-                holder.setFuture(PipelineHelper.getNextPipeLabel(this.pipeline, this));
+                holder.setFuture(GremlinHelper.getNextPipeLabel(this.pipeline, this));
                 return holder;
             }
         }
