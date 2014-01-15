@@ -315,4 +315,56 @@ public class ElementHelperTest {
         assertTrue(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
     }
 
+    @Test
+    public void shouldDeterminePropertiesAreNotEqualWhenElementsAreDifferent() {
+        final Property mockPropertyA = mock(Property.class);
+        final Property mockPropertyB = mock(Property.class);
+        final Element mockElement = mock(Element.class);
+        final Element mockElementDifferent = mock(Element.class);
+        when(mockPropertyA.isPresent()).thenReturn(true);
+        when(mockPropertyB.isPresent()).thenReturn(true);
+        when(mockPropertyA.getElement()).thenReturn(mockElement);
+        when(mockPropertyB.getElement()).thenReturn(mockElementDifferent);
+        when(mockPropertyA.getKey()).thenReturn("k");
+        when(mockPropertyB.getKey()).thenReturn("k");
+        when(mockPropertyA.get()).thenReturn("v");
+        when(mockPropertyB.get()).thenReturn("v");
+
+        assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
+    }
+
+    @Test
+    public void shouldDeterminePropertiesAreNotEqualWhenKeysAreDifferent() {
+        final Property mockPropertyA = mock(Property.class);
+        final Property mockPropertyB = mock(Property.class);
+        final Element mockElement = mock(Element.class);
+        when(mockPropertyA.isPresent()).thenReturn(true);
+        when(mockPropertyB.isPresent()).thenReturn(true);
+        when(mockPropertyA.getElement()).thenReturn(mockElement);
+        when(mockPropertyB.getElement()).thenReturn(mockElement);
+        when(mockPropertyA.getKey()).thenReturn("k");
+        when(mockPropertyB.getKey()).thenReturn("k1");
+        when(mockPropertyA.get()).thenReturn("v");
+        when(mockPropertyB.get()).thenReturn("v");
+
+        assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
+    }
+
+    @Test
+    public void shouldDeterminePropertiesAreNotEqualWhenValuesAreDifferent() {
+        final Property mockPropertyA = mock(Property.class);
+        final Property mockPropertyB = mock(Property.class);
+        final Element mockElement = mock(Element.class);
+        when(mockPropertyA.isPresent()).thenReturn(true);
+        when(mockPropertyB.isPresent()).thenReturn(true);
+        when(mockPropertyA.getElement()).thenReturn(mockElement);
+        when(mockPropertyB.getElement()).thenReturn(mockElement);
+        when(mockPropertyA.getKey()).thenReturn("k");
+        when(mockPropertyB.getKey()).thenReturn("k");
+        when(mockPropertyA.get()).thenReturn("v");
+        when(mockPropertyB.get()).thenReturn("v1");
+
+        assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
+    }
+
 }
