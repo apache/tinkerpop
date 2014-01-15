@@ -162,7 +162,7 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldFailAreEqualTestBecauseFirstArgumentIsNull() {
+    public void shouldFailElementAreEqualTestBecauseFirstArgumentIsNull() {
         try {
             ElementHelper.areEqual((Element) null, "some object");
             fail("Should throw exception since the first argument is null");
@@ -172,7 +172,7 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldFailAreEqualTestBecauseSecondArgumentIsNull() {
+    public void shouldFailElementAreEqualTestBecauseSecondArgumentIsNull() {
         final Element mockElement = mock(Element.class);
         try {
             ElementHelper.areEqual(mockElement, null);
@@ -237,4 +237,32 @@ public class ElementHelperTest {
         when(mockEdgeB.getId()).thenReturn("2");
         assertFalse(ElementHelper.areEqual(mockEdgeA, mockEdgeB));
     }
+
+    @Test
+    public void shouldFailPropertyAreEqualTestBecauseFirstArgumentIsNull() {
+        try {
+            ElementHelper.areEqual((Property) null, "some object");
+            fail("Should throw exception since the first argument is null");
+        } catch (IllegalArgumentException iae) {
+            assertEquals(Graph.Exceptions.argumentCanNotBeNull("a").getMessage(), iae.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldFailPropertyAreEqualTestBecauseSecondArgumentIsNull() {
+        final Property mockProperty = mock(Property.class);
+        try {
+            ElementHelper.areEqual(mockProperty, null);
+            fail("Should throw exception since the second argument is null");
+        } catch (IllegalArgumentException iae) {
+            assertEquals(Graph.Exceptions.argumentCanNotBeNull("b").getMessage(), iae.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldDeterminePropertiesAreEqualAsTheyAreSameObject() {
+        final Property mockProperty = mock(Property.class);
+        assertTrue(ElementHelper.areEqual(mockProperty, mockProperty));
+    }
+
 }
