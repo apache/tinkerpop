@@ -271,4 +271,13 @@ public class ElementHelperTest {
         assertTrue(ElementHelper.areEqual(mockProperty, mockProperty));
     }
 
+    @Test
+    public void shouldDeterminePropertiesAreEqualAsTheyAreBothEmpty() {
+        final Property mockPropertyA = mock(Property.class);
+        final Property mockPropertyB = mock(Property.class);
+        when(mockPropertyA.isPresent()).thenReturn(false);
+        when(mockPropertyB.isPresent()).thenReturn(false);
+        assertTrue(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
+    }
+
 }
