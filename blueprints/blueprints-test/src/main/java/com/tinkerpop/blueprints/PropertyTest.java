@@ -4,7 +4,9 @@ import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.GraphPropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.PropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
+import com.tinkerpop.blueprints.util.StringFactory;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -21,206 +23,229 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * Blueprints Test Suite for {@link Property} operations.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(Parameterized.class)
-public class PropertyTest extends AbstractBlueprintsTest {
-    private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
+@RunWith(Enclosed.class)
+public class PropertyTest {
 
-    private static final Map testMap = new HashMap() {{
-        put("testString", "try");
-        put("testInteger", 123);
-    }};
-
-    private static final ArrayList mixedList = new ArrayList() {{
-        add("try1");
-        add(2);
-    }};
-
-    private static final ArrayList uniformStringList = new ArrayList() {{
-        add("try1");
-        add("try2");
-    }};
-
-    private static final ArrayList uniformIntegerList = new ArrayList() {{
-        add(100);
-        add(200);
-        add(300);
-    }};
-
-    @Parameterized.Parameters(name = "{index}: supports{0}({1})")
-    public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {PropertyFeatures.FEATURE_BOOLEAN_VALUES, true},
-                {PropertyFeatures.FEATURE_BOOLEAN_VALUES, false},
-                {PropertyFeatures.FEATURE_DOUBLE_VALUES, Double.MIN_VALUE},
-                {PropertyFeatures.FEATURE_DOUBLE_VALUES, Double.MAX_VALUE},
-                {PropertyFeatures.FEATURE_DOUBLE_VALUES, 0.0d},
-                {PropertyFeatures.FEATURE_DOUBLE_VALUES, 0.5d},
-                {PropertyFeatures.FEATURE_DOUBLE_VALUES, -0.5d},
-                {PropertyFeatures.FEATURE_FLOAT_VALUES, Float.MIN_VALUE},
-                {PropertyFeatures.FEATURE_FLOAT_VALUES, Float.MAX_VALUE},
-                {PropertyFeatures.FEATURE_FLOAT_VALUES, 0.0f},
-                {PropertyFeatures.FEATURE_FLOAT_VALUES, 0.5f},
-                {PropertyFeatures.FEATURE_FLOAT_VALUES, -0.5f},
-                {PropertyFeatures.FEATURE_INTEGER_VALUES, Integer.MIN_VALUE},
-                {PropertyFeatures.FEATURE_INTEGER_VALUES, Integer.MAX_VALUE},
-                {PropertyFeatures.FEATURE_INTEGER_VALUES, 0},
-                {PropertyFeatures.FEATURE_INTEGER_VALUES, 10000},
-                {PropertyFeatures.FEATURE_INTEGER_VALUES, -10000},
-                {PropertyFeatures.FEATURE_LONG_VALUES, Long.MIN_VALUE},
-                {PropertyFeatures.FEATURE_LONG_VALUES, Long.MAX_VALUE},
-                {PropertyFeatures.FEATURE_LONG_VALUES, 0l},
-                {PropertyFeatures.FEATURE_LONG_VALUES, 10000l},
-                {PropertyFeatures.FEATURE_LONG_VALUES, -10000l},
-                {PropertyFeatures.FEATURE_MAP_VALUES, testMap},
-                {PropertyFeatures.FEATURE_MIXED_LIST_VALUES, mixedList},
-                {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new boolean[]{true, false}},
-                {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new double[]{1d, 2d}},
-                {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new float[]{1f, 2f}},
-                {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[]{1, 2}},
-                {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new long[]{1l, 2l}},
-                {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new String[]{"try1", "try2"}},
-                {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[1]},
-                {PropertyFeatures.FEATURE_SERIALIZABLE_VALUES, new MockSerializable("testing")},
-                {PropertyFeatures.FEATURE_STRING_VALUES, "short string"},
-                {PropertyFeatures.FEATURE_UNIFORM_LIST_VALUES, uniformIntegerList},
-                {PropertyFeatures.FEATURE_UNIFORM_LIST_VALUES, uniformStringList}
-        });
+    /**
+     * Basic tests for the {@link Property} class.
+     */
+    public static class BasicPropertyTest extends AbstractBlueprintsTest {
+        @Test
+        public void shouldHaveStandardStringRepresentation() {
+            final Vertex v = g.addVertex("name", "marko");
+            final Property p = v.getProperty("name");
+            assertEquals(StringFactory.propertyString(p), p.toString());
+        }
     }
 
-    @Parameterized.Parameter(value = 0)
-    public String featureName;
+    /**
+     * Tests for feature support on {@link Property}.  The tests validate if {@link Graph.Features.PropertyFeatures}
+     * should be turned on or off and if the enabled features are properly supported by the implementation.  Note that
+     * these tests are run in a separate test class as they are "parameterized" tests.
+     */
+    @RunWith(Parameterized.class)
+    public static class PropertyFeatureSupportTest extends AbstractBlueprintsTest {
+        private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
-    @Parameterized.Parameter(value = 1)
-    public Object value;
+        private static final Map testMap = new HashMap() {{
+            put("testString", "try");
+            put("testInteger", 123);
+        }};
 
-    @Test
-    public void shouldSetValueOnEdge() throws Exception {
-        assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(true));
-        final Edge edge = createEdgeForPropertyFeatureTests();
-        edge.setProperty("key", value);
+        private static final ArrayList mixedList = new ArrayList() {{
+            add("try1");
+            add(2);
+        }};
 
-        if (value instanceof Map)
-            tryCommit(g, graph -> {
-                final Map map = edge.<Map>getProperty("key").get();
-                assertEquals(((Map) value).size(), map.size());
-                ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
-            });
-        else if (value instanceof List)
-            tryCommit(g, graph -> {
-                final List l = edge.<List>getProperty("key").get();
-                assertEquals(((List) value).size(), l.size());
-                for (int ix = 0; ix < ((List) value).size(); ix++) {
-                    assertEquals(((List) value).get(ix), l.get(ix));
-                }
-            });
-        else if (value instanceof MockSerializable)
-            tryCommit(g, graph -> {
-                final MockSerializable mock = edge.<MockSerializable>getProperty("key").get();
-                assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
-            });
-        else
-            tryCommit(g, graph -> assertEquals(value, edge.getProperty("key").get()));
-    }
+        private static final ArrayList uniformStringList = new ArrayList() {{
+            add("try1");
+            add("try2");
+        }};
 
-    /*@Test
-    public void shouldSetValueOnGraph() throws Exception {
-        assumeThat(g.getFeatures().supports(GraphPropertyFeatures.class, featureName), is(true));
-        g.setProperty("key", value);
+        private static final ArrayList uniformIntegerList = new ArrayList() {{
+            add(100);
+            add(200);
+            add(300);
+        }};
 
-        if (value instanceof Map)
-            tryCommit(g, graph -> {
-                final Map map = graph.<Map>getProperty("key").getValue();
-                assertEquals(((Map) value).size(), map.size());
-                ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
+        @Parameterized.Parameters(name = "{index}: supports{0}({1})")
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    {PropertyFeatures.FEATURE_BOOLEAN_VALUES, true},
+                    {PropertyFeatures.FEATURE_BOOLEAN_VALUES, false},
+                    {PropertyFeatures.FEATURE_DOUBLE_VALUES, Double.MIN_VALUE},
+                    {PropertyFeatures.FEATURE_DOUBLE_VALUES, Double.MAX_VALUE},
+                    {PropertyFeatures.FEATURE_DOUBLE_VALUES, 0.0d},
+                    {PropertyFeatures.FEATURE_DOUBLE_VALUES, 0.5d},
+                    {PropertyFeatures.FEATURE_DOUBLE_VALUES, -0.5d},
+                    {PropertyFeatures.FEATURE_FLOAT_VALUES, Float.MIN_VALUE},
+                    {PropertyFeatures.FEATURE_FLOAT_VALUES, Float.MAX_VALUE},
+                    {PropertyFeatures.FEATURE_FLOAT_VALUES, 0.0f},
+                    {PropertyFeatures.FEATURE_FLOAT_VALUES, 0.5f},
+                    {PropertyFeatures.FEATURE_FLOAT_VALUES, -0.5f},
+                    {PropertyFeatures.FEATURE_INTEGER_VALUES, Integer.MIN_VALUE},
+                    {PropertyFeatures.FEATURE_INTEGER_VALUES, Integer.MAX_VALUE},
+                    {PropertyFeatures.FEATURE_INTEGER_VALUES, 0},
+                    {PropertyFeatures.FEATURE_INTEGER_VALUES, 10000},
+                    {PropertyFeatures.FEATURE_INTEGER_VALUES, -10000},
+                    {PropertyFeatures.FEATURE_LONG_VALUES, Long.MIN_VALUE},
+                    {PropertyFeatures.FEATURE_LONG_VALUES, Long.MAX_VALUE},
+                    {PropertyFeatures.FEATURE_LONG_VALUES, 0l},
+                    {PropertyFeatures.FEATURE_LONG_VALUES, 10000l},
+                    {PropertyFeatures.FEATURE_LONG_VALUES, -10000l},
+                    {PropertyFeatures.FEATURE_MAP_VALUES, testMap},
+                    {PropertyFeatures.FEATURE_MIXED_LIST_VALUES, mixedList},
+                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new boolean[]{true, false}},
+                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new double[]{1d, 2d}},
+                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new float[]{1f, 2f}},
+                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[]{1, 2}},
+                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new long[]{1l, 2l}},
+                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new String[]{"try1", "try2"}},
+                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[1]},
+                    {PropertyFeatures.FEATURE_SERIALIZABLE_VALUES, new MockSerializable("testing")},
+                    {PropertyFeatures.FEATURE_STRING_VALUES, "short string"},
+                    {PropertyFeatures.FEATURE_UNIFORM_LIST_VALUES, uniformIntegerList},
+                    {PropertyFeatures.FEATURE_UNIFORM_LIST_VALUES, uniformStringList}
             });
-        else if (value instanceof List)
-            tryCommit(g, graph -> {
-                final List l = graph.<List>getProperty("key").getValue();
-                assertEquals(((List) value).size(), l.size());
-                for (int ix = 0; ix < ((List) value).size(); ix++) {
-                    assertEquals(((List) value).get(ix), l.get(ix));
-                }
-            });
-        else if (value instanceof MockSerializable)
-            tryCommit(g, graph -> {
-                final MockSerializable mock = g.<MockSerializable>getProperty("key").getValue();
-                assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
-            });
-        else
-            tryCommit(g, graph->assertEquals(value, g.getProperty("key").getValue()));
-    }*/
+        }
 
-    @Test
-    public void shouldSetValueOnVertex() throws Exception {
-        assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(true));
-        final Vertex v = g.addVertex("key", value);
+        @Parameterized.Parameter(value = 0)
+        public String featureName;
 
-        if (value instanceof Map)
-            tryCommit(g, graph -> {
-                final Map map = v.<Map>getProperty("key").get();
-                assertEquals(((Map) value).size(), map.size());
-                ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
-            });
-        else if (value instanceof List)
-            tryCommit(g, graph -> {
-                final List l = v.<List>getProperty("key").get();
-                assertEquals(((List) value).size(), l.size());
-                for (int ix = 0; ix < ((List) value).size(); ix++) {
-                    assertEquals(((List) value).get(ix), l.get(ix));
-                }
-            });
-        else if (value instanceof MockSerializable)
-            tryCommit(g, graph -> {
-                final MockSerializable mock = v.<MockSerializable>getProperty("key").get();
-                assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
-            });
-        else
-            tryCommit(g, graph->assertEquals(value, v.getProperty("key").get()));
-    }
+        @Parameterized.Parameter(value = 1)
+        public Object value;
 
-    /*@Test
-    public void shouldEnableFeatureOnEdgeIfNotEnabled() throws Exception {
-        assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(false));
-        try {
+        @Test
+        public void shouldSetValueOnEdge() throws Exception {
+            assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(true));
             final Edge edge = createEdgeForPropertyFeatureTests();
             edge.setProperty("key", value);
-            fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
-        } catch (UnsupportedOperationException e) {
-            assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
-        }
-    }*/
 
-    /*@Test
-    public void shouldEnableFeatureOnGraphIfNotEnabled() throws Exception {
-        assumeThat(g.getFeatures().supports(GraphPropertyFeatures.class, featureName), is(false));
-        try {
+            if (value instanceof Map)
+                tryCommit(g, graph -> {
+                    final Map map = edge.<Map>getProperty("key").get();
+                    assertEquals(((Map) value).size(), map.size());
+                    ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
+                });
+            else if (value instanceof List)
+                tryCommit(g, graph -> {
+                    final List l = edge.<List>getProperty("key").get();
+                    assertEquals(((List) value).size(), l.size());
+                    for (int ix = 0; ix < ((List) value).size(); ix++) {
+                        assertEquals(((List) value).get(ix), l.get(ix));
+                    }
+                });
+            else if (value instanceof MockSerializable)
+                tryCommit(g, graph -> {
+                    final MockSerializable mock = edge.<MockSerializable>getProperty("key").get();
+                    assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
+                });
+            else
+                tryCommit(g, graph -> assertEquals(value, edge.getProperty("key").get()));
+        }
+
+        /*@Test
+        public void shouldSetValueOnGraph() throws Exception {
+            assumeThat(g.getFeatures().supports(GraphPropertyFeatures.class, featureName), is(true));
             g.setProperty("key", value);
-            fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
-        } catch (UnsupportedOperationException e) {
-            assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
-        }
-    }*/
 
-    @Test
-    public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
-        assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
-        try {
-            g.addVertex("key", value);
-            fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
-        } catch (UnsupportedOperationException e) {
-            assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
+            if (value instanceof Map)
+                tryCommit(g, graph -> {
+                    final Map map = graph.<Map>getProperty("key").getValue();
+                    assertEquals(((Map) value).size(), map.size());
+                    ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
+                });
+            else if (value instanceof List)
+                tryCommit(g, graph -> {
+                    final List l = graph.<List>getProperty("key").getValue();
+                    assertEquals(((List) value).size(), l.size());
+                    for (int ix = 0; ix < ((List) value).size(); ix++) {
+                        assertEquals(((List) value).get(ix), l.get(ix));
+                    }
+                });
+            else if (value instanceof MockSerializable)
+                tryCommit(g, graph -> {
+                    final MockSerializable mock = g.<MockSerializable>getProperty("key").getValue();
+                    assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
+                });
+            else
+                tryCommit(g, graph->assertEquals(value, g.getProperty("key").getValue()));
+        }*/
+
+        @Test
+        public void shouldSetValueOnVertex() throws Exception {
+            assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(true));
+            final Vertex v = g.addVertex("key", value);
+
+            if (value instanceof Map)
+                tryCommit(g, graph -> {
+                    final Map map = v.<Map>getProperty("key").get();
+                    assertEquals(((Map) value).size(), map.size());
+                    ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
+                });
+            else if (value instanceof List)
+                tryCommit(g, graph -> {
+                    final List l = v.<List>getProperty("key").get();
+                    assertEquals(((List) value).size(), l.size());
+                    for (int ix = 0; ix < ((List) value).size(); ix++) {
+                        assertEquals(((List) value).get(ix), l.get(ix));
+                    }
+                });
+            else if (value instanceof MockSerializable)
+                tryCommit(g, graph -> {
+                    final MockSerializable mock = v.<MockSerializable>getProperty("key").get();
+                    assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
+                });
+            else
+                tryCommit(g, graph->assertEquals(value, v.getProperty("key").get()));
+        }
+
+        /*@Test
+        public void shouldEnableFeatureOnEdgeIfNotEnabled() throws Exception {
+            assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(false));
+            try {
+                final Edge edge = createEdgeForPropertyFeatureTests();
+                edge.setProperty("key", value);
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
+            } catch (UnsupportedOperationException e) {
+                assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
+            }
+        }*/
+
+        /*@Test
+        public void shouldEnableFeatureOnGraphIfNotEnabled() throws Exception {
+            assumeThat(g.getFeatures().supports(GraphPropertyFeatures.class, featureName), is(false));
+            try {
+                g.setProperty("key", value);
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
+            } catch (UnsupportedOperationException e) {
+                assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
+            }
+        }*/
+
+        @Test
+        public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
+            assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
+            try {
+                g.addVertex("key", value);
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
+            } catch (UnsupportedOperationException e) {
+                assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
+            }
+        }
+
+        private Edge createEdgeForPropertyFeatureTests() {
+            final Vertex vertexA = g.addVertex();
+            final Vertex vertexB = g.addVertex();
+            return vertexA.addEdge(BlueprintsStandardSuite.GraphManager.get().convertLabel("knows"), vertexB);
         }
     }
 
-    private Edge createEdgeForPropertyFeatureTests() {
-        final Vertex vertexA = g.addVertex();
-        final Vertex vertexB = g.addVertex();
-        return vertexA.addEdge(BlueprintsStandardSuite.GraphManager.get().convertLabel("knows"), vertexB);
-    }
-
-    public static class MockSerializable implements Serializable {
+    private static class MockSerializable implements Serializable {
         private String testField;
 
         public MockSerializable(final String testField) {
