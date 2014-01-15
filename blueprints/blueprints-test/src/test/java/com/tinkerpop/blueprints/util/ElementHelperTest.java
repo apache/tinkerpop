@@ -7,6 +7,10 @@ import org.junit.Test;
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -126,5 +130,14 @@ public class ElementHelperTest {
     @Test(expected = ClassCastException.class)
     public void shouldErrorIfLabelIsNotString() {
         assertFalse(ElementHelper.getLabelValue("test", 321, Property.Key.LABEL, 4545, "testagain", "that").isPresent());
+    }
+
+    @Test
+    public void shouldAttachKeyValuesButNotLabelsOrId() {
+        final Element mockElement = mock(Element.class);
+        ElementHelper.attachKeyValues(mockElement, "test", 123, Property.Key.ID, 321, Property.Key.LABEL, "friends");
+        verify(mockElement, times(1)).setProperty("test", 123);
+        verify(mockElement, times(0)).setProperty(Property.Key.ID, 321);
+        verify(mockElement, times(0)).setProperty(Property.Key.LABEL, "friends");
     }
 }
