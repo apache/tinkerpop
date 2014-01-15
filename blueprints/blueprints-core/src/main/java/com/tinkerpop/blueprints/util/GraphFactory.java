@@ -9,6 +9,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -27,8 +28,8 @@ public class GraphFactory {
      * @return A {@link Graph} instance.
      */
     public static Graph open(final Configuration configuration, final Optional<? extends GraphStrategy> strategy) {
-        if (null == configuration)
-            throw new IllegalArgumentException("Configuration argument cannot be null");
+        Objects.requireNonNull(configuration);
+        Objects.requireNonNull(strategy);
 
         final String clazz = configuration.getString("blueprints.graph", null);
         if (null == clazz)
