@@ -70,15 +70,6 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         return (P) this;
     }
 
-    public void setAs(final String name) {
-        //this.pipes.get(0).setAs(name);
-    }
-
-    public String getAs() {
-        return "gremlin";
-        // return this.pipes.get(0).getAs();
-    }
-
     public Gremlin<S, E> trackPaths(final boolean trackPaths) {
         this.trackPaths = trackPaths;
         return this;
@@ -92,8 +83,8 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         return this.pipes.get(this.pipes.size() - 1).hasNext();
     }
 
-    public Holder<E> next() {
-        return (Holder<E>) this.pipes.get(this.pipes.size() - 1).next();
+    public E next() {
+        return (E) this.pipes.get(this.pipes.size() - 1).next().get();
     }
 
     public String toString() {

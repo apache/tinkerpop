@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.pipes.util;
 import com.tinkerpop.gremlin.pipes.Pipe;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.stream.Stream;
 
 /**
@@ -34,5 +36,38 @@ public class ExpandablePipeIterator<T> implements Iterator<T> {
             this.pipe = (Pipe) iterator;
         else
             this.expander.add(iterator);
+    }
+
+    public class ExpandableIterator<T> implements Iterator<T> {
+
+        private final Queue<Iterator<T>> queue;
+
+        @SafeVarargs
+        public ExpandableIterator(final Iterator<T>... iterators) {
+            this.queue = new LinkedList<>();
+            for (final Iterator<T> iterator : iterators) {
+                this.queue.add(iterator);
+            }
+        }
+
+        public boolean hasNext() {
+            for (final Iterator<T> itty : this.queue) {
+                if (itty.hasNext())
+                    return true;
+            }
+            return false;
+        }
+
+        public T next() {
+            while (true) {
+                final Iterator<T> itty = this.queue.element();
+                if (null != itty && itty.hasNext()) return itty.next();
+                else this.queue.remove();
+            }
+        }
+
+        public void add(final Iterator<T> iterator) {
+            this.queue.add(iterator);
+        }
     }
 }

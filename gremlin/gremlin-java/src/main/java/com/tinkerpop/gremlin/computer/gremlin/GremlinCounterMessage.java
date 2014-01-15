@@ -9,8 +9,8 @@ import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.pipes.Pipe;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
-import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.HashMap;
@@ -63,7 +63,7 @@ public class GremlinCounterMessage extends GremlinMessage {
             if (holder.isDone()) {
                 MapHelper.incr(tracker.getDoneObjectTracks(), holder, counts);
             } else {
-                final Pipe<?, ?> pipe = PipelineHelper.getAs(holder.getFuture(), gremlin);
+                final Pipe<?, ?> pipe = GremlinHelper.getAs(holder.getFuture(), gremlin);
                 for (int i = 0; i < counts; i++) {
                     pipe.addStarts(new SingleIterator(holder));
                 }
@@ -95,7 +95,7 @@ public class GremlinCounterMessage extends GremlinMessage {
             return false;
         }
 
-        final Pipe<?, ?> pipe = PipelineHelper.getAs(this.holder.getFuture(), gremlin);
+        final Pipe<?, ?> pipe = GremlinHelper.getAs(this.holder.getFuture(), gremlin);
         if (!this.stageHolder(vertex))
             return false;
 

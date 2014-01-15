@@ -1,9 +1,8 @@
 package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.gremlin.Holder;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 import com.tinkerpop.gremlin.pipes.util.MultiIterator;
-import com.tinkerpop.gremlin.pipes.util.PipeHelper;
-import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
 import java.util.ArrayList;
@@ -32,19 +31,19 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
         this.outAs = outAs;
         this.pipelines = pipelines;
         for (final Pipeline p1 : this.pipelines) {
-            final Pipe endPipe = PipelineHelper.getEnd(p1);
+            final Pipe endPipe = GremlinHelper.getEnd(p1);
             final String endPipeName = endPipe.getAs();
             if (!endPipeName.equals(Holder.NONE)) {
                 for (final Pipeline p2 : this.pipelines) {
-                    final Pipe startPipe = PipelineHelper.getStart(p2);
+                    final Pipe startPipe = GremlinHelper.getStart(p2);
                     if (endPipe.getAs().equals(startPipe.getAs()))
                         startPipe.addStarts(endPipe);
                 }
             } else {
-                List<Pipeline> pipes = this.predicatePipelines.get(PipelineHelper.getStart(p1).getAs());
+                List<Pipeline> pipes = this.predicatePipelines.get(GremlinHelper.getStart(p1).getAs());
                 if (null == pipes) {
                     pipes = new ArrayList<>();
-                    this.predicatePipelines.put(PipelineHelper.getStart(p1).getAs(), pipes);
+                    this.predicatePipelines.put(GremlinHelper.getStart(p1).getAs(), pipes);
                 }
                 pipes.add(p1);
             }
@@ -72,8 +71,8 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
 
     private List<Pipe> getAs(final String key) {
         return (List) Stream.of(this.pipelines)
-                .filter(p -> PipelineHelper.asExists(key, p))
-                .map(p -> PipelineHelper.getAs(key, p))
+                .filter(p -> GremlinHelper.asExists(key, p))
+                .map(p -> GremlinHelper.getAs(key, p))
                 .collect(Collectors.toList());
     }
 
@@ -82,7 +81,7 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
         if (this.predicatePipelines.containsKey(name)) {
             for (final Pipeline pipeline : this.predicatePipelines.get(name)) {
                 pipeline.addStarts(new SingleIterator(holder.makeSibling()));
-                if (!PipeHelper.hasNextIteration(pipeline)) {
+                if (!GremlinHelper.hasNextIteration(pipeline)) {
                     legal = false;
                     break; // short-circuit AND
                 }
