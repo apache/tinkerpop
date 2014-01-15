@@ -286,5 +286,9 @@ public interface Graph extends AutoCloseable {
         public static IllegalStateException vertexWithIdDoesNotExist(final Object id) {
             return new IllegalStateException("Vertex with id does not exist: " + id);
         }
+
+        public static IllegalArgumentException argumentCanNotBeNull(final String argument) {
+            return new IllegalArgumentException("The provided argument can not be null: " + argument);
+        }
     }
 }

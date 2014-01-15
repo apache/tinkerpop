@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.AnnotatedList;
+import com.tinkerpop.blueprints.AnnotatedValue;
 import com.tinkerpop.blueprints.Annotations;
 import com.tinkerpop.blueprints.Property;
 
@@ -8,6 +9,11 @@ import com.tinkerpop.blueprints.Property;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AnnotationHelper {
+
+    public static void validatedAnnotatedValue(final Object value) throws IllegalArgumentException {
+        if (null == value)
+            throw AnnotatedValue.Exceptions.annotatedValueCanNotBeNull();
+    }
 
     public static void validateAnnotation(final String key, final Object value) throws IllegalArgumentException {
         if (null == value)
@@ -26,6 +32,13 @@ public class AnnotationHelper {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (!(keyValues[i] instanceof String) && !(keyValues[i] instanceof Property.Key))
                 throw AnnotatedList.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
+        }
+    }
+
+    public static void attachKeyValues(final Annotations annotations, final Object... keyValues) {
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            if (!keyValues[i].equals(Annotations.Key.VALUE))
+                annotations.set((String) keyValues[i], keyValues[i + 1]);
         }
     }
 }
