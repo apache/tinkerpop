@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.util.StreamFactory;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -180,6 +181,9 @@ public class GraphTest extends AbstractBlueprintsTest {
         }
     }
 
+    /**
+     * Create a small {@link Graph} and ensure that counts of edges per vertex are correct.
+     */
     public void shouldEvaluateConnectivityPatterns() {
         final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
         final Graph graph = this.g;
@@ -257,5 +261,50 @@ public class GraphTest extends AbstractBlueprintsTest {
         vertexIds.add(d.getId());
         vertexIds.add(d.getId());
         assertEquals(4, vertexIds.size());
+    }
+
+    @Test
+    public void shouldEvaluateVertexEdgeLabels() {
+        final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
+        final Graph graph = g;
+
+        final Vertex a = graph.addVertex();
+        final Vertex b = graph.addVertex();
+        final Vertex c = graph.addVertex();
+        final Edge aFriendB = a.addEdge(graphProvider.convertLabel("friend"), b);
+        final Edge aFriendC = a.addEdge(graphProvider.convertLabel("friend"), c);
+        final Edge aHateC = a.addEdge(graphProvider.convertLabel("hate"), c);
+        final Edge cHateA = c.addEdge(graphProvider.convertLabel("hate"), a);
+        final Edge cHateB = c.addEdge(graphProvider.convertLabel("hate"), b);
+
+        List<Edge> results = StreamFactory.stream(a.query().direction(Direction.OUT).edges()).collect(Collectors.toList());
+        assertEquals(3, results.size());
+        assertTrue(results.contains(aFriendB));
+        assertTrue(results.contains(aFriendC));
+        assertTrue(results.contains(aHateC));
+
+        results = StreamFactory.stream(a.query().direction(Direction.OUT).labels(graphProvider.convertLabel("friend")).edges()).collect(Collectors.toList());
+        assertEquals(2, results.size());
+        assertTrue(results.contains(aFriendB));
+        assertTrue(results.contains(aFriendC));
+
+        results = StreamFactory.stream(a.query().direction(Direction.OUT).labels(graphProvider.convertLabel("hate")).edges()).collect(Collectors.toList());
+        assertEquals(1, results.size());
+        assertTrue(results.contains(aHateC));
+
+        results = StreamFactory.stream(a.query().direction(Direction.IN).labels(graphProvider.convertLabel("hate")).edges()).collect(Collectors.toList());
+        assertEquals(1, results.size());
+        assertTrue(results.contains(cHateA));
+
+        results = StreamFactory.stream(a.query().direction(Direction.IN).labels(graphProvider.convertLabel("friend")).edges()).collect(Collectors.toList());
+        assertEquals(0, results.size());
+
+        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(graphProvider.convertLabel("hate")).edges()).collect(Collectors.toList());
+        assertEquals(1, results.size());
+        assertTrue(results.contains(cHateB));
+
+        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(graphProvider.convertLabel("friend")).edges()).collect(Collectors.toList());
+        assertEquals(1, results.size());
+        assertTrue(results.contains(aFriendB));
     }
 }
