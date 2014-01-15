@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import org.junit.Test;
 
@@ -145,5 +146,15 @@ public class ElementHelperTest {
     public void shouldFailTryingToAttachNonStringKey() {
         final Element mockElement = mock(Element.class);
         ElementHelper.attachKeyValues(mockElement, "test", 123, 321, "test");
+    }
+
+    @Test
+    public void shouldFailTryingToAttachKeysToNullElement() {
+        try {
+            ElementHelper.attachKeyValues(null, "test", 123, 321, "test");
+            fail("Should throw exception since the element argument is null");
+        } catch (IllegalArgumentException iae) {
+            assertEquals(Graph.Exceptions.argumentCanNotBeNull("element").getMessage(), iae.getMessage());
+        }
     }
 }

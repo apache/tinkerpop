@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -87,8 +88,12 @@ public class ElementHelper {
      * @param element the graph element to assign the {@code keyValues}
      * @param keyValues the key/value pairs to assign to the {@code element}
      * @throws ClassCastException if the value of the key is not a {@link String}
+     * @throws IllegalArgumentException if the value of {@code element} is null
      */
     public static void attachKeyValues(final Element element, final Object... keyValues) {
+        if (null == element)
+            throw Graph.Exceptions.argumentCanNotBeNull("element");
+
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (!keyValues[i].equals(Property.Key.ID) && !keyValues[i].equals(Property.Key.LABEL))
                 element.setProperty((String) keyValues[i], keyValues[i + 1]);
