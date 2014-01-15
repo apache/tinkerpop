@@ -260,6 +260,12 @@ public class ElementHelperTest {
     }
 
     @Test
+    public void shouldFailPropertyAreEqualTestBecauseSecondArgumentIsNotProperty() {
+        final Property mockProperty = mock(Property.class);
+        assertFalse(ElementHelper.areEqual(mockProperty, "i'm a string"));
+    }
+
+    @Test
     public void shouldDeterminePropertiesAreEqualAsTheyAreSameObject() {
         final Property mockProperty = mock(Property.class);
         assertTrue(ElementHelper.areEqual(mockProperty, mockProperty));
