@@ -101,12 +101,13 @@ public class ElementHelper {
     }
 
     /**
-     * A standard method for determining if two elements are equal. This method should be used by any
+     * A standard method for determining if two {@link Element} objects are equal. This method should be used by any
      * {@link Object#equals(Object)} implementation to ensure consistent behavior.
      *
      * @param a The first {@link Element}
      * @param b The second {@link Element} (as an {@link Object})
      * @return true if elements and equal and false otherwise
+     * @throws IllegalArgumentException if either argument is null
      */
     public static boolean areEqual(final Element a, final Object b) {
         if (null == a)
@@ -132,6 +133,14 @@ public class ElementHelper {
         return a.getId().equals(b.getId());
     }
 
+    /**
+     * A standard method for determining if two {@link Property} objects are equal. This method should be used by any
+     * {@link Object#equals(Object)} implementation to ensure consistent behavior.
+     *
+     * @param a the first {@link Property}
+     * @param b the second {@link Property}
+     * @return true if equal and false otherwise
+     */
     public static boolean areEqual(final Property a, final Object b) {
         Objects.requireNonNull(a);
         Objects.requireNonNull(b);
