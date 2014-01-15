@@ -118,7 +118,7 @@ public class ElementHelper {
             return true;
         if (!((a instanceof Vertex && b instanceof Vertex) || (a instanceof Edge && b instanceof Edge)))
             return false;
-        return a.getId().equals(((Element) b).getId());
+        return haveEqualIds(a, (Element) b);
     }
 
     /**
