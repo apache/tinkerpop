@@ -14,12 +14,13 @@ import java.util.Optional;
 public class ElementHelper {
 
     /**
-     * Determines whether the property key/value for the specified thing can be legally set.
-     * This is typically used as a pre-condition check prior to setting a property.
+     * Determines whether the property key/value for the specified thing can be legally set. This is typically used as
+     * a pre-condition check prior to setting a property.
      *
      * @param key   the key of the property
      * @param value the value of the property
-     * @throws IllegalArgumentException whether the key/value pair is legal and if not, a clear reason exception message is provided
+     * @throws IllegalArgumentException whether the key/value pair is legal and if not, a clear reason exception
+     *         message is provided
      */
     public static void validateProperty(final String key, final Object value) throws IllegalArgumentException {
         if (null == value)
@@ -34,6 +35,13 @@ public class ElementHelper {
             throw Property.Exceptions.propertyKeyCanNotBeEmpty();
     }
 
+    /**
+     * Determines whether a list of key/values are legal, ensuring that there are an even number of values submitted
+     * and that the key values in the list of arguments are {@link String} or {@link Property.Key} objects.
+     *
+     * @param keyValues a list of key/value pairs
+     * @throws IllegalArgumentException if something in the pairs is illegal
+     */
     public static void legalKeyValues(final Object... keyValues) throws IllegalArgumentException {
         if (keyValues.length % 2 != 0)
             throw Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
@@ -43,6 +51,12 @@ public class ElementHelper {
         }
     }
 
+    /**
+     * Extracts the value of the {@link Property.Key#ID} key from the list of arguments.
+     *
+     * @param keyValues a list of key/value pairs
+     * @return the value associated with {@link Property.Key#ID}
+     */
     public static Optional<Object> getIdValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i].equals(Property.Key.ID))
@@ -51,10 +65,17 @@ public class ElementHelper {
         return Optional.empty();
     }
 
+    /**
+     * Extracts the value of the {@link Property.Key#LABEL} key from the list of arguments.
+     *
+     * @param keyValues a list of key/value pairs
+     * @return the value associated with {@link Property.Key#LABEL}
+     * @throws ClassCastException if the value of the label is not a {@link String}
+     */
     public static Optional<String> getLabelValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i].equals(Property.Key.LABEL))
-                return Optional.of(keyValues[i + 1].toString());
+                return Optional.of((String) keyValues[i + 1]);
         }
         return Optional.empty();
     }

@@ -25,13 +25,13 @@ public class PipelineHelper {
         for (int i = 0; i < pipeline.getPipes().size(); i++) {
             if (pipeline.getPipes().get(i) == pipe) {
                 if (i == pipeline.getPipes().size() - 1)
-                    return Holder.NONE;
+                    return SimpleHolder.NONE;
                 else {
                     return ((Pipe) pipeline.getPipes().get(i + 1)).getAs();
                 }
             }
         }
-        return Holder.NONE;
+        return SimpleHolder.NONE;
     }
 
     public static <S, E> Pipe<S, ?> getStart(final Pipeline<S, E> pipeline) {

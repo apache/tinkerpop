@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.gremlin.pipes.util.ExpandablePipeIterator;
-import com.tinkerpop.gremlin.pipes.util.Holder;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -11,6 +10,7 @@ import java.util.NoSuchElementException;
  */
 public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
 
+    private static final String UNDERSCORE = "_";
     protected String as;
     protected final Pipeline<?, ?> pipeline;
     protected ExpandablePipeIterator<Holder<S>> starts = new ExpandablePipeIterator<>();
@@ -19,7 +19,7 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
 
     public <P extends Pipeline> AbstractPipe(final P pipeline) {
         this.pipeline = pipeline;
-        this.as = "_" + this.pipeline.getPipes().size();
+        this.as = UNDERSCORE + this.pipeline.getPipes().size();
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {

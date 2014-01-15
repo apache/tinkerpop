@@ -54,6 +54,10 @@ public class Path {
         throw new IllegalArgumentException("The as-step does not exist: " + as);
     }
 
+    public <T> T get(final int index) {
+        return (T) this.objects.get(index);
+    }
+
     public List<String> getAsSteps() {
         return this.asNames.stream().collect(Collectors.toList());
     }

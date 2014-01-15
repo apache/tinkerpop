@@ -11,7 +11,6 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
-import com.tinkerpop.blueprints.util.DefaultAnnotations;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
@@ -34,7 +33,7 @@ public class TinkerGraph implements Graph, Serializable {
     protected Long currentId = -1l;
     protected Map<String, Vertex> vertices = new HashMap<>();
     protected Map<String, Edge> edges = new HashMap<>();
-    protected Annotations annotations = new DefaultAnnotations();
+    protected Annotations annotations = new TinkerAnnotations();
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
@@ -83,8 +82,8 @@ public class TinkerGraph implements Graph, Serializable {
      * be overridden for the Blueprint Test Suite to pass.
      *
      * @param configuration the configuration for the instance
-     * @param strategy a strategy to apply
-     * @param <G> the {@link Graph} instance
+     * @param strategy      a strategy to apply
+     * @param <G>           the {@link Graph} instance
      * @return a newly opened {@link Graph}
      */
     public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<GraphStrategy> strategy) {
@@ -143,7 +142,7 @@ public class TinkerGraph implements Graph, Serializable {
     public void clear() {
         this.vertices.clear();
         this.edges.clear();
-        this.annotations = new DefaultAnnotations();
+        this.annotations = new TinkerAnnotations();
         this.currentId = 0l;
         this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
         this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);

@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.query.util;
 
 import com.tinkerpop.blueprints.AnnotatedList;
+import com.tinkerpop.blueprints.AnnotatedValue;
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.query.AnnotatedListQuery;
 
@@ -54,7 +55,7 @@ public abstract class DefaultAnnotatedListQuery<V> extends DefaultQuery implemen
         return this;
     }
 
-    public abstract Iterable<AnnotatedList.AnnotatedValue<V>> annotatedValues();
+    public abstract Iterable<AnnotatedValue<V>> annotatedValues();
 
     public abstract Iterable<V> values();
 }

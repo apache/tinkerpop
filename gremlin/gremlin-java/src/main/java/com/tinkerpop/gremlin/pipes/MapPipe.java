@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.pipes;
 
-import com.tinkerpop.gremlin.pipes.util.Holder;
+import com.tinkerpop.gremlin.pipes.util.SimpleHolder;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 
 import java.util.function.Function;
@@ -25,7 +25,7 @@ public class MapPipe<S, E> extends AbstractPipe<S, E> {
             final E temp = this.function.apply(holder);
             if (Pipe.NO_OBJECT != temp)
                 if (holder.get().equals(temp))
-                    return (Holder<E>) holder.makeSibling(this.getAs()); // no path extension
+                    return (SimpleHolder<E>) holder.makeSibling(this.getAs()); // no path extension
                 else
                     return holder.makeChild(this.getAs(), temp);
         }

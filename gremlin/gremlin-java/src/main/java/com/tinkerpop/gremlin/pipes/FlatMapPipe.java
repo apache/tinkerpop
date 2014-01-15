@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.pipes;
 
-import com.tinkerpop.gremlin.pipes.util.Holder;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.function.Function;
 
@@ -35,7 +35,7 @@ public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
     private synchronized Holder<E> getNext() {
         if (this.queue.isEmpty()) {
             final Holder<S> holder = this.starts.next();
-            this.queue.add(new HolderIterator<>(holder, this, this.function.apply(holder)));
+            this.queue.add(new HolderIterator<>((Optional) Optional.of(holder), this, this.function.apply(holder)));
             return null;
         } else {
             final Iterator<Holder<E>> iterator = this.queue.peek();

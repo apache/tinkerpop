@@ -46,14 +46,6 @@ public class MicroProperty implements Property {
         throw new UnsupportedOperationException();
     }
 
-    public void setAnnotation(final String key, final Object value) {
-        throw new UnsupportedOperationException();
-    }
-
-    public <T> Optional<T> getAnnotation(final String key) {
-        throw new UnsupportedOperationException();
-    }
-
     public String toString() {
         return StringFactory.propertyString(this) + ".";
     }

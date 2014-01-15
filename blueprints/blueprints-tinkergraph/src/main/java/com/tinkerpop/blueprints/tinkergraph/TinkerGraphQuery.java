@@ -25,7 +25,11 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
 
     @Override
     public GraphQuery ids(final Object... ids) {
-        return this.graph.strategy().compose(s -> s.getGraphQueryIdsStrategy(new Strategy.Context<GraphQuery>(this.graph, this)), super::ids).apply(ids);
+        final String[] idStrings = new String[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            idStrings[i] = ids[i].toString();
+        }
+        return this.graph.strategy().compose(s -> s.getGraphQueryIdsStrategy(new Strategy.Context<GraphQuery>(this.graph, this)), super::ids).apply(idStrings);
     }
 
     public Iterable<Edge> edges() {
