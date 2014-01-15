@@ -298,4 +298,21 @@ public class ElementHelperTest {
         assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
     }
 
+    @Test
+    public void shouldDeterminePropertiesAreEqual() {
+        final Property mockPropertyA = mock(Property.class);
+        final Property mockPropertyB = mock(Property.class);
+        final Element mockElement = mock(Element.class);
+        when(mockPropertyA.isPresent()).thenReturn(true);
+        when(mockPropertyB.isPresent()).thenReturn(true);
+        when(mockPropertyA.getElement()).thenReturn(mockElement);
+        when(mockPropertyB.getElement()).thenReturn(mockElement);
+        when(mockPropertyA.getKey()).thenReturn("k");
+        when(mockPropertyB.getKey()).thenReturn("k");
+        when(mockPropertyA.get()).thenReturn("v");
+        when(mockPropertyB.get()).thenReturn("v");
+
+        assertTrue(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
+    }
+
 }
