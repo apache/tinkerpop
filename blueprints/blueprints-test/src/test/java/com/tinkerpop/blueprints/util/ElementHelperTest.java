@@ -1,13 +1,16 @@
 package com.tinkerpop.blueprints.util;
 
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Vertex;
 import org.junit.Test;
 
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -156,5 +159,82 @@ public class ElementHelperTest {
         } catch (IllegalArgumentException iae) {
             assertEquals(Graph.Exceptions.argumentCanNotBeNull("element").getMessage(), iae.getMessage());
         }
+    }
+
+    @Test
+    public void shouldFailAreEqualTestBecauseFirstArgumentIsNull() {
+        try {
+            ElementHelper.areEqual((Element) null, "some object");
+            fail("Should throw exception since the first argument is null");
+        } catch (IllegalArgumentException iae) {
+            assertEquals(Graph.Exceptions.argumentCanNotBeNull("a").getMessage(), iae.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldFailAreEqualTestBecauseSecondArgumentIsNull() {
+        final Element mockElement = mock(Element.class);
+        try {
+            ElementHelper.areEqual(mockElement, null);
+            fail("Should throw exception since the second argument is null");
+        } catch (IllegalArgumentException iae) {
+            assertEquals(Graph.Exceptions.argumentCanNotBeNull("b").getMessage(), iae.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldDetermineElementsAreEqualAsTheyAreSameObject() {
+        final Element mockElement = mock(Element.class);
+        assertTrue(ElementHelper.areEqual(mockElement, mockElement));
+    }
+
+    @Test
+    public void shouldDetermineElementsAreNotEqualAsAIsVertexAndBIsEdge() {
+        final Element mockVertex = mock(Vertex.class);
+        final Element mockEdge = mock(Edge.class);
+        assertFalse(ElementHelper.areEqual(mockVertex, mockEdge));
+    }
+
+    @Test
+    public void shouldDetermineElementsAreNotEqualAsBIsVertexAndAIsEdge() {
+        final Element mockVertex = mock(Vertex.class);
+        final Element mockEdge = mock(Edge.class);
+        assertFalse(ElementHelper.areEqual(mockEdge, mockVertex));
+    }
+
+    @Test
+    public void shouldDetermineVerticesAreEqual() {
+        final Element mockVertexA = mock(Vertex.class);
+        final Element mockVertexB = mock(Vertex.class);
+        when(mockVertexA.getId()).thenReturn("1");
+        when(mockVertexB.getId()).thenReturn("1");
+        assertTrue(ElementHelper.areEqual(mockVertexA, mockVertexB));
+    }
+
+    @Test
+    public void shouldDetermineVerticesAreNotEqual() {
+        final Element mockVertexA = mock(Vertex.class);
+        final Element mockVertexB = mock(Vertex.class);
+        when(mockVertexA.getId()).thenReturn("1");
+        when(mockVertexB.getId()).thenReturn("2");
+        assertFalse(ElementHelper.areEqual(mockVertexA, mockVertexB));
+    }
+
+    @Test
+    public void shouldDetermineEdgesAreEqual() {
+        final Element mockEdgeA = mock(Edge.class);
+        final Element mockEdgeB = mock(Edge.class);
+        when(mockEdgeA.getId()).thenReturn("1");
+        when(mockEdgeB.getId()).thenReturn("1");
+        assertTrue(ElementHelper.areEqual(mockEdgeA, mockEdgeB));
+    }
+
+    @Test
+    public void shouldDetermineEdgesAreNotEqual() {
+        final Element mockEdgeA = mock(Edge.class);
+        final Element mockEdgeB = mock(Edge.class);
+        when(mockEdgeA.getId()).thenReturn("1");
+        when(mockEdgeB.getId()).thenReturn("2");
+        assertFalse(ElementHelper.areEqual(mockEdgeA, mockEdgeB));
     }
 }

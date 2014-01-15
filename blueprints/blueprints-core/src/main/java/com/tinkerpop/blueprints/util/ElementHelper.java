@@ -109,8 +109,11 @@ public class ElementHelper {
      * @return true if elements and equal and false otherwise
      */
     public static boolean areEqual(final Element a, final Object b) {
-        Objects.requireNonNull(a);
-        Objects.requireNonNull(b);
+        if (null == a)
+            throw Graph.Exceptions.argumentCanNotBeNull("a");
+        if (null == b)
+            throw Graph.Exceptions.argumentCanNotBeNull("b");
+
         if (a == b)
             return true;
         if (!((a instanceof Vertex && b instanceof Vertex) || (a instanceof Edge && b instanceof Edge)))
