@@ -26,10 +26,14 @@ public class GraphFactory {
      *                      instance. This minimum is determined by the {@link Graph} instance itself.
      * @param strategy A {@link com.tinkerpop.blueprints.strategy.GraphStrategy} to plug into the underlying {@link Graph} being constructed.
      * @return A {@link Graph} instance.
+     * @throws IllegalArgumentException if {@code configuration} or {@code strategy} are null
      */
     public static Graph open(final Configuration configuration, final Optional<? extends GraphStrategy> strategy) {
-        Objects.requireNonNull(configuration);
-        Objects.requireNonNull(strategy);
+        if (null == configuration)
+            throw Graph.Exceptions.argumentCanNotBeNull("configuration");
+
+        if (null == strategy)
+            throw Graph.Exceptions.argumentCanNotBeNull("strategy");
 
         final String clazz = configuration.getString("blueprints.graph", null);
         if (null == clazz)
@@ -67,8 +71,12 @@ public class GraphFactory {
      *                          for a {@link Graph} instance. This minimum is determined by the {@link Graph} instance
      *                          itself.
      * @return A {@link Graph} instance.
+     * @throws IllegalArgumentException if {@code configurationFile} is null
      */
     public static Graph open(final String configurationFile) {
+        if (null == configurationFile)
+            throw Graph.Exceptions.argumentCanNotBeNull("configurationFile");
+
         return open(getConfiguration(new File(configurationFile)));
     }
 
@@ -83,17 +91,17 @@ public class GraphFactory {
         return open(new MapConfiguration(configuration));
     }
 
-    private static Configuration getConfiguration(final File dirOrFile) {
-        if (null == dirOrFile)
-            throw new IllegalArgumentException("Need to specify a configuration file or storage directory");
+    private static Configuration getConfiguration(final File configurationFile) {
+        if (null == configurationFile)
+            throw Graph.Exceptions.argumentCanNotBeNull("configurationFile");
 
-        if (!dirOrFile.isFile())
-            throw new IllegalArgumentException("Location of configuration must be a file");
+        if (!configurationFile.isFile())
+            throw new IllegalArgumentException(String.format("The location configuration must resolve to a file and [%s] does not", configurationFile));
 
         try {
-            return new PropertiesConfiguration(dirOrFile);
+            return new PropertiesConfiguration(configurationFile);
         } catch (final ConfigurationException e) {
-            throw new IllegalArgumentException("Could not load configuration at: " + dirOrFile, e);
+            throw new IllegalArgumentException(String.format("Could not load configuration at: %s", configurationFile), e);
         }
     }
 }
