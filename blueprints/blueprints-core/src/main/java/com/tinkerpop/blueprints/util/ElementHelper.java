@@ -80,11 +80,18 @@ public class ElementHelper {
         return Optional.empty();
     }
 
+    /**
+     * Assign key/value pairs as properties to an {@link Element}.  If the value of {@link Property.Key#ID} or
+     * {@link Property.Key#LABEL} is in the set of pairs, then they are ignored.
+     *
+     * @param element the graph element to assign the {@code keyValues}
+     * @param keyValues the key/value pairs to assign to the {@code element}
+     * @throws ClassCastException if the value of the key is not a {@link String}
+     */
     public static void attachKeyValues(final Element element, final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (!keyValues[i].equals(Property.Key.ID) && !keyValues[i].equals(Property.Key.LABEL)) {
-                element.setProperty(keyValues[i].toString(), keyValues[i + 1]);
-            }
+            if (!keyValues[i].equals(Property.Key.ID) && !keyValues[i].equals(Property.Key.LABEL))
+                element.setProperty((String) keyValues[i], keyValues[i + 1]);
         }
     }
 

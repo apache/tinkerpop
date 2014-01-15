@@ -140,4 +140,10 @@ public class ElementHelperTest {
         verify(mockElement, times(0)).setProperty(Property.Key.ID, 321);
         verify(mockElement, times(0)).setProperty(Property.Key.LABEL, "friends");
     }
+
+    @Test(expected = ClassCastException.class)
+    public void shouldFailTryingToAttachNonStringKey() {
+        final Element mockElement = mock(Element.class);
+        ElementHelper.attachKeyValues(mockElement, "test", 123, 321, "test");
+    }
 }
