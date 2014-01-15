@@ -10,7 +10,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
+ * Utility class supporting common functions for {@link Element}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ElementHelper {
 
