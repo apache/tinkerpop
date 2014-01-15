@@ -5,8 +5,10 @@ import org.junit.Test;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -149,7 +151,7 @@ public class GraphTest extends AbstractBlueprintsTest {
      * Generate a graph with lots of edges and vertices, then test vertex/edge counts on removal of each vertex.
      */
     @Test
-    public void testRemovingVertices() {
+    public void shouldRemoveVertices() {
         final int vertexCount = 500;
         final List<Vertex> vertices = new ArrayList<>();
         final List<Edge> edges = new ArrayList<>();
@@ -176,5 +178,84 @@ public class GraphTest extends AbstractBlueprintsTest {
                         g, vertexCount - currentCounter, edges.size() - ((currentCounter + 1) / 2)));
             }
         }
+    }
+
+    public void shouldEvaluateConnectivityPatterns() {
+        final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
+        final Graph graph = this.g;
+
+        final Vertex a = graph.addVertex(graphProvider.convertId("1"));
+        final Vertex b = graph.addVertex(graphProvider.convertId("2"));
+        final Vertex c = graph.addVertex(graphProvider.convertId("3"));
+        final Vertex d = graph.addVertex(graphProvider.convertId("4"));
+
+        tryCommit(graph, ig-> AbstractBlueprintsSuite.assertVertexEdgeCounts(ig, 4, 0));
+
+        final Edge e = a.addEdge(graphProvider.convertLabel("knows"), b);
+        final Edge f = b.addEdge(graphProvider.convertLabel("knows"), c);
+        final Edge g = c.addEdge(graphProvider.convertLabel("knows"), d);
+        final Edge h = d.addEdge(graphProvider.convertLabel("knows"), a);
+
+        tryCommit(graph, ig-> AbstractBlueprintsSuite.assertVertexEdgeCounts(ig, 4, 4));
+
+        for (Vertex v : graph.query().vertices()) {
+            assertEquals(1, v.query().direction(Direction.OUT).count());
+            assertEquals(1, v.query().direction(Direction.IN).count());
+        }
+
+        for (Edge x : graph.query().edges()) {
+            assertEquals(graphProvider.convertLabel("knows"), x.getLabel());
+        }
+
+        if (graph.getFeatures().vertex().supportsUserSuppliedIds()) {
+            final Vertex va = graph.query().ids(graphProvider.convertId("1")).vertices().iterator().next();
+            final Vertex vb = graph.query().ids(graphProvider.convertId("2")).vertices().iterator().next();
+            final Vertex vc = graph.query().ids(graphProvider.convertId("3")).vertices().iterator().next();
+            final Vertex vd = graph.query().ids(graphProvider.convertId("4")).vertices().iterator().next();
+
+            assertEquals(a, va);
+            assertEquals(b, vb);
+            assertEquals(c, vc);
+            assertEquals(d, vd);
+
+            assertEquals(1, va.query().direction(Direction.IN).count());
+            assertEquals(1, va.query().direction(Direction.OUT).count());
+            assertEquals(1, vb.query().direction(Direction.IN).count());
+            assertEquals(1, vb.query().direction(Direction.OUT).count());
+            assertEquals(1, vc.query().direction(Direction.IN).count());
+            assertEquals(1, vc.query().direction(Direction.OUT).count());
+            assertEquals(1, vd.query().direction(Direction.IN).count());
+            assertEquals(1, vd.query().direction(Direction.OUT).count());
+
+            final Edge i = a.addEdge(graphProvider.convertLabel("hates"), b);
+
+            assertEquals(1, va.query().direction(Direction.IN).count());
+            assertEquals(2, va.query().direction(Direction.OUT).count());
+            assertEquals(2, vb.query().direction(Direction.IN).count());
+            assertEquals(1, vb.query().direction(Direction.OUT).count());
+            assertEquals(1, vc.query().direction(Direction.IN).count());
+            assertEquals(1, vc.query().direction(Direction.OUT).count());
+            assertEquals(1, vd.query().direction(Direction.IN).count());
+            assertEquals(1, vd.query().direction(Direction.OUT).count());
+
+            for (Edge x : a.query().direction(Direction.OUT).edges()) {
+                assertTrue(x.getLabel().equals(graphProvider.convertId("knows")) || x.getLabel().equals(graphProvider.convertId("hates")));
+            }
+
+            assertEquals(graphProvider.convertId("hates"), i.getLabel());
+            assertEquals(graphProvider.convertId("2"), i.getVertex(Direction.IN).getId().toString());
+            assertEquals(graphProvider.convertId("1"), i.getVertex(Direction.OUT).getId().toString());
+        }
+
+        final Set<Object> vertexIds = new HashSet<>();
+        vertexIds.add(a.getId());
+        vertexIds.add(a.getId());
+        vertexIds.add(b.getId());
+        vertexIds.add(b.getId());
+        vertexIds.add(c.getId());
+        vertexIds.add(d.getId());
+        vertexIds.add(d.getId());
+        vertexIds.add(d.getId());
+        assertEquals(4, vertexIds.size());
     }
 }
