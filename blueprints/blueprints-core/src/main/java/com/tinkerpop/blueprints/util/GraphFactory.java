@@ -9,7 +9,6 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 
 import java.io.File;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -24,7 +23,7 @@ public class GraphFactory {
      *
      * @param configuration A configuration object that specifies the minimally required properties for a {@link Graph}
      *                      instance. This minimum is determined by the {@link Graph} instance itself.
-     * @param strategy A {@link com.tinkerpop.blueprints.strategy.GraphStrategy} to plug into the underlying {@link Graph} being constructed.
+     * @param strategy      A {@link com.tinkerpop.blueprints.strategy.GraphStrategy} to plug into the underlying {@link Graph} being constructed.
      * @return A {@link Graph} instance.
      * @throws IllegalArgumentException if {@code configuration} or {@code strategy} are null
      */

@@ -48,7 +48,7 @@ public class BackTest extends TestCase {
 
     public void test_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(Iterator<String> pipe) {
         int counter = 0;
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
         while (pipe.hasNext()) {
             counter++;
             names.add(pipe.next());

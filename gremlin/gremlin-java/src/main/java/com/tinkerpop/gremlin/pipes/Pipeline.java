@@ -6,8 +6,10 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Path;
+import com.tinkerpop.gremlin.T;
 import com.tinkerpop.gremlin.pipes.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
@@ -24,6 +26,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -38,7 +41,11 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public Pipeline<Vertex, Vertex> V();
 
+    public Pipeline<Edge, Edge> E();
+
     public Pipeline<Vertex, Vertex> v(final Object... ids);
+
+    public Pipeline<Edge, Edge> e(final Object... ids);
 
     public Pipeline trackPaths(final boolean trackPaths);
 
@@ -179,10 +186,16 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> has(final String key, final Object value) {
-        return this.addPipe(new FilterPipe<Element>(this, e -> {
-            final Property x = e.get().getProperty(key);
-            return x.isPresent() && Compare.EQUAL.test(x.get(), value);
-        }));
+        return has(key, Compare.EQUAL, value);
+    }
+
+    public default Pipeline<S, E> has(final String key, final T t, final Object value) {
+        return has(key, T.convert(t), value);
+    }
+
+    public default Pipeline<S, E> has(final String key, final BiPredicate predicate, final Object value) {
+        final HasContainer hasContainer = new HasContainer(key, predicate, value);
+        return this.addPipe(new FilterPipe<Element>(this, e -> hasContainer.test(e.get())));
     }
 
     public default Pipeline<S, E> dedup() {
