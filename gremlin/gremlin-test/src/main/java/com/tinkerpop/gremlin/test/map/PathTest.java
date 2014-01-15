@@ -21,9 +21,9 @@ public class PathTest extends TestCase {
     public void test_g_v1_propertyXnameX_path(final Iterator<Holder<Path>> pipe) {
         Path path = pipe.next().get();
         assertFalse(pipe.hasNext());
-        assertEquals(path.size(), 2);
-        assertEquals(((Vertex) path.get(0)).getValue("name"), "marko");
-        assertEquals(path.get(1), "marko");
+        assertEquals(2, path.size());
+        assertEquals("marko", ((Vertex) path.get(0)).getValue("name"));
+        assertEquals("marko", path.get(1));
     }
 
     public void test_g_v1_out_pathXage__nameX(final Iterator<Holder<Path>> pipe) {
@@ -32,12 +32,12 @@ public class PathTest extends TestCase {
         while (pipe.hasNext()) {
             counter++;
             Path path = pipe.next().get();
-            assertEquals(path.get(0), Integer.valueOf(29));
+            assertEquals(Integer.valueOf(29), path.get(0));
             assertTrue(path.get(1).equals("josh") || path.get(1).equals("vadas") || path.get(1).equals("lop"));
             names.add(path.get(1));
         }
-        assertEquals(counter, 3);
-        assertEquals(names.size(), 3);
+        assertEquals(3, counter);
+        assertEquals(3, names.size());
     }
 
     public void test_g_V_out_loopX1__loops_lt_3X_pathXit__name__langX(final Iterator<Holder<Path>> pipe) {
@@ -45,11 +45,11 @@ public class PathTest extends TestCase {
         while (pipe.hasNext()) {
             counter++;
             Path path = pipe.next().get();
-            assertEquals(path.size(), 3);
-            assertEquals(((Vertex) path.get(0)).getValue("name"), "marko");
-            assertEquals(path.get(1), "josh");
-            assertEquals(path.get(2), "java");
+            assertEquals(3, path.size());
+            assertEquals("marko", ((Vertex) path.get(0)).getValue("name"));
+            assertEquals("josh", path.get(1));
+            assertEquals("java", path.get(2));
         }
-        assertEquals(counter, 2);
+        assertEquals(2, counter);
     }
 }

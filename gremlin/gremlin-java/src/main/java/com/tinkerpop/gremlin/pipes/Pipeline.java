@@ -7,9 +7,9 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Holder;
+import com.tinkerpop.gremlin.Path;
 import com.tinkerpop.gremlin.pipes.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
-import com.tinkerpop.gremlin.Path;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 
@@ -198,14 +198,13 @@ public interface Pipeline<S, E> extends Pipe<S, E> {
         }
         final AtomicInteger counter = new AtomicInteger(-1);
         return this.addPipe(new FilterPipe<E>(this, o -> {
-            int newCounter = counter.incrementAndGet();
-            if ((low == -1 || newCounter >= low) && (high == -1 || newCounter <= high)) {
+            counter.incrementAndGet();
+            if ((low == -1 || counter.get() >= low) && (high == -1 || counter.get() <= high))
                 return true;
-            }
-            if (high != -1 && newCounter > high) {
+            else if (high != -1 && counter.get() > high)
                 throw FastNoSuchElementException.instance();
-            }
-            return true;
+            else
+                return false;
         }));
     }
 

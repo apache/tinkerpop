@@ -10,11 +10,19 @@ import java.util.Iterator;
  */
 public interface Pipe<S, E> extends Iterator<Holder<E>>, Serializable {
 
-    public static final Object NO_OBJECT = new Object();
+    public static final Object NO_OBJECT = new Object() {
+        public int hashCode() {
+            return Integer.MIN_VALUE;
+        }
+
+        public boolean equals(final Object object) {
+            return object.hashCode() == this.hashCode();
+        }
+    };
 
     public void addStarts(Iterator<Holder<S>> iterator);
 
-    public <P extends Pipeline<?,?>> P getPipeline();
+    public <P extends Pipeline<?, ?>> P getPipeline();
 
     public String getAs();
 
