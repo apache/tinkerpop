@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.Graph.Features.VertexFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
+import com.tinkerpop.blueprints.util.StringFactory;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -22,6 +23,12 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class VertexTest extends AbstractBlueprintsTest {
+
+    @Test
+    public void shouldHaveStandardStringRepresentation() {
+        final Vertex v = g.addVertex("name", "marko", "age", 34);
+        assertEquals(StringFactory.vertexString(v), v.toString());
+    }
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)

@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.util.StringFactory;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -11,6 +12,15 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class EdgeTest extends AbstractBlueprintsTest {
+    @Test
+    public void shouldHaveStandardStringRepresentation() {
+        final Vertex v1 = g.addVertex();
+        final Vertex v2 = g.addVertex();
+        final Edge e = v1.addEdge("friends", v2);
+
+        assertEquals(StringFactory.edgeString(e), e.toString());
+    }
+
     @Test
     public void shouldCauseExceptionIfVertexRemovedMoreThanOnce() {
         final Vertex v1 = g.addVertex();
