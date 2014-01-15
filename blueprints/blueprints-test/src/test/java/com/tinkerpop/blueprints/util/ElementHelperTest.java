@@ -280,4 +280,22 @@ public class ElementHelperTest {
         assertTrue(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
     }
 
+    @Test
+    public void shouldDeterminePropertiesAreNotEqualAsAIsEmptyAndBIsNot() {
+        final Property mockPropertyA = mock(Property.class);
+        final Property mockPropertyB = mock(Property.class);
+        when(mockPropertyA.isPresent()).thenReturn(false);
+        when(mockPropertyB.isPresent()).thenReturn(true);
+        assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
+    }
+
+    @Test
+    public void shouldDeterminePropertiesAreNotEqualAsBIsEmptyAndAIsNot() {
+        final Property mockPropertyA = mock(Property.class);
+        final Property mockPropertyB = mock(Property.class);
+        when(mockPropertyA.isPresent()).thenReturn(true);
+        when(mockPropertyB.isPresent()).thenReturn(false);
+        assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
+    }
+
 }
