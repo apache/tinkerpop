@@ -118,9 +118,21 @@ public interface Pipeline<S, E> extends Pipe<S, E> {
         return this.addPipe(new MapPipe<Element, Object>(this, e -> e.get().<E2>getProperty(key).orElseGet(defaultSupplier)));
     }
 
-    public default Pipeline<S, Path> path() {
+    public default Pipeline<S, Path> path(final Function... pathFunctions) {
         this.trackPaths(true);
-        return this.addPipe(new MapPipe<S, Path>(this, Holder::getPath));
+        if (null == pathFunctions || pathFunctions.length == 0)
+            return this.addPipe(new MapPipe<S, Path>(this, Holder::getPath));
+        else {
+            final AtomicInteger nextFunction = new AtomicInteger(0);
+            return this.addPipe(new MapPipe<S, Path>(this, o -> {
+                final Path path = new Path();
+                o.getPath().forEach((a, b) -> {
+                    path.add(a, pathFunctions[nextFunction.get()].apply(b));
+                    nextFunction.set((nextFunction.get() + 1) % pathFunctions.length);
+                });
+                return path;
+            }));
+        }
     }
 
     public default <E2> Pipeline<S, E2> back(final String name) {
