@@ -6,9 +6,10 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.pipes.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
-import com.tinkerpop.gremlin.pipes.util.Path;
+import com.tinkerpop.gremlin.Path;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 

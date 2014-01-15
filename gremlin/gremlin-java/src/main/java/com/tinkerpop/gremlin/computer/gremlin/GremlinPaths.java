@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.computer.gremlin;
 
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.gremlin.pipes.Holder;
+import com.tinkerpop.gremlin.Holder;
 
 import java.io.Serializable;
 import java.util.HashMap;

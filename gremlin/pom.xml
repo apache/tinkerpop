@@ -17,7 +17,7 @@
     <url>http://gremlin.tinkerpop.com</url>
     <name>Gremlin: A Graph Traversal Language</name>
     <description>Gremlin is a domain specific language for traversing property graphs.
-        Gremlin makes use of a path-based syntax to support complex graph traversals.
+        Gremlin makes use of a path-based syntax to support arbitrary graph traversals.
         Gremlin has application in the areas of graph query, analysis, and manipulation.
     </description>
     <inceptionYear>2009</inceptionYear>
@@ -34,6 +34,7 @@
     </scm>
 
     <modules>
+        <module>gremlin-core</module>
         <module>gremlin-test</module>
         <module>gremlin-java</module>
         <module>gremlin-groovy</module>

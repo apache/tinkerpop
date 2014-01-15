@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 
 import java.util.ArrayList;

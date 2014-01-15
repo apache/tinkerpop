@@ -116,7 +116,7 @@ public abstract interface Property<V> {
         }
 
         public static UnsupportedOperationException dataTypeOfPropertyValueNotSupported(final Object val) {
-            throw new UnsupportedOperationException(String.format("Property value [%s] is of type %s which is not supported by this Graph implementation", val, val.getClass()));
+            throw new UnsupportedOperationException(String.format("Property value [%s] is of type %s is not supported", val, val.getClass()));
         }
     }
 

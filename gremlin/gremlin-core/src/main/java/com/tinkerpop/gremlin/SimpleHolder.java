@@ -1,7 +1,5 @@
-package com.tinkerpop.gremlin.pipes.util;
+package com.tinkerpop.gremlin;
 
-
-import com.tinkerpop.gremlin.pipes.Holder;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

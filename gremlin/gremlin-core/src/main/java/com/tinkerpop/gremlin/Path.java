@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.pipes.util;
+package com.tinkerpop.gremlin;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;

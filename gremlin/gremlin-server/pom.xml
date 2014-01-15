@@ -76,6 +76,12 @@
         </dependency>
         <!-- TESTING -->
         <dependency>
+            <groupId>com.tinkerpop.blueprints</groupId>
+            <artifactId>blueprints-tinkergraph</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
@@ -173,7 +179,9 @@
                                 <include>**/*IntegrateTest.java</include>
                             </includes>
                             <skipTests>${skipIntegrationTests}</skipTests>
-                            <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                            <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182
+                                -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
+                                -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                             </argLine>
                             <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
                         </configuration>
@@ -188,7 +196,9 @@
                                 <include>**/*PerformanceTest.java</include>
                             </includes>
                             <skipTests>${skipPerformanceTests}</skipTests>
-                            <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182 -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                            <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182
+                                -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
+                                -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                             </argLine>
                             <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                         </configuration>

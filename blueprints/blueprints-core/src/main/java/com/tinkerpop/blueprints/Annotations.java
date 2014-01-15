@@ -24,4 +24,30 @@ public interface Annotations {
 
     public Set<String> getKeys();
 
+    public static class Exceptions {
+        public static IllegalArgumentException annotationKeyIsReserved(final String key) {
+            return new IllegalArgumentException("Annotation key is reserved: " + key);
+        }
+
+        public static IllegalArgumentException annotationKeyValueIsReserved() {
+            return annotationKeyIsReserved(Key.VALUE);
+        }
+
+        public static IllegalArgumentException annotationKeyCanNotBeEmpty() {
+            return new IllegalArgumentException("Annotation key can not be the empty string");
+        }
+
+        public static IllegalArgumentException annotationKeyCanNotBeNull() {
+            return new IllegalArgumentException("Annotation key can not be null");
+        }
+
+        public static IllegalArgumentException annotationValueCanNotBeNull() {
+            return new IllegalArgumentException("Annotation value can not be null");
+        }
+
+        public static UnsupportedOperationException dataTypeOfAnnotationValueNotSupported(final Object val) {
+            throw new UnsupportedOperationException(String.format("Annotation value [%s] is of type %s is not supported", val, val.getClass()));
+        }
+    }
+
 }

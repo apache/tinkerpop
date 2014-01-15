@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.pipes.util;
 
 import com.tinkerpop.gremlin.pipes.Pipe;
+import com.tinkerpop.gremlin.SimpleHolder;
 import com.tinkerpop.gremlin.pipes.Pipeline;
 
 /**

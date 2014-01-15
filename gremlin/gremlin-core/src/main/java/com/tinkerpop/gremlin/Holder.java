@@ -1,6 +1,4 @@
-package com.tinkerpop.gremlin.pipes;
-
-import com.tinkerpop.gremlin.pipes.util.Path;
+package com.tinkerpop.gremlin;
 
 import java.io.Serializable;
 

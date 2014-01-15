@@ -6,10 +6,10 @@ import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.gremlin.pipes.Gremlin;
-import com.tinkerpop.gremlin.pipes.Holder;
-import com.tinkerpop.gremlin.pipes.util.PathHolder;
+import com.tinkerpop.gremlin.Holder;
+import com.tinkerpop.gremlin.PathHolder;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
-import com.tinkerpop.gremlin.pipes.util.SimpleHolder;
+import com.tinkerpop.gremlin.SimpleHolder;
 
 import java.util.Map;
 import java.util.function.Supplier;

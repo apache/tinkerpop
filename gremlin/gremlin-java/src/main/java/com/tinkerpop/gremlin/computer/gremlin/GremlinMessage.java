@@ -5,8 +5,8 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.gremlin.pipes.Holder;
-import com.tinkerpop.gremlin.pipes.util.PathHolder;
+import com.tinkerpop.gremlin.Holder;
+import com.tinkerpop.gremlin.PathHolder;
 
 import java.io.Serializable;
 import java.util.Optional;

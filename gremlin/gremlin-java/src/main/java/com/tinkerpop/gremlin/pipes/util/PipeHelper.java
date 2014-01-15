@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.pipes.util;
 
-import com.tinkerpop.gremlin.pipes.Holder;
+import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.pipes.Pipe;
 
 import java.util.ArrayList;

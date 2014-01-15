@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.pipes;
 
+import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 import com.tinkerpop.gremlin.pipes.util.PipelineHelper;
 

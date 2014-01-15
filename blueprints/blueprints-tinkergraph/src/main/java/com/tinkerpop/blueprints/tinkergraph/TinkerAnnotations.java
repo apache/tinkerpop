@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Annotations;
+import com.tinkerpop.blueprints.util.AnnotationHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +20,7 @@ public class TinkerAnnotations implements Annotations {
     }
 
     public void set(final String key, final Object value) {
+        AnnotationHelper.validateAnnotation(key, value);
         this.annotations.put(key, value);
     }
 

@@ -12,7 +12,7 @@ import java.util.Set;
 public class ComplianceTest extends TestCase {
 
     public void testCompliance() {
-        TestCase.assertTrue(true);
+        assertTrue(true);
     }
 
     public static void testCompliance(final Class testClass) {
@@ -24,7 +24,7 @@ public class ComplianceTest extends TestCase {
         }
         for (Method method : testClass.getMethods()) {
             if (method.getName().startsWith("test")) {
-                TestCase.assertTrue(methodNames.contains(method.getName()));
+                assertTrue(methodNames.contains(method.getName()));
             }
         }
     }
