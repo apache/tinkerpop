@@ -10,6 +10,7 @@ public class SimpleHolder<T> implements Holder<T> {
 
     protected T t;
     protected String future = NONE;
+    protected int loops = 0;
 
     public SimpleHolder(final T t) {
         this.t = t;
@@ -48,11 +49,11 @@ public class SimpleHolder<T> implements Holder<T> {
     }
 
     public int getLoops() {
-        throw new IllegalStateException(PATH_ERROR_MESSAGE);
+        return this.loops;
     }
 
     public void incrLoops() {
-        throw new IllegalStateException(PATH_ERROR_MESSAGE);
+        this.loops++;
     }
 
     public <R> SimpleHolder<R> makeChild(final String as, final R r) {

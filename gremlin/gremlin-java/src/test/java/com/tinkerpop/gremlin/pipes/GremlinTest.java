@@ -2,9 +2,12 @@ package com.tinkerpop.gremlin.pipes;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import org.junit.Test;
+
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 
@@ -93,7 +96,7 @@ public class GremlinTest {
                 .sideEffect(System.out::println).iterate();
     }
 
-    /*@Test
+    @Test
     public void testLoop() {
 
         TinkerGraph g = TinkerGraph.open(Optional.empty());
@@ -110,11 +113,15 @@ public class GremlinTest {
         e.addEdge("next", f);
         f.addEdge("next", a);
 
-        new Gremlin(g).v(a.getId()).as("x").out()
+        Gremlin.of(g).v(a.getId()).as("x").out()
                 .loop("x", o -> o.getLoops() < 8, o -> true)
                 .sideEffect(o -> System.out.println(o.getLoops()))
                 .simplePath().path().sideEffect(System.out::println).iterate();
-    }*/
+
+        System.out.println("------------");
+
+        Gremlin.of(g).v(a.getId()).as("x").goTo("y", o -> true).out().out().path().as("y").sideEffect(System.out::println).iterate();
+    }
 
     /*@Test
     public void testMultiStarts() {

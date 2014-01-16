@@ -5,7 +5,6 @@ package com.tinkerpop.gremlin;
  */
 public class PathHolder<T> extends SimpleHolder<T> {
 
-    private int loops = 0;
     private Path path = new Path();
 
     public PathHolder(final T t) {
@@ -23,14 +22,6 @@ public class PathHolder<T> extends SimpleHolder<T> {
 
     public void setPath(final Path path) {
         this.path = path;
-    }
-
-    public int getLoops() {
-        return this.loops;
-    }
-
-    public void incrLoops() {
-        this.loops++;
     }
 
     public <R> PathHolder<R> makeChild(final String as, final R r) {

@@ -257,7 +257,6 @@ public interface Pipeline<S, E> extends Iterator<E> {
     ///////////////////// BRANCH STEPS /////////////////////
 
     public default Pipeline<S, E> loop(final String as, final Predicate<Holder<E>> whilePredicate, final Predicate<Holder<E>> emitPredicate) {
-        this.trackPaths(true);
         final Pipe<?, ?> loopStartPipe = GremlinHelper.getAs(as, getPipeline());
         return this.addPipe(new MapPipe<E, Object>(this, holder -> {
             holder.incrLoops();
@@ -265,6 +264,18 @@ public interface Pipeline<S, E> extends Iterator<E> {
                 holder.setFuture(as);
                 loopStartPipe.addStarts((Iterator) new SingleIterator<>(holder));
                 return emitPredicate.test(holder) ? holder.get() : Pipe.NO_OBJECT;
+            } else {
+                return holder.get();
+            }
+        }));
+    }
+
+    public default Pipeline<S, E> goTo(final String as, final Predicate<Holder<E>> goToPredicate) {
+        return this.addPipe(new MapPipe<E, Object>(this, holder -> {
+            if (goToPredicate.test(holder)) {
+                holder.setFuture(as);
+                GremlinHelper.getAs(as, getPipeline()).addStarts((Iterator) new SingleIterator<>(holder));
+                return Pipe.NO_OBJECT;
             } else {
                 return holder.get();
             }
