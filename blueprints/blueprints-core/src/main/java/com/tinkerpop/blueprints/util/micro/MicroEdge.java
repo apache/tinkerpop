@@ -19,7 +19,7 @@ public class MicroEdge extends MicroElement implements Edge {
         this.inVertex = new MicroVertex(edge.getVertex(Direction.IN));
     }
 
-    public Vertex getVertex(Direction direction) {
+    public Vertex getVertex(final Direction direction) {
         if (direction.equals(Direction.OUT))
             return outVertex;
         else if (direction.equals(Direction.IN))
