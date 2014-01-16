@@ -5,11 +5,11 @@ import com.tinkerpop.blueprints.computer.GraphMemory;
 import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.computer.VertexProgram;
-import com.tinkerpop.gremlin.pipes.Gremlin;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.PathHolder;
-import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 import com.tinkerpop.gremlin.SimpleHolder;
+import com.tinkerpop.gremlin.pipes.Gremlin;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 
 import java.util.Map;
 import java.util.function.Supplier;

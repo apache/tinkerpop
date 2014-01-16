@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.test.map;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import junit.framework.TestCase;
 
 import java.util.HashSet;
 import java.util.Iterator;

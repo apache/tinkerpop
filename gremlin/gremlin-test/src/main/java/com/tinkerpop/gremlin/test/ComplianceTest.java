@@ -5,8 +5,8 @@ import org.junit.Test;
 import java.util.stream.Stream;
 
 import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

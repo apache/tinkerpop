@@ -1,9 +1,7 @@
 package com.tinkerpop.gremlin.test.map;
 
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Path;
-import junit.framework.TestCase;
 
 import java.util.HashSet;
 import java.util.Iterator;

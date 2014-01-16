@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.test.filter;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import junit.framework.TestCase;
 
 import java.util.Iterator;
 import java.util.List;

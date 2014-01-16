@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.test.filter;
 
 import com.tinkerpop.blueprints.Vertex;
-import junit.framework.TestCase;
 
 import java.util.Iterator;
 
