@@ -184,14 +184,15 @@ public class GraphTest extends AbstractBlueprintsTest {
     /**
      * Create a small {@link Graph} and ensure that counts of edges per vertex are correct.
      */
+    @Test
     public void shouldEvaluateConnectivityPatterns() {
         final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
         final Graph graph = this.g;
 
-        final Vertex a = graph.addVertex(graphProvider.convertId("1"));
-        final Vertex b = graph.addVertex(graphProvider.convertId("2"));
-        final Vertex c = graph.addVertex(graphProvider.convertId("3"));
-        final Vertex d = graph.addVertex(graphProvider.convertId("4"));
+        final Vertex a = graph.addVertex(Property.Key.ID, graphProvider.convertId("1"));
+        final Vertex b = graph.addVertex(Property.Key.ID, graphProvider.convertId("2"));
+        final Vertex c = graph.addVertex(Property.Key.ID, graphProvider.convertId("3"));
+        final Vertex d = graph.addVertex(Property.Key.ID, graphProvider.convertId("4"));
 
         tryCommit(graph, ig-> AbstractBlueprintsSuite.assertVertexEdgeCounts(ig, 4, 0));
 
