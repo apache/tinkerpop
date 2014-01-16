@@ -169,6 +169,11 @@ public class TinkerGraph implements Graph, Serializable {
                 public boolean supportsTransactions() {
                     return false;
                 }
+
+                @Override
+                public boolean supportsPersistence() {
+                    return false;
+                }
             };
         }
     }
