@@ -26,7 +26,7 @@ public class ComplianceTest {
 
         // get the test methods from base and validate that they are somehow implemented in the parent class
         // and have a junit @Test annotation.
-        assertTrue(Stream.of(gremlinTestBaseClass.getDeclaredMethods())
+        Stream.of(gremlinTestBaseClass.getDeclaredMethods())
                 .map(m -> {
                     try {
                         assertNotNull(testClass.getDeclaredMethod(m.getName()).getAnnotation(Test.class));
@@ -36,6 +36,6 @@ public class ComplianceTest {
                                 m.getName(), testClass));
                         return false;
                     }
-                }).reduce(true, (a, b) -> a && b));
+                }).count();
     }
 }
