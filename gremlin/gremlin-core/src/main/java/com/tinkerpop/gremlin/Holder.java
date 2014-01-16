@@ -13,7 +13,9 @@ public interface Holder<T> extends Serializable {
 
     public void set(final T t);
 
-    public boolean isDone();
+    public default boolean isDone() {
+        return this.getFuture().equals(NO_FUTURE);
+    }
 
     public Path getPath();
 

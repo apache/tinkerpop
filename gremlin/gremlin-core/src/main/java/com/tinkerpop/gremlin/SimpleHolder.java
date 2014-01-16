@@ -28,10 +28,6 @@ public class SimpleHolder<T> implements Holder<T> {
         this.t = t;
     }
 
-    public boolean isDone() {
-        return this.future.equals(NO_FUTURE);
-    }
-
     public String getFuture() {
         return this.future;
     }
