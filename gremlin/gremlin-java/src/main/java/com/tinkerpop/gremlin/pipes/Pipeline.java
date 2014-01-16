@@ -129,6 +129,26 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new MapPipe<Element, Object>(this, e -> e.get().<E2>getProperty(key).orElseGet(defaultSupplier)));
     }
 
+    public default Pipeline<S, Map<String, Object>> values(final String... keys) {
+        return this.addPipe(new MapPipe<Element, Map>(this, e -> {
+            final Map<String, Object> values = new HashMap<>();
+            final Element element = e.get();
+            if (null == keys || keys.length == 0) {
+                element.getPropertyKeys().forEach(key -> values.put(key, element.getValue(key)));
+            } else {
+                for (final String key : keys) {
+                    if (key.equals(Property.Key.ID))
+                        values.put(Property.Key.ID, element.getId());
+                    else if (key.equals(Property.Key.LABEL))
+                        values.put(Property.Key.LABEL, element.getLabel());
+                    else
+                        element.getProperty(key).ifPresent(v -> values.put(key, v));
+                }
+            }
+            return values;
+        }));
+    }
+
     public default Pipeline<S, Path> path(final Function... pathFunctions) {
         this.trackPaths(true);
         if (null == pathFunctions || pathFunctions.length == 0)
@@ -180,17 +200,18 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new FilterPipe<>(this, predicate));
     }
 
-    public default Pipeline<S, E> simplePath() {
-        this.trackPaths(true);
-        return this.addPipe(new FilterPipe<Object>(this, o -> o.getPath().isSimple()));
+    public default Pipeline<S, E> dedup() {
+        final Set<Object> set = new LinkedHashSet<>();
+        return this.addPipe(new FilterPipe<E>(this, o -> set.add(o.get())));
+    }
+
+    public default Pipeline<S, E> dedup(final Function<Holder<E>, Object> uniqueFunction) {
+        final Set<Object> set = new LinkedHashSet<>();
+        return this.addPipe(new FilterPipe<E>(this, o -> set.add(uniqueFunction.apply(o))));
     }
 
     public default Pipeline<S, E> has(final String key) {
         return this.addPipe(new FilterPipe<Element>(this, e -> e.get().getProperty(key).isPresent()));
-    }
-
-    public default Pipeline<S, E> hasNot(final String key) {
-        return this.addPipe(new FilterPipe<Element>(this, e -> !e.get().getProperty(key).isPresent()));
     }
 
     public default Pipeline<S, E> has(final String key, final Object value) {
@@ -201,19 +222,13 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return has(key, T.convert(t), value);
     }
 
+    public default Pipeline<S, E> hasNot(final String key) {
+        return this.addPipe(new FilterPipe<Element>(this, e -> !e.get().getProperty(key).isPresent()));
+    }
+
     public default Pipeline<S, E> has(final String key, final BiPredicate predicate, final Object value) {
         final HasContainer hasContainer = new HasContainer(key, predicate, value);
         return this.addPipe(new FilterPipe<Element>(this, e -> hasContainer.test(e.get())));
-    }
-
-    public default Pipeline<S, E> dedup() {
-        final Set<Object> set = new LinkedHashSet<>();
-        return this.addPipe(new FilterPipe<E>(this, o -> set.add(o.get())));
-    }
-
-    public default Pipeline<S, E> dedup(final Function<Holder<E>, Object> uniqueFunction) {
-        final Set<Object> set = new LinkedHashSet<>();
-        return this.addPipe(new FilterPipe<E>(this, o -> set.add(uniqueFunction.apply(o))));
     }
 
     public default Pipeline<S, E> range(final int low, final int high) {
@@ -230,6 +245,11 @@ public interface Pipeline<S, E> extends Iterator<E> {
             else
                 return false;
         }));
+    }
+
+    public default Pipeline<S, E> simplePath() {
+        this.trackPaths(true);
+        return this.addPipe(new FilterPipe<Object>(this, o -> o.getPath().isSimple()));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
@@ -256,32 +276,6 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default Pipeline<S, E> loop(final String as, final Predicate<Holder<E>> whilePredicate, final Predicate<Holder<E>> emitPredicate) {
-        final Pipe<?, ?> loopStartPipe = GremlinHelper.getAs(as, getPipeline());
-        return this.addPipe(new MapPipe<E, Object>(this, holder -> {
-            holder.incrLoops();
-            if (whilePredicate.test(holder)) {
-                holder.setFuture(as);
-                loopStartPipe.addStarts((Iterator) new SingleIterator<>(holder));
-                return emitPredicate.test(holder) ? holder.get() : Pipe.NO_OBJECT;
-            } else {
-                return holder.get();
-            }
-        }));
-    }
-
-    public default Pipeline<S, E> goTo(final String as, final Predicate<Holder<E>> goToPredicate) {
-        return this.addPipe(new MapPipe<E, Object>(this, holder -> {
-            if (goToPredicate.test(holder)) {
-                holder.setFuture(as);
-                GremlinHelper.getAs(as, getPipeline()).addStarts((Iterator) new SingleIterator<>(holder));
-                return Pipe.NO_OBJECT;
-            } else {
-                return holder.get();
-            }
-        }));
-    }
-
     public default Pipeline<S, E> jump(final String as) {
         return this.jump(as, h -> true, h -> false);
     }
@@ -306,10 +300,6 @@ public interface Pipeline<S, E> extends Iterator<E> {
                 return holder.get();
             }
         }));
-    }
-
-    public default Pipeline<S, E> loop(final String as, final Predicate<Holder<E>> whilePredicate) {
-        return this.loop(as, whilePredicate, o -> false);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////

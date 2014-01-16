@@ -16,18 +16,14 @@ import java.util.stream.Stream;
  */
 public class GremlinVertexProgramTest {
 
-    public void testTrue() {
-
-    }
-
     @Test
     public void testGremlinOLAP() throws Exception {
         final Graph g = TinkerFactory.createClassic();
         final ComputeResult result =
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
                         //Gremlin.of().out("created").in("created").value("name").map(o -> o.toString().length()))
-                        Gremlin.of().out().out().property("name").value().path())
-                        //Gremlin.of().as("x").outE().inV().loop("x", o -> o.getLoops() < 2).value("name").map(s -> s.toString().length()).path())
+                        //Gremlin.of().out().out().property("name").value().path())
+                        Gremlin.of().as("x").outE().inV().jump("x", o -> o.getLoops() < 2).value("name").map(s -> s.toString().length()).path())
                         .build())
                         .submit().get();
 

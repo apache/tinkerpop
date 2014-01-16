@@ -38,7 +38,7 @@ public class GremlinTest {
         System.out.println("--------------");
 
         Gremlin.of(g).v("1").as("x").out()
-                .loop("x", o -> o.getLoops() < 2, o -> false)
+                .jump("x", o -> o.getLoops() < 2, o -> false)
                 .path().sideEffect(System.out::println).iterate();
 
         System.out.println("--------------");
@@ -114,13 +114,10 @@ public class GremlinTest {
         f.addEdge("next", a);
 
         Gremlin.of(g).v(a.getId()).as("x").out()
-                .loop("x", o -> o.getLoops() < 8, o -> true)
+                .jump("x", o -> o.getLoops() < 8, o -> true)
                 .sideEffect(o -> System.out.println(o.getLoops()))
-                .simplePath().path().sideEffect(System.out::println).iterate();
+                .path().sideEffect(System.out::println).iterate();
 
-        System.out.println("------------");
-
-        Gremlin.of(g).v(a.getId()).as("x").goTo("y", o -> true).out().out().path().as("y").sideEffect(System.out::println).iterate();
     }
 
     @Test
@@ -131,14 +128,12 @@ public class GremlinTest {
         Gremlin.of(g).V().as("x").jump("y", o -> o.getLoops() > 1).out().jump("x").property("name").as("y").forEach(System.out::println);
     }
 
-    /*@Test
-    public void testMultiStarts() {
-        Graph graph = TinkerFactory.createClassic();
-        Gremlin g = (Gremlin) Gremlin.of().has("name", "lop");
-        assertFalse(g.hasNext());
-        g.addStarts(new HolderIterator(graph.query().vertices().iterator()));
-        g.next();
-    }*/
+    @Test
+    public void testValues() {
+        Graph g = TinkerFactory.createClassic();
+        Gremlin.of(g).V().values("name","age","label","id").forEach(System.out::println);
+
+    }
 
     @Test
     public void testRange() {

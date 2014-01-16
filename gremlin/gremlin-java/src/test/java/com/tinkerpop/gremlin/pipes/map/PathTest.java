@@ -36,7 +36,7 @@ public class PathTest extends com.tinkerpop.gremlin.test.map.PathTest {
     public void g_V_out_loopX1__loops_lt_3X_pathXit__name__langX() {
         super.g_V_out_loopX1__loops_lt_3X_pathXit__name__langX(
                 Gremlin.of(g).V().as("x").out()
-                        .loop("x", o -> o.getLoops() < 2)
+                        .jump("x", o -> o.getLoops() < 2)
                         .path(v -> v, v -> ((Vertex) v).getValue("name"), v -> ((Vertex) v).getValue("lang")));
     }
 }
