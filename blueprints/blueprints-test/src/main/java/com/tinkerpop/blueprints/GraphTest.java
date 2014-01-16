@@ -348,4 +348,54 @@ public class GraphTest extends AbstractBlueprintsTest {
         results = StreamFactory.stream(b.query().direction(Direction.IN).labels(graphProvider.convertLabel("blah1"), graphProvider.convertLabel("blah2")).edges()).collect(Collectors.toList());
         assertEquals(results.size(), 0);
     }
+
+    @Test
+    public void shouldTestTreeConnectivity() {
+        final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
+        final Graph graph = g;
+
+        int branchSize = 11;
+        final Vertex start = graph.addVertex();
+        for (int i = 0; i < branchSize; i++) {
+            final Vertex a = graph.addVertex();
+            start.addEdge(graphProvider.convertLabel("test1"), a);
+            for (int j = 0; j < branchSize; j++) {
+                final Vertex b = graph.addVertex();
+                a.addEdge(graphProvider.convertLabel("test2"), b);
+                for (int k = 0; k < branchSize; k++) {
+                    final Vertex c = graph.addVertex();
+                    b.addEdge(graphProvider.convertLabel("test3"), c);
+                }
+            }
+        }
+
+        assertEquals(0, start.query().direction(Direction.IN).count());
+        assertEquals(branchSize, start.query().direction(Direction.OUT).count());
+        for (Edge e : start.query().direction(Direction.OUT).edges()) {
+            assertEquals(graphProvider.convertId("test1"), e.getLabel());
+            assertEquals(branchSize, e.getVertex(Direction.IN).query().direction(Direction.OUT).count());
+            assertEquals(1, e.getVertex(Direction.IN).query().direction(Direction.IN).count());
+            for (Edge f : e.getVertex(Direction.IN).query().direction(Direction.OUT).edges()) {
+                assertEquals(graphProvider.convertId("test2"), f.getLabel());
+                assertEquals(branchSize, f.getVertex(Direction.IN).query().direction(Direction.OUT).count());
+                assertEquals(1, f.getVertex(Direction.IN).query().direction(Direction.IN).count());
+                for (Edge g : f.getVertex(Direction.IN).query().direction(Direction.OUT).edges()) {
+                    assertEquals(graphProvider.convertId("test3"), g.getLabel());
+                    assertEquals(0, g.getVertex(Direction.IN).query().direction(Direction.OUT).count());
+                    assertEquals(1, g.getVertex(Direction.IN).query().direction(Direction.IN).count());
+                }
+            }
+        }
+
+        int totalVertices = 0;
+        for (int i = 0; i < 4; i++) {
+            totalVertices = totalVertices + (int) Math.pow(branchSize, i);
+        }
+
+        final List<Vertex> vertices = StreamFactory.stream(graph.query().vertices()).collect(Collectors.toList());
+        assertEquals(totalVertices, vertices.size());
+
+        final List<Edge> edges = StreamFactory.stream(graph.query().edges()).collect(Collectors.toList());
+        assertEquals(totalVertices - 1, edges.size());
+    }
 }
