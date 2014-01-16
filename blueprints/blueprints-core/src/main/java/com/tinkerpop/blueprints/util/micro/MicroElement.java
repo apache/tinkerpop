@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.util.micro;
 
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.util.ElementHelper;
 
@@ -16,7 +17,9 @@ public abstract class MicroElement implements Element {
     final String label;
 
     public MicroElement(final Element element) {
-        Objects.requireNonNull(element);
+        if (null == element)
+            throw Graph.Exceptions.argumentCanNotBeNull("element");
+
         this.id = element.getId();
         this.label = element.getLabel();
     }
