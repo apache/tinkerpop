@@ -13,7 +13,7 @@ import org.junit.Test;
  */
 public class PathTest extends com.tinkerpop.gremlin.test.map.PathTest {
 
-    final Graph g = TinkerFactory.createClassic();
+    private final Graph g = TinkerFactory.createClassic();
 
     @Test
     public void testCompliance() {

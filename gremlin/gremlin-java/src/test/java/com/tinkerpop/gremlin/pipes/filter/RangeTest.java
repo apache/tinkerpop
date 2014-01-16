@@ -12,7 +12,7 @@ import org.junit.Test;
  */
 public class RangeTest extends com.tinkerpop.gremlin.test.filter.RangeTest {
 
-    Graph g = TinkerFactory.createClassic();
+    private final Graph g = TinkerFactory.createClassic();
 
     @Test
     public void testCompliance() {

@@ -15,7 +15,7 @@ import java.util.Arrays;
  */
 public class HasTest extends com.tinkerpop.gremlin.test.filter.HasTest {
 
-    Graph g = TinkerFactory.createClassic();
+    private final Graph g = TinkerFactory.createClassic();
 
     @Test
     public void testCompliance() {

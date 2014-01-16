@@ -12,7 +12,7 @@ import org.junit.Test;
  */
 public class BackTest extends com.tinkerpop.gremlin.test.map.BackTest {
 
-    Graph g = TinkerFactory.createClassic();
+    private final Graph g = TinkerFactory.createClassic();
 
     @Test
     public void testCompliance() {
