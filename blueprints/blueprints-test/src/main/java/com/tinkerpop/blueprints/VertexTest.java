@@ -8,7 +8,11 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_BOOLEAN_VALUES;
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_DOUBLE_VALUES;
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_LONG_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
@@ -149,5 +153,66 @@ public class VertexTest extends AbstractBlueprintsTest {
         } catch (IllegalStateException ise) {
             assertEquals(Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, id).getMessage(), ise.getMessage());
         }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void shouldAutotypeStringProperties() {
+        final Graph graph = g;
+        final Vertex v = graph.addVertex();
+        v.setProperty("string", "marko");
+        final String name = v.getValue("string");
+        assertEquals(name, "marko");
+
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    public void shouldAutotypIntegerProperties() {
+        final Graph graph = g;
+        final Vertex v = graph.addVertex();
+        v.setProperty("integer", 33);
+        final Integer age = v.getValue("integer");
+        assertEquals(Integer.valueOf(33), age);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_BOOLEAN_VALUES)
+    public void shouldAutotypeBooleanProperties() {
+        final Graph graph = g;
+        final Vertex v = graph.addVertex();
+        v.setProperty("boolean", true);
+        final Boolean best = v.getValue("boolean");
+        assertEquals(best, Boolean.valueOf(true));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_DOUBLE_VALUES)
+    public void shouldAutotypeDoubleProperties() {
+        final Graph graph = g;
+        final Vertex v = graph.addVertex();
+        v.setProperty("double", 0.1d);
+        final Double best = v.getValue("double");
+        assertEquals(best, Double.valueOf(0.1d));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_LONG_VALUES)
+    public void shouldAutotypeLongProperties() {
+        final Graph graph = g;
+        final Vertex v = graph.addVertex();
+        v.setProperty("long", 1l);
+        final Long best = v.getValue("long");
+        assertEquals(best, Long.valueOf(1l));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    public void shouldAutotypeFloatProperties() {
+        final Graph graph = g;
+        final Vertex v = graph.addVertex();
+        v.setProperty("float", 0.1f);
+        final Float best = v.getValue("float");
+        assertEquals(best, Float.valueOf(0.1f));
     }
 }
