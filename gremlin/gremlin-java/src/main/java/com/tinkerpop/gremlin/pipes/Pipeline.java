@@ -282,6 +282,32 @@ public interface Pipeline<S, E> extends Iterator<E> {
         }));
     }
 
+    public default Pipeline<S, E> jump(final String as) {
+        return this.jump(as, h -> true, h -> false);
+    }
+
+    public default Pipeline<S, E> jump(final String as, final Predicate<Holder<E>> ifPredicate) {
+        return this.jump(as, ifPredicate, h -> false);
+    }
+
+    public default Pipeline<S, E> jump(final String as, final Predicate<Holder<E>> ifPredicate, final Predicate<Holder<E>> emitPredicate) {
+        final Pipe<?, ?> jumpPipe = GremlinHelper.asExists(as, this) ? GremlinHelper.getAs(as, this) : null;
+        return this.addPipe(new MapPipe<E, Object>(this, holder -> {
+            if (null != jumpPipe)
+                holder.incrLoops();
+            if (ifPredicate.test(holder)) {
+                holder.setFuture(as);
+                if (jumpPipe == null)
+                    GremlinHelper.getAs(as, getPipeline()).addStarts((Iterator) new SingleIterator<>(holder));
+                else
+                    jumpPipe.addStarts((Iterator) new SingleIterator<>(holder));
+                return emitPredicate.test(holder) ? holder.get() : Pipe.NO_OBJECT;
+            } else {
+                return holder.get();
+            }
+        }));
+    }
+
     public default Pipeline<S, E> loop(final String as, final Predicate<Holder<E>> whilePredicate) {
         return this.loop(as, whilePredicate, o -> false);
     }
@@ -349,9 +375,13 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return (P) this;
     }
 
-    public default void forEach(final Consumer<Pipe<?, ?>> consumer) {
-        for (int i = 0; i < this.getPipes().size(); i++) {
-            consumer.accept(this.getPipes().get(i));
+    public default void forEach(final Consumer<E> consumer) {
+        try {
+            while (true) {
+                consumer.accept(this.next());
+            }
+        } catch (final NoSuchElementException e) {
+
         }
     }
 }

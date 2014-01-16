@@ -46,6 +46,11 @@
     <inceptionYear>2009</inceptionYear>
     <dependencies>
         <dependency>
+            <groupId>com.tinkerpop.blueprints</groupId>
+            <artifactId>blueprints-tinkergraph</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.tinkerpop.gremlin</groupId>
             <artifactId>gremlin-java</artifactId>
             <version>${project.parent.version}</version>

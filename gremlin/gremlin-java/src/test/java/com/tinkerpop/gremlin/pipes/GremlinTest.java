@@ -123,6 +123,14 @@ public class GremlinTest {
         Gremlin.of(g).v(a.getId()).as("x").goTo("y", o -> true).out().out().path().as("y").sideEffect(System.out::println).iterate();
     }
 
+    @Test
+    public void testLoop2() {
+
+        TinkerGraph g = TinkerFactory.createClassic();
+        Gremlin.of(g).V().as("x").out().jump("x", o -> o.getLoops() < 2).path().forEach(System.out::println);
+        Gremlin.of(g).V().as("x").jump("y", o -> o.getLoops() > 1).out().jump("x").path().as("y").forEach(System.out::println);
+    }
+
     /*@Test
     public void testMultiStarts() {
         Graph graph = TinkerFactory.createClassic();
