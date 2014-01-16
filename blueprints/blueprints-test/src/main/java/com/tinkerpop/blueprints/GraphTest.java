@@ -264,18 +264,22 @@ public class GraphTest extends AbstractBlueprintsTest {
     }
 
     @Test
-    public void shouldEvaluateVertexEdgeLabels() {
+    public void shouldTraverseInOutFromVertexWithSingleEdgeLabelFilter() {
         final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
         final Graph graph = g;
 
         final Vertex a = graph.addVertex();
         final Vertex b = graph.addVertex();
         final Vertex c = graph.addVertex();
-        final Edge aFriendB = a.addEdge(graphProvider.convertLabel("friend"), b);
-        final Edge aFriendC = a.addEdge(graphProvider.convertLabel("friend"), c);
-        final Edge aHateC = a.addEdge(graphProvider.convertLabel("hate"), c);
-        final Edge cHateA = c.addEdge(graphProvider.convertLabel("hate"), a);
-        final Edge cHateB = c.addEdge(graphProvider.convertLabel("hate"), b);
+
+        final String labelFriend = graphProvider.convertLabel("friend");
+        final String labelHate = graphProvider.convertLabel("hate");
+
+        final Edge aFriendB = a.addEdge(labelFriend, b);
+        final Edge aFriendC = a.addEdge(labelFriend, c);
+        final Edge aHateC = a.addEdge(labelHate, c);
+        final Edge cHateA = c.addEdge(labelHate, a);
+        final Edge cHateB = c.addEdge(labelHate, b);
 
         List<Edge> results = StreamFactory.stream(a.query().direction(Direction.OUT).edges()).collect(Collectors.toList());
         assertEquals(3, results.size());
@@ -283,28 +287,67 @@ public class GraphTest extends AbstractBlueprintsTest {
         assertTrue(results.contains(aFriendC));
         assertTrue(results.contains(aHateC));
 
-        results = StreamFactory.stream(a.query().direction(Direction.OUT).labels(graphProvider.convertLabel("friend")).edges()).collect(Collectors.toList());
+        results = StreamFactory.stream(a.query().direction(Direction.OUT).labels(labelFriend).edges()).collect(Collectors.toList());
         assertEquals(2, results.size());
         assertTrue(results.contains(aFriendB));
         assertTrue(results.contains(aFriendC));
 
-        results = StreamFactory.stream(a.query().direction(Direction.OUT).labels(graphProvider.convertLabel("hate")).edges()).collect(Collectors.toList());
+        results = StreamFactory.stream(a.query().direction(Direction.OUT).labels(labelHate).edges()).collect(Collectors.toList());
         assertEquals(1, results.size());
         assertTrue(results.contains(aHateC));
 
-        results = StreamFactory.stream(a.query().direction(Direction.IN).labels(graphProvider.convertLabel("hate")).edges()).collect(Collectors.toList());
+        results = StreamFactory.stream(a.query().direction(Direction.IN).labels(labelHate).edges()).collect(Collectors.toList());
         assertEquals(1, results.size());
         assertTrue(results.contains(cHateA));
 
-        results = StreamFactory.stream(a.query().direction(Direction.IN).labels(graphProvider.convertLabel("friend")).edges()).collect(Collectors.toList());
+        results = StreamFactory.stream(a.query().direction(Direction.IN).labels(labelFriend).edges()).collect(Collectors.toList());
         assertEquals(0, results.size());
 
-        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(graphProvider.convertLabel("hate")).edges()).collect(Collectors.toList());
+        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(labelHate).edges()).collect(Collectors.toList());
         assertEquals(1, results.size());
         assertTrue(results.contains(cHateB));
 
-        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(graphProvider.convertLabel("friend")).edges()).collect(Collectors.toList());
+        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(labelFriend).edges()).collect(Collectors.toList());
         assertEquals(1, results.size());
         assertTrue(results.contains(aFriendB));
+    }
+
+    @Test
+    public void shouldTraverseInOutFromVertexWithMultipleEdgeLabelFilter() {
+        final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
+        final Graph graph = g;
+        final Vertex a = graph.addVertex();
+        final Vertex b = graph.addVertex();
+        final Vertex c = graph.addVertex();
+
+        final String labelFriend = graphProvider.convertLabel("friend");
+        final String labelHate = graphProvider.convertLabel("hate");
+
+        final Edge aFriendB = a.addEdge(labelFriend, b);
+        final Edge aFriendC = a.addEdge(labelFriend, c);
+        final Edge aHateC = a.addEdge(labelHate, c);
+        final Edge cHateA = c.addEdge(labelHate, a);
+        final Edge cHateB = c.addEdge(labelHate, b);
+
+        List<Edge> results = StreamFactory.stream(a.query().direction(Direction.OUT).labels(labelFriend, labelHate).edges()).collect(Collectors.toList());
+        assertEquals(results.size(), 3);
+        assertTrue(results.contains(aFriendB));
+        assertTrue(results.contains(aFriendC));
+        assertTrue(results.contains(aHateC));
+
+        results = StreamFactory.stream(a.query().direction(Direction.IN).labels(labelFriend, labelHate).edges()).collect(Collectors.toList());
+        //results = asList(a.getEdges(Direction.IN, graphTest.convertLabel("friend"), graphTest.convertLabel("hate")));
+        assertEquals(results.size(), 1);
+        assertTrue(results.contains(cHateA));
+
+        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(labelFriend, labelHate).edges()).collect(Collectors.toList());
+        //results = asList(b.getEdges(Direction.IN, graphTest.convertLabel("friend"), graphTest.convertLabel("hate")));
+        assertEquals(results.size(), 2);
+        assertTrue(results.contains(aFriendB));
+        assertTrue(results.contains(cHateB));
+
+        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(graphProvider.convertLabel("blah1"), graphProvider.convertLabel("blah2")).edges()).collect(Collectors.toList());
+        //results = asList(b.getEdges(Direction.IN, graphTest.convertLabel("blah"), graphTest.convertLabel("blah2"), graphTest.convertLabel("blah3")));
+        assertEquals(results.size(), 0);
     }
 }
