@@ -45,7 +45,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(v.getPropertyKeys().contains("name"));
         assertTrue(v.getPropertyKeys().contains("age"));
         assertFalse(v.getPropertyKeys().contains("location"));
-        BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
+        BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
 
         v.setProperty("name", "marko rodriguez");
         assertEquals(34, (int) v.getValue("age"));
@@ -57,7 +57,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(v.getPropertyKeys().contains("name"));
         assertTrue(v.getPropertyKeys().contains("age"));
         assertFalse(v.getPropertyKeys().contains("location"));
-        BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
+        BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
 
         v.setProperty("location", "santa fe");
         assertEquals(3, v.getProperties().size());
@@ -69,11 +69,11 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(v.getPropertyKeys().contains("age"));
         assertTrue(v.getPropertyKeys().contains("location"));
         v.getProperty("location").remove();
-        BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
+        BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
         assertEquals(2, v.getProperties().size());
         v.getProperties().values().stream().forEach(Property::remove);
         assertEquals(0, v.getProperties().size());
-        BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
+        BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
     }
 
     @Test

@@ -17,6 +17,7 @@ import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
@@ -57,9 +58,11 @@ public abstract class AbstractBlueprintsSuite extends Suite {
         return annotation.value();
     }
 
-    public static void assertVertexEdgeCounts(final Graph graph, final int expectedVertexCount, final int expectedEdgeCount) {
-        assertEquals(expectedVertexCount, StreamFactory.stream(graph.query().vertices()).count());
-        assertEquals(expectedEdgeCount, StreamFactory.stream(graph.query().edges()).count());
+    public static Consumer<Graph> assertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
+        return (g) -> {
+            assertEquals(expectedVertexCount, StreamFactory.stream(g.query().vertices()).count());
+            assertEquals(expectedEdgeCount, StreamFactory.stream(g.query().edges()).count());
+        };
     }
 
     /**

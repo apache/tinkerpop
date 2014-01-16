@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_PERSISTENCE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -73,41 +74,41 @@ public class GraphTest extends AbstractBlueprintsTest {
     @Test
     public void shouldProperlyCountVerticesAndEdgesOnAddRemove() {
         final Vertex v = g.addVertex();
-        BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0);
+        BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
         assertEquals(v, g.query().vertices().iterator().next());
         assertEquals(v.getId(), g.query().vertices().iterator().next().getId());
         assertEquals(v.getLabel(), g.query().vertices().iterator().next().getLabel());
         v.remove();
-        tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(graph, 0, 0));
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(0, 0));
         g.addVertex();
         g.addVertex();
-        tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(g, 2, 0));
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(2, 0));
         g.query().vertices().forEach(Vertex::remove);
-        tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(g, 0, 0));
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(0, 0));
 
         final String edgeLabel = BlueprintsStandardSuite.GraphManager.get().convertLabel("test");
         Vertex v1 = g.addVertex();
         Vertex v2 = g.addVertex();
         Edge e = v1.addEdge(edgeLabel, v2);
-        tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(g, 2, 1));
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(2, 1));
 
         // test removal of the edge itself
         e.remove();
-        tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(g, 2, 0));
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(2, 0));
 
         v1.addEdge(edgeLabel, v2);
-        tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(g, 2, 1));
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(2, 1));
 
         // test removal of the out vertex to remove the edge
         v1.remove();
-        tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0));
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0));
 
         // test removal of the in vertex to remove the edge
         v1 = g.addVertex();
         v1.addEdge(edgeLabel, v2);
-        tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(g, 2, 1));
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(2, 1));
         v2.remove();
-        tryCommit(g, graph-> BlueprintsStandardSuite.assertVertexEdgeCounts(g, 1, 0));
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0));
     }
 
     /**
@@ -122,7 +123,7 @@ public class GraphTest extends AbstractBlueprintsTest {
         final Random random = new Random();
 
         IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Property.Key.ID, i)));
-        tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, 0));
+        tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         IntStream.range(0, edgeCount).forEach(i -> {
             boolean created = false;
@@ -136,7 +137,7 @@ public class GraphTest extends AbstractBlueprintsTest {
             }
         });
 
-        tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, edgeCount));
+        tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, edgeCount));
 
         int counter = 0;
         for (Edge e : edges) {
@@ -144,7 +145,7 @@ public class GraphTest extends AbstractBlueprintsTest {
             e.remove();
 
             final int currentCounter = counter;
-            tryCommit(g, graph -> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, edgeCount - currentCounter));
+            tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, edgeCount - currentCounter));
         }
     }
 
@@ -158,7 +159,7 @@ public class GraphTest extends AbstractBlueprintsTest {
         final List<Edge> edges = new ArrayList<>();
 
         IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Property.Key.ID, i)));
-        tryCommit(g, graph -> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, 0));
+        tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         for (int i = 0; i < vertexCount; i = i + 2) {
             final Vertex a = vertices.get(i);
@@ -166,7 +167,7 @@ public class GraphTest extends AbstractBlueprintsTest {
             edges.add(a.addEdge(AbstractBlueprintsSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
         }
 
-        tryCommit(g, graph -> AbstractBlueprintsSuite.assertVertexEdgeCounts(g, vertexCount, vertexCount / 2));
+        tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, vertexCount / 2));
 
         int counter = 0;
         for (Vertex v : vertices) {
@@ -175,8 +176,8 @@ public class GraphTest extends AbstractBlueprintsTest {
 
             if ((counter + 1) % 2 == 0) {
                 final int currentCounter = counter;
-                tryCommit(g, graph-> AbstractBlueprintsSuite.assertVertexEdgeCounts(
-                        g, vertexCount - currentCounter, edges.size() - ((currentCounter + 1) / 2)));
+                tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(
+                        vertexCount - currentCounter, edges.size() - ((currentCounter + 1) / 2)));
             }
         }
     }
@@ -194,14 +195,14 @@ public class GraphTest extends AbstractBlueprintsTest {
         final Vertex c = graph.addVertex(Property.Key.ID, graphProvider.convertId("3"));
         final Vertex d = graph.addVertex(Property.Key.ID, graphProvider.convertId("4"));
 
-        tryCommit(graph, ig-> AbstractBlueprintsSuite.assertVertexEdgeCounts(ig, 4, 0));
+        tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(4, 0));
 
         final Edge e = a.addEdge(graphProvider.convertLabel("knows"), b);
         final Edge f = b.addEdge(graphProvider.convertLabel("knows"), c);
         final Edge g = c.addEdge(graphProvider.convertLabel("knows"), d);
         final Edge h = d.addEdge(graphProvider.convertLabel("knows"), a);
 
-        tryCommit(graph, ig-> AbstractBlueprintsSuite.assertVertexEdgeCounts(ig, 4, 4));
+        tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(4, 4));
 
         for (Vertex v : graph.query().vertices()) {
             assertEquals(1, v.query().direction(Direction.OUT).count());
@@ -392,10 +393,44 @@ public class GraphTest extends AbstractBlueprintsTest {
             totalVertices = totalVertices + (int) Math.pow(branchSize, i);
         }
 
-        final List<Vertex> vertices = StreamFactory.stream(graph.query().vertices()).collect(Collectors.toList());
-        assertEquals(totalVertices, vertices.size());
+        tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(totalVertices, totalVertices - 1));
+    }
 
-        final List<Edge> edges = StreamFactory.stream(graph.query().edges()).collect(Collectors.toList());
-        assertEquals(totalVertices - 1, edges.size());
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_PERSISTENCE)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES)
+    public void testGraphDataPersists() throws Exception {
+        final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
+        final Graph graph = g;
+
+        final Vertex v = graph.addVertex("name", "marko");
+        final Vertex u = graph.addVertex("name", "pavel");
+        final Edge e = v.addEdge(graphProvider.convertLabel("collaborator"), u, "location", "internet");
+        tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(2, 1));
+        graph.close();
+
+        /*
+        graph =
+            printPerformance(graph.toString(), 1, "graph loaded", this.stopWatch());
+            if (graph.getFeatures().supportsVertexIteration) {
+                assertEquals(count(graph.getVertices()), 2);
+                if (graph.getFeatures().supportsVertexProperties) {
+                    for (Vertex vertex : graph.getVertices()) {
+                        assertTrue(vertex.getProperty("name").equals("marko") || vertex.getProperty("name").equals("pavel"));
+                    }
+                }
+            }
+            if (graph.getFeatures().supportsEdgeIteration) {
+                assertEquals(count(graph.getEdges()), 1);
+                for (Edge edge : graph.getEdges()) {
+                    assertEquals(edge.getLabel(), graphTest.convertId("collaborator"));
+                    if (graph.getFeatures().supportsEdgeProperties)
+                        assertEquals(edge.getProperty("location"), "internet");
+                }
+            }
+
+        }
+        */
     }
 }
