@@ -18,7 +18,7 @@ public class RangeTest {
         assertTrue(true);
     }
 
-    public void test_g_v1_out_rangeX0_1X(Iterator<Vertex> pipe) {
+    public void test_g_v1_out_rangeX0_1X(final Iterator<Vertex> pipe) {
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -27,31 +27,31 @@ public class RangeTest {
         assertEquals(2, counter);
     }
 
-    public void test_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(Iterator<Vertex> pipe) {
+    public void test_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(final Iterator<Vertex> pipe) {
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
-            String name = pipe.next().getValue("name");
+            final String name = pipe.next().getValue("name");
             assertTrue(name.equals("lop") || name.equals("ripple"));
         }
         assertEquals(1, counter);
     }
 
-    public void test_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(Iterator<Vertex> pipe) {
+    public void test_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(final Iterator<Vertex> pipe) {
         this.test_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(pipe);
     }
 
-    public void test_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(Iterator<Vertex> pipe) {
+    public void test_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(final Iterator<Vertex> pipe) {
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
-            String name = pipe.next().getValue("name");
+            final String name = pipe.next().getValue("name");
             assertTrue(name.equals("marko") || name.equals("josh") || name.equals("peter"));
         }
         assertEquals(2, counter);
     }
 
-    public void test_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(Iterator<Vertex> pipe) {
+    public void test_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Iterator<Vertex> pipe) {
         this.test_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(pipe);
     }
 }
