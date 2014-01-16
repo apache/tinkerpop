@@ -231,6 +231,12 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new FilterPipe<Element>(this, e -> hasContainer.test(e.get())));
     }
 
+    public default Pipeline<S, E> interval(final String key, final Comparable startValue, final Comparable endValue) {
+        final HasContainer start = new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue);
+        final HasContainer end = new HasContainer(key, Compare.LESS_THAN, endValue);
+        return this.addPipe(new FilterPipe<Element>(this, e -> start.test(e.get()) && end.test(e.get())));
+    }
+
     public default Pipeline<S, E> range(final int low, final int high) {
         if (low != -1 && high != -1 && low > high) {
             throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + "]");
