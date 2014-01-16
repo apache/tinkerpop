@@ -57,9 +57,16 @@ public interface Strategy {
         }
 
         public Context(final Graph g, final T current, final Optional<Map<String,Object>> environment) {
-            this.g = Objects.requireNonNull(g);
-            this.current = Objects.requireNonNull(current);
-            this.environment = Objects.requireNonNull(environment).orElse(new HashMap<>());
+            if (null == g)
+                throw Graph.Exceptions.argumentCanNotBeNull("g");
+            if (null == current)
+                throw Graph.Exceptions.argumentCanNotBeNull("current");
+            if (null == environment)
+                throw Graph.Exceptions.argumentCanNotBeNull("environment");
+
+            this.g = g;
+            this.current = current;
+            this.environment = environment.orElse(new HashMap<>());
         }
 
         public T getCurrent() {
@@ -83,7 +90,8 @@ public interface Strategy {
 
         @Override
         public void set(final Optional<? extends GraphStrategy> strategy) {
-            Objects.requireNonNull(strategy);
+            if (null == strategy)
+                throw Graph.Exceptions.argumentCanNotBeNull("strategy");
             this.strategy = strategy;
         }
 
@@ -106,7 +114,8 @@ public interface Strategy {
 
         @Override
         public void set(final Optional<? extends GraphStrategy> strategy) {
-            Objects.requireNonNull(strategy);
+            if (null == strategy)
+                throw Graph.Exceptions.argumentCanNotBeNull("strategy");
             this.strategy.set(strategy);
         }
 
