@@ -33,7 +33,7 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
         for (final Pipeline p1 : this.pipelines) {
             final Pipe endPipe = GremlinHelper.getEnd(p1);
             final String endPipeName = endPipe.getAs();
-            if (!endPipeName.equals(Holder.NONE)) {
+            if (!endPipeName.equals(Holder.NO_FUTURE)) {
                 for (final Pipeline p2 : this.pipelines) {
                     final Pipe startPipe = GremlinHelper.getStart(p2);
                     if (endPipe.getAs().equals(startPipe.getAs()))

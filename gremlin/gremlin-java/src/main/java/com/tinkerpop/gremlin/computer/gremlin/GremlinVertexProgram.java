@@ -43,7 +43,7 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
         final Gremlin gremlin = graphMemory.<Supplier<Gremlin>>get(GREMLIN_PIPELINE).get();
         if (graphMemory.isInitialIteration()) {
 
-            final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ? new PathHolder<>(Holder.NONE, vertex) : new SimpleHolder<>(Holder.NONE, vertex);
+            final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ? new PathHolder<>(Holder.NO_FUTURE, vertex) : new SimpleHolder<>(Holder.NO_FUTURE, vertex);
             holder.setFuture(GremlinHelper.getStart(gremlin).getAs());
             if (graphMemory.<Boolean>get(TRACK_PATHS))
                 messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), (M) GremlinPathMessage.of(holder));

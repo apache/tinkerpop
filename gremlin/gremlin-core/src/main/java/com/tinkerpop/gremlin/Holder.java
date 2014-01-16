@@ -7,7 +7,7 @@ import java.io.Serializable;
  */
 public interface Holder<T> extends Serializable {
 
-    public static final String NONE = "none";
+    public static final String NO_FUTURE = "noFuture";
 
     public T get();
 

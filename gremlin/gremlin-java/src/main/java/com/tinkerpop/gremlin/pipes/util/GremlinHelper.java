@@ -29,13 +29,13 @@ public class GremlinHelper {
         for (int i = 0; i < pipeline.getPipes().size(); i++) {
             if (pipeline.getPipes().get(i) == pipe) {
                 if (i == pipeline.getPipes().size() - 1)
-                    return Holder.NONE;
+                    return Holder.NO_FUTURE;
                 else {
                     return ((Pipe) pipeline.getPipes().get(i + 1)).getAs();
                 }
             }
         }
-        return SimpleHolder.NONE;
+        return SimpleHolder.NO_FUTURE;
     }
 
     public static <S, E> Pipe<S, ?> getStart(final Pipeline<S, E> pipeline) {

@@ -297,7 +297,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
                 holder.incrLoops();
             if (ifPredicate.test(holder)) {
                 holder.setFuture(as);
-                if (jumpPipe == null)
+                if (null == jumpPipe)
                     GremlinHelper.getAs(as, getPipeline()).addStarts((Iterator) new SingleIterator<>(holder));
                 else
                     jumpPipe.addStarts((Iterator) new SingleIterator<>(holder));

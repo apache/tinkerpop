@@ -127,8 +127,8 @@ public class GremlinTest {
     public void testLoop2() {
 
         TinkerGraph g = TinkerFactory.createClassic();
-        Gremlin.of(g).V().as("x").out().jump("x", o -> o.getLoops() < 2).path().forEach(System.out::println);
-        Gremlin.of(g).V().as("x").jump("y", o -> o.getLoops() > 1).out().jump("x").path().as("y").forEach(System.out::println);
+        Gremlin.of(g).V().as("x").out().jump("x", o -> o.getLoops() < 2).property("name").forEach(System.out::println);
+        Gremlin.of(g).V().as("x").jump("y", o -> o.getLoops() > 1).out().jump("x").property("name").as("y").forEach(System.out::println);
     }
 
     /*@Test

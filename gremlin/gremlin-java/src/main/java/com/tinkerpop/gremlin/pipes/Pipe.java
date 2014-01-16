@@ -10,15 +10,7 @@ import java.util.Iterator;
  */
 public interface Pipe<S, E> extends Iterator<Holder<E>>, Serializable {
 
-    public static final Object NO_OBJECT = new Object() {
-        public int hashCode() {
-            return Integer.MIN_VALUE;
-        }
-
-        public boolean equals(final Object object) {
-            return object.hashCode() == this.hashCode();
-        }
-    };
+    public static final NoObject NO_OBJECT = new NoObject();
 
     public void addStarts(final Iterator<Holder<S>> iterator);
 
@@ -27,4 +19,11 @@ public interface Pipe<S, E> extends Iterator<Holder<E>>, Serializable {
     public String getAs();
 
     public void setAs(String as);
+
+    public static final class NoObject {
+
+        public boolean equals(final Object object) {
+            return object instanceof NoObject;
+        }
+    }
 }

@@ -9,7 +9,7 @@ public class SimpleHolder<T> implements Holder<T> {
     private static final String PATH_ERROR_MESSAGE = "Path tracking is not supported by this Holder: " + SimpleHolder.class;
 
     protected T t;
-    protected String future = NONE;
+    protected String future = NO_FUTURE;
     protected int loops = 0;
 
     public SimpleHolder(final T t) {
@@ -29,7 +29,7 @@ public class SimpleHolder<T> implements Holder<T> {
     }
 
     public boolean isDone() {
-        return this.future.equals(NONE);
+        return this.future.equals(NO_FUTURE);
     }
 
     public String getFuture() {
@@ -59,18 +59,21 @@ public class SimpleHolder<T> implements Holder<T> {
     public <R> SimpleHolder<R> makeChild(final String as, final R r) {
         final SimpleHolder<R> holder = new SimpleHolder<>(r);
         holder.future = this.future;
+        holder.loops = this.loops;
         return holder;
     }
 
     public SimpleHolder<T> makeSibling() {
         final SimpleHolder<T> holder = new SimpleHolder<>(this.t);
         holder.future = this.future;
+        holder.loops = this.loops;
         return holder;
     }
 
     public SimpleHolder<T> makeSibling(final String as) {
         final SimpleHolder<T> holder = new SimpleHolder<>(this.t);
         holder.future = this.future;
+        holder.loops = this.loops;
         return holder;
     }
 
