@@ -26,20 +26,16 @@ public class ComplianceTest {
 
         // get the test methods from base and validate that they are somehow implemented in the parent class
         // and have a junit @Test annotation.
-        assertTrue("Ensure that all test methods from the base class are implemented and that the @Test annotation is appended to each.",
-                    Stream.of(gremlinTestBaseClass.getDeclaredMethods())
-                            .filter(m -> m.getName().startsWith("test"))
-                            .map(m -> {
-                                try {
-                                    return testClass.getDeclaredMethod(m.getName()).getAnnotation(Test.class) != null;
-                                } catch (NoSuchMethodException nsme) {
-                                    fail(String.format("Base test method from gremlin-test [%s] not found in test implementation %s",
-                                            m.getName(), testClass));
-
-                                    // guess this won't return b/c of above assertion, but something needs to return from
-                                    // the clsoure for this to compile.
-                                    return false;
-                                }
-                            }).allMatch(b -> b));
+        assertTrue(Stream.of(gremlinTestBaseClass.getDeclaredMethods())
+                .map(m -> {
+                    try {
+                        assertNotNull(testClass.getDeclaredMethod(m.getName()).getAnnotation(Test.class));
+                        return true;
+                    } catch (final NoSuchMethodException e) {
+                        fail(String.format("Base test method from gremlin-test [%s] not found in test implementation %s",
+                                m.getName(), testClass));
+                        return false;
+                    }
+                }).reduce(true, (a, b) -> a && b));
     }
 }
