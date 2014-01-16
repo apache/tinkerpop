@@ -400,7 +400,7 @@ public class GraphTest extends AbstractBlueprintsTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_PERSISTENCE)
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES)
-    public void testGraphDataPersists() throws Exception {
+    public void shouldPersistDataOnClose() throws Exception {
         final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
         final Graph graph = g;
 
