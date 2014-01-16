@@ -1,31 +1,45 @@
 package com.tinkerpop.gremlin.test;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.stream.Stream;
+
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ComplianceTest extends TestCase {
+public class ComplianceTest {
 
+    @Test
     public void testCompliance() {
         assertTrue(true);
     }
 
     public static void testCompliance(final Class testClass) {
-        Set<String> methodNames = new HashSet<String>();
-        for (Method method : testClass.getMethods()) {
-            if (method.getDeclaringClass().equals(testClass) && method.getName().startsWith("test")) {
-                methodNames.add(method.getName());
-            }
-        }
-        for (Method method : testClass.getMethods()) {
-            if (method.getName().startsWith("test")) {
-                assertTrue(methodNames.contains(method.getName()));
-            }
-        }
+        // get the base class from gremlin-test
+        final Class gremlinTestBaseClass = testClass.getSuperclass();
+        assertNotNull(gremlinTestBaseClass);
+
+        // get the test methods from base and validate that they are somehow implemented in the parent class
+        // and have a junit @Test annotation.
+        assertTrue("Ensure that all test methods from the base class are implemented and that the @Test annotation is appended to each.",
+                    Stream.of(gremlinTestBaseClass.getDeclaredMethods())
+                            .filter(m -> m.getName().startsWith("test"))
+                            .map(m -> {
+                                try {
+                                    return testClass.getDeclaredMethod(m.getName()).getAnnotation(Test.class) != null;
+                                } catch (NoSuchMethodException nsme) {
+                                    fail(String.format("Base test method from gremlin-test [%s] not found in test implementation %s",
+                                            m.getName(), testClass));
+
+                                    // guess this won't return b/c of above assertion, but something needs to return from
+                                    // the clsoure for this to compile.
+                                    return false;
+                                }
+                            }).allMatch(b -> b));
     }
 }

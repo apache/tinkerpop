@@ -8,10 +8,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class BackTest extends TestCase {
+public class BackTest {
 
     public void testCompliance() {
         assertTrue(true);
@@ -42,7 +47,7 @@ public class BackTest extends TestCase {
         Edge edge = pipe.next();
         assertEquals("knows", edge.getLabel());
         assertEquals("7", edge.getId());
-        assertEquals(0.5f, edge.<Float>getValue("weight"));
+        assertEquals(0.5f, edge.<Float>getValue("weight"), 0.0001f);
         assertFalse(pipe.hasNext());
     }
 
