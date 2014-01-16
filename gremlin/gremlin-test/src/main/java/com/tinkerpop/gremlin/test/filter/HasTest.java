@@ -23,33 +23,33 @@ public class HasTest {
         assertTrue(true);
     }
 
-    public void test_g_V_hasXname_markoX(Iterator<Vertex> pipe) {
-        assertEquals("marko", pipe.next().getValue("name"));
+    public void test_g_V_hasXname_markoX(final Iterator<Vertex> pipe) {
+        assertEquals("marko", pipe.next().<String>getValue("name"));
         assertFalse(pipe.hasNext());
     }
 
-    public void test_g_V_hasXname_blahX(Iterator<Vertex> pipe) {
+    public void test_g_V_hasXname_blahX(final Iterator<Vertex> pipe) {
         assertFalse(pipe.hasNext());
     }
 
-    public void test_g_V_hasXage_gt_30X(Iterator<Vertex> pipe) {
+    public void test_g_V_hasXage_gt_30X(final Iterator<Vertex> pipe) {
         final List<Vertex> list = StreamFactory.stream(pipe).collect(Collectors.toList());
-        assertEquals(list.size(), 2);
+        assertEquals(2, list.size());
         for (final Vertex v : list) {
             assertTrue(v.<Integer>getValue("age") > 30);
         }
     }
 
-    public void test_g_v1_out_hasXid_2X(Iterator<Vertex> pipe) {
+    public void test_g_v1_out_hasXid_2X(final Iterator<Vertex> pipe) {
         assertTrue(pipe.hasNext());
         assertEquals("2", pipe.next().getId().toString());
     }
 
-    public void test_g_V_hasXblahX(Iterator<Vertex> pipe) {
+    public void test_g_V_hasXblahX(final Iterator<Vertex> pipe) {
         assertFalse(pipe.hasNext());
     }
 
-    public void test_g_E_hasXlabelXknowsX(Iterator<Edge> pipe) {
+    public void test_g_E_hasXlabelXknowsX(final Iterator<Edge> pipe) {
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -58,7 +58,7 @@ public class HasTest {
         assertEquals(2, counter);
     }
 
-    public void test_g_E_hasXlabelXknows_createdX(Iterator<Edge> pipe) {
+    public void test_g_E_hasXlabelXknows_createdX(final Iterator<Edge> pipe) {
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
