@@ -336,18 +336,15 @@ public class GraphTest extends AbstractBlueprintsTest {
         assertTrue(results.contains(aHateC));
 
         results = StreamFactory.stream(a.query().direction(Direction.IN).labels(labelFriend, labelHate).edges()).collect(Collectors.toList());
-        //results = asList(a.getEdges(Direction.IN, graphTest.convertLabel("friend"), graphTest.convertLabel("hate")));
         assertEquals(results.size(), 1);
         assertTrue(results.contains(cHateA));
 
         results = StreamFactory.stream(b.query().direction(Direction.IN).labels(labelFriend, labelHate).edges()).collect(Collectors.toList());
-        //results = asList(b.getEdges(Direction.IN, graphTest.convertLabel("friend"), graphTest.convertLabel("hate")));
         assertEquals(results.size(), 2);
         assertTrue(results.contains(aFriendB));
         assertTrue(results.contains(cHateB));
 
         results = StreamFactory.stream(b.query().direction(Direction.IN).labels(graphProvider.convertLabel("blah1"), graphProvider.convertLabel("blah2")).edges()).collect(Collectors.toList());
-        //results = asList(b.getEdges(Direction.IN, graphTest.convertLabel("blah"), graphTest.convertLabel("blah2"), graphTest.convertLabel("blah3")));
         assertEquals(results.size(), 0);
     }
 }
