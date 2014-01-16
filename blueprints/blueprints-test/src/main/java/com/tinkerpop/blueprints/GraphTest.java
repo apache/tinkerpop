@@ -398,39 +398,39 @@ public class GraphTest extends AbstractBlueprintsTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_PERSISTENCE)
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES)
     public void shouldPersistDataOnClose() throws Exception {
         final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
         final Graph graph = g;
 
-        final Vertex v = graph.addVertex("name", "marko");
-        final Vertex u = graph.addVertex("name", "pavel");
-        final Edge e = v.addEdge(graphProvider.convertLabel("collaborator"), u, "location", "internet");
+        final Vertex v = graph.addVertex();
+        final Vertex u = graph.addVertex();
+        if (graph.getFeatures().edge().properties().supportsStringValues()) {
+            v.setProperty("name", "marko");
+            u.setProperty("name", "pavel");
+        }
+
+        final Edge e = v.addEdge(graphProvider.convertLabel("collaborator"), u);
+        if (graph.getFeatures().edge().properties().supportsStringValues())
+            e.setProperty("location", "internet");
+
         tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(2, 1));
         graph.close();
 
-        /*
-        graph =
-            printPerformance(graph.toString(), 1, "graph loaded", this.stopWatch());
-            if (graph.getFeatures().supportsVertexIteration) {
-                assertEquals(count(graph.getVertices()), 2);
-                if (graph.getFeatures().supportsVertexProperties) {
-                    for (Vertex vertex : graph.getVertices()) {
-                        assertTrue(vertex.getProperty("name").equals("marko") || vertex.getProperty("name").equals("pavel"));
-                    }
-                }
-            }
-            if (graph.getFeatures().supportsEdgeIteration) {
-                assertEquals(count(graph.getEdges()), 1);
-                for (Edge edge : graph.getEdges()) {
-                    assertEquals(edge.getLabel(), graphTest.convertId("collaborator"));
-                    if (graph.getFeatures().supportsEdgeProperties)
-                        assertEquals(edge.getProperty("location"), "internet");
-                }
-            }
+        final Graph reopenedGraph = graphProvider.newTestGraph();
+        AbstractBlueprintsSuite.assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
 
+        if (graph.getFeatures().vertex().properties().supportsStringValues()) {
+            for (Vertex vertex : graph.query().vertices()) {
+                assertTrue(vertex.getProperty("name").get().equals("marko") || vertex.getProperty("name").get().equals("pavel"));
+            }
         }
-        */
+
+        for (Edge edge : graph.query().edges()) {
+            assertEquals(graphProvider.convertId("collaborator"), edge.getLabel());
+            if (graph.getFeatures().edge().properties().supportsStringValues())
+                assertEquals("internet", edge.getProperty("location").get());
+        }
+
+        reopenedGraph.close();
     }
 }

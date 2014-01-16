@@ -72,6 +72,14 @@ public abstract class AbstractBlueprintsSuite extends Suite {
     public static interface GraphProvider {
 
         /**
+         * Creates a new {@link Graph} instance using the default {@link Configuration} from
+         * {@link #newGraphConfiguration()}.
+         */
+        default public Graph newTestGraph() {
+            return newTestGraph(newGraphConfiguration());
+        }
+
+        /**
          * Creates a new Graph instance from the Configuration object using GraphFactory.
          */
         default public Graph newTestGraph(final Configuration config) {
