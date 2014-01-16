@@ -17,7 +17,7 @@ public class RangeTest {
         assertTrue(true);
     }
 
-    public void test_g_v1_out_rangeX0_1X(final Iterator<Vertex> pipe) {
+    public void g_v1_out_rangeX0_1X(final Iterator<Vertex> pipe) {
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -26,7 +26,7 @@ public class RangeTest {
         assertEquals(2, counter);
     }
 
-    public void test_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(final Iterator<Vertex> pipe) {
+    public void g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(final Iterator<Vertex> pipe) {
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -36,11 +36,11 @@ public class RangeTest {
         assertEquals(1, counter);
     }
 
-    public void test_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(final Iterator<Vertex> pipe) {
-        this.test_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(pipe);
+    public void g_v1_outXknowsX_outXcreatedX_rangeX0_0X(final Iterator<Vertex> pipe) {
+        this.g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(pipe);
     }
 
-    public void test_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(final Iterator<Vertex> pipe) {
+    public void g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(final Iterator<Vertex> pipe) {
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -50,7 +50,7 @@ public class RangeTest {
         assertEquals(2, counter);
     }
 
-    public void test_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Iterator<Vertex> pipe) {
-        this.test_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(pipe);
+    public void g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Iterator<Vertex> pipe) {
+        this.g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(pipe);
     }
 }

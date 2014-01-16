@@ -21,20 +21,20 @@ public class PathTest extends com.tinkerpop.gremlin.test.map.PathTest {
     }
 
     @Test
-    public void test_g_v1_propertyXnameX_path() {
-        super.test_g_v1_propertyXnameX_path(Gremlin.of(g).v(1).value("name").path());
+    public void g_v1_propertyXnameX_path() {
+        super.g_v1_propertyXnameX_path(Gremlin.of(g).v(1).value("name").path());
     }
 
     @Test
-    public void test_g_v1_out_pathXage__nameX() {
-        super.test_g_v1_out_pathXage__nameX(
+    public void g_v1_out_pathXage__nameX() {
+        super.g_v1_out_pathXage__nameX(
                 Gremlin.of(g).v(1).out().path(v -> ((Vertex) v).getValue("age"), v -> ((Vertex) v).getValue("name")));
 
     }
 
     @Test
-    public void test_g_V_out_loopX1__loops_lt_3X_pathXit__name__langX() {
-        super.test_g_V_out_loopX1__loops_lt_3X_pathXit__name__langX(
+    public void g_V_out_loopX1__loops_lt_3X_pathXit__name__langX() {
+        super.g_V_out_loopX1__loops_lt_3X_pathXit__name__langX(
                 Gremlin.of(g).V().as("x").out()
                         .loop("x", o -> o.getLoops() < 2)
                         .path(v -> v, v -> ((Vertex) v).getValue("name"), v -> ((Vertex) v).getValue("lang")));

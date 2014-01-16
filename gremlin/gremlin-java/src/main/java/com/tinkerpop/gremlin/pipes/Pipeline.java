@@ -166,6 +166,14 @@ public interface Pipeline<S, E> extends Iterator<E> {
         }));
     }
 
+    public default <E2> Pipeline<S, E2> unroll() {
+        return this.addPipe(new FlatMapPipe<List, Object>(this, l -> l.get().iterator()));
+    }
+
+    /*public default <E2> Pipeline<S, E2> rollup() {
+        return this.addPipe(new Map<Object, List>(this, o -> o);
+    }*/
+
     ///////////////////// FILTER STEPS /////////////////////
 
     public default Pipeline<S, E> filter(final Predicate<Holder<E>> predicate) {

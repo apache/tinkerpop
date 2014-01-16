@@ -20,23 +20,23 @@ public class BackTest extends com.tinkerpop.gremlin.test.map.BackTest {
     }
 
     @Test
-    public void test_g_v1_asXhereX_out_backXhereX() {
-        super.test_g_v1_asXhereX_out_backXhereX(Gremlin.of(g).v(1).as("here").out().back("here"));
+    public void g_v1_asXhereX_out_backXhereX() {
+        super.g_v1_asXhereX_out_backXhereX(Gremlin.of(g).v(1).as("here").out().back("here"));
     }
 
     @Test
-    public void test_g_v4_out_asXhereX_hasXlang_javaX_backXhereX() {
-        super.test_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(Gremlin.of(g).v(4).out().as("here").has("lang", "java").back("here"));
+    public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX() {
+        super.g_v4_out_asXhereX_hasXlang_javaX_backXhereX(Gremlin.of(g).v(4).out().as("here").has("lang", "java").back("here"));
     }
 
     @Test
-    public void test_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX() {
-        super.test_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(Gremlin.of(g).v(4).out().as("here").has("lang", "java").back("here").<String>value("name"));
+    public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX() {
+        super.g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(Gremlin.of(g).v(4).out().as("here").has("lang", "java").back("here").<String>value("name"));
     }
 
     @Test
-    public void test_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX() {
-        super.test_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(Gremlin.of(g).v(1).outE().as("here").inV().has("name", "vadas").back("here"));
+    public void g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX() {
+        super.g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(Gremlin.of(g).v(1).outE().as("here").inV().has("name", "vadas").back("here"));
     }
 
 }
