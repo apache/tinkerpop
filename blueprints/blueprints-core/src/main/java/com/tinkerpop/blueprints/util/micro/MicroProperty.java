@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints.util.micro;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.ElementHelper;
@@ -19,6 +20,9 @@ public class MicroProperty implements Property {
     private final MicroElement element;
 
     public MicroProperty(final Property property) {
+        if (null == property)
+            throw Graph.Exceptions.argumentCanNotBeNull("property");
+
         this.key = property.getKey();
         this.value = property.get();
         this.element = property.getElement() instanceof Vertex ?

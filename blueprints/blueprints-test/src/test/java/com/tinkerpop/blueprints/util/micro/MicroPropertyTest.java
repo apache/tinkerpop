@@ -33,6 +33,11 @@ public class MicroPropertyTest {
         this.mp = new MicroProperty(p);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotConstructWithNullProperty() {
+        new MicroProperty(null);
+    }
+
     @Test
     public void shouldConstructMicroPropertyWithPropertyFromVertex() {
         assertEquals("k", mp.getKey());
