@@ -19,11 +19,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
@@ -38,6 +40,10 @@ import java.util.stream.Stream;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Pipeline<S, E> extends Iterator<E> {
+
+    public <T> Optional<T> get(final String variable);
+
+    public <T> void put(final String variable, T t);
 
     public Pipeline<Vertex, Vertex> V();
 
@@ -210,6 +216,11 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new FilterPipe<E>(this, o -> set.add(uniqueFunction.apply(o))));
     }
 
+    public default Pipeline<S, E> except(final String variable) {
+        final Collection<E> collection = this.<Collection<E>>get(variable).get();
+        return this.addPipe(new FilterPipe<E>(this, o -> !collection.contains(o.get())));
+    }
+
     public default Pipeline<S, E> has(final String key) {
         return this.addPipe(new FilterPipe<Element>(this, e -> e.get().getProperty(key).isPresent()));
     }
@@ -264,6 +275,24 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new FilterPipe<E>(this, o -> {
             consumer.accept(o);
             return true;
+        }));
+    }
+
+    public default Pipeline<S, E> aggregate(final String variable) {
+        final Set<E> set = this.<Set<E>>get(variable).orElse(new HashSet<>());
+        this.put(variable, set);
+        final List<E> list = new ArrayList<>();
+        final String pipeName = GremlinHelper.getEnd(this).getAs();
+        return this.addPipe(new FlatMapPipe<E, E>(this, o -> {
+            set.add(o.get());
+            list.add(o.get());
+            while (GremlinHelper.getAs(pipeName, this).hasNext()) {
+                E e = (E) GremlinHelper.getAs(pipeName, this).next().get();
+                set.add(e);
+                list.add(e);
+            }
+
+            return list.iterator();
         }));
     }
 

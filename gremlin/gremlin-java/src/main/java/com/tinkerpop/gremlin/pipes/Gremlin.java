@@ -8,8 +8,10 @@ import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -18,6 +20,7 @@ import java.util.Optional;
  */
 public class Gremlin<S, E> implements Pipeline<S, E> {
 
+    private final Map<String, Object> variables = new HashMap<>();
     private final List<Pipe<?, ?>> pipes = new ArrayList<>();
     private Graph graph = null;
     private boolean trackPaths;
@@ -38,6 +41,14 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
 
     public static Gremlin<?, ?> of(final Graph graph) {
         return new Gremlin(graph);
+    }
+
+    public <T> void put(final String variable, final T t) {
+        this.variables.put(variable, t);
+    }
+
+    public <T> Optional<T> get(final String variable) {
+        return Optional.ofNullable((T) this.variables.get(variable));
     }
 
     public Gremlin<Vertex, Vertex> V() {

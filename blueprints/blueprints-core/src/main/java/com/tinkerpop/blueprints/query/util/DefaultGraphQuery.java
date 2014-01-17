@@ -1,13 +1,13 @@
 package com.tinkerpop.blueprints.query.util;
 
-import com.tinkerpop.blueprints.Compare;
+import com.tinkerpop.blueprints.Contains;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
 
+import java.util.Arrays;
 import java.util.function.BiPredicate;
-import java.util.stream.Stream;
 
 /**
  * For those graph engines that do not support the low-level querying of the vertices or edges, then
@@ -21,9 +21,7 @@ import java.util.stream.Stream;
 public abstract class DefaultGraphQuery extends DefaultQuery implements GraphQuery {
 
     public GraphQuery ids(final Object... ids) {
-        Stream.of(ids).forEach(id -> {
-            this.hasContainers.add(new HasContainer(Property.Key.ID.toString(), Compare.EQUAL, id));
-        });
+        this.hasContainers.add(new HasContainer(Property.Key.ID, Contains.IN, Arrays.asList(ids)));
         return this;
     }
 

@@ -131,7 +131,12 @@ public class GremlinTest {
     @Test
     public void testValues() {
         Graph g = TinkerFactory.createClassic();
-        Gremlin.of(g).V().values("name","age","label","id").forEach(System.out::println);
+        //Gremlin.of(g).V().values("name","age","label","id").forEach(System.out::println);
+        System.out.println(g.query().ids(1,2,3).vertices());
+        Pipeline gremlin = Gremlin.of(g).V().out("created").aggregate("x").in("created").has("name","marko").out("created").except("x");
+        gremlin.forEach(System.out::println);
+        System.out.println(gremlin.get("x").get());
+
 
     }
 
