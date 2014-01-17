@@ -116,6 +116,11 @@ public class ElementHelperTest {
         assertFalse(ElementHelper.getIdValue("test", 321, "xyz", 123l, "testagain", "that").isPresent());
     }
 
+    @Test(expected = NullPointerException.class)
+    public void shouldNotFindAnIdValueBecauseItIsNull() {
+        ElementHelper.getIdValue("test", 321, Property.Key.ID, null, "testagain", "that");
+    }
+
     @Test
     public void shouldFindTheLabelValueAlone() {
         assertEquals("friend", ElementHelper.getLabelValue(Property.Key.LABEL, "friend").get());
@@ -127,13 +132,18 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldNotFindAnLabelValue() {
+    public void shouldNotFindTheLabelValue() {
         assertFalse(ElementHelper.getLabelValue("test", 321, "xyz", "friend", "testagain", "that").isPresent());
     }
 
     @Test(expected = ClassCastException.class)
-    public void shouldErrorIfLabelIsNotString() {
-        assertFalse(ElementHelper.getLabelValue("test", 321, Property.Key.LABEL, 4545, "testagain", "that").isPresent());
+    public void shouldNotFindTheLabelBecauseItIsNotString() {
+        ElementHelper.getLabelValue("test", 321, Property.Key.LABEL, 4545, "testagain", "that");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void shouldNotFindTheLabelBecauseItIsNull() {
+        ElementHelper.getLabelValue("test", 321, Property.Key.LABEL, null, "testagain", "that");
     }
 
     @Test

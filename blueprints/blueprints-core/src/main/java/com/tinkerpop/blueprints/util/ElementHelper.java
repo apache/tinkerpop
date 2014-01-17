@@ -60,6 +60,7 @@ public class ElementHelper {
      *
      * @param keyValues a list of key/value pairs
      * @return the value associated with {@link Property.Key#ID}
+     * @throws NullPointerException if the value for the {@link Property.Key#ID} key is {@code null}
      */
     public static Optional<Object> getIdValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
@@ -75,6 +76,7 @@ public class ElementHelper {
      * @param keyValues a list of key/value pairs
      * @return the value associated with {@link Property.Key#LABEL}
      * @throws ClassCastException if the value of the label is not a {@link String}
+     * @throws NullPointerException if the value for the {@link Property.Key#LABEL} key is {@code null}
      */
     public static Optional<String> getLabelValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
