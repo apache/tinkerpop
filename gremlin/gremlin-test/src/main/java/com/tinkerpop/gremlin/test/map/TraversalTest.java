@@ -70,21 +70,21 @@ public class TraversalTest {
         assertEquals(3, vertices.size());
     }
 
-    /*public void g_v1_outX1_knowsX_name(final Iterator<String> pipe) {
+    public void g_v1_outX1_knowsX_name(final Iterator<String> pipe) {
         final String name = pipe.next();
         assertTrue(name.equals("vadas") || name.equals("josh"));
         assertFalse(pipe.hasNext());
-    }*/
+    }
 
-    /*public void g_V_bothX1_createdX_name(final Iterator<String> pipe) {
+    public void g_V_bothX1_createdX_name(final Iterator<String> pipe) {
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
             final String name = pipe.next();
             assertTrue(name.equals("marko") || name.equals("lop") || name.equals("josh") || name.equals("ripple") || name.equals("peter"));
         }
-        assertEquals(counter, 5);
-    }*/
+        assertEquals(5,counter);
+    }
 
     // EDGE ADJACENCY
 
@@ -134,22 +134,22 @@ public class TraversalTest {
         assertEquals(3, edges.size());
     }
 
-    /*public void g_v4_bothEX1_createdX(final Iterator<Edge> pipe) {
+    public void g_v4_bothEX1_createdX(final Iterator<Edge> pipe) {
         final Edge edge = pipe.next();
-        assertEquals(edge.getLabel(), "created");
+        assertEquals("created", edge.getLabel());
         assertTrue(edge.getValue("weight").equals(1.0f) || edge.getValue("weight").equals(0.4f));
         assertFalse(pipe.hasNext());
-    }*/
+    }
 
-    /*public void g_V_inEX2_knowsX_outV_name(final Iterator<String> pipe) {
+    public void g_V_inEX2_knowsX_outV_name(final Iterator<String> pipe) {
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
             assertEquals(pipe.next(), "marko");
         }
         assertFalse(pipe.hasNext());
-        assertEquals(counter, 2);
-    }*/
+        assertEquals(2, counter);
+    }
 
     // EDGE/VERTEX ADJACENCY
 

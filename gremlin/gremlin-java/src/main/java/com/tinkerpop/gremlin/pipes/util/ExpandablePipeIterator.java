@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.pipes.util;
 
-import com.tinkerpop.gremlin.pipes.Pipe;
+import com.tinkerpop.gremlin.Pipe;
 
 import java.util.Iterator;
 import java.util.LinkedList;

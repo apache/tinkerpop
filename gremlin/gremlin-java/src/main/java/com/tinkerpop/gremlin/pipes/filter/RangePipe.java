@@ -1,7 +1,7 @@
-package com.tinkerpop.gremlin.pipes.named;
+package com.tinkerpop.gremlin.pipes.filter;
 
-import com.tinkerpop.gremlin.pipes.FilterPipe;
-import com.tinkerpop.gremlin.pipes.Pipeline;
+import com.tinkerpop.gremlin.FilterPipe;
+import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.pipes.util.FastNoSuchElementException;
 
 import java.util.concurrent.atomic.AtomicInteger;

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.pipes;
+package com.tinkerpop.gremlin;
 
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Direction;
@@ -7,12 +7,11 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.HasContainer;
-import com.tinkerpop.gremlin.Holder;
-import com.tinkerpop.gremlin.Path;
-import com.tinkerpop.gremlin.T;
-import com.tinkerpop.gremlin.pipes.named.HasPipe;
-import com.tinkerpop.gremlin.pipes.named.RangePipe;
-import com.tinkerpop.gremlin.pipes.named.VertexVertexPipe;
+import com.tinkerpop.gremlin.pipes.filter.HasPipe;
+import com.tinkerpop.gremlin.pipes.filter.RangePipe;
+import com.tinkerpop.gremlin.pipes.map.EdgeVertexPipe;
+import com.tinkerpop.gremlin.pipes.map.VertexEdgePipe;
+import com.tinkerpop.gremlin.pipes.map.VertexVertexPipe;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
@@ -20,6 +19,7 @@ import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,36 +79,61 @@ public interface Pipeline<S, E> extends Iterator<E> {
     /*public default Pipeline<S, Vertex> out(final String... labels) {
         return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).vertices().iterator()));
     }*/
+
+    public default Pipeline<S, Vertex> out(final int branchFactor, final String... labels) {
+        return this.addPipe(new VertexVertexPipe(this, Direction.OUT, branchFactor, labels));
+    }
+
     public default Pipeline<S, Vertex> out(final String... labels) {
-        return this.addPipe(new VertexVertexPipe(this, Direction.OUT, Integer.MAX_VALUE, labels));
+        return this.out(Integer.MAX_VALUE, labels);
+    }
+
+    public default Pipeline<S, Vertex> in(final int branchFactor, final String... labels) {
+        return this.addPipe(new VertexVertexPipe(this, Direction.IN, branchFactor, labels));
     }
 
     public default Pipeline<S, Vertex> in(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.IN).labels(labels).vertices().iterator()));
+        return this.in(Integer.MAX_VALUE, labels);
+    }
+
+    public default Pipeline<S, Vertex> both(final int branchFactor, final String... labels) {
+        return this.addPipe(new VertexVertexPipe(this, Direction.BOTH, branchFactor, labels));
     }
 
     public default Pipeline<S, Vertex> both(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.BOTH).labels(labels).vertices().iterator()));
+        return this.both(Integer.MAX_VALUE, labels);
+    }
+
+    public default Pipeline<S, Edge> outE(final int branchFactor, final String... labels) {
+        return this.addPipe(new VertexEdgePipe(this, Direction.OUT, branchFactor, labels));
     }
 
     public default Pipeline<S, Edge> outE(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).edges().iterator()));
+        return this.outE(Integer.MAX_VALUE, labels);
+    }
+
+    public default Pipeline<S, Edge> inE(final int branchFactor, final String... labels) {
+        return this.addPipe(new VertexEdgePipe(this, Direction.IN, branchFactor, labels));
     }
 
     public default Pipeline<S, Edge> inE(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.get().query().direction(Direction.IN).labels(labels).edges().iterator()));
+        return this.inE(Integer.MAX_VALUE, labels);
+    }
+
+    public default Pipeline<S, Edge> bothE(final int branchFactor, final String... labels) {
+        return this.addPipe(new VertexEdgePipe(this, Direction.BOTH, branchFactor, labels));
     }
 
     public default Pipeline<S, Edge> bothE(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.get().query().direction(Direction.BOTH).labels(labels).edges().iterator()));
+        return this.bothE(Integer.MAX_VALUE, labels);
     }
 
     public default Pipeline<S, Vertex> inV() {
-        return this.addPipe(new MapPipe<Edge, Vertex>(this, e -> e.get().getVertex(Direction.IN)));
+        return this.addPipe(new EdgeVertexPipe(this,Direction.IN));
     }
 
     public default Pipeline<S, Vertex> outV() {
-        return this.addPipe(new MapPipe<Edge, Vertex>(this, e -> e.get().getVertex(Direction.OUT)));
+        return this.addPipe(new EdgeVertexPipe(this,Direction.OUT));
     }
 
     public default Pipeline<S, Vertex> bothV() {
@@ -207,7 +232,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> dedup() {
-        final Set<Object> set = new LinkedHashSet<>();
+        final Set<Object> set = Collections.synchronizedSet(new LinkedHashSet<>()); // TODO: Good?
         return this.addPipe(new FilterPipe<E>(this, o -> set.add(o.get())));
     }
 
@@ -221,28 +246,27 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new FilterPipe<E>(this, o -> !collection.contains(o.get())));
     }
 
-    public default Pipeline<S, E> has(final String key) {
+    public default <E2 extends Element> Pipeline<S, E2> has(final String key) {
         return this.addPipe(new FilterPipe<Element>(this, e -> e.get().getProperty(key).isPresent()));
     }
 
-    public default Pipeline<S, E> has(final String key, final Object value) {
+    public default <E2 extends Element> Pipeline<S, E2> has(final String key, final Object value) {
         return has(key, Compare.EQUAL, value);
     }
 
-    public default Pipeline<S, E> has(final String key, final T t, final Object value) {
-        return this.addPipe(new HasPipe((Pipeline<S, Element>) this, new HasContainer(key, T.convert(t), value)));
+    public default <E2 extends Element> Pipeline<S, E2> has(final String key, final T t, final Object value) {
+        return this.has(key, T.convert(t), value);
     }
 
-    public default Pipeline<S, E> hasNot(final String key) {
+    public default <E2 extends Element> Pipeline<S, E2> hasNot(final String key) {
         return this.addPipe(new FilterPipe<Element>(this, e -> !e.get().getProperty(key).isPresent()));
     }
 
-    public default Pipeline<S, E> has(final String key, final BiPredicate predicate, final Object value) {
-        final HasContainer hasContainer = new HasContainer(key, predicate, value);
-        return this.addPipe(new FilterPipe<Element>(this, e -> hasContainer.test(e.get())));
+    public default <E2 extends Element> Pipeline<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
+        return this.addPipe(new HasPipe((Pipeline) this, new HasContainer(key, predicate, value)));
     }
 
-    public default Pipeline<S, E> interval(final String key, final Comparable startValue, final Comparable endValue) {
+    public default <E2 extends Element> Pipeline<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
         final HasContainer start = new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue);
         final HasContainer end = new HasContainer(key, Compare.LESS_THAN, endValue);
         return this.addPipe(new FilterPipe<Element>(this, e -> start.test(e.get()) && end.test(e.get())));

@@ -1,9 +1,9 @@
-package com.tinkerpop.gremlin.pipes.named;
+package com.tinkerpop.gremlin.pipes.filter;
 
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.query.util.HasContainer;
-import com.tinkerpop.gremlin.pipes.FilterPipe;
-import com.tinkerpop.gremlin.pipes.Pipeline;
+import com.tinkerpop.gremlin.FilterPipe;
+import com.tinkerpop.gremlin.Pipeline;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

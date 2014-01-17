@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.blueprints.Graph
 import com.tinkerpop.gremlin.groovy.GremlinLoader
-import com.tinkerpop.gremlin.pipes.Gremlin
+import com.tinkerpop.gremlin.Gremlin
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -1,10 +1,10 @@
-package com.tinkerpop.gremlin.pipes.named;
+package com.tinkerpop.gremlin.pipes.map;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.gremlin.pipes.FlatMapPipe;
-import com.tinkerpop.gremlin.pipes.Pipeline;
+import com.tinkerpop.gremlin.FlatMapPipe;
+import com.tinkerpop.gremlin.Pipeline;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

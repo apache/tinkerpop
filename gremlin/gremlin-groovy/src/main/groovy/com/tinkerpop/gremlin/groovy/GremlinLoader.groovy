@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.Tokens
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import com.tinkerpop.gremlin.groovy.loaders.GraphLoader
 import com.tinkerpop.gremlin.groovy.loaders.PipeLoader
-import com.tinkerpop.gremlin.pipes.Pipe
-import com.tinkerpop.gremlin.pipes.Pipeline
+import com.tinkerpop.gremlin.Pipe
+import com.tinkerpop.gremlin.Pipeline
 import groovy.grape.Grape
 
 /**

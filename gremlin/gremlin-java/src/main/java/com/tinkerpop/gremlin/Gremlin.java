@@ -1,9 +1,8 @@
-package com.tinkerpop.gremlin.pipes;
+package com.tinkerpop.gremlin;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 
 import java.util.ArrayList;

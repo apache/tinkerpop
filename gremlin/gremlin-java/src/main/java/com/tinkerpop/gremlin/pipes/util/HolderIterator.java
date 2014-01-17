@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.pipes.util;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.PathHolder;
 import com.tinkerpop.gremlin.SimpleHolder;
-import com.tinkerpop.gremlin.pipes.Pipe;
-import com.tinkerpop.gremlin.pipes.Pipeline;
+import com.tinkerpop.gremlin.Pipe;
+import com.tinkerpop.gremlin.Pipeline;
 
 import java.util.Iterator;
 import java.util.Optional;

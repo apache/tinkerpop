@@ -1,6 +1,4 @@
-package com.tinkerpop.gremlin.pipes;
-
-import com.tinkerpop.gremlin.Holder;
+package com.tinkerpop.gremlin;
 
 import java.io.Serializable;
 import java.util.Iterator;

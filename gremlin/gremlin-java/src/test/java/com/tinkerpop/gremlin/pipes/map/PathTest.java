@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.pipes.map;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import com.tinkerpop.gremlin.pipes.Gremlin;
+import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;
 

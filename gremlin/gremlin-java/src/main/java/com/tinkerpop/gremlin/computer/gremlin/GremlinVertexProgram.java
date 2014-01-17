@@ -8,7 +8,7 @@ import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.PathHolder;
 import com.tinkerpop.gremlin.SimpleHolder;
-import com.tinkerpop.gremlin.pipes.Gremlin;
+import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 
 import java.util.Map;

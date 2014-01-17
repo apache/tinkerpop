@@ -41,7 +41,9 @@ public class TinkerVertexQuery extends DefaultVertexQuery {
             if (!this.adjacents.isEmpty())
                 edges = edges.filter(e -> this.adjacents.contains(e.getVertex(Direction.IN)));
         }
-        edges = edges.filter(e -> HasContainer.testAll(e, this.hasContainers)).limit(this.limit);
+        edges = edges.filter(e -> HasContainer.testAll(e, this.hasContainers));
+        if (this.limit != Integer.MAX_VALUE)
+            edges = edges.limit(this.limit);
 
         // GENERATE COMPUTE SHELLED EDGES DURING GRAPH COMPUTING
         if (TinkerGraphComputer.State.CENTRIC == this.vertex.state)

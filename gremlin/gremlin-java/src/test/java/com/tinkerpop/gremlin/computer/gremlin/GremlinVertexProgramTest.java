@@ -4,7 +4,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.gremlin.pipes.Gremlin;
+import com.tinkerpop.gremlin.Gremlin;
 import org.junit.Test;
 
 import java.util.List;
