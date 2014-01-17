@@ -101,7 +101,7 @@ public class TinkerGraph implements Graph, Serializable {
         return strategy.compose(
                 s -> s.getAddVertexStrategy(graphContext),
                 (kvs) -> {
-                    Objects.requireNonNull(kvs);
+                    ElementHelper.legalKeyValues(kvs);
                     Object idString = ElementHelper.getIdValue(kvs).orElse(null);
                     final String label = ElementHelper.getLabelValue(kvs).orElse(null);
 

@@ -36,6 +36,7 @@ public class BlueprintsStandardSuite extends AbstractBlueprintsSuite {
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
             EdgeTest.class,
+            ExceptionConsistencyTest.class,
             FeatureSupportTest.class,
             GraphTest.class,
             GraphComputerTest.class,

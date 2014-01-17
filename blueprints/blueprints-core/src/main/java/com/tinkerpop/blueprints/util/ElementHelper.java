@@ -6,7 +6,6 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
-import java.util.Objects;
 import java.util.Optional;
 
 /**
