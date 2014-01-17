@@ -10,6 +10,7 @@ import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Path;
 import com.tinkerpop.gremlin.T;
+import com.tinkerpop.gremlin.pipes.named.HasPipe;
 import com.tinkerpop.gremlin.pipes.named.RangePipe;
 import com.tinkerpop.gremlin.pipes.named.VertexVertexPipe;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
@@ -229,7 +230,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> has(final String key, final T t, final Object value) {
-        return has(key, T.convert(t), value);
+        return this.addPipe(new HasPipe((Pipeline<S, Element>) this, new HasContainer(key, T.convert(t), value)));
     }
 
     public default Pipeline<S, E> hasNot(final String key) {
