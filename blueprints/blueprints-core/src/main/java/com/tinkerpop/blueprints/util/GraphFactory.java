@@ -2,10 +2,12 @@ package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
+import com.tinkerpop.blueprints.util.config.YamlConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration.XMLConfiguration;
 
 import java.io.File;
 import java.util.Map;
@@ -64,7 +66,9 @@ public class GraphFactory {
     }
 
     /**
-     * Open a graph.  See each {@link Graph} instance for its configuration options.
+     * Open a graph.  See each {@link Graph} instance for its configuration options. This file may be XML, YAML,
+     * or a standard properties file. How the configuration is used (and which kind is required) is dependent on
+     * the implementation.
      *
      * @param configurationFile The location of a configuration file that specifies the minimally required properties
      *                          for a {@link Graph} instance. This minimum is determined by the {@link Graph} instance
@@ -98,7 +102,18 @@ public class GraphFactory {
             throw new IllegalArgumentException(String.format("The location configuration must resolve to a file and [%s] does not", configurationFile));
 
         try {
-            return new PropertiesConfiguration(configurationFile);
+            final String fileName = configurationFile.getName();
+            final String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
+
+            switch (fileExtension) {
+                case "yml":
+                case "yaml":
+                    return new YamlConfiguration(configurationFile);
+                case "xml":
+                    return new XMLConfiguration(configurationFile);
+                default:
+                    return new PropertiesConfiguration(configurationFile);
+            }
         } catch (final ConfigurationException e) {
             throw new IllegalArgumentException(String.format("Could not load configuration at: %s", configurationFile), e);
         }
