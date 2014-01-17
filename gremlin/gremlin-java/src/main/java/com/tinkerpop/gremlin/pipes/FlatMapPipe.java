@@ -15,7 +15,7 @@ import java.util.function.Function;
  */
 public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
 
-    private final Function<Holder<S>, Iterator<E>> function;
+    protected Function<Holder<S>, Iterator<E>> function;
     private final Queue<Iterator<Holder<E>>> queue = new LinkedList<>();
 
     public FlatMapPipe(final Pipeline pipeline, Function<Holder<S>, Iterator<E>> function) {

@@ -10,7 +10,7 @@ import java.util.function.Predicate;
  */
 public class FilterPipe<S> extends AbstractPipe<S, S> {
 
-    private final Predicate<Holder<S>> predicate;
+    protected Predicate<Holder<S>> predicate;
 
     public FilterPipe(final Pipeline pipeline, final Predicate<Holder<S>> predicate) {
         super(pipeline);

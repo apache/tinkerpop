@@ -10,7 +10,8 @@ import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Path;
 import com.tinkerpop.gremlin.T;
-import com.tinkerpop.gremlin.pipes.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.pipes.named.RangePipe;
+import com.tinkerpop.gremlin.pipes.named.VertexVertexPipe;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 import com.tinkerpop.gremlin.pipes.util.MapHelper;
 import com.tinkerpop.gremlin.pipes.util.SingleIterator;
@@ -74,8 +75,11 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new MapPipe<E, E>(this, Holder::get));
     }
 
-    public default Pipeline<S, Vertex> out(final String... labels) {
+    /*public default Pipeline<S, Vertex> out(final String... labels) {
         return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).vertices().iterator()));
+    }*/
+    public default Pipeline<S, Vertex> out(final String... labels) {
+        return this.addPipe(new VertexVertexPipe(this, Direction.OUT, Integer.MAX_VALUE, labels));
     }
 
     public default Pipeline<S, Vertex> in(final String... labels) {
@@ -87,12 +91,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Edge> outE(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).edges().iterator())
-        /*{
-            public String toString() {
-                return "FlatMapPipe[out," + Arrays.asList(labels) + "]";
-            }
-        }*/);
+        return this.addPipe(new FlatMapPipe<Vertex, Edge>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).edges().iterator()));
     }
 
     public default Pipeline<S, Edge> inE(final String... labels) {
@@ -248,7 +247,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new FilterPipe<Element>(this, e -> start.test(e.get()) && end.test(e.get())));
     }
 
-    public default Pipeline<S, E> range(final int low, final int high) {
+    /*public default Pipeline<S, E> range(final int low, final int high) {
         if (low != -1 && high != -1 && low > high) {
             throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + "]");
         }
@@ -262,6 +261,10 @@ public interface Pipeline<S, E> extends Iterator<E> {
             else
                 return false;
         }));
+    }*/
+
+    public default Pipeline<S, E> range(final int low, final int high) {
+        return this.addPipe(new RangePipe<>(this, low, high));
     }
 
     public default Pipeline<S, E> simplePath() {

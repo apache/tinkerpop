@@ -49,7 +49,7 @@ public class ElementHelper {
         if (keyValues.length % 2 != 0)
             throw Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
         for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (!(keyValues[i] instanceof String) && !(keyValues[i] instanceof Property.Key))
+            if (!(keyValues[i] instanceof String))
                 throw Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
         }
     }
