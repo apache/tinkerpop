@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.pipes.map;
 
-import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.FlatMapPipe;
 import com.tinkerpop.gremlin.Pipeline;
 
@@ -11,14 +11,10 @@ import com.tinkerpop.gremlin.Pipeline;
  */
 public class VertexEdgePipe extends FlatMapPipe<Vertex, Edge> {
 
-    public final Direction direction;
-    public final String[] labels;
-    public final int localLimit;
+    public final VertexQueryBuilder queryBuilder;
 
-    public VertexEdgePipe(final Pipeline pipeline, final Direction direction, final int localLimit, final String... labels) {
-        super(pipeline, v -> v.get().query().direction(direction).labels(labels).limit(localLimit).edges().iterator());
-        this.direction = direction;
-        this.labels = labels;
-        this.localLimit = localLimit;
+    public VertexEdgePipe(final Pipeline pipeline, final VertexQueryBuilder queryBuilder) {
+        super(pipeline, v -> queryBuilder.build(v.get()).edges().iterator());
+        this.queryBuilder = queryBuilder;
     }
 }

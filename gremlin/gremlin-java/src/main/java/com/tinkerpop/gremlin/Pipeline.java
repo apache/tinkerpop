@@ -7,9 +7,11 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.HasContainer;
+import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.pipes.filter.HasPipe;
 import com.tinkerpop.gremlin.pipes.filter.RangePipe;
 import com.tinkerpop.gremlin.pipes.map.EdgeVertexPipe;
+import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
 import com.tinkerpop.gremlin.pipes.map.VertexEdgePipe;
 import com.tinkerpop.gremlin.pipes.map.VertexVertexPipe;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
@@ -73,7 +75,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> identity() {
-        return this.addPipe(new MapPipe<E, E>(this, Holder::get));
+        return this.addPipe(new IdentityPipe(this));
     }
 
     /*public default Pipeline<S, Vertex> out(final String... labels) {
@@ -81,7 +83,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }*/
 
     public default Pipeline<S, Vertex> out(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexVertexPipe(this, Direction.OUT, branchFactor, labels));
+        return this.addPipe(new VertexVertexPipe(this, new VertexQueryBuilder().direction(Direction.OUT).limit(branchFactor).labels(labels)));
     }
 
     public default Pipeline<S, Vertex> out(final String... labels) {
@@ -89,7 +91,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Vertex> in(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexVertexPipe(this, Direction.IN, branchFactor, labels));
+        return this.addPipe(new VertexVertexPipe(this, new VertexQueryBuilder().direction(Direction.IN).limit(branchFactor).labels(labels)));
     }
 
     public default Pipeline<S, Vertex> in(final String... labels) {
@@ -97,7 +99,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Vertex> both(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexVertexPipe(this, Direction.BOTH, branchFactor, labels));
+        return this.addPipe(new VertexVertexPipe(this, new VertexQueryBuilder().direction(Direction.BOTH).limit(branchFactor).labels(labels)));
     }
 
     public default Pipeline<S, Vertex> both(final String... labels) {
@@ -105,7 +107,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Edge> outE(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexEdgePipe(this, Direction.OUT, branchFactor, labels));
+        return this.addPipe(new VertexEdgePipe(this, new VertexQueryBuilder().direction(Direction.OUT).limit(branchFactor).labels(labels)));
     }
 
     public default Pipeline<S, Edge> outE(final String... labels) {
@@ -113,7 +115,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Edge> inE(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexEdgePipe(this, Direction.IN, branchFactor, labels));
+        return this.addPipe(new VertexEdgePipe(this, new VertexQueryBuilder().direction(Direction.IN).limit(branchFactor).labels(labels)));
     }
 
     public default Pipeline<S, Edge> inE(final String... labels) {
@@ -121,7 +123,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Edge> bothE(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexEdgePipe(this, Direction.BOTH, branchFactor, labels));
+        return this.addPipe(new VertexEdgePipe(this, new VertexQueryBuilder().direction(Direction.BOTH).limit(branchFactor).labels(labels)));
     }
 
     public default Pipeline<S, Edge> bothE(final String... labels) {
@@ -129,11 +131,11 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Vertex> inV() {
-        return this.addPipe(new EdgeVertexPipe(this,Direction.IN));
+        return this.addPipe(new EdgeVertexPipe(this, Direction.IN));
     }
 
     public default Pipeline<S, Vertex> outV() {
-        return this.addPipe(new EdgeVertexPipe(this,Direction.OUT));
+        return this.addPipe(new EdgeVertexPipe(this, Direction.OUT));
     }
 
     public default Pipeline<S, Vertex> bothV() {
