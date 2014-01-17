@@ -8,6 +8,7 @@ import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import org.junit.Test;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -38,7 +39,7 @@ public class GremlinTest {
         System.out.println("--------------");
 
         Gremlin.of(g).v("1").as("x").out()
-                .jump("x", o -> o.getLoops() < 2, o -> false)
+                .jump("x", o -> o.getLoops() < 2)
                 .path().sideEffect(System.out::println).iterate();
 
         System.out.println("--------------");
@@ -132,10 +133,9 @@ public class GremlinTest {
     public void testValues() {
         Graph g = TinkerFactory.createClassic();
         //Gremlin.of(g).V().values("name","age","label","id").forEach(System.out::println);
-        System.out.println(g.query().ids(1,2,3).vertices());
-        Pipeline gremlin = Gremlin.of(g).V().out("created").aggregate("x").in("created").has("name","marko").out("created").except("x");
+        Pipeline gremlin = Gremlin.of(g).v(1).out("created").aggregate("x").in("created").out("created").except("x").value("name");
         gremlin.forEach(System.out::println);
-        System.out.println(gremlin.get("x").get());
+        System.out.println(((Set<Vertex>) gremlin.get("x").get()).iterator().next().<String>getValue("name"));
 
 
     }

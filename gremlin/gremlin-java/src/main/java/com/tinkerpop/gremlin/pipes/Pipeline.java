@@ -187,8 +187,8 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new MapPipe<Object, List>(this, h -> {
             final Path path = h.getPath();
             return names.length == 0 ?
-                    path.getAsSteps().stream().map(s -> path.get(s)).collect(Collectors.toList()) :
-                    Stream.of(names).map(s -> path.get(s)).collect(Collectors.toList());
+                    path.getAsSteps().stream().map(path::get).collect(Collectors.toList()) :
+                    Stream.of(names).map(path::get).collect(Collectors.toList());
         }));
     }
 
@@ -357,8 +357,8 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return result;
     }
 
-    public default List<Holder> toList() {
-        return (List<Holder>) this.fill(new ArrayList<>());
+    public default List<E> toList() {
+        return (List<E>) this.fill(new ArrayList<>());
     }
 
     public default Collection<E> fill(final Collection<E> collection) {
