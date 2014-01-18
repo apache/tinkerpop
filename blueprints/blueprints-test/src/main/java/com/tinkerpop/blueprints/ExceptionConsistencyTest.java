@@ -143,24 +143,25 @@ public class ExceptionConsistencyTest {
             }
         }
 
-        /*
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_COMPUTER)
         public void testGraphEdgeSetPropertyGraphComputer() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
-                v.addEdge("label", v).setProperty(key, val);
+                v.addEdge("label", v);
+                final Future future = g.compute().program(new MockVertexProgramForEdge(key, val)).submit();
+                future.get();
                 fail(String.format("Call to Edge.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
             } catch (Exception ex) {
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
+                final Throwable inner = ex.getCause();
+                assertEquals(expectedException.getClass(), inner.getClass());
+                assertEquals(expectedException.getMessage(), inner.getMessage());
             }
         }
-        */
 
         /**
-         * Mock {@link VertexProgram} that just dummies up a way to set a property on an {@link Vertex}.
+         * Mock {@link VertexProgram} that just dummies up a way to set a property on a {@link Vertex}.
          */
         public static class MockVertexProgramForVertex implements VertexProgram {
             private final String key;
@@ -178,6 +179,38 @@ public class ExceptionConsistencyTest {
             @Override
             public void execute(final Vertex vertex, final Messenger messenger, final GraphMemory graphMemory) {
                 vertex.setProperty(this.key, this.val);
+            }
+
+            @Override
+            public boolean terminate(GraphMemory graphMemory) {
+                return false;
+            }
+
+            @Override
+            public Map<String, KeyType> getComputeKeys() {
+                return null;
+            }
+        }
+
+        /**
+         * Mock {@link VertexProgram} that just dummies up a way to set a property on an {@link Edge}.
+         */
+        public static class MockVertexProgramForEdge implements VertexProgram {
+            private final String key;
+            private final String val;
+
+            public MockVertexProgramForEdge(final String key, final String val) {
+                this.key = key;
+                this.val = val;
+            }
+
+            @Override
+            public void setup(final GraphMemory graphMemory) {
+            }
+
+            @Override
+            public void execute(final Vertex vertex, final Messenger messenger, final GraphMemory graphMemory) {
+                vertex.query().edges().forEach(e->e.setProperty(this.key, this.val));
             }
 
             @Override
