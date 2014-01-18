@@ -99,7 +99,7 @@ public class ExceptionConsistencyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGraphAddVertex() throws Exception {
+        public void testGraphVertexSetProperty() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
                 v.setProperty(key, val);
@@ -112,7 +112,7 @@ public class ExceptionConsistencyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGraphAddEdge() throws Exception {
+        public void testGraphEdgeSetProperty() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
                 v.addEdge("label", v).setProperty(key, val);
