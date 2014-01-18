@@ -1,17 +1,21 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.computer.GraphMemory;
+import com.tinkerpop.blueprints.computer.Messenger;
+import com.tinkerpop.blueprints.computer.VertexProgram;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.Future;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeThat;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 
 /**
  * Ensure that exception handling is consistent within Blueprints.
@@ -92,14 +96,14 @@ public class ExceptionConsistencyTest {
         public String key;
 
         @Parameterized.Parameter(value = 1)
-        public Object val;
+        public String val;
 
         @Parameterized.Parameter(value = 2)
         public Exception expectedException;
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGraphVertexSetProperty() throws Exception {
+        public void testGraphVertexSetPropertyStandard() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
                 v.setProperty(key, val);
@@ -112,7 +116,7 @@ public class ExceptionConsistencyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
-        public void testGraphEdgeSetProperty() throws Exception {
+        public void testGraphEdgeSetPropertyStandard() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
                 v.addEdge("label", v).setProperty(key, val);
@@ -120,6 +124,70 @@ public class ExceptionConsistencyTest {
             } catch (Exception ex) {
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_COMPUTER)
+        public void testGraphVertexSetPropertyGraphComputer() throws Exception {
+            try {
+                this.g.addVertex();
+                final Future future = g.compute().program(new MockVertexProgramForVertex(key, val)).submit();
+                future.get();
+                fail(String.format("Call to Vertex.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
+            } catch (Exception ex) {
+                final Throwable inner = ex.getCause();
+                assertEquals(expectedException.getClass(), inner.getClass());
+                assertEquals(expectedException.getMessage(), inner.getMessage());
+            }
+        }
+
+        /*
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_COMPUTER)
+        public void testGraphEdgeSetPropertyGraphComputer() throws Exception {
+            try {
+                final Vertex v = this.g.addVertex();
+                v.addEdge("label", v).setProperty(key, val);
+                fail(String.format("Call to Edge.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
+            } catch (Exception ex) {
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+        */
+
+        /**
+         * Mock {@link VertexProgram} that just dummies up a way to set a property on an {@link Vertex}.
+         */
+        public static class MockVertexProgramForVertex implements VertexProgram {
+            private final String key;
+            private final String val;
+
+            public MockVertexProgramForVertex(final String key, final String val) {
+                this.key = key;
+                this.val = val;
+            }
+
+            @Override
+            public void setup(final GraphMemory graphMemory) {
+            }
+
+            @Override
+            public void execute(final Vertex vertex, final Messenger messenger, final GraphMemory graphMemory) {
+                vertex.setProperty(this.key, this.val);
+            }
+
+            @Override
+            public boolean terminate(GraphMemory graphMemory) {
+                return false;
+            }
+
+            @Override
+            public Map<String, KeyType> getComputeKeys() {
+                return null;
             }
         }
     }
