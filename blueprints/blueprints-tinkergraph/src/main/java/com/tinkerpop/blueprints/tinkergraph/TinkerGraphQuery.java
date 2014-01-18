@@ -3,12 +3,15 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.query.util.DefaultGraphQuery;
 import com.tinkerpop.blueprints.query.util.HasContainer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,14 +28,11 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
 
     @Override
     public GraphQuery ids(final Object... ids) {
-        final String[] idStrings = new String[ids.length];
-        for (int i = 0; i < ids.length; i++) {
-            idStrings[i] = ids[i].toString();
-        }
-        return this.graph.strategy().compose(s -> s.getGraphQueryIdsStrategy(new Strategy.Context<GraphQuery>(this.graph, this)), super::ids).apply(idStrings);
+        return this.graph.strategy().compose(s -> s.getGraphQueryIdsStrategy(new Strategy.Context<GraphQuery>(this.graph, this)), super::ids).apply(ids);
     }
 
     public Iterable<Edge> edges() {
+        stringifyIds();
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         return ((null == indexedContainer) ?
                 this.graph.edges.values().parallelStream() :
@@ -43,6 +43,7 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
     }
 
     public Iterable<Vertex> vertices() {
+        stringifyIds();
         return this.graph.strategy().compose(s -> s.getGraphQueryVerticesStrategy(new Strategy.Context<GraphQuery>(this.graph, this)), this::internalVertices).get();
     }
 
@@ -62,5 +63,13 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
                 .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
                 .findFirst()
                 .orElseGet(() -> null);
+    }
+
+    private void stringifyIds() {
+        this.hasContainers.stream().filter(h -> h.key.equals(Property.Key.ID)).forEach(h -> {
+            final List<String> ids = new ArrayList<>();
+            ((List<Object>) h.value).forEach(v -> ids.add(v.toString()));
+            h.value = ids;
+        });
     }
 }

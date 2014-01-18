@@ -26,6 +26,6 @@ public class VertexQueryOptimizer implements Optimizer {
     }
 
     public Rate getOptimizationRate() {
-        return Rate.COMPILE_TIME;
+        return Rate.FINAL_COMPILE_TIME;
     }
 }

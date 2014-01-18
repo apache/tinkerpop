@@ -3,7 +3,11 @@ package com.tinkerpop.gremlin;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.query.util.GraphQueryBuilder;
+import com.tinkerpop.gremlin.pipes.map.GraphQueryPipe;
+import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
+import com.tinkerpop.gremlin.pipes.util.optimizers.HolderOptimizer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,16 +27,17 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     private final List<Pipe<?, ?>> pipes = new ArrayList<>();
     private final List<Optimizer> optimizers = new ArrayList<>();
     private Graph graph = null;
-    private boolean trackPaths;
 
-    public Gremlin(final Graph graph) {
+    private Gremlin(final Graph graph) {
         this.graph = graph;
+        //this.optimizers.add(new IdentityOptimizer());
+        this.optimizers.add(new HolderOptimizer());
     }
 
     private Gremlin(final Iterator<S> starts) {
-        final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
+        final Pipe<S, S> pipe = new IdentityPipe<>(this);
         this.addPipe(pipe);
-        this.addStarts(new HolderIterator<>(Optional.empty(), pipe, starts));
+        this.addStarts(new HolderIterator<>(Optional.empty(), pipe, starts, false));
     }
 
     public static Gremlin<?, ?> of() {
@@ -55,41 +60,31 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         this.optimizers.add(optimizer);
     }
 
-    public void optimize() {
-        this.optimizers.stream()
-                .filter(o -> o.getOptimizationRate().equals(Optimizer.Rate.COMPILE_TIME))
-                .forEach(o -> o.optimize(this));
-    }
-
     public Gremlin<Vertex, Vertex> V() {
         Objects.requireNonNull(this.graph);
-        final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
+        GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Vertex.class);
         this.addPipe(pipe);
-        this.addStarts(new HolderIterator(Optional.empty(), pipe, this.graph.query().vertices().iterator()));
         return (Gremlin<Vertex, Vertex>) this;
     }
 
     public Gremlin<Edge, Edge> E() {
         Objects.requireNonNull(this.graph);
-        final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
+        GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Edge.class);
         this.addPipe(pipe);
-        this.addStarts(new HolderIterator(Optional.empty(), pipe, this.graph.query().edges().iterator()));
         return (Gremlin<Edge, Edge>) this;
     }
 
     public Gremlin<Vertex, Vertex> v(final Object... ids) {
         Objects.requireNonNull(this.graph);
-        final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
+        GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Vertex.class);
         this.addPipe(pipe);
-        this.addStarts(new HolderIterator(Optional.empty(), pipe, this.graph.query().ids(ids).vertices().iterator()));
         return (Gremlin<Vertex, Vertex>) this;
     }
 
     public Gremlin<Edge, Edge> e(final Object... ids) {
         Objects.requireNonNull(this.graph);
-        final Pipe<S, S> pipe = new MapPipe<S, S>(this, s -> s.get());
+        GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Edge.class);
         this.addPipe(pipe);
-        this.addStarts(new HolderIterator(Optional.empty(), pipe, this.graph.query().ids(ids).edges().iterator()));
         return (Gremlin<Edge, Edge>) this;
     }
 
@@ -105,16 +100,10 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         if (this.pipes.size() > 0)
             pipe.addStarts(this.pipes.get(this.pipes.size() - 1));
         this.pipes.add(pipe);
+        this.optimizers.stream()
+                .filter(o -> o.getOptimizationRate().equals(Optimizer.Rate.FINAL_COMPILE_TIME))
+                .forEach(o -> o.optimize(this));
         return (P) this;
-    }
-
-    public Gremlin<S, E> trackPaths(final boolean trackPaths) {
-        this.trackPaths = trackPaths;
-        return this;
-    }
-
-    public boolean getTrackPaths() {
-        return this.trackPaths;
     }
 
     public boolean hasNext() {

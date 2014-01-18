@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.query.util;
 
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
 
@@ -11,7 +12,7 @@ import java.util.function.BiPredicate;
  */
 public class GraphQueryBuilder extends DefaultGraphQuery implements QueryBuilder {
 
-    public GraphQuery ids(final Object... ids) {
+    public GraphQueryBuilder ids(final Object... ids) {
         super.ids(ids);
         return this;
     }
@@ -44,6 +45,14 @@ public class GraphQueryBuilder extends DefaultGraphQuery implements QueryBuilder
     public <T extends Comparable<?>> GraphQueryBuilder interval(final String key, final T startValue, final T endValue) {
         super.interval(key, startValue, endValue);
         return this;
+    }
+
+    public GraphQuery build(final Graph graph) {
+        final GraphQuery query = graph.query();
+        for (final HasContainer hasContainer : this.hasContainers) {
+            query.has(hasContainer.key, hasContainer.predicate, hasContainer.value);
+        }
+        return query.limit(this.limit);
     }
 
     public Iterable<Edge> edges() {

@@ -10,9 +10,11 @@ import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.pipes.filter.HasPipe;
 import com.tinkerpop.gremlin.pipes.filter.RangePipe;
+import com.tinkerpop.gremlin.pipes.filter.SimplePathPipe;
 import com.tinkerpop.gremlin.pipes.map.BackPipe;
 import com.tinkerpop.gremlin.pipes.map.EdgeVertexPipe;
 import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
+import com.tinkerpop.gremlin.pipes.map.MatchPipe;
 import com.tinkerpop.gremlin.pipes.map.PathPipe;
 import com.tinkerpop.gremlin.pipes.map.SelectPipe;
 import com.tinkerpop.gremlin.pipes.map.VertexEdgePipe;
@@ -57,13 +59,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public Pipeline<Edge, Edge> e(final Object... ids);
 
-    public Pipeline trackPaths(final boolean trackPaths);
-
-    public boolean getTrackPaths();
-
     public void registerOptimizer(final Optimizer optimizer);
-
-    public void optimize();
 
     public void addStarts(final Iterator<Holder<S>> starts);
 
@@ -81,10 +77,6 @@ public interface Pipeline<S, E> extends Iterator<E> {
     public default Pipeline<S, E> identity() {
         return this.addPipe(new IdentityPipe(this));
     }
-
-    /*public default Pipeline<S, Vertex> out(final String... labels) {
-        return this.addPipe(new FlatMapPipe<Vertex, Vertex>(this, v -> v.get().query().direction(Direction.OUT).labels(labels).vertices().iterator()));
-    }*/
 
     public default Pipeline<S, Vertex> out(final int branchFactor, final String... labels) {
         return this.addPipe(new VertexVertexPipe(this, new VertexQueryBuilder().direction(Direction.OUT).limit(branchFactor).labels(labels)));
@@ -187,22 +179,18 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Path> path(final Function... pathFunctions) {
-        this.trackPaths(true);
         return this.addPipe(new PathPipe(this, pathFunctions));
     }
 
     public default <E2> Pipeline<S, E2> back(final String as) {
-        this.trackPaths(true);
         return this.addPipe(new BackPipe(this, as));
     }
 
     public default <E2> Pipeline<S, E2> match(final String inAs, final String outAs, final Pipeline... pipelines) {
-        this.trackPaths(true);
         return this.addPipe(new MatchPipe(inAs, outAs, this, pipelines));
     }
 
     public default Pipeline<S, List> select(final String... ases) {
-        this.trackPaths(true);
         return this.addPipe(new SelectPipe(this, ases));
     }
 
@@ -261,29 +249,12 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new FilterPipe<Element>(this, e -> start.test(e.get()) && end.test(e.get())));
     }
 
-    /*public default Pipeline<S, E> range(final int low, final int high) {
-        if (low != -1 && high != -1 && low > high) {
-            throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + "]");
-        }
-        final AtomicInteger counter = new AtomicInteger(-1);
-        return this.addPipe(new FilterPipe<E>(this, o -> {
-            counter.incrementAndGet();
-            if ((low == -1 || counter.get() >= low) && (high == -1 || counter.get() <= high))
-                return true;
-            else if (high != -1 && counter.get() > high)
-                throw FastNoSuchElementException.instance();
-            else
-                return false;
-        }));
-    }*/
-
     public default Pipeline<S, E> range(final int low, final int high) {
         return this.addPipe(new RangePipe<>(this, low, high));
     }
 
     public default Pipeline<S, E> simplePath() {
-        this.trackPaths(true);
-        return this.addPipe(new FilterPipe<Object>(this, o -> o.getPath().isSimple()));
+        return this.addPipe(new SimplePathPipe(this));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////

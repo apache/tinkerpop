@@ -7,7 +7,8 @@ public interface Optimizer {
 
     public enum Rate {
         RUNTIME,
-        COMPILE_TIME
+        FINAL_COMPILE_TIME,
+        STEP_COMPILE_TIME
     }
 
     public <S, E> Pipeline<S, E> optimize(final Pipeline<S, E> pipeline);
