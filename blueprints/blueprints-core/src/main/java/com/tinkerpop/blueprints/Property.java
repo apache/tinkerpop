@@ -14,6 +14,11 @@ public abstract interface Property<V> {
 
     public class Key {
 
+        /**
+         * Can't be constructed publically.
+         */
+        private Key() {}
+
         public static final String ID = "id";
         public static final String LABEL = "label";
         public static final String DEFAULT_LABEL = "default";
