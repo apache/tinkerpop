@@ -204,6 +204,8 @@ public class ExceptionConsistencyTest {
                 assertEquals(expectedException.getMessage(), inner.getMessage());
             }
         }
+
+        // TODO: need to trigger this: GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeWritten()
     }
 
     /**
