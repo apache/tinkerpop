@@ -29,24 +29,40 @@ public class StringFactory {
     private static final String DASH = "-";
     private static final String ARROW = "->";
     private static final String EMPTY_PROPERTY = "p[empty]";
-    private static final String VALUE = "value";
 
+    /**
+     * Construct the representation for a {@link Vertex}.
+     */
     public static String vertexString(final Vertex vertex) {
         return V + L_BRACKET + vertex.getId() + R_BRACKET;
     }
 
+    /**
+     * Construct the representation for a {@link Edge}.
+     */
     public static String edgeString(final Edge edge) {
         return E + L_BRACKET + edge.getId() + R_BRACKET + L_BRACKET + edge.getVertex(Direction.OUT).getId() + DASH + edge.getLabel() + ARROW + edge.getVertex(Direction.IN).getId() + R_BRACKET;
     }
 
+    /**
+     * Construct the representation for a {@link Property}.
+     */
     public static String propertyString(final Property property) {
         return property.isPresent() ? P + L_BRACKET + property.getKey() + ARROW + property.get() + R_BRACKET : EMPTY_PROPERTY;
     }
 
+    /**
+     * Construct the representation for a {@link Graph}.
+     *
+     * @param internalString a custom {@link String} that appends to the end of the standard representation
+     */
     public static String graphString(final Graph graph, final String internalString) {
         return graph.getClass().getSimpleName().toLowerCase() + L_BRACKET + internalString + R_BRACKET;
     }
 
+    /**
+     * Construct the representation for a {@link AnnotatedList}.
+     */
     public static String annotatedListString(final AnnotatedList annotatedList) {
         final StringBuilder builder = new StringBuilder(L_BRACKET);
         annotatedList.query().limit(2).values().forEach(v -> builder.append(v).append(COMMA_SPACE));
@@ -56,6 +72,9 @@ public class StringFactory {
         return builder.toString();
     }
 
+    /**
+     * Construct the representation for a {@link AnnotatedValue}.
+     */
     public static String annotatedValueString(final AnnotatedValue annotatedValue) {
         return L_BRACKET + annotatedValue.getValue() + COLON + EMPTY_MAP + R_BRACKET;
     }
