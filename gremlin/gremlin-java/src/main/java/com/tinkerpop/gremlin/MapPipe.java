@@ -9,7 +9,11 @@ import java.util.function.Function;
  */
 public class MapPipe<S, E> extends AbstractPipe<S, E> {
 
-    private final Function<Holder<S>, E> function;
+    private Function<Holder<S>, E> function;
+
+    public MapPipe(final Pipeline pipeline) {
+        super(pipeline);
+    }
 
     public MapPipe(final Pipeline pipeline, final Function<Holder<S>, E> function) {
         super(pipeline);
@@ -28,5 +32,9 @@ public class MapPipe<S, E> extends AbstractPipe<S, E> {
                 else
                     return holder.makeChild(this.getAs(), temp);
         }
+    }
+
+    public void setFunction(final Function<Holder<S>, E> function) {
+        this.function = function;
     }
 }

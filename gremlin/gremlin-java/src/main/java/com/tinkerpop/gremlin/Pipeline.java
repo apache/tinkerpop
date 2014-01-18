@@ -10,8 +10,11 @@ import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.pipes.filter.HasPipe;
 import com.tinkerpop.gremlin.pipes.filter.RangePipe;
+import com.tinkerpop.gremlin.pipes.map.BackPipe;
 import com.tinkerpop.gremlin.pipes.map.EdgeVertexPipe;
 import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
+import com.tinkerpop.gremlin.pipes.map.PathPipe;
+import com.tinkerpop.gremlin.pipes.map.SelectPipe;
 import com.tinkerpop.gremlin.pipes.map.VertexEdgePipe;
 import com.tinkerpop.gremlin.pipes.map.VertexVertexPipe;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
@@ -31,14 +34,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,6 +60,10 @@ public interface Pipeline<S, E> extends Iterator<E> {
     public Pipeline trackPaths(final boolean trackPaths);
 
     public boolean getTrackPaths();
+
+    public void registerOptimizer(final Optimizer optimizer);
+
+    public void optimize();
 
     public void addStarts(final Iterator<Holder<S>> starts);
 
@@ -184,24 +188,12 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public default Pipeline<S, Path> path(final Function... pathFunctions) {
         this.trackPaths(true);
-        if (null == pathFunctions || pathFunctions.length == 0)
-            return this.addPipe(new MapPipe<S, Path>(this, Holder::getPath));
-        else {
-            final AtomicInteger nextFunction = new AtomicInteger(0);
-            return this.addPipe(new MapPipe<S, Path>(this, o -> {
-                final Path path = new Path();
-                o.getPath().forEach((a, b) -> {
-                    path.add(a, pathFunctions[nextFunction.get()].apply(b));
-                    nextFunction.set((nextFunction.get() + 1) % pathFunctions.length);
-                });
-                return path;
-            }));
-        }
+        return this.addPipe(new PathPipe(this, pathFunctions));
     }
 
-    public default <E2> Pipeline<S, E2> back(final String name) {
+    public default <E2> Pipeline<S, E2> back(final String as) {
         this.trackPaths(true);
-        return this.addPipe(new MapPipe<E, Object>(this, o -> o.getPath().get(name)));
+        return this.addPipe(new BackPipe(this, as));
     }
 
     public default <E2> Pipeline<S, E2> match(final String inAs, final String outAs, final Pipeline... pipelines) {
@@ -209,14 +201,9 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new MatchPipe(inAs, outAs, this, pipelines));
     }
 
-    public default Pipeline<S, List> select(final String... names) {
+    public default Pipeline<S, List> select(final String... ases) {
         this.trackPaths(true);
-        return this.addPipe(new MapPipe<Object, List>(this, h -> {
-            final Path path = h.getPath();
-            return names.length == 0 ?
-                    path.getAsSteps().stream().map(path::get).collect(Collectors.toList()) :
-                    Stream.of(names).map(path::get).collect(Collectors.toList());
-        }));
+        return this.addPipe(new SelectPipe(this, ases));
     }
 
     public default <E2> Pipeline<S, E2> unroll() {

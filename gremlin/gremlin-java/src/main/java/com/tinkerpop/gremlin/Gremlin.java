@@ -21,6 +21,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
 
     private final Map<String, Object> variables = new HashMap<>();
     private final List<Pipe<?, ?>> pipes = new ArrayList<>();
+    private final List<Optimizer> optimizers = new ArrayList<>();
     private Graph graph = null;
     private boolean trackPaths;
 
@@ -48,6 +49,16 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
 
     public <T> Optional<T> get(final String variable) {
         return Optional.ofNullable((T) this.variables.get(variable));
+    }
+
+    public void registerOptimizer(final Optimizer optimizer) {
+        this.optimizers.add(optimizer);
+    }
+
+    public void optimize() {
+        this.optimizers.stream()
+                .filter(o -> o.getOptimizationRate().equals(Optimizer.Rate.COMPILE_TIME))
+                .forEach(o -> o.optimize(this));
     }
 
     public Gremlin<Vertex, Vertex> V() {

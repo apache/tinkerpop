@@ -3,7 +3,9 @@ package com.tinkerpop.gremlin.pipes.util.optimizers;
 import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.Pipeline;
+import com.tinkerpop.gremlin.SimpleHolder;
 import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
+import com.tinkerpop.gremlin.pipes.util.SingleIterator;
 import org.junit.Test;
 
 import java.util.List;
@@ -44,5 +46,23 @@ public class IdentityOptimizerTest {
             }
         }
         assertEquals(2, counter);
+    }
+
+    @Test
+    public void shouldStillMaintainGlobalChain() {
+        // NO OPTIMIZER
+        Pipeline gremlin = Gremlin.of().identity().as("x").identity().identity().as("y");
+        gremlin.addStarts(new SingleIterator<>(new SimpleHolder<>("marko")));
+        assertTrue(gremlin.hasNext());
+        assertEquals("marko", gremlin.next());
+        assertFalse(gremlin.hasNext());
+
+        // WITH OPTIMIZER
+        gremlin = Gremlin.of().identity().as("x").identity().identity().as("y");
+        new IdentityOptimizer().optimize(gremlin);
+        gremlin.addStarts(new SingleIterator<>(new SimpleHolder<>("marko")));
+        assertTrue(gremlin.hasNext());
+        assertEquals("marko", gremlin.next());
+        assertFalse(gremlin.hasNext());
     }
 }
