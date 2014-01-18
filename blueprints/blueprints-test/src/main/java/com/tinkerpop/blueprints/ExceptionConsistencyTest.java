@@ -43,7 +43,7 @@ public class ExceptionConsistencyTest {
                     { new Object[] {"odd", null}, Property.Exceptions.propertyValueCanNotBeNull()},
                     { new Object[] {null, "val"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
                     { new Object[] {"", "val"}, Property.Exceptions.propertyKeyCanNotBeEmpty()}});
-            };
+            }
 
         @Parameterized.Parameter(value = 0)
         public Object[] arguments;
@@ -92,7 +92,7 @@ public class ExceptionConsistencyTest {
                     { Property.Key.ID, "v", Property.Exceptions.propertyKeyIdIsReserved()},
                     { Property.Key.LABEL, "v", Property.Exceptions.propertyKeyLabelIsReserved()},
                     { "", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()}});
-        };
+        }
 
         @Parameterized.Parameter(value = 0)
         public String key;
