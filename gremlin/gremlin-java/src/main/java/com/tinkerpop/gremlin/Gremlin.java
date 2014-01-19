@@ -110,18 +110,21 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     public <P extends Pipeline> P addPipe(final Pipe pipe) {
         if (this.pipes.size() > 0)
             pipe.addStarts(this.pipes.get(this.pipes.size() - 1));
-        this.pipes.add(pipe);
-        this.optimize(Optimizer.Rate.STEP_COMPILE_TIME);
+        if (this.optimizers.stream()
+                .filter(o -> o instanceof Optimizer.StepOptimizer)
+                .map(o -> ((Optimizer.StepOptimizer) o).optimize(this, pipe))
+                .reduce(true, (a, b) -> a && b))
+            this.pipes.add(pipe);
         return (P) this;
     }
 
     public boolean hasNext() {
-        this.optimize(Optimizer.Rate.FINAL_COMPILE_TIME);
+        this.finalOptimize();
         return this.pipes.get(this.pipes.size() - 1).hasNext();
     }
 
     public E next() {
-        this.optimize(Optimizer.Rate.FINAL_COMPILE_TIME);
+        this.finalOptimize();
         return (E) this.pipes.get(this.pipes.size() - 1).next().get();
     }
 
@@ -129,16 +132,15 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         return this.getPipes().toString();
     }
 
-    private void optimize(final Optimizer.Rate rate) {
-        if (rate.equals(Optimizer.Rate.FINAL_COMPILE_TIME)) {
-            if (this.firstNext)
-                this.firstNext = false;
-            else
-                return;
-        }
-        this.optimizers.stream().
-                filter(o -> o.getOptimizationRate().equals(rate))
-                .forEach(o -> o.optimize(this));
+    private void finalOptimize() {
+        if (this.firstNext)
+            this.firstNext = false;
+        else
+            return;
+
+        this.optimizers.stream()
+                .filter(o -> o instanceof Optimizer.FinalOptimizer)
+                .map(o -> ((Optimizer.FinalOptimizer) o).optimize(this)).count();
     }
 
     public boolean equals(final Object object) {

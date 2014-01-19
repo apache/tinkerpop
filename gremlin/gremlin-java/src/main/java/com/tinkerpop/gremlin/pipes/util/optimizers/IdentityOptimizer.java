@@ -10,9 +10,9 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdentityOptimizer implements Optimizer {
+public class IdentityOptimizer implements Optimizer.FinalOptimizer, Optimizer {
 
-    public <S, E> Pipeline<S, E> optimize(final Pipeline<S, E> pipeline) {
+    public Pipeline optimize(final Pipeline pipeline) {
         final Iterator<Pipe<?, ?>> itty = pipeline.getPipes().iterator();
         while (itty.hasNext()) {
             final Pipe<?, ?> pipe = itty.next();
@@ -20,9 +20,5 @@ public class IdentityOptimizer implements Optimizer {
                 itty.remove();
         }
         return pipeline;
-    }
-
-    public Rate getOptimizationRate() {
-        return Rate.FINAL_COMPILE_TIME;
     }
 }

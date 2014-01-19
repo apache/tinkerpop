@@ -5,13 +5,15 @@ package com.tinkerpop.gremlin;
  */
 public interface Optimizer {
 
-    public enum Rate {
-        RUNTIME,
-        FINAL_COMPILE_TIME,
-        STEP_COMPILE_TIME
+    public interface StepOptimizer extends Optimizer {
+        public boolean optimize(final Pipeline pipeline, final Pipe pipe);
     }
 
-    public <S, E> Pipeline<S, E> optimize(final Pipeline<S, E> pipeline);
+    public interface FinalOptimizer extends Optimizer {
+        public Pipeline optimize(final Pipeline pipeline);
+    }
 
-    public Rate getOptimizationRate();
+    public interface RuntimeOptimizer extends Optimizer {
+        public void optimize(final Pipeline pipeline);
+    }
 }

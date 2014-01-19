@@ -11,6 +11,10 @@ import java.util.Iterator;
  */
 public class GremlinHelper {
 
+    public static boolean isLabeled(final Pipe pipe) {
+        return !pipe.getAs().startsWith("_");
+    }
+
     public static <S, E> Pipe<S, E> getAs(final String as, final Pipeline<?, ?> pipeline) {
         return (Pipe) pipeline.getPipes().stream()
                 .filter(p -> as.equals(p.getAs()))
@@ -64,5 +68,20 @@ public class GremlinHelper {
         } else {
             return false;
         }
+    }
+
+    public static String makePipeString(final Pipe pipe, final Object... arguments) {
+        final StringBuilder builder = new StringBuilder(pipe.getClass().getSimpleName());
+        if (arguments.length > 0) {
+            builder.append("(");
+            for (final Object arg : arguments) {
+                builder.append(arg).append(",");
+            }
+            builder.replace(builder.length() - 1, builder.length(), "");
+            builder.append(")");
+        }
+        if (GremlinHelper.isLabeled(pipe))
+            builder.append("@").append(pipe.getAs());
+        return builder.toString();
     }
 }

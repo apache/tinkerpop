@@ -1,28 +1,33 @@
 package com.tinkerpop.gremlin.pipes.util.optimizers;
 
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Optimizer;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.pipes.filter.HasPipe;
 import com.tinkerpop.gremlin.pipes.filter.IntervalPipe;
+import com.tinkerpop.gremlin.pipes.map.EdgeVertexPipe;
 import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
-import com.tinkerpop.gremlin.pipes.map.VertexEdgePipe;
+import com.tinkerpop.gremlin.pipes.map.VertexQueryPipe;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexQueryOptimizer implements Optimizer {
+public class VertexQueryOptimizer implements Optimizer.StepOptimizer, Optimizer {
 
-    public <S, E> Pipeline<S, E> optimize(final Pipeline<S, E> pipeline) {
-        final Pipe lastPipe = GremlinHelper.getEnd(pipeline);
-        if (!(lastPipe instanceof HasPipe || lastPipe instanceof IntervalPipe))
-            return pipeline;
+    public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
+        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe || pipe instanceof EdgeVertexPipe))
+            return true;
+        else {
+            if (GremlinHelper.isLabeled(pipe))
+                return true;
+        }
 
-        VertexEdgePipe vertexEdgePipe = null;
+        VertexQueryPipe vertexQueryPipe = null;
         for (int i = pipeline.getPipes().size() - 1; i >= 0; i--) {
-            if (pipeline.getPipes().get(i) instanceof VertexEdgePipe) {
-                vertexEdgePipe = (VertexEdgePipe) pipeline.getPipes().get(i);
+            if (pipeline.getPipes().get(i) instanceof VertexQueryPipe) {
+                vertexQueryPipe = (VertexQueryPipe) pipeline.getPipes().get(i);
                 break;
             } else if (!(pipeline.getPipes().get(i) instanceof IdentityPipe
                     || pipeline.getPipes().get(i) instanceof HasPipe
@@ -30,20 +35,26 @@ public class VertexQueryOptimizer implements Optimizer {
                 break;
         }
 
-        if (null != vertexEdgePipe) {
-            if (lastPipe instanceof HasPipe) {
-                vertexEdgePipe.queryBuilder.has(((HasPipe) lastPipe).hasContainer.key, ((HasPipe) lastPipe).hasContainer.predicate, ((HasPipe) lastPipe).hasContainer.value);
+        if (null != vertexQueryPipe && !GremlinHelper.isLabeled(vertexQueryPipe)) {
+            if (pipe instanceof EdgeVertexPipe) {
+                vertexQueryPipe.returnClass = Vertex.class;
+            } else if (pipe instanceof HasPipe) {
+                final HasPipe hasPipe = (HasPipe) pipe;
+                if (!vertexQueryPipe.returnClass.equals(Vertex.class)) {
+                    vertexQueryPipe.queryBuilder.has(hasPipe.hasContainer.key, hasPipe.hasContainer.predicate, hasPipe.hasContainer.value);
+                } else
+                    return true;
+            } else if (pipe instanceof IntervalPipe) {
+                final IntervalPipe intervalPipe = (IntervalPipe) pipe;
+                vertexQueryPipe.queryBuilder.has(intervalPipe.startContainer.key, intervalPipe.startContainer.predicate, intervalPipe.startContainer.value);
+                vertexQueryPipe.queryBuilder.has(intervalPipe.endContainer.key, intervalPipe.endContainer.predicate, intervalPipe.endContainer.value);
             } else {
-                vertexEdgePipe.queryBuilder.has(((IntervalPipe) lastPipe).startContainer.key, ((IntervalPipe) lastPipe).startContainer.predicate, ((IntervalPipe) lastPipe).startContainer.value);
-                vertexEdgePipe.queryBuilder.has(((IntervalPipe) lastPipe).endContainer.key, ((IntervalPipe) lastPipe).endContainer.predicate, ((IntervalPipe) lastPipe).endContainer.value);
+                throw new IllegalStateException("This pipe should not be accessible via this optimizer: " + pipe.getClass());
             }
-            pipeline.getPipes().remove(lastPipe);
+            vertexQueryPipe.generateFunction();
+            return false;
         }
 
-        return pipeline;
-    }
-
-    public Rate getOptimizationRate() {
-        return Rate.STEP_COMPILE_TIME;
+        return true;
     }
 }

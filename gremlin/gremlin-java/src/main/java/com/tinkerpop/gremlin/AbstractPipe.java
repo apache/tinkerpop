@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin;
 
 import com.tinkerpop.gremlin.pipes.util.ExpandablePipeIterator;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -63,6 +64,10 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
     }
 
     protected abstract Holder<E> processNextStart() throws NoSuchElementException;
+
+    public String toString() {
+        return GremlinHelper.makePipeString(this);
+    }
 
 
 }

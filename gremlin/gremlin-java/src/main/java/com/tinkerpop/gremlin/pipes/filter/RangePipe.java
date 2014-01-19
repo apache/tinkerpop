@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.pipes.filter;
 import com.tinkerpop.gremlin.FilterPipe;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.pipes.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,7 +33,9 @@ public class RangePipe<E> extends FilterPipe<E> {
             else
                 return false;
         };
+    }
 
-
+    public String toString() {
+        return GremlinHelper.makePipeString(this, this.low, this.high);
     }
 }

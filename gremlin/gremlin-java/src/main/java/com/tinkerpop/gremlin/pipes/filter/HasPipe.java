@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.gremlin.FilterPipe;
 import com.tinkerpop.gremlin.Pipeline;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -19,6 +20,6 @@ public class HasPipe extends FilterPipe<Element> {
     }
 
     public String toString() {
-        return this.getClass().getSimpleName() + this.hasContainer;
+        return GremlinHelper.makePipeString(this, this.hasContainer);
     }
 }
