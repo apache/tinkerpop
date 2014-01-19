@@ -25,6 +25,11 @@ public class RangeTest extends com.tinkerpop.gremlin.test.filter.RangeTest {
     }
 
     @Test
+    public void g_V_outX1X_rangeX0_2X() {
+        super.g_V_outX1X_rangeX0_2X(Gremlin.of(g).V().out(1).range(0, 2));
+    }
+
+    @Test
     public void g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV() {
         super.g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(Gremlin.of(g).v(1).out("knows").outE("created").range(0, 0).inV());
     }

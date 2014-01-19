@@ -27,6 +27,16 @@ public class RangeTest {
         assertEquals(2, counter);
     }
 
+    public void g_V_outX1X_rangeX0_2X(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
+        int counter = 0;
+        while (pipe.hasNext()) {
+            counter++;
+            pipe.next();
+        }
+        assertEquals(3, counter);
+    }
+
     public void g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(final Iterator<Vertex> pipe) {
         System.out.println("Testing: " + pipe);
         int counter = 0;
