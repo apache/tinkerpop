@@ -66,4 +66,16 @@ public class GraphQueryBuilder extends DefaultGraphQuery implements QueryBuilder
     public long count() {
         throw new UnsupportedOperationException();
     }
+
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        if (this.hasContainers.size() > 0)
+            if (this.hasContainers.size() == 1)
+                builder.append(this.hasContainers.get(0));
+            else
+                builder.append(this.hasContainers);
+        if (this.limit != Integer.MAX_VALUE)
+            builder.append(",").append(this.limit);
+        return builder.toString();
+    }
 }

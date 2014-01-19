@@ -22,6 +22,14 @@ public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
         this.function = function;
     }
 
+    public FlatMapPipe(final Pipeline pipeline) {
+        super(pipeline);
+    }
+
+    public void setFunction(final Function<Holder<S>, Iterator<E>> function) {
+        this.function = function;
+    }
+
     public Holder<E> processNextStart() {
         while (true) {
             final Holder<E> holder = this.getNext();

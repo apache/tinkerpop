@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.pipes.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 import com.tinkerpop.gremlin.pipes.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.pipes.util.optimizers.IdentityOptimizer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,11 +28,13 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     private final List<Pipe<?, ?>> pipes = new ArrayList<>();
     private final List<Optimizer> optimizers = new ArrayList<>();
     private Graph graph = null;
+    private boolean firstNext = true;
 
     private Gremlin(final Graph graph) {
         this.graph = graph;
-        //this.optimizers.add(new IdentityOptimizer());
+        this.optimizers.add(new IdentityOptimizer());
         this.optimizers.add(new HolderOptimizer());
+        //this.optimizers.add(new VertexQueryOptimizer());
     }
 
     private Gremlin(final Iterator<S> starts) {
@@ -100,22 +103,34 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         if (this.pipes.size() > 0)
             pipe.addStarts(this.pipes.get(this.pipes.size() - 1));
         this.pipes.add(pipe);
-        this.optimizers.stream()
-                .filter(o -> o.getOptimizationRate().equals(Optimizer.Rate.FINAL_COMPILE_TIME))
-                .forEach(o -> o.optimize(this));
+        this.optimize(Optimizer.Rate.STEP_COMPILE_TIME);
         return (P) this;
     }
 
     public boolean hasNext() {
+        this.optimize(Optimizer.Rate.FINAL_COMPILE_TIME);
         return this.pipes.get(this.pipes.size() - 1).hasNext();
     }
 
     public E next() {
+        this.optimize(Optimizer.Rate.FINAL_COMPILE_TIME);
         return (E) this.pipes.get(this.pipes.size() - 1).next().get();
     }
 
     public String toString() {
         return this.getPipes().toString();
+    }
+
+    private void optimize(final Optimizer.Rate rate) {
+        if (rate.equals(Optimizer.Rate.FINAL_COMPILE_TIME)) {
+            if (this.firstNext)
+                this.firstNext = false;
+            else
+                return;
+        }
+        this.optimizers.stream().
+                filter(o -> o.getOptimizationRate().equals(rate))
+                .forEach(o -> o.optimize(this));
     }
 
 }

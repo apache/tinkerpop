@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.VertexQuery;
 
+import java.util.Arrays;
 import java.util.function.BiPredicate;
 
 /**
@@ -96,5 +97,22 @@ public class VertexQueryBuilder extends DefaultVertexQuery implements QueryBuild
 
     public long count() {
         throw new UnsupportedOperationException();
+    }
+
+    public String toString() {
+        final StringBuilder builder = new StringBuilder(this.direction.toString());
+        if (this.labels.length > 0)
+            if (this.labels.length == 1)
+                builder.append(",").append(this.labels[0]);
+            else
+                builder.append(",").append(Arrays.asList(this.labels));
+        if (this.hasContainers.size() > 0)
+            if (this.hasContainers.size() == 1)
+                builder.append(",").append(this.hasContainers.get(0));
+            else
+                builder.append(",").append(this.hasContainers);
+        if (this.limit != Integer.MAX_VALUE)
+            builder.append(",").append(this.limit);
+        return builder.toString();
     }
 }
