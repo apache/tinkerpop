@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.groovy.GremlinLoader
 import com.tinkerpop.gremlin.Pipeline
+import com.tinkerpop.gremlin.groovy.GremlinLoader
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

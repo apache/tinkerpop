@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.blueprints.Graph
+import com.tinkerpop.gremlin.groovy.GremlinGroovy
 import com.tinkerpop.gremlin.groovy.GremlinLoader
-import com.tinkerpop.gremlin.Gremlin
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -14,7 +14,7 @@ class GraphLoader {
 
         Graph.metaClass.propertyMissing = { final String name ->
             if (GremlinLoader.isStep(name)) {
-                return Gremlin.of((Graph) delegate)."$name"();
+                return GremlinGroovy.of((Graph) delegate)."$name"();
             } else {
                 throw new MissingPropertyException(name, delegate.getClass());
             }
@@ -22,7 +22,7 @@ class GraphLoader {
 
         Graph.metaClass.methodMissing = { final String name, final def args ->
             if (GremlinLoader.isStep(name)) {
-                return Gremlin.of((Graph) delegate)."$name"(* args);
+                return GremlinGroovy.of((Graph) delegate)."$name"(* args);
             } else {
                 throw new MissingMethodException(name, delegate.getClass());
             }

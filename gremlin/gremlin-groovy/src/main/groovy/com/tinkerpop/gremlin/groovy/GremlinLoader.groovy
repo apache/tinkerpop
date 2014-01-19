@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.groovy
 
+import com.tinkerpop.gremlin.Pipe
+import com.tinkerpop.gremlin.Pipeline
 import com.tinkerpop.gremlin.Tokens
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import com.tinkerpop.gremlin.groovy.loaders.GraphLoader
 import com.tinkerpop.gremlin.groovy.loaders.PipeLoader
-import com.tinkerpop.gremlin.Pipe
-import com.tinkerpop.gremlin.Pipeline
 import groovy.grape.Grape
 
 /**
@@ -25,7 +25,7 @@ class GremlinLoader {
 
         Pipeline.getMethods().each {
             if (it.getReturnType().equals(Pipeline.class)) {
-                GremlinLoader.addStep(it.getName())
+                addStep(it.getName())
             }
         }
 
@@ -68,15 +68,15 @@ class GremlinLoader {
     }
 
     public static void addStep(final String stepName) {
-        GremlinLoader.steps.add(stepName)
+        steps.add(stepName)
     }
 
     public static boolean isStep(final String stepName) {
-        return GremlinLoader.steps.contains(stepName)
+        return steps.contains(stepName)
     }
 
     public static Set<String> getStepNames() {
-        return new HashSet(GremlinLoader.steps)
+        return new HashSet(steps)
     }
 
     public static void defineStep(final String stepName, final List<Class> classes, final Closure stepClosure) {
