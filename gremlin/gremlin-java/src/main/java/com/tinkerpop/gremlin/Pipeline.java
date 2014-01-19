@@ -61,6 +61,8 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public void registerOptimizer(final Optimizer optimizer);
 
+    public List<Optimizer> getOptimizers();
+
     public void addStarts(final Iterator<Holder<S>> starts);
 
 

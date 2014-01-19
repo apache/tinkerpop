@@ -26,6 +26,7 @@ public class GraphQueryPipe<S extends Element> extends AbstractPipe<S, S> {
         this.queryBuilder = queryBuilder;
         this.resultingElementClass = resultingElementClass;
         this.graph = graph;
+        this.generateHolderIterator(false);
     }
 
     public void generateHolderIterator(final boolean trackPaths) {

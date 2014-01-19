@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.pipes.filter.HasPipe;
 import com.tinkerpop.gremlin.pipes.filter.IntervalPipe;
 import com.tinkerpop.gremlin.pipes.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
-import com.tinkerpop.gremlin.pipes.map.VertexEdgePipe;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 
 /**
@@ -40,6 +39,7 @@ public class GraphQueryOptimizer implements Optimizer {
                 graphQueryPipe.queryBuilder.has(((IntervalPipe) lastPipe).endContainer.key, ((IntervalPipe) lastPipe).endContainer.predicate, ((IntervalPipe) lastPipe).endContainer.value);
             }
             pipeline.getPipes().remove(lastPipe);
+            graphQueryPipe.generateHolderIterator(false);
         }
 
         return pipeline;

@@ -6,9 +6,12 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.GraphQueryBuilder;
 import com.tinkerpop.gremlin.pipes.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 import com.tinkerpop.gremlin.pipes.util.HolderIterator;
+import com.tinkerpop.gremlin.pipes.util.optimizers.GraphQueryOptimizer;
 import com.tinkerpop.gremlin.pipes.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.pipes.util.optimizers.IdentityOptimizer;
+import com.tinkerpop.gremlin.pipes.util.optimizers.VertexQueryOptimizer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +37,8 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         this.graph = graph;
         this.optimizers.add(new IdentityOptimizer());
         this.optimizers.add(new HolderOptimizer());
-        //this.optimizers.add(new VertexQueryOptimizer());
+        this.optimizers.add(new VertexQueryOptimizer());
+        this.optimizers.add(new GraphQueryOptimizer());
     }
 
     private Gremlin(final Iterator<S> starts) {
@@ -61,6 +65,10 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
 
     public void registerOptimizer(final Optimizer optimizer) {
         this.optimizers.add(optimizer);
+    }
+
+    public List<Optimizer> getOptimizers() {
+        return this.optimizers;
     }
 
     public Gremlin<Vertex, Vertex> V() {
@@ -131,6 +139,10 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         this.optimizers.stream().
                 filter(o -> o.getOptimizationRate().equals(rate))
                 .forEach(o -> o.optimize(this));
+    }
+
+    public boolean equals(final Object object) {
+        return object instanceof Iterator && GremlinHelper.areEqual(this, (Iterator) object);
     }
 
 }

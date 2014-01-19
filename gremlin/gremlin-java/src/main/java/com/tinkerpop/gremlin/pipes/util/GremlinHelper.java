@@ -3,10 +3,8 @@ package com.tinkerpop.gremlin.pipes.util;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.Pipeline;
-import com.tinkerpop.gremlin.SimpleHolder;
 
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -36,7 +34,7 @@ public class GremlinHelper {
                 }
             }
         }
-        return SimpleHolder.NO_FUTURE;
+        return Holder.NO_FUTURE;
     }
 
     public static <S, E> Pipe<S, ?> getStart(final Pipeline<S, E> pipeline) {
@@ -47,13 +45,14 @@ public class GremlinHelper {
         return (Pipe) pipeline.getPipes().get(pipeline.getPipes().size() - 1);
     }
 
-    public static void chainPipes(final Pipeline pipeline) {
-        final List<Pipe> pipes = pipeline.getPipes();
-        if (pipes.size() > 0) {
-            for (int i = 1; i < pipes.size(); i++) {
-                pipes.get(i).addStarts(pipes.get(i - 1));
-            }
+    public static boolean areEqual(final Iterator a, final Iterator b) {
+        while (a.hasNext() || b.hasNext()) {
+            if (a.hasNext() != b.hasNext())
+                return false;
+            if (!a.next().equals(b.next()))
+                return false;
         }
+        return true;
     }
 
     public static boolean hasNextIteration(final Iterator iterator) {
