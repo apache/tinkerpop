@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.pipes.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.pipes.map.MatchPipe;
 import com.tinkerpop.gremlin.pipes.map.PathPipe;
 import com.tinkerpop.gremlin.pipes.map.SelectPipe;
+import com.tinkerpop.gremlin.pipes.sideeffect.LinkPipe;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -29,6 +30,7 @@ public class HolderOptimizer implements Optimizer.FinalOptimizer, Optimizer {
                         || p instanceof BackPipe
                         || p instanceof SelectPipe
                         || p instanceof SimplePathPipe
-                        || p instanceof MatchPipe).findFirst().isPresent();
+                        || p instanceof MatchPipe
+                        || p instanceof LinkPipe).findFirst().isPresent();
     }
 }

@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IntervalPipe extends FilterPipe<Element> {
+public class IntervalPipe<S extends Element> extends FilterPipe<S> {
 
     public HasContainer startContainer;
     public HasContainer endContainer;
