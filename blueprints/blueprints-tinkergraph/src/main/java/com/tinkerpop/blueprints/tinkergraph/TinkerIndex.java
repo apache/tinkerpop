@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -109,7 +110,11 @@ class TinkerIndex<T extends Element> implements Serializable {
     }
 
     public void createKeyIndex(final String key) {
-        Objects.requireNonNull(key);
+        if (null == key)
+            throw Graph.Exceptions.argumentCanNotBeNull("key");
+        if (key.isEmpty())
+            throw new IllegalArgumentException("The key for the index cannot be an empty string");
+
         if (this.indexedKeys.contains(key))
             return;
         this.indexedKeys.add(key);
