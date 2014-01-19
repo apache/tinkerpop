@@ -18,6 +18,7 @@ public class DedupTest {
     }
 
     public void g_V_both_dedup_name(final Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         final List<String> names = StreamFactory.stream(pipe).collect(Collectors.toList());
         assertEquals(6, names.size());
         assertTrue(names.contains("marko"));
@@ -30,6 +31,7 @@ public class DedupTest {
     }
 
     public void g_V_both_dedupXlangX_name(final Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         final List<String> names = StreamFactory.stream(pipe).collect(Collectors.toList());
         assertEquals(2, names.size());
         assertTrue(names.contains("marko") || names.contains("peter") || names.contains("josh") || names.contains("vadas"));

@@ -39,4 +39,9 @@ public class BackTest extends com.tinkerpop.gremlin.test.map.BackTest {
         super.g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(Gremlin.of(g).v(1).outE().as("here").inV().has("name", "vadas").back("here"));
     }
 
+    @Test
+    public void g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX() {
+        super.g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(Gremlin.of(g).v(1).outE("knows").has("weight", 1.0f).as("here").inV().has("name", "josh").back("here"));
+    }
+
 }

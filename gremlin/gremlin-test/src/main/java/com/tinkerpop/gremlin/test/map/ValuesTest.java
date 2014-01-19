@@ -14,6 +14,7 @@ public class ValuesTest {
     }
 
     public void g_V_values(final Iterator<Map<String, Object>> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -40,6 +41,7 @@ public class ValuesTest {
     }
 
     public void g_V_valuesXname_ageX(final Iterator<Map<String, Object>> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -71,6 +73,7 @@ public class ValuesTest {
     }
 
     public void g_E_valuesXid_label_weightX(final Iterator<Map<String, Object>> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;

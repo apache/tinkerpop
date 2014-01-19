@@ -33,12 +33,14 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     private Graph graph = null;
     private boolean firstNext = true;
 
-    private Gremlin(final Graph graph) {
+    private Gremlin(final Graph graph, final boolean useDefaultOptimizers) {
         this.graph = graph;
-        this.optimizers.add(new IdentityOptimizer());
-        this.optimizers.add(new HolderOptimizer());
-        this.optimizers.add(new VertexQueryOptimizer());
-        this.optimizers.add(new GraphQueryOptimizer());
+        if (useDefaultOptimizers) {
+            this.optimizers.add(new IdentityOptimizer());
+            this.optimizers.add(new HolderOptimizer());
+            this.optimizers.add(new VertexQueryOptimizer());
+            this.optimizers.add(new GraphQueryOptimizer());
+        }
     }
 
     private Gremlin(final Iterator<S> starts) {
@@ -52,7 +54,11 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     }
 
     public static Gremlin<?, ?> of(final Graph graph) {
-        return new Gremlin(graph);
+        return new Gremlin(graph, true);
+    }
+
+    public static Gremlin<?, ?> of(final Graph graph, final boolean useDefaultOptimizers) {
+        return new Gremlin(graph, useDefaultOptimizers);
     }
 
     public <T> void put(final String variable, final T t) {

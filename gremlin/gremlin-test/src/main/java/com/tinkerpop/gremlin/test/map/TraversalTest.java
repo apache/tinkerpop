@@ -21,6 +21,7 @@ public class TraversalTest {
     // VERTEX ADJACENCY
 
     public void g_V(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
         while (pipe.hasNext()) {
@@ -32,6 +33,7 @@ public class TraversalTest {
     }
 
     public void g_v1_out(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
         while (pipe.hasNext()) {
@@ -47,6 +49,7 @@ public class TraversalTest {
     }
 
     public void g_v2_in(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -56,6 +59,7 @@ public class TraversalTest {
     }
 
     public void g_v4_both(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
         while (pipe.hasNext()) {
@@ -71,12 +75,14 @@ public class TraversalTest {
     }
 
     public void g_v1_outX1_knowsX_name(final Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         final String name = pipe.next();
         assertTrue(name.equals("vadas") || name.equals("josh"));
         assertFalse(pipe.hasNext());
     }
 
     public void g_V_bothX1_createdX_name(final Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -89,6 +95,7 @@ public class TraversalTest {
     // EDGE ADJACENCY
 
     public void g_E(final Iterator<Edge> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Edge> edges = new HashSet<>();
         while (pipe.hasNext()) {
@@ -100,6 +107,7 @@ public class TraversalTest {
     }
 
     public void g_v1_outE(final Iterator<Edge> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Edge> edges = new HashSet<>();
         while (pipe.hasNext()) {
@@ -113,6 +121,7 @@ public class TraversalTest {
     }
 
     public void g_v2_inE(final Iterator<Edge> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -122,6 +131,7 @@ public class TraversalTest {
     }
 
     public void g_v4_bothE(final Iterator<Edge> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Edge> edges = new HashSet<>();
         while (pipe.hasNext()) {
@@ -135,6 +145,7 @@ public class TraversalTest {
     }
 
     public void g_v4_bothEX1_createdX(final Iterator<Edge> pipe) {
+        System.out.println("Testing: " + pipe);
         final Edge edge = pipe.next();
         assertEquals("created", edge.getLabel());
         assertTrue(edge.getValue("weight").equals(1.0f) || edge.getValue("weight").equals(0.4f));
@@ -142,6 +153,7 @@ public class TraversalTest {
     }
 
     public void g_V_inEX2_knowsX_outV_name(final Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -164,6 +176,7 @@ public class TraversalTest {
     // VERTEX EDGE LABEL ADJACENCY
 
     public void g_v1_outXknowsX(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
         while (pipe.hasNext()) {
@@ -190,6 +203,7 @@ public class TraversalTest {
     }
 
     public void g_V_out_out(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
         while (pipe.hasNext()) {
@@ -210,6 +224,7 @@ public class TraversalTest {
     // PROPERTY TESTING
 
     public void g_v1_out_propertyXnameX(final Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<String> names = new HashSet<>();
         while (pipe.hasNext()) {

@@ -74,10 +74,10 @@ public class GremlinHelper {
         final StringBuilder builder = new StringBuilder(pipe.getClass().getSimpleName());
         if (arguments.length > 0) {
             builder.append("(");
-            for (final Object arg : arguments) {
-                builder.append(arg).append(",");
+            for (int i = 0; i < arguments.length; i++) {
+                if (i > 0) builder.append(",");
+                builder.append(arguments[i]);
             }
-            builder.replace(builder.length() - 1, builder.length(), "");
             builder.append(")");
         }
         if (GremlinHelper.isLabeled(pipe))

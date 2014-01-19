@@ -18,6 +18,7 @@ public class RangeTest {
     }
 
     public void g_v1_out_rangeX0_1X(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -27,6 +28,7 @@ public class RangeTest {
     }
 
     public void g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -41,6 +43,7 @@ public class RangeTest {
     }
 
     public void g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;

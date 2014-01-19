@@ -42,7 +42,10 @@ public class GraphQueryPipe<S extends Element> extends AbstractPipe<S, S> {
     }
 
     public String toString() {
-        return GremlinHelper.makePipeString(this, this.queryBuilder);
+        if (this.queryBuilder.hasContainers.size() > 0)
+            return GremlinHelper.makePipeString(this, this.returnClass.getSimpleName().toLowerCase(), this.queryBuilder);
+        else
+            return GremlinHelper.makePipeString(this, this.returnClass.getSimpleName().toLowerCase());
     }
 
 }
