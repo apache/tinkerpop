@@ -22,6 +22,14 @@ public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
         this.function = function;
     }
 
+    public FlatMapPipe(final Pipeline pipeline) {
+        super(pipeline);
+    }
+
+    public void setFunction(final Function<Holder<S>, Iterator<E>> function) {
+        this.function = function;
+    }
+
     public Holder<E> processNextStart() {
         while (true) {
             final Holder<E> holder = this.getNext();
@@ -35,7 +43,7 @@ public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
     private synchronized Holder<E> getNext() {
         if (this.queue.isEmpty()) {
             final Holder<S> holder = this.starts.next();
-            this.queue.add(new HolderIterator<>((Optional) Optional.of(holder), this, this.function.apply(holder)));
+            this.queue.add(new HolderIterator<>((Optional) Optional.of(holder), this, this.function.apply(holder), holder instanceof PathHolder));
             return null;
         } else {
             final Iterator<Holder<E>> iterator = this.queue.peek();

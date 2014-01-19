@@ -7,9 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -22,6 +20,7 @@ public class BackTest {
     }
 
     public void g_v1_asXhereX_out_backXhereX(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -32,6 +31,7 @@ public class BackTest {
 
 
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -43,6 +43,7 @@ public class BackTest {
     }
 
     public void g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(final Iterator<Edge> pipe) {
+        System.out.println("Testing: " + pipe);
         final Edge edge = pipe.next();
         assertEquals("knows", edge.getLabel());
         assertEquals("7", edge.getId());
@@ -51,6 +52,7 @@ public class BackTest {
     }
 
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(final Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         final Set<String> names = new HashSet<>();
         while (pipe.hasNext()) {
@@ -61,5 +63,17 @@ public class BackTest {
         assertEquals(2, names.size());
         assertTrue(names.contains("ripple"));
         assertTrue(names.contains("lop"));
+    }
+
+    public void g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Iterator<Edge> pipe) {
+        System.out.println("Testing: " + pipe);
+        assertTrue(pipe.hasNext());
+        assertTrue(pipe.hasNext());
+        Edge edge = pipe.next();
+        assertEquals("8", edge.getId());
+        assertEquals("knows", edge.getLabel());
+        assertEquals(Float.valueOf(1.0f), edge.<Float>getValue("weight"));
+        assertFalse(pipe.hasNext());
+        assertFalse(pipe.hasNext());
     }
 }

@@ -22,7 +22,7 @@ public class IdentityOptimizerTest {
         Pipeline gremlin = Gremlin.of().identity().identity().identity();
         assertEquals(4, gremlin.getPipes().size());
         new IdentityOptimizer().optimize(gremlin);
-        assertEquals(1, gremlin.getPipes().size());
+        assertEquals(0, gremlin.getPipes().size());
     }
 
     @Test
@@ -30,7 +30,7 @@ public class IdentityOptimizerTest {
         Pipeline gremlin = Gremlin.of().identity().as("x").identity().identity().as("y");
         assertEquals(4, gremlin.getPipes().size());
         new IdentityOptimizer().optimize(gremlin);
-        assertEquals(3, gremlin.getPipes().size());
+        assertEquals(2, gremlin.getPipes().size());
         boolean foundX = false;
         int counter = 0;
         for (final Pipe pipe : (List<Pipe>) gremlin.getPipes()) {

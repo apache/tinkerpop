@@ -22,6 +22,7 @@ public class PathTest {
     }
 
     public void g_v1_propertyXnameX_path(final Iterator<Path> pipe) {
+        System.out.println("Testing: " + pipe);
         final Path path = pipe.next();
         assertFalse(pipe.hasNext());
         assertEquals(2, path.size());
@@ -29,7 +30,8 @@ public class PathTest {
         assertEquals("marko", path.<String>get(1));
     }
 
-    public void g_v1_out_pathXage__nameX(final Iterator<Path> pipe) {
+    public void g_v1_out_pathXage_nameX(final Iterator<Path> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         final Set<String> names = new HashSet<>();
         while (pipe.hasNext()) {
@@ -43,7 +45,8 @@ public class PathTest {
         assertEquals(3, names.size());
     }
 
-    public void g_V_out_loopX1__loops_lt_3X_pathXit__name__langX(final Iterator<Path> pipe) {
+    public void g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX(final Iterator<Path> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;

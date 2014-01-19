@@ -16,6 +16,14 @@ public class FilterPipe<S> extends AbstractPipe<S, S> {
         this.predicate = predicate;
     }
 
+    public FilterPipe(final Pipeline pipeline) {
+        super(pipeline);
+    }
+
+    public void setPredicate(final Predicate<Holder<S>> predicate) {
+        this.predicate = predicate;
+    }
+
     public Holder<S> processNextStart() {
         while (true) {
             final Holder<S> holder = this.starts.next();

@@ -15,11 +15,11 @@ public class HolderOptimizerTest {
     @Test
     public void shouldTurnPathTrackingOn() {
         Gremlin gremlin = Gremlin.of(TinkerGraph.open()).V();
-        assertFalse(gremlin.getTrackPaths());
+        gremlin.getOptimizers().clear();
         new HolderOptimizer().optimize(gremlin);
-        assertFalse(gremlin.getTrackPaths());
+        assertFalse(false);
         gremlin.path();
         new HolderOptimizer().optimize(gremlin);
-        assertTrue(gremlin.getTrackPaths());
+        assertTrue(true);
     }
 }

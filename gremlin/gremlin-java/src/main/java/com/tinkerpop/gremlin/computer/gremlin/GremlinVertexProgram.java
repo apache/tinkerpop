@@ -5,11 +5,12 @@ import com.tinkerpop.blueprints.computer.GraphMemory;
 import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.computer.VertexProgram;
+import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.PathHolder;
 import com.tinkerpop.gremlin.SimpleHolder;
-import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
+import com.tinkerpop.gremlin.pipes.util.optimizers.HolderOptimizer;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -36,7 +37,7 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     public void setup(final GraphMemory graphMemory) {
         graphMemory.setIfAbsent(GREMLIN_PIPELINE, this.gremlin);
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
-        graphMemory.setIfAbsent(TRACK_PATHS, this.gremlin.get().getTrackPaths());
+        graphMemory.setIfAbsent(TRACK_PATHS, new HolderOptimizer().trackPaths(this.gremlin.get()));
     }
 
     public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {

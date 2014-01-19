@@ -43,8 +43,8 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public <V> void setProperty(final String key, final V value) {
+        ElementHelper.validateProperty(key, value);
         if (TinkerGraphComputer.State.STANDARD == this.state) {
-            ElementHelper.validateProperty(key, value);
             final Property oldProperty = super.getProperty(key);
             if (value == AnnotatedList.make()) {
                 if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList))
@@ -53,7 +53,6 @@ class TinkerVertex extends TinkerElement implements Vertex {
                 this.properties.put(key, new TinkerProperty<>(this, key, value));
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
         } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
-            ElementHelper.validateProperty(key, value);
             if (this.vertexMemory.getComputeKeys().containsKey(key))
                 this.vertexMemory.setProperty(this, key, value);
             else

@@ -1,31 +1,60 @@
 package com.tinkerpop.gremlin.pipes.util.optimizers;
 
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Optimizer;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.pipes.filter.HasPipe;
-import com.tinkerpop.gremlin.pipes.map.VertexEdgePipe;
-
-import java.util.List;
+import com.tinkerpop.gremlin.pipes.filter.IntervalPipe;
+import com.tinkerpop.gremlin.pipes.map.EdgeVertexPipe;
+import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
+import com.tinkerpop.gremlin.pipes.map.VertexQueryPipe;
+import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexQueryOptimizer implements Optimizer {
+public class VertexQueryOptimizer implements Optimizer.StepOptimizer, Optimizer {
 
-    public <S, E> Pipeline<S, E> optimize(final Pipeline<S, E> pipeline) {
-        final List<Pipe<?, ?>> pipes = pipeline.getPipes();
-        for (int i = 0; i < pipes.size(); i++) {
-            if (pipes.get(i) instanceof HasPipe) {
-                if (pipes.get(i - 1) instanceof VertexEdgePipe) {
-                    ((VertexEdgePipe) pipes.get(i - 1)).queryBuilder.hasContainers.add(((HasPipe) pipes.get(i)).hasContainer);
-                }
-            }
+    public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
+        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe || pipe instanceof EdgeVertexPipe))
+            return true;
+        else {
+            if (GremlinHelper.isLabeled(pipe))
+                return true;
         }
-        return pipeline;
-    }
 
-    public Rate getOptimizationRate() {
-        return Rate.COMPILE_TIME;
+        VertexQueryPipe vertexQueryPipe = null;
+        for (int i = pipeline.getPipes().size() - 1; i >= 0; i--) {
+            if (pipeline.getPipes().get(i) instanceof VertexQueryPipe) {
+                vertexQueryPipe = (VertexQueryPipe) pipeline.getPipes().get(i);
+                break;
+            } else if (!(pipeline.getPipes().get(i) instanceof IdentityPipe
+                    || pipeline.getPipes().get(i) instanceof HasPipe
+                    || pipeline.getPipes().get(i) instanceof IntervalPipe))
+                break;
+        }
+
+        if (null != vertexQueryPipe && !GremlinHelper.isLabeled(vertexQueryPipe)) {
+            if (pipe instanceof EdgeVertexPipe) {
+                vertexQueryPipe.returnClass = Vertex.class;
+            } else if (pipe instanceof HasPipe) {
+                final HasPipe hasPipe = (HasPipe) pipe;
+                if (!vertexQueryPipe.returnClass.equals(Vertex.class)) {
+                    vertexQueryPipe.queryBuilder.has(hasPipe.hasContainer.key, hasPipe.hasContainer.predicate, hasPipe.hasContainer.value);
+                } else
+                    return true;
+            } else if (pipe instanceof IntervalPipe) {
+                final IntervalPipe intervalPipe = (IntervalPipe) pipe;
+                vertexQueryPipe.queryBuilder.has(intervalPipe.startContainer.key, intervalPipe.startContainer.predicate, intervalPipe.startContainer.value);
+                vertexQueryPipe.queryBuilder.has(intervalPipe.endContainer.key, intervalPipe.endContainer.predicate, intervalPipe.endContainer.value);
+            } else {
+                throw new IllegalStateException("This pipe should not be accessible via this optimizer: " + pipe.getClass());
+            }
+            vertexQueryPipe.generateFunction();
+            return false;
+        }
+
+        return true;
     }
 }

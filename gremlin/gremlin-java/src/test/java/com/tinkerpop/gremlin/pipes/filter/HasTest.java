@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.pipes.filter;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import com.tinkerpop.gremlin.T;
 import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.T;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;
 
@@ -24,6 +24,7 @@ public class HasTest extends com.tinkerpop.gremlin.test.filter.HasTest {
 
     @Test
     public void g_V_hasXname_markoX() {
+        super.g_V_hasXname_markoX(Gremlin.of(g, false).V().has("name", "marko"));   // TODO: Do this everywhere? More programmatic way to do this?
         super.g_V_hasXname_markoX(Gremlin.of(g).V().has("name", "marko"));
     }
 

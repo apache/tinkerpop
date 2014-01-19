@@ -68,4 +68,8 @@ public class HasContainer {
         }
     }
 
+    public String toString() {
+        return "[" + this.key + "," + this.predicate + "," + this.value + "]";
+    }
+
 }
