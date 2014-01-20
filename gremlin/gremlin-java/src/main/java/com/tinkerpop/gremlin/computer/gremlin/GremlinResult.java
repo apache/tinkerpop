@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.computer.gremlin;
 
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.Pipeline;
@@ -26,7 +28,7 @@ public class GremlinResult<T> implements Iterator<T> {
         this.graph = graph;
         try {
             this.computeResult =
-                    this.graph.compute()
+                    graph.compute()
                             .program(GremlinVertexProgram.create().gremlin((Supplier) gremlinSupplier).build())
                             .submit()
                             .get();
@@ -52,17 +54,23 @@ public class GremlinResult<T> implements Iterator<T> {
         if (new HolderOptimizer().trackPaths(this.gremlinSupplier.get())) {
             final List list = new ArrayList();
             StreamFactory.stream(this.graph.query().vertices())
-                    .map(v -> this.computeResult.getVertexMemory().<GremlinPaths>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).orElse(null))
-                    .filter(t -> null != t)
-                    .forEach(t -> {
-                        t.getDoneObjectTracks().entrySet().stream().forEach(h -> {
-                            for (int i = 0; i < h.getValue().size(); i++) {
-                                list.add(h.getKey());
+                    .map(vertex -> this.computeResult.getVertexMemory().<GremlinPaths>getProperty(vertex, GremlinVertexProgram.GREMLIN_TRACKER).orElse(null))
+                    .filter(tracker -> null != tracker)
+                    .forEach(tracker -> {
+                        tracker.getDoneObjectTracks().entrySet().stream().forEach(entry -> {
+                            for (int i = 0; i < entry.getValue().size(); i++) {
+                                list.add(entry.getKey());
                             }
                         });
-                        t.getDoneGraphTracks().entrySet().stream().forEach(h -> {
-                            for (int i = 0; i < h.getValue().size(); i++) {
-                                list.add(h.getKey());
+                        tracker.getDoneGraphTracks().entrySet().stream().forEach(entry -> {
+                            for (int i = 0; i < entry.getValue().size(); i++) {
+                                if (entry.getKey() instanceof Vertex) {
+                                    list.add(this.graph.query().ids(((Vertex) entry.getKey()).getId()).vertices().iterator().next());
+                                } else if (entry.getKey() instanceof Edge) {
+                                    list.add(this.graph.query().ids(((Edge) entry.getKey()).getId()).edges().iterator().next());
+                                } else {
+                                    list.add(entry.getKey());
+                                }
                             }
                         });
                     });
@@ -70,17 +78,23 @@ public class GremlinResult<T> implements Iterator<T> {
         } else {
             final List list = new ArrayList();
             StreamFactory.stream(this.graph.query().vertices())
-                    .map(v -> this.computeResult.getVertexMemory().<GremlinCounters>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).orElse(null))
-                    .filter(t -> null != t)
-                    .forEach(t -> {
-                        t.getDoneObjectTracks().entrySet().stream().forEach(h -> {
-                            for (int i = 0; i < h.getValue(); i++) {
-                                list.add(h.getKey().get());
+                    .map(vertex -> this.computeResult.getVertexMemory().<GremlinCounters>getProperty(vertex, GremlinVertexProgram.GREMLIN_TRACKER).orElse(null))
+                    .filter(tracker -> null != tracker)
+                    .forEach(tracker -> {
+                        tracker.getDoneObjectTracks().entrySet().stream().forEach(entry -> {
+                            for (int i = 0; i < entry.getValue(); i++) {
+                                list.add(entry.getKey().get());
                             }
                         });
-                        t.getDoneGraphTracks().entrySet().stream().forEach(h -> {
-                            for (int i = 0; i < h.getValue(); i++) {
-                                list.add(h.getKey().get());
+                        tracker.getDoneGraphTracks().entrySet().stream().forEach(entry -> {
+                            for (int i = 0; i < entry.getValue(); i++) {
+                                if (entry.getKey().get() instanceof Vertex) {
+                                    list.add(this.graph.query().ids(((Vertex) entry.getKey().get()).getId()).vertices().iterator().next());
+                                } else if (entry.getKey().get() instanceof Edge) {
+                                    list.add(this.graph.query().ids(((Edge) entry.getKey().get()).getId()).edges().iterator().next());
+                                } else {
+                                    list.add(entry.getKey().get());
+                                }
                             }
                         });
                     });

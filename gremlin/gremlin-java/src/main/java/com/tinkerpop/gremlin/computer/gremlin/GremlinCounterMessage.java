@@ -54,8 +54,8 @@ public class GremlinCounterMessage extends GremlinMessage {
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final Map<Holder, Long> localCounts = new HashMap<>();
 
-        messages.forEach(m -> {
-            if (m.executeCounts(vertex, tracker, gremlin, localCounts))
+        messages.forEach(message -> {
+            if (message.executeCounts(vertex, tracker, gremlin, localCounts))
                 voteToHalt.set(false);
         });
 
@@ -72,16 +72,16 @@ public class GremlinCounterMessage extends GremlinMessage {
             }
         });
 
-        localCounts.forEach((o, c) -> {
-            if (o.get() instanceof Element || o.get() instanceof Property) {
-                final GremlinCounterMessage message = GremlinCounterMessage.of(o);
-                message.setCounter(c);
+        localCounts.forEach((holder, count) -> {
+            if (holder.get() instanceof Element || holder.get() instanceof Property) {
+                final GremlinCounterMessage message = GremlinCounterMessage.of(holder);
+                message.setCounter(count);
                 messenger.sendMessage(
                         vertex,
-                        MessageType.Global.of(GremlinVertexProgram.GREMLIN_MESSAGE, Messenger.getHostingVertices(o.get())),
+                        MessageType.Global.of(GremlinVertexProgram.GREMLIN_MESSAGE, Messenger.getHostingVertices(holder.get())),
                         message);
             } else {
-                MapHelper.incr(tracker.getObjectTracks(), o, c);
+                MapHelper.incr(tracker.getObjectTracks(), holder, count);
             }
         });
         return voteToHalt.get();
@@ -108,8 +108,8 @@ public class GremlinCounterMessage extends GremlinMessage {
 
     private static boolean processPipe(final Pipe<?, ?> pipe, final Map<Holder, Long> localCounts) {
         final boolean messageSent = pipe.hasNext();
-        pipe.forEachRemaining(h -> {
-            MapHelper.incr(localCounts, h, 1l);
+        pipe.forEachRemaining(holder -> {
+            MapHelper.incr(localCounts, holder, 1l);
         });
         return messageSent;
     }

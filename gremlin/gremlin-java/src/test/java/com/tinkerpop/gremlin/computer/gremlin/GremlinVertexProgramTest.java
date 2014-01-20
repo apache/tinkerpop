@@ -49,7 +49,7 @@ public class GremlinVertexProgramTest {
     @Test
     public void testIterable() throws Exception {
         final Graph g = TinkerFactory.createClassic();
-        new GremlinResult<>(g, () -> Gremlin.of().v("1").value("name").path()).forEachRemaining(System.out::println);
+        new GremlinResult<>(g, () -> Gremlin.of().v("1").out().outE()).forEachRemaining(System.out::println);
 
     }
 }

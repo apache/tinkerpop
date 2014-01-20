@@ -27,7 +27,7 @@ public interface Messenger<M extends Serializable> {
         if (object instanceof Vertex)
             return Arrays.asList((Vertex) object);
         else if (object instanceof Edge)
-            return Arrays.asList(((Edge) object).getVertex(Direction.OUT), ((Edge) object).getVertex(Direction.IN));
+            return Arrays.asList(((Edge) object).getVertex(Direction.OUT));
         else if (object instanceof Property)
             return getHostingVertices(((Property) object).getElement());
         else

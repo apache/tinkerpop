@@ -2,6 +2,10 @@ package com.tinkerpop.gremlin.computer.gremlin.map;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
+import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.computer.gremlin.GremlinResult;
+import com.tinkerpop.gremlin.test.ComplianceTest;
+import org.junit.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -10,7 +14,7 @@ public class TraversalTest extends com.tinkerpop.gremlin.test.map.TraversalTest 
 
     final Graph g = TinkerFactory.createClassic();
 
-    /*@Test
+    @Test
     public void testCompliance() {
         ComplianceTest.testCompliance(this.getClass());
     }
@@ -57,7 +61,6 @@ public class TraversalTest extends com.tinkerpop.gremlin.test.map.TraversalTest 
 
     @Test
     public void g_v2_inE() {
-        //new GremlinResult<>(g, () -> Gremlin.of().v("2").inE()).forEachRemaining(System.out::println);
         super.g_v2_inE(new GremlinResult<>(g, () -> Gremlin.of().v("2").inE()));
     }
 
@@ -119,5 +122,5 @@ public class TraversalTest extends com.tinkerpop.gremlin.test.map.TraversalTest 
     @Test
     public void g_v1_out_propertyXnameX() {
         super.g_v1_out_propertyXnameX(new GremlinResult<>(g, () -> Gremlin.of().v("1").out().value("name")));
-    }*/
+    }
 }
