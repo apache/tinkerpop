@@ -6,6 +6,7 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.StreamFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -133,5 +134,24 @@ public class TinkerGraphTest {
     public void shouldNotCreateEdgeIndexWithEmptyKey() {
         final TinkerGraph g = TinkerGraph.open();
         g.createIndex("", Edge.class);
+    }
+
+    @Test
+    public void shouldUpdateVertexIndicesInNewGraph() {
+        final TinkerGraph g = TinkerGraph.open();
+        g.createIndex("name", Vertex.class);
+
+        g.addVertex("name", "marko", "age", 29);
+        g.addVertex("name", "stephen", "age", 35);
+
+        // a tricky way to evaluate if indices are actually being used is to pass a phone BiPredicate to has()
+        // to get into the Pipeline and evaluate what's going through it.  in this case, we know that at index
+        // is used because only "stephen" ages should pass through the pipeline due to the inclusion of the
+        // key index lookup on "name".  If there's an age of something other than 35 in the pipeline being evaluated
+        // then something is wrong.
+        assertEquals(1, StreamFactory.stream(g.query().has("age", (t, u) -> {
+            assertEquals(35, t);
+            return true;
+        }, 35).has("name", "stephen").vertices()).count());
     }
 }
