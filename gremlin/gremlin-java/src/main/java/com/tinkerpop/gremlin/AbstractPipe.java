@@ -68,6 +68,4 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
     public String toString() {
         return GremlinHelper.makePipeString(this);
     }
-
-
 }

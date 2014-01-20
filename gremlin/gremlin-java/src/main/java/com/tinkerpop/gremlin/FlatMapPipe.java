@@ -1,11 +1,9 @@
 package com.tinkerpop.gremlin;
 
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
-import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.function.Function;
 
@@ -43,7 +41,7 @@ public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
     protected Holder<E> getNext() {
         if (this.queue.isEmpty()) {
             final Holder<S> holder = this.starts.next();
-            this.queue.add(new HolderIterator<>((Optional) Optional.of(holder), this, this.function.apply(holder), holder instanceof PathHolder));
+            this.queue.add(new FlatMapHolderIterator<>(holder, this, this.function.apply(holder)));
             return null;
         } else {
             final Iterator<Holder<E>> iterator = this.queue.peek();
@@ -55,4 +53,26 @@ public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
             }
         }
     }
+
+    private class FlatMapHolderIterator<A, B> implements Iterator<Holder<B>> {
+
+        private final Holder<A> head;
+        private final Iterator<B> iterator;
+        private final Pipe pipe;
+
+        protected FlatMapHolderIterator(final Holder<A> head, final Pipe pipe, final Iterator<B> iterator) {
+            this.iterator = iterator;
+            this.head = head;
+            this.pipe = pipe;
+        }
+
+        public boolean hasNext() {
+            return this.iterator.hasNext();
+        }
+
+        public Holder<B> next() {
+            return this.head.makeChild(this.pipe.getAs(), this.iterator.next());
+        }
+    }
+
 }

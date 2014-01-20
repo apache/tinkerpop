@@ -66,13 +66,6 @@ public class SimpleHolder<T> implements Holder<T> {
         return holder;
     }
 
-    public SimpleHolder<T> makeSibling(final String as) {
-        final SimpleHolder<T> holder = new SimpleHolder<>(this.t);
-        holder.future = this.future;
-        holder.loops = this.loops;
-        return holder;
-    }
-
     public String toString() {
         return t.toString();
     }

@@ -33,8 +33,8 @@ public class GraphQueryPipe<S extends Element> extends AbstractPipe<S, S> {
     public void generateHolderIterator(final boolean trackPaths) {
         this.starts = new ExpandablePipeIterator<>();
         this.starts.add(this.returnClass.equals(Vertex.class) ?
-                new HolderIterator(Optional.empty(), this, this.queryBuilder.build(this.graph).vertices().iterator(), trackPaths) :
-                new HolderIterator(Optional.empty(), this, this.queryBuilder.build(this.graph).edges().iterator(), trackPaths));
+                new HolderIterator(this, this.queryBuilder.build(this.graph).vertices().iterator(), trackPaths) :
+                new HolderIterator(this, this.queryBuilder.build(this.graph).edges().iterator(), trackPaths));
     }
 
     public Holder<S> processNextStart() {

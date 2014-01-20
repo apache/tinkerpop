@@ -24,11 +24,10 @@ public class MapPipe<S, E> extends AbstractPipe<S, E> {
         while (true) {
             final Holder<S> holder = this.starts.next();
             holder.setFuture(GremlinHelper.getNextPipeLabel(this.pipeline, this));
-
             final E temp = this.function.apply(holder);
             if (NO_OBJECT != temp)
-                if (holder.get().equals(temp))
-                    return (SimpleHolder<E>) holder.makeSibling(this.getAs()); // no path extension
+                if (holder.get().equals(temp)) // no path extension (i.e. a filter, identity, side-effect)
+                    return (Holder<E>) holder.makeSibling();
                 else
                     return holder.makeChild(this.getAs(), temp);
         }

@@ -46,7 +46,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     protected Gremlin(final Iterator<S> starts) {
         final Pipe<S, S> pipe = new IdentityPipe<>(this);
         this.addPipe(pipe);
-        this.addStarts(new HolderIterator<>(Optional.empty(), pipe, starts, false));
+        this.addStarts(new HolderIterator<>(pipe, starts, false));
     }
 
     public static Gremlin<?, ?> of() {
@@ -79,28 +79,28 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
 
     public Gremlin<Vertex, Vertex> V() {
         Objects.requireNonNull(this.graph);
-        GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Vertex.class);
+        final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Vertex.class);
         this.addPipe(pipe);
         return (Gremlin<Vertex, Vertex>) this;
     }
 
     public Gremlin<Edge, Edge> E() {
         Objects.requireNonNull(this.graph);
-        GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Edge.class);
+        final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Edge.class);
         this.addPipe(pipe);
         return (Gremlin<Edge, Edge>) this;
     }
 
     public Gremlin<Vertex, Vertex> v(final Object... ids) {
         Objects.requireNonNull(this.graph);
-        GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Vertex.class);
+        final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Vertex.class);
         this.addPipe(pipe);
         return (Gremlin<Vertex, Vertex>) this;
     }
 
     public Gremlin<Edge, Edge> e(final Object... ids) {
         Objects.requireNonNull(this.graph);
-        GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Edge.class);
+        final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Edge.class);
         this.addPipe(pipe);
         return (Gremlin<Edge, Edge>) this;
     }

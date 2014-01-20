@@ -32,6 +32,4 @@ public interface Holder<T> extends Serializable {
     public <R> Holder<R> makeChild(final String as, final R r);
 
     public Holder<T> makeSibling();
-
-    public Holder<T> makeSibling(final String as);
 }
