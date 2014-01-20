@@ -51,9 +51,12 @@ abstract class TinkerElement implements Element, Serializable {
         if (TinkerGraphComputer.State.STANDARD == this.state) {
             return this.properties.getOrDefault(key, Property.empty());
         } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
-            return this.vertexMemory.getComputeKeys().containsKey(key) ?
-                    this.vertexMemory.getProperty(this, key) :
-                    ((TinkerProperty) this.properties.get(key)).createClone(TinkerGraphComputer.State.CENTRIC, vertexMemory);
+            if (this.vertexMemory.getComputeKeys().containsKey(key))
+                return this.vertexMemory.getProperty(this, key);
+            else if (this.properties.containsKey(key))
+                return ((TinkerProperty) this.properties.get(key)).createClone(TinkerGraphComputer.State.CENTRIC, vertexMemory);
+            else
+                return Property.empty();
         } else {
             throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeRead();
         }

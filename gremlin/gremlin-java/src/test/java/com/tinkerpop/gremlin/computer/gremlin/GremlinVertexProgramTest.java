@@ -45,4 +45,11 @@ public class GremlinVertexProgramTest {
             });
         }
     }
+
+    @Test
+    public void testIterable() throws Exception {
+        final Graph g = TinkerFactory.createClassic();
+        new GremlinResultIterable(g, () -> (Gremlin) Gremlin.of().out().value("name")).forEach(System.out::println);
+
+    }
 }
