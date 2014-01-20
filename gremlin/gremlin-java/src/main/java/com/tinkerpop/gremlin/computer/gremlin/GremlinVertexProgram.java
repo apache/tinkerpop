@@ -63,23 +63,16 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
         if (graphQueryPipe.returnClass.equals(Vertex.class) && HasContainer.testAll(vertex, hasContainers)) {
             final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ? new PathHolder<>(graphQueryPipe.getAs(), vertex) : new SimpleHolder<>(graphQueryPipe.getAs(), vertex);
             holder.setFuture(future);
-            if (graphMemory.<Boolean>get(TRACK_PATHS))
-                messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), (M) GremlinPathMessage.of(holder));
-            else
-                messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), (M) GremlinCounterMessage.of(holder));
+            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(holder));
         } else if (graphQueryPipe.returnClass.equals(Edge.class)) {
             StreamFactory.stream(vertex.query().direction(Direction.OUT).edges())
                     .filter(e -> HasContainer.testAll(e, hasContainers))
                     .forEach(e -> {
                         final Holder<Edge> holder = graphMemory.<Boolean>get(TRACK_PATHS) ? new PathHolder<>(e) : new SimpleHolder<>(e);
                         holder.setFuture(future);
-                        if (graphMemory.<Boolean>get(TRACK_PATHS))
-                            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), (M) GremlinPathMessage.of(holder));
-                        else
-                            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), (M) GremlinCounterMessage.of(holder));
+                        messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(holder));
                     });
         }
-
         graphMemory.and(VOTE_TO_HALT, false);
     }
 

@@ -5,8 +5,6 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
-import com.tinkerpop.gremlin.Gremlin;
-import com.tinkerpop.gremlin.Pipeline;
 import org.junit.Ignore;
 import org.junit.Test;
 

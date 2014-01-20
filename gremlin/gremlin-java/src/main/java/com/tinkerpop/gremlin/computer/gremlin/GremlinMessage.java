@@ -46,6 +46,13 @@ public abstract class GremlinMessage implements Serializable {
             this.holder.getPath().microSize();
     }
 
+    public static <T extends GremlinMessage> T of(final Holder holder) {
+        if (holder instanceof PathHolder)
+            return (T) GremlinPathMessage.of(holder);
+        else
+            return (T) GremlinCounterMessage.of(holder);
+    }
+
     ///////////////////////////////////
 
     protected boolean stageHolder(final Vertex vertex) {

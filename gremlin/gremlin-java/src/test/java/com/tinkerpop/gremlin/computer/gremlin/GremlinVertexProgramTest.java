@@ -5,7 +5,6 @@ import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.Gremlin;
-import com.tinkerpop.gremlin.T;
 import org.junit.Test;
 
 import java.util.List;
