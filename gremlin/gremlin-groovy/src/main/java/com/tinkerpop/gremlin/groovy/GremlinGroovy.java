@@ -1,11 +1,9 @@
 package com.tinkerpop.gremlin.groovy;
 
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.gremlin.EmptyGraph;
 import com.tinkerpop.gremlin.Gremlin;
 import groovy.lang.Closure;
-
-import java.util.Collections;
-import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -16,12 +14,8 @@ public class GremlinGroovy<S, E> extends Gremlin<S, E> {
         super(graph, useDefaultOptimizers);
     }
 
-    protected GremlinGroovy(final Iterator<S> starts) {
-        super(starts);
-    }
-
     public static GremlinGroovy<?, ?> of() {
-        return new GremlinGroovy<>(Collections.emptyIterator());
+        return new GremlinGroovy<>(EmptyGraph.instance(),true);
     }
 
     public static GremlinGroovy<?, ?> of(final Graph graph) {

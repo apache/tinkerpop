@@ -7,6 +7,7 @@ import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.Pipeline;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -66,7 +67,7 @@ public class GremlinTest {
         Gremlin.of(g).V().as("x").out().as("y").select("x", "y").sideEffect(System.out::println).iterate();
     }
 
-    @Test
+    @Ignore
     public void testMatch() {
         TinkerGraph g = TinkerFactory.createClassic();
         Gremlin.of(g).V()

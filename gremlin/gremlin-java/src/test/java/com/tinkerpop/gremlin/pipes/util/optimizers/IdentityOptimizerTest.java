@@ -20,7 +20,7 @@ public class IdentityOptimizerTest {
     @Test
     public void shouldRemoveIdentityPipes() {
         Pipeline gremlin = Gremlin.of().identity().identity().identity();
-        assertEquals(4, gremlin.getPipes().size());
+        assertEquals(3, gremlin.getPipes().size());
         new IdentityOptimizer().optimize(gremlin);
         assertEquals(0, gremlin.getPipes().size());
     }
@@ -28,7 +28,7 @@ public class IdentityOptimizerTest {
     @Test
     public void shouldNotRemoveAsNamedIdentityPipes() {
         Pipeline gremlin = Gremlin.of().identity().as("x").identity().identity().as("y");
-        assertEquals(4, gremlin.getPipes().size());
+        assertEquals(3, gremlin.getPipes().size());
         new IdentityOptimizer().optimize(gremlin);
         assertEquals(2, gremlin.getPipes().size());
         boolean foundX = false;

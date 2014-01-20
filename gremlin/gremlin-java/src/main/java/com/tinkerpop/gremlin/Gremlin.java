@@ -5,21 +5,17 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.GraphQueryBuilder;
 import com.tinkerpop.gremlin.pipes.map.GraphQueryPipe;
-import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
 import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
-import com.tinkerpop.gremlin.pipes.util.HolderIterator;
 import com.tinkerpop.gremlin.pipes.util.optimizers.GraphQueryOptimizer;
 import com.tinkerpop.gremlin.pipes.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.pipes.util.optimizers.IdentityOptimizer;
 import com.tinkerpop.gremlin.pipes.util.optimizers.VertexQueryOptimizer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -43,14 +39,8 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         }
     }
 
-    protected Gremlin(final Iterator<S> starts) {
-        final Pipe<S, S> pipe = new IdentityPipe<>(this);
-        this.addPipe(pipe);
-        this.addStarts(new HolderIterator<>(pipe, starts, false));
-    }
-
     public static Gremlin<?, ?> of() {
-        return new Gremlin<>(Collections.emptyIterator());
+        return Gremlin.of(EmptyGraph.instance());
     }
 
     public static Gremlin<?, ?> of(final Graph graph) {
@@ -78,28 +68,24 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     }
 
     public Gremlin<Vertex, Vertex> V() {
-        Objects.requireNonNull(this.graph);
         final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Vertex.class);
         this.addPipe(pipe);
         return (Gremlin<Vertex, Vertex>) this;
     }
 
     public Gremlin<Edge, Edge> E() {
-        Objects.requireNonNull(this.graph);
         final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Edge.class);
         this.addPipe(pipe);
         return (Gremlin<Edge, Edge>) this;
     }
 
     public Gremlin<Vertex, Vertex> v(final Object... ids) {
-        Objects.requireNonNull(this.graph);
         final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Vertex.class);
         this.addPipe(pipe);
         return (Gremlin<Vertex, Vertex>) this;
     }
 
     public Gremlin<Edge, Edge> e(final Object... ids) {
-        Objects.requireNonNull(this.graph);
         final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Edge.class);
         this.addPipe(pipe);
         return (Gremlin<Edge, Edge>) this;

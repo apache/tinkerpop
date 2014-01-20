@@ -14,7 +14,7 @@ import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
 public class GraphQueryOptimizer implements Optimizer.StepOptimizer {
 
     public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
-        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe || pipe instanceof IdentityPipe))
+        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe))
             return true;
 
         GraphQueryPipe graphQueryPipe = null;

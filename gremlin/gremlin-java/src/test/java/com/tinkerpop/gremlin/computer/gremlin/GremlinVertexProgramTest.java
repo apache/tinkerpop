@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.T;
 import org.junit.Test;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class GremlinVertexProgramTest {
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
                         //Gremlin.of().out("created").in("created").value("name").map(o -> o.toString().length()))
                         //Gremlin.of().out().out().property("name").value().path())
-                        Gremlin.of().as("x").outE().inV().jump("x", o -> o.getLoops() < 2).value("name").map(s -> s.toString().length()).path())
+                        Gremlin.of().V().as("x").outE().inV().jump("x", o -> o.getLoops() < 2).value("name").map(s -> s.toString().length()).path())
                         .build())
                         .submit().get();
 
@@ -49,7 +50,7 @@ public class GremlinVertexProgramTest {
     @Test
     public void testIterable() throws Exception {
         final Graph g = TinkerFactory.createClassic();
-        new GremlinResultIterable(g, () -> (Gremlin) Gremlin.of().out().value("name")).forEach(System.out::println);
+        new GremlinResult<>(g, () -> Gremlin.of().v("1").value("name").path()).forEachRemaining(System.out::println);
 
     }
 }
