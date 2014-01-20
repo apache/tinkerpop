@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.pipes.sideeffect.LinkPipe;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HolderOptimizer implements Optimizer.FinalOptimizer, Optimizer {
+public class HolderOptimizer implements Optimizer.FinalOptimizer {
 
     public Pipeline optimize(final Pipeline pipeline) {
         final boolean trackPaths = this.trackPaths(pipeline);

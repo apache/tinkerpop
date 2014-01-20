@@ -11,10 +11,10 @@ import com.tinkerpop.gremlin.pipes.map.IdentityPipe;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphQueryOptimizer implements Optimizer.StepOptimizer, Optimizer {
+public class GraphQueryOptimizer implements Optimizer.StepOptimizer {
 
     public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
-        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe))
+        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe || pipe instanceof IdentityPipe))
             return true;
 
         GraphQueryPipe graphQueryPipe = null;

@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.pipes.util;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.PathHolder;
 import com.tinkerpop.gremlin.Pipe;
-import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.SimpleHolder;
 
 import java.util.Iterator;
@@ -19,7 +18,7 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
     private final Pipe pipe;
     private final boolean trackPaths;
 
-    public <P extends Pipeline> HolderIterator(final Optional<Holder<T>> headOptional, final Pipe pipe, final Iterator<T> iterator, final boolean trackPaths) {
+    public HolderIterator(final Optional<Holder<T>> headOptional, final Pipe pipe, final Iterator<T> iterator, final boolean trackPaths) {
         this.iterator = iterator;
         this.headOptional = headOptional;
         this.pipe = pipe;

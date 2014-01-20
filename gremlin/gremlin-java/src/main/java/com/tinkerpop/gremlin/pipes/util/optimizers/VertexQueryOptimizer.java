@@ -15,7 +15,7 @@ import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexQueryOptimizer implements Optimizer.StepOptimizer, Optimizer {
+public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
 
     public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
         if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe || pipe instanceof EdgeVertexPipe || pipe instanceof RangePipe))
