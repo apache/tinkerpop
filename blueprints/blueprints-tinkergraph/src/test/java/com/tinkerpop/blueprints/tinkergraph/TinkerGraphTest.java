@@ -154,4 +154,31 @@ public class TinkerGraphTest {
             return true;
         }, 35).has("name", "stephen").vertices()).count());
     }
+
+    @Test
+    public void shouldUpdateVertexIndicesInExistingGraph() {
+        final TinkerGraph g = TinkerGraph.open();
+
+        g.addVertex("name", "marko", "age", 29);
+        g.addVertex("name", "stephen", "age", 35);
+
+        // a tricky way to evaluate if indices are actually being used is to pass a phone BiPredicate to has()
+        // to get into the Pipeline and evaluate what's going through it.  in this case, we know that at index
+        // is not used because "stephen" and "marko" ages both pass through the pipeline.
+        assertEquals(1, StreamFactory.stream(g.query().has("age", (t, u) -> {
+            assertTrue(t.equals(35) || t.equals(29));
+            return true;
+        }, 35).has("name", "stephen").vertices()).count());
+
+        g.createIndex("name", Vertex.class);
+
+        // another spy into the pipeline for index check.  in this case, we know that at index
+        // is used because only "stephen" ages should pass through the pipeline due to the inclusion of the
+        // key index lookup on "name".  If there's an age of something other than 35 in the pipeline being evaluated
+        // then something is wrong.
+        assertEquals(1, StreamFactory.stream(g.query().has("age", (t, u) -> {
+            assertEquals(35, t);
+            return true;
+        }, 35).has("name", "stephen").vertices()).count());
+    }
 }
