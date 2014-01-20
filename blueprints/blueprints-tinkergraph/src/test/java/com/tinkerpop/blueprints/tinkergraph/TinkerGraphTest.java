@@ -61,7 +61,6 @@ public class TinkerGraphTest {
     }
 
     @Test
-    @Ignore
     public void shouldManageIndices() {
         final TinkerGraph g = TinkerGraph.open();
 

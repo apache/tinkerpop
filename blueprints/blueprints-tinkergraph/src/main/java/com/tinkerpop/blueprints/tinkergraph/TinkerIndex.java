@@ -94,7 +94,6 @@ class TinkerIndex<T extends Element> implements Serializable {
         }
     }
 
-
     public void autoUpdate(final String key, final Object newValue, final Object oldValue, final T element) {
         if (this.indexedKeys.contains(key)) {
             if (oldValue != null)
@@ -104,9 +103,8 @@ class TinkerIndex<T extends Element> implements Serializable {
     }
 
     public void autoRemove(final String key, final Object oldValue, final T element) {
-        if (this.indexedKeys.contains(key)) {
+        if (this.indexedKeys.contains(key))
             this.remove(key, oldValue, element);
-        }
     }
 
     public void createKeyIndex(final String key) {
@@ -128,10 +126,13 @@ class TinkerIndex<T extends Element> implements Serializable {
     }
 
     public void dropKeyIndex(final String key) {
-        this.index.remove(key).clear();
+        if (this.index.containsKey(key))
+            this.index.remove(key).clear();
+
+        this.indexedKeys.remove(key);
     }
 
     public Set<String> getIndexedKeys() {
-        return this.index.keySet();
+        return this.indexedKeys;
     }
 }
