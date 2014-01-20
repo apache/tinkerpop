@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin;
 
-import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
+import com.tinkerpop.gremlin.util.GremlinHelper;
 
 import java.util.function.Predicate;
 

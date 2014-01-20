@@ -4,12 +4,12 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.GraphQueryBuilder;
-import com.tinkerpop.gremlin.pipes.map.GraphQueryPipe;
-import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
-import com.tinkerpop.gremlin.pipes.util.optimizers.GraphQueryOptimizer;
-import com.tinkerpop.gremlin.pipes.util.optimizers.HolderOptimizer;
-import com.tinkerpop.gremlin.pipes.util.optimizers.IdentityOptimizer;
-import com.tinkerpop.gremlin.pipes.util.optimizers.VertexQueryOptimizer;
+import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
+import com.tinkerpop.gremlin.util.GremlinHelper;
+import com.tinkerpop.gremlin.util.optimizers.GraphQueryOptimizer;
+import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.util.optimizers.IdentityOptimizer;
+import com.tinkerpop.gremlin.util.optimizers.VertexQueryOptimizer;
 
 import java.util.ArrayList;
 import java.util.HashMap;

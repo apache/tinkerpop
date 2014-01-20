@@ -109,4 +109,14 @@ public class ValuesTest {
         }
         assertEquals(6, counter);
     }
+
+    public void g_v1_outXcreatedX_values(final Iterator<Map<String, Object>> pipe) {
+        System.out.println("Testing: " + pipe);
+        assertTrue(pipe.hasNext());
+        final Map<String, Object> values = pipe.next();
+        assertFalse(pipe.hasNext());
+        assertEquals("lop", values.get("name"));
+        assertEquals("java", values.get("lang"));
+        assertEquals(2, values.size());
+    }
 }

@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.groovy.console;
 
-import com.tinkerpop.gremlin.pipes.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.util.FastNoSuchElementException;
 import groovy.lang.Closure;
 import org.codehaus.groovy.tools.shell.IO;
 

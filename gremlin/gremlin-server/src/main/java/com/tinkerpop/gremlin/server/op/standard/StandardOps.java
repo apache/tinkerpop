@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.server.op.standard;
 
 import com.codahale.metrics.Timer;
-import com.tinkerpop.gremlin.pipes.util.SingleIterator;
+import com.tinkerpop.gremlin.util.SingleIterator;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;

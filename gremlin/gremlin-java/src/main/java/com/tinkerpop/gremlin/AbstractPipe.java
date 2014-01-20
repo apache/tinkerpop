@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin;
 
-import com.tinkerpop.gremlin.pipes.util.ExpandablePipeIterator;
-import com.tinkerpop.gremlin.pipes.util.GremlinHelper;
+import com.tinkerpop.gremlin.util.ExpandablePipeIterator;
+import com.tinkerpop.gremlin.util.GremlinHelper;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
