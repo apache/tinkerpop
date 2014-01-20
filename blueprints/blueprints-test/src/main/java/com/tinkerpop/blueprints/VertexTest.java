@@ -6,6 +6,7 @@ import com.tinkerpop.blueprints.util.StringFactory;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_BOOLEAN_VALUES;
@@ -214,5 +215,38 @@ public class VertexTest extends AbstractBlueprintsTest {
         v.setProperty("float", 0.1f);
         final Float best = v.getValue("float");
         assertEquals(best, Float.valueOf(0.1f));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void shouldGetPropertyKeysOnVertex() {
+        final Vertex v = g.addVertex("name", "marko", "location", "desert", "status", "dope");
+        Set<String> keys = v.getPropertyKeys();
+        assertEquals(3, keys.size());
+
+        assertTrue(keys.contains("name"));
+        assertTrue(keys.contains("location"));
+        assertTrue(keys.contains("status"));
+
+        final Map<String,Property> m = v.getProperties();
+        assertEquals(3, m.size());
+        assertEquals("name", m.get("name").getKey());
+        assertEquals("location", m.get("location").getKey());
+        assertEquals("status", m.get("status").getKey());
+        assertEquals("marko", m.get("name").orElse(""));
+        assertEquals("desert", m.get("location").orElse(""));
+        assertEquals("dope", m.get("status").orElse(""));
+
+        v.getProperty("status").remove();
+
+        keys = v.getPropertyKeys();
+        assertEquals(2, keys.size());
+        assertTrue(keys.contains("name"));
+        assertTrue(keys.contains("location"));
+
+        v.getProperties().values().stream().forEach(p->p.remove());
+
+        keys = v.getPropertyKeys();
+        assertEquals(0, keys.size());
     }
 }
