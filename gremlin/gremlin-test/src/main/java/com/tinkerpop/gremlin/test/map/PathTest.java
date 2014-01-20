@@ -26,7 +26,7 @@ public class PathTest {
         final Path path = pipe.next();
         assertFalse(pipe.hasNext());
         assertEquals(2, path.size());
-        assertEquals("marko", ((Vertex) path.get(0)).<String>getValue("name"));
+        assertEquals("1", ((Vertex) path.get(0)).<String>getId());
         assertEquals("marko", path.<String>get(1));
     }
 

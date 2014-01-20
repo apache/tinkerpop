@@ -23,7 +23,7 @@ public class GremlinVertexProgramTest {
                 g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
                         //Gremlin.of().out("created").in("created").value("name").map(o -> o.toString().length()))
                         //Gremlin.of().out().out().property("name").value().path())
-                        Gremlin.of().as("x").outE().inV().jump("x", o -> o.getLoops() < 2).value("name").map(s -> s.toString().length()).path())
+                        Gremlin.of().V().as("x").outE().inV().jump("x", o -> o.getLoops() < 2).value("name").map(s -> s.toString().length()).path())
                         .build())
                         .submit().get();
 
@@ -44,5 +44,12 @@ public class GremlinVertexProgramTest {
                 tracker.getDoneObjectTracks().forEach((a, b) -> Stream.generate(() -> 1).limit(b).forEach(t -> System.out.println("==>" + a)));
             });
         }
+    }
+
+    @Test
+    public void testIterable() throws Exception {
+        final Graph g = TinkerFactory.createClassic();
+        new GremlinResult<>(g, () -> Gremlin.of().v("1").value("name").path()).forEachRemaining(System.out::println);
+
     }
 }

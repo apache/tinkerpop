@@ -1,15 +1,15 @@
-package com.tinkerpop.gremlin.pipes.map;
+package com.tinkerpop.gremlin.computer.gremlin.map;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.computer.gremlin.GremlinResult;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class PathTest extends com.tinkerpop.gremlin.test.map.PathTest {
 
@@ -22,7 +22,7 @@ public class PathTest extends com.tinkerpop.gremlin.test.map.PathTest {
 
     @Test
     public void g_v1_propertyXnameX_path() {
-        super.g_v1_propertyXnameX_path(Gremlin.of(g).v(1).value("name").path());
+        super.g_v1_propertyXnameX_path(new GremlinResult<>(g, () -> Gremlin.of().v("1").value("name").path()));
     }
 
     @Test
