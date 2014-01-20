@@ -7,7 +7,6 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Random;
