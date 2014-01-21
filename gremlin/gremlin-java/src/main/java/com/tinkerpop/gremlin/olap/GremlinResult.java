@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin.olap;
 
-import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.Pipeline;
@@ -64,13 +62,7 @@ public class GremlinResult<T> implements Iterator<T> {
                         });
                         tracker.getDoneGraphTracks().entrySet().stream().forEach(entry -> {
                             for (int i = 0; i < entry.getValue().size(); i++) {
-                                if (entry.getKey() instanceof Vertex) {
-                                    list.add(this.graph.query().ids(((Vertex) entry.getKey()).getId()).vertices().iterator().next());
-                                } else if (entry.getKey() instanceof Edge) {
-                                    list.add(this.graph.query().ids(((Edge) entry.getKey()).getId()).edges().iterator().next());
-                                } else {
-                                    list.add(entry.getKey());
-                                }
+                                list.add(entry.getKey());
                             }
                         });
                     });
@@ -88,13 +80,7 @@ public class GremlinResult<T> implements Iterator<T> {
                         });
                         tracker.getDoneGraphTracks().entrySet().stream().forEach(entry -> {
                             for (int i = 0; i < entry.getValue(); i++) {
-                                if (entry.getKey().get() instanceof Vertex) {
-                                    list.add(this.graph.query().ids(((Vertex) entry.getKey().get()).getId()).vertices().iterator().next());
-                                } else if (entry.getKey().get() instanceof Edge) {
-                                    list.add(this.graph.query().ids(((Edge) entry.getKey().get()).getId()).edges().iterator().next());
-                                } else {
-                                    list.add(entry.getKey().get());
-                                }
+                                list.add(entry.getKey().get());
                             }
                         });
                     });
