@@ -187,6 +187,25 @@ public class ExceptionConsistencyTest {
     }
 
     /**
+     * Addition of an {@link Edge} without a label should throw an exception.
+     */
+    public static class EdgeLabelTest extends AbstractBlueprintsTest {
+        @Test
+        public void testNullEdgeLabel() {
+            final Vertex v = g.addVertex();
+            try {
+                v.addEdge(null, v);
+                fail("Call to Vertex.addEdge() should throw an exception when label is null");
+            } catch (Exception ex) {
+                final Exception expectedException = Edge.Exceptions.edgeLabelCanNotBeNull();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+
+        }
+    }
+
+    /**
      * Test exceptions where the same ID is assigned twice to an {@link Element},
      */
     public static class SameIdUsageTest extends AbstractBlueprintsTest {
