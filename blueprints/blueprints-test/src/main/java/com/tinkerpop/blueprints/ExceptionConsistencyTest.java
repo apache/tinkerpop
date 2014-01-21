@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -201,8 +201,30 @@ public class ExceptionConsistencyTest {
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
-
         }
+    }
+
+    /**
+     * Tests around exceptions when working with {@link Transaction}.
+     */
+    public static class TransactionTest extends AbstractBlueprintsTest {
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+        public void testTransactionAlreadyOpen() {
+            if (!g.tx().isOpen())
+                g.tx().open();
+
+            try {
+                g.tx().open();
+                fail("An exception should be thrown when a transaction is opened twice");
+            } catch (Exception ex) {
+                final Exception expectedException = Transaction.Exceptions.transactionAlreadyOpen();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
     }
 
     /**
