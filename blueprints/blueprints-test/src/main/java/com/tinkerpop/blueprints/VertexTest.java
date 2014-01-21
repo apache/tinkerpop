@@ -123,40 +123,6 @@ public class VertexTest extends AbstractBlueprintsTest {
     }
 
     @Test
-    public void shouldCauseExceptionIfVertexRemovedMoreThanOnce() {
-        Vertex v = g.addVertex();
-        assertNotNull(v);
-
-        Object id = v.getId();
-        v.remove();
-        assertFalse(g.query().ids(id).vertices().iterator().hasNext());
-
-        // try second remove with no commit
-        try {
-            v.remove();
-            fail("Vertex cannot be removed twice.");
-        } catch (IllegalStateException ise) {
-            assertEquals(Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, id).getMessage(), ise.getMessage());
-        }
-
-        v = g.addVertex();
-        assertNotNull(v);
-
-        id = v.getId();
-        v.remove();
-
-        // try second remove with a commit and then a second remove.  both should return the same exception
-        tryCommit(g);
-
-        try {
-            v.remove();
-            fail("Vertex cannot be removed twice.");
-        } catch (IllegalStateException ise) {
-            assertEquals(Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, id).getMessage(), ise.getMessage());
-        }
-    }
-
-    @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldAutotypeStringProperties() {
         final Graph graph = g;

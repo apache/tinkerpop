@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
@@ -25,6 +27,7 @@ import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMP
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
+@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class ExceptionConsistencyTest {
 
     /**
@@ -34,7 +37,6 @@ public class ExceptionConsistencyTest {
     @RunWith(Parameterized.class)
     public static class PropertyValidationOnAddTest extends AbstractBlueprintsTest {
 
-        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         @Parameterized.Parameters(name = "{index}: expect - {1}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
@@ -85,7 +87,6 @@ public class ExceptionConsistencyTest {
     @RunWith(Parameterized.class)
     public static class PropertyValidationOnSetTest extends AbstractBlueprintsTest {
 
-        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
@@ -169,8 +170,6 @@ public class ExceptionConsistencyTest {
      * Test exceptions around use of {@link Direction} with the incorrect context.
      */
     public static class UseOfDirectionTest extends AbstractBlueprintsTest {
-
-        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         @Test
         public void testGetVertexOnEdge() {
             final Vertex v = g.addVertex();
@@ -188,12 +187,95 @@ public class ExceptionConsistencyTest {
     }
 
     /**
+     * An {@link Element} can only be removed once.
+     */
+    public static class DuplicateRemovalTest extends AbstractBlueprintsTest {
+        @Test
+        public void shouldCauseExceptionIfEdgeRemovedMoreThanOnce() {
+            final Vertex v1 = g.addVertex();
+            final Vertex v2 = g.addVertex();
+            Edge e = v1.addEdge("knows", v2);
+
+            assertNotNull(e);
+
+            Object id = e.getId();
+            e.remove();
+            assertFalse(g.query().ids(id).edges().iterator().hasNext());
+
+            // try second remove with no commit
+            try {
+                e.remove();
+                fail("Edge cannot be removed twice.");
+            } catch (Exception ex) {
+                final Exception expectedException = Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, id);
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+
+            e = v1.addEdge("knows", v2);
+            assertNotNull(e);
+
+            id = e.getId();
+            e.remove();
+
+            // try second remove with a commit and then a second remove.  both should return the same exception
+            tryCommit(g);
+
+            try {
+                e.remove();
+                fail("Edge cannot be removed twice.");
+            } catch (Exception ex) {
+                final Exception expectedException = Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, id);
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        public void shouldCauseExceptionIfVertexRemovedMoreThanOnce() {
+            Vertex v = g.addVertex();
+            assertNotNull(v);
+
+            Object id = v.getId();
+            v.remove();
+            assertFalse(g.query().ids(id).vertices().iterator().hasNext());
+
+            // try second remove with no commit
+            try {
+                v.remove();
+                fail("Vertex cannot be removed twice.");
+            } catch (Exception ex) {
+                final Exception expectedException = Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, id);
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+
+            v = g.addVertex();
+            assertNotNull(v);
+
+            id = v.getId();
+            v.remove();
+
+            // try second remove with a commit and then a second remove.  both should return the same exception
+            tryCommit(g);
+
+            try {
+                v.remove();
+                fail("Vertex cannot be removed twice.");
+            } catch (Exception ex) {
+                final Exception expectedException = Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, id);
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+    }
+
+    /**
      * Tests specific to setting {@link Element} properties with
      * {@link com.tinkerpop.blueprints.computer.GraphComputer}.
      */
     public static class PropertyValidationOnSetGraphComputerTest extends AbstractBlueprintsTest {
 
-        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         @Test
         public void testGraphVertexSetPropertyNoComputeKey() {
             final String key = "key-not-a-compute-key";
@@ -212,7 +294,6 @@ public class ExceptionConsistencyTest {
             }
         }
 
-        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         @Test
         public void testGraphEdgeSetPropertyNoComputeKey() {
             final String key = "key-not-a-compute-key";
