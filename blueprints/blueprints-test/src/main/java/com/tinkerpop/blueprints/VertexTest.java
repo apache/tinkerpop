@@ -249,4 +249,20 @@ public class VertexTest extends AbstractBlueprintsTest {
         keys = v.getPropertyKeys();
         assertEquals(0, keys.size());
     }
+
+    @Test
+    public void shouldNotGetConcurrentModificationException() {
+        for (int i = 0; i < 25; i++) {
+            g.addVertex();
+        }
+
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(25, 0));
+
+        for(Vertex v : g.query().vertices()) {
+            v.remove();
+            tryCommit(g);
+        }
+
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(0, 0));
+    }
 }
