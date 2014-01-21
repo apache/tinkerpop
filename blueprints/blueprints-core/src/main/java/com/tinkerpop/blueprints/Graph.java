@@ -269,14 +269,6 @@ public interface Graph extends AutoCloseable {
             return new UnsupportedOperationException("Graph does not support graph strategy");
         }
 
-        public static IllegalArgumentException vertexIdCanNotBeNull() {
-            return new IllegalArgumentException("Vertex id can not be null");
-        }
-
-        public static IllegalArgumentException edgeIdCanNotBeNull() {
-            return new IllegalArgumentException("Edge id can not be null");
-        }
-
         public static IllegalArgumentException vertexWithIdAlreadyExists(final Object id) {
             return new IllegalArgumentException(String.format("Vertex with id already exists: %s", id));
         }
