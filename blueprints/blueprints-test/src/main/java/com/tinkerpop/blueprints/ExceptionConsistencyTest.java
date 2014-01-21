@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -175,10 +176,45 @@ public class ExceptionConsistencyTest {
             final Vertex v = g.addVertex();
             try {
                 v.addEdge("label", v).getVertex(Direction.BOTH);
-                tryCommit(g);
                 fail("Call to Edge.getVertex(BOTH) should throw an exception");
             } catch (Exception ex) {
                 final Exception expectedException = Element.Exceptions.bothIsNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+
+        }
+    }
+
+    /**
+     * Test exceptions around use of {@link Element#getValue(String)}.
+     */
+    public static class ElementGetValueTest extends AbstractBlueprintsTest {
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
+        public void testGetValueThatIsNotPresentOnVertex() {
+            final Vertex v = g.addVertex();
+            try {
+                v.getValue("does-not-exist");
+                fail("Call to Element.getValue() with a key that is not present should throw an exception");
+            } catch (Exception ex) {
+                final Exception expectedException = Property.Exceptions.propertyDoesNotExist();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
+        public void testGetValueThatIsNotPresentOnEdge() {
+            final Vertex v = g.addVertex();
+            final Edge e = v.addEdge("label", v);
+            try {
+                e.getValue("does-not-exist");
+                fail("Call to Element.getValue() with a key that is not present should throw an exception");
+            } catch (Exception ex) {
+                final Exception expectedException = Property.Exceptions.propertyDoesNotExist();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }

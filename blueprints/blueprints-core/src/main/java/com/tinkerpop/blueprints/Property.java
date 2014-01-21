@@ -117,11 +117,11 @@ public abstract interface Property<V> {
         }
 
         public static IllegalStateException propertyDoesNotExist() {
-            throw new IllegalStateException("The property does not exist as it has no key, value, or associated element");
+            return new IllegalStateException("The property does not exist as it has no key, value, or associated element");
         }
 
         public static UnsupportedOperationException dataTypeOfPropertyValueNotSupported(final Object val) {
-            throw new UnsupportedOperationException(String.format("Property value [%s] is of type %s is not supported", val, val.getClass()));
+            return new UnsupportedOperationException(String.format("Property value [%s] is of type %s is not supported", val, val.getClass()));
         }
     }
 
