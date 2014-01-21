@@ -121,6 +121,12 @@ public interface Graph extends AutoCloseable {
         }
 
         public interface EdgeFeatures extends FeatureSet {
+            public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+
+            @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
+            public default boolean supportsUserSuppliedIds() {
+                return true;
+            }
 
             public default EdgePropertyFeatures properties() {
                 return new EdgePropertyFeatures() {

@@ -187,6 +187,43 @@ public class ExceptionConsistencyTest {
     }
 
     /**
+     * Test exceptions where the same ID is assigned twice to an {@link Element},
+     */
+    public static class SameIdUsageTest extends AbstractBlueprintsTest {
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+        public void testAssignSameIdOnVertex() {
+            g.addVertex(Property.Key.ID, 1000l);
+            try {
+                g.addVertex(Property.Key.ID, 1000l);
+                fail("Assigning the same ID to an Element should throw an exception");
+            } catch (Exception ex) {
+                final Exception expectedException = Graph.Exceptions.vertexWithIdAlreadyExists(1000l);
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+        public void testAssignSameIdOnEdge() {
+            final Vertex v = g.addVertex();
+            v.addEdge("label", v, Property.Key.ID, 1000l);
+
+            try {
+                v.addEdge("label", v, Property.Key.ID, 1000l);
+                fail("Assigning the same ID to an Element should throw an exception");
+            } catch (Exception ex) {
+                final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExist(1000l);
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+
+        }
+    }
+
+    /**
      * Test exceptions around use of {@link Element#getValue(String)}.
      */
     public static class ElementGetValueTest extends AbstractBlueprintsTest {
