@@ -48,7 +48,7 @@ public interface Transaction extends Closeable {
         }
 
         public static IllegalStateException openTransactionsOnClose() {
-            return new IllegalStateException("Commit or rollback all outstanding transactions before closing the graph");
+            return new IllegalStateException("Commit or rollback all outstanding transactions before closing the transaction");
         }
     }
 

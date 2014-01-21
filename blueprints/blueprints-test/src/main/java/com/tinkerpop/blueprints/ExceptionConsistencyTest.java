@@ -225,6 +225,8 @@ public class ExceptionConsistencyTest {
             }
         }
 
+        // TODO: still need to test transactionMustBeOpenToReadWrite and openTransactionsOnClose
+
     }
 
     /**
