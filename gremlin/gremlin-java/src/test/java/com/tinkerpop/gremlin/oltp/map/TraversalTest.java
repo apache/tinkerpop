@@ -89,6 +89,16 @@ public class TraversalTest extends com.tinkerpop.gremlin.test.map.TraversalTest 
     }
 
     @Test
+    public void g_V_outE_hasXweight_1X_outV() {
+        super.g_V_outE_hasXweight_1X_outV(Gremlin.of(g).V().outE().has("weight", 1.0f).outV());
+    }
+
+    @Test
+    public void g_V_out_outE_inV_inE_inV_both_name() {
+        super.g_V_out_outE_inV_inE_inV_both_name(Gremlin.of(g).V().out().outE().inV().inE().inV().both().value("name"));
+    }
+
+    @Test
     public void g_v1_outXknowsX() {
         super.g_v1_outXknowsX(Gremlin.of(g).v(1).out("knows"));
     }

@@ -11,8 +11,6 @@ import com.tinkerpop.gremlin.util.ExpandablePipeIterator;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.HolderIterator;
 
-import java.util.Optional;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
