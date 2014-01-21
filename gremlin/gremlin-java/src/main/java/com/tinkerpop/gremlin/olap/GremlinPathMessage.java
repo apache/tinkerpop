@@ -6,8 +6,8 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
-import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.MapHelper;
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class GremlinPathMessage extends GremlinMessage {
 
-    public GremlinPathMessage(final Destination destination, final Object elementId, final String propertyKey, final Holder holder) {
+    private GremlinPathMessage(final Destination destination, final Object elementId, final String propertyKey, final Holder holder) {
         super(destination, elementId, propertyKey, holder);
     }
 
@@ -43,8 +43,10 @@ public class GremlinPathMessage extends GremlinMessage {
 
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        messages.forEach(m -> {
-            if (m.executePaths(vertex, messenger, tracker, gremlin))
+        messages.forEach(message -> {
+            if (!message.inflate(vertex))
+                voteToHalt.set(true);
+            else if (message.executePaths(vertex, messenger, tracker, gremlin))
                 voteToHalt.set(false);
         });
         tracker.getPreviousObjectTracks().forEach((a, b) -> {
@@ -52,7 +54,7 @@ public class GremlinPathMessage extends GremlinMessage {
                 if (holder.isDone()) {
                     MapHelper.incr(tracker.getDoneObjectTracks(), a, holder);
                 } else {
-                    final Pipe<?, ?> pipe = GremlinHelper.getAs(holder.getFuture(), gremlin);
+                    final Pipe pipe = GremlinHelper.getAs(holder.getFuture(), gremlin);
                     pipe.addStarts(new SingleIterator(holder));
                     if (processPipe(pipe, vertex, messenger, tracker))
                         voteToHalt.set(false);
@@ -71,10 +73,7 @@ public class GremlinPathMessage extends GremlinMessage {
             return false;
         }
 
-        final Pipe<?, ?> pipe = GremlinHelper.getAs(this.holder.getFuture(), gremlin);
-
-        if (!this.stageHolder(vertex))
-            return false;
+        final Pipe pipe = GremlinHelper.getAs(this.holder.getFuture(), gremlin);
         MapHelper.incr(tracker.getGraphTracks(), this.holder.get(), this.holder);
         pipe.addStarts(new SingleIterator(this.holder));
         return processPipe(pipe, vertex, messenger, tracker);

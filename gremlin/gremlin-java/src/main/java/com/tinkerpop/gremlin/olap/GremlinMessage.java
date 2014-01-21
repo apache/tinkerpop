@@ -42,6 +42,7 @@ public abstract class GremlinMessage implements Serializable {
         this.elementId = elementId;
         this.propertyKey = propertyKey;
         this.holder = holder;
+        this.holder.set(null);
         if (this.holder instanceof PathHolder)
             this.holder.getPath().microSize();
     }
@@ -55,7 +56,7 @@ public abstract class GremlinMessage implements Serializable {
 
     ///////////////////////////////////
 
-    protected boolean stageHolder(final Vertex vertex) {
+    protected boolean inflate(final Vertex vertex) {
         if (this.destination.equals(Destination.VERTEX)) {
             this.holder.set(vertex);
         } else if (this.destination.equals(Destination.EDGE)) {
