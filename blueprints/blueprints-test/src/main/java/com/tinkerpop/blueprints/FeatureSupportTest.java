@@ -70,16 +70,9 @@ public class FeatureSupportTest  {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void ifAnIdCanBeAssignedToVertexThenItMustSupportUserSuppliedIds() throws Exception {
             final Vertex v = g.addVertex(Property.Key.ID, BlueprintsStandardSuite.GraphManager.get().convertId(99999943835l));
-
-            // can't define this feature as a @FeatureRequirement because the test should run regardless of the
-            // transactional capability of the graph. need to potentially commit here because some graphs won't
-            // assign an permanent ID until after commit.
-            if (g.getFeatures().graph().supportsTransactions())
-                g.tx().commit();
-
-            assertThat(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS),
-                    v.getId().toString(),
-                    is(not("99999943835")));
+            tryCommit(g, graph -> assertThat(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS),
+                                             v.getId().toString(),
+                                             is(not("99999943835"))));
         }
 
         /**
