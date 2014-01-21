@@ -13,12 +13,12 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
 
     private static final String UNDERSCORE = "_";
     protected String as;
-    protected final Pipeline<?, ?> pipeline;
+    protected final Pipeline pipeline;
     protected ExpandablePipeIterator<Holder<S>> starts = new ExpandablePipeIterator<>();
     private Holder<E> nextEnd;
     private boolean available;
 
-    public <P extends Pipeline> AbstractPipe(final P pipeline) {
+    public AbstractPipe(final Pipeline pipeline) {
         this.pipeline = pipeline;
         this.as = UNDERSCORE + this.pipeline.getPipes().size();
     }
@@ -59,8 +59,8 @@ public abstract class AbstractPipe<S, E> implements Pipe<S, E> {
         }
     }
 
-    public <P extends Pipeline<?, ?>> P getPipeline() {
-        return (P) this.pipeline;
+    public <S, E> Pipeline<S, E> getPipeline() {
+        return this.pipeline;
     }
 
     protected abstract Holder<E> processNextStart() throws NoSuchElementException;

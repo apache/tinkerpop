@@ -42,11 +42,11 @@ public class GremlinHelper {
     }
 
     public static <S, E> Pipe<S, ?> getStart(final Pipeline<S, E> pipeline) {
-        return (Pipe) pipeline.getPipes().get(0);
+        return pipeline.getPipes().get(0);
     }
 
     public static <S, E> Pipe<?, E> getEnd(final Pipeline<S, E> pipeline) {
-        return (Pipe) pipeline.getPipes().get(pipeline.getPipes().size() - 1);
+        return pipeline.getPipes().get(pipeline.getPipes().size() - 1);
     }
 
     public static boolean areEqual(final Iterator a, final Iterator b) {

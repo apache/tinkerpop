@@ -24,7 +24,7 @@ import java.util.Optional;
 public class Gremlin<S, E> implements Pipeline<S, E> {
 
     private final Map<String, Object> variables = new HashMap<>();
-    private final List<Pipe<?, ?>> pipes = new ArrayList<>();
+    private final List<Pipe> pipes = new ArrayList<>();
     private final List<Optimizer> optimizers = new ArrayList<>();
     private Graph graph = null;
     private boolean firstNext = true;
@@ -95,7 +95,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         ((Pipe<S, ?>) this.pipes.get(0)).addStarts(starts);
     }
 
-    public List<Pipe<?, ?>> getPipes() {
+    public List<Pipe> getPipes() {
         return this.pipes;
     }
 
@@ -117,7 +117,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
 
     public E next() {
         this.finalOptimize();
-        return (E) this.pipes.get(this.pipes.size() - 1).next().get();
+        return ((Holder<E>) this.pipes.get(this.pipes.size() - 1).next()).get();
     }
 
     public String toString() {
