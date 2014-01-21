@@ -162,4 +162,21 @@ public class EdgeTest extends AbstractBlueprintsTest {
         keys = e.getPropertyKeys();
         assertEquals(0, keys.size());
     }
+
+    @Test
+    public void shouldNotGetConcurrentModificationException() {
+        for (int i = 0; i < 25; i++) {
+            final Vertex v = g.addVertex();
+            v.addEdge("friend", v);
+        }
+
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(25, 25));
+
+        for(Edge e : g.query().edges()) {
+            e.remove();
+            tryCommit(g);
+        }
+
+        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(25, 0));
+    }
 }
