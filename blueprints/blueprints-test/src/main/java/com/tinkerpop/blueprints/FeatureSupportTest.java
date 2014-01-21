@@ -3,8 +3,9 @@ package com.tinkerpop.blueprints;
 import com.tinkerpop.blueprints.Graph.Features.EdgeFeatures;
 import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.GraphFeatures;
-import com.tinkerpop.blueprints.Graph.Features.GraphPropertyFeatures;
+import com.tinkerpop.blueprints.Graph.Features.GraphAnnotationFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexFeatures;
+import com.tinkerpop.blueprints.Graph.Features.VertexAnnotationFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import com.tinkerpop.blueprints.strategy.PartitionGraphStrategy;
@@ -149,7 +150,7 @@ public class FeatureSupportTest  {
             try {
                 final Edge edge = createEdgeForPropertyFeatureTests();
                 edge.setProperty("key", value);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgePropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
                 assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
             }
@@ -160,7 +161,7 @@ public class FeatureSupportTest  {
             assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
             try {
                 g.addVertex("key", value);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
                 assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
             }
@@ -182,8 +183,9 @@ public class FeatureSupportTest  {
         private EdgeFeatures edgeFeatures;
         private EdgePropertyFeatures edgePropertyFeatures;
         private GraphFeatures graphFeatures;
-        private GraphPropertyFeatures graphPropertyFeatures;
+        private GraphAnnotationFeatures graphAnnotationFeatures;
         private VertexFeatures vertexFeatures;
+        private VertexAnnotationFeatures vertexAnnotationFeatures;
         private VertexPropertyFeatures vertexPropertyFeatures;
 
         @Before
@@ -192,21 +194,34 @@ public class FeatureSupportTest  {
             edgeFeatures = f.edge();
             edgePropertyFeatures = edgeFeatures.properties();
             graphFeatures = f.graph();
-            graphPropertyFeatures = graphFeatures.properties();
+            graphAnnotationFeatures = graphFeatures.annotations();
             vertexFeatures = f.vertex();
+            vertexAnnotationFeatures = vertexFeatures.annotations();
             vertexPropertyFeatures = vertexFeatures.properties();
         }
 
         @Test
-        public void ifGraphHasPropertyEnabledThenItMustSupportADataType() {
-            assertTrue(graphPropertyFeatures.supportsProperties()
-                    && (graphPropertyFeatures.supportsBooleanValues() || graphPropertyFeatures.supportsDoubleValues()
-                    || graphPropertyFeatures.supportsFloatValues() || graphPropertyFeatures.supportsIntegerValues()
-                    || graphPropertyFeatures.supportsLongValues() || graphPropertyFeatures.supportsMapValues()
-                    || graphPropertyFeatures.supportsMetaProperties() || graphPropertyFeatures.supportsMixedListValues()
-                    || graphPropertyFeatures.supportsPrimitiveArrayValues() || graphPropertyFeatures.supportsPrimitiveArrayValues()
-                    || graphPropertyFeatures.supportsSerializableValues() || graphPropertyFeatures.supportsStringValues()
-                    || graphPropertyFeatures.supportsUniformListValues()));
+        public void ifGraphHasAnnotationsEnabledThenItMustSupportADataType() {
+            assertTrue(graphAnnotationFeatures.supportsAnnotations()
+                    && (graphAnnotationFeatures.supportsBooleanValues() || graphAnnotationFeatures.supportsDoubleValues()
+                    || graphAnnotationFeatures.supportsFloatValues() || graphAnnotationFeatures.supportsIntegerValues()
+                    || graphAnnotationFeatures.supportsLongValues() || graphAnnotationFeatures.supportsMapValues()
+                    || graphAnnotationFeatures.supportsMetaProperties() || graphAnnotationFeatures.supportsMixedListValues()
+                    || graphAnnotationFeatures.supportsPrimitiveArrayValues() || graphAnnotationFeatures.supportsPrimitiveArrayValues()
+                    || graphAnnotationFeatures.supportsSerializableValues() || graphAnnotationFeatures.supportsStringValues()
+                    || graphAnnotationFeatures.supportsUniformListValues()));
+        }
+
+        @Test
+        public void ifVertexHasAnnotationsEnabledThenItMustSupportADataType() {
+            assertTrue(vertexAnnotationFeatures.supportsAnnotations()
+                    && (vertexAnnotationFeatures.supportsBooleanValues() || vertexAnnotationFeatures.supportsDoubleValues()
+                    || vertexAnnotationFeatures.supportsFloatValues() || vertexAnnotationFeatures.supportsIntegerValues()
+                    || vertexAnnotationFeatures.supportsLongValues() || vertexAnnotationFeatures.supportsMapValues()
+                    || vertexAnnotationFeatures.supportsMetaProperties() || vertexAnnotationFeatures.supportsMixedListValues()
+                    || vertexAnnotationFeatures.supportsPrimitiveArrayValues() || vertexAnnotationFeatures.supportsPrimitiveArrayValues()
+                    || vertexAnnotationFeatures.supportsSerializableValues() || vertexAnnotationFeatures.supportsStringValues()
+                    || vertexAnnotationFeatures.supportsUniformListValues()));
         }
 
         @Test

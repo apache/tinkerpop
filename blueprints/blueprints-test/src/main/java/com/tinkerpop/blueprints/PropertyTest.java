@@ -1,7 +1,6 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.blueprints.Graph.Features.GraphPropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.PropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.blueprints.util.StringFactory;
@@ -19,7 +18,6 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
