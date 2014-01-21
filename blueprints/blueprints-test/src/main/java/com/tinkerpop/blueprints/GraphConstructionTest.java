@@ -34,23 +34,6 @@ public class GraphConstructionTest extends AbstractBlueprintsTest{
     }
 
     /**
-     * If given a non-empty {@link GraphStrategy} a graph that does not support
-     * {@link Graph.Features.GraphFeatures#FEATURE_STRATEGY} should throw
-     * {@link com.tinkerpop.blueprints.Graph.Exceptions#graphStrategyNotSupported()}.
-     */
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-    public void shouldThrowUnsupportedIfStrategyIsNonEmptyAndStrategyFeatureDisabled() {
-        try {
-            GraphFactory.open(config, Optional.<GraphStrategy>of(new PartitionGraphStrategy("k","v")));
-            fail("Strategy feature is not supported but accepts a GraphStrategy instance on construction.");
-        } catch (UnsupportedOperationException ex) {
-            assertEquals(Graph.Exceptions.graphStrategyNotSupported().getMessage(), ex.getMessage());
-        }
-
-    }
-
-    /**
      * Blueprints implementations should have private constructor as all graphs.  They should be only instantiated
      * through the GraphFactory or the static open() method on the Graph implementation itself.
      */

@@ -6,11 +6,16 @@ import com.tinkerpop.blueprints.Graph.Features.GraphFeatures;
 import com.tinkerpop.blueprints.Graph.Features.GraphPropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
+import com.tinkerpop.blueprints.strategy.GraphStrategy;
+import com.tinkerpop.blueprints.strategy.PartitionGraphStrategy;
+import com.tinkerpop.blueprints.util.GraphFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.util.Optional;
 
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
@@ -83,6 +88,23 @@ public class FeatureSupportTest  {
             } catch (UnsupportedOperationException e) {
                 assertEquals(Graph.Exceptions.graphStrategyNotSupported().getMessage(), e.getMessage());
             }
+        }
+
+        /**
+         * If given a non-empty {@link com.tinkerpop.blueprints.strategy.GraphStrategy} a graph that does not support
+         * {@link Graph.Features.GraphFeatures#FEATURE_STRATEGY} should throw
+         * {@link com.tinkerpop.blueprints.Graph.Exceptions#graphStrategyNotSupported()}.
+         */
+        @Test
+        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_STRATEGY, supported = false)
+        public void shouldThrowUnsupportedIfStrategyIsNonEmptyAndStrategyFeatureDisabled() {
+            try {
+                GraphFactory.open(config, Optional.<GraphStrategy>of(new PartitionGraphStrategy("k", "v")));
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_STRATEGY));
+            } catch (UnsupportedOperationException ex) {
+                assertEquals(Graph.Exceptions.graphStrategyNotSupported().getMessage(), ex.getMessage());
+            }
+
         }
     }
 
