@@ -131,7 +131,7 @@ public class EdgeTest extends AbstractBlueprintsTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    public void shouldGetPropertyKeysOnVertex() {
+    public void shouldGetPropertyKeysOnEdge() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("friend", v, "name", "marko", "location", "desert", "status", "dope");
         Set<String> keys = e.getPropertyKeys();
