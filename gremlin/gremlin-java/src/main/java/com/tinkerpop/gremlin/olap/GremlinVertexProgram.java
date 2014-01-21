@@ -19,6 +19,7 @@ import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 /**
@@ -59,21 +60,28 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
         final GraphQueryPipe graphQueryPipe = (GraphQueryPipe) gremlin.getPipes().get(0);
         final String future = (gremlin.getPipes().size() == 1) ? Holder.NO_FUTURE : ((Pipe) gremlin.getPipes().get(1)).getAs();
 
+        final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final List<HasContainer> hasContainers = graphQueryPipe.queryBuilder.hasContainers;
         if (graphQueryPipe.returnClass.equals(Vertex.class) && HasContainer.testAll(vertex, hasContainers)) {
-            final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ? new PathHolder<>(graphQueryPipe.getAs(), vertex) : new SimpleHolder<>(graphQueryPipe.getAs(), vertex);
+            final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
+                    new PathHolder<>(graphQueryPipe.getAs(), vertex) :
+                    new SimpleHolder<>(graphQueryPipe.getAs(), vertex);
             holder.setFuture(future);
             messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(holder));
+            voteToHalt.set(false);
         } else if (graphQueryPipe.returnClass.equals(Edge.class)) {
             StreamFactory.stream(vertex.query().direction(Direction.OUT).edges())
                     .filter(e -> HasContainer.testAll(e, hasContainers))
                     .forEach(e -> {
-                        final Holder<Edge> holder = graphMemory.<Boolean>get(TRACK_PATHS) ? new PathHolder<>(e) : new SimpleHolder<>(e);
+                        final Holder<Edge> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
+                                new PathHolder<>(graphQueryPipe.getAs(), e) :
+                                new SimpleHolder<>(graphQueryPipe.getAs(), e);
                         holder.setFuture(future);
                         messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(holder));
+                        voteToHalt.set(false);
                     });
         }
-        graphMemory.and(VOTE_TO_HALT, false);
+        graphMemory.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
