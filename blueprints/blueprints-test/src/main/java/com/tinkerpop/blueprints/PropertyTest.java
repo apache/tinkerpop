@@ -188,17 +188,6 @@ public class PropertyTest {
             }
         }*/
 
-        /*@Test
-        public void shouldEnableFeatureOnGraphIfNotEnabled() throws Exception {
-            assumeThat(g.getFeatures().supports(GraphPropertyFeatures.class, featureName), is(false));
-            try {
-                g.setProperty("key", value);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
-                assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
-            }
-        }*/
-
         @Test
         public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
             assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
