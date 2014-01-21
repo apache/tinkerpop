@@ -9,6 +9,6 @@ import com.tinkerpop.gremlin.Pipeline;
 public class SimplePathPipe<S> extends FilterPipe<S> {
 
     public SimplePathPipe(final Pipeline pipeline) {
-        super(pipeline, h -> h.getPath().isSimple());
+        super(pipeline, holder -> holder.getPath().isSimple());
     }
 }

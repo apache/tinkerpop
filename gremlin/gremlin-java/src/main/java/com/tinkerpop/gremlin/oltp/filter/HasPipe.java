@@ -16,7 +16,7 @@ public class HasPipe extends FilterPipe<Element> {
     public HasPipe(final Pipeline pipeline, final HasContainer hasContainer) {
         super(pipeline);
         this.hasContainer = hasContainer;
-        this.setPredicate(e -> hasContainer.test(e.get()));
+        this.setPredicate(holder -> hasContainer.test(holder.get()));
     }
 
     public String toString() {

@@ -17,20 +17,20 @@ public class HolderOptimizer implements Optimizer.FinalOptimizer {
 
     public Pipeline optimize(final Pipeline pipeline) {
         final boolean trackPaths = this.trackPaths(pipeline);
-        pipeline.getPipes().forEach(p -> {
-            if (p instanceof GraphQueryPipe)
-                ((GraphQueryPipe) p).generateHolderIterator(trackPaths);
+        pipeline.getPipes().forEach(pipe -> {
+            if (pipe instanceof GraphQueryPipe)
+                ((GraphQueryPipe) pipe).generateHolderIterator(trackPaths);
         });
         return pipeline;
     }
 
     public <S, E> boolean trackPaths(final Pipeline<S, E> pipeline) {
-        return pipeline.getPipes().stream().filter(p ->
-                p instanceof PathPipe
-                        || p instanceof BackPipe
-                        || p instanceof SelectPipe
-                        || p instanceof SimplePathPipe
-                        || p instanceof MatchPipe
-                        || p instanceof LinkPipe).findFirst().isPresent();
+        return pipeline.getPipes().stream().filter(pipe ->
+                pipe instanceof PathPipe
+                        || pipe instanceof BackPipe
+                        || pipe instanceof SelectPipe
+                        || pipe instanceof SimplePathPipe
+                        || pipe instanceof MatchPipe
+                        || pipe instanceof LinkPipe).findFirst().isPresent();
     }
 }

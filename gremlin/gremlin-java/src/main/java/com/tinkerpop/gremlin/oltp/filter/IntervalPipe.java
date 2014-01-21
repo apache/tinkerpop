@@ -18,7 +18,7 @@ public class IntervalPipe<S extends Element> extends FilterPipe<S> {
         super(pipeline);
         this.startContainer = startContainer;
         this.endContainer = endContainer;
-        this.setPredicate(e -> startContainer.test(e.get()) && endContainer.test(e.get()));
+        this.setPredicate(holder -> startContainer.test(holder.get()) && endContainer.test(holder.get()));
     }
 
     public String toString() {

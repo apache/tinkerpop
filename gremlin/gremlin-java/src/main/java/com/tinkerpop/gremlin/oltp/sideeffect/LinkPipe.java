@@ -20,9 +20,9 @@ public class LinkPipe extends MapPipe<Vertex, Vertex> {
         this.direction = direction;
         this.label = label;
         this.as = as;
-        super.setFunction(v -> {
-            final Vertex current = v.get();
-            final Vertex other = v.getPath().get(as);
+        super.setFunction(holder -> {
+            final Vertex current = holder.get();
+            final Vertex other = holder.getPath().get(as);
             if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
                 other.addEdge(label, current);
             }

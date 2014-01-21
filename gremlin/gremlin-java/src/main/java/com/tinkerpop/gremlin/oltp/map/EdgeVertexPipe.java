@@ -20,7 +20,7 @@ public class EdgeVertexPipe extends MapPipe<Edge, Vertex> {
         if (direction.equals(Direction.BOTH))
             throw Element.Exceptions.bothIsNotSupported();
         this.direction = direction;
-        this.setFunction(e -> e.get().getVertex(direction));
+        this.setFunction(holder -> holder.get().getVertex(direction));
     }
 
     public String toString() {

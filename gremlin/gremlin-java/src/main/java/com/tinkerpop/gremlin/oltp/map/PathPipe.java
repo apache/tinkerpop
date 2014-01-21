@@ -22,9 +22,9 @@ public class PathPipe<S> extends MapPipe<S, Path> {
             super.setFunction(Holder::getPath);
         else {
             final AtomicInteger nextFunction = new AtomicInteger(0);
-            super.setFunction(o -> {
+            super.setFunction(holder -> {
                 final Path path = new Path();
-                o.getPath().forEach((a, b) -> {
+                holder.getPath().forEach((a, b) -> {
                     path.add(a, pathFunctions[nextFunction.get()].apply(b));
                     nextFunction.set((nextFunction.get() + 1) % pathFunctions.length);
                 });

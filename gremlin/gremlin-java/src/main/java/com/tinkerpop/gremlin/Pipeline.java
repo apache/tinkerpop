@@ -23,6 +23,7 @@ import com.tinkerpop.gremlin.oltp.map.SelectPipe;
 import com.tinkerpop.gremlin.oltp.map.ValuePipe;
 import com.tinkerpop.gremlin.oltp.map.ValuesPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
+import com.tinkerpop.gremlin.oltp.sideeffect.GroupCountPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.LinkPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.MapHelper;
@@ -278,17 +279,8 @@ public interface Pipeline<S, E> extends Iterator<E> {
         }));
     }
 
-    // TODO: What is the state of groupCount/groupBy --- sideEffects/endPoints (the cap() dilema ensues).
-
-    public default Map<Object, Long> groupCount() {
-        final Map<Object, Long> map = new HashMap<>();
-        try {
-            while (true) {
-                MapHelper.incr(map, this.next(), 1l);
-            }
-        } catch (final NoSuchElementException e) {
-            return map;
-        }
+    public default Pipeline<S, E> groupCount(final Map<Object, Long> map) {
+        return this.addPipe(new GroupCountPipe(this, map));
     }
 
     public default Pipeline<S, Vertex> linkIn(final String label, final String as) {
@@ -397,6 +389,17 @@ public interface Pipeline<S, E> extends Iterator<E> {
             }
         } catch (final NoSuchElementException e) {
 
+        }
+    }
+
+    public default Map<Object, Long> groupCount() {
+        final Map<Object, Long> map = new HashMap<>();
+        try {
+            while (true) {
+                MapHelper.incr(map, this.next(), 1l);
+            }
+        } catch (final NoSuchElementException e) {
+            return map;
         }
     }
 }

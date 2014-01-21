@@ -9,11 +9,12 @@ import com.tinkerpop.gremlin.util.GremlinHelper;
  */
 public class BackPipe<S> extends MapPipe<S, Object> {
 
-    public final String as;
+    public String as;
 
     public BackPipe(final Pipeline pipeline, final String as) {
-        super(pipeline, o -> o.getPath().get(as));
+        super(pipeline);
         this.as = as;
+        this.setFunction(holder -> holder.getPath().get(this.as));
     }
 
     public String toString() {

@@ -16,7 +16,7 @@ public class RangePipe<E> extends FilterPipe<E> {
     public int high;
 
     public RangePipe(final Pipeline<?, E> pipeline, final int low, final int high) {
-        super(pipeline, null);
+        super(pipeline);
         if (low != -1 && high != -1 && low > high) {
             throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + "]");
         }
@@ -24,7 +24,7 @@ public class RangePipe<E> extends FilterPipe<E> {
         this.high = high;
 
         final AtomicInteger counter = new AtomicInteger(-1);
-        this.predicate = o -> {
+        this.setPredicate(holder -> {
             counter.incrementAndGet();
             if ((low == -1 || counter.get() >= low) && (high == -1 || counter.get() <= high))
                 return true;
@@ -32,7 +32,7 @@ public class RangePipe<E> extends FilterPipe<E> {
                 throw FastNoSuchElementException.instance();
             else
                 return false;
-        };
+        });
     }
 
     public String toString() {

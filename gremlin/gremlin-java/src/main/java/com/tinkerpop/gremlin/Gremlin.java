@@ -26,7 +26,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     private final Map<String, Object> variables = new HashMap<>();
     private final List<Pipe> pipes = new ArrayList<>();
     private final List<Optimizer> optimizers = new ArrayList<>();
-    private Graph graph = null;
+    private final Graph graph;
     private boolean firstNext = true;
 
     protected Gremlin(final Graph graph, final boolean useDefaultOptimizers) {
@@ -111,12 +111,12 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     }
 
     public boolean hasNext() {
-        this.finalOptimize();
+        if (this.firstNext) this.finalOptimize();
         return this.pipes.get(this.pipes.size() - 1).hasNext();
     }
 
     public E next() {
-        this.finalOptimize();
+        if (this.firstNext) this.finalOptimize();
         return ((Holder<E>) this.pipes.get(this.pipes.size() - 1).next()).get();
     }
 

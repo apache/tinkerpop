@@ -14,9 +14,9 @@ import java.util.Map;
 public class ValuesPipe extends MapPipe<Element, Map<String, Object>> {
 
     public ValuesPipe(final Pipeline pipeline, final String... keys) {
-        super(pipeline, e -> {
+        super(pipeline, holder -> {
             final Map<String, Object> values = new HashMap<>();
-            final Element element = e.get();
+            final Element element = holder.get();
             if (null == keys || keys.length == 0) {
                 element.getPropertyKeys().forEach(key -> values.put(key, element.getValue(key)));
             } else {

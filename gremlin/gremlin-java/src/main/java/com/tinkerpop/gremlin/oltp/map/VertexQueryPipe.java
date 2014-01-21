@@ -33,9 +33,9 @@ public class VertexQueryPipe<E extends Element> extends FlatMapPipe<Vertex, E> {
 
     public void generateFunction() {
         if (this.returnClass.equals(Vertex.class))
-            this.setFunction(v -> (Iterator<E>) this.generateBuilder().build(v.get()).vertices().iterator());
+            this.setFunction(holder -> (Iterator<E>) this.generateBuilder().build(holder.get()).vertices().iterator());
         else
-            this.setFunction(v -> (Iterator<E>) this.generateBuilder().build(v.get()).edges().iterator());
+            this.setFunction(holder -> (Iterator<E>) this.generateBuilder().build(holder.get()).edges().iterator());
     }
 
     private VertexQueryBuilder generateBuilder() {

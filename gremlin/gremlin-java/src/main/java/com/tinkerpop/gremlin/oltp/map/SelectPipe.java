@@ -14,8 +14,8 @@ import java.util.stream.Stream;
 public class SelectPipe extends MapPipe<Object, List> {
 
     public SelectPipe(final Pipeline pipeline, final String... ases) {
-        super(pipeline, h -> {
-            final Path path = h.getPath();
+        super(pipeline, holder -> {
+            final Path path = holder.getPath();
             return ases.length == 0 ?
                     path.getAsSteps().stream().map(path::get).collect(Collectors.toList()) :
                     Stream.of(ases).map(path::get).collect(Collectors.toList());
