@@ -66,6 +66,9 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public void addStarts(final Iterator<Holder<S>> starts);
 
+    public <P extends Pipeline> P addPipe(final Pipe pipe);
+
+    public List<Pipe> getPipes();
 
     ///////////////////// TRANSFORM STEPS /////////////////////
 
@@ -345,7 +348,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     public default Pipeline<S, E> as(final String as) {
         if (GremlinHelper.asExists(as, this))
             throw new IllegalStateException("The named pipe already exists");
-        final List<Pipe<?, ?>> pipes = this.getPipes();
+        final List<Pipe> pipes = this.getPipes();
         pipes.get(pipes.size() - 1).setAs(as);
         return this;
 
@@ -395,12 +398,8 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return counter;
     }
 
-    public <P extends Pipeline> P addPipe(final Pipe pipe);
-
-    public List<Pipe<?, ?>> getPipes();
-
-    public default <P extends Pipeline<?, ?>> P getPipeline() {
-        return (P) this;
+    public default Pipeline<S,E> getPipeline() {
+        return this;
     }
 
     public default void forEach(final Consumer<E> consumer) {
