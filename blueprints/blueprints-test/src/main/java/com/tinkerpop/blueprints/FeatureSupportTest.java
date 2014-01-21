@@ -32,7 +32,7 @@ public class FeatureSupportTest  {
     private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
     /**
-     * Feature checks that test functionality to determine if a feature should be on or off.
+     * Feature checks that test functionality to determine if a feature should be on when it is marked as not supported.
      */
     public static class FunctionalityTest extends AbstractBlueprintsTest {
 
