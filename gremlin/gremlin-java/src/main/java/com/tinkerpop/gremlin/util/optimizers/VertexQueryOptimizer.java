@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.util.optimizers;
 
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Optimizer;
 import com.tinkerpop.gremlin.Pipe;

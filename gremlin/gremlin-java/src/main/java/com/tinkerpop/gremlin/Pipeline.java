@@ -21,6 +21,7 @@ import com.tinkerpop.gremlin.oltp.map.PathPipe;
 import com.tinkerpop.gremlin.oltp.map.PropertyPipe;
 import com.tinkerpop.gremlin.oltp.map.SelectPipe;
 import com.tinkerpop.gremlin.oltp.map.ValuePipe;
+import com.tinkerpop.gremlin.oltp.map.ValuesPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.LinkPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
@@ -168,23 +169,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Map<String, Object>> values(final String... keys) {
-        return this.addPipe(new MapPipe<Element, Map>(this, e -> {
-            final Map<String, Object> values = new HashMap<>();
-            final Element element = e.get();
-            if (null == keys || keys.length == 0) {
-                element.getPropertyKeys().forEach(key -> values.put(key, element.getValue(key)));
-            } else {
-                for (final String key : keys) {
-                    if (key.equals(Property.Key.ID))
-                        values.put(Property.Key.ID, element.getId());
-                    else if (key.equals(Property.Key.LABEL))
-                        values.put(Property.Key.LABEL, element.getLabel());
-                    else
-                        element.getProperty(key).ifPresent(v -> values.put(key, v));
-                }
-            }
-            return values;
-        }));
+        return this.addPipe(new ValuesPipe(this, keys));
     }
 
     public default Pipeline<S, Path> path(final Function... pathFunctions) {

@@ -5,11 +5,12 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
+import com.tinkerpop.gremlin.FlatMapPipe;
 import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.oltp.filter.HasPipe;
+import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
 import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
-import com.tinkerpop.gremlin.util.optimizers.VertexQueryOptimizer;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -73,5 +74,47 @@ public class VertexQueryOptimizerTest {
         assertEquals(a, b);
         assertFalse(a.hasNext());
         assertFalse(b.hasNext());
+    }
+
+    @Test
+    public void shouldNotRemoveEdgeVertexPipeIfTraversalIsGoingBackwards() {
+        Gremlin gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
+        gremlin.getOptimizers().clear();
+        gremlin.V().outE().outV();
+        assertEquals(3, gremlin.getPipes().size());
+        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
+        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
+        assertTrue(gremlin.getPipes().get(2) instanceof EdgeVertexPipe);
+
+        gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
+        gremlin.V().outE().outV();
+        assertEquals(3, gremlin.getPipes().size());
+        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
+        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
+        assertTrue(gremlin.getPipes().get(2) instanceof EdgeVertexPipe);
+
+        gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
+        gremlin.V().outE().bothV();
+        assertEquals(3, gremlin.getPipes().size());
+        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
+        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
+        assertTrue(gremlin.getPipes().get(2) instanceof FlatMapPipe);
+    }
+
+    @Test
+    public void shouldRemoveEdgeVertexPipeIfTraversalIsGoingForward() {
+        Gremlin gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
+        gremlin.getOptimizers().clear();
+        gremlin.V().outE().inV();
+        assertEquals(3, gremlin.getPipes().size());
+        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
+        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
+        assertTrue(gremlin.getPipes().get(2) instanceof EdgeVertexPipe);
+
+        gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
+        gremlin.V().outE().inV();
+        assertEquals(2, gremlin.getPipes().size());
+        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
+        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
     }
 }
