@@ -6,6 +6,7 @@ import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -162,6 +163,28 @@ public class ExceptionConsistencyTest {
                 assertEquals(expectedException.getClass(), inner.getClass());
                 assertEquals(expectedException.getMessage(), inner.getMessage());
             }
+        }
+    }
+
+    /**
+     * Test exceptions around use of {@link Direction} with the incorrect context.
+     */
+    public static class UseOfDirectionTest extends AbstractBlueprintsTest {
+
+        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+        @Test
+        public void testGetVertexOnEdge() {
+            final Vertex v = g.addVertex();
+            try {
+                v.addEdge("label", v).getVertex(Direction.BOTH);
+                tryCommit(g);
+                fail("Call to Edge.getVertex(BOTH) should throw an exception");
+            } catch (Exception ex) {
+                final Exception expectedException = Element.Exceptions.bothIsNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+
         }
     }
 
