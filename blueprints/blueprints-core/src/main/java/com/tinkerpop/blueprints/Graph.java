@@ -289,10 +289,6 @@ public interface Graph extends AutoCloseable {
             return new IllegalArgumentException(String.format("Edge with id already exists: %s", id));
         }
 
-        public static IllegalStateException vertexWithIdDoesNotExist(final Object id) {
-            return new IllegalStateException(String.format("Vertex with id does not exist: %s", id));
-        }
-
         public static IllegalArgumentException argumentCanNotBeNull(final String argument) {
             return new IllegalArgumentException(String.format("The provided argument can not be null: %s", argument));
         }
