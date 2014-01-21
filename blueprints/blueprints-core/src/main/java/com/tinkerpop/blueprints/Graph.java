@@ -261,10 +261,6 @@ public interface Graph extends AutoCloseable {
             return new UnsupportedOperationException("Graph does not support transactions");
         }
 
-        public static UnsupportedOperationException graphQueryNotSupported() {
-            return new UnsupportedOperationException("Graph does not support graph query");
-        }
-
         public static UnsupportedOperationException graphComputerNotSupported() {
             return new UnsupportedOperationException("Graph does not support graph computer");
         }
