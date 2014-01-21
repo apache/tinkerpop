@@ -49,8 +49,6 @@ public class PropertyTest {
      */
     @RunWith(Parameterized.class)
     public static class PropertyFeatureSupportTest extends AbstractBlueprintsTest {
-        private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
-
         private static final Map testMap = new HashMap() {{
             put("testString", "try");
             put("testInteger", 123);
@@ -174,29 +172,6 @@ public class PropertyTest {
                 });
             else
                 tryCommit(g, graph->assertEquals(value, v.getProperty("key").get()));
-        }
-
-        /*@Test
-        public void shouldEnableFeatureOnEdgeIfNotEnabled() throws Exception {
-            assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(false));
-            try {
-                final Edge edge = createEdgeForPropertyFeatureTests();
-                edge.setProperty("key", value);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
-                assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
-            }
-        }*/
-
-        @Test
-        public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
-            assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
-            try {
-                g.addVertex("key", value);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
-                assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
-            }
         }
 
         private Edge createEdgeForPropertyFeatureTests() {

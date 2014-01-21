@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Tests that do basic validation of proper Feature settings in Graph implementations.
@@ -28,13 +30,15 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
+@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class FeatureSupportTest  {
     private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
     /**
-     * Feature checks that test functionality to determine if a feature should be on when it is marked as not supported.
+     * Feature checks that test {@link Graph} functionality to determine if a feature should be on when it is marked
+     * as not supported.
      */
-    public static class FunctionalityTest extends AbstractBlueprintsTest {
+    public static class GraphFunctionalityTest extends AbstractBlueprintsTest {
 
         /**
          * A {@link Graph} that does not support {@link GraphFeatures#FEATURE_COMPUTER} must call
@@ -66,15 +70,6 @@ public class FeatureSupportTest  {
             }
         }
 
-        @Test
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-        public void ifAnIdCanBeAssignedToVertexThenItMustSupportUserSuppliedIds() throws Exception {
-            final Vertex v = g.addVertex(Property.Key.ID, BlueprintsStandardSuite.GraphManager.get().convertId(99999943835l));
-            tryCommit(g, graph -> assertThat(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS),
-                                             v.getId().toString(),
-                                             is(not("99999943835"))));
-        }
-
         /**
          * A {@link Graph} that does not support {@link GraphFeatures#FEATURE_STRATEGY} must call
          * {@link com.tinkerpop.blueprints.Graph.Exceptions#graphStrategyNotSupported()}.
@@ -88,6 +83,71 @@ public class FeatureSupportTest  {
             } catch (UnsupportedOperationException e) {
                 assertEquals(Graph.Exceptions.graphStrategyNotSupported().getMessage(), e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Feature checks that test {@link Vertex} functionality to determine if a feature should be on when it is marked
+     * as not supported.
+     */
+    public static class VertexFunctionalityTest extends AbstractBlueprintsTest {
+
+        @Test
+        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        public void ifAnIdCanBeAssignedToVertexThenItMustSupportUserSuppliedIds() throws Exception {
+            final Vertex v = g.addVertex(Property.Key.ID, BlueprintsStandardSuite.GraphManager.get().convertId(99999943835l));
+            tryCommit(g, graph -> assertThat(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS),
+                    v.getId().toString(),
+                    is(not("99999943835"))));
+        }
+    }
+
+    /**
+     * Feature checks that test {@link Element} {@link Property} functionality to determine if a feature should be on
+     * when it is marked as not supported.
+     */
+    @RunWith(Parameterized.class)
+    public static class ElementPropertyFunctionalityTest extends AbstractBlueprintsTest {
+        private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
+
+        @Parameterized.Parameters(name = "{index}: supports{0}({1})")
+        public static Iterable<Object[]> data() {
+            return PropertyTest.PropertyFeatureSupportTest.data();
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String featureName;
+
+        @Parameterized.Parameter(value = 1)
+        public Object value;
+
+        @Test
+        public void shouldEnableFeatureOnEdgeIfNotEnabled() throws Exception {
+            assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(false));
+            try {
+                final Edge edge = createEdgeForPropertyFeatureTests();
+                edge.setProperty("key", value);
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
+            } catch (UnsupportedOperationException e) {
+                assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
+            }
+        }
+
+        @Test
+        public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
+            assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
+            try {
+                g.addVertex("key", value);
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphPropertyFeatures.class.getSimpleName(), featureName));
+            } catch (UnsupportedOperationException e) {
+                assertEquals(Property.Exceptions.dataTypeOfPropertyValueNotSupported(value).getMessage(), e.getMessage());
+            }
+        }
+
+        private Edge createEdgeForPropertyFeatureTests() {
+            final Vertex vertexA = g.addVertex();
+            final Vertex vertexB = g.addVertex();
+            return vertexA.addEdge(BlueprintsStandardSuite.GraphManager.get().convertLabel("knows"), vertexB);
         }
     }
 
