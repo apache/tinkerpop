@@ -148,34 +148,6 @@ public class PropertyTest {
                 tryCommit(g, graph -> assertEquals(value, edge.getProperty("key").get()));
         }
 
-        /*@Test
-        public void shouldSetValueOnGraph() throws Exception {
-            assumeThat(g.getFeatures().supports(GraphPropertyFeatures.class, featureName), is(true));
-            g.setProperty("key", value);
-
-            if (value instanceof Map)
-                tryCommit(g, graph -> {
-                    final Map map = graph.<Map>getProperty("key").getValue();
-                    assertEquals(((Map) value).size(), map.size());
-                    ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
-                });
-            else if (value instanceof List)
-                tryCommit(g, graph -> {
-                    final List l = graph.<List>getProperty("key").getValue();
-                    assertEquals(((List) value).size(), l.size());
-                    for (int ix = 0; ix < ((List) value).size(); ix++) {
-                        assertEquals(((List) value).get(ix), l.get(ix));
-                    }
-                });
-            else if (value instanceof MockSerializable)
-                tryCommit(g, graph -> {
-                    final MockSerializable mock = g.<MockSerializable>getProperty("key").getValue();
-                    assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
-                });
-            else
-                tryCommit(g, graph->assertEquals(value, g.getProperty("key").getValue()));
-        }*/
-
         @Test
         public void shouldSetValueOnVertex() throws Exception {
             assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(true));
