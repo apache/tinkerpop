@@ -34,6 +34,7 @@ public class ExceptionConsistencyTest {
     @RunWith(Parameterized.class)
     public static class PropertyValidationOnAddTest extends AbstractBlueprintsTest {
 
+        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         @Parameterized.Parameters(name = "{index}: expect - {1}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
@@ -84,6 +85,7 @@ public class ExceptionConsistencyTest {
     @RunWith(Parameterized.class)
     public static class PropertyValidationOnSetTest extends AbstractBlueprintsTest {
 
+        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
@@ -168,6 +170,8 @@ public class ExceptionConsistencyTest {
      * {@link com.tinkerpop.blueprints.computer.GraphComputer}.
      */
     public static class PropertyValidationOnSetGraphComputerTest extends AbstractBlueprintsTest {
+
+        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         @Test
         public void testGraphVertexSetPropertyNoComputeKey() {
             final String key = "key-not-a-compute-key";
@@ -186,6 +190,7 @@ public class ExceptionConsistencyTest {
             }
         }
 
+        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         @Test
         public void testGraphEdgeSetPropertyNoComputeKey() {
             final String key = "key-not-a-compute-key";
