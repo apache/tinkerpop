@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.AnnotatedValue;
+import com.tinkerpop.blueprints.Annotations;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
@@ -77,5 +78,12 @@ public class StringFactory {
      */
     public static String annotatedValueString(final AnnotatedValue annotatedValue) {
         return L_BRACKET + annotatedValue.getValue() + COLON + EMPTY_MAP + R_BRACKET;
+    }
+
+    /**
+     * Construct the representation for a {@link Annotations}.
+     */
+    public static String annotationsString(final Annotations annotations) {
+        return annotations.toString();
     }
 }

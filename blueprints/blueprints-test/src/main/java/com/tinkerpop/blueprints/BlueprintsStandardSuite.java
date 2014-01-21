@@ -35,6 +35,7 @@ public class BlueprintsStandardSuite extends AbstractBlueprintsSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+            AnnotationTest.class,
             EdgeTest.class,
             ExceptionConsistencyTest.class,
             FeatureSupportTest.class,
