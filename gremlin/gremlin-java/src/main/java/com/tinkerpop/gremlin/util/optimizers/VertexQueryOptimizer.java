@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.util.optimizers;
 
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Optimizer;
 import com.tinkerpop.gremlin.Pipe;
@@ -39,7 +40,10 @@ public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
 
         if (null != vertexQueryPipe && !GremlinHelper.isLabeled(vertexQueryPipe)) {
             if (pipe instanceof EdgeVertexPipe) {
-                vertexQueryPipe.returnClass = Vertex.class;
+                if (((EdgeVertexPipe) pipe).direction.equals(vertexQueryPipe.queryBuilder.direction.opposite()))
+                    vertexQueryPipe.returnClass = Vertex.class;
+                else
+                    return true;
             } else if (pipe instanceof HasPipe) {
                 final HasPipe hasPipe = (HasPipe) pipe;
                 if (!vertexQueryPipe.returnClass.equals(Vertex.class)) {

@@ -13,7 +13,7 @@ public class HasPipe extends FilterPipe<Element> {
 
     public HasContainer hasContainer;
 
-    public HasPipe(final Pipeline<?, Element> pipeline, final HasContainer hasContainer) {
+    public HasPipe(final Pipeline pipeline, final HasContainer hasContainer) {
         super(pipeline);
         this.hasContainer = hasContainer;
         this.setPredicate(e -> hasContainer.test(e.get()));

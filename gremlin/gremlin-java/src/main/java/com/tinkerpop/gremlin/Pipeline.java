@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin;
 
 import com.tinkerpop.blueprints.Compare;
+import com.tinkerpop.blueprints.Contains;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -17,7 +18,10 @@ import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.oltp.map.MatchPipe;
 import com.tinkerpop.gremlin.oltp.map.PathPipe;
+import com.tinkerpop.gremlin.oltp.map.PropertyPipe;
 import com.tinkerpop.gremlin.oltp.map.SelectPipe;
+import com.tinkerpop.gremlin.oltp.map.ValuePipe;
+import com.tinkerpop.gremlin.oltp.map.ValuesPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.LinkPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
@@ -145,7 +149,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default <E2> Pipeline<S, Property<E2>> property(final String key) {
-        return this.addPipe(new MapPipe<Element, Property>(this, e -> e.get().<E2>getProperty(key)));
+        return this.addPipe(new PropertyPipe<>(this, key));
     }
 
     public default <E2> Pipeline<S, E2> value() {
@@ -153,35 +157,19 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default <E2> Pipeline<S, E2> value(final String key) {
-        return this.addPipe(new MapPipe<Element, E2>(this, e -> e.get().<E2>getValue(key)));
+        return this.addPipe(new ValuePipe<>(this, key));
     }
 
     public default <E2> Pipeline<S, E2> value(final String key, final E2 defaultValue) {
-        return this.addPipe(new MapPipe<Element, E2>(this, e -> e.get().<E2>getProperty(key).orElse(defaultValue)));
+        return this.addPipe(new ValuePipe<>(this, key, defaultValue));
     }
 
     public default <E2> Pipeline<S, E2> value(final String key, final Supplier<E2> defaultSupplier) {
-        return this.addPipe(new MapPipe<Element, Object>(this, e -> e.get().<E2>getProperty(key).orElseGet(defaultSupplier)));
+        return this.addPipe(new ValuePipe<>(this, key, defaultSupplier));
     }
 
     public default Pipeline<S, Map<String, Object>> values(final String... keys) {
-        return this.addPipe(new MapPipe<Element, Map>(this, e -> {
-            final Map<String, Object> values = new HashMap<>();
-            final Element element = e.get();
-            if (null == keys || keys.length == 0) {
-                element.getPropertyKeys().forEach(key -> values.put(key, element.getValue(key)));
-            } else {
-                for (final String key : keys) {
-                    if (key.equals(Property.Key.ID))
-                        values.put(Property.Key.ID, element.getId());
-                    else if (key.equals(Property.Key.LABEL))
-                        values.put(Property.Key.LABEL, element.getLabel());
-                    else
-                        element.getProperty(key).ifPresent(v -> values.put(key, v));
-                }
-            }
-            return values;
-        }));
+        return this.addPipe(new ValuesPipe(this, keys));
     }
 
     public default Pipeline<S, Path> path(final Function... pathFunctions) {
@@ -230,7 +218,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default <E2 extends Element> Pipeline<S, E2> has(final String key) {
-        return this.addPipe(new FilterPipe<Element>(this, e -> e.get().getProperty(key).isPresent()));
+        return this.addPipe(new HasPipe(this, new HasContainer(key, Contains.IN)));
     }
 
     public default <E2 extends Element> Pipeline<S, E2> has(final String key, final Object value) {
@@ -242,11 +230,11 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default <E2 extends Element> Pipeline<S, E2> hasNot(final String key) {
-        return this.addPipe(new FilterPipe<Element>(this, e -> !e.get().getProperty(key).isPresent()));
+        return this.addPipe(new HasPipe(this, new HasContainer(key, Contains.NOT_IN)));
     }
 
     public default <E2 extends Element> Pipeline<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
-        return this.addPipe(new HasPipe((Pipeline) this, new HasContainer(key, predicate, value)));
+        return this.addPipe(new HasPipe(this, new HasContainer(key, predicate, value)));
     }
 
     public default <E2 extends Element> Pipeline<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
@@ -398,7 +386,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return counter;
     }
 
-    public default Pipeline<S,E> getPipeline() {
+    public default Pipeline<S, E> getPipeline() {
         return this;
     }
 

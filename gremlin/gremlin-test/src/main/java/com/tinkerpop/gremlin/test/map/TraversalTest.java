@@ -3,8 +3,10 @@ package com.tinkerpop.gremlin.test.map;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -89,7 +91,7 @@ public class TraversalTest {
             final String name = pipe.next();
             assertTrue(name.equals("marko") || name.equals("lop") || name.equals("josh") || name.equals("ripple") || name.equals("peter"));
         }
-        assertEquals(5,counter);
+        assertEquals(5, counter);
     }
 
     // EDGE ADJACENCY
@@ -171,6 +173,43 @@ public class TraversalTest {
 
     public void g_v2_inE_outV(final Iterator<Vertex> pipe) {
         this.g_v2_in(pipe);
+    }
+
+    public void g_V_outE_hasXweight_1X_outV(final Iterator<Vertex> pipe) {
+        System.out.println(pipe);
+        int counter = 0;
+        Map<Object, Integer> counts = new HashMap<>();
+        while (pipe.hasNext()) {
+            final Object id = pipe.next().getId();
+            int previousCount = counts.getOrDefault(id, 0);
+            counts.put(id, previousCount + 1);
+            counter++;
+        }
+        assertEquals(2, counts.size());
+        assertEquals(1, counts.get("1").intValue());
+        assertEquals(1, counts.get("4").intValue());
+
+        assertEquals(2, counter);
+        assertFalse(pipe.hasNext());
+    }
+
+    public void g_V_out_outE_inV_inE_inV_both_name(final Iterator<String> pipe) {
+        System.out.println(pipe);
+        int counter = 0;
+        Map<String, Integer> counts = new HashMap<>();
+        while (pipe.hasNext()) {
+            final String key = pipe.next();
+            int previousCount = counts.getOrDefault(key, 0);
+            counts.put(key, previousCount + 1);
+            counter++;
+        }
+        assertEquals(3, counts.size());
+        assertEquals(4, counts.get("josh").intValue());
+        assertEquals(3, counts.get("marko").intValue());
+        assertEquals(3, counts.get("peter").intValue());
+
+        assertEquals(10, counter);
+        assertFalse(pipe.hasNext());
     }
 
     // VERTEX EDGE LABEL ADJACENCY

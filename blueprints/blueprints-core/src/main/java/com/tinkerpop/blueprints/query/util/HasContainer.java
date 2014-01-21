@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints.query.util;
 
 import com.tinkerpop.blueprints.AnnotatedValue;
 import com.tinkerpop.blueprints.Annotations;
+import com.tinkerpop.blueprints.Contains;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 
@@ -21,16 +22,29 @@ public class HasContainer {
         this.key = key;
         this.predicate = predicate;
         this.value = value;
+        if (null == this.value && !(this.predicate instanceof Contains)) {
+            throw new IllegalArgumentException("For determining the existence of a property, use the Contains predicate");
+        }
+    }
+
+    public HasContainer(final String key, final Contains contains) {
+        this(key, contains, null);
     }
 
     public boolean test(final Element element) {
-        if (this.key.equals(Property.Key.ID))
-            return this.predicate.test(element.getId(), this.value);
-        else if (this.key.equals(Property.Key.LABEL))
-            return this.predicate.test(element.getLabel(), this.value);
-        else {
-            final Property property = element.getProperty(this.key);
-            return property.isPresent() && this.predicate.test(property.get(), this.value);
+        if (null != this.value) {
+            if (this.key.equals(Property.Key.ID))
+                return this.predicate.test(element.getId(), this.value);
+            else if (this.key.equals(Property.Key.LABEL))
+                return this.predicate.test(element.getLabel(), this.value);
+            else {
+                final Property property = element.getProperty(this.key);
+                return property.isPresent() && this.predicate.test(property.get(), this.value);
+            }
+        } else {
+            return Contains.IN.equals(this.predicate) ?
+                    element.getProperty(this.key).isPresent() :
+                    !element.getProperty(this.key).isPresent();
         }
     }
 
