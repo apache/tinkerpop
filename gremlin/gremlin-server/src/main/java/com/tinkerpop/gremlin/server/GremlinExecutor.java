@@ -19,13 +19,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Execute Gremlin scripts against a {@code ScriptEngine} instance.  The {@code ScriptEngine} maybe be a shared
- * {@code ScriptEngine} in the case of a sessionless request or a standalone {@code ScriptEngine} bound to a session
- * that always executes within the same thread for every request.
- * <p>
- * The shared {@code ScriptEngine} for sessionless requests can not be dynamically re-initialized as doing so
- * essentially equates to restarting the server.  It's easier to just do that. The sessioned {@code ScriptEngine} is
- * initialized with settings once per session and can be reset by the session itself.
+ * Execute Gremlin scripts against a {@code ScriptEngine} instance.  The shared {@code ScriptEngine} can not be
+ * dynamically re-initialized as doing so essentially equates to restarting the server.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -60,6 +55,7 @@ public class GremlinExecutor {
         final String language = message.<String>optionalArgs(Tokens.ARGS_LANGUAGE).orElse("gremlin-groovy");
         bindings.putAll(graphs.getGraphs());
 
+        // an executor service for the current thread so that script evaluation can be timed out if it runs too long
         final ExecutorService executorService = LocalExecutorService.getLocal();
         try {
             // do a safety cleanup of previous transaction...if any
@@ -70,8 +66,13 @@ public class GremlinExecutor {
             executorService.submit(graphs::commitAll).get();
             return o;
         } catch (Exception ex) {
-            // todo: gotta work on error handling for failed scripts..........
+            logger.warn("Script did not evaluate with success [{}]", message);
+
+            // try to rollback the changes
             executorService.submit(graphs::rollbackAll).get();
+
+            // throw the exception as it will be handled by the request processor and messaged back to the
+            // calling client.
             throw ex;
         }
     }
