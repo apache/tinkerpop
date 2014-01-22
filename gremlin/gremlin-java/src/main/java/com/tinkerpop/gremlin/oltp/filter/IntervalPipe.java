@@ -9,12 +9,12 @@ import com.tinkerpop.gremlin.util.GremlinHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IntervalPipe<S extends Element> extends FilterPipe<S> {
+public class IntervalPipe extends FilterPipe<Element> {
 
     public HasContainer startContainer;
     public HasContainer endContainer;
 
-    public IntervalPipe(final Pipeline<?, Element> pipeline, final HasContainer startContainer, final HasContainer endContainer) {
+    public IntervalPipe(final Pipeline pipeline, final HasContainer startContainer, final HasContainer endContainer) {
         super(pipeline);
         this.startContainer = startContainer;
         this.endContainer = endContainer;

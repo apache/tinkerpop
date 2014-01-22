@@ -95,7 +95,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         return this.pipes;
     }
 
-    public Pipeline addPipe(final Pipe pipe) {
+    public <S, E> Pipeline<S, E> addPipe(final Pipe<?, E> pipe) {
         if (this.pipes.size() > 0)
             pipe.addStarts(this.pipes.get(this.pipes.size() - 1));
         if (this.optimizers.stream()
@@ -103,7 +103,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
                 .map(optimizer -> ((Optimizer.StepOptimizer) optimizer).optimize(this, pipe))
                 .reduce(true, (a, b) -> a && b))
             this.pipes.add(pipe);
-        return this;
+        return (Gremlin<S, E>) this;
     }
 
     public boolean hasNext() {

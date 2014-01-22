@@ -21,6 +21,7 @@ import com.tinkerpop.gremlin.oltp.map.MatchPipe;
 import com.tinkerpop.gremlin.oltp.map.PathPipe;
 import com.tinkerpop.gremlin.oltp.map.PropertyPipe;
 import com.tinkerpop.gremlin.oltp.map.SelectPipe;
+import com.tinkerpop.gremlin.oltp.map.ShufflePipe;
 import com.tinkerpop.gremlin.oltp.map.ValuePipe;
 import com.tinkerpop.gremlin.oltp.map.ValuesPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
@@ -74,7 +75,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public void addStarts(final Iterator<Holder<S>> starts);
 
-    public Pipeline addPipe(final Pipe pipe);
+    public <S, E> Pipeline<S, E> addPipe(final Pipe<?, E> pipe);
 
     public List<Pipe> getPipes();
 
@@ -156,6 +157,10 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new PropertyPipe<>(this, key));
     }
 
+    public default Pipeline<S, E> shuffle() {
+        return this.addPipe(new ShufflePipe<>(this));
+    }
+
     public default <E2> Pipeline<S, E2> value() {
         return this.addPipe(new MapPipe<Property, E2>(this, p -> (E2) (p.get()).get()));
     }
@@ -221,27 +226,27 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new FilterPipe<E>(this, o -> !collection.contains(o.get())));
     }
 
-    public default <E2 extends Element> Pipeline<S, E2> has(final String key) {
+    public default Pipeline<S, Element> has(final String key) {
         return this.addPipe(new HasPipe(this, new HasContainer(key, Contains.IN)));
     }
 
-    public default <E2 extends Element> Pipeline<S, E2> has(final String key, final Object value) {
+    public default Pipeline<S, Element> has(final String key, final Object value) {
         return has(key, Compare.EQUAL, value);
     }
 
-    public default <E2 extends Element> Pipeline<S, E2> has(final String key, final T t, final Object value) {
+    public default Pipeline<S, Element> has(final String key, final T t, final Object value) {
         return this.has(key, T.convert(t), value);
     }
 
-    public default <E2 extends Element> Pipeline<S, E2> hasNot(final String key) {
+    public default Pipeline<S, Element> hasNot(final String key) {
         return this.addPipe(new HasPipe(this, new HasContainer(key, Contains.NOT_IN)));
     }
 
-    public default <E2 extends Element> Pipeline<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
+    public default Pipeline<S, Element> has(final String key, final BiPredicate predicate, final Object value) {
         return this.addPipe(new HasPipe(this, new HasContainer(key, predicate, value)));
     }
 
-    public default <E2 extends Element> Pipeline<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
+    public default Pipeline<S, Element> interval(final String key, final Comparable startValue, final Comparable endValue) {
         final HasContainer start = new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue);
         final HasContainer end = new HasContainer(key, Compare.LESS_THAN, endValue);
         return this.addPipe(new IntervalPipe(this, start, end));
@@ -310,7 +315,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public default Pipeline<S, E> jump(final String as, final Predicate<Holder<E>> ifPredicate, final Predicate<Holder<E>> emitPredicate) {
         final Pipe<?, ?> jumpPipe = GremlinHelper.asExists(as, this) ? GremlinHelper.getAs(as, this) : null;
-        return this.addPipe(new MapPipe<E, Object>(this, holder -> {
+        return this.addPipe(new MapPipe<E, E>(this, holder -> {
             if (null != jumpPipe)
                 holder.incrLoops();
             if (ifPredicate.test(holder)) {
@@ -319,9 +324,9 @@ public interface Pipeline<S, E> extends Iterator<E> {
                     GremlinHelper.getAs(as, getPipeline()).addStarts((Iterator) new SingleIterator<>(holder));
                 else
                     jumpPipe.addStarts((Iterator) new SingleIterator<>(holder));
-                return emitPredicate.test(holder) ? holder.get() : Pipe.NO_OBJECT;
+                return (E) (emitPredicate.test(holder) ? holder.get() : Pipe.NO_OBJECT);
             } else {
-                return holder.get();
+                return (E) holder.get();
             }
         }));
     }
