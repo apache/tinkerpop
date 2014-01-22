@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.server.op.standard;
 
 import com.codahale.metrics.Timer;
-import com.tinkerpop.gremlin.util.SingleIterator;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
@@ -14,6 +13,7 @@ import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.Tokens;
 import com.tinkerpop.gremlin.server.util.LocalExecutorService;
 import com.tinkerpop.gremlin.server.util.MetricManager;
+import com.tinkerpop.gremlin.util.SingleIterator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -85,6 +85,7 @@ final class StandardOps {
             throw new RuntimeException(String.format("Validation for the show operation is not properly checking the %s", Tokens.ARGS_INFO_TYPE));
 
         try {
+            // todo: serialize to JSON and make applicable to sessionless requests
             ctx.channel().write(new TextWebSocketFrame(serializer.serializeResult(infoToShow, context)));
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.",

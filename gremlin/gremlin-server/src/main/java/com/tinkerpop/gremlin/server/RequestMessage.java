@@ -19,12 +19,6 @@ public class RequestMessage {
     static RequestMessage INVALID = new RequestMessage("invalid");
 
     /**
-     * The id of the session to connect the message to.  Leave this value as {@code null} to issue a sessionless
-     * request.
-     */
-    public UUID sessionId = null;
-
-    /**
      * The id of the current request and is used to track the message within Gremlin Server and in its response.  This
      * value should be unique per request made.
      */
@@ -53,10 +47,6 @@ public class RequestMessage {
         this.op = op;
     }
 
-    public Optional<UUID> optionalSessionId() {
-        return sessionId == null ? Optional.empty() : Optional.of(this.sessionId);
-    }
-
     public <T> Optional<T> optionalArgs(final String key) {
         final Object o = args.get(key);
         return  o == null ? Optional.empty() : Optional.of((T) o);
@@ -66,7 +56,6 @@ public class RequestMessage {
      * Builder class for {@link RequestMessage}.
      */
     public static final class Builder {
-        private UUID sessionId = null;
         private UUID requestId = UUID.randomUUID();
         private String op;
         private String processor = StandardOpProcessor.OP_PROCESSOR_NAME;
@@ -97,32 +86,6 @@ public class RequestMessage {
         }
 
         /**
-         * Use an existing session id.
-         *
-         * @param sessionId the session identifier
-         */
-        public Builder existingSession(final UUID sessionId) {
-            this.sessionId = sessionId;
-            return this;
-        }
-
-        /**
-         * Construct the message with a new randomly generated session identifier.
-         */
-        public Builder newSession() {
-            this.sessionId = UUID.randomUUID();
-            return this;
-        }
-
-        /**
-         * Construct the message with no session identifier (a sessionless request).
-         */
-        public Builder noSession() {
-            this.sessionId = null;
-            return this;
-        }
-
-        /**
          * Create the request message given the settings provided to the {@link Builder}.
          */
         public RequestMessage build() {
@@ -131,7 +94,6 @@ public class RequestMessage {
             msg.op = this.op;
             msg.processor = this.processor;
             msg.requestId = this.requestId;
-            msg.sessionId = this.sessionId;
 
             return msg;
         }
@@ -140,7 +102,6 @@ public class RequestMessage {
     @Override
     public String toString() {
         return "RequestMessage{" +
-                "sessionId=" + sessionId +
                 ", requestId=" + requestId +
                 ", op='" + op + '\'' +
                 ", processor='" + processor + '\'' +

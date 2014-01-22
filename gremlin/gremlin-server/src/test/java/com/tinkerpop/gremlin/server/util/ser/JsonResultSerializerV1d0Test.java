@@ -403,7 +403,6 @@ public class JsonResultSerializerV1d0Test {
         assertTrue(msg.isPresent());
 
         final RequestMessage m = msg.get();
-        assertEquals(session, m.sessionId);
         assertEquals(request, m.requestId);
         assertEquals("eval", m.op);
         assertNotNull(m.args);
@@ -418,7 +417,6 @@ public class JsonResultSerializerV1d0Test {
         assertTrue(msg.isPresent());
 
         final RequestMessage m = msg.get();
-        assertEquals(session, m.sessionId);
         assertEquals(request, m.requestId);
         assertEquals("eval", m.op);
         assertNotNull(m.args);

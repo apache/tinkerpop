@@ -8,32 +8,11 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class RequestMessageTest {
-    @Test
-    public void shouldReturnEmptyOptionalSessionId() {
-        final RequestMessage msg = new RequestMessage.Builder("op").noSession().build();
-        assertFalse(msg.optionalSessionId().isPresent());
-    }
-
-    @Test
-    public void shouldReturnSessionIdAsOptional() {
-        final RequestMessage msg = new RequestMessage.Builder("op").newSession().build();
-        assertTrue(msg.optionalSessionId().isPresent());
-        assertEquals(msg.sessionId, msg.optionalSessionId().get());
-    }
-
-    @Test
-    public void shouldOverrideSession() {
-        final UUID session = UUID.randomUUID();
-        final RequestMessage msg = new RequestMessage.Builder("op").existingSession(session).build();
-        assertEquals(session, msg.sessionId);
-    }
 
     @Test
     public void shouldOverrideRequest() {
@@ -53,7 +32,6 @@ public class RequestMessageTest {
         final RequestMessage msg = new RequestMessage.Builder("op").build();
         assertEquals(StandardOpProcessor.OP_PROCESSOR_NAME, msg.processor);
         assertNotNull(msg.requestId);
-        assertNull(msg.sessionId);
         assertEquals("op", msg.op);
         assertNotNull(msg.args);
     }
