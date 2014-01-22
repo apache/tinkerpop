@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
+import static com.tinkerpop.blueprints.Graph.Features.GraphAnnotationFeatures.FEATURE_ANNOTATIONS;
 
 /**
  * Ensure that exception handling is consistent within Blueprints.
@@ -179,6 +180,26 @@ public class ExceptionConsistencyTest {
                 fail("Call to Edge.getVertex(BOTH) should throw an exception");
             } catch (Exception ex) {
                 final Exception expectedException = Element.Exceptions.bothIsNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+
+        }
+    }
+
+    /**
+     * Test exceptions around {@link Annotations}.
+     */
+    public static class GraphAnnotationsTest extends AbstractBlueprintsTest {
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphAnnotationFeatures.class, feature = FEATURE_ANNOTATIONS)
+        public void testSetNullValue() {
+
+            try {
+                g.annotations().set("k", null);
+                fail("Setting an annotation to a null value should throw an exception");
+            } catch (Exception ex) {
+                final Exception expectedException = Annotations.Exceptions.annotationValueCanNotBeNull();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
