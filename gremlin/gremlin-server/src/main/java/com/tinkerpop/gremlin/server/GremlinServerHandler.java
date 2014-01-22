@@ -177,8 +177,8 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
+    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
+        logger.warn("Message handler caught an exception.", cause);
         ctx.close();
     }
 
