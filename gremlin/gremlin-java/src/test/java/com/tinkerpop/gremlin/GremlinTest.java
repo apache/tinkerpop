@@ -149,5 +149,8 @@ public class GremlinTest {
 
         g.v(1).out().forEach(System.out::println);
         System.out.println(g.v(1).out().tree(o -> ((Vertex) o).getValue("name")));
+
+        Gremlin.of(graph).V().out().remove();
+        System.out.println(graph);
     }
 }

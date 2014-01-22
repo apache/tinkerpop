@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin;
 
+import com.tinkerpop.blueprints.AnnotatedValue;
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Contains;
 import com.tinkerpop.blueprints.Direction;
@@ -430,5 +431,24 @@ public interface Pipeline<S, E> extends Iterator<E> {
         } catch (final NoSuchElementException e) {
         }
         return (Tree) tree;
+    }
+
+    public default void remove() {
+        try {
+            while (true) {
+                final Object object = this.next();
+                if (object instanceof Element)
+                    ((Element) object).remove();
+                else if (object instanceof Property)
+                    ((Property) object).remove();
+                else if (object instanceof AnnotatedValue)
+                    ((AnnotatedValue) object).remove();
+                else {
+                    throw new IllegalStateException("The following object does not have a remove() method: " + object);
+                }
+            }
+        } catch (final NoSuchElementException e) {
+
+        }
     }
 }
