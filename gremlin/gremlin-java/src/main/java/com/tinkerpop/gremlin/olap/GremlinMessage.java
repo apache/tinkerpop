@@ -79,7 +79,7 @@ public abstract class GremlinMessage implements Serializable {
         return true;
     }
 
-    protected Optional<Edge> getEdge(final Vertex vertex) {
+    private Optional<Edge> getEdge(final Vertex vertex) {
         // TODO: WHY IS THIS NOT LIKE FAUNUS WITH A BOTH?
         // TODO: I KNOW WHY -- CAUSE OF HOSTING VERTICES IS BOTH IN/OUT WHICH IS NECESSARY FOR EDGE MUTATIONS
         return StreamFactory.stream(vertex.query().direction(Direction.OUT).edges())
@@ -87,7 +87,7 @@ public abstract class GremlinMessage implements Serializable {
                 .findFirst();
     }
 
-    protected Optional<Property> getProperty(final Vertex vertex) {
+    private Optional<Property> getProperty(final Vertex vertex) {
         if (this.elementId.equals(vertex.getId())) {
             final Property property = vertex.getProperty(this.propertyKey);
             return property.isPresent() ? Optional.of(property) : Optional.empty();

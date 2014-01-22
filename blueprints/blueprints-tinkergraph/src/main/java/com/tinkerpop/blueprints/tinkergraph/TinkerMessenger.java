@@ -7,10 +7,8 @@ import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -27,18 +25,17 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
     public Iterable<M> receiveMessages(final Vertex vertex, final MessageType messageType) {
         if (messageType instanceof MessageType.Local) {
             final MessageType.Local<Object, M> localMessageType = (MessageType.Local) messageType;
-            final List<Edge> edge = new ArrayList<>(1); // simulates storage side-effects available in Gremlin, but not Java8 streams
+            final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
             return StreamFactory.iterable(StreamFactory.stream(localMessageType.getQuery().build().reverse().build(vertex).edges())
                     .map(e -> {
-                        edge.clear();
-                        edge.add(e);
+                        edge[0] = e;
                         return receiveMessages.get(e.getVertex(localMessageType.getQuery().direction).getId());
                     })
                     .filter(m -> null != m)
                     .map(m -> m.get(messageType.getLabel()))
                     .filter(l -> null != l)
                     .flatMap(l -> l.stream())
-                    .map(message -> localMessageType.getEdgeFunction().apply(message, edge.get(0))));
+                    .map(message -> localMessageType.getEdgeFunction().apply(message, edge[0])));
 
         } else {
             return StreamFactory.iterable(Arrays.asList(vertex).stream()
