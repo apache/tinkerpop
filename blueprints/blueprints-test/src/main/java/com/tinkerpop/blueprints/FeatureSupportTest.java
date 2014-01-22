@@ -175,6 +175,52 @@ public class FeatureSupportTest  {
     }
 
     /**
+     * Feature checks that test {@link Graph} {@link Annotations} and {@link Vertex} {@link AnnotatedList}
+     * functionality to determine if a feature should be on when it is marked as not supported.
+     */
+    @RunWith(Parameterized.class)
+    public static class AnnotationFunctionalityTest extends AbstractBlueprintsTest {
+        private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
+
+        @Parameterized.Parameters(name = "{index}: supports{0}({1})")
+        public static Iterable<Object[]> data() {
+            return AnnotationTest.AnnotationFeatureSupportTest.data();
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String featureName;
+
+        @Parameterized.Parameter(value = 1)
+        public Object value;
+
+        @Test
+        public void shouldEnableFeatureOnGraphIfNotEnabled() throws Exception {
+            assumeThat(g.getFeatures().supports(GraphAnnotationFeatures.class, featureName), is(false));
+            try {
+               final Annotations annotations = g.annotations();
+                annotations.set("key", value);
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphAnnotationFeatures.class.getSimpleName(), featureName));
+            } catch (UnsupportedOperationException e) {
+                assertEquals(Annotations.Exceptions.dataTypeOfAnnotationValueNotSupported(value).getMessage(), e.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = VertexAnnotationFeatures.class, feature = VertexAnnotationFeatures.FEATURE_STRING_VALUES)
+        public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
+            assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
+            try {
+                final Vertex v = g.addVertex("key", AnnotatedList.make());
+                final Property<AnnotatedList<String>> al = v.getProperty("key");
+                al.get().addValue("v", "t", value);
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
+            } catch (UnsupportedOperationException e) {
+                assertEquals(Annotations.Exceptions.dataTypeOfAnnotationValueNotSupported(value).getMessage(), e.getMessage());
+            }
+        }
+    }
+
+    /**
      * Feature checks that simply evaluate conflicting feature definitions without evaluating the actual implementation
      * itself.
      */
