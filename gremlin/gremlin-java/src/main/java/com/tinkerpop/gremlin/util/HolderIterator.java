@@ -22,6 +22,12 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
         this.trackPaths = trackPaths;
     }
 
+    public HolderIterator(final Iterator<T> iterator) {
+        this.iterator = iterator;
+        this.pipe = null;
+        this.trackPaths = false;
+    }
+
     public boolean hasNext() {
         return this.iterator.hasNext();
     }

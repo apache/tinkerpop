@@ -6,10 +6,12 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerProperty<V> implements Property<V> {
+public class TinkerProperty<V> implements Property<V>, Serializable {
 
     private final Element element;
     private final String key;
