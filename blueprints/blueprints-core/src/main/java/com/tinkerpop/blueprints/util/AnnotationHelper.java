@@ -12,7 +12,7 @@ public class AnnotationHelper {
 
     public static void validatedAnnotatedValue(final Object value) throws IllegalArgumentException {
         if (null == value)
-            throw AnnotatedValue.Exceptions.annotatedValueCanNotBeNull();
+            throw Annotations.Exceptions.annotationValueCanNotBeNull();
     }
 
     public static void validateAnnotation(final String key, final Object value) throws IllegalArgumentException {

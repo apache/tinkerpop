@@ -224,6 +224,46 @@ public class ExceptionConsistencyTest {
     }
 
     /**
+     * Tests for exceptions with {@link AnnotatedList} and {@link AnnotatedValue}.
+     */
+    @RunWith(Parameterized.class)
+    public static class AnnotatedListValueTest extends AbstractBlueprintsTest {
+
+        @Parameterized.Parameters(name = "{index}: expect - {1}")
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    { new Object[] {"odd", "number", "arguments"},AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    { new Object[] {"odd"}, AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    { new Object[] {"odd", "number", 123, "test"}, AnnotatedList.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
+                    { new Object[] {"odd", null}, Annotations.Exceptions.annotationValueCanNotBeNull()},
+                    { new Object[] {null, "val"}, AnnotatedList.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
+                    { new Object[] {Property.Key.ID, "v"}, Annotations.Exceptions.annotationKeyValueIsReserved()},
+                    { new Object[] {"", "val"}, Annotations.Exceptions.annotationKeyCanNotBeEmpty()}});
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public Object[] arguments;
+
+        @Parameterized.Parameter(value = 1)
+        public Exception expectedException;
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = FEATURE_ANNOTATIONS)
+        public void testAnnotatedListAddValue() throws Exception {
+            try {
+                final Vertex v = this.g.addVertex();
+                v.setProperty("names", AnnotatedList.make());
+                final Property<AnnotatedList<String>> names = v.getProperty("names");
+                names.get().addValue("antonio", arguments);
+                fail(String.format("Call to addValue should have thrown an exception with these arguments [%s]", arguments));
+            } catch (Exception ex) {
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+    }
+
+    /**
      * Addition of an {@link Edge} without a label should throw an exception.
      */
     public static class EdgeLabelTest extends AbstractBlueprintsTest {
