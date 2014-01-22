@@ -27,10 +27,13 @@ import java.util.Optional;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
 import static io.netty.handler.codec.http.HttpMethod.GET;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -45,7 +48,6 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private static final String websocketPath = "/gremlin";
 
     private WebSocketServerHandshaker handshaker;
-    private StaticFileHandler staticFileHandler;
     private final Settings settings;
     private final Graphs graphs;
 
@@ -84,6 +86,22 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         }
 
         final String uri = req.getUri();
+        if ("/".equals(uri)) {
+            ByteBuf content = GremlinServerIndexPage.getContent(getWebSocketLocation(req));
+            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
+
+            res.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+            setContentLength(res, content.readableBytes());
+
+            sendHttpResponse(ctx, req, res);
+            return;
+        }
+
+        if ("/favicon.ico".equals(req.getUri())) {
+            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND);
+            sendHttpResponse(ctx, req, res);
+            return;
+        }
 
         if (uri.startsWith(websocketPath)) {
             // Web socket handshake
@@ -95,13 +113,6 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             } else {
                 handshaker.handshake(ctx.channel(), req);
             }
-        } else {
-            // Static file request
-            if (staticFileHandler == null) {
-                staticFileHandler = new StaticFileHandler();
-            }
-
-            staticFileHandler.handleHttpStaticFileRequest(ctx, req);
         }
     }
 
@@ -173,5 +184,28 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
 
     private String getWebSocketLocation(FullHttpRequest req) {
         return "ws://" + req.headers().get(HOST) + websocketPath;
+    }
+
+    private static final class GremlinServerIndexPage {
+        private GremlinServerIndexPage() {}
+
+        public static ByteBuf getContent(String webSocketLocation) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("<html style=\"background-color:#111111\">");
+            sb.append("<head><meta charset=\"UTF-8\"><title>Gremlin Server</title></head>");
+            sb.append("<body>");
+            sb.append("<div align=\"center\"><a href=\"http://tinkerpop.com\"><img style=\"width:300px\" src=\"https://raw2.github.com/tinkerpop/homepage/master/images/tinkerpop3-splash.png\"/></a></div>");
+            sb.append("<div align=\"center\">");
+            sb.append("<h3 style=\"color:#B5B5B5\">Gremlin Server - " + com.tinkerpop.gremlin.Tokens.VERSION + "</h3>");
+            sb.append("<p>");
+            sb.append(webSocketLocation);
+            sb.append("</p>");
+            sb.append("</div>");
+            sb.append("</body>");
+            sb.append("</html>");
+
+
+            return Unpooled.copiedBuffer(sb.toString(), CharsetUtil.US_ASCII);
+        }
     }
 }
