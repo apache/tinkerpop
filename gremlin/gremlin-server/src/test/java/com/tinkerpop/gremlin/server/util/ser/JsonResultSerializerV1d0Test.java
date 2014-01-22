@@ -397,9 +397,8 @@ public class JsonResultSerializerV1d0Test {
 
     @Test
     public void deserializeRequestNicelyWithNoArgs() {
-        final UUID session = UUID.fromString("7F5C73E3-CB3C-45A7-BF76-F6A68F944A8A");
         final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
-        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest(String.format("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\"}", session, request));
+        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest(String.format("{\"requestId\":\"%s\",\"op\":\"eval\"}", request));
         assertTrue(msg.isPresent());
 
         final RequestMessage m = msg.get();
@@ -411,9 +410,8 @@ public class JsonResultSerializerV1d0Test {
 
     @Test
     public void deserializeRequestNicelyWithArgs() {
-        final UUID session = UUID.fromString("7F5C73E3-CB3C-45A7-BF76-F6A68F944A8A");
         final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
-        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest(String.format("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}", session, request));
+        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest(String.format("{\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}", request));
         assertTrue(msg.isPresent());
 
         final RequestMessage m = msg.get();
@@ -425,7 +423,7 @@ public class JsonResultSerializerV1d0Test {
 
     @Test
     public void deserializeRequestParseMessage() {
-        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest("{\"sessionId\":\"%s\",\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}");
+        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest("{\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}");
         assertFalse(msg.isPresent());
     }
 
