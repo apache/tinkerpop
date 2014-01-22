@@ -48,7 +48,7 @@ public enum T {
     /**
      * Not in collection
      */
-    notin;
+    nin;
 
 
     public static BiPredicate convert(final T t) {
@@ -66,7 +66,7 @@ public enum T {
             return Compare.GREATER_THAN_EQUAL;
         else if (t.equals(T.in))
             return Contains.IN;
-        else if (t.equals(T.notin))
+        else if (t.equals(T.nin))
             return Contains.NOT_IN;
         else
             throw new IllegalArgumentException(t.toString() + " is an unknown filter type");

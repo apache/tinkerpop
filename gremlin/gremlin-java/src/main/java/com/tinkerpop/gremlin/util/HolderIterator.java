@@ -16,10 +16,10 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
     private final Pipe pipe;
     private final boolean trackPaths;
 
-    public HolderIterator(final Pipe pipe, final Iterator<T> iterator, final boolean trackPaths) {
+    public HolderIterator(final Pipe pipe, final Iterator<T> iterator) {
         this.iterator = iterator;
         this.pipe = pipe;
-        this.trackPaths = trackPaths;
+        this.trackPaths = true;
     }
 
     public HolderIterator(final Iterator<T> iterator) {
