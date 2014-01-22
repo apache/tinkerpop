@@ -29,10 +29,8 @@ public class Tokens {
     public static final String ARGS_COORDINATES_VERSION = "version";
 
     public static final String ARGS_INFO_TYPE_DEPDENENCIES = "dependencies";
-    public static final String ARGS_INFO_TYPE_VARIABLES = "variables";
     public static final String ARGS_INFO_TYPE_IMPORTS = "imports";
 
     public static final List<String> INFO_TYPES = Arrays.asList(ARGS_INFO_TYPE_DEPDENENCIES,
-                                                                ARGS_INFO_TYPE_VARIABLES,
                                                                 ARGS_INFO_TYPE_IMPORTS);
 }

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class ScriptEngines implements ScriptEngineOps {
+public class ScriptEngines implements ScriptEngineOps {
     /**
      * {@code ScriptEngine} objects configured for the server keyed on the language name.
      */

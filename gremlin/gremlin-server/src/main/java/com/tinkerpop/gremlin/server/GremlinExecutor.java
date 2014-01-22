@@ -33,7 +33,7 @@ public class GremlinExecutor {
     private static final Logger logger = LoggerFactory.getLogger(GremlinExecutor.class);
 
     /**
-     * Used in sessionless mode and centrally configured for imports/scripts.
+     * {@link ScriptEngines} instance to evaluate Gremlin script requests.
      */
     private ScriptEngines sharedScriptEngines;
 
@@ -45,8 +45,7 @@ public class GremlinExecutor {
     private Settings settings = null;
 
     /**
-     * Evaluate the {@link RequestMessage} after selecting the appropriate type (in-session or sessionless) of
-     * {@code ScriptEngine} instance.
+     * Evaluate the {@link RequestMessage} within a {@code ScriptEngine} instance.
      *
      * @param message the current message
      * @param graphs the list of {@link com.tinkerpop.blueprints.Graph} instances configured for the server
@@ -54,7 +53,27 @@ public class GremlinExecutor {
      */
     public Object eval(final RequestMessage message, final Graphs graphs)
             throws ScriptException, InterruptedException, ExecutionException, TimeoutException {
-        return selectForEval(message, graphs).apply(message);
+
+        final Bindings bindings = new SimpleBindings();
+        bindings.putAll(extractBindingsFromMessage(message));
+
+        final String language = message.<String>optionalArgs(Tokens.ARGS_LANGUAGE).orElse("gremlin-groovy");
+        bindings.putAll(graphs.getGraphs());
+
+        final ExecutorService executorService = LocalExecutorService.getLocal();
+        try {
+            // do a safety cleanup of previous transaction...if any
+            executorService.submit(graphs::rollbackAll).get();
+            final Future<Object> future = executorService.submit((Callable<Object>) () ->
+                    sharedScriptEngines.eval(message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language));
+            final Object o = future.get(settings.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
+            executorService.submit(graphs::commitAll).get();
+            return o;
+        } catch (Exception ex) {
+            // todo: gotta work on error handling for failed scripts..........
+            executorService.submit(graphs::rollbackAll).get();
+            throw ex;
+        }
     }
 
     /**
@@ -91,6 +110,10 @@ public class GremlinExecutor {
         return scriptEngines;
     }
 
+    public ScriptEngines getSharedScriptEngines() {
+        return this.sharedScriptEngines;
+    }
+
     /**
      * Determines whether or not the {@link GremlinExecutor} was initialized with the appropriate settings or not.
      */
@@ -98,69 +121,9 @@ public class GremlinExecutor {
         return initialized;
     }
 
-    /**
-     * Determine whether to execute the script by way of a specific session or by the shared {@code ScriptEngine} in
-     * a sessionless request.
-     */
-    private EvalFunctionThatThrows<RequestMessage, Object> selectForEval(final RequestMessage message, final Graphs graphs) {
-        final Bindings bindings = new SimpleBindings();
-        bindings.putAll(extractBindingsFromMessage(message));
-
-        final String language = message.<String>optionalArgs(Tokens.ARGS_LANGUAGE).orElse("gremlin-groovy");
-
-        // a sessionless request
-        if (logger.isDebugEnabled()) logger.debug("Using shared ScriptEngine to process {}", message);
-        return (RequestMessage m) -> {
-            // put all the preconfigured graphs on the bindings
-            bindings.putAll(graphs.getGraphs());
-
-            final ExecutorService executorService = LocalExecutorService.getLocal();
-            try {
-                // do a safety cleanup of previous transaction...if any
-                executorService.submit(graphs::rollbackAll).get();
-                final Future<Object> future = executorService.submit((Callable<Object>) () -> sharedScriptEngines.eval(m.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language));
-                final Object o = future.get(settings.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
-                executorService.submit(graphs::commitAll).get();
-                return o;
-            } catch (Exception ex) {
-                // todo: gotta work on error handling for failed scripts..........
-                executorService.submit(graphs::rollbackAll).get();
-                throw ex;
-            }
-        };
-    }
-
-    /**
-     * Selects a {@code ScriptEngine}, either shared or session-based, based on the {@link RequestMessage}. If a
-     * session identifier is present on the message then return a session-based {@link ScriptEngineOps} otherwise
-     * return the shared instance.
-     *
-     * @param message the current {@link RequestMessage} being processed
-     */
-    public ScriptEngineOps select(final RequestMessage message) {
-        return sharedScriptEngines;
-    }
-
-    /**
-     * Gets bindings from the session if this is an in-session requests.
-     */
-    public Optional<Map<String,Object>> getBindingsAsMap(final RequestMessage message) {
-        return Optional.empty();
-    }
-
     private static Map<String,Object> extractBindingsFromMessage(final RequestMessage msg) {
         final Map<String, Object> m = new HashMap<>();
         final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs(Tokens.ARGS_BINDINGS);
         return bindingsInMessage.orElse(m);
-    }
-
-    /**
-     * An {@link FunctionalInterface} that throws {@code ScriptEngine} oriented exceptions.
-     * @param <T> value passed to the function
-     * @param <R> value returned from the function
-     */
-    @FunctionalInterface
-    public interface EvalFunctionThatThrows<T, R> {
-        R apply(T t) throws ScriptException, InterruptedException, ExecutionException, TimeoutException;
     }
 }

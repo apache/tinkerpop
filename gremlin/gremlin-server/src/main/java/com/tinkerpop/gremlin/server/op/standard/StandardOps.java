@@ -38,7 +38,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -58,7 +57,7 @@ final class StandardOps {
     public static void importOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
         final List<String> l = (List<String>) msg.args.get(Tokens.ARGS_IMPORTS);
-        context.getGremlinExecutor().select(msg).addImports(new HashSet<>(l));
+        context.getGremlinExecutor().getSharedScriptEngines().addImports(new HashSet<>(l));
     }
 
     /**
@@ -72,15 +71,13 @@ final class StandardOps {
                 MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         final String infoType = msg.<String>optionalArgs(Tokens.ARGS_INFO_TYPE).get();
         final GremlinExecutor executor = context.getGremlinExecutor();
-        final ScriptEngineOps seo = executor.select(msg);
+        final ScriptEngineOps seo = executor.getSharedScriptEngines();
 
         final Object infoToShow;
         if (infoType.equals(Tokens.ARGS_INFO_TYPE_DEPDENENCIES))
             infoToShow = seo.dependencies();
         else if (infoType.equals(Tokens.ARGS_INFO_TYPE_IMPORTS))
             infoToShow  = seo.imports();
-        else if (infoType.equals(Tokens.ARGS_INFO_TYPE_VARIABLES))
-            infoToShow = executor.getBindingsAsMap(msg);
         else
             throw new RuntimeException(String.format("Validation for the show operation is not properly checking the %s", Tokens.ARGS_INFO_TYPE));
 
@@ -97,8 +94,7 @@ final class StandardOps {
      * Resets the {@code ScriptEngine} thus forcing a reload of scripts and classes.
      */
     public static void resetOp(final Context context) {
-        final RequestMessage msg = context.getRequestMessage();
-        context.getGremlinExecutor().select(msg).reset();
+        context.getGremlinExecutor().getSharedScriptEngines().reset();
     }
 
     /**
@@ -112,7 +108,7 @@ final class StandardOps {
             final String artifact = c.get(Tokens.ARGS_COORDINATES_ARTIFACT);
             final String version = c.get(Tokens.ARGS_COORDINATES_VERSION);
             logger.info("Loading plugin [group={},artifact={},version={}]", group, artifact, version);
-            context.getGremlinExecutor().select(msg).use(group, artifact, version);
+            context.getGremlinExecutor().getSharedScriptEngines().use(group, artifact, version);
             OpProcessor.text(String.format("Plugin loaded - [group=%s,artifact=%s,version=%s]", group, artifact, version)).accept(context);
         });
     }
@@ -156,9 +152,6 @@ final class StandardOps {
 
             // determines when the iteration of all results is complete and queue is full
             final AtomicBoolean iterationComplete = new AtomicBoolean(false);
-
-            // hold the serialization exception if one occurs duing result iteration
-            final AtomicReference<Optional<Exception>> serializationException = new AtomicReference<>(Optional.empty());
 
             // need to queue results as the frames need to be written in the request that handled the response.
             // hard to write a good integration test for the serialization/response timeouts.  add a Thread.sleep()
