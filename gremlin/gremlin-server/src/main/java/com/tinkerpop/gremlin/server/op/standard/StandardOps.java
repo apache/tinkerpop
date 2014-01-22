@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.server.MessageSerializer;
 import com.tinkerpop.gremlin.server.OpProcessor;
 import com.tinkerpop.gremlin.server.RequestMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
-import com.tinkerpop.gremlin.server.ScriptEngineOps;
+import com.tinkerpop.gremlin.server.ScriptEngines;
 import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.Tokens;
 import com.tinkerpop.gremlin.server.util.LocalExecutorService;
@@ -71,13 +71,13 @@ final class StandardOps {
                 MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         final String infoType = msg.<String>optionalArgs(Tokens.ARGS_INFO_TYPE).get();
         final GremlinExecutor executor = context.getGremlinExecutor();
-        final ScriptEngineOps seo = executor.getSharedScriptEngines();
+        final ScriptEngines scriptEngines = executor.getSharedScriptEngines();
 
         final Object infoToShow;
         if (infoType.equals(Tokens.ARGS_INFO_TYPE_DEPDENENCIES))
-            infoToShow = seo.dependencies();
+            infoToShow = scriptEngines.dependencies();
         else if (infoType.equals(Tokens.ARGS_INFO_TYPE_IMPORTS))
-            infoToShow  = seo.imports();
+            infoToShow  = scriptEngines.imports();
         else
             throw new RuntimeException(String.format("Validation for the show operation is not properly checking the %s", Tokens.ARGS_INFO_TYPE));
 
