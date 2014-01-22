@@ -11,6 +11,7 @@ import com.tinkerpop.blueprints.Graph;
  *
  * @author Matthias Broecheler (me@matthiasb.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface GraphMemory {
 

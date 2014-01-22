@@ -144,7 +144,13 @@ public class GremlinTest {
     @Test
     public void testRange() {
         Graph graph = TinkerFactory.createClassic();
-        Gremlin g = (Gremlin) Gremlin.of(graph);
+        Gremlin<Vertex, Vertex> g = (Gremlin) Gremlin.of(graph);
         assertEquals(3l, g.V().range(0, 2).count());
+
+        g.v(1).out().forEach(System.out::println);
+        System.out.println(g.v(1).out().tree(o -> ((Vertex) o).getValue("name")));
+
+        Gremlin.of(graph).V().out().remove();
+        System.out.println(graph);
     }
 }

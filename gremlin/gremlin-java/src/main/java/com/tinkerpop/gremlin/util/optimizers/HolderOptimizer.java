@@ -24,7 +24,7 @@ public class HolderOptimizer implements Optimizer.FinalOptimizer {
         return pipeline;
     }
 
-    public <S, E> boolean trackPaths(final Pipeline<S, E> pipeline) {
+    public static <S, E> boolean trackPaths(final Pipeline<S, E> pipeline) {
         return pipeline.getPipes().stream().filter(pipe ->
                 pipe instanceof PathPipe
                         || pipe instanceof BackPipe
@@ -32,5 +32,12 @@ public class HolderOptimizer implements Optimizer.FinalOptimizer {
                         || pipe instanceof SimplePathPipe
                         || pipe instanceof MatchPipe
                         || pipe instanceof LinkPipe).findFirst().isPresent();
+    }
+
+    public static <S, E> void doPathTracking(final Pipeline<S, E> pipeline) {
+        pipeline.getPipes().forEach(pipe -> {
+            if (pipe instanceof GraphQueryPipe)
+                ((GraphQueryPipe) pipe).generateHolderIterator(true);
+        });
     }
 }

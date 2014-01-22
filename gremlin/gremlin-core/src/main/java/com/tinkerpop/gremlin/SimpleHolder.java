@@ -16,10 +16,6 @@ public class SimpleHolder<T> implements Holder<T> {
         this.t = t;
     }
 
-    public SimpleHolder(final String as, final T t) {
-        this.t = t;
-    }
-
     public T get() {
         return this.t;
     }

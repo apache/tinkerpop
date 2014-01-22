@@ -44,7 +44,7 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     public void setup(final GraphMemory graphMemory) {
         graphMemory.setIfAbsent(GREMLIN_PIPELINE, this.gremlin);
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
-        graphMemory.setIfAbsent(TRACK_PATHS, new HolderOptimizer().trackPaths(this.gremlin.get()));
+        graphMemory.setIfAbsent(TRACK_PATHS, HolderOptimizer.trackPaths(this.gremlin.get()));
     }
 
     public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
@@ -65,17 +65,17 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
         if (graphQueryPipe.returnClass.equals(Vertex.class) && HasContainer.testAll(vertex, hasContainers)) {
             final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
                     new PathHolder<>(graphQueryPipe.getAs(), vertex) :
-                    new SimpleHolder<>(graphQueryPipe.getAs(), vertex);
+                    new SimpleHolder<>(vertex);
             holder.setFuture(future);
             messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(holder));
             voteToHalt.set(false);
         } else if (graphQueryPipe.returnClass.equals(Edge.class)) {
             StreamFactory.stream(vertex.query().direction(Direction.OUT).edges())
-                    .filter(e -> HasContainer.testAll(e, hasContainers))
+                    .filter(edge -> HasContainer.testAll(edge, hasContainers))
                     .forEach(e -> {
                         final Holder<Edge> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
                                 new PathHolder<>(graphQueryPipe.getAs(), e) :
-                                new SimpleHolder<>(graphQueryPipe.getAs(), e);
+                                new SimpleHolder<>(e);
                         holder.setFuture(future);
                         messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(holder));
                         voteToHalt.set(false);
