@@ -144,7 +144,7 @@ final class StandardOps {
             o = context.getGremlinExecutor().eval(msg, context.getGraphs());
 
             // make all results an iterator
-            Iterator itty = convertToIterator(o);
+            final Iterator itty = convertToIterator(o);
 
             // mark this request as having its results evaluated
             evaluated = true;
