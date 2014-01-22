@@ -46,7 +46,7 @@ public interface Annotations {
         }
 
         public static UnsupportedOperationException dataTypeOfAnnotationValueNotSupported(final Object val) {
-            throw new UnsupportedOperationException(String.format("Annotation value [%s] is of type %s is not supported", val, val.getClass()));
+            return new UnsupportedOperationException(String.format("Annotation value [%s] is of type %s is not supported", val, val.getClass()));
         }
     }
 

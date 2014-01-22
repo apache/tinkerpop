@@ -190,20 +190,36 @@ public class ExceptionConsistencyTest {
     /**
      * Test exceptions around {@link Annotations}.
      */
+    @RunWith(Parameterized.class)
     public static class GraphAnnotationsTest extends AbstractBlueprintsTest {
+        @Parameterized.Parameters(name = "{index}: expect - {2}")
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    { "k", null, Annotations.Exceptions.annotationValueCanNotBeNull()},
+                    { null, "v", Annotations.Exceptions.annotationKeyCanNotBeNull()},
+                    { Property.Key.ID, "v", Annotations.Exceptions.annotationKeyValueIsReserved()},
+                    { "", "v", Annotations.Exceptions.annotationKeyCanNotBeEmpty()}});
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String key;
+
+        @Parameterized.Parameter(value = 1)
+        public String val;
+
+        @Parameterized.Parameter(value = 2)
+        public Exception expectedException;
+
         @Test
         @FeatureRequirement(featureClass = Graph.Features.GraphAnnotationFeatures.class, feature = FEATURE_ANNOTATIONS)
-        public void testSetNullValue() {
-
+        public void testGraphAnnotationsSet() throws Exception {
             try {
-                g.annotations().set("k", null);
-                fail("Setting an annotation to a null value should throw an exception");
+                g.annotations().set(key, val);
+                fail(String.format("Setting an annotation with these arguments [key: %s value: %s] should throw an exception", key, val));
             } catch (Exception ex) {
-                final Exception expectedException = Annotations.Exceptions.annotationValueCanNotBeNull();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
-
         }
     }
 
