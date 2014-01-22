@@ -27,7 +27,7 @@ public class GroupCountTest {
         assertEquals(1l, m.get("ripple"));
     }*/
 
-    public void g_V_outXcreatedX_name_groupCount(Map<Object, Long> map) {
+    public void g_V_outXcreatedX_name_groupCount(final Map<Object, Long> map) {
         assertEquals(map.size(), 2);
         assertEquals(map.get("lop").longValue(), 3l);
         assertEquals(map.get("ripple").longValue(), 1l);

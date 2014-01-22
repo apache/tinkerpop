@@ -29,6 +29,6 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
     public Holder<T> next() {
         return this.trackPaths ?
                 new PathHolder<>(this.pipe.getAs(), this.iterator.next()) :
-                new SimpleHolder<>(this.pipe.getAs(), this.iterator.next());
+                new SimpleHolder<>(this.iterator.next());
     }
 }

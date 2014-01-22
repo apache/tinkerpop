@@ -68,26 +68,22 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     }
 
     public Gremlin<Vertex, Vertex> V() {
-        final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Vertex.class);
-        this.addPipe(pipe);
+        this.addPipe(new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Vertex.class));
         return (Gremlin<Vertex, Vertex>) this;
     }
 
     public Gremlin<Edge, Edge> E() {
-        final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Edge.class);
-        this.addPipe(pipe);
+        this.addPipe(new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Edge.class));
         return (Gremlin<Edge, Edge>) this;
     }
 
     public Gremlin<Vertex, Vertex> v(final Object... ids) {
-        final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Vertex.class);
-        this.addPipe(pipe);
+        this.addPipe(new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Vertex.class));
         return (Gremlin<Vertex, Vertex>) this;
     }
 
     public Gremlin<Edge, Edge> e(final Object... ids) {
-        final GraphQueryPipe pipe = new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Edge.class);
-        this.addPipe(pipe);
+        this.addPipe(new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Edge.class));
         return (Gremlin<Edge, Edge>) this;
     }
 
@@ -99,15 +95,15 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         return this.pipes;
     }
 
-    public <P extends Pipeline> P addPipe(final Pipe pipe) {
+    public Pipeline addPipe(final Pipe pipe) {
         if (this.pipes.size() > 0)
             pipe.addStarts(this.pipes.get(this.pipes.size() - 1));
         if (this.optimizers.stream()
-                .filter(o -> o instanceof Optimizer.StepOptimizer)
-                .map(o -> ((Optimizer.StepOptimizer) o).optimize(this, pipe))
+                .filter(optimizer -> optimizer instanceof Optimizer.StepOptimizer)
+                .map(optimizer -> ((Optimizer.StepOptimizer) optimizer).optimize(this, pipe))
                 .reduce(true, (a, b) -> a && b))
             this.pipes.add(pipe);
-        return (P) this;
+        return this;
     }
 
     public boolean hasNext() {
@@ -131,8 +127,8 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
             return;
 
         this.optimizers.stream()
-                .filter(o -> o instanceof Optimizer.FinalOptimizer)
-                .map(o -> ((Optimizer.FinalOptimizer) o).optimize(this)).count();
+                .filter(optimizer -> optimizer instanceof Optimizer.FinalOptimizer)
+                .map(optimizer -> ((Optimizer.FinalOptimizer) optimizer).optimize(this)).count();
     }
 
     public boolean equals(final Object object) {

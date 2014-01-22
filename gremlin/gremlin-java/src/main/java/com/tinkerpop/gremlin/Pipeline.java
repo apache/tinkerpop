@@ -28,6 +28,8 @@ import com.tinkerpop.gremlin.oltp.sideeffect.LinkPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.MapHelper;
 import com.tinkerpop.gremlin.util.SingleIterator;
+import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.util.structures.Tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,7 +73,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public void addStarts(final Iterator<Holder<S>> starts);
 
-    public <P extends Pipeline> P addPipe(final Pipe pipe);
+    public Pipeline addPipe(final Pipe pipe);
 
     public List<Pipe> getPipes();
 
@@ -189,11 +191,11 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new SelectPipe(this, ases));
     }
 
-    public default <E2> Pipeline<S, E2> unroll() {
+    /*public default <E2> Pipeline<S, E2> unroll() {
         return this.addPipe(new FlatMapPipe<List, Object>(this, l -> l.get().iterator()));
     }
 
-    /*public default <E2> Pipeline<S, E2> rollup() {
+    public default <E2> Pipeline<S, E2> rollup() {
         return this.addPipe(new Map<Object, List>(this, o -> o);
     }*/
 
@@ -280,7 +282,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> groupCount(final Map<Object, Long> map) {
-        return this.addPipe(new GroupCountPipe(this, map));
+        return this.addPipe(new GroupCountPipe<>(this, map));
     }
 
     public default Pipeline<S, Vertex> linkIn(final String label, final String as) {
@@ -399,7 +401,34 @@ public interface Pipeline<S, E> extends Iterator<E> {
                 MapHelper.incr(map, this.next(), 1l);
             }
         } catch (final NoSuchElementException e) {
-            return map;
         }
+        return map;
+    }
+
+    public default <T> Tree<T> tree(final Function... branchFunctions) {
+        final Tree<Object> tree = new Tree<>();
+        Tree<Object> depth = tree;
+        HolderOptimizer.doPathTracking(this);
+        final Pipe endPipe = GremlinHelper.getEnd(this);
+        int currentFunction = (branchFunctions.length > 0) ? 0 : -1;
+        try {
+            while (true) {
+                final Path path = ((Holder) endPipe.next()).getPath();
+                for (int i = 0; i < path.size(); i++) {
+                    Object object = path.get(i);
+                    if (-1 != currentFunction) {
+                        object = branchFunctions[currentFunction].apply(object);
+                        currentFunction = (currentFunction + 1) % branchFunctions.length;
+                    }
+                    if (!depth.containsKey(object))
+                        depth.put(object, new Tree<>());
+
+                    depth = depth.get(object);
+                }
+                depth = tree;
+            }
+        } catch (final NoSuchElementException e) {
+        }
+        return (Tree) tree;
     }
 }
