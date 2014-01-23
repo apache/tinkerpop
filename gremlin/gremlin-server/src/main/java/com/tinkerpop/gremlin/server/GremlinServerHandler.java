@@ -166,9 +166,11 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
                 uuidBytes.writeLong(requestMessage.requestId.getLeastSignificantBits());
                 ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
             }
-        } else
+        } else {
+            // gets caught by the exceptionCaught method on this handler.
             throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
                     .getName()));
+        }
     }
 
     private static String[] segmentMessage(final String msg) {
