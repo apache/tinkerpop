@@ -5,7 +5,6 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -65,17 +64,19 @@ public class GremlinTest {
         Gremlin.of(g).V().as("x").out().as("y").select("x", "y").sideEffect(System.out::println).iterate();
     }
 
-    @Ignore
+    @Test
     public void testMatch() {
         TinkerGraph g = TinkerFactory.createClassic();
         Gremlin.of(g).V()
                 .match("a", "d",
-                        Gremlin.of().as("a").out("knows").as("b"),
-                        Gremlin.of().as("b").out("created").as("c"),
-                        Gremlin.of().as("c").value("name").as("d"))
-                .sideEffect(System.out::println).iterate();
+                        Gremlin.of().as("a").out("created").as("b"),
+                        Gremlin.of().as("b").has("name", "lop"),
+                        Gremlin.of().as("b").in("created").as("c"),
+                        Gremlin.of().as("c").has("age", 29),
+                        Gremlin.of().as("c").out("knows").as("d"))
+                .select("b", "d").forEach(System.out::println);
 
-        System.out.println("--------------");
+        /*System.out.println("--------------");
 
         Gremlin.of(g).V()
                 .match("a", "b",
@@ -95,7 +96,7 @@ public class GremlinTest {
                         Gremlin.of().as("b").has("lang", "java"),
                         Gremlin.of().as("b").in("created").has("name", "peter"))
                 .value("name").path()
-                .sideEffect(System.out::println).iterate();
+                .sideEffect(System.out::println).iterate();*/
     }
 
     @Test
@@ -124,7 +125,6 @@ public class GremlinTest {
 
     @Test
     public void testLoop2() {
-
         TinkerGraph g = TinkerFactory.createClassic();
         Gremlin.of(g).V().as("x").out().jump("x", o -> o.getLoops() < 2).property("name").forEach(System.out::println);
         Gremlin.of(g).V().as("x").jump("y", o -> o.getLoops() > 1).out().jump("x").property("name").as("y").forEach(System.out::println);

@@ -15,6 +15,10 @@ public class GremlinHelper {
         return !pipe.getAs().startsWith("_");
     }
 
+    public static boolean isLabeled(final String as) {
+        return !as.startsWith("_");
+    }
+
     public static <S, E> Pipe<S, E> getAs(final String as, final Pipeline<?, ?> pipeline) {
         return (Pipe) pipeline.getPipes().stream()
                 .filter(p -> as.equals(p.getAs()))

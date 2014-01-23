@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.GraphQueryBuilder;
 import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
+import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.optimizers.GraphQueryOptimizer;
 import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
@@ -40,7 +41,10 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     }
 
     public static Gremlin<?, ?> of() {
-        return Gremlin.of(EmptyGraph.instance());
+        Gremlin gremlin = Gremlin.of(EmptyGraph.instance());
+        gremlin.addPipe(new IdentityPipe(gremlin));
+        return gremlin;
+
     }
 
     public static Gremlin<?, ?> of(final Graph graph) {

@@ -57,8 +57,9 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
         final Gremlin gremlin = graphMemory.<Supplier<Gremlin>>get(GREMLIN_PIPELINE).get();
-        final GraphQueryPipe graphQueryPipe = (GraphQueryPipe) gremlin.getPipes().get(0);
-        final String future = (gremlin.getPipes().size() == 1) ? Holder.NO_FUTURE : ((Pipe) gremlin.getPipes().get(1)).getAs();
+        // the head is always an IdentityPipe so simply skip it
+        final GraphQueryPipe graphQueryPipe = (GraphQueryPipe) gremlin.getPipes().get(1);
+        final String future = (gremlin.getPipes().size() == 2) ? Holder.NO_FUTURE : ((Pipe) gremlin.getPipes().get(2)).getAs();
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final List<HasContainer> hasContainers = graphQueryPipe.queryBuilder.hasContainers;

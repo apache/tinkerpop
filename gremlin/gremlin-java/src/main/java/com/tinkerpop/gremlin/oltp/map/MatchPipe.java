@@ -1,11 +1,10 @@
 package com.tinkerpop.gremlin.oltp.map;
 
-import com.tinkerpop.gremlin.oltp.AbstractPipe;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.Pipeline;
+import com.tinkerpop.gremlin.oltp.AbstractPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
-import com.tinkerpop.gremlin.util.MultiIterator;
 import com.tinkerpop.gremlin.util.SingleIterator;
 
 import java.util.ArrayList;
@@ -14,8 +13,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -25,72 +22,81 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
     private Iterator<Holder<E>> iterator = Collections.emptyIterator();
     private final Pipeline[] pipelines;
     private final Map<String, List<Pipeline>> predicatePipelines = new HashMap<>();
+    private final Map<String, List<Pipeline>> internalPipelines = new HashMap<>();
+    private Pipeline endPipeline;
+    private String endPipelineStartAs;
     private final String inAs;
     private final String outAs;
 
-    public MatchPipe(final String inAs, final String outAs, final Pipeline pipeline, final Pipeline... pipelines) {
+    public MatchPipe(final Pipeline pipeline, final String inAs, final String outAs, final Pipeline... pipelines) {
         super(pipeline);
         this.inAs = inAs;
         this.outAs = outAs;
         this.pipelines = pipelines;
         for (final Pipeline p1 : this.pipelines) {
-            final Pipe endPipe = GremlinHelper.getEnd(p1);
-            final String endPipeName = endPipe.getAs();
-            if (!endPipeName.equals(Holder.NO_FUTURE)) {
-                for (final Pipeline p2 : this.pipelines) {
-                    final Pipe startPipe = GremlinHelper.getStart(p2);
-                    if (endPipe.getAs().equals(startPipe.getAs()))
-                        startPipe.addStarts(endPipe);
-                }
-            } else {
-                List<Pipeline> pipes = this.predicatePipelines.get(GremlinHelper.getStart(p1).getAs());
-                if (null == pipes) {
-                    pipes = new ArrayList<>();
-                    this.predicatePipelines.put(GremlinHelper.getStart(p1).getAs(), pipes);
-                }
-                pipes.add(p1);
+            final String start = GremlinHelper.getStart(p1).getAs();
+            final String end = GremlinHelper.getEnd(p1).getAs();
+            if (!GremlinHelper.isLabeled(start)) {
+                throw new IllegalStateException("All match pipelines must have their start pipe labeled");
             }
+            if (!GremlinHelper.isLabeled(end)) {
+                final List<Pipeline> list = this.predicatePipelines.getOrDefault(start, new ArrayList<>());
+                this.predicatePipelines.put(start, list);
+                list.add(p1);
+            } else {
+                if (end.equals(this.outAs)) {
+                    this.endPipeline = p1;
+                    this.endPipelineStartAs = GremlinHelper.getStart(p1).getAs();
+                } else {
+                    final List<Pipeline> list = this.internalPipelines.getOrDefault(start, new ArrayList<>());
+                    this.internalPipelines.put(start, list);
+                    list.add(p1);
+                }
+            }
+
         }
     }
 
     public Holder<E> processNextStart() {
         while (true) {
-            if (this.iterator.hasNext()) {
-                // CHECK ALL END PREDICATE PIPELINE
-                final Holder<E> holder = this.iterator.next();
-                if (isLegalPredicate(this.outAs, holder)) {
+            if (this.endPipeline.hasNext()) {
+                final Holder<E> holder = (Holder<E>) GremlinHelper.getEnd(this.endPipeline).next();
+                if (doPredicates(this.outAs, holder))
                     return holder;
-                }
             } else {
-                final Holder<S> start = this.starts.next();
-                // IF PREDICATES HOLD, DO END-NAMED PIPELINES
-                if (isLegalPredicate(this.inAs, start)) {
-                    this.getAs(this.inAs).forEach(pipe -> pipe.addStarts(new SingleIterator(start.makeSibling())));
-                    this.iterator = new MultiIterator(this.getAs(outAs));
-                }
+                doMatch(this.inAs, this.starts.next());
             }
         }
     }
 
-    private List<Pipe> getAs(final String key) {
-        return (List) Stream.of(this.pipelines)
-                .filter(p -> GremlinHelper.asExists(key, p))
-                .map(p -> GremlinHelper.getAs(key, p))
-                .collect(Collectors.toList());
-    }
+    private void doMatch(final String as, final Holder holder) {
+        if (!doPredicates(as, holder))
+            return;
 
-    private boolean isLegalPredicate(final String name, final Holder holder) {
-        boolean legal = true;
-        if (this.predicatePipelines.containsKey(name)) {
-            for (final Pipeline pipeline : this.predicatePipelines.get(name)) {
-                pipeline.addStarts(new SingleIterator(holder.makeSibling()));
-                if (!GremlinHelper.hasNextIteration(pipeline)) {
-                    legal = false;
-                    break; // short-circuit AND
-                }
+        if (as.equals(this.endPipelineStartAs)) {
+            this.endPipeline.addStarts(new SingleIterator<>(holder));
+            return;
+        }
+
+        for (final Pipeline pipeline : this.internalPipelines.get(as)) {
+            pipeline.addStarts(new SingleIterator<>(holder));
+            final Pipe<?, ?> endPipe = GremlinHelper.getEnd(pipeline);
+            while (endPipe.hasNext()) {
+                final Holder temp = endPipe.next();
+                doMatch(endPipe.getAs(), temp);
             }
         }
-        return legal;
+    }
+
+    private boolean doPredicates(final String as, final Holder holder) {
+        if (this.predicatePipelines.containsKey(as)) {
+            for (final Pipeline pipeline : this.predicatePipelines.get(as)) {
+                pipeline.addStarts(new SingleIterator<>(holder));
+                if (!GremlinHelper.hasNextIteration(pipeline))
+                    return false;
+            }
+        }
+        return true;
     }
 
 }

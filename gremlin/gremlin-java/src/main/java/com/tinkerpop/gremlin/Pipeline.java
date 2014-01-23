@@ -193,7 +193,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default <E2> Pipeline<S, E2> match(final String inAs, final String outAs, final Pipeline... pipelines) {
-        return this.addPipe(new MatchPipe(inAs, outAs, this, pipelines));
+        return this.addPipe(new MatchPipe(this, inAs, outAs, pipelines));
     }
 
     public default Pipeline<S, List> select(final String... ases) {
