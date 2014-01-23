@@ -21,7 +21,7 @@ import com.tinkerpop.gremlin.oltp.map.FlatMapPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.oltp.map.MapPipe;
 import com.tinkerpop.gremlin.oltp.map.MatchPipe;
-import com.tinkerpop.gremlin.oltp.map.OrderMap;
+import com.tinkerpop.gremlin.oltp.map.OrderPipe;
 import com.tinkerpop.gremlin.oltp.map.PathPipe;
 import com.tinkerpop.gremlin.oltp.map.ProjectPipe;
 import com.tinkerpop.gremlin.oltp.map.PropertyPipe;
@@ -160,11 +160,11 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> order() {
-        return this.addPipe(new OrderMap<E>(this, (a, b) -> ((Comparable) a.get()).compareTo(b.get())));
+        return this.addPipe(new OrderPipe<E>(this, (a, b) -> ((Comparable) a.get()).compareTo(b.get())));
     }
 
     public default Pipeline<S, E> order(final Comparator<Holder<E>> comparator) {
-        return this.addPipe(new OrderMap<>(this, comparator));
+        return this.addPipe(new OrderPipe<>(this, comparator));
     }
 
     public default <E2> Pipeline<S, Property<E2>> property(final String key) {

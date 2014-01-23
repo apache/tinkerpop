@@ -16,13 +16,13 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class OrderMap<S> extends AbstractPipe<S, S> {
+public class OrderPipe<S> extends AbstractPipe<S, S> {
 
     public Iterator<Holder<S>> itty = null;
     public Comparator<Holder<S>> comparator;
     public Pipe endPipe;
 
-    public OrderMap(final Pipeline pipeline, final Comparator<Holder<S>> comparator) {
+    public OrderPipe(final Pipeline pipeline, final Comparator<Holder<S>> comparator) {
         super(pipeline);
         this.comparator = comparator;
         this.endPipe = GremlinHelper.getEnd(pipeline);
