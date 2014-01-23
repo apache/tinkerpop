@@ -1,9 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-
-import java.util.function.Consumer;
 
 /**
  * Interface for providing commands that websocket requests will respond to.
