@@ -61,7 +61,11 @@ public class GremlinTest {
     @Test
     public void testSelect() {
         TinkerGraph g = TinkerFactory.createClassic();
-        Gremlin.of(g).V().as("x").out().as("y").select("x", "y").sideEffect(System.out::println).iterate();
+        Gremlin.of(g).V().as("x")
+                .out().as("y")
+                .select("x", "y")
+                .project(v -> ((Vertex) v).getValue("name"))
+                .sideEffect(System.out::println).iterate();
     }
 
     @Test
@@ -74,19 +78,19 @@ public class GremlinTest {
                         Gremlin.of().as("b").in("created").as("c"),
                         Gremlin.of().as("c").has("age", 29),
                         Gremlin.of().as("c").out("knows").as("d"))
-                .select("b", "d").forEach(System.out::println);
+                .select("a", "d").project(v -> ((Vertex) v).getValue("name")).forEach(System.out::println);
 
-        /*System.out.println("--------------");
+        System.out.println("--------------");
 
         Gremlin.of(g).V()
-                .match("a", "b",
-                        Gremlin.of().as("a").out("knows").has("name", "josh"),
-                        Gremlin.of().as("a").out("created").has("name", "lop"),
-                        Gremlin.of().as("a").out("created").as("b"))
+                .match("a", "c",
+                        Gremlin.of().as("a").out("created").as("b"),
+                        Gremlin.of().as("a").out("knows").as("b"),
+                        Gremlin.of().as("b").identity().as("c"))
                 .value("name").path()
                 .sideEffect(System.out::println).iterate();
 
-        System.out.println("--------------");
+        /*System.out.println("--------------");
 
         Gremlin.of(g).V()
                 .match("a", "b",

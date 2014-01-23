@@ -9,6 +9,7 @@ import com.tinkerpop.blueprints.util.micro.MicroProperty;
 import com.tinkerpop.blueprints.util.micro.MicroVertex;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -62,6 +63,10 @@ public class Path {
         return this.asNames.stream().collect(Collectors.toList());
     }
 
+    public void renameLastStep(final String as) {
+        this.asNames.set(this.asNames.size() - 1, as);
+    }
+
     public boolean isSimple() {
         return new LinkedHashSet<>(this.objects).size() == this.objects.size();
     }
@@ -92,6 +97,17 @@ public class Path {
             }
         });
         this.objects = newObjects;
+    }
+
+    public Path subset(final String... ases) {
+        final List list = Arrays.asList(ases);
+        Path path = new Path();
+        this.forEach((as, object) -> {
+            if (list.contains(as)) {
+                path.add(as, object);
+            }
+        });
+        return path;
     }
 
     public String toString() {

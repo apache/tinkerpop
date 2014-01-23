@@ -22,6 +22,7 @@ import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.oltp.map.MapPipe;
 import com.tinkerpop.gremlin.oltp.map.MatchPipe;
 import com.tinkerpop.gremlin.oltp.map.PathPipe;
+import com.tinkerpop.gremlin.oltp.map.ProjectPipe;
 import com.tinkerpop.gremlin.oltp.map.PropertyPipe;
 import com.tinkerpop.gremlin.oltp.map.SelectPipe;
 import com.tinkerpop.gremlin.oltp.map.ShufflePipe;
@@ -196,7 +197,11 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new MatchPipe(this, inAs, outAs, pipelines));
     }
 
-    public default Pipeline<S, List> select(final String... ases) {
+    public default Pipeline<S, Path> project(final Function... projections) {
+        return this.addPipe(new ProjectPipe(this, projections));
+    }
+
+    public default Pipeline<S, Path> select(final String... ases) {
         return this.addPipe(new SelectPipe(this, ases));
     }
 
