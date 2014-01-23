@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -22,9 +21,11 @@ import static org.junit.Assert.fail;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.blueprints.Graph.Features.GraphAnnotationFeatures.FEATURE_ANNOTATIONS;
-
+import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 /**
- * Ensure that exception handling is consistent within Blueprints.
+ * Ensure that exception handling is consistent within Blueprints. It may be necessary to throw exceptions in an
+ * appropriate order in order to ensure that these tests pass.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -76,6 +77,38 @@ public class ExceptionConsistencyTest {
                 v.addEdge("label", v, arguments);
                 fail(String.format("Call to addVertex should have thrown an exception with these arguments [%s]", arguments));
             } catch (Exception ex) {
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Test for consistent exceptions for graphs not supporting user supplied identifiers.
+     */
+    public static class AddElementWithIdTest extends AbstractBlueprintsTest {
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        public void testGraphAddVertex() throws Exception {
+            try {
+                this.g.addVertex(Property.Key.ID, "");
+                fail("Call to addVertex should have thrown an exception when ID was specified as it is not supported");
+            } catch (Exception ex) {
+                final Exception expectedException = Edge.Exceptions.userSuppliedIdsNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS, supported = false)
+        public void testGraphAddEdge() throws Exception {
+            try {
+                final Vertex v = this.g.addVertex();
+                v.addEdge("label", v, Property.Key.ID, "");
+                fail("Call to addEdge should have thrown an exception when ID was specified as it is not supported");
+            } catch (Exception ex) {
+                final Exception expectedException = Edge.Exceptions.userSuppliedIdsNotSupported();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }

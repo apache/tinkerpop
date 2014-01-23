@@ -22,5 +22,9 @@ public interface Edge extends Element {
         public static IllegalArgumentException edgeLabelCanNotBeNull() {
             return new IllegalArgumentException("Edge label can not be null");
         }
+
+        public static UnsupportedOperationException userSuppliedIdsNotSupported() {
+            return new UnsupportedOperationException("Edge does not support user supplied identifiers");
+        }
     }
 }

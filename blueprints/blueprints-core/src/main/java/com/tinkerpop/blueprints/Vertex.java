@@ -20,4 +20,9 @@ public interface Vertex extends Element {
 
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
+    public static class Exceptions {
+        public static UnsupportedOperationException userSuppliedIdsNotSupported() {
+            return new UnsupportedOperationException("Vertex does not support user supplied identifiers");
+        }
+    }
 }
