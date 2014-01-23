@@ -138,17 +138,20 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             final RequestMessage requestMessage = MessageSerializer.select(parts[0], MessageSerializer.DEFAULT_REQUEST_SERIALIZER)
                     .deserializeRequest(parts[1]).orElse(RequestMessage.INVALID);
 
+            // only initialize the executor once
             if (!gremlinExecutor.isInitialized())
                 gremlinExecutor.init(settings);
 
             try {
+                // choose a processor to do the work based on the request message.
                 final Optional<OpProcessor> processor = OpLoader.getProcessor(requestMessage.processor);
                 final Context gremlinServerContext = new Context(requestMessage, ctx, settings, graphs, gremlinExecutor);
 
                 if (processor.isPresent()) {
+                    // the processor is known so use it to evaluate the message
                     processor.get().select(gremlinServerContext).accept(gremlinServerContext);
                 } else {
-                    // invalid op processor selected
+                    // invalid op processor selected so write back an error by way of OpProcessorException.
                     final String msg = String.format("Invalid OpProcessor requested [%s]", requestMessage.processor);
                     final MessageSerializer serializer = MessageSerializer.select(
                             requestMessage.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
