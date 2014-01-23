@@ -119,7 +119,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         }
     }
 
-    private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) throws OpProcessorException {
+    private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) {
         requestMeter.mark();
 
         // Check for closing frame
