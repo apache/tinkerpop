@@ -19,7 +19,7 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
 
     private final Map<String, List<Pipeline>> predicatePipelines = new HashMap<>();
     private final Map<String, List<Pipeline>> internalPipelines = new HashMap<>();
-    private Pipeline endPipeline;
+    private Pipeline endPipeline = null;
     private String endPipelineStartAs;
     private final String inAs;
     private final String outAs;
@@ -32,7 +32,7 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
             final String start = GremlinHelper.getStart(p1).getAs();
             final String end = GremlinHelper.getEnd(p1).getAs();
             if (!GremlinHelper.isLabeled(start)) {
-                throw new IllegalStateException("All match pipelines must have their start pipe labeled");
+                throw new IllegalArgumentException("All match pipelines must have their start pipe labeled");
             }
             if (!GremlinHelper.isLabeled(end)) {
                 final List<Pipeline> list = this.predicatePipelines.getOrDefault(start, new ArrayList<>());
@@ -40,6 +40,8 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
                 list.add(p1);
             } else {
                 if (end.equals(this.outAs)) {
+                    if (null != this.endPipeline)
+                        throw new IllegalArgumentException("There can only be one outAs labeled end pipeline");
                     this.endPipeline = p1;
                     this.endPipelineStartAs = GremlinHelper.getStart(p1).getAs();
                 } else {
