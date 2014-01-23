@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
-import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
 import com.tinkerpop.gremlin.server.op.OpLoader;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.MetricManager;
@@ -46,7 +46,8 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  */
 class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
-    static final Counter requestCounter = MetricManager.INSTANCE.getCounter(name(GremlinServer.class, "requests"));
+    static final Meter requestMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "requests"));
+    static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
     private static final String websocketPath = "/gremlin";
 
     private WebSocketServerHandshaker handshaker;
@@ -119,7 +120,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) throws OpProcessorException {
-        requestCounter.inc();
+        requestMeter.mark();
 
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame)
@@ -147,7 +148,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
                 try {
                     processor.get().select(gremlinServerContext).accept(gremlinServerContext);
                 } catch (OpProcessorException ope) {
-                    // todo: metrics here
+                    errorMeter.mark();
                     logger.warn(ope.getMessage(), ope);
                     ctx.channel().write(ope.getFrame());
                 } finally {
@@ -157,11 +158,11 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
                     uuidBytes.writeLong(requestMessage.requestId.getLeastSignificantBits());
                     ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
                 }
-            }
-            else
+            } else {
                 logger.warn("Invalid OpProcessor requested [{}]", requestMessage.processor);
-        }
-        else
+                errorMeter.mark();
+            }
+        } else
             throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
                     .getName()));
     }

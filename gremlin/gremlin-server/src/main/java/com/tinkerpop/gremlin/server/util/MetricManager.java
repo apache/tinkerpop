@@ -5,6 +5,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.CsvReporter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
@@ -365,6 +366,14 @@ public enum MetricManager {
 
     public Counter getCounter(final String prefix, final String... names) {
         return getRegistry().counter(MetricRegistry.name(prefix, names));
+    }
+
+    public Meter getMeter(final String name) {
+        return getRegistry().meter(name);
+    }
+
+    public Meter getMeter(final String prefix, final String... names) {
+        return getRegistry().meter(MetricRegistry.name(prefix, names));
     }
 
     public Timer getTimer(final String name) {
