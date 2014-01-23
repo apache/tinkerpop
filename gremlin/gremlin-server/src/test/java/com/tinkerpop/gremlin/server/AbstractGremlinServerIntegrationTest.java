@@ -46,7 +46,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
             thread.start();
 
             // make sure gremlin server gets off the ground
-            Thread.sleep(500);
+            Thread.sleep(1000);
         } else
             logger.error("Configuration file at gremlin-server-integration.yaml could not be found or parsed properly.");
 
