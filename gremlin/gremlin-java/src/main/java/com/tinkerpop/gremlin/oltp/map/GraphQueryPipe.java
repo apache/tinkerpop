@@ -14,13 +14,13 @@ import com.tinkerpop.gremlin.util.HolderIterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphQueryPipe<S extends Element> extends AbstractPipe<S, S> {
+public class GraphQueryPipe extends AbstractPipe<Element, Element> {
 
     public final Graph graph;
     public final GraphQueryBuilder queryBuilder;
-    public final Class<S> returnClass;
+    public final Class<? extends Element> returnClass;
 
-    public GraphQueryPipe(final Pipeline pipeline, final Graph graph, final GraphQueryBuilder queryBuilder, final Class<S> returnClass) {
+    public GraphQueryPipe(final Pipeline pipeline, final Graph graph, final GraphQueryBuilder queryBuilder, final Class<? extends Element> returnClass) {
         super(pipeline);
         this.queryBuilder = queryBuilder;
         this.returnClass = returnClass;
@@ -30,12 +30,18 @@ public class GraphQueryPipe<S extends Element> extends AbstractPipe<S, S> {
 
     public void generateHolderIterator(final boolean trackPaths) {
         this.starts = new ExpandablePipeIterator<>();
-        this.starts.add(this.returnClass.equals(Vertex.class) ?
-                new HolderIterator(this, this.queryBuilder.build(this.graph).vertices().iterator(), trackPaths) :
-                new HolderIterator(this, this.queryBuilder.build(this.graph).edges().iterator(), trackPaths));
+        if (trackPaths) {
+            this.starts.add(this.returnClass.equals(Vertex.class) ?
+                    new HolderIterator(this, this.queryBuilder.build(this.graph).vertices().iterator()) :
+                    new HolderIterator(this, this.queryBuilder.build(this.graph).edges().iterator()));
+        } else {
+            this.starts.add(this.returnClass.equals(Vertex.class) ?
+                    new HolderIterator(this.queryBuilder.build(this.graph).vertices().iterator()) :
+                    new HolderIterator(this.queryBuilder.build(this.graph).edges().iterator()));
+        }
     }
 
-    public Holder<S> processNextStart() {
+    public Holder<Element> processNextStart() {
         return this.starts.next();
     }
 

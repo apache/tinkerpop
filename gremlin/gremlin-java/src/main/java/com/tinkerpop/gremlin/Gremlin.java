@@ -68,22 +68,22 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     }
 
     public Gremlin<Vertex, Vertex> V() {
-        this.addPipe(new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Vertex.class));
+        this.addPipe(new GraphQueryPipe(this, this.graph, new GraphQueryBuilder(), Vertex.class));
         return (Gremlin<Vertex, Vertex>) this;
     }
 
     public Gremlin<Edge, Edge> E() {
-        this.addPipe(new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder(), Edge.class));
+        this.addPipe(new GraphQueryPipe(this, this.graph, new GraphQueryBuilder(), Edge.class));
         return (Gremlin<Edge, Edge>) this;
     }
 
     public Gremlin<Vertex, Vertex> v(final Object... ids) {
-        this.addPipe(new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Vertex.class));
+        this.addPipe(new GraphQueryPipe(this, this.graph, new GraphQueryBuilder().ids(ids), Vertex.class));
         return (Gremlin<Vertex, Vertex>) this;
     }
 
     public Gremlin<Edge, Edge> e(final Object... ids) {
-        this.addPipe(new GraphQueryPipe<>(this, this.graph, new GraphQueryBuilder().ids(ids), Edge.class));
+        this.addPipe(new GraphQueryPipe(this, this.graph, new GraphQueryBuilder().ids(ids), Edge.class));
         return (Gremlin<Edge, Edge>) this;
     }
 

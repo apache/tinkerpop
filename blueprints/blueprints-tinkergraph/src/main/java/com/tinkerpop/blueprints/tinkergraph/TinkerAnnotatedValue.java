@@ -5,10 +5,12 @@ import com.tinkerpop.blueprints.Annotations;
 import com.tinkerpop.blueprints.util.AnnotationHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerAnnotatedValue<V> implements AnnotatedValue<V> {
+public class TinkerAnnotatedValue<V> implements AnnotatedValue<V>, Serializable {
 
     private final V value;
     private final Annotations annotations;
