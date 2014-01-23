@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.oltp.filter;
 
-import com.tinkerpop.gremlin.FilterPipe;
 import com.tinkerpop.gremlin.Pipeline;
 
 /**

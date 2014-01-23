@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.oltp.filter;
 
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.query.util.HasContainer;
-import com.tinkerpop.gremlin.FilterPipe;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 

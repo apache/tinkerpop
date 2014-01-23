@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.oltp.map;
 
 import com.tinkerpop.gremlin.Holder;
-import com.tinkerpop.gremlin.MapPipe;
 import com.tinkerpop.gremlin.Path;
 import com.tinkerpop.gremlin.Pipeline;
 

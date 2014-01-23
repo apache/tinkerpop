@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.oltp.map;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
-import com.tinkerpop.gremlin.FlatMapPipe;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.FastNoSuchElementException;

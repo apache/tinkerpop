@@ -1,5 +1,8 @@
-package com.tinkerpop.gremlin;
+package com.tinkerpop.gremlin.oltp.filter;
 
+import com.tinkerpop.gremlin.oltp.AbstractPipe;
+import com.tinkerpop.gremlin.Holder;
+import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 
 import java.util.function.Predicate;

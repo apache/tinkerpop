@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.oltp.map;
 
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.gremlin.MapPipe;
 import com.tinkerpop.gremlin.Pipeline;
 
 import java.util.HashMap;

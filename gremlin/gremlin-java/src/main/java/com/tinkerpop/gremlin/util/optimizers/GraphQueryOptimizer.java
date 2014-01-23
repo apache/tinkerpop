@@ -31,9 +31,11 @@ public class GraphQueryOptimizer implements Optimizer.StepOptimizer {
         if (null != graphQueryPipe) {
             if (pipe instanceof HasPipe) {
                 graphQueryPipe.queryBuilder.has(((HasPipe) pipe).hasContainer.key, ((HasPipe) pipe).hasContainer.predicate, ((HasPipe) pipe).hasContainer.value);
-            } else {
+            } else if (pipe instanceof IntervalPipe) {
                 graphQueryPipe.queryBuilder.has(((IntervalPipe) pipe).startContainer.key, ((IntervalPipe) pipe).startContainer.predicate, ((IntervalPipe) pipe).startContainer.value);
                 graphQueryPipe.queryBuilder.has(((IntervalPipe) pipe).endContainer.key, ((IntervalPipe) pipe).endContainer.predicate, ((IntervalPipe) pipe).endContainer.value);
+            } else {
+                throw new IllegalStateException("This pipe should not be accessible via this optimizer: " + pipe.getClass());
             }
 
             graphQueryPipe.generateHolderIterator(false);

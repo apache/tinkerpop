@@ -4,7 +4,7 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.GraphQueryBuilder;
-import com.tinkerpop.gremlin.AbstractPipe;
+import com.tinkerpop.gremlin.oltp.AbstractPipe;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.ExpandablePipeIterator;

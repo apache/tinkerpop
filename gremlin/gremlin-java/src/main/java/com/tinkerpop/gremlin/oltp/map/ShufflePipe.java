@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.oltp.map;
 
 import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.gremlin.AbstractPipe;
+import com.tinkerpop.gremlin.oltp.AbstractPipe;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipeline;
 

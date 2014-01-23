@@ -1,5 +1,8 @@
-package com.tinkerpop.gremlin;
+package com.tinkerpop.gremlin.oltp;
 
+import com.tinkerpop.gremlin.Holder;
+import com.tinkerpop.gremlin.Pipe;
+import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.ExpandablePipeIterator;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 
