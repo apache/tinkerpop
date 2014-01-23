@@ -24,14 +24,6 @@ public interface OpProcessor {
      */
     public ConsumerThatThrows<Context> select(final Context ctx) throws OpProcessorException;
 
-    /**
-     * Writes a response message as text.
-     */
-    public static Consumer<Context> text(final String message) {
-        return (context) -> context.getChannelHandlerContext().channel().write(
-                new TextWebSocketFrame(String.format("%s>>%s", context.getRequestMessage().requestId, message)));
-    }
-
     @FunctionalInterface
     public interface ConsumerThatThrows<Context> {
         public void accept(final Context ctx) throws OpProcessorException;

@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -80,11 +81,13 @@ final class StandardOps {
             infoToShow = scriptEngines.dependencies();
         else if (infoType.equals(Tokens.ARGS_INFO_TYPE_IMPORTS))
             infoToShow  = scriptEngines.imports();
-        else
+        else {
+            // this shouldn't happen if validations are working properly.  will bomb and log as error to server logs
+            // thus killing the connection
             throw new RuntimeException(String.format("Validation for the show operation is not properly checking the %s", Tokens.ARGS_INFO_TYPE));
+        }
 
         try {
-            // todo: serialize to JSON and make applicable to sessionless requests
             ctx.channel().write(new TextWebSocketFrame(serializer.serializeResult(infoToShow, context)));
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.",
@@ -104,6 +107,9 @@ final class StandardOps {
      */
     public static void useOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
+        final MessageSerializer serializer = MessageSerializer.select(
+                msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
+                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         final List<Map<String,String>> usings = (List<Map<String,String>>) msg.args.get(Tokens.ARGS_COORDINATES);
         usings.forEach(c -> {
             final String group = c.get(Tokens.ARGS_COORDINATES_GROUP);
@@ -111,7 +117,14 @@ final class StandardOps {
             final String version = c.get(Tokens.ARGS_COORDINATES_VERSION);
             logger.info("Loading plugin [group={},artifact={},version={}]", group, artifact, version);
             context.getGremlinExecutor().getSharedScriptEngines().use(group, artifact, version);
-            OpProcessor.text(String.format("Plugin loaded - [group=%s,artifact=%s,version=%s]", group, artifact, version)).accept(context);
+
+            final Map<String,String> coords = new HashMap<String,String>() {{
+                put("group", group);
+                put("artifact", artifact);
+                put("version", version);
+            }};
+
+            context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(serializer.serializeResult(coords, context)));
         });
     }
 
