@@ -48,6 +48,24 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    @Ignore("Until working on the server")
+    public void shouldCloseConnectionOnServerIfNoActivity() throws Exception {
+        final String url = getWebSocketBaseUri();
+        final WebSocketClient client = new WebSocketClient(url);
+        client.open();
+
+        // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
+        final String result = client.<String>eval("Thread.sleep(300);'some-stuff-that-should not return'").findFirst().orElse("nothing");
+        //assertTrue(result.startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+
+        Thread.sleep(11000);
+        final String result2 = client.<String>eval("Thread.sleep(300);'some-stuff-that-should not return'").findFirst().orElse("nothing");
+
+
+        client.close();
+    }
+
+    @Test
     public void shouldReceiveFailureTimeOutOnTotalSerialization() throws Exception {
         final String url = getWebSocketBaseUri();
         final WebSocketClient client = new WebSocketClient(url);

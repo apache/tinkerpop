@@ -54,11 +54,12 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     private final Settings settings;
     private final Graphs graphs;
 
-    private static GremlinExecutor gremlinExecutor = new GremlinExecutor();
+    private final GremlinExecutor gremlinExecutor;
 
-    public GremlinServerHandler(final Settings settings, final Graphs graphs) {
+    public GremlinServerHandler(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor) {
         this.settings = settings;
         this.graphs = graphs;
+        this.gremlinExecutor = gremlinExecutor;
     }
 
     @Override
@@ -137,10 +138,6 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             final String[] parts = segmentMessage(request);
             final RequestMessage requestMessage = MessageSerializer.select(parts[0], MessageSerializer.DEFAULT_REQUEST_SERIALIZER)
                     .deserializeRequest(parts[1]).orElse(RequestMessage.INVALID);
-
-            // only initialize the executor once
-            if (!gremlinExecutor.isInitialized())
-                gremlinExecutor.init(settings);
 
             try {
                 // choose a processor to do the work based on the request message.

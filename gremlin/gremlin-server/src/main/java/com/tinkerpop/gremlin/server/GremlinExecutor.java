@@ -32,12 +32,19 @@ public class GremlinExecutor {
      */
     private ScriptEngines sharedScriptEngines;
 
-    /**
-     * True if initialized and false otherwise.
-     */
-    private boolean initialized = false;
-
     private Settings settings = null;
+
+    /**
+     * Construct the {@link GremlinExecutor} given the provided {@link Settings}.
+     *
+     * @param settings the Gremlin Server configuration
+     */
+    public GremlinExecutor(final Settings settings) {
+        if (logger.isDebugEnabled()) logger.debug("Initializing GremlinExecutor.  This should not happen more than once.");
+        sharedScriptEngines = createScriptEngine(settings);
+
+        this.settings = settings;
+    }
 
     /**
      * Evaluate the {@link RequestMessage} within a {@code ScriptEngine} instance.
@@ -77,21 +84,6 @@ public class GremlinExecutor {
         }
     }
 
-    /**
-     * Initialize the {@link GremlinExecutor} given the provided {@link Settings}.  This method is idempotent.
-     *
-     * @param settings the Gremlin Server configuration
-     */
-    public synchronized void init(final Settings settings) {
-        if (!initialized) {
-            if (logger.isDebugEnabled()) logger.debug("Initializing GremlinExecutor");
-            sharedScriptEngines = createScriptEngine(settings);
-
-            this.settings = settings;
-            initialized = true;
-        }
-    }
-
     private synchronized static ScriptEngines createScriptEngine(final Settings settings) {
         final ScriptEngines scriptEngines = new ScriptEngines();
         for (Map.Entry<String,Settings.ScriptEngineSettings> config: settings.scriptEngines.entrySet()) {
@@ -113,13 +105,6 @@ public class GremlinExecutor {
 
     public ScriptEngines getSharedScriptEngines() {
         return this.sharedScriptEngines;
-    }
-
-    /**
-     * Determines whether or not the {@link GremlinExecutor} was initialized with the appropriate settings or not.
-     */
-    public boolean isInitialized() {
-        return initialized;
     }
 
     private static Map<String,Object> extractBindingsFromMessage(final RequestMessage msg) {

@@ -26,7 +26,7 @@ import java.util.Optional;
 public class GremlinServer {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
     private final Settings settings;
-    private static Optional<Graphs> graphs = Optional.empty();
+    private Optional<Graphs> graphs = Optional.empty();
     private Channel ch;
 
     public GremlinServer(final Settings settings) {
@@ -116,12 +116,16 @@ public class GremlinServer {
 
     private class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
         private final Settings settings;
+        private final GremlinExecutor gremlinExecutor;
 
         public WebSocketServerInitializer(final Settings settings) {
             this.settings = settings;
             synchronized (this) {
                 if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
+                gremlinExecutor = new GremlinExecutor(this.settings);
             }
+
+            logger.info("Initialize GremlinExecutor and configured ScriptEngines.");
         }
 
         @Override
@@ -129,7 +133,7 @@ public class GremlinServer {
             final ChannelPipeline pipeline = ch.pipeline();
             pipeline.addLast("codec-http", new HttpServerCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-            pipeline.addLast("handler", new GremlinServerHandler(settings, graphs.get()));
+            pipeline.addLast("handler", new GremlinServerHandler(settings, graphs.get(), gremlinExecutor));
         }
     }
 }
