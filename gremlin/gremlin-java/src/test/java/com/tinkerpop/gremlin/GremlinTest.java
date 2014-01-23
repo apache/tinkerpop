@@ -61,7 +61,8 @@ public class GremlinTest {
     @Test
     public void testSelect() {
         TinkerGraph g = TinkerFactory.createClassic();
-        Gremlin.of(g).V().as("x")
+        Gremlin.of(g)
+                .V().as("x")
                 .out().as("y")
                 .select("x", "y")
                 .project(v -> ((Vertex) v).getValue("name"))
@@ -156,5 +157,13 @@ public class GremlinTest {
 
         Gremlin.of(graph).V().out().remove();
         System.out.println(graph);
+    }
+
+    @Test
+    public void testOrder() {
+        Graph g = TinkerFactory.createClassic();
+        Gremlin.of(g).V().<String>value("name").order((a, b) -> b.get().compareTo(a.get())).path().forEach(System.out::println);
+
+
     }
 }

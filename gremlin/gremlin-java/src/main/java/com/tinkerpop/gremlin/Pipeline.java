@@ -21,6 +21,7 @@ import com.tinkerpop.gremlin.oltp.map.FlatMapPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.oltp.map.MapPipe;
 import com.tinkerpop.gremlin.oltp.map.MatchPipe;
+import com.tinkerpop.gremlin.oltp.map.OrderMap;
 import com.tinkerpop.gremlin.oltp.map.PathPipe;
 import com.tinkerpop.gremlin.oltp.map.ProjectPipe;
 import com.tinkerpop.gremlin.oltp.map.PropertyPipe;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -154,7 +156,15 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Vertex> bothV() {
-        return this.addPipe(new FlatMapPipe<Edge, Vertex>(this, e -> Arrays.asList(e.get().getVertex(Direction.OUT), e.get().getVertex(Direction.IN)).iterator()));
+        return this.addPipe(new FlatMapPipe<Edge, Vertex>(this, edge -> Arrays.asList(edge.get().getVertex(Direction.OUT), edge.get().getVertex(Direction.IN)).iterator()));
+    }
+
+    public default Pipeline<S, E> order() {
+        return this.addPipe(new OrderMap<E>(this, (a, b) -> ((Comparable) a.get()).compareTo(b.get())));
+    }
+
+    public default Pipeline<S, E> order(final Comparator<Holder<E>> comparator) {
+        return this.addPipe(new OrderMap<>(this, comparator));
     }
 
     public default <E2> Pipeline<S, Property<E2>> property(final String key) {

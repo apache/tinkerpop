@@ -11,7 +11,7 @@ import java.util.function.Function;
 public class ProjectPipe extends MapPipe<Path, Path> {
 
     public Function[] projections;
-    public int currentFunction = 0;
+    public int current = 0;
 
     public ProjectPipe(final Pipeline pipeline, final Function... projectionFunctions) {
         super(pipeline);
@@ -20,8 +20,8 @@ public class ProjectPipe extends MapPipe<Path, Path> {
             final Path path = holder.get();
             final Path temp = new Path();
             path.forEach((as, object) -> {
-                temp.add(as, this.projections[this.currentFunction].apply(object));
-                this.currentFunction = (this.currentFunction + 1) % this.projections.length;
+                temp.add(as, this.projections[this.current].apply(object));
+                this.current = (this.current + 1) % this.projections.length;
             });
             return temp;
         });
