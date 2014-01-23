@@ -141,26 +141,30 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             if (!gremlinExecutor.isInitialized())
                 gremlinExecutor.init(settings);
 
-            final Optional<OpProcessor> processor = OpLoader.getProcessor(requestMessage.processor);
-            if (processor.isPresent()) {
+            try {
+                final Optional<OpProcessor> processor = OpLoader.getProcessor(requestMessage.processor);
                 final Context gremlinServerContext = new Context(requestMessage, ctx, settings, graphs, gremlinExecutor);
 
-                try {
+                if (processor.isPresent()) {
                     processor.get().select(gremlinServerContext).accept(gremlinServerContext);
-                } catch (OpProcessorException ope) {
-                    errorMeter.mark();
-                    logger.warn(ope.getMessage(), ope);
-                    ctx.channel().write(ope.getFrame());
-                } finally {
-                    // sending the requestId acts as a termination message for this request.
-                    final ByteBuf uuidBytes = Unpooled.directBuffer(16);
-                    uuidBytes.writeLong(requestMessage.requestId.getMostSignificantBits());
-                    uuidBytes.writeLong(requestMessage.requestId.getLeastSignificantBits());
-                    ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
+                } else {
+                    // invalid op processor selected
+                    final String msg = String.format("Invalid OpProcessor requested [%s]", requestMessage.processor);
+                    final MessageSerializer serializer = MessageSerializer.select(
+                            requestMessage.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
+                            MessageSerializer.DEFAULT_RESULT_SERIALIZER);
+                    throw new OpProcessorException(msg, serializer.serializeResult(msg, ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, gremlinServerContext));
                 }
-            } else {
-                logger.warn("Invalid OpProcessor requested [{}]", requestMessage.processor);
+            } catch (OpProcessorException ope) {
                 errorMeter.mark();
+                logger.warn(ope.getMessage(), ope);
+                ctx.channel().write(ope.getFrame());
+            } finally {
+                // sending the requestId acts as a termination message for this request.
+                final ByteBuf uuidBytes = Unpooled.directBuffer(16);
+                uuidBytes.writeLong(requestMessage.requestId.getMostSignificantBits());
+                uuidBytes.writeLong(requestMessage.requestId.getLeastSignificantBits());
+                ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
             }
         } else
             throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
@@ -194,10 +198,10 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
 
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
-        logger.warn("Message handler caught an exception.", cause);
-
-        // todo: add metrics
-
+        // this only happens if an exception fires that isn't handled.  A good example would be if a frame
+        // was sent that was not covered.  bad stuff if we get here.
+        logger.error("Message handler caught an exception fatal to this request. Closing connection.", cause);
+        errorMeter.mark();
         ctx.close();
     }
 
