@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.server.ResultCode;
 import com.tinkerpop.gremlin.server.ScriptEngines;
 import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.Tokens;
+import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.LocalExecutorService;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.util.SingleIterator;
@@ -38,6 +39,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -116,7 +118,7 @@ final class StandardOps {
     /**
      * Evaluate a script in the {@code ScriptEngine}.
      */
-    public static void evalOp(final Context context) {
+    public static void evalOp(final Context context) throws OpProcessorException {
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
@@ -214,21 +216,21 @@ final class StandardOps {
             } while (!iterationComplete.get() || frameQueue.size() > 0);
 
         } catch (ScriptException se) {
-            logger.warn("Error while evaluating a script on request [{}]", msg);
             logger.debug("Exception from ScriptException error.", se);
-            OpProcessor.error(serializer.serializeResult(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context)).accept(context);
+            throw new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
+                    serializer.serializeResult(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context));
         } catch (InterruptedException ie) {
-            logger.warn("Thread interrupted (perhaps script ran for too long) while processing this request [{}]", msg);
             logger.debug("Exception from InterruptedException error.", ie);
-            OpProcessor.error(serializer.serializeResult(ie.getMessage(), ResultCode.SERVER_ERROR, context)).accept(context);
+            throw new OpProcessorException(String.format("Thread interrupted (perhaps script ran for too long) while processing this request [%s]", msg),
+                    serializer.serializeResult(ie.getMessage(), ResultCode.SERVER_ERROR, context));
         } catch (ExecutionException ee) {
-            logger.warn("Error while processing response from the script evaluated on request [{}]", msg);
             logger.debug("Exception from ExecutionException error.", ee.getCause());
             Throwable inner = ee.getCause();
             if (inner instanceof ScriptException)
                 inner = inner.getCause();
 
-            OpProcessor.error(serializer.serializeResult(inner.getMessage(), ResultCode.SERVER_ERROR, context)).accept(context);
+            throw new OpProcessorException(String.format("Error while processing response from the script evaluated on request [%s]", msg),
+                    serializer.serializeResult(inner.getMessage(), ResultCode.SERVER_ERROR, context));
         } catch (TimeoutException toe) {
             final String errorMessage;
             if (!evaluated)
@@ -236,16 +238,8 @@ final class StandardOps {
             else
                 errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, toe.getMessage());
 
-            logger.warn(errorMessage);
-            final String json = serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context);
-            OpProcessor.error(json).accept(context);
+            throw new OpProcessorException(errorMessage, serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context));
         } finally {
-            // sending the requestId acts as a termination message for this request.
-            final ByteBuf uuidBytes = Unpooled.directBuffer(16);
-            uuidBytes.writeLong(msg.requestId.getMostSignificantBits());
-            uuidBytes.writeLong(msg.requestId.getLeastSignificantBits());
-            ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
-
             // try to cancel the serialization task if its still running somehow
             serializing.ifPresent(f->f.cancel(true));
 

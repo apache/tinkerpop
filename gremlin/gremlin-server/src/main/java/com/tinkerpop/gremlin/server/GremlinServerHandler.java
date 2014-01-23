@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server;
 
 import com.codahale.metrics.Counter;
 import com.tinkerpop.gremlin.server.op.OpLoader;
+import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -12,6 +13,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
@@ -116,7 +118,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         }
     }
 
-    private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) {
+    private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) throws OpProcessorException {
         requestCounter.inc();
 
         // Check for closing frame
@@ -141,7 +143,20 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
             final Optional<OpProcessor> processor = OpLoader.getProcessor(requestMessage.processor);
             if (processor.isPresent()) {
                 final Context gremlinServerContext = new Context(requestMessage, ctx, settings, graphs, gremlinExecutor);
-                processor.get().select(gremlinServerContext).accept(gremlinServerContext);
+
+                try {
+                    processor.get().select(gremlinServerContext).accept(gremlinServerContext);
+                } catch (OpProcessorException ope) {
+                    // todo: metrics here
+                    logger.warn(ope.getMessage(), ope);
+                    ctx.channel().write(ope.getFrame());
+                } finally {
+                    // sending the requestId acts as a termination message for this request.
+                    final ByteBuf uuidBytes = Unpooled.directBuffer(16);
+                    uuidBytes.writeLong(requestMessage.requestId.getMostSignificantBits());
+                    uuidBytes.writeLong(requestMessage.requestId.getLeastSignificantBits());
+                    ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
+                }
             }
             else
                 logger.warn("Invalid OpProcessor requested [{}]", requestMessage.processor);
@@ -179,6 +194,9 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
         logger.warn("Message handler caught an exception.", cause);
+
+        // todo: add metrics
+
         ctx.close();
     }
 

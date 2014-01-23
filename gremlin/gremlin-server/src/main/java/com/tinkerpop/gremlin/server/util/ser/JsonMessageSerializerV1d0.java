@@ -96,6 +96,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
             result.put(TOKEN_RESULT, o);
             result.put(TOKEN_VERSION, JSON_SERIALIZATION_VERSION.toString());
 
+            // todo: make optional instead of null check
             // a context may not be available
             if (context != null)
                 result.put(TOKEN_REQUEST, context.getRequestMessage().requestId);
