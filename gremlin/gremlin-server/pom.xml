@@ -31,7 +31,6 @@
             <groupId>com.tinkerpop.blueprints</groupId>
             <artifactId>blueprints-tinkergraph</artifactId>
             <version>${project.parent.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.tinkerpop.gremlin</groupId>
@@ -91,12 +90,6 @@
             <version>1.2.16</version>
         </dependency>
         <!-- TESTING -->
-        <dependency>
-            <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-tinkergraph</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
