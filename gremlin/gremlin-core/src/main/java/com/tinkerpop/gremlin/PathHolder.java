@@ -40,4 +40,11 @@ public class PathHolder<T> extends SimpleHolder<T> {
         holder.future = this.future;
         return holder;
     }
+
+    public boolean equals(final Object object) {
+        if (object instanceof PathHolder)
+            return this.t.equals(((PathHolder) object).get()) && this.path.equals(((PathHolder) object).getPath());
+        else
+            return false;
+    }
 }
