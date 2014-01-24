@@ -44,6 +44,10 @@ public class TinkerGraph implements Graph, Serializable {
 
     private transient Strategy.Context<Graph> graphContext = new Strategy.Context<Graph>(this, this);
 
+    /**
+     * An empty private constructor that initializes {@link TinkerGraph} with no {@link GraphStrategy}.  Primarily
+     * used for purposes of serialization issues.
+     */
     private TinkerGraph() {
         this(Optional.empty());
     }
