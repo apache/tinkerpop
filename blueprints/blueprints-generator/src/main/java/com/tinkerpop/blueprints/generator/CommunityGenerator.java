@@ -24,10 +24,10 @@ public class CommunityGenerator extends AbstractGenerator {
      */
     public static final double DEFAULT_CROSS_COMMUNITY_PERCENTAGE = 0.1;
 
-    private Distribution communitySize=null;
-    private Distribution edgeDegree=null;
+    private Distribution communitySize = null;
+    private Distribution edgeDegree = null;
     private double crossCommunityPercentage = DEFAULT_CROSS_COMMUNITY_PERCENTAGE;
-    
+
     private final Random random = new Random();
 
     /**
@@ -56,14 +56,14 @@ public class CommunityGenerator extends AbstractGenerator {
      * Sets the distribution to be used to generate the sizes of communities.
      */
     public void setCommunityDistribution(final Distribution community) {
-        this.communitySize=community;
+        this.communitySize = community;
     }
 
     /**
      * Sets the distribution to be used to generate the out-degrees of vertices.
      */
     public void setDegreeDistribution(final Distribution degree) {
-        this.edgeDegree=degree;
+        this.edgeDegree = degree;
     }
 
     /**
@@ -73,8 +73,9 @@ public class CommunityGenerator extends AbstractGenerator {
      * @param percentage Percentage of community crossing edges. Must be in [0,1]
      */
     public void setCrossCommunityPercentage(final double percentage) {
-        if (percentage<0.0 || percentage>1.0) throw new IllegalArgumentException("Percentage must be between 0 and 1");
-        this.crossCommunityPercentage=percentage;
+        if (percentage < 0.0 || percentage > 1.0)
+            throw new IllegalArgumentException("Percentage must be between 0 and 1");
+        this.crossCommunityPercentage = percentage;
     }
 
     /**
@@ -102,45 +103,46 @@ public class CommunityGenerator extends AbstractGenerator {
      * @return The actual number of edges generated. May be different from the expected number.
      */
     public int generate(final Iterable<Vertex> vertices, final int expectedNumCommunities, final int expectedNumEdges) {
-        if (communitySize==null) throw new IllegalStateException("Need to initialize community size distribution");
-        if (edgeDegree==null) throw new IllegalStateException("Need to initialize degree distribution");
+        if (communitySize == null) throw new IllegalStateException("Need to initialize community size distribution");
+        if (edgeDegree == null) throw new IllegalStateException("Need to initialize degree distribution");
         int numVertices = SizableIterable.sizeOf(vertices);
         final Iterator<Vertex> iter = vertices.iterator();
         final ArrayList<ArrayList<Vertex>> communities = new ArrayList<>(expectedNumCommunities);
-        final Distribution communityDist = communitySize.initialize(expectedNumCommunities,numVertices);
+        final Distribution communityDist = communitySize.initialize(expectedNumCommunities, numVertices);
         final Map<String, Object> context = new HashMap<>();
         while (iter.hasNext()) {
             final int nextSize = communityDist.nextValue(random);
             context.put("communityIndex", communities.size());
             final ArrayList<Vertex> community = new ArrayList<>(nextSize);
-            for (int i=0;i<nextSize && iter.hasNext();i++) {
+            for (int i = 0; i < nextSize && iter.hasNext(); i++) {
                 community.add(processVertex(iter.next(), context));
             }
             if (!community.isEmpty()) communities.add(community);
         }
 
-        final double inCommunityPercentage = 1.0-crossCommunityPercentage;
-        final Distribution degreeDist = edgeDegree.initialize(numVertices,expectedNumEdges);
-        if (crossCommunityPercentage>0 && communities.size()<2) throw new IllegalArgumentException("Cannot have cross links with only one community");
+        final double inCommunityPercentage = 1.0 - crossCommunityPercentage;
+        final Distribution degreeDist = edgeDegree.initialize(numVertices, expectedNumEdges);
+        if (crossCommunityPercentage > 0 && communities.size() < 2)
+            throw new IllegalArgumentException("Cannot have cross links with only one community");
         int addedEdges = 0;
-        
+
         //System.out.println("Generating links on communities: "+communities.size());
 
         for (ArrayList<Vertex> community : communities) {
             for (Vertex v : community) {
                 final int randomDegree = degreeDist.nextValue(random);
-                final int degree = Math.min(randomDegree,(int)Math.ceil((community.size() - 1) / inCommunityPercentage)-1);
+                final int degree = Math.min(randomDegree, (int) Math.ceil((community.size() - 1) / inCommunityPercentage) - 1);
                 final Set<Vertex> inlinks = new HashSet<>();
                 final Set<Vertex> outlinks = new HashSet<>();
-                for (int i=0;i<degree;i++) {
+                for (int i = 0; i < degree; i++) {
                     Vertex selected = null;
-                    if (random.nextDouble()<crossCommunityPercentage || (community.size()-1<=inlinks.size()) ) {
+                    if (random.nextDouble() < crossCommunityPercentage || (community.size() - 1 <= inlinks.size())) {
                         //Cross community
                         ArrayList<Vertex> othercomm = null;
                         while (selected == null) {
-                            while (othercomm==null) {
+                            while (othercomm == null) {
                                 othercomm = communities.get(random.nextInt(communities.size()));
-                                if (othercomm.equals(community)) othercomm=null;
+                                if (othercomm.equals(community)) othercomm = null;
                             }
                             selected = othercomm.get(random.nextInt(othercomm.size()));
                             if (outlinks.contains(selected)) selected = null;
@@ -148,18 +150,18 @@ public class CommunityGenerator extends AbstractGenerator {
                         outlinks.add(selected);
                     } else {
                         //In community
-                        while (selected==null) {
-                            selected=community.get(random.nextInt(community.size()));
-                            if (v.equals(selected) || inlinks.contains(selected)) selected=null;
+                        while (selected == null) {
+                            selected = community.get(random.nextInt(community.size()));
+                            if (v.equals(selected) || inlinks.contains(selected)) selected = null;
                         }
                         inlinks.add(selected);
                     }
-                    addEdge(v,selected);
+                    addEdge(v, selected);
                     addedEdges++;
                 }
             }
         }
         return addedEdges;
     }
-    
+
 }

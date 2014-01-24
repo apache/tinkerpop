@@ -18,27 +18,27 @@ public class PowerLawDistribution implements Distribution {
      * @param gamma
      */
     public PowerLawDistribution(final double gamma) {
-        this(gamma,0.0);
+        this(gamma, 0.0);
     }
 
     private PowerLawDistribution(final double gamma, final double multiplier) {
-        if (gamma <=2.0) throw new IllegalArgumentException("Beta must be bigger than 2: " + gamma);
-        if (multiplier<0) throw new IllegalArgumentException("Invalid multiplier value: " + multiplier);
+        if (gamma <= 2.0) throw new IllegalArgumentException("Beta must be bigger than 2: " + gamma);
+        if (multiplier < 0) throw new IllegalArgumentException("Invalid multiplier value: " + multiplier);
         this.gamma = gamma;
-        this.multiplier=multiplier;
+        this.multiplier = multiplier;
     }
 
     @Override
     public Distribution initialize(final int invocations, final int expectedTotal) {
-        double multiplier = expectedTotal /((gamma -1)/(gamma -2) * invocations) * 2; //times two because we are generating stubs
-        assert multiplier>0;
-        return new PowerLawDistribution(gamma,multiplier);
+        double multiplier = expectedTotal / ((gamma - 1) / (gamma - 2) * invocations) * 2; //times two because we are generating stubs
+        assert multiplier > 0;
+        return new PowerLawDistribution(gamma, multiplier);
     }
 
     @Override
     public int nextValue(final Random random) {
-        if (multiplier==0.0) throw new IllegalStateException("Distribution has not been initialized");
-        return getValue(random,multiplier, gamma);
+        if (multiplier == 0.0) throw new IllegalStateException("Distribution has not been initialized");
+        return getValue(random, multiplier, gamma);
     }
 
     @Override
@@ -55,6 +55,6 @@ public class PowerLawDistribution implements Distribution {
     }
 
     public static int getValue(final Random random, final double multiplier, final double beta) {
-        return (int)Math.round(multiplier*(Math.pow(1.0/(1.0-random.nextDouble()), 1.0/(beta-1.0))-1.0));
+        return (int) Math.round(multiplier * (Math.pow(1.0 / (1.0 - random.nextDouble()), 1.0 / (beta - 1.0)) - 1.0));
     }
 }

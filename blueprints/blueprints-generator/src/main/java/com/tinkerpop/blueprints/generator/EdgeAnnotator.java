@@ -4,11 +4,11 @@ import com.tinkerpop.blueprints.Edge;
 
 /**
  * EdgeAnnotator is used to assign properties to generated edges.
- * 
+ * <p/>
  * During synthetic network generation, {@link #annotate(com.tinkerpop.blueprints.Edge)} is
  * called on each newly generated edge exactly once. Hence, an implementation of this
  * interface can assign arbitrary properties to this edge.
- * 
+ *
  * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface EdgeAnnotator {
