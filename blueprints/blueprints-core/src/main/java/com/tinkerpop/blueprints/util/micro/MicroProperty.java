@@ -8,8 +8,6 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
-import java.util.Optional;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -18,6 +16,7 @@ public class MicroProperty implements Property {
     private final String key;
     private final Object value;
     private final MicroElement element;
+    private final int hashCode;
 
     public MicroProperty(final Property property) {
         if (null == property)
@@ -25,6 +24,7 @@ public class MicroProperty implements Property {
 
         this.key = property.getKey();
         this.value = property.get();
+        this.hashCode = property.hashCode();
         this.element = property.getElement() instanceof Vertex ?
                 new MicroVertex((Vertex) property.getElement()) :
                 new MicroEdge((Edge) property.getElement());
@@ -59,6 +59,6 @@ public class MicroProperty implements Property {
     }
 
     public int hashCode() {
-        return this.key.hashCode() + this.value.hashCode() + this.element.hashCode();
+        return this.hashCode;
     }
 }

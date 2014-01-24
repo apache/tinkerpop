@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin;
 
+import com.tinkerpop.blueprints.Vertex;
+
 import java.io.Serializable;
 
 /**
@@ -32,4 +34,8 @@ public interface Holder<T> extends Serializable {
     public <R> Holder<R> makeChild(final String as, final R r);
 
     public Holder<T> makeSibling();
+
+    public Holder<T> deflate();
+
+    public Holder<T> inflate(final Vertex hostVertex);
 }
