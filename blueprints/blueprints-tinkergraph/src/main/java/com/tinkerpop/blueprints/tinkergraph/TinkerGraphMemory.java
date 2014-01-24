@@ -17,6 +17,7 @@ public class TinkerGraphMemory implements GraphSystemMemory {
     private final Map<String, Object> memory;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
+    protected TinkerReductionMemory reductionMemory = null;
 
     public TinkerGraphMemory(final Graph graph) {
         this(graph, new ConcurrentHashMap<>());
@@ -87,5 +88,9 @@ public class TinkerGraphMemory implements GraphSystemMemory {
 
     public Graph getGraph() {
         return this.graph;
+    }
+
+    public <K, V, R> ReductionMemory<K, V, R> getReductionMemory() {
+        return (ReductionMemory) this.reductionMemory;
     }
 }

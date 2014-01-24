@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.olap;
 
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.ComputeResult;
+import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.MicroPath;
 import com.tinkerpop.gremlin.Pipeline;
@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
@@ -23,19 +24,23 @@ public class GremlinResult<T> implements Iterator<T> {
     private final Graph graph;
     private final ComputeResult computeResult;
 
-    public GremlinResult(final Graph graph, final Supplier<Pipeline> gremlinSupplier) {
+    public <K, V, R> GremlinResult(final Graph graph, final Supplier<Pipeline> gremlinSupplier, final BiFunction<K, Iterator<V>, R> reduction) {
         this.gremlinSupplier = gremlinSupplier;
         this.graph = graph;
+        final GraphComputer computer = graph.compute();
+        computer.program(GremlinVertexProgram.create().gremlin((Supplier) gremlinSupplier).build());
+        if (null != reduction) computer.reduction(reduction);
+
         try {
-            this.computeResult =
-                    graph.compute()
-                            .program(GremlinVertexProgram.create().gremlin((Supplier) gremlinSupplier).build())
-                            .submit()
-                            .get();
+            this.computeResult = computer.submit().get();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
         buildIterator();
+    }
+
+    public GremlinResult(final Graph graph, final Supplier<Pipeline> gremlinSupplier) {
+        this(graph, gremlinSupplier, null);
     }
 
     public boolean hasNext() {
@@ -51,9 +56,12 @@ public class GremlinResult<T> implements Iterator<T> {
     }
 
     private void buildIterator() {
-        if (new HolderOptimizer().trackPaths(this.gremlinSupplier.get())) {
+        //if (null != this.computeResult.getGraphMemory().getReductionMemory()) {
+        //    this.itty = new SingleIterator(this.computeResult.getGraphMemory().getReductionMemory().get("marko").orElse(10));
+        //} else
+        if (HolderOptimizer.trackPaths(this.gremlinSupplier.get())) {
             final List list = new ArrayList();
-            for (final Vertex vertex : this.graph.query().vertices()) {
+            this.graph.query().vertices().forEach(vertex -> {
                 StreamFactory.stream(vertex)
                         .map(v -> this.computeResult.getVertexMemory().<GremlinPaths>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
@@ -71,11 +79,11 @@ public class GremlinResult<T> implements Iterator<T> {
                                 entry.getValue().forEach(holder -> list.add(holder.inflate(vertex).get()));
                             });
                         });
-            }
+            });
             this.itty = list.iterator();
         } else {
             final List list = new ArrayList();
-            for (final Vertex vertex : this.graph.query().vertices()) {
+            this.graph.query().vertices().forEach(vertex -> {
                 StreamFactory.stream(vertex)
                         .map(v -> this.computeResult.getVertexMemory().<GremlinCounters>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
@@ -91,7 +99,7 @@ public class GremlinResult<T> implements Iterator<T> {
                                 }
                             });
                         });
-            }
+            });
             this.itty = list.iterator();
         }
     }

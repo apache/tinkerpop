@@ -5,13 +5,11 @@ import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.Gremlin;
-import com.tinkerpop.gremlin.olap.GremlinCounters;
-import com.tinkerpop.gremlin.olap.GremlinPaths;
-import com.tinkerpop.gremlin.olap.GremlinResult;
-import com.tinkerpop.gremlin.olap.GremlinVertexProgram;
 import org.junit.Test;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -53,7 +51,8 @@ public class GremlinVertexProgramTest {
     @Test
     public void testIterable() throws Exception {
         final Graph g = TinkerFactory.createClassic();
-        new GremlinResult<>(g, () -> Gremlin.of().v("1").out().outE()).forEachRemaining(System.out::println);
+        final BiFunction<String, Iterator<Integer>, Long> reduction = (k, v) -> StreamFactory.stream(v).count();
+        new GremlinResult<>(g, () -> Gremlin.of().v("1").both().both().value("name"), reduction).forEachRemaining(System.out::println);
 
     }
 }
