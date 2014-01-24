@@ -290,7 +290,6 @@ public class TinkerGraphTest {
     }
 
     @Test
-    @Ignore("until working")
     public void shouldSerializeGraph() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
         final String location = "/tmp/tp/tinkergraph-serialization-test";
@@ -308,6 +307,8 @@ public class TinkerGraphTest {
 
         try {
             final TinkerGraph g1 = (TinkerGraph) input.readObject();
+
+            // todo: should test this more and consider strategy carefully
             assertEquals(StreamFactory.stream(g.query().vertices()).count(), StreamFactory.stream(g1.query().vertices()).count());
             assertEquals(StreamFactory.stream(g.query().edges()).count(), StreamFactory.stream(g1.query().edges()).count());
         } catch (ClassNotFoundException cnfe) {

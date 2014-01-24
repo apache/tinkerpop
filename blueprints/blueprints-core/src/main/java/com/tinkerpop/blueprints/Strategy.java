@@ -16,7 +16,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Strategy extends Serializable {
+public interface Strategy  {
 
     /**
      * Set the {@link GraphStrategy} to utilized in the various Blueprints methods that it supports.  Set to
@@ -48,7 +48,7 @@ public interface Strategy extends Serializable {
      *
      * @param <T> represents the object that is calling the strategy (i.e. the vertex on which addEdge was called).
      */
-    public static class Context<T> implements Serializable {
+    public static class Context<T>  {
         private final Graph g;
         private final Map<String,Object> environment;
         private final T current;
@@ -87,7 +87,7 @@ public interface Strategy extends Serializable {
      * Basic {@link Strategy} implementation where the {@link GraphStrategy} can be get or set.
      */
     public static class Simple implements Strategy {
-        private Optional<? extends GraphStrategy> strategy;
+        private Optional<? extends GraphStrategy> strategy = Optional.empty();
 
         @Override
         public void set(final Optional<? extends GraphStrategy> strategy) {

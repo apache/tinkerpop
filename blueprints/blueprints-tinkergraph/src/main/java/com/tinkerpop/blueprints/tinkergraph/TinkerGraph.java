@@ -15,6 +15,8 @@ import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,9 +40,13 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
-    protected final transient Strategy strategy;
+    protected transient Strategy strategy = new Strategy.Simple();
 
-    private final transient Strategy.Context<Graph> graphContext;
+    private transient Strategy.Context<Graph> graphContext = new Strategy.Context<Graph>(this, this);
+
+    private TinkerGraph() {
+        this(Optional.empty());
+    }
 
     /**
      * Internally create a new {@link TinkerGraph} instance.
@@ -50,9 +56,7 @@ public class TinkerGraph implements Graph, Serializable {
      * enforced by the Blueprints Test suite.
      */
     private TinkerGraph(final Optional<GraphStrategy> strategy) {
-        this.strategy =  new Strategy.Simple();
         this.strategy.set(strategy);
-        this.graphContext  = new Strategy.Context<Graph>(this, this);
     }
 
     /**
@@ -91,6 +95,12 @@ public class TinkerGraph implements Graph, Serializable {
      */
     public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<GraphStrategy> strategy) {
         return (G) new TinkerGraph(strategy);
+    }
+
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        strategy = new Strategy.Simple();
+        graphContext = new Strategy.Context<Graph>(this, this);
     }
 
     ////////////// BLUEPRINTS API METHODS //////////////////
