@@ -16,7 +16,7 @@ public abstract class MicroElement implements Element, Serializable {
     final Object id;
     final String label;
 
-    public MicroElement(final Element element) {
+    protected MicroElement(final Element element) {
         if (null == element)
             throw Graph.Exceptions.argumentCanNotBeNull("element");
 

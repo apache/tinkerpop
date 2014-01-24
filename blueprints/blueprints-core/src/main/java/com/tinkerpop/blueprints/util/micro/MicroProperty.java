@@ -22,7 +22,7 @@ public class MicroProperty<V> implements Property, Serializable {
     private final MicroElement element;
     private final int hashCode;
 
-    public MicroProperty(final Property property) {
+    private MicroProperty(final Property property) {
         if (null == property)
             throw Graph.Exceptions.argumentCanNotBeNull("property");
 
@@ -30,8 +30,8 @@ public class MicroProperty<V> implements Property, Serializable {
         this.value = (V) property.get();
         this.hashCode = property.hashCode();
         this.element = property.getElement() instanceof Vertex ?
-                new MicroVertex((Vertex) property.getElement()) :
-                new MicroEdge((Edge) property.getElement());
+                MicroVertex.deflate((Vertex) property.getElement()) :
+                MicroEdge.deflate((Edge) property.getElement());
     }
 
     public boolean isPresent() {

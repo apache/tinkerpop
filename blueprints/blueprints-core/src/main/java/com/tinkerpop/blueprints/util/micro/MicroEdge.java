@@ -15,10 +15,10 @@ public class MicroEdge extends MicroElement implements Edge {
     final MicroVertex outVertex;
     final MicroVertex inVertex;
 
-    public MicroEdge(final Edge edge) {
+    private MicroEdge(final Edge edge) {
         super(edge);
-        this.outVertex = new MicroVertex(edge.getVertex(Direction.OUT));
-        this.inVertex = new MicroVertex(edge.getVertex(Direction.IN));
+        this.outVertex = MicroVertex.deflate(edge.getVertex(Direction.OUT));
+        this.inVertex = MicroVertex.deflate(edge.getVertex(Direction.IN));
     }
 
     public Vertex getVertex(final Direction direction) {

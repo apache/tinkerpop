@@ -34,12 +34,12 @@ public class MicroEdgeTest {
         when(e.getVertex(Direction.OUT)).thenReturn(v1);
         when(e.getVertex(Direction.IN)).thenReturn(v2);
 
-        this.me = new MicroEdge(e);
+        this.me = MicroEdge.deflate(e);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullElement() {
-        new MicroEdge(null);
+        MicroEdge.deflate(null);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class MicroEdgeTest {
         when(e.getVertex(Direction.OUT)).thenReturn(v1);
         when(e.getVertex(Direction.IN)).thenReturn(v2);
 
-        final MicroEdge me1 = new MicroEdge(e);
+        final MicroEdge me1 = MicroEdge.deflate(e);
         assertTrue(me1.equals(this.me));
     }
 
@@ -86,7 +86,7 @@ public class MicroEdgeTest {
         when(e.getVertex(Direction.OUT)).thenReturn(v1);
         when(e.getVertex(Direction.IN)).thenReturn(v2);
 
-        final MicroEdge me1 = new MicroEdge(e);
+        final MicroEdge me1 = MicroEdge.deflate(e);
         assertFalse(me1.equals(this.me));
     }
 

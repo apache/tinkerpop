@@ -7,9 +7,7 @@ import com.tinkerpop.blueprints.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,12 +28,12 @@ public class MicroPropertyTest {
         when(p.getElement()).thenReturn(v);
         when(p.get()).thenReturn("val");
 
-        this.mp = new MicroProperty(p);
+        this.mp = MicroProperty.deflate(p);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullProperty() {
-        new MicroProperty(null);
+        MicroProperty.deflate(null);
     }
 
     @Test
@@ -58,13 +56,13 @@ public class MicroPropertyTest {
         when(p.getElement()).thenReturn(e);
         when(p.get()).thenReturn("val");
 
-        final MicroProperty mp = new MicroProperty(p);
+        final MicroProperty mp = MicroProperty.deflate(p);
         assertEquals("k", mp.getKey());
         assertEquals("val", mp.get());
         assertEquals(MicroEdge.class, mp.getElement().getClass());
     }
 
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void shouldNotSupportRemove() {
         this.mp.remove();
     }
@@ -78,7 +76,7 @@ public class MicroPropertyTest {
         when(p.getElement()).thenReturn(v);
         when(p.get()).thenReturn("val");
 
-        final MicroProperty mp2 = new MicroProperty(p);
+        final MicroProperty mp2 = MicroProperty.deflate(p);
 
         assertTrue(mp2.equals(this.mp));
     }
@@ -92,7 +90,7 @@ public class MicroPropertyTest {
         when(p.getElement()).thenReturn(v);
         when(p.get()).thenReturn("val");
 
-        final MicroProperty mp2 = new MicroProperty(p);
+        final MicroProperty mp2 = MicroProperty.deflate(p);
 
         assertFalse(mp2.equals(this.mp));
     }
@@ -106,7 +104,7 @@ public class MicroPropertyTest {
         when(p.getElement()).thenReturn(v);
         when(p.get()).thenReturn("val");
 
-        final MicroProperty mp2 = new MicroProperty(p);
+        final MicroProperty mp2 = MicroProperty.deflate(p);
 
         assertFalse(mp2.equals(this.mp));
     }
@@ -120,7 +118,7 @@ public class MicroPropertyTest {
         when(p.getElement()).thenReturn(v);
         when(p.get()).thenReturn("val1");
 
-        final MicroProperty mp2 = new MicroProperty(p);
+        final MicroProperty mp2 = MicroProperty.deflate(p);
 
         assertFalse(mp2.equals(this.mp));
     }

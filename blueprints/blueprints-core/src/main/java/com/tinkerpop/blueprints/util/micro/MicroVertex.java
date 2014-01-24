@@ -11,7 +11,7 @@ import com.tinkerpop.blueprints.util.StringFactory;
  */
 public class MicroVertex extends MicroElement implements Vertex {
 
-    public MicroVertex(final Vertex vertex) {
+    private MicroVertex(final Vertex vertex) {
         super(vertex);
     }
 

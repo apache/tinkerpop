@@ -4,9 +4,7 @@ import com.tinkerpop.blueprints.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,12 +21,12 @@ public class MicroVertexTest {
         when(v.getId()).thenReturn("1");
         when(v.getLabel()).thenReturn("l");
 
-        this.mv = new MicroVertex(v);
+        this.mv = MicroVertex.deflate(v);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullElement() {
-        new MicroVertex(null);
+        MicroVertex.deflate(null);
     }
 
     @Test
@@ -43,7 +41,7 @@ public class MicroVertexTest {
         when(v.getId()).thenReturn("1");
         when(v.getLabel()).thenReturn("l");
 
-        final MicroVertex mv1 = new MicroVertex(v);
+        final MicroVertex mv1 = MicroVertex.deflate(v);
         assertTrue(mv1.equals(this.mv));
     }
 
@@ -53,7 +51,7 @@ public class MicroVertexTest {
         when(v.getId()).thenReturn("2");
         when(v.getLabel()).thenReturn("l");
 
-        final MicroVertex mv1 = new MicroVertex(v);
+        final MicroVertex mv1 = MicroVertex.deflate(v);
         assertFalse(mv1.equals(this.mv));
     }
 
