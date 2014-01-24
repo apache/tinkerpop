@@ -3,12 +3,14 @@ package com.tinkerpop.gremlin.olap;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.computer.GraphComputer;
+import com.tinkerpop.blueprints.computer.GraphMemory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.MicroPath;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -56,10 +58,10 @@ public class GremlinResult<T> implements Iterator<T> {
     }
 
     private void buildIterator() {
-        //if (null != this.computeResult.getGraphMemory().getReductionMemory()) {
-        //    this.itty = new SingleIterator(this.computeResult.getGraphMemory().getReductionMemory().get("marko").orElse(10));
-        //} else
-        if (HolderOptimizer.trackPaths(this.gremlinSupplier.get())) {
+        if (null != this.computeResult.getGraphMemory().getReductionMemory()) {
+            final GraphMemory.ReductionMemory reductionMemory = this.computeResult.getGraphMemory().getReductionMemory();
+            this.itty = StreamFactory.stream(reductionMemory.getKeys()).map(key -> Arrays.asList(key, reductionMemory.get(key).get())).iterator();
+        } else if (HolderOptimizer.trackPaths(this.gremlinSupplier.get())) {
             final List list = new ArrayList();
             this.graph.query().vertices().forEach(vertex -> {
                 StreamFactory.stream(vertex)

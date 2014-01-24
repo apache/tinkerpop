@@ -2,6 +2,7 @@ package com.tinkerpop.blueprints.computer;
 
 import com.tinkerpop.blueprints.Graph;
 
+import java.util.Iterator;
 import java.util.Optional;
 
 /**
@@ -46,6 +47,8 @@ public interface GraphMemory {
         public Optional<R> get(final K key);
 
         public void reduce();
+
+        public Iterator<K> getKeys();
 
     }
 

@@ -52,7 +52,7 @@ public class GremlinVertexProgramTest {
     public void testIterable() throws Exception {
         final Graph g = TinkerFactory.createClassic();
         final BiFunction<String, Iterator<Integer>, Long> reduction = (k, v) -> StreamFactory.stream(v).count();
-        new GremlinResult<>(g, () -> Gremlin.of().v("1").both().both().value("name"), reduction).forEachRemaining(System.out::println);
+        new GremlinResult<>(g, () -> Gremlin.of().v("1").both().both().value("name")).forEachRemaining(System.out::println);
 
     }
 }

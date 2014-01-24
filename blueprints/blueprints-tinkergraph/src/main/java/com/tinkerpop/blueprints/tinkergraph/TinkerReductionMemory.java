@@ -44,4 +44,8 @@ public class TinkerReductionMemory<K, V, R> implements GraphMemory.ReductionMemo
         });
         this.map.clear();
     }
+
+    public Iterator<K> getKeys() {
+        return this.reducedMap.keySet().iterator();
+    }
 }

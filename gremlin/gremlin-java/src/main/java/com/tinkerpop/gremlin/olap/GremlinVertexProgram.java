@@ -57,6 +57,8 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
         final Gremlin gremlin = graphMemory.<Supplier<Gremlin>>get(GREMLIN_PIPELINE).get();
+        if (null != graphMemory.getReductionMemory())
+            gremlin.addPipe(new ReductionPipe(gremlin, graphMemory.getReductionMemory()));
         // the head is always an IdentityPipe so simply skip it
         final GraphQueryPipe graphQueryPipe = (GraphQueryPipe) gremlin.getPipes().get(1);
         final String future = (gremlin.getPipes().size() == 2) ? Holder.NO_FUTURE : ((Pipe) gremlin.getPipes().get(2)).getAs();
@@ -87,6 +89,8 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
         final Gremlin gremlin = graphMemory.<Supplier<Gremlin>>get(GREMLIN_PIPELINE).get();
+        if (null != graphMemory.getReductionMemory())
+            gremlin.addPipe(new ReductionPipe(gremlin, graphMemory.getReductionMemory()));
         if (graphMemory.<Boolean>get(TRACK_PATHS)) {
             final GremlinPaths tracker = new GremlinPaths(vertex);
             graphMemory.and(VOTE_TO_HALT, GremlinPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, gremlin));
