@@ -8,8 +8,10 @@ import com.tinkerpop.blueprints.computer.VertexMemory;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.util.StreamFactory;
 
+import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.BiFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,6 +43,11 @@ public class TinkerGraphComputer implements GraphComputer {
         return this;
     }
 
+    public <K, V, R> GraphComputer reduction(final BiFunction<K, Iterator<V>, R> reduction) {
+        this.graphMemory.reductionMemory = new TinkerReductionMemory<>(reduction);
+        return this;
+    }
+
     public Future<ComputeResult> submit() {
         return CompletableFuture.<ComputeResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
@@ -58,6 +65,9 @@ public class TinkerGraphComputer implements GraphComputer {
                 this.messenger.completeIteration();
                 if (this.vertexProgram.terminate(this.graphMemory)) break;
             }
+
+            if (null != this.graphMemory.getReductionMemory())
+                this.graphMemory.getReductionMemory().reduce();
 
             this.graphMemory.setRuntime(System.currentTimeMillis() - time);
 
