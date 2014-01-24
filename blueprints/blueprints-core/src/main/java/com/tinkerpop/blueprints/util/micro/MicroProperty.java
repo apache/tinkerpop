@@ -8,10 +8,12 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MicroProperty implements Property {
+public class MicroProperty implements Property, Serializable {
 
     private final String key;
     private final Object value;

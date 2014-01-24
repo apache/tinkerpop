@@ -5,13 +5,14 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.util.ElementHelper;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class MicroElement implements Element {
+public abstract class MicroElement implements Element, Serializable {
 
     final Object id;
     final String label;
