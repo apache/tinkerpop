@@ -7,6 +7,8 @@ import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.Holder;
+import com.tinkerpop.gremlin.MicroPath;
+import com.tinkerpop.gremlin.Path;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.MapHelper;
@@ -21,7 +23,7 @@ public class GremlinPathMessage extends GremlinMessage {
 
     private GremlinPathMessage(final Holder holder) {
         super(holder);
-        this.holder.getPath().deflate();
+        this.holder.setPath(MicroPath.deflate(this.holder.getPath()));
     }
 
     public static GremlinPathMessage of(final Holder holder) {
@@ -41,10 +43,14 @@ public class GremlinPathMessage extends GremlinMessage {
             if (message.executePaths(vertex, messenger, tracker, gremlin))
                 voteToHalt.set(false);
         });
-        tracker.getPreviousObjectTracks().forEach((a, b) -> {
-            b.forEach(holder -> {
+        tracker.getPreviousObjectTracks().forEach((object, holders) -> {
+            holders.forEach(holder -> {
                 if (holder.isDone()) {
-                    MapHelper.incr(tracker.getDoneObjectTracks(), a, holder);
+                    if (object instanceof Path) {
+                        MapHelper.incr(tracker.getDoneObjectTracks(), MicroPath.deflate(((Path) object)), holder);
+                    } else {
+                        MapHelper.incr(tracker.getDoneObjectTracks(), object, holder);
+                    }
                 } else {
                     final Pipe pipe = GremlinHelper.getAs(holder.getFuture(), gremlin);
                     pipe.addStarts(new SingleIterator(holder));
@@ -82,7 +88,11 @@ public class GremlinPathMessage extends GremlinMessage {
                         MessageType.Global.of(GremlinVertexProgram.GREMLIN_MESSAGE, Messenger.getHostingVertices(end)),
                         GremlinPathMessage.of(holder));
             } else {
-                MapHelper.incr(tracker.getObjectTracks(), end, holder);
+                if (end instanceof Path) {
+                    MapHelper.incr(tracker.getObjectTracks(), MicroPath.deflate(((Path) end)), holder);
+                } else {
+                    MapHelper.incr(tracker.getObjectTracks(), end, holder);
+                }
             }
         });
         return messageSent;

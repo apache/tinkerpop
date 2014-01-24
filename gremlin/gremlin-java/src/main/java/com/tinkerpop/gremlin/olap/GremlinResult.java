@@ -4,7 +4,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.gremlin.Path;
+import com.tinkerpop.gremlin.MicroPath;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
 
@@ -60,10 +60,10 @@ public class GremlinResult<T> implements Iterator<T> {
                         .forEach(tracker -> {
                             tracker.getDoneObjectTracks().entrySet().stream().forEach(entry -> {
                                 entry.getValue().forEach(holder -> {
-                                    if (holder.get() instanceof Path) {
-                                        list.add(Path.inflate((Path) holder.get(), this.graph));
+                                    if (entry.getKey() instanceof MicroPath) {
+                                        list.add(((MicroPath) entry.getKey()).inflate(this.graph));
                                     } else {
-                                        list.add(holder.get());
+                                        list.add(entry.getKey());
                                     }
                                 });
                             });

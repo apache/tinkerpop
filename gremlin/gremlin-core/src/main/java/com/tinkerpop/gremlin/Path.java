@@ -82,40 +82,6 @@ public class Path {
         }
     }
 
-    public void deflate() {
-        final List<Object> newObjects = new ArrayList<>();
-        this.objects.forEach(a -> {
-            if (a instanceof MicroElement || a instanceof MicroProperty) {
-                newObjects.add(a);
-            } else if (a instanceof Vertex) {
-                newObjects.add(MicroVertex.deflate((Vertex) a));
-            } else if (a instanceof Edge) {
-                newObjects.add(MicroEdge.deflate((Edge) a));
-            } else if (a instanceof Property) {
-                newObjects.add(MicroProperty.deflate((Property) a));
-            } else {
-                newObjects.add(a);
-            }
-        });
-        this.objects = newObjects;
-    }
-
-    public static Path inflate(final Path path, final Graph graph) {
-        final Path temp = new Path();
-        path.forEach((as, object) -> {
-            if (object instanceof MicroVertex) {
-                temp.add(as, ((MicroVertex) object).inflate(graph));
-            } else if (object instanceof MicroEdge) {
-                temp.add(as, ((MicroEdge) object).inflate(graph));
-            } else if (object instanceof MicroProperty) {
-                temp.add(as, ((MicroProperty) object).inflate(graph));
-            } else {
-                temp.add(as, object);
-            }
-        });
-        return temp;
-    }
-
     public Path subset(final String... ases) {
         final List list = Arrays.asList(ases);
         final Path path = new Path();
