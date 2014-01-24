@@ -38,8 +38,9 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
-    protected final Strategy strategy = new Strategy.Simple();
-    private final Strategy.Context<Graph> graphContext = new Strategy.Context<Graph>(this, this);
+    protected final transient Strategy strategy;
+
+    private final transient Strategy.Context<Graph> graphContext;
 
     /**
      * Internally create a new {@link TinkerGraph} instance.
@@ -49,7 +50,9 @@ public class TinkerGraph implements Graph, Serializable {
      * enforced by the Blueprints Test suite.
      */
     private TinkerGraph(final Optional<GraphStrategy> strategy) {
+        this.strategy =  new Strategy.Simple();
         this.strategy.set(strategy);
+        this.graphContext  = new Strategy.Context<Graph>(this, this);
     }
 
     /**

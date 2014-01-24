@@ -7,8 +7,15 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.StreamFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -280,5 +287,40 @@ public class TinkerGraphTest {
             assertEquals(0.5f, t);
             return true;
         }, 0.5).has("oid", "1").edges()).count());
+    }
+
+    @Test
+    @Ignore("until working")
+    public void shouldSerializeGraph() throws Exception {
+        final TinkerGraph g = TinkerFactory.createClassic();
+        final String location = "/tmp/tp/tinkergraph-serialization-test";
+        deleteFile(location);
+
+        final File f = new File(location);
+        if (!f.exists())
+            f.mkdirs();
+
+        final ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(location + "/tinkergraph"));
+        out.writeObject(g);
+        out.close();
+
+        final ObjectInputStream input = new ObjectInputStream(new FileInputStream(location + "/tinkergraph"));
+
+        try {
+            final TinkerGraph g1 = (TinkerGraph) input.readObject();
+            assertEquals(StreamFactory.stream(g.query().vertices()).count(), StreamFactory.stream(g1.query().vertices()).count());
+            assertEquals(StreamFactory.stream(g.query().edges()).count(), StreamFactory.stream(g1.query().edges()).count());
+        } catch (ClassNotFoundException cnfe) {
+            throw new RuntimeException(cnfe);
+        } finally {
+            input.close();
+        }
+    }
+
+    protected void deleteFile(final String path) throws IOException {
+        final File file = new File(path);
+        if (file.exists()) {
+            file.delete();
+        }
     }
 }

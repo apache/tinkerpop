@@ -24,12 +24,13 @@ class TinkerVertex extends TinkerElement implements Vertex {
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
 
-    private final Strategy.Context<Vertex> strategyContext = new Strategy.Context<Vertex>(this.graph, this);
+    private transient final Strategy.Context<Vertex> strategyContext;
 
     protected TinkerVertex(final String id, final String label, final TinkerGraph graph) {
         super(id, label, graph);
         this.state = TinkerGraphComputer.State.STANDARD;
         this.centricId = id;
+        this.strategyContext = new Strategy.Context<Vertex>(this.graph, this);
     }
 
     private TinkerVertex(final TinkerVertex vertex, final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory annotationMemory) {
@@ -40,6 +41,7 @@ class TinkerVertex extends TinkerElement implements Vertex {
         this.properties = vertex.properties;
         this.vertexMemory = annotationMemory;
         this.centricId = centricId;
+        this.strategyContext = new Strategy.Context<Vertex>(this.graph, this);
     }
 
     public <V> void setProperty(final String key, final V value) {
