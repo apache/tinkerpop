@@ -7,7 +7,6 @@ import com.tinkerpop.blueprints.util.ElementHelper;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,19 +33,19 @@ public abstract class MicroElement implements Element, Serializable {
     }
 
     public void setProperty(final String key, final Object value) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Micro elements do not store properties (inflate): " + this.toString());
     }
 
     public <V> Property<V> getProperty(final String key) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Micro elements do not store properties (inflate): " + this.toString());
     }
 
     public Map<String, Property> getProperties() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Micro elements do not store properties (inflate): " + this.toString());
     }
 
     public void remove() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Micro elements can not be removed (inflate): " + this.toString());
     }
 
     public int hashCode() {

@@ -81,17 +81,17 @@ public class Path {
         }
     }
 
-    public void microSize() {
+    public void deflate() {
         final List<Object> newObjects = new ArrayList<>();
         this.objects.forEach(a -> {
             if (a instanceof MicroElement || a instanceof MicroProperty) {
                 newObjects.add(a);
             } else if (a instanceof Vertex) {
-                newObjects.add(new MicroVertex((Vertex) a));
+                newObjects.add(MicroVertex.deflate((Vertex) a));
             } else if (a instanceof Edge) {
-                newObjects.add(new MicroEdge((Edge) a));
+                newObjects.add(MicroEdge.deflate((Edge) a));
             } else if (a instanceof Property) {
-                newObjects.add(new MicroProperty((Property) a));
+                newObjects.add(MicroProperty.deflate((Property) a));
             } else {
                 newObjects.add(a);
             }
@@ -101,7 +101,7 @@ public class Path {
 
     public Path subset(final String... ases) {
         final List list = Arrays.asList(ases);
-        Path path = new Path();
+        final Path path = new Path();
         this.forEach((as, object) -> {
             if (list.contains(as)) {
                 path.add(as, object);

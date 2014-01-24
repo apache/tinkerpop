@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.olap;
 
-import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
@@ -24,20 +23,13 @@ public class GremlinCounterMessage extends GremlinMessage {
 
     private Long counter;
 
-    private GremlinCounterMessage(final Destination destination, final Object elementId, final String propertyKey, final Holder holder) {
-        super(destination, elementId, propertyKey, holder);
+    private GremlinCounterMessage(final Holder holder) {
+        super(holder);
         this.counter = 1l;
     }
 
     public static GremlinCounterMessage of(final Holder holder) {
-        final Destination destination = Destination.of(holder.get());
-        if (destination == Destination.VERTEX)
-            return new GremlinCounterMessage(destination, ((Vertex) holder.get()).getId(), null, holder);
-        else if (destination == Destination.EDGE)
-            return new GremlinCounterMessage(destination, ((Edge) holder.get()).getId(), null, holder);
-        else
-            return new GremlinCounterMessage(destination, ((Property) holder.get()).getElement().getId(), ((Property) holder.get()).getKey(), holder);
-
+        return new GremlinCounterMessage(holder);
     }
 
     public void setCounter(final Long counter) {
@@ -54,9 +46,8 @@ public class GremlinCounterMessage extends GremlinMessage {
         final Map<Holder, Long> localCounts = new HashMap<>();
 
         messages.forEach(message -> {
-            if (!message.inflate(vertex))
-                voteToHalt.set(true);
-            else if (message.executeCounts(tracker, gremlin, localCounts))
+            message.holder.inflate(vertex);
+            if (message.executeCounts(tracker, gremlin, localCounts))
                 voteToHalt.set(false);
         });
 
@@ -93,6 +84,7 @@ public class GremlinCounterMessage extends GremlinMessage {
                                   final Gremlin gremlin, Map<Holder, Long> localCounts) {
 
         if (this.holder.isDone()) {
+            this.holder.deflate();
             MapHelper.incr(tracker.getDoneGraphTracks(), this.holder, this.counter);
             return false;
         }

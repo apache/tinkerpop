@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.olap;
 
-import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
@@ -20,18 +19,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class GremlinPathMessage extends GremlinMessage {
 
-    private GremlinPathMessage(final Destination destination, final Object elementId, final String propertyKey, final Holder holder) {
-        super(destination, elementId, propertyKey, holder);
+    private GremlinPathMessage(final Holder holder) {
+        super(holder);
     }
 
     public static GremlinPathMessage of(final Holder holder) {
-        final Destination destination = Destination.of(holder.get());
-        if (destination == Destination.VERTEX)
-            return new GremlinPathMessage(destination, ((Vertex) holder.get()).getId(), null, holder);
-        else if (destination == Destination.EDGE)
-            return new GremlinPathMessage(destination, ((Edge) holder.get()).getId(), null, holder);
-        else
-            return new GremlinPathMessage(destination, ((Property) holder.get()).getElement().getId(), ((Property) holder.get()).getKey(), holder);
+        return new GremlinPathMessage(holder);
 
     }
 
@@ -44,9 +37,8 @@ public class GremlinPathMessage extends GremlinMessage {
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         messages.forEach(message -> {
-            if (!message.inflate(vertex))
-                voteToHalt.set(true);
-            else if (message.executePaths(vertex, messenger, tracker, gremlin))
+            message.holder.inflate(vertex);
+            if (message.executePaths(vertex, messenger, tracker, gremlin))
                 voteToHalt.set(false);
         });
         tracker.getPreviousObjectTracks().forEach((a, b) -> {
@@ -69,6 +61,7 @@ public class GremlinPathMessage extends GremlinMessage {
                                  final GremlinPaths tracker,
                                  final Gremlin gremlin) {
         if (this.holder.isDone()) {
+            this.holder.deflate();
             MapHelper.incr(tracker.getDoneGraphTracks(), this.holder.get(), this.holder);
             return false;
         }

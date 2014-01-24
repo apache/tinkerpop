@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.util;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -46,5 +47,9 @@ public class StreamFactory {
      */
     public static <T> Iterable<T> iterable(final Stream<T> stream) {
         return () -> stream.iterator();
+    }
+
+    public static <T> Stream<T> stream(final T t) {
+        return Arrays.asList(t).stream();
     }
 }
