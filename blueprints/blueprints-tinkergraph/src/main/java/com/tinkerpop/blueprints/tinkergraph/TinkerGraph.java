@@ -97,6 +97,10 @@ public class TinkerGraph implements Graph, Serializable {
         return (G) new TinkerGraph(strategy);
     }
 
+    /**
+     * This method supports serialization of {@link TinkerGraph} where the objects related to {@link GraphStrategy}
+     * are initialized properly.
+     */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         strategy = new Strategy.Simple();
