@@ -21,11 +21,11 @@ public class GremlinPathMessage extends GremlinMessage {
 
     private GremlinPathMessage(final Holder holder) {
         super(holder);
+        this.holder.getPath().deflate();
     }
 
     public static GremlinPathMessage of(final Holder holder) {
         return new GremlinPathMessage(holder);
-
     }
 
     public static boolean execute(final Vertex vertex,

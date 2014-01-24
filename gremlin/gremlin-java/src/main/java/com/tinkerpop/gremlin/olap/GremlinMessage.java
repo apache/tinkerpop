@@ -15,8 +15,6 @@ public abstract class GremlinMessage implements Serializable {
     protected GremlinMessage(final Holder holder) {
         this.holder = holder;
         this.holder.deflate();
-        if (this.holder instanceof PathHolder)
-            this.holder.getPath().deflate();
     }
 
     public static <T extends GremlinMessage> T of(final Holder holder) {

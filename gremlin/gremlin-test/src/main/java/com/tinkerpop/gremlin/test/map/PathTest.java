@@ -7,9 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -27,6 +25,7 @@ public class PathTest {
         assertFalse(pipe.hasNext());
         assertEquals(2, path.size());
         assertEquals("1", ((Vertex) path.get(0)).<String>getId());
+        assertEquals("marko", ((Vertex) path.get(0)).<String>getValue("name"));
         assertEquals("marko", path.<String>get(1));
     }
 

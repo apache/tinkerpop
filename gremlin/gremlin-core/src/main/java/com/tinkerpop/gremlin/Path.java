@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin;
 
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.micro.MicroEdge;
@@ -97,6 +98,22 @@ public class Path {
             }
         });
         this.objects = newObjects;
+    }
+
+    public static Path inflate(final Path path, final Graph graph) {
+        final Path temp = new Path();
+        path.forEach((as, object) -> {
+            if (object instanceof MicroVertex) {
+                temp.add(as, ((MicroVertex) object).inflate(graph));
+            } else if (object instanceof MicroEdge) {
+                temp.add(as, ((MicroEdge) object).inflate(graph));
+            } else if (object instanceof MicroProperty) {
+                temp.add(as, ((MicroProperty) object).inflate(graph));
+            } else {
+                temp.add(as, object);
+            }
+        });
+        return temp;
     }
 
     public Path subset(final String... ases) {

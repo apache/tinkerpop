@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.Path;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
 
@@ -58,9 +59,13 @@ public class GremlinResult<T> implements Iterator<T> {
                         .filter(tracker -> null != tracker)
                         .forEach(tracker -> {
                             tracker.getDoneObjectTracks().entrySet().stream().forEach(entry -> {
-                                for (int i = 0; i < entry.getValue().size(); i++) {
-                                    list.add(entry.getKey());
-                                }
+                                entry.getValue().forEach(holder -> {
+                                    if (holder.get() instanceof Path) {
+                                        list.add(Path.inflate((Path) holder.get(), this.graph));
+                                    } else {
+                                        list.add(holder.get());
+                                    }
+                                });
                             });
                             tracker.getDoneGraphTracks().entrySet().stream().forEach(entry -> {
                                 entry.getValue().forEach(holder -> list.add(holder.inflate(vertex).get()));
