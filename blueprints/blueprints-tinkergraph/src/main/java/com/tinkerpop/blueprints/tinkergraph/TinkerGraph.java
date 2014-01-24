@@ -40,8 +40,21 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
+    /**
+     * Define the method by which {@link GraphStrategy} implementations are executed.
+     * <p/>
+     * <b>Reference Implementation Help:</b> Implementers may use the existing implementations on the {@link Strategy}
+     * class or write their own if deemed necessary.
+     */
     protected transient Strategy strategy = new Strategy.Simple();
 
+    /**
+     * The context to be passed to the {@link GraphStrategy} when triggered.  The context wraps the {@link Graph}
+     * instance providing that reference to the {@link GraphStrategy}.
+     * <p/>
+     * <b>Reference Implementation Help:</b> It is best to declare this field once and re-use for the life of the
+     * {@link Graph} rather than construct the new instances at the time they are needed.
+     */
     private transient Strategy.Context<Graph> graphContext = new Strategy.Context<Graph>(this, this);
 
     /**
