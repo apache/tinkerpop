@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.olap;
+package com.tinkerpop.gremlin.olap.util;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.computer.ComputeResult;
@@ -7,6 +7,9 @@ import com.tinkerpop.blueprints.computer.GraphMemory;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.MicroPath;
 import com.tinkerpop.gremlin.Pipeline;
+import com.tinkerpop.gremlin.olap.GremlinCounters;
+import com.tinkerpop.gremlin.olap.GremlinPaths;
+import com.tinkerpop.gremlin.olap.GremlinVertexProgram;
 import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
 
 import java.util.ArrayList;

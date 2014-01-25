@@ -4,10 +4,9 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.GraphQueryBuilder;
-import com.tinkerpop.gremlin.oltp.AbstractPipe;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipeline;
-import com.tinkerpop.gremlin.util.ExpandablePipeIterator;
+import com.tinkerpop.gremlin.oltp.AbstractPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.HolderIterator;
 
@@ -29,7 +28,7 @@ public class GraphQueryPipe extends AbstractPipe<Element, Element> {
     }
 
     public void generateHolderIterator(final boolean trackPaths) {
-        this.starts = new ExpandablePipeIterator<>();
+        this.starts.clear();
         if (trackPaths) {
             this.starts.add(this.returnClass.equals(Vertex.class) ?
                     new HolderIterator(this, this.queryBuilder.build(this.graph).vertices().iterator()) :

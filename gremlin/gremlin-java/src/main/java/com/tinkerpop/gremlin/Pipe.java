@@ -12,7 +12,15 @@ public interface Pipe<S, E> extends Iterator<Holder<E>>, Serializable {
 
     public void addStarts(final Iterator<Holder<S>> iterator);
 
-    public <S,E> Pipeline<S,E> getPipeline();
+    public void setPreviousPipe(final Pipe<?, S> pipe);
+
+    public Pipe<?, S> getPreviousPipe();
+
+    public void setNextPipe(final Pipe<E, ?> pipe);
+
+    public Pipe<E, ?> getNextPipe();
+
+    public <S, E> Pipeline<S, E> getPipeline();
 
     public String getAs();
 

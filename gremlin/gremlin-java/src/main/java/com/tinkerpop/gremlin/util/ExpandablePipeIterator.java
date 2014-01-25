@@ -1,53 +1,49 @@
 package com.tinkerpop.gremlin.util;
 
+import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipe;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExpandablePipeIterator<T> implements Iterator<T> {
+public class ExpandablePipeIterator<E> implements Iterator<Holder<E>> {
 
-    private final ExpandableIterator<T> expander = new ExpandableIterator<>();
-    private Pipe<?, T> pipe;
+    private final ExpandableIterator<Holder<E>> expander = new ExpandableIterator<>();
+    private Pipe<?, E> pipe = EmptyPipe.instance();
 
-    @SafeVarargs
-    public ExpandablePipeIterator(final Iterator<T>... iterators) {
-        Stream.of(iterators).forEach(i -> this.add(i));
+    public ExpandablePipeIterator(final Pipe<?, E> pipe) {
+        this.pipe = pipe;
+    }
+
+    public void clear() {
+        this.expander.clear();
     }
 
     public boolean hasNext() {
-        return (null != this.pipe && this.pipe.hasNext()) || this.expander.hasNext();
+        return this.pipe.getPreviousPipe().hasNext() || this.expander.hasNext();
     }
 
-    public T next() {
-        if (null != this.pipe && this.pipe.hasNext())
-            return (T) this.pipe.next();
+    public Holder<E> next() {
+        if (this.pipe.getPreviousPipe().hasNext())
+            return (Holder<E>) this.pipe.getPreviousPipe().next();
         else
             return this.expander.next();
     }
 
-    public void add(final Iterator<T> iterator) {
-        if (iterator instanceof Pipe)
-            this.pipe = (Pipe) iterator;
-        else
-            this.expander.add(iterator);
+    public void add(final Iterator<E> iterator) {
+        this.expander.add((Iterator) iterator);
     }
 
     public class ExpandableIterator<T> implements Iterator<T> {
 
-        private final Queue<Iterator<T>> queue;
+        private final Queue<Iterator<T>> queue = new LinkedList<>();
 
-        @SafeVarargs
-        public ExpandableIterator(final Iterator<T>... iterators) {
-            this.queue = new LinkedList<>();
-            for (final Iterator<T> iterator : iterators) {
-                this.queue.add(iterator);
-            }
+        public void clear() {
+            this.queue.clear();
         }
 
         public boolean hasNext() {

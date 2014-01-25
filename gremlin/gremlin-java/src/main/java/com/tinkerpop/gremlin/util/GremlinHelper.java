@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.util;
 
-import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.Pipeline;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,19 +30,6 @@ public class GremlinHelper {
         return pipeline.getPipes().stream()
                 .filter(p -> as.equals(p.getAs()))
                 .findFirst().isPresent();
-    }
-
-    public static String getNextPipeLabel(final Pipeline pipeline, final Pipe pipe) {
-        for (int i = 0; i < pipeline.getPipes().size(); i++) {
-            if (pipeline.getPipes().get(i) == pipe) {
-                if (i == pipeline.getPipes().size() - 1)
-                    return Holder.NO_FUTURE;
-                else {
-                    return ((Pipe) pipeline.getPipes().get(i + 1)).getAs();
-                }
-            }
-        }
-        return Holder.NO_FUTURE;
     }
 
     public static <S, E> Pipe<S, ?> getStart(final Pipeline<S, E> pipeline) {
@@ -72,6 +59,16 @@ public class GremlinHelper {
         } else {
             return false;
         }
+    }
+
+    public static void removePipe(final Pipe pipe, final Pipeline pipeline) {
+        final List<Pipe> pipes = pipeline.getPipes();
+        final int index = pipes.indexOf(pipe);
+        if (index - 1 >= 0 && index + 1 <= pipes.size()) {
+            pipes.get(index - 1).setNextPipe(pipes.get(index + 1));
+            pipes.get(index + 1).setPreviousPipe(pipes.get(index - 1));
+        }
+        pipes.remove(index);
     }
 
     public static String makePipeString(final Pipe pipe, final Object... arguments) {

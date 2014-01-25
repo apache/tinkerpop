@@ -6,7 +6,8 @@ import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 
-import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -14,12 +15,10 @@ import java.util.Iterator;
 public class IdentityOptimizer implements Optimizer.FinalOptimizer {
 
     public Pipeline optimize(final Pipeline pipeline) {
-        final Iterator<Pipe<?, ?>> itty = pipeline.getPipes().iterator();
-        while (itty.hasNext()) {
-            final Pipe<?, ?> pipe = itty.next();
-            if (pipe instanceof IdentityPipe && !GremlinHelper.isLabeled(pipe))
-                itty.remove();
-        }
+        ((List<Pipe>) pipeline.getPipes()).stream()
+                .filter(pipe -> pipe instanceof IdentityPipe && !GremlinHelper.isLabeled(pipe))
+                .collect(Collectors.<Pipe>toList())
+                .stream().forEach(pipe -> GremlinHelper.removePipe(pipe, pipeline));
         return pipeline;
     }
 }

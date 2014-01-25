@@ -36,7 +36,7 @@ public class FlatMapPipe<S, E> extends AbstractPipe<S, E> {
         while (true) {
             final Holder<E> holder = this.getNext();
             if (null != holder) {
-                holder.setFuture(GremlinHelper.getNextPipeLabel(this.pipeline, this));
+                holder.setFuture(this.getNextPipe().getAs());
                 return holder;
             }
         }

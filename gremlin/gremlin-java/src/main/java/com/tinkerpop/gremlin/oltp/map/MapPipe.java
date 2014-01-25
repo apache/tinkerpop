@@ -26,7 +26,7 @@ public class MapPipe<S, E> extends AbstractPipe<S, E> {
     public Holder<E> processNextStart() {
         while (true) {
             final Holder<S> holder = this.starts.next();
-            holder.setFuture(GremlinHelper.getNextPipeLabel(this.pipeline, this));
+            holder.setFuture(this.getNextPipe().getAs());
             final E temp = this.function.apply(holder);
             if (NO_OBJECT != temp)
                 if (holder.get().equals(temp)) // no path extension (i.e. a filter, identity, side-effect)

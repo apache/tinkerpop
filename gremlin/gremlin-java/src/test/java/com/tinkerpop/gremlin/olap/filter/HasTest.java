@@ -4,7 +4,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.T;
-import com.tinkerpop.gremlin.olap.GremlinResult;
+import com.tinkerpop.gremlin.olap.util.GremlinResult;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;
 

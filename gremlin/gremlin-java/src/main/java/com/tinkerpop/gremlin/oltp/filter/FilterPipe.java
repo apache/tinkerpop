@@ -1,9 +1,8 @@
 package com.tinkerpop.gremlin.oltp.filter;
 
-import com.tinkerpop.gremlin.oltp.AbstractPipe;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipeline;
-import com.tinkerpop.gremlin.util.GremlinHelper;
+import com.tinkerpop.gremlin.oltp.AbstractPipe;
 
 import java.util.function.Predicate;
 
@@ -31,7 +30,7 @@ public class FilterPipe<S> extends AbstractPipe<S, S> {
         while (true) {
             final Holder<S> holder = this.starts.next();
             if (this.predicate.test(holder)) {
-                holder.setFuture(GremlinHelper.getNextPipeLabel(this.pipeline, this));
+                holder.setFuture(this.getNextPipe().getAs());
                 return holder;
             }
         }

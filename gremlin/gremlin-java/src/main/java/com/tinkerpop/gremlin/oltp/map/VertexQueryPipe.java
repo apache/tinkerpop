@@ -64,7 +64,7 @@ public class VertexQueryPipe<E extends Element> extends FlatMapPipe<Vertex, E> {
             if (null != holder) {
                 this.counter++;
                 if (this.counter > this.low) {
-                    holder.setFuture(GremlinHelper.getNextPipeLabel(this.pipeline, this));
+                    holder.setFuture(this.getNextPipe().getAs());
                     return holder;
                 }
             }
