@@ -8,6 +8,12 @@ import com.tinkerpop.blueprints.io.graphml.GraphMLWriter;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import org.junit.Test;
 
+import javax.xml.XMLConstants;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,6 +26,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URL;
 
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
@@ -111,6 +118,8 @@ public class IoTest extends AbstractBlueprintsTest {
             w.outputGraph(out);
         }
 
+        validateXmlAgainstGraphMLXsd(f);
+
         // reusing the same config used for creation of "g".
         final Graph g2 = BlueprintsStandardSuite.GraphManager.get().newTestGraph(config);
         final GraphMLReader r = new GraphMLReader.Builder(g2).build();
@@ -124,6 +133,15 @@ public class IoTest extends AbstractBlueprintsTest {
 
         // need to manually close the "g2" instance
         BlueprintsStandardSuite.GraphManager.get().clear(g2, config);
+    }
+
+    private void validateXmlAgainstGraphMLXsd(final File file) throws Exception {
+        final Source xmlFile = new StreamSource(file);
+        final SchemaFactory schemaFactory = SchemaFactory
+                .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        final Schema schema = schemaFactory.newSchema(IoTest.class.getResource(RESOURCE_PATH_PREFIX + "graphml-1.1.xsd"));
+        final Validator validator = schema.newValidator();
+        validator.validate(xmlFile);
     }
 
     private static void readGraphMLIntoGraph(final Graph g) throws IOException {
