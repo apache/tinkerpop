@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.computer;
 
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 import java.io.Serializable;

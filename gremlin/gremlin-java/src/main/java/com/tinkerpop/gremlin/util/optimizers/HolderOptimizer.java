@@ -16,7 +16,7 @@ import com.tinkerpop.gremlin.oltp.sideeffect.LinkPipe;
 public class HolderOptimizer implements Optimizer.FinalOptimizer {
 
     public Pipeline optimize(final Pipeline pipeline) {
-        final boolean trackPaths = this.trackPaths(pipeline);
+        final boolean trackPaths = HolderOptimizer.trackPaths(pipeline);
         pipeline.getPipes().forEach(pipe -> {
             if (pipe instanceof GraphQueryPipe)
                 ((GraphQueryPipe) pipe).generateHolderIterator(trackPaths);

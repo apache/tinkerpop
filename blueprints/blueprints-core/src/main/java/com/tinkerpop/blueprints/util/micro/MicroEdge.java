@@ -7,6 +7,8 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.blueprints.util.StringFactory;
 
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -37,11 +39,14 @@ public class MicroEdge extends MicroElement implements Edge {
     public Edge inflate(final Vertex hostVertex) {
         return StreamFactory.stream(hostVertex.query().direction(Direction.OUT).labels(this.label).edges())
                 .filter(e -> e.getId().equals(this.id))
-                .findFirst().get();
+                .findFirst().orElseThrow(() -> new IllegalStateException("The micro edge could not be be found at the provided vertex"));
     }
 
     public Edge inflate(final Graph graph) {
-        return graph.query().ids(this.id).edges().iterator().next();
+        final Iterator<Edge> itty = graph.query().ids(this.id).edges().iterator();
+        if (itty.hasNext()) return itty.next();
+        else
+            throw new IllegalStateException("The micro edge could not be found at the provided graph");
     }
 
     public static MicroEdge deflate(final Edge edge) {

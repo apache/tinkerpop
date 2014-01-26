@@ -15,9 +15,10 @@ public abstract interface Property<V> {
     public class Key {
 
         /**
-         * Can't be constructed publically.
+         * A property key can not be constructed.
          */
-        private Key() {}
+        private Key() {
+        }
 
         public static final String ID = "id";
         public static final String LABEL = "label";
@@ -44,8 +45,14 @@ public abstract interface Property<V> {
         return this.isPresent() ? this.get() : otherValue;
     }
 
-    public default V orElseGet(final Supplier<? extends V> supplier) {
-        return this.isPresent() ? this.get() : supplier.get();
+    public default V orElseGet(final Supplier<? extends V> edgeSupplier) {
+        return this.isPresent() ? this.get() : edgeSupplier.get();
+    }
+
+    public default <E extends Throwable> V orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
+        if (this.isPresent()) return this.get();
+        else
+            throw exceptionSupplier.get();
     }
 
     public <E extends Element> E getElement();

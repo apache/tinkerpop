@@ -91,7 +91,7 @@ public class GremlinTest {
                 .value("name").path()
                 .sideEffect(System.out::println).iterate();
 
-        /*System.out.println("--------------");
+        System.out.println("--------------");
 
         Gremlin.of(g).V()
                 .match("a", "b",
@@ -101,7 +101,7 @@ public class GremlinTest {
                         Gremlin.of().as("b").has("lang", "java"),
                         Gremlin.of().as("b").in("created").has("name", "peter"))
                 .value("name").path()
-                .sideEffect(System.out::println).iterate();*/
+                .sideEffect(System.out::println).iterate();
     }
 
     @Test
