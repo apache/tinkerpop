@@ -50,7 +50,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -63,9 +62,11 @@ import java.util.function.Supplier;
  */
 public interface Pipeline<S, E> extends Iterator<E> {
 
-    public <T> Optional<T> get(final String variable);
+    public <T> T get(final String variable);
 
     public <T> void set(final String variable, T t);
+
+    public Set<String> getVariables();
 
     public Pipeline<Vertex, Vertex> V();
 
@@ -240,7 +241,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> except(final String variable) {
-        return this.addPipe(new FilterPipe<E>(this, o -> !this.<Collection<E>>get(variable).get().contains(o.get())));
+        return this.addPipe(new FilterPipe<E>(this, o -> !this.<Collection<E>>get(variable).contains(o.get())));
     }
 
     public default Pipeline<S, Element> has(final String key) {
@@ -274,7 +275,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> simplePath() {
-        return this.addPipe(new SimplePathPipe(this));
+        return this.addPipe(new SimplePathPipe<>(this));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
@@ -290,8 +291,8 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new AggregatePipe<>(this, variable, preAggregateFunctions));
     }
 
-    public default Pipeline<S, E> groupCount(final Map<Object, Long> map) {
-        return this.addPipe(new GroupCountPipe<>(this, map));
+    public default Pipeline<S, E> groupCount(final String variable, final Function<E, ?>... preGroupFunctions) {
+        return this.addPipe(new GroupCountPipe<>(this, variable, preGroupFunctions));
     }
 
     public default Pipeline<S, Vertex> linkIn(final String label, final String as) {
@@ -404,11 +405,17 @@ public interface Pipeline<S, E> extends Iterator<E> {
         }
     }
 
-    public default Map<Object, Long> groupCount() {
+    public default Map<Object, Long> groupCount(final Function<E, ?>... preGroupFunctions) {
         final Map<Object, Long> map = new HashMap<>();
+        int currentFunction = 0;
         try {
             while (true) {
-                MapHelper.incr(map, this.next(), 1l);
+                if (preGroupFunctions.length == 0)
+                    MapHelper.incr(map, this.next(), 1l);
+                else {
+                    MapHelper.incr(map, preGroupFunctions[currentFunction].apply(this.next()), 1l);
+                    currentFunction = (currentFunction + 1) % preGroupFunctions.length;
+                }
             }
         } catch (final NoSuchElementException e) {
         }

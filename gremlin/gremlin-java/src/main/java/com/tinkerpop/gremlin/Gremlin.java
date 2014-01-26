@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -59,8 +59,12 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         this.variables.put(variable, t);
     }
 
-    public <T> Optional<T> get(final String variable) {
-        return Optional.ofNullable((T) this.variables.get(variable));
+    public <T> T get(final String variable) {
+        return (T) this.variables.get(variable);
+    }
+
+    public Set<String> getVariables() {
+        return this.variables.keySet();
     }
 
     public void registerOptimizer(final Optimizer optimizer) {

@@ -14,22 +14,23 @@ public class GroupCountTest {
         assertTrue(true);
     }
 
-    /*public void test_g_V_outXcreatedX_groupCountXm__nameX(Iterator<Vertex> pipe, Map<String, Number> m) {
-        int counter = 0;
-        while (pipe.hasNext()) {
-            Vertex vertex = pipe.next();
-            counter++;
-            assertTrue(vertex.getValue("name").equals("lop") || vertex.getValue("name").equals("ripple"));
-        }
-        assertEquals(4, counter);
-        assertEquals(2, m.size());
-        assertEquals(3l, m.get("lop"));
-        assertEquals(1l, m.get("ripple"));
-    }*/
+    public void g_V_outXcreatedX_groupCountXnameX(final Map<Object, Long> map) {
+        assertEquals(map.size(), 2);
+        assertEquals(map.get("lop"), Long.valueOf(3l));
+        assertEquals(map.get("ripple"), Long.valueOf(1l));
+    }
 
     public void g_V_outXcreatedX_name_groupCount(final Map<Object, Long> map) {
         assertEquals(map.size(), 2);
         assertEquals(map.get("lop").longValue(), 3l);
         assertEquals(map.get("ripple").longValue(), 1l);
+    }
+
+    public void g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_iterate_getXaX(final Map<Object, Long> map) {
+        assertEquals(map.size(), 4);
+        assertEquals(map.get("lop").longValue(), 4l);
+        assertEquals(map.get("ripple").longValue(), 2l);
+        assertEquals(map.get("josh").longValue(), 1l);
+        assertEquals(map.get("vadas").longValue(), 1l);
     }
 }

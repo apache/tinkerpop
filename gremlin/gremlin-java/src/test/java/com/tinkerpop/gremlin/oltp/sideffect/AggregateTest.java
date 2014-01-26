@@ -27,12 +27,11 @@ public class AggregateTest extends com.tinkerpop.gremlin.test.sideeffect.Aggrega
 
     @Test
     public void g_V_valueXnameX_aggregateXaX_iterate_getXaX() {
-        super.g_V_valueXnameX_aggregateXaX_iterate_getXaX((List) Gremlin.of(g).V().value("name").aggregate("x").iterate().get("x").get());
+        super.g_V_valueXnameX_aggregateXaX_iterate_getXaX((List) Gremlin.of(g).V().value("name").aggregate("x").iterate().get("x"));
     }
 
     @Test
     public void g_V_aggregateXa_nameX_iterate_getXaX() {
-        System.out.println(Gremlin.of(g).V().aggregate("a", v -> v.getValue("name")).iterate().get("a").get());
-        super.g_V_aggregateXa_nameX_iterate_getXaX((List) Gremlin.of(g).V().aggregate("a", v -> v.getValue("name")).iterate().get("a").get());
+        super.g_V_aggregateXa_nameX_iterate_getXaX((List) Gremlin.of(g).V().aggregate("a", v -> v.getValue("name")).iterate().get("a"));
     }
 }

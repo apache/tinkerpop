@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.Pipeline;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -86,5 +87,15 @@ public class GremlinHelper {
         if (GremlinHelper.isLabeled(pipe))
             builder.append("@").append(pipe.getAs());
         return builder.toString();
+    }
+
+    public static <T> T getOrCreate(final Pipeline pipeline, final String variable, final Supplier<T> orCreate) {
+        if (pipeline.getVariables().contains(variable))
+            return (T) pipeline.get(variable);
+        else {
+            final T t = orCreate.get();
+            pipeline.set(variable, t);
+            return t;
+        }
     }
 }

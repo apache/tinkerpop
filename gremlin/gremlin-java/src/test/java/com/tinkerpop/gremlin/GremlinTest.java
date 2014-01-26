@@ -141,7 +141,7 @@ public class GremlinTest {
         //Gremlin.of(g).V().values("name","age","label","id").forEach(System.out::println);
         Pipeline gremlin = Gremlin.of(g).v(1).out("created").aggregate("x").in("created").out("created").except("x").value("name");
         gremlin.forEach(System.out::println);
-        System.out.println(((Collection<Vertex>) gremlin.get("x").get()).iterator().next().<String>getValue("name"));
+        System.out.println(((Collection<Vertex>) gremlin.get("x")).iterator().next().<String>getValue("name"));
 
 
     }

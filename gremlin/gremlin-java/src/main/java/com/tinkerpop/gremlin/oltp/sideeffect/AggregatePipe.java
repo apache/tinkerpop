@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.oltp.AbstractPipe;
+import com.tinkerpop.gremlin.util.GremlinHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,7 +16,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AggregatePipe<S, T> extends AbstractPipe<S, S> {
+public class AggregatePipe<S> extends AbstractPipe<S, S> {
 
     private Iterator<Holder<S>> itty = null;
     private final String variable;
@@ -32,12 +33,7 @@ public class AggregatePipe<S, T> extends AbstractPipe<S, S> {
             return this.itty.next();
         } else {
             final List<Holder<S>> toReturn = new ArrayList<>();
-
-            final Collection collection = (Collection<T>) this.pipeline.get(this.variable).orElseGet(() -> {
-                final List list = new ArrayList<>();
-                this.pipeline.set(this.variable, list);
-                return list;
-            });
+            final Collection collection = GremlinHelper.getOrCreate(this.pipeline, this.variable, () -> new ArrayList());
 
             try {
                 final Pipe<?, S> pipe = this.getPreviousPipe();
