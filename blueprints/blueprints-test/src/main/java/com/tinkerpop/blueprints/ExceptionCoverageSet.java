@@ -6,13 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Holds a collection of {@link FeatureRequirement} annotations enabling multiple {@link FeatureRequirement}
- * annotations to be applied to a single test method.
+ * A group of {@link ExceptionCoverage} annotations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface FeatureRequirements {
-    FeatureRequirement[] value();
+@Target(ElementType.TYPE)
+public @interface ExceptionCoverageSet {
+    ExceptionCoverage[] value();
 }

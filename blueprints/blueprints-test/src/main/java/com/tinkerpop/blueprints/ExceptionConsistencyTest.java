@@ -38,6 +38,14 @@ public class ExceptionConsistencyTest {
      * {@link Vertex} or {@link Edge} construction by throwing an appropriate exception.
      */
     @RunWith(Parameterized.class)
+    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
+            "providedKeyValuesMustBeAMultipleOfTwo",
+            "providedKeyValuesMustHaveALegalKeyOnEvenIndices"
+    })
+    @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
+            "propertyValueCanNotBeNull",
+            "propertyKeyCanNotBeEmpty"
+    })
     public static class PropertyValidationOnAddTest extends AbstractBlueprintsTest {
 
         @Parameterized.Parameters(name = "{index}: expect - {1}")
@@ -86,6 +94,9 @@ public class ExceptionConsistencyTest {
     /**
      * Test for consistent exceptions for graphs not supporting user supplied identifiers.
      */
+    @ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
+            "userSuppliedIdsNotSupported"
+    })
     public static class AddElementWithIdTest extends AbstractBlueprintsTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
@@ -120,6 +131,13 @@ public class ExceptionConsistencyTest {
      * {@link Vertex} or {@link Edge} construction by throwing an appropriate exception.
      */
     @RunWith(Parameterized.class)
+    @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
+            "propertyValueCanNotBeNull",
+            "propertyKeyCanNotBeNull",
+            "propertyKeyIdIsReserved",
+            "propertyKeyLabelIsReserved",
+            "propertyKeyCanNotBeEmpty"
+    })
     public static class PropertyValidationOnSetTest extends AbstractBlueprintsTest {
 
         @Parameterized.Parameters(name = "{index}: expect - {2}")
@@ -204,6 +222,9 @@ public class ExceptionConsistencyTest {
     /**
      * Test exceptions around use of {@link Direction} with the incorrect context.
      */
+    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
+            "bothIsNotSupported"
+    })
     public static class UseOfDirectionTest extends AbstractBlueprintsTest {
         @Test
         public void testGetVertexOnEdge() {
@@ -224,6 +245,12 @@ public class ExceptionConsistencyTest {
      * Test exceptions around {@link Annotations}.
      */
     @RunWith(Parameterized.class)
+    @ExceptionCoverage(exceptionClass = Annotations.Exceptions.class, methods = {
+            "annotationValueCanNotBeNull",
+            "annotationKeyCanNotBeNull",
+            "annotationKeyValueIsReserved",
+            "annotationKeyCanNotBeEmpty"
+    })
     public static class GraphAnnotationsTest extends AbstractBlueprintsTest {
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
@@ -260,6 +287,15 @@ public class ExceptionConsistencyTest {
      * Tests for exceptions with {@link AnnotatedList} and {@link AnnotatedValue}.
      */
     @RunWith(Parameterized.class)
+    @ExceptionCoverage(exceptionClass = Annotations.Exceptions.class, methods = {
+            "annotationKeyValueIsReserved",
+            "annotationKeyCanNotBeEmpty",
+            "annotationValueCanNotBeNull"
+    })
+    @ExceptionCoverage(exceptionClass = AnnotatedList.Exceptions.class, methods = {
+            "providedKeyValuesMustHaveALegalKeyOnEvenIndices",
+            "providedKeyValuesMustBeAMultipleOfTwo"
+    })
     public static class AnnotatedListValueTest extends AbstractBlueprintsTest {
 
         @Parameterized.Parameters(name = "{index}: expect - {1}")
@@ -299,6 +335,9 @@ public class ExceptionConsistencyTest {
     /**
      * Addition of an {@link Edge} without a label should throw an exception.
      */
+    @ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
+            "edgeLabelCanNotBeNull"
+    })
     public static class EdgeLabelTest extends AbstractBlueprintsTest {
         @Test
         public void testNullEdgeLabel() {
@@ -317,6 +356,9 @@ public class ExceptionConsistencyTest {
     /**
      * Tests around exceptions when working with {@link Transaction}.
      */
+    @ExceptionCoverage(exceptionClass = Transaction.Exceptions.class, methods = {
+            "transactionAlreadyOpen"
+    })
     public static class TransactionTest extends AbstractBlueprintsTest {
 
         @Test
@@ -342,6 +384,10 @@ public class ExceptionConsistencyTest {
     /**
      * Test exceptions where the same ID is assigned twice to an {@link Element},
      */
+    @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
+            "vertexWithIdAlreadyExists",
+            "edgeWithIdAlreadyExist"
+    })
     public static class SameIdUsageTest extends AbstractBlueprintsTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
@@ -379,6 +425,9 @@ public class ExceptionConsistencyTest {
     /**
      * Test exceptions around use of {@link Element#getValue(String)}.
      */
+    @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
+            "propertyDoesNotExist"
+    })
     public static class ElementGetValueTest extends AbstractBlueprintsTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
@@ -415,6 +464,9 @@ public class ExceptionConsistencyTest {
     /**
      * An {@link Element} can only be removed once.
      */
+    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
+            "elementHasAlreadyBeenRemovedOrDoesNotExist"
+    })
     public static class DuplicateRemovalTest extends AbstractBlueprintsTest {
         @Test
         public void shouldCauseExceptionIfEdgeRemovedMoreThanOnce() {
@@ -500,6 +552,9 @@ public class ExceptionConsistencyTest {
      * Tests specific to setting {@link Element} properties with
      * {@link com.tinkerpop.blueprints.computer.GraphComputer}.
      */
+    @ExceptionCoverage(exceptionClass = GraphComputer.Exceptions.class, methods = {
+            "providedKeyIsNotAComputeKey"
+    })
     public static class PropertyValidationOnSetGraphComputerTest extends AbstractBlueprintsTest {
 
         @Test
