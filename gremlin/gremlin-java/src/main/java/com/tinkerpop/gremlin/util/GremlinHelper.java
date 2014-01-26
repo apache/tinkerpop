@@ -11,12 +11,14 @@ import java.util.List;
  */
 public class GremlinHelper {
 
+    private static final String UNDERSCORE = "_";
+
     public static boolean isLabeled(final Pipe pipe) {
-        return !pipe.getAs().startsWith("_");
+        return !pipe.getAs().startsWith(UNDERSCORE);
     }
 
     public static boolean isLabeled(final String as) {
-        return !as.startsWith("_");
+        return !as.startsWith(UNDERSCORE);
     }
 
     public static <S, E> Pipe<S, E> getAs(final String as, final Pipeline<?, ?> pipeline) {

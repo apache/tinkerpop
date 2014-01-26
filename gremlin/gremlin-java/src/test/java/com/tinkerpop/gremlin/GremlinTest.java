@@ -7,8 +7,8 @@ import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -141,7 +141,7 @@ public class GremlinTest {
         //Gremlin.of(g).V().values("name","age","label","id").forEach(System.out::println);
         Pipeline gremlin = Gremlin.of(g).v(1).out("created").aggregate("x").in("created").out("created").except("x").value("name");
         gremlin.forEach(System.out::println);
-        System.out.println(((Set<Vertex>) gremlin.get("x").get()).iterator().next().<String>getValue("name"));
+        System.out.println(((Collection<Vertex>) gremlin.get("x").get()).iterator().next().<String>getValue("name"));
 
 
     }

@@ -24,7 +24,7 @@ public interface Pipe<S, E> extends Iterator<Holder<E>>, Serializable {
 
     public String getAs();
 
-    public void setAs(String as);
+    public void setAs(final String as);
 
     public static final class NoObject {
 

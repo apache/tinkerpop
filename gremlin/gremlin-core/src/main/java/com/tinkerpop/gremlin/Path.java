@@ -1,16 +1,8 @@
 package com.tinkerpop.gremlin;
 
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.micro.MicroEdge;
-import com.tinkerpop.blueprints.util.micro.MicroElement;
-import com.tinkerpop.blueprints.util.micro.MicroProperty;
-import com.tinkerpop.blueprints.util.micro.MicroVertex;
+import com.tinkerpop.blueprints.util.ObjectHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -22,14 +14,14 @@ import java.util.stream.Collectors;
  */
 public class Path {
 
-    protected List<String> asNames = new ArrayList<>();
+    protected List<String> asLabels = new ArrayList<>();
     protected List<Object> objects = new ArrayList<>();
 
     public Path(final Object... asObjects) {
         if (asObjects.length % 2 != 0)
             throw new IllegalArgumentException("The provided array must be a multiple of two");
         for (int i = 0; i < asObjects.length; i = i + 2) {
-            this.asNames.add((String) asObjects[i]);
+            this.asLabels.add((String) asObjects[i]);
             this.objects.add(asObjects[i + 1]);
         }
     }
@@ -39,18 +31,18 @@ public class Path {
     }
 
     public void add(final String as, final Object object) {
-        this.asNames.add(as);
+        this.asLabels.add(as);
         this.objects.add(object);
     }
 
     public void add(final Path path) {
-        this.asNames.addAll(path.asNames);
+        this.asLabels.addAll(path.asLabels);
         this.objects.addAll(path.objects);
     }
 
     public <T> T get(final String as) {
-        for (int i = 0; i < this.asNames.size(); i++) {
-            if (this.asNames.get(i).equals(as))
+        for (int i = 0; i < this.asLabels.size(); i++) {
+            if (this.asLabels.get(i).equals(as))
                 return (T) this.objects.get(i);
         }
         throw new IllegalArgumentException("The as-step does not exist: " + as);
@@ -60,12 +52,12 @@ public class Path {
         return (T) this.objects.get(index);
     }
 
-    public List<String> getAsSteps() {
-        return this.asNames.stream().collect(Collectors.toList());
+    public List<String> getAsLabels() {
+        return this.asLabels.stream().collect(Collectors.toList());
     }
 
     public void renameLastStep(final String as) {
-        this.asNames.set(this.asNames.size() - 1, as);
+        this.asLabels.set(this.asLabels.size() - 1, as);
     }
 
     public boolean isSimple() {
@@ -78,15 +70,14 @@ public class Path {
 
     public void forEach(final BiConsumer<String, Object> consumer) {
         for (int i = 0; i < this.size(); i++) {
-            consumer.accept(this.asNames.get(i), this.objects.get(i));
+            consumer.accept(this.asLabels.get(i), this.objects.get(i));
         }
     }
 
-    public Path subset(final String... ases) {
-        final List list = Arrays.asList(ases);
+    public Path subset(final String... asLabels) {
         final Path path = new Path();
         this.forEach((as, object) -> {
-            if (list.contains(as)) {
+            if (ObjectHelper.contains(as, asLabels)) {
                 path.add(as, object);
             }
         });

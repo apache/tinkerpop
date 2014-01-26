@@ -30,6 +30,7 @@ import com.tinkerpop.gremlin.oltp.map.ShufflePipe;
 import com.tinkerpop.gremlin.oltp.map.ValuePipe;
 import com.tinkerpop.gremlin.oltp.map.ValuesPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
+import com.tinkerpop.gremlin.oltp.sideeffect.AggregatePipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.GroupCountPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.LinkPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
@@ -44,7 +45,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -65,7 +65,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public <T> Optional<T> get(final String variable);
 
-    public <T> void put(final String variable, T t);
+    public <T> void set(final String variable, T t);
 
     public Pipeline<Vertex, Vertex> V();
 
@@ -211,8 +211,8 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new ProjectPipe(this, projections));
     }
 
-    public default Pipeline<S, Path> select(final String... ases) {
-        return this.addPipe(new SelectPipe(this, ases));
+    public default Pipeline<S, Path> select(final String... asLabels) {
+        return this.addPipe(new SelectPipe(this, asLabels));
     }
 
     /*public default <E2> Pipeline<S, E2> unroll() {
@@ -240,8 +240,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> except(final String variable) {
-        final Collection<E> collection = this.<Collection<E>>get(variable).get();
-        return this.addPipe(new FilterPipe<E>(this, o -> !collection.contains(o.get())));
+        return this.addPipe(new FilterPipe<E>(this, o -> !this.<Collection<E>>get(variable).get().contains(o.get())));
     }
 
     public default Pipeline<S, Element> has(final String key) {
@@ -287,22 +286,8 @@ public interface Pipeline<S, E> extends Iterator<E> {
         }));
     }
 
-    public default Pipeline<S, E> aggregate(final String variable) {
-        final Set<E> set = this.<Set<E>>get(variable).orElse(new HashSet<>());
-        this.put(variable, set);
-        final List<E> list = new ArrayList<>();
-        final String pipeName = GremlinHelper.getEnd(this).getAs();
-        return this.addPipe(new FlatMapPipe<E, E>(this, o -> {
-            set.add(o.get());
-            list.add(o.get());
-            while (GremlinHelper.getAs(pipeName, this).hasNext()) {
-                E e = (E) GremlinHelper.getAs(pipeName, this).next().get();
-                set.add(e);
-                list.add(e);
-            }
-
-            return list.iterator();
-        }));
+    public default Pipeline<S, E> aggregate(final String variable, final Function<E, ?>... preAggregateFunctions) {
+        return this.addPipe(new AggregatePipe<>(this, variable, preAggregateFunctions));
     }
 
     public default Pipeline<S, E> groupCount(final Map<Object, Long> map) {
@@ -383,13 +368,14 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return collection;
     }
 
-    public default void iterate() {
+    public default Pipeline iterate() {
         try {
             while (true) {
                 this.next();
             }
         } catch (final NoSuchElementException e) {
         }
+        return this;
     }
 
     public default long count() {

@@ -10,6 +10,10 @@ public interface Annotations {
 
     public class Key {
 
+        private Key() {
+
+        }
+
         public static final String VALUE = "value";
         private static final String HIDDEN_PREFIX = "%&%";
 

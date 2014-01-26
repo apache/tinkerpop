@@ -55,7 +55,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         return new Gremlin(graph, useDefaultOptimizers);
     }
 
-    public <T> void put(final String variable, final T t) {
+    public <T> void set(final String variable, final T t) {
         this.variables.put(variable, t);
     }
 
@@ -69,6 +69,12 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
 
     public List<Optimizer> getOptimizers() {
         return this.optimizers;
+    }
+
+    // TODO: Is this good?
+    public Gremlin<S, E> with(final Map<String, Object> bindings) {
+        bindings.forEach(this.variables::put);
+        return this;
     }
 
     public Gremlin<Vertex, Vertex> V() {
