@@ -377,8 +377,6 @@ public class ExceptionConsistencyTest {
             }
         }
 
-        // TODO: still need to test transactionMustBeOpenToReadWrite and openTransactionsOnClose
-
     }
 
     /**
@@ -593,11 +591,7 @@ public class ExceptionConsistencyTest {
                 assertEquals(expectedException.getMessage(), inner.getMessage());
             }
         }
-
-        // TODO: need to trigger this: GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeWritten()
     }
-
-    // TODO: need GraphComputer.Exceptions consistency checks
 
     /**
      * Mock {@link VertexProgram} that just dummies up a way to set a property on a {@link Vertex}.
