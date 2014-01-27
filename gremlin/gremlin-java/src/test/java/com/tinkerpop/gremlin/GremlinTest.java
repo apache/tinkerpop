@@ -51,7 +51,7 @@ public class GremlinTest {
 
         Gremlin.of(g).V()
                 .both()
-                .dedup(e -> e.get().getProperty("name").isPresent())
+                .dedup(e -> e.getProperty("name").isPresent())
                 .sideEffect(System.out::println)
                 .iterate();
 

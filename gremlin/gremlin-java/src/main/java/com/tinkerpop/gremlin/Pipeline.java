@@ -10,6 +10,7 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
+import com.tinkerpop.gremlin.oltp.filter.DedupPipe;
 import com.tinkerpop.gremlin.oltp.filter.ExceptPipe;
 import com.tinkerpop.gremlin.oltp.filter.FilterPipe;
 import com.tinkerpop.gremlin.oltp.filter.HasPipe;
@@ -47,11 +48,9 @@ import com.tinkerpop.gremlin.util.structures.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -236,13 +235,11 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> dedup() {
-        final Set<Object> set = Collections.synchronizedSet(new LinkedHashSet<>()); // TODO: Good?
-        return this.addPipe(new FilterPipe<E>(this, o -> set.add(o.get())));
+        return this.addPipe(new DedupPipe<>(this));
     }
 
-    public default Pipeline<S, E> dedup(final Function<Holder<E>, Object> uniqueFunction) {
-        final Set<Object> set = new LinkedHashSet<>();
-        return this.addPipe(new FilterPipe<E>(this, o -> set.add(uniqueFunction.apply(o))));
+    public default Pipeline<S, E> dedup(final Function<E, ?> uniqueFunction) {
+        return this.addPipe(new DedupPipe<>(this, uniqueFunction));
     }
 
     public default Pipeline<S, E> except(final String variable) {
@@ -278,9 +275,9 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Element> interval(final String key, final Comparable startValue, final Comparable endValue) {
-        final HasContainer start = new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue);
-        final HasContainer end = new HasContainer(key, Compare.LESS_THAN, endValue);
-        return this.addPipe(new IntervalPipe(this, start, end));
+        return this.addPipe(new IntervalPipe(this,
+                new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue),
+                new HasContainer(key, Compare.LESS_THAN, endValue)));
     }
 
     public default Pipeline<S, E> range(final int low, final int high) {

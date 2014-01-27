@@ -25,6 +25,6 @@ public class DedupTest extends com.tinkerpop.gremlin.test.filter.DedupTest {
 
     @Test
     public void g_V_both_dedupXlangX_name() {
-        super.g_V_both_dedupXlangX_name(Gremlin.of(g).V().both().dedup(v -> v.get().getProperty("lang").orElse(null)).value("name"));
+        super.g_V_both_dedupXlangX_name(Gremlin.of(g).V().both().dedup(v -> v.getProperty("lang").orElse(null)).value("name"));
     }
 }
