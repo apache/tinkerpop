@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Path;
 import com.tinkerpop.gremlin.Pipeline;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -13,6 +12,7 @@ import java.util.function.Function;
 public class PathPipe<S> extends MapPipe<S, Path> {
 
     public Function[] pathFunctions;
+    public int currentFunction = 0;
 
     public PathPipe(final Pipeline pipeline, final Function... pathFunctions) {
         super(pipeline);
@@ -20,12 +20,11 @@ public class PathPipe<S> extends MapPipe<S, Path> {
         if (null == this.pathFunctions || this.pathFunctions.length == 0)
             super.setFunction(Holder::getPath);
         else {
-            final AtomicInteger nextFunction = new AtomicInteger(0);
             super.setFunction(holder -> {
                 final Path path = new Path();
                 holder.getPath().forEach((a, b) -> {
-                    path.add(a, pathFunctions[nextFunction.get()].apply(b));
-                    nextFunction.set((nextFunction.get() + 1) % pathFunctions.length);
+                    path.add(a, this.pathFunctions[this.currentFunction].apply(b));
+                    this.currentFunction = (this.currentFunction + 1) % this.pathFunctions.length;
                 });
                 return path;
             });

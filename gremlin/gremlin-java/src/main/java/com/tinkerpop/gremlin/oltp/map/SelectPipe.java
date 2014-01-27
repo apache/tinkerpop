@@ -8,10 +8,10 @@ import com.tinkerpop.gremlin.Pipeline;
  */
 public class SelectPipe extends MapPipe<Object, Path> {
 
-    public SelectPipe(final Pipeline pipeline, final String... ases) {
+    public SelectPipe(final Pipeline pipeline, final String... asLabels) {
         super(pipeline, holder -> {
             final Path path = holder.getPath();
-            return ases.length == 0 ? path : path.subset(ases);
+            return asLabels.length == 0 ? path : path.subset(asLabels);
         });
     }
 }

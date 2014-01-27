@@ -55,7 +55,7 @@ public class VertexQueryPipe<E extends Element> extends FlatMapPipe<Vertex, E> {
         return this.queryBuilder;
     }
 
-    public Holder<E> processNextStart() {
+    protected Holder<E> processNextStart() {
         while (true) {
             if (this.counter > this.high) {
                 throw FastNoSuchElementException.instance();

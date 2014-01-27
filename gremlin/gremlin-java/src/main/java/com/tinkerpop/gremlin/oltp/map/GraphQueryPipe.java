@@ -6,14 +6,13 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.GraphQueryBuilder;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipeline;
-import com.tinkerpop.gremlin.oltp.AbstractPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.HolderIterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphQueryPipe extends AbstractPipe<Element, Element> {
+public class GraphQueryPipe extends FlatMapPipe<Element, Element> {
 
     public final Graph graph;
     public final GraphQueryBuilder queryBuilder;
@@ -40,8 +39,10 @@ public class GraphQueryPipe extends AbstractPipe<Element, Element> {
         }
     }
 
-    public Holder<Element> processNextStart() {
-        return this.starts.next();
+    protected Holder<Element> processNextStart() {
+        final Holder<Element> holder = this.starts.next();
+        holder.setFuture(this.getNextPipe().getAs());
+        return holder;
     }
 
     public String toString() {

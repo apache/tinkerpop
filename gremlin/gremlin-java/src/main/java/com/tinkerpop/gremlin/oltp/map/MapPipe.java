@@ -23,7 +23,7 @@ public class MapPipe<S, E> extends AbstractPipe<S, E> {
         this.function = function;
     }
 
-    public Holder<E> processNextStart() {
+    protected Holder<E> processNextStart() {
         while (true) {
             final Holder<S> holder = this.starts.next();
             holder.setFuture(this.getNextPipe().getAs());

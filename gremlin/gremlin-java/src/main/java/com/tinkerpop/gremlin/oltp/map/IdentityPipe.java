@@ -2,18 +2,13 @@ package com.tinkerpop.gremlin.oltp.map;
 
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipeline;
-import com.tinkerpop.gremlin.oltp.AbstractPipe;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdentityPipe<S> extends AbstractPipe<S, S> {
+public class IdentityPipe<S> extends MapPipe<S, S> {
 
     public IdentityPipe(final Pipeline pipeline) {
-        super(pipeline);
-    }
-
-    protected Holder<S> processNextStart() {
-        return this.starts.next();
+        super(pipeline, Holder::get);
     }
 }
