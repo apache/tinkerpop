@@ -32,9 +32,11 @@ import com.tinkerpop.gremlin.oltp.map.ValuePipe;
 import com.tinkerpop.gremlin.oltp.map.ValuesPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.AggregatePipe;
+import com.tinkerpop.gremlin.oltp.sideeffect.GroupByPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.GroupCountPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.LinkPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.SideEffectPipe;
+import com.tinkerpop.gremlin.util.FunctionRing;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.MapHelper;
 import com.tinkerpop.gremlin.util.SingleIterator;
@@ -310,6 +312,18 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new AggregatePipe<>(this, variable, preAggregateFunctions));
     }
 
+    public default Pipeline<S, E> groupBy(final String variable, final Function<E, ?> keyFunction, final Function<E, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
+        return this.addPipe(new GroupByPipe(this, variable, keyFunction, valueFunction, reduceFunction));
+    }
+
+    public default Pipeline<S, E> groupBy(final String variable, final Function<E, ?> keyFunction, final Function<E, ?> valueFunction) {
+        return this.addPipe(new GroupByPipe(this, variable, keyFunction, valueFunction));
+    }
+
+    public default Pipeline<S, E> groupBy(final String variable, final Function<E, ?> keyFunction) {
+        return this.addPipe(new GroupByPipe(this, variable, keyFunction));
+    }
+
     public default Pipeline<S, E> groupCount(final String variable, final Function<E, ?>... preGroupFunctions) {
         return this.addPipe(new GroupCountPipe<>(this, variable, preGroupFunctions));
     }
@@ -426,19 +440,39 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public default Map<Object, Long> groupCount(final Function<E, ?>... preGroupFunctions) {
         final Map<Object, Long> map = new HashMap<>();
-        int currentFunction = 0;
+        final FunctionRing functionRing = new FunctionRing(preGroupFunctions);
         try {
             while (true) {
-                if (preGroupFunctions.length == 0)
-                    MapHelper.incr(map, this.next(), 1l);
-                else {
-                    MapHelper.incr(map, preGroupFunctions[currentFunction].apply(this.next()), 1l);
-                    currentFunction = (currentFunction + 1) % preGroupFunctions.length;
-                }
+                MapHelper.incr(map, functionRing.next().apply(this.next()), 1l);
             }
         } catch (final NoSuchElementException e) {
         }
         return map;
+    }
+
+    public default Map<Object, ?> groupBy(final Function<E, ?> keyFunction) {
+        return groupBy(keyFunction, s -> (E) s, null);
+    }
+
+    public default Map<Object, ?> groupBy(final Function<E, ?> keyFunction, final Function<E, ?> valueFunction) {
+        return this.groupBy(keyFunction, valueFunction, null);
+    }
+
+    public default Map<Object, ?> groupBy(final Function<E, ?> keyFunction, final Function<E, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
+        final Map<Object, Collection<Object>> groupMap = new HashMap<>();
+        final Map<Object, Object> reduceMap = new HashMap<>();
+        try {
+            while (true) {
+                GroupByPipe.doGroup(this.next(), groupMap, (Function) keyFunction, (Function) valueFunction);
+            }
+        } catch (final NoSuchElementException e) {
+        }
+        if (null != reduceFunction) {
+            GroupByPipe.doReduce(groupMap, reduceMap, (Function) reduceFunction);
+            return reduceMap;
+        } else {
+            return groupMap;
+        }
     }
 
     public default <T> Tree<T> tree(final Function... branchFunctions) {

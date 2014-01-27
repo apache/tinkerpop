@@ -22,7 +22,7 @@ public class AggregatePipe<S> extends FlatMapPipe<S, S> {
     public AggregatePipe(final Pipeline pipeline, final String variable, final Function<S, ?>... preAggregateFunctions) {
         super(pipeline);
         this.functionRing = new FunctionRing<>(preAggregateFunctions);
-        this.aggregate = GremlinHelper.getOrCreate(this.pipeline, variable, () -> new ArrayList<>());
+        this.aggregate = GremlinHelper.getOrCreate(this.pipeline, variable, ArrayList::new);
         this.setFunction(holder -> {
             final List<S> list = new ArrayList<>();
             list.add(holder.get());
