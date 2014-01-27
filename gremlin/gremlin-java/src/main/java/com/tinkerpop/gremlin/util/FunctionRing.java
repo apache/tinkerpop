@@ -24,4 +24,8 @@ public class FunctionRing<A, B> {
             return nextFunction;
         }
     }
+
+    public boolean hasFunctions() {
+        return this.functions.length > 0;
+    }
 }

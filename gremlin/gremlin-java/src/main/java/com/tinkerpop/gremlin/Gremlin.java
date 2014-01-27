@@ -81,6 +81,13 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         return this;
     }
 
+    public Gremlin<S, E> with(final Object... keyValues) {
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            this.variables.put((String) keyValues[i], keyValues[i + 1]);
+        }
+        return this;
+    }
+
     public Gremlin<Vertex, Vertex> V() {
         this.addPipe(new GraphQueryPipe(this, this.graph, new GraphQueryBuilder(), Vertex.class));
         return (Gremlin<Vertex, Vertex>) this;

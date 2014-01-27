@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
+import com.tinkerpop.gremlin.util.As;
 import org.junit.Test;
 
 import java.util.Collection;
@@ -64,8 +65,7 @@ public class GremlinTest {
         Gremlin.of(g)
                 .V().as("x")
                 .out().as("y")
-                .select("x", "y")
-                .project(v -> ((Vertex) v).getValue("name"))
+                .select(As.of("x", "y"), v -> ((Vertex) v).getValue("name"))
                 .sideEffect(System.out::println).iterate();
     }
 
@@ -79,7 +79,7 @@ public class GremlinTest {
                         Gremlin.of().as("b").in("created").as("c"),
                         Gremlin.of().as("c").has("age", 29),
                         Gremlin.of().as("c").out("knows").as("d"))
-                .select("a", "d").project(v -> ((Vertex) v).getValue("name")).forEach(System.out::println);
+                .select(As.of("a", "d"), v -> ((Vertex) v).getValue("name")).forEach(System.out::println);
 
         System.out.println("--------------");
 

@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -22,7 +23,9 @@ public class AggregateTest extends com.tinkerpop.gremlin.test.sideeffect.Aggrega
 
     @Test
     public void g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX() {
-        super.g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(Gremlin.of(g).v(1).aggregate("x").out("created").in("created").except("x"));
+        super.g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(
+                Gremlin.of(g).with("x", new HashSet<>())
+                        .v(1).aggregate("x").out("created").in("created").except("x"));
     }
 
     @Test
