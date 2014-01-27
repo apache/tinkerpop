@@ -30,6 +30,9 @@ public class ExceptionCoverageTest {
                 Vertex.Exceptions.class
         };
 
+        // this is a list of exceptions that are "excused" from the coverage tests.  in most cases there should only
+        // be exceptions ignored if they are "base" exception methods that are used to compose other exceptions,
+        // like the first set listed (and labelled as such) below in the list assignments.
         final Set<String> ignore = new HashSet<String>() {{
             // these exceptions is not used directly...they are called by other exception methods.
             add("com.tinkerpop.blueprints.Annotations$Exceptions#annotationKeyIsReserved");
@@ -48,7 +51,6 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.blueprints.Property$Exceptions#dataTypeOfPropertyValueNotSupported");
             add("com.tinkerpop.blueprints.Transaction$Exceptions#transactionMustBeOpenToReadWrite");
             add("com.tinkerpop.blueprints.Transaction$Exceptions#openTransactionsOnClose");
-            add("com.tinkerpop.blueprints.Vertex$Exceptions#userSuppliedIdsNotSupported"); // ???
         }};
 
         final Set<String> implementedExceptions = new HashSet<>();

@@ -97,6 +97,9 @@ public class ExceptionConsistencyTest {
     @ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
             "userSuppliedIdsNotSupported"
     })
+    @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
+            "userSuppliedIdsNotSupported"
+    })
     public static class AddElementWithIdTest extends AbstractBlueprintsTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
@@ -105,7 +108,7 @@ public class ExceptionConsistencyTest {
                 this.g.addVertex(Property.Key.ID, "");
                 fail("Call to addVertex should have thrown an exception when ID was specified as it is not supported");
             } catch (Exception ex) {
-                final Exception expectedException = Edge.Exceptions.userSuppliedIdsNotSupported();
+                final Exception expectedException = Vertex.Exceptions.userSuppliedIdsNotSupported();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
