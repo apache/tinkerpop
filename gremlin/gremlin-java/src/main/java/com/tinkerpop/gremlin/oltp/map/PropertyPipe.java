@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.Pipeline;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertyPipe<E2> extends MapPipe<Element, Property<E2>> {
+public class PropertyPipe<E> extends MapPipe<Element, Property<E>> {
 
     public PropertyPipe(final Pipeline pipeline, final String key) {
         super(pipeline, holder -> holder.get().getProperty(key));

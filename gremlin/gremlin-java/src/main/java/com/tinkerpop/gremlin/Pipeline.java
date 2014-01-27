@@ -26,6 +26,7 @@ import com.tinkerpop.gremlin.oltp.map.MatchPipe;
 import com.tinkerpop.gremlin.oltp.map.OrderPipe;
 import com.tinkerpop.gremlin.oltp.map.PathPipe;
 import com.tinkerpop.gremlin.oltp.map.PropertyPipe;
+import com.tinkerpop.gremlin.oltp.map.PropertyValuePipe;
 import com.tinkerpop.gremlin.oltp.map.SelectPipe;
 import com.tinkerpop.gremlin.oltp.map.ShufflePipe;
 import com.tinkerpop.gremlin.oltp.map.ValuePipe;
@@ -181,7 +182,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default <E2> Pipeline<S, E2> value() {
-        return this.addPipe(new MapPipe<Property, E2>(this, p -> (E2) (p.get()).get()));
+        return this.addPipe(new PropertyValuePipe<>(this));
     }
 
     public default <E2> Pipeline<S, E2> value(final String key) {
