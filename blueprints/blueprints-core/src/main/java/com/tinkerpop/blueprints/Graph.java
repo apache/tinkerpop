@@ -7,6 +7,7 @@ import com.tinkerpop.blueprints.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 import java.util.Optional;
 
 /**
@@ -30,6 +31,16 @@ public interface Graph extends AutoCloseable {
     }
 
     public Vertex addVertex(final Object... keyValues);
+
+    public default Optional<Vertex> v(final Object id) {
+        final Iterator<Vertex> itty = this.query().ids(id).vertices().iterator();
+        return itty.hasNext() ? Optional.of(itty.next()) : Optional.empty();
+    }
+
+    public default Optional<Edge> e(final Object id) {
+        final Iterator<Edge> itty = this.query().ids(id).edges().iterator();
+        return itty.hasNext() ? Optional.of(itty.next()) : Optional.empty();
+    }
 
     public GraphQuery query();
 

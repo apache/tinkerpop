@@ -10,10 +10,12 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
+import com.tinkerpop.gremlin.oltp.filter.ExceptPipe;
 import com.tinkerpop.gremlin.oltp.filter.FilterPipe;
 import com.tinkerpop.gremlin.oltp.filter.HasPipe;
 import com.tinkerpop.gremlin.oltp.filter.IntervalPipe;
 import com.tinkerpop.gremlin.oltp.filter.RangePipe;
+import com.tinkerpop.gremlin.oltp.filter.RetainPipe;
 import com.tinkerpop.gremlin.oltp.filter.SimplePathPipe;
 import com.tinkerpop.gremlin.oltp.map.BackPipe;
 import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
@@ -32,6 +34,7 @@ import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.AggregatePipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.GroupCountPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.LinkPipe;
+import com.tinkerpop.gremlin.oltp.sideeffect.SideEffectPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.MapHelper;
 import com.tinkerpop.gremlin.util.SingleIterator;
@@ -240,7 +243,15 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> except(final String variable) {
-        return this.addPipe(new FilterPipe<E>(this, o -> !this.<Collection<E>>get(variable).contains(o.get())));
+        return this.addPipe(new ExceptPipe<>(this, variable));
+    }
+
+    public default Pipeline<S, E> except(final E exceptionObject) {
+        return this.addPipe(new ExceptPipe<>(this, exceptionObject));
+    }
+
+    public default Pipeline<S, E> except(final Collection<E> exceptionCollection) {
+        return this.addPipe(new ExceptPipe<>(this, exceptionCollection));
     }
 
     public default Pipeline<S, Element> has(final String key) {
@@ -273,6 +284,18 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new RangePipe<>(this, low, high));
     }
 
+    public default Pipeline<S, E> retain(final String variable) {
+        return this.addPipe(new RetainPipe<>(this, variable));
+    }
+
+    public default Pipeline<S, E> retain(final E retainObject) {
+        return this.addPipe(new RetainPipe<>(this, retainObject));
+    }
+
+    public default Pipeline<S, E> retain(final Collection<E> retainCollection) {
+        return this.addPipe(new RetainPipe<>(this, retainCollection));
+    }
+
     public default Pipeline<S, E> simplePath() {
         return this.addPipe(new SimplePathPipe<>(this));
     }
@@ -280,10 +303,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     public default Pipeline<S, E> sideEffect(final Consumer<Holder<E>> consumer) {
-        return this.addPipe(new FilterPipe<E>(this, o -> {
-            consumer.accept(o);
-            return true;
-        }));
+        return this.addPipe(new SideEffectPipe<>(this, consumer));
     }
 
     public default Pipeline<S, E> aggregate(final String variable, final Function<E, ?>... preAggregateFunctions) {

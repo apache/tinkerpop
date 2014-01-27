@@ -8,7 +8,7 @@ import java.util.function.Function;
 public class FunctionRing<A, B> {
 
     public Function<A, B>[] functions;
-    public int currentFunction = 0;
+    private int currentFunction = -1;
     private static final Function IDENTITY = a -> a;
 
     public FunctionRing(final Function... functions) {
@@ -19,9 +19,8 @@ public class FunctionRing<A, B> {
         if (this.functions.length == 0) {
             return IDENTITY;
         } else {
-            final Function<A, B> nextFunction = this.functions[this.currentFunction];
             this.currentFunction = (this.currentFunction + 1) % this.functions.length;
-            return nextFunction;
+            return this.functions[this.currentFunction];
         }
     }
 

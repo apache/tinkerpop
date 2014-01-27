@@ -16,21 +16,20 @@ import java.util.function.Function;
  */
 public class AggregatePipe<S> extends FlatMapPipe<S, S> {
 
-    private final String variable;
     public final FunctionRing<S, ?> functionRing;
+    final Collection aggregate;
 
     public AggregatePipe(final Pipeline pipeline, final String variable, final Function<S, ?>... preAggregateFunctions) {
         super(pipeline);
-        this.variable = variable;
         this.functionRing = new FunctionRing<>(preAggregateFunctions);
+        this.aggregate = GremlinHelper.getOrCreate(this.pipeline, variable, () -> new ArrayList<>());
         this.setFunction(holder -> {
-            final Collection aggregate = GremlinHelper.getOrCreate(this.pipeline, this.variable, () -> new ArrayList<>());
             final List<S> list = new ArrayList<>();
             list.add(holder.get());
-            aggregate.add(this.functionRing.next().apply(holder.get()));
+            this.aggregate.add(this.functionRing.next().apply(holder.get()));
             StreamFactory.stream(this.getPreviousPipe()).forEach(nextHolder -> {
                 list.add(nextHolder.get());
-                aggregate.add(this.functionRing.next().apply(nextHolder.get()));
+                this.aggregate.add(this.functionRing.next().apply(nextHolder.get()));
             });
             return list.iterator();
         });
