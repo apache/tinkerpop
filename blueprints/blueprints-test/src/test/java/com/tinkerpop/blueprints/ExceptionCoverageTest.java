@@ -38,12 +38,14 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.blueprints.Annotations$Exceptions#annotationKeyIsReserved");
             add("com.tinkerpop.blueprints.Property$Exceptions#propertyKeyIsReserved");
 
+            // this is a general exception to be used as needed.  it is not explicitly tested:
+            add("com.tinkerpop.blueprints.Graph$Exceptions#argumentCanNotBeNull");
+
             // todo: review why these are not covered in the tests
             add("com.tinkerpop.blueprints.Annotations$Exceptions#dataTypeOfAnnotationValueNotSupported");
             add("com.tinkerpop.blueprints.Graph$Exceptions#transactionsNotSupported");
             add("com.tinkerpop.blueprints.Graph$Exceptions#graphComputerNotSupported");
             add("com.tinkerpop.blueprints.Graph$Exceptions#graphStrategyNotSupported");
-            add("com.tinkerpop.blueprints.Graph$Exceptions#argumentCanNotBeNull");
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#constantComputeKeyHasAlreadyBeenSet");
