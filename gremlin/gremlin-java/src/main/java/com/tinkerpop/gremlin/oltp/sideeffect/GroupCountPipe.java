@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.oltp.sideeffect;
 
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.oltp.map.MapPipe;
+import com.tinkerpop.gremlin.util.FunctionRing;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.MapHelper;
 
@@ -15,21 +16,16 @@ import java.util.function.Function;
 public class GroupCountPipe<S> extends MapPipe<S, S> {
 
     public final Map<Object, Long> map;
-    public final Function<S, ?>[] preGroupFunctions;
-    public int currentFunction = 0;
+    public FunctionRing<S, ?> functionRing;
 
     public GroupCountPipe(final Pipeline pipeline, final String variable, final Function<S, ?>... preGroupFunctions) {
         super(pipeline);
-        this.preGroupFunctions = preGroupFunctions;
+        this.functionRing = new FunctionRing<>(preGroupFunctions);
         this.map = GremlinHelper.getOrCreate(this.pipeline, variable, HashMap<Object, Long>::new);
         this.setFunction(holder -> {
-            if (this.preGroupFunctions.length == 0)
-                MapHelper.incr(this.map, holder.get(), 1l);
-            else {
-                MapHelper.incr(this.map, this.preGroupFunctions[this.currentFunction].apply(holder.get()), 1l);
-                this.currentFunction = (this.currentFunction + 1) % this.preGroupFunctions.length;
-            }
-            return holder.get();
+            final S s = holder.get();
+            MapHelper.incr(this.map, this.functionRing.next().apply(s), 1l);
+            return s;
         });
     }
 }
