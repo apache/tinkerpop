@@ -481,19 +481,14 @@ public interface Pipeline<S, E> extends Iterator<E> {
         Tree<Object> depth = tree;
         HolderOptimizer.doPathTracking(this);
         final Pipe endPipe = GremlinHelper.getEnd(this);
-        int currentFunction = (branchFunctions.length > 0) ? 0 : -1;
+        final FunctionRing functionRing = new FunctionRing(branchFunctions);
         try {
             while (true) {
                 final Path path = ((Holder) endPipe.next()).getPath();
                 for (int i = 0; i < path.size(); i++) {
-                    Object object = path.get(i);
-                    if (-1 != currentFunction) {
-                        object = branchFunctions[currentFunction].apply(object);
-                        currentFunction = (currentFunction + 1) % branchFunctions.length;
-                    }
+                    final Object object = functionRing.next().apply(path.get(i));
                     if (!depth.containsKey(object))
                         depth.put(object, new Tree<>());
-
                     depth = depth.get(object);
                 }
                 depth = tree;

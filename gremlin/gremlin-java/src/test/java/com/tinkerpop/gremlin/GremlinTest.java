@@ -152,7 +152,7 @@ public class GremlinTest {
         Gremlin<Vertex, Vertex> g = (Gremlin) Gremlin.of(graph);
         assertEquals(3l, g.V().range(0, 2).count());
 
-        g.v(1).out().forEach(System.out::println);
+        //g.v(1).out().forEach(System.out::println);
         System.out.println(g.v(1).out().tree(o -> ((Vertex) o).getValue("name")));
 
         Gremlin.of(graph).V().out().remove();
