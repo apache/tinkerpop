@@ -22,6 +22,7 @@ import com.tinkerpop.gremlin.oltp.map.BackPipe;
 import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
 import com.tinkerpop.gremlin.oltp.map.FlatMapPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
+import com.tinkerpop.gremlin.oltp.map.JumpPipe;
 import com.tinkerpop.gremlin.oltp.map.MapPipe;
 import com.tinkerpop.gremlin.oltp.map.MatchPipe;
 import com.tinkerpop.gremlin.oltp.map.OrderPipe;
@@ -41,7 +42,6 @@ import com.tinkerpop.gremlin.oltp.sideeffect.SideEffectPipe;
 import com.tinkerpop.gremlin.util.FunctionRing;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.MapHelper;
-import com.tinkerpop.gremlin.util.SingleIterator;
 import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.util.structures.Tree;
 
@@ -349,21 +349,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> jump(final String as, final Predicate<Holder<E>> ifPredicate, final Predicate<Holder<E>> emitPredicate) {
-        final Pipe<?, ?> jumpPipe = GremlinHelper.asExists(as, this) ? GremlinHelper.getAs(as, this) : null;
-        return this.addPipe(new MapPipe<E, E>(this, holder -> {
-            if (null != jumpPipe)
-                holder.incrLoops();
-            if (ifPredicate.test(holder)) {
-                holder.setFuture(as);
-                if (null == jumpPipe)
-                    GremlinHelper.getAs(as, getPipeline()).addStarts((Iterator) new SingleIterator<>(holder));
-                else
-                    jumpPipe.addStarts((Iterator) new SingleIterator<>(holder));
-                return (E) (emitPredicate.test(holder) ? holder.get() : Pipe.NO_OBJECT);
-            } else {
-                return (E) holder.get();
-            }
-        }));
+        return this.addPipe(new JumpPipe<>(this, as, ifPredicate, emitPredicate));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
