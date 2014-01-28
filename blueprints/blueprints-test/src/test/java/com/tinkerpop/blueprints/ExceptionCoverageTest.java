@@ -52,9 +52,8 @@ public class ExceptionCoverageTest {
         }};
 
         // implemented exceptions are the classes that potentially contains exception consistency checks.
-        final Set<String> implementedExceptions = Stream.of(ExceptionConsistencyTest.class.getDeclaredClasses(),
-                                                            FeatureSupportTest.class.getDeclaredClasses())
-            .flatMap(classes->Stream.of(classes))
+        final Set<String> implementedExceptions = Stream.concat(Stream.of(ExceptionConsistencyTest.class.getDeclaredClasses()),
+                                                                Stream.of(FeatureSupportTest.class.getDeclaredClasses()))
             .flatMap(c -> Stream.of(c.getAnnotationsByType(ExceptionCoverage.class)))
             .flatMap(ec -> Stream.of(ec.methods()).map(m -> String.format("%s#%s", ec.exceptionClass().getName(), m)))
             .collect(Collectors.<String>toSet());
