@@ -33,7 +33,12 @@ public class Settings {
     /**
      * Size of the worker thread pool.   Defaults to 16
      */
-    public int threadPoolWorker = 16;
+    public int threadPoolWorker = 4;
+
+    /**
+     * Size of the Gremlin thread pool.   Defaults to 8
+     */
+    public int gremlinPool = 8;
 
     /**
      * Size of the boss thread pool.  Defaults to 1.

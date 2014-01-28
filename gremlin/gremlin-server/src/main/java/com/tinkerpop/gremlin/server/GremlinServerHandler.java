@@ -44,13 +44,10 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
+class GremlinServerHandler extends SimpleChannelInboundHandler<RequestMessage> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
-    static final Meter requestMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "requests"));
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
-    private static final String websocketPath = "/gremlin";
 
-    private WebSocketServerHandshaker handshaker;
     private final Settings settings;
     private final Graphs graphs;
 
@@ -63,139 +60,39 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     @Override
-    public void channelRead0(final ChannelHandlerContext ctx, final Object msg) throws Exception {
-        if (msg instanceof FullHttpRequest) {
-            handleHttpRequest(ctx, (FullHttpRequest) msg);
-        } else if (msg instanceof WebSocketFrame) {
-            handleWebSocketFrame(ctx, (WebSocketFrame) msg);
+    public void channelRead0(final ChannelHandlerContext ctx, final RequestMessage msg) throws Exception {
+        try {
+            // choose a processor to do the work based on the request message.
+            final Optional<OpProcessor> processor = OpLoader.getProcessor(msg.processor);
+            final Context gremlinServerContext = new Context(msg, ctx, settings, graphs, gremlinExecutor);
+
+            if (processor.isPresent()) {
+                // the processor is known so use it to evaluate the message
+                processor.get().select(gremlinServerContext).accept(gremlinServerContext);
+            } else {
+                // invalid op processor selected so write back an error by way of OpProcessorException.
+                final String errorMessage = String.format("Invalid OpProcessor requested [%s]", msg.processor);
+                final MessageSerializer serializer = MessageSerializer.select(
+                        msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
+                        MessageSerializer.DEFAULT_RESULT_SERIALIZER);
+                throw new OpProcessorException(errorMessage, serializer.serializeResult(msg, ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, gremlinServerContext));
+            }
+        } catch (OpProcessorException ope) {
+            errorMeter.mark();
+            logger.warn(ope.getMessage(), ope);
+            ctx.channel().write(ope.getFrame());
+        } finally {
+            // sending the requestId acts as a termination message for this request.
+            final ByteBuf uuidBytes = Unpooled.directBuffer(16);
+            uuidBytes.writeLong(msg.requestId.getMostSignificantBits());
+            uuidBytes.writeLong(msg.requestId.getLeastSignificantBits());
+            ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
         }
     }
 
     @Override
     public void channelReadComplete(final ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
-    }
-
-    private void handleHttpRequest(final ChannelHandlerContext ctx, final FullHttpRequest req) throws Exception {
-        // Handle a bad request.
-        if (!req.getDecoderResult().isSuccess()) {
-            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST));
-            return;
-        }
-
-        // Allow only GET methods.
-        if (req.getMethod() != GET) {
-            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, FORBIDDEN));
-            return;
-        }
-
-        final String uri = req.getUri();
-        if ("/".equals(uri)) {
-            ByteBuf content = GremlinServerIndexPage.getContent(getWebSocketLocation(req));
-            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
-
-            res.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-            setContentLength(res, content.readableBytes());
-
-            sendHttpResponse(ctx, req, res);
-            return;
-        }
-
-        if ("/favicon.ico".equals(req.getUri())) {
-            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND);
-            sendHttpResponse(ctx, req, res);
-            return;
-        }
-
-        if (uri.startsWith(websocketPath)) {
-            // Web socket handshake
-            final WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
-                    getWebSocketLocation(req), null, false);
-            handshaker = wsFactory.newHandshaker(req);
-            if (handshaker == null) {
-                WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
-            } else {
-                handshaker.handshake(ctx.channel(), req);
-            }
-        }
-    }
-
-    private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) {
-        requestMeter.mark();
-
-        // Check for closing frame
-        if (frame instanceof CloseWebSocketFrame)
-            handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
-        else if (frame instanceof PingWebSocketFrame)
-            ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
-        else if (frame instanceof PongWebSocketFrame) { } // nothing to do
-        else if (frame instanceof TextWebSocketFrame) {
-            final String request = ((TextWebSocketFrame) frame).text();
-
-            // message consists of two parts.  the first part has the mime type of the incoming message and the
-            // second part is the message itself.  these two parts are separated by a "|-". if there aren't two parts
-            // assume application/json and that the entire message is that format (i.e. there is no "mimetype|-")
-            final String[] parts = segmentMessage(request);
-            final RequestMessage requestMessage = MessageSerializer.select(parts[0], MessageSerializer.DEFAULT_REQUEST_SERIALIZER)
-                    .deserializeRequest(parts[1]).orElse(RequestMessage.INVALID);
-
-            try {
-                // choose a processor to do the work based on the request message.
-                final Optional<OpProcessor> processor = OpLoader.getProcessor(requestMessage.processor);
-                final Context gremlinServerContext = new Context(requestMessage, ctx, settings, graphs, gremlinExecutor);
-
-                if (processor.isPresent()) {
-                    // the processor is known so use it to evaluate the message
-                    processor.get().select(gremlinServerContext).accept(gremlinServerContext);
-                } else {
-                    // invalid op processor selected so write back an error by way of OpProcessorException.
-                    final String msg = String.format("Invalid OpProcessor requested [%s]", requestMessage.processor);
-                    final MessageSerializer serializer = MessageSerializer.select(
-                            requestMessage.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
-                            MessageSerializer.DEFAULT_RESULT_SERIALIZER);
-                    throw new OpProcessorException(msg, serializer.serializeResult(msg, ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, gremlinServerContext));
-                }
-            } catch (OpProcessorException ope) {
-                errorMeter.mark();
-                logger.warn(ope.getMessage(), ope);
-                ctx.channel().write(ope.getFrame());
-            } finally {
-                // sending the requestId acts as a termination message for this request.
-                final ByteBuf uuidBytes = Unpooled.directBuffer(16);
-                uuidBytes.writeLong(requestMessage.requestId.getMostSignificantBits());
-                uuidBytes.writeLong(requestMessage.requestId.getLeastSignificantBits());
-                ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
-            }
-        } else {
-            // gets caught by the exceptionCaught method on this handler.
-            throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
-                    .getName()));
-        }
-    }
-
-    private static String[] segmentMessage(final String msg) {
-        final int splitter = msg.indexOf("|-");
-        if (splitter == -1)
-            return new String[] {"application/json", msg};
-
-        return new String[] {msg.substring(0, splitter), msg.substring(splitter + 2)};
-    }
-
-    private static void sendHttpResponse(final ChannelHandlerContext ctx,
-                                         final FullHttpRequest req, final FullHttpResponse res) {
-        // Generate an error page if response getStatus code is not OK (200).
-        if (res.getStatus().code() != 200) {
-            final ByteBuf buf = Unpooled.copiedBuffer(res.getStatus().toString(), CharsetUtil.UTF_8);
-            res.content().writeBytes(buf);
-            buf.release();
-            setContentLength(res, res.content().readableBytes());
-        }
-
-        // Send the response and close the connection if necessary.
-        final ChannelFuture f = ctx.channel().writeAndFlush(res);
-        if (!isKeepAlive(req) || res.getStatus().code() != 200) {
-            f.addListener(ChannelFutureListener.CLOSE);
-        }
     }
 
     @Override
@@ -205,32 +102,5 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<Object> {
         logger.error("Message handler caught an exception fatal to this request. Closing connection.", cause);
         errorMeter.mark();
         ctx.close();
-    }
-
-    private String getWebSocketLocation(FullHttpRequest req) {
-        return "ws://" + req.headers().get(HOST) + websocketPath;
-    }
-
-    private static final class GremlinServerIndexPage {
-        private GremlinServerIndexPage() {}
-
-        public static ByteBuf getContent(String webSocketLocation) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append("<html style=\"background-color:#111111\">");
-            sb.append("<head><meta charset=\"UTF-8\"><title>Gremlin Server</title></head>");
-            sb.append("<body>");
-            sb.append("<div align=\"center\"><a href=\"http://tinkerpop.com\"><img style=\"width:300px\" src=\"https://raw2.github.com/tinkerpop/homepage/master/images/tinkerpop3-splash.png\"/></a></div>");
-            sb.append("<div align=\"center\">");
-            sb.append("<h3 style=\"color:#B5B5B5\">Gremlin Server - " + com.tinkerpop.gremlin.Tokens.VERSION + "</h3>");
-            sb.append("<p>");
-            sb.append(webSocketLocation);
-            sb.append("</p>");
-            sb.append("</div>");
-            sb.append("</body>");
-            sb.append("</html>");
-
-
-            return Unpooled.copiedBuffer(sb.toString(), CharsetUtil.US_ASCII);
-        }
     }
 }

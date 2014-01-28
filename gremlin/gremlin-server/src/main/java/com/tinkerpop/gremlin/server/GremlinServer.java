@@ -10,7 +10,13 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,9 +136,14 @@ public class GremlinServer {
         @Override
         public void initChannel(final SocketChannel ch) throws Exception {
             final ChannelPipeline pipeline = ch.pipeline();
-            pipeline.addLast("codec-http", new HttpServerCodec());
+            pipeline.addLast("http-request-decoder", new HttpRequestDecoder());
             pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-            pipeline.addLast("handler", new GremlinServerHandler(settings, graphs.get(), gremlinExecutor));
+            pipeline.addLast("http-response-encoder", new HttpResponseEncoder());
+            pipeline.addLast("request-handler", new WebSocketServerProtocolHandler("/gremlin"));
+            pipeline.addLast("gremlin-decoder", new GremlinRequestDecoder());
+
+            final EventExecutorGroup gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool);
+            pipeline.addLast(gremlinGroup, "gremlin-handler", new GremlinServerHandler(settings, graphs.get(), gremlinExecutor));
         }
     }
 }
