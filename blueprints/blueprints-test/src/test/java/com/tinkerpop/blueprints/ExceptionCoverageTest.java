@@ -52,15 +52,12 @@ public class ExceptionCoverageTest {
         }};
 
         // implemented exceptions are the classes that potentially contains exception consistency checks.
-        final Set<String> implementedExceptions = new HashSet<>();
-        final Set<Class> exceptionConcistencyTests = Stream.of(ExceptionConsistencyTest.class.getDeclaredClasses(),
-                                                               FeatureSupportTest.class.getDeclaredClasses())
-                .flatMap(classes->Stream.of(classes)).collect(Collectors.toSet());
-
-        exceptionConcistencyTests.stream()
-                .flatMap(c -> Stream.of(c.getAnnotationsByType(ExceptionCoverage.class)))
-                .map(c->(ExceptionCoverage) c)
-                .forEach(ec -> implementedExceptions.addAll(Stream.of(ec.methods()).map(m -> String.format("%s#%s", ec.exceptionClass().getName(), m)).collect(Collectors.<String>toList())));
+        final Set<String> implementedExceptions = Stream.of(ExceptionConsistencyTest.class.getDeclaredClasses(),
+                                                            FeatureSupportTest.class.getDeclaredClasses())
+            .flatMap(classes->Stream.of(classes))
+            .flatMap(c -> Stream.of(c.getAnnotationsByType(ExceptionCoverage.class)))
+            .flatMap(ec -> Stream.of(ec.methods()).map(m -> String.format("%s#%s", ec.exceptionClass().getName(), m)))
+            .collect(Collectors.<String>toSet());
 
         Stream.of(blueprintsExceptions).flatMap(c -> Stream.of(c.getDeclaredMethods()).map(m -> String.format("%s#%s", c.getName(), m.getName())))
                 .filter(s -> !ignore.contains(s))
