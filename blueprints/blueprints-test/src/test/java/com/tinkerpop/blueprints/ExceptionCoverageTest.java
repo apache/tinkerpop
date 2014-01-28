@@ -18,6 +18,8 @@ import static org.junit.Assert.assertTrue;
 public class ExceptionCoverageTest {
     @Test
     public void shouldCoverAllExceptionsInTests() {
+
+        // these are the classes that have Exceptions that need to be checked.
         final Class[] blueprintsExceptions = {
                 AnnotatedList.Exceptions.class,
                 Annotations.Exceptions.class,
@@ -57,6 +59,8 @@ public class ExceptionCoverageTest {
             .flatMap(ec -> Stream.of(ec.methods()).map(m -> String.format("%s#%s", ec.exceptionClass().getName(), m)))
             .collect(Collectors.<String>toSet());
 
+        // evaluate each of the blueprints exceptions and find the list of exception methods...assert them against
+        // the list of implementedExceptions to make sure they are covered.
         Stream.of(blueprintsExceptions).flatMap(c -> Stream.of(c.getDeclaredMethods()).map(m -> String.format("%s#%s", c.getName(), m.getName())))
                 .filter(s -> !ignore.contains(s))
                 .forEach(s -> {
