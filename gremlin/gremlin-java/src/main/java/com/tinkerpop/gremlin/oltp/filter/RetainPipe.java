@@ -11,7 +11,7 @@ public class RetainPipe<S> extends FilterPipe<S> {
 
     public RetainPipe(final Pipeline pipeline, final String variable) {
         super(pipeline);
-        final Object temp = this.pipeline.get(variable);
+        final Object temp = this.pipeline.memory().get(variable);
         if (temp instanceof Collection)
             this.setPredicate(holder -> ((Collection) temp).contains(holder.get()));
         else

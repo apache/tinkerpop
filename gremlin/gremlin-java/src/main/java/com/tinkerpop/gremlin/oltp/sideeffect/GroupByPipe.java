@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.oltp.sideeffect;
 
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.oltp.map.MapPipe;
-import com.tinkerpop.gremlin.util.GremlinHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +23,7 @@ public class GroupByPipe<S, K, V, R> extends MapPipe<S, S> {
 
     public GroupByPipe(final Pipeline pipeline, final String variable, final Function<S, K> keyFunction, final Function<S, V> valueFunction, final Function<Collection<V>, R> reduceFunction) {
         super(pipeline);
-        this.groupMap = GremlinHelper.getOrCreate(this.pipeline, variable, HashMap<K, Collection<V>>::new);
+        this.groupMap = this.pipeline.memory().getOrCreate(variable, HashMap<K, Collection<V>>::new);
         this.reduceMap = new HashMap<>();
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction == null ? s -> (V) s : valueFunction;
@@ -33,7 +32,7 @@ public class GroupByPipe<S, K, V, R> extends MapPipe<S, S> {
             doGroup(holder.get(), this.groupMap, this.keyFunction, this.valueFunction);
             if (null != reduceFunction && !this.getPreviousPipe().hasNext()) {
                 doReduce(this.groupMap, this.reduceMap, this.reduceFunction);
-                this.pipeline.set(variable, this.reduceMap);
+                this.pipeline.memory().set(variable, this.reduceMap);
             }
             return holder.get();
         });
