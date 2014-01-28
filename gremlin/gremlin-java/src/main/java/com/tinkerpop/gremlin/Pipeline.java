@@ -54,7 +54,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -66,11 +65,7 @@ import java.util.function.Supplier;
  */
 public interface Pipeline<S, E> extends Iterator<E> {
 
-    public <T> T get(final String variable);
-
-    public <T> void set(final String variable, T t);
-
-    public Set<String> getVariables();
+    public PipelineMemory memory();
 
     public Pipeline<Vertex, Vertex> V();
 
@@ -422,7 +417,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
         }
     }
 
-    public default Map<Object, Long> groupCount(final Function<E, ?>... preGroupFunctions) {
+    public default <K> Map<K, Long> groupCount(final Function<E, ?>... preGroupFunctions) {
         final Map<Object, Long> map = new HashMap<>();
         final FunctionRing functionRing = new FunctionRing(preGroupFunctions);
         try {
@@ -431,18 +426,18 @@ public interface Pipeline<S, E> extends Iterator<E> {
             }
         } catch (final NoSuchElementException e) {
         }
-        return map;
+        return (Map<K, Long>) map;
     }
 
-    public default Map<Object, ?> groupBy(final Function<E, ?> keyFunction) {
-        return groupBy(keyFunction, s -> (E) s, null);
+    public default <K, V> Map<K, V> groupBy(final Function<E, ?> keyFunction) {
+        return (Map<K, V>) groupBy(keyFunction, s -> s, null);
     }
 
-    public default Map<Object, ?> groupBy(final Function<E, ?> keyFunction, final Function<E, ?> valueFunction) {
+    public default <K, V> Map<K, V> groupBy(final Function<E, ?> keyFunction, final Function<E, ?> valueFunction) {
         return this.groupBy(keyFunction, valueFunction, null);
     }
 
-    public default Map<Object, ?> groupBy(final Function<E, ?> keyFunction, final Function<E, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
+    public default <K, V> Map<K, V> groupBy(final Function<E, ?> keyFunction, final Function<E, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
         final Map<Object, Collection<Object>> groupMap = new HashMap<>();
         final Map<Object, Object> reduceMap = new HashMap<>();
         try {
@@ -453,9 +448,9 @@ public interface Pipeline<S, E> extends Iterator<E> {
         }
         if (null != reduceFunction) {
             GroupByPipe.doReduce(groupMap, reduceMap, (Function) reduceFunction);
-            return reduceMap;
+            return (Map<K, V>) reduceMap;
         } else {
-            return groupMap;
+            return (Map<K, V>) groupMap;
         }
     }
 

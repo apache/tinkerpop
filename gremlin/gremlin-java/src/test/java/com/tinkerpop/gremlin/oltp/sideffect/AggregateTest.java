@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;
 
 import java.util.HashSet;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,11 +29,11 @@ public class AggregateTest extends com.tinkerpop.gremlin.test.sideeffect.Aggrega
 
     @Test
     public void g_V_valueXnameX_aggregateXaX_iterate_getXaX() {
-        super.g_V_valueXnameX_aggregateXaX_iterate_getXaX((List) Gremlin.of(g).V().value("name").aggregate("x").iterate().get("x"));
+        super.g_V_valueXnameX_aggregateXaX_iterate_getXaX(Gremlin.of(g).V().value("name").aggregate("x").iterate().memory().get("x"));
     }
 
     @Test
     public void g_V_aggregateXa_nameX_iterate_getXaX() {
-        super.g_V_aggregateXa_nameX_iterate_getXaX((List) Gremlin.of(g).V().aggregate("a", v -> v.getValue("name")).iterate().get("a"));
+        super.g_V_aggregateXa_nameX_iterate_getXaX(Gremlin.of(g).V().aggregate("a", v -> v.getValue("name")).iterate().memory().get("a"));
     }
 }

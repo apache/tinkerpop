@@ -5,8 +5,6 @@ import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.Gremlin;
 import org.junit.Test;
 
-import java.util.Map;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -21,21 +19,21 @@ public class GroupByTest extends com.tinkerpop.gremlin.test.sideeffect.GroupByTe
 
     @Test
     public void g_V_groupByXa_nameX() {
-        super.g_V_groupByXa_nameX((Map) Gremlin.of(g).V().groupBy(v -> v.getValue("name")));
+        super.g_V_groupByXa_nameX(Gremlin.of(g).V().groupBy(v -> v.getValue("name")));
     }
 
     @Test
     public void g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX() {
-        super.g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX((Map)
+        super.g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX(
                 Gremlin.of(g).V().has("lang")
                         .groupBy("a",
                                 v -> v.getValue("lang"),
-                                v -> v.getValue("name")).iterate().get("a"));
+                                v -> v.getValue("name")).iterate().memory().get("a"));
     }
 
     @Test
     public void g_V_hasXlangX_groupByXa_lang_1_countX() {
-        super.g_V_hasXlangX_groupByXa_lang_1_countX((Map)
+        super.g_V_hasXlangX_groupByXa_lang_1_countX(
                 Gremlin.of(g).V().has("lang")
                         .groupBy(v -> v.getValue("lang"),
                                 v -> 1,
