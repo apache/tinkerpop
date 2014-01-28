@@ -44,6 +44,11 @@ public class FeatureSupportTest  {
      * Feature checks that test {@link Graph} functionality to determine if a feature should be on when it is marked
      * as not supported.
      */
+    @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
+            "graphComputerNotSupported",
+            "transactionsNotSupported",
+            "graphStrategyNotSupported"
+    })
     public static class GraphFunctionalityTest extends AbstractBlueprintsTest {
 
         /**
@@ -130,6 +135,9 @@ public class FeatureSupportTest  {
      * when it is marked as not supported.
      */
     @RunWith(Parameterized.class)
+    @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
+            "dataTypeOfPropertyValueNotSupported"
+    })
     public static class ElementPropertyFunctionalityTest extends AbstractBlueprintsTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
@@ -179,6 +187,9 @@ public class FeatureSupportTest  {
      * functionality to determine if a feature should be on when it is marked as not supported.
      */
     @RunWith(Parameterized.class)
+    @ExceptionCoverage(exceptionClass = Annotations.Exceptions.class, methods = {
+            "dataTypeOfAnnotationValueNotSupported"
+    })
     public static class AnnotationFunctionalityTest extends AbstractBlueprintsTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 

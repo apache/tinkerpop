@@ -25,7 +25,8 @@ import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USE
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 /**
  * Ensure that exception handling is consistent within Blueprints. It may be necessary to throw exceptions in an
- * appropriate order in order to ensure that these tests pass.
+ * appropriate order in order to ensure that these tests pass.  Note that some exception consistency checks are
+ * in the {@link FeatureSupportTest}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

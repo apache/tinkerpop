@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,28 +42,29 @@ public class ExceptionCoverageTest {
             // this is a general exception to be used as needed.  it is not explicitly tested:
             add("com.tinkerpop.blueprints.Graph$Exceptions#argumentCanNotBeNull");
 
-            // todo: review why these are not covered in the tests
-            add("com.tinkerpop.blueprints.Annotations$Exceptions#dataTypeOfAnnotationValueNotSupported");
-            add("com.tinkerpop.blueprints.Graph$Exceptions#transactionsNotSupported");
-            add("com.tinkerpop.blueprints.Graph$Exceptions#graphComputerNotSupported");
-            add("com.tinkerpop.blueprints.Graph$Exceptions#graphStrategyNotSupported");
+            // todo: need to write consistency tests for the following items still...........
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#constantComputeKeyHasAlreadyBeenSet");
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
-            add("com.tinkerpop.blueprints.Property$Exceptions#dataTypeOfPropertyValueNotSupported");
             add("com.tinkerpop.blueprints.Transaction$Exceptions#transactionMustBeOpenToReadWrite");
             add("com.tinkerpop.blueprints.Transaction$Exceptions#openTransactionsOnClose");
         }};
 
+        // implemented exceptions are the classes that potentially contains exception consistency checks.
         final Set<String> implementedExceptions = new HashSet<>();
-        Stream.of(ExceptionConsistencyTest.class.getDeclaredClasses())
+        final Set<Class> exceptionConcistencyTests = Stream.of(ExceptionConsistencyTest.class.getDeclaredClasses(),
+                                                               FeatureSupportTest.class.getDeclaredClasses())
+                .flatMap(classes->Stream.of(classes)).collect(Collectors.toSet());
+
+        exceptionConcistencyTests.stream()
                 .flatMap(c -> Stream.of(c.getAnnotationsByType(ExceptionCoverage.class)))
+                .map(c->(ExceptionCoverage) c)
                 .forEach(ec -> implementedExceptions.addAll(Stream.of(ec.methods()).map(m -> String.format("%s#%s", ec.exceptionClass().getName(), m)).collect(Collectors.<String>toList())));
 
         Stream.of(blueprintsExceptions).flatMap(c -> Stream.of(c.getDeclaredMethods()).map(m -> String.format("%s#%s", c.getName(), m.getName())))
-                .filter(s->!ignore.contains(s))
-                .forEach(s-> {
+                .filter(s -> !ignore.contains(s))
+                .forEach(s -> {
                     System.out.println(s);
                     assertTrue(implementedExceptions.contains(s));
                 });
