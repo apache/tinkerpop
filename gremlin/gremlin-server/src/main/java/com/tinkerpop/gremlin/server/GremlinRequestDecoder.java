@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
+class GremlinRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
         // message consists of two parts.  the first part has the mime type of the incoming message and the
