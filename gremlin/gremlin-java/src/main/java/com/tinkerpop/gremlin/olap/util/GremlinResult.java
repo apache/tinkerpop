@@ -65,12 +65,12 @@ public class GremlinResult<T> implements Iterator<T> {
             final GraphMemory.ReductionMemory reductionMemory = this.computeResult.getGraphMemory().getReductionMemory();
             this.itty = StreamFactory.stream(reductionMemory.getKeys()).map(key -> Arrays.asList(key, reductionMemory.get(key).get())).iterator();
         } else if (HolderOptimizer.trackPaths(this.gremlinSupplier.get())) {
-            final List list = new ArrayList();
-            this.graph.query().vertices().forEach(vertex -> {
-                StreamFactory.stream(vertex)
+            this.itty = StreamFactory.stream(this.graph.query().vertices()).flatMap(vertex -> {
+                return StreamFactory.stream(vertex)
                         .map(v -> this.computeResult.getVertexMemory().<GremlinPaths>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
-                        .forEach(tracker -> {
+                        .flatMap(tracker -> {
+                            final List list = new ArrayList();
                             tracker.getDoneObjectTracks().entrySet().stream().forEach(entry -> {
                                 entry.getValue().forEach(holder -> {
                                     if (entry.getKey() instanceof MicroPath) {
@@ -83,16 +83,16 @@ public class GremlinResult<T> implements Iterator<T> {
                             tracker.getDoneGraphTracks().entrySet().stream().forEach(entry -> {
                                 entry.getValue().forEach(holder -> list.add(holder.inflate(vertex).get()));
                             });
+                            return list.stream();
                         });
-            });
-            this.itty = list.iterator();
+            }).iterator();
         } else {
-            final List list = new ArrayList();
-            this.graph.query().vertices().forEach(vertex -> {
-                StreamFactory.stream(vertex)
+            this.itty = StreamFactory.stream(this.graph.query().vertices()).flatMap(vertex -> {
+                return StreamFactory.stream(vertex)
                         .map(v -> this.computeResult.getVertexMemory().<GremlinCounters>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
-                        .forEach(tracker -> {
+                        .flatMap(tracker -> {
+                            final List list = new ArrayList();
                             tracker.getDoneObjectTracks().entrySet().stream().forEach(entry -> {
                                 for (int i = 0; i < entry.getValue(); i++) {
                                     list.add(entry.getKey().get());
@@ -103,9 +103,9 @@ public class GremlinResult<T> implements Iterator<T> {
                                     list.add(entry.getKey().inflate(vertex).get());
                                 }
                             });
+                            return list.stream();
                         });
-            });
-            this.itty = list.iterator();
+            }).iterator();
         }
     }
 }
