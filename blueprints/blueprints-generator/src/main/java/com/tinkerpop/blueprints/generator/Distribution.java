@@ -10,7 +10,6 @@ import java.util.Random;
  *
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-
 public interface Distribution {
 
     /**
