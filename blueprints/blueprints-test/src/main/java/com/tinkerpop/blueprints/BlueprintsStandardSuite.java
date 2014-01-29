@@ -1,5 +1,8 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.generator.CommunityGenerator;
+import com.tinkerpop.blueprints.generator.CommunityGeneratorTest;
+import com.tinkerpop.blueprints.generator.DistributionGeneratorTest;
 import com.tinkerpop.blueprints.strategy.IdGraphStrategyTest;
 import com.tinkerpop.blueprints.strategy.PartitionGraphStrategyTest;
 import com.tinkerpop.blueprints.strategy.ReadOnlyGraphStrategyTest;
@@ -36,6 +39,8 @@ public class BlueprintsStandardSuite extends AbstractBlueprintsSuite {
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
             AnnotationTest.class,
+            CommunityGeneratorTest.class,
+            DistributionGeneratorTest.class,
             EdgeTest.class,
             ExceptionConsistencyTest.class,
             FeatureSupportTest.class,
