@@ -21,8 +21,8 @@ import static com.codahale.metrics.MetricRegistry.name;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GremlinServerHandler extends SimpleChannelInboundHandler<RequestMessage> {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinServerHandler.class);
+class GremlinOpHandler extends SimpleChannelInboundHandler<RequestMessage> {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinOpHandler.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     private final Settings settings;
@@ -30,7 +30,7 @@ class GremlinServerHandler extends SimpleChannelInboundHandler<RequestMessage> {
 
     private final GremlinExecutor gremlinExecutor;
 
-    public GremlinServerHandler(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor) {
+    public GremlinOpHandler(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor) {
         this.settings = settings;
         this.graphs = graphs;
         this.gremlinExecutor = gremlinExecutor;

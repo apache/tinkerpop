@@ -141,7 +141,7 @@ public class GremlinServer {
             pipeline.addLast("gremlin-decoder", new GremlinRequestDecoder());
 
             final EventExecutorGroup gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool);
-            pipeline.addLast(gremlinGroup, "gremlin-handler", new GremlinServerHandler(settings, graphs.get(), gremlinExecutor));
+            pipeline.addLast(gremlinGroup, "gremlin-handler", new GremlinOpHandler(settings, graphs.get(), gremlinExecutor));
         }
     }
 }
