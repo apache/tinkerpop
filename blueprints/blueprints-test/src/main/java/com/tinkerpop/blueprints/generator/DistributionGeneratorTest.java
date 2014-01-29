@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.BlueprintsStandardSuite;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.util.StreamFactory;
+import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -49,12 +50,15 @@ public class DistributionGeneratorTest {
             final DistributionGenerator generator = new DistributionGenerator("knows");
             distributionGeneratorTest(g, generator);
 
-            final Graph g1 = BlueprintsStandardSuite.GraphManager.get().newTestGraph();
+            final Configuration configuration = graphProvider.newGraphConfiguration("g1");
+            final Graph g1 = graphProvider.openTestGraph(configuration);
             prepareGraph(g1);
             final DistributionGenerator generator1 = new DistributionGenerator("knows");
             distributionGeneratorTest(g1, generator1);
 
             assertNotEquals(StreamFactory.stream(g.query().edges()).count(), StreamFactory.stream(g1.query().edges()).count());
+
+            graphProvider.clear(g1, configuration);
         }
 
         @Test
@@ -62,12 +66,15 @@ public class DistributionGeneratorTest {
             final DistributionGenerator generator = new DistributionGenerator("knows", null, ()->123456789l);
             distributionGeneratorTest(g, generator);
 
-            final Graph g1 = BlueprintsStandardSuite.GraphManager.get().newTestGraph();
+            final Configuration configuration = graphProvider.newGraphConfiguration("g1");
+            final Graph g1 = graphProvider.openTestGraph(configuration);
             prepareGraph(g1);
             final DistributionGenerator generator1 = new DistributionGenerator("knows", null, ()->123456789l);
             distributionGeneratorTest(g1, generator1);
 
             assertEquals(StreamFactory.stream(g.query().edges()).count(), StreamFactory.stream(g1.query().edges()).count());
+
+            graphProvider.clear(g1, configuration);
         }
 
         @Override

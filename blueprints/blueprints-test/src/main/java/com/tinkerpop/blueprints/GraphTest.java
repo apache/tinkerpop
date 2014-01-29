@@ -416,7 +416,7 @@ public class GraphTest extends AbstractBlueprintsTest {
         tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(2, 1));
         graph.close();
 
-        final Graph reopenedGraph = graphProvider.newTestGraph();
+        final Graph reopenedGraph = graphProvider.standardTestGraph();
         AbstractBlueprintsSuite.assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
 
         if (graph.getFeatures().vertex().properties().supportsStringValues()) {
@@ -431,6 +431,6 @@ public class GraphTest extends AbstractBlueprintsTest {
                 assertEquals("internet", edge.getProperty("location").get());
         }
 
-        reopenedGraph.close();
+        graphProvider.clear(reopenedGraph, graphProvider.standardGraphConfiguration());
     }
 }

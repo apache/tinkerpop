@@ -25,6 +25,7 @@ public abstract class AbstractBlueprintsTest {
     protected Graph g;
     protected Configuration config;
     protected Optional<? extends GraphStrategy> strategyToTest;
+    protected AbstractBlueprintsSuite.GraphProvider graphProvider;
 
     @Rule
     public TestName name = new TestName();
@@ -39,8 +40,9 @@ public abstract class AbstractBlueprintsTest {
 
     @Before
     public void setup() throws Exception {
-        config = BlueprintsStandardSuite.GraphManager.get().newGraphConfiguration();
-        g = BlueprintsStandardSuite.GraphManager.get().newTestGraph(config, strategyToTest);
+        graphProvider = BlueprintsStandardSuite.GraphManager.get();
+        config = graphProvider.standardGraphConfiguration();
+        g = graphProvider.openTestGraph(config, strategyToTest);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
         final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);
@@ -64,7 +66,7 @@ public abstract class AbstractBlueprintsTest {
 
     @After
     public void tearDown() throws Exception {
-        BlueprintsStandardSuite.GraphManager.get().clear(g, config);
+        graphProvider.clear(g, config);
     }
 
     /**

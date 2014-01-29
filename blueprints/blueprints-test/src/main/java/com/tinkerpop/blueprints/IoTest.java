@@ -6,6 +6,7 @@ import com.tinkerpop.blueprints.io.GraphReader;
 import com.tinkerpop.blueprints.io.graphml.GraphMLReader;
 import com.tinkerpop.blueprints.io.graphml.GraphMLWriter;
 import com.tinkerpop.blueprints.util.StreamFactory;
+import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import javax.xml.XMLConstants;
@@ -120,7 +121,8 @@ public class IoTest extends AbstractBlueprintsTest {
         validateXmlAgainstGraphMLXsd(f);
 
         // reusing the same config used for creation of "g".
-        final Graph g2 = BlueprintsStandardSuite.GraphManager.get().newTestGraph(config);
+        final Configuration configuration = graphProvider.newGraphConfiguration("g2");
+        final Graph g2 = graphProvider.openTestGraph(configuration);
         final GraphMLReader r = new GraphMLReader.Builder(g2).build();
 
         try (final InputStream in = new FileInputStream(f)) {
@@ -131,7 +133,7 @@ public class IoTest extends AbstractBlueprintsTest {
         assertEquals("\u00E9", v2.getProperty("text").get());
 
         // need to manually close the "g2" instance
-        BlueprintsStandardSuite.GraphManager.get().clear(g2, config);
+        graphProvider.clear(g2, configuration);
     }
 
     private void validateXmlAgainstGraphMLXsd(final File file) throws Exception {

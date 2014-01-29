@@ -15,6 +15,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -73,36 +74,39 @@ public abstract class AbstractBlueprintsSuite extends Suite {
 
         /**
          * Creates a new {@link Graph} instance using the default {@link Configuration} from
-         * {@link #newGraphConfiguration()}.
+         * {@link #standardGraphConfiguration()}.
          */
-        default public Graph newTestGraph() {
-            return newTestGraph(newGraphConfiguration());
+        default public Graph standardTestGraph() {
+            return openTestGraph(standardGraphConfiguration());
         }
 
         /**
-         * Creates a new Graph instance from the Configuration object using GraphFactory.
+         * Creates a new {@link Graph} instance from the Configuration object using {@link GraphFactory}.
          */
-        default public Graph newTestGraph(final Configuration config) {
-            return newTestGraph(config, Optional.empty());
+        default public Graph openTestGraph(final Configuration config) {
+            return openTestGraph(config, Optional.empty());
         }
 
         /**
-         * Creates a new Graph instance from the Configuration object using GraphFactory.
+         * Creates a new {@link Graph} instance from the Configuration object using {@link GraphFactory}.
          */
-        default public Graph newTestGraph(final Configuration config, final Optional<? extends GraphStrategy> strategy) {
+        default public Graph openTestGraph(final Configuration config, final Optional<? extends GraphStrategy> strategy) {
             return GraphFactory.open(config ,strategy);
         }
 
         /**
-         * Creates a new base Configuration object that can construct a Graph instance from GraphFactory.
+         * Gets the {@link Configuration} object that can construct a {@link Graph} instance from {@link GraphFactory}.
+         * Note that this method should create a {@link Graph} using the {@code graphName} of "standard", meaning it
+         * should always return a configuration instance that generates the same {@link Graph} from the
+         * {@link GraphFactory}.
          */
-        default public Configuration newGraphConfiguration() {
-            return newGraphConfiguration(Collections.<String, Object>emptyMap());
+        default public Configuration standardGraphConfiguration() {
+            return newGraphConfiguration("standard", Collections.<String, Object>emptyMap());
         }
 
         /**
-         * Clears a graph of all data and settings.  Implementations will have different ways of handling this.  For
-         * a brute force approach, implementers can simply delete data directories provided in the configuration.
+         * Clears a {@link Graph} of all data and settings.  Implementations will have different ways of handling this.
+         * For a brute force approach, implementers can simply delete data directories provided in the configuration.
          * Implementers may choose a more elegant approach if it exists.
          */
         public void clear(final Graph g, final Configuration configuration) throws Exception;
@@ -125,11 +129,25 @@ public abstract class AbstractBlueprintsSuite extends Suite {
 
         /**
          * When implementing this method ensure that the BlueprintsStandardSuite can override any settings EXCEPT the
-         * "blueprints.graph" setting which should be defined by the implementer.
+         * "blueprints.graph" setting which should be defined by the implementer. It should provide a
+         * {@link Configuration} that will generate a graph unique to that {@code graphName}.
          *
+         * @param graphName a unique test graph name
          * @param configurationOverrides Settings to override defaults with.
          */
-        public Configuration newGraphConfiguration(final Map<String, Object> configurationOverrides);
+        public Configuration newGraphConfiguration(final String graphName, final Map<String, Object> configurationOverrides);
+
+        /**
+         * When implementing this method ensure that the BlueprintsStandardSuite can override any settings EXCEPT the
+         * "blueprints.graph" setting which should be defined by the implementer. It should provide a
+         * {@link Configuration} that will generate a graph unique to that {@code graphName}.
+         *
+         * @param graphName a unique test graph name
+         */
+        default public Configuration newGraphConfiguration(final String graphName) {
+            return newGraphConfiguration(graphName, new HashMap<>());
+        }
+
     }
 
     /**
@@ -138,12 +156,21 @@ public abstract class AbstractBlueprintsSuite extends Suite {
      */
     public static abstract class AbstractGraphProvider implements GraphProvider {
 
-        public abstract Map<String, Object> getBaseConfiguration();
+        /**
+         * Provides a basic configuration for a particular {@link Graph} instance and used the {@code graphName}
+         * to ensure that the instance is unique.  It is up to the Blueprints implementation to determine how
+         * best to use the {@code graphName} to ensure uniqueness.  For example, Neo4j, might use the {@code graphName}
+         * might be used to create a different sub-directory where the graph is stored.
+         *
+         * @param graphName a value that represents a unique configuration for a graph
+         * @return a configuration {@link Map} that should be unique per the {@code graphName}
+         */
+        public abstract Map<String, Object> getBaseConfiguration(final String graphName);
 
         @Override
-        public Configuration newGraphConfiguration(final Map<String, Object> configurationOverrides) {
+        public Configuration newGraphConfiguration(final String graphName, final Map<String, Object> configurationOverrides) {
             final Configuration conf = new BaseConfiguration();
-            getBaseConfiguration().entrySet().stream()
+            getBaseConfiguration(graphName).entrySet().stream()
                     .forEach(e -> conf.setProperty(e.getKey(), e.getValue()));
 
             // assign overrides but don't allow blueprints.graph setting to be overridden.  the test suite should
