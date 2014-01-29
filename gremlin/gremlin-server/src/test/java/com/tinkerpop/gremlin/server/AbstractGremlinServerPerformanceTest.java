@@ -37,7 +37,7 @@ public abstract class AbstractGremlinServerPerformanceTest {
             thread.start();
 
             // make sure gremlin server gets off the ground
-            Thread.sleep(1000);
+            Thread.sleep(1500);
         } else
             logger.error("Configuration file at gremlin-server-performance.yaml could not be found or parsed properly.");
 

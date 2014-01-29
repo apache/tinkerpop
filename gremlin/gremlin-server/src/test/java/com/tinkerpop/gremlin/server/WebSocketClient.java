@@ -123,7 +123,7 @@ class WebSocketClient {
         final UUID requestId = msg.requestId;
         responses.put(requestId, responseQueue);
 
-        ch.writeAndFlush(new TextWebSocketFrame("application/jsdon|-" + serializer.serialize(msg)));
+        ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + serializer.serialize(msg)));
 
         return StreamSupport.stream(Spliterators.<T>spliteratorUnknownSize(new BlockingIterator<>(requestId), Spliterator.IMMUTABLE), false);
     }
