@@ -31,9 +31,9 @@ public class Settings {
     public int port = 8182;
 
     /**
-     * Size of the worker thread pool.   Defaults to 16
+     * Size of the worker thread pool.   Defaults to 1
      */
-    public int threadPoolWorker = 4;
+    public int threadPoolWorker = 1;
 
     /**
      * Size of the Gremlin thread pool.   Defaults to 8
