@@ -8,14 +8,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * Generates a synthetic network with a community structure, that is, several densely connected
  * sub-networks that are loosely connected with one another.
  *
  * @author Matthias Broecheler (me@matthiasb.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class CommunityGenerator extends AbstractGenerator {
 
@@ -28,13 +31,13 @@ public class CommunityGenerator extends AbstractGenerator {
     private Distribution edgeDegree = null;
     private double crossCommunityPercentage = DEFAULT_CROSS_COMMUNITY_PERCENTAGE;
 
-    private final Random random = new Random();
+    private final Random random;
 
     /**
      * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator)
      */
     public CommunityGenerator(final String label, final EdgeAnnotator annotator) {
-        super(label, annotator);
+        this(label, annotator, VertexAnnotator.NONE);
     }
 
     /**
@@ -42,14 +45,23 @@ public class CommunityGenerator extends AbstractGenerator {
      */
     public CommunityGenerator(final String label, final EdgeAnnotator edgeAnnotator,
                               final VertexAnnotator vertexAnnotator) {
-        super(label, edgeAnnotator, vertexAnnotator);
+        this(label, edgeAnnotator, vertexAnnotator, null);
+    }
+
+    /**
+     * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator, VertexAnnotator, java.util.Optional)
+     */
+    public CommunityGenerator(final String label, final EdgeAnnotator edgeAnnotator,
+                              final VertexAnnotator vertexAnnotator, final Supplier<Long> seedGenerator) {
+        super(label, edgeAnnotator, vertexAnnotator, Optional.ofNullable(seedGenerator));
+        random = new Random(this.seedSupplier.get());
     }
 
     /**
      * @see AbstractGenerator#AbstractGenerator(String)
      */
     public CommunityGenerator(final String label) {
-        super(label);
+        this(label, EdgeAnnotator.NONE);
     }
 
     /**

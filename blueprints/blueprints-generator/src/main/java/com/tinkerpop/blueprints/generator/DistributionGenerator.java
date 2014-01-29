@@ -25,7 +25,7 @@ public class DistributionGenerator extends AbstractGenerator {
     private boolean allowLoops = true;
 
     /**
-     * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator)
+     * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator, VertexAnnotator, java.util.Optional)
      */
     public DistributionGenerator(final String label, final EdgeAnnotator annotator, final Supplier<Long> seedGenerator) {
         super(label, annotator, VertexAnnotator.NONE, Optional.ofNullable(seedGenerator));

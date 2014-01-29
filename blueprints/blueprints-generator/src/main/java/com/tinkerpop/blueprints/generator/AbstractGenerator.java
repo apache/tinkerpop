@@ -21,7 +21,8 @@ public abstract class AbstractGenerator {
     protected final Supplier<Long> seedSupplier;
 
     /**
-     * Constructs a new network generator for edges with the given label and annotator.
+     * Constructs a new network generator for edges with the given label and annotator. If a {@code seedGenerator} is
+     * not supplied then the system clock is used to generate a seed.
      *
      * @param label           Label for the generated edges
      * @param edgeAnnotator   EdgeAnnotator to use for annotating newly generated edges.
@@ -31,9 +32,9 @@ public abstract class AbstractGenerator {
     public AbstractGenerator(final String label, final EdgeAnnotator edgeAnnotator,
                              final VertexAnnotator vertexAnnotator, final Optional<Supplier<Long>> seedGenerator) {
         if (label == null || label.isEmpty()) throw new IllegalArgumentException("Label cannot be empty");
-        if (edgeAnnotator == null) throw new NullPointerException();
-        if (vertexAnnotator == null) throw new NullPointerException();
-        if (seedGenerator == null) throw new NullPointerException();
+        if (edgeAnnotator == null) throw new IllegalArgumentException("edgeAnnotator");
+        if (vertexAnnotator == null) throw new IllegalArgumentException("vertexAnnotator");
+        if (seedGenerator == null) throw new IllegalArgumentException("seedGenerator");
         this.label = label;
         this.edgeAnnotator = edgeAnnotator;
         this.vertexAnnotator = vertexAnnotator;
