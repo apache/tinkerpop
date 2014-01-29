@@ -14,8 +14,6 @@ public class PowerLawDistribution implements Distribution {
 
     /**
      * Constructs a new scale-free distribution for the provided gamma value.
-     *
-     * @param gamma
      */
     public PowerLawDistribution(final double gamma) {
         this(gamma, 0.0);
