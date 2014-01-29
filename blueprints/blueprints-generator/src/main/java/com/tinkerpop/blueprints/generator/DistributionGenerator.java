@@ -30,6 +30,7 @@ public class DistributionGenerator extends AbstractGenerator {
         super(label);
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public DistributionGenerator(final String label, final Consumer<Edge> annotator) {
         this(label, annotator, null);
     }
@@ -56,6 +57,7 @@ public class DistributionGenerator extends AbstractGenerator {
      * <p/>
      * If the in-degree distribution is not specified, {@link CopyDistribution} is used by default.
      */
+    @SuppressWarnings("UnusedDeclaration")
     public void setInDistribution(final Distribution distribution) {
         if (distribution == null) throw new NullPointerException();
         this.inDistribution = distribution;
@@ -64,6 +66,7 @@ public class DistributionGenerator extends AbstractGenerator {
     /**
      * Clears the in-degree distribution
      */
+    @SuppressWarnings("UnusedDeclaration")
     public void clearInDistribution() {
         this.inDistribution = null;
     }
@@ -71,6 +74,7 @@ public class DistributionGenerator extends AbstractGenerator {
     /**
      * Whether edge loops are allowed
      */
+    @SuppressWarnings("UnusedDeclaration")
     public boolean hasAllowLoops() {
         return allowLoops;
     }
@@ -78,6 +82,7 @@ public class DistributionGenerator extends AbstractGenerator {
     /**
      * Sets whether loops, i.e. edges with the same start and end vertex, are allowed to be generated.
      */
+    @SuppressWarnings("UnusedDeclaration")
     public void setAllowLoops(final boolean allowLoops) {
         this.allowLoops = allowLoops;
     }
@@ -113,7 +118,7 @@ public class DistributionGenerator extends AbstractGenerator {
             throw new IllegalStateException("Must set out-distribution before generating edges");
 
         final Distribution outDist = outDistribution.initialize(SizableIterable.sizeOf(out), expectedNumEdges);
-        Distribution inDist = null;
+        Distribution inDist;
         if (inDistribution == null) {
             if (out != in) throw new IllegalArgumentException("Need to specify in-distribution");
             inDist = new CopyDistribution();
