@@ -1,7 +1,9 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
@@ -70,6 +72,10 @@ public interface GraphStrategy {
      *         and returns an enhanced strategy {@link Function} with the same signature
      */
     public default UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<Vertex> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    public default <V> UnaryOperator<Function<String, Property<V>>> getElementGetProperty(final Strategy.Context<Element> ctx) {
         return UnaryOperator.identity();
     }
 

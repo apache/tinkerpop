@@ -32,7 +32,9 @@ public class BlueprintsPerformanceSuite extends AbstractBlueprintsSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            GraphGeneratePerformanceTest.class};
+            GraphGeneratePerformanceTest.class,
+            GraphReadPerformanceTest.class
+    };
 
     public BlueprintsPerformanceSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
         super(klass, builder, testsToExecute);

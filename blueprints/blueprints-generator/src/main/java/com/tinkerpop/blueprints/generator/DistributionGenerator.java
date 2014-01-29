@@ -5,7 +5,9 @@ import com.tinkerpop.blueprints.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Supplier;
 
 /**
  * Generates a synthetic network for a given out- and (optionally) in-degree distribution.
@@ -13,14 +15,21 @@ import java.util.Random;
  * After construction, at least the out-degree distribution must be set via {@link #setOutDistribution}
  *
  * @author Matthias Broecheler (me@matthiasb.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-
 public class DistributionGenerator extends AbstractGenerator {
 
     private Distribution outDistribution;
     private Distribution inDistribution;
 
     private boolean allowLoops = true;
+
+    /**
+     * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator)
+     */
+    public DistributionGenerator(final String label, final EdgeAnnotator annotator, final Supplier<Long> seedGenerator) {
+        super(label, annotator, VertexAnnotator.NONE, Optional.ofNullable(seedGenerator));
+    }
 
     /**
      * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator)
@@ -116,7 +125,7 @@ public class DistributionGenerator extends AbstractGenerator {
             inDist = inDistribution.initialize(SizableIterable.sizeOf(in), expectedNumEdges);
         }
 
-        final long seed = System.currentTimeMillis() * 177;
+        final long seed = this.seedSupplier.get();
         Random outRandom = new Random(seed);
         ArrayList<Vertex> outStubs = new ArrayList<>(expectedNumEdges);
         for (Vertex v : out) {
@@ -129,7 +138,7 @@ public class DistributionGenerator extends AbstractGenerator {
         Collections.shuffle(outStubs);
 
         outRandom = new Random(seed);
-        final Random inRandom = new Random(System.currentTimeMillis() * 14421);
+        final Random inRandom = new Random(this.seedSupplier.get());
         int addedEdges = 0;
         int position = 0;
         for (Vertex v : in) {

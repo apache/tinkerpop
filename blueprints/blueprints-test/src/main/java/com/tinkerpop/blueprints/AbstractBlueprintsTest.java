@@ -54,6 +54,12 @@ public abstract class AbstractBlueprintsTest {
                 throw ex;
             }
         }
+
+        prepareGraph(g);
+    }
+
+    protected void prepareGraph(final Graph g) throws Exception {
+        // do nothing
     }
 
     @After

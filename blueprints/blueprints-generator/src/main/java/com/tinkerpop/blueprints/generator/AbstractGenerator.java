@@ -4,18 +4,41 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Base class for all synthetic network generators.
  *
  * @author Matthias Broecheler (me@matthiasb.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-
 public abstract class AbstractGenerator {
 
     private final String label;
     private final EdgeAnnotator edgeAnnotator;
     private final VertexAnnotator vertexAnnotator;
+    protected final Supplier<Long> seedSupplier;
+
+    /**
+     * Constructs a new network generator for edges with the given label and annotator.
+     *
+     * @param label           Label for the generated edges
+     * @param edgeAnnotator   EdgeAnnotator to use for annotating newly generated edges.
+     * @param vertexAnnotator VertexAnnotator to use for annotating process vertices.
+     * @param seedGenerator A {@link Supplier} function to provide seeds to {@link java.util.Random}
+     */
+    public AbstractGenerator(final String label, final EdgeAnnotator edgeAnnotator,
+                             final VertexAnnotator vertexAnnotator, final Optional<Supplier<Long>> seedGenerator) {
+        if (label == null || label.isEmpty()) throw new IllegalArgumentException("Label cannot be empty");
+        if (edgeAnnotator == null) throw new NullPointerException();
+        if (vertexAnnotator == null) throw new NullPointerException();
+        if (seedGenerator == null) throw new NullPointerException();
+        this.label = label;
+        this.edgeAnnotator = edgeAnnotator;
+        this.vertexAnnotator = vertexAnnotator;
+        this.seedSupplier = seedGenerator.orElse(System::currentTimeMillis);
+    }
 
     /**
      * Constructs a new network generator for edges with the given label and annotator.
@@ -26,12 +49,7 @@ public abstract class AbstractGenerator {
      */
     public AbstractGenerator(final String label, final EdgeAnnotator edgeAnnotator,
                              final VertexAnnotator vertexAnnotator) {
-        if (label == null || label.isEmpty()) throw new IllegalArgumentException("Label cannot be empty");
-        if (edgeAnnotator == null) throw new NullPointerException();
-        if (vertexAnnotator == null) throw new NullPointerException();
-        this.label = label;
-        this.edgeAnnotator = edgeAnnotator;
-        this.vertexAnnotator = vertexAnnotator;
+        this(label, edgeAnnotator, vertexAnnotator, Optional.empty());
     }
 
     /**
