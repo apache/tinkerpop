@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.computer.GraphSystemMemory;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,6 +29,10 @@ public class TinkerGraphMemory implements GraphSystemMemory {
         this.memory = state;
     }
 
+    public Set<String> getVariables() {
+        return this.memory.keySet();
+    }
+
     public void incrIteration() {
         this.iteration.getAndIncrement();
     }
@@ -48,42 +53,42 @@ public class TinkerGraphMemory implements GraphSystemMemory {
         return this.getIteration() == 0;
     }
 
-    public <R> R get(final String key) {
-        return (R) this.memory.get(key);
+    public <R> R get(final String variable) {
+        return (R) this.memory.get(variable);
     }
 
-    public long increment(final String key, final long delta) {
-        final Object value = this.memory.get(key);
+    public long increment(final String variable, final long delta) {
+        final Object value = this.memory.get(variable);
         final long incremented = value == null ? delta : (Long) value + delta;
-        this.memory.put(key, incremented);
+        this.memory.put(variable, incremented);
         return incremented;
     }
 
-    public long decrement(final String key, final long delta) {
-        final Object value = this.memory.get(key);
+    public long decrement(final String variable, final long delta) {
+        final Object value = this.memory.get(variable);
         final long decremented = value == null ? delta : (Long) value - delta;
-        this.memory.put(key, decremented);
+        this.memory.put(variable, decremented);
         return decremented;
     }
 
-    public boolean and(final String key, final boolean bool) {
-        final boolean value = (Boolean) this.memory.getOrDefault(key, bool);
+    public boolean and(final String variable, final boolean bool) {
+        final boolean value = (Boolean) this.memory.getOrDefault(variable, bool);
         final boolean returnValue = value & bool;
-        this.memory.put(key, returnValue);
+        this.memory.put(variable, returnValue);
         return returnValue;
     }
 
-    public boolean or(final String key, final boolean bool) {
-        final boolean value = (Boolean) this.memory.getOrDefault(key, bool);
+    public boolean or(final String variable, final boolean bool) {
+        final boolean value = (Boolean) this.memory.getOrDefault(variable, bool);
         final boolean returnValue = value | bool;
-        this.memory.put(key, returnValue);
+        this.memory.put(variable, returnValue);
         return returnValue;
     }
 
-    public void setIfAbsent(final String key, final Object value) {
-        if (this.memory.containsKey(key))
-            throw new IllegalStateException("The memory already has the a value for key " + key);
-        this.memory.put(key, value);
+    public void setIfAbsent(final String variable, final Object value) {
+        if (this.memory.containsKey(variable))
+            throw new IllegalStateException("The memory already has the a value for key " + variable);
+        this.memory.put(variable, value);
     }
 
     public Graph getGraph() {

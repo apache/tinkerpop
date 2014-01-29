@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.util.GremlinHelper;
 import com.tinkerpop.gremlin.util.optimizers.GraphQueryOptimizer;
 import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.util.optimizers.IdentityOptimizer;
-import com.tinkerpop.gremlin.util.optimizers.LocalOptimizers;
+import com.tinkerpop.gremlin.util.optimizers.SimpleOptimizers;
 import com.tinkerpop.gremlin.util.optimizers.VertexQueryOptimizer;
 import com.tinkerpop.gremlin.util.structures.LocalMemory;
 
@@ -24,7 +24,7 @@ import java.util.List;
 public class Gremlin<S, E> implements Pipeline<S, E> {
 
     private final Memory memory = new LocalMemory();
-    private final Optimizers optimizers = new LocalOptimizers();
+    private final Optimizers optimizers = new SimpleOptimizers();
     private final List<Pipe> pipes = new ArrayList<>();
     private final Graph graph;
     private boolean firstNext = true;

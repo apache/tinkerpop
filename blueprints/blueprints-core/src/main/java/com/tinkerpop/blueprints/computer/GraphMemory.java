@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.Graph;
 
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Each vertex in a vertex-centric graph computation can access itself and its neighbors' properties.
@@ -18,17 +19,19 @@ import java.util.Optional;
  */
 public interface GraphMemory {
 
-    public <R> R get(final String key);
+    public Set<String> getVariables();
 
-    public void setIfAbsent(final String key, final Object value);
+    public <R> R get(final String variable);
 
-    public long increment(final String key, final long delta);
+    public void setIfAbsent(final String variable, final Object value);
 
-    public long decrement(final String key, final long delta);
+    public long increment(final String variable, final long delta);
 
-    public boolean and(final String key, final boolean bool);
+    public long decrement(final String variable, final long delta);
 
-    public boolean or(final String key, final boolean bool);
+    public boolean and(final String variable, final boolean bool);
+
+    public boolean or(final String variable, final boolean bool);
 
     public int getIteration();
 

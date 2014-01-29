@@ -35,16 +35,16 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     public static final String TRACK_PATHS = "trackPaths";
     // TODO: public static final String MESSAGES_SENT = "messagesSent";
     public static final String GREMLIN_TRACKER = "gremlinTracker";
-    private final Supplier<Gremlin> gremlin;
+    private final Supplier<Gremlin> gremlinSupplier;
 
-    private GremlinVertexProgram(final Supplier<Gremlin> gremlin) {
-        this.gremlin = gremlin;
+    private GremlinVertexProgram(final Supplier<Gremlin> gremlinSupplier) {
+        this.gremlinSupplier = gremlinSupplier;
     }
 
     public void setup(final GraphMemory graphMemory) {
-        graphMemory.setIfAbsent(GREMLIN_PIPELINE, this.gremlin);
+        graphMemory.setIfAbsent(GREMLIN_PIPELINE, this.gremlinSupplier);
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
-        graphMemory.setIfAbsent(TRACK_PATHS, HolderOptimizer.trackPaths(this.gremlin.get()));
+        graphMemory.setIfAbsent(TRACK_PATHS, HolderOptimizer.trackPaths(this.gremlinSupplier.get()));
     }
 
     public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {

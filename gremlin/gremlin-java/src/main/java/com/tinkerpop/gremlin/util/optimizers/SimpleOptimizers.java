@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LocalOptimizers implements Optimizers {
+public class SimpleOptimizers implements Optimizers {
 
     final List<Optimizer> optimizers = new ArrayList<>();
 
