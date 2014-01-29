@@ -88,7 +88,7 @@ public class GremlinServer {
     }
 
     public static String getHeader() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         builder.append("\r\n");
         builder.append("         \\,,,/\r\n");
         builder.append("         (o o)\r\n");
