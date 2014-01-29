@@ -18,8 +18,6 @@ public interface Distribution {
      * <p/>
      * Since most distributions have an element of randomness, these values are the expected values.
      *
-     * @param invocations
-     * @param expectedTotal
      * @return A new distribution configured to match the expected total for the number of invocations.
      */
     Distribution initialize(final int invocations, final int expectedTotal);
