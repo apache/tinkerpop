@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.generator;
 
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -11,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -33,35 +36,26 @@ public class CommunityGenerator extends AbstractGenerator {
 
     private final Random random;
 
-    /**
-     * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator)
-     */
-    public CommunityGenerator(final String label, final EdgeAnnotator annotator) {
-        this(label, annotator, VertexAnnotator.NONE);
+    public CommunityGenerator(final String label) {
+        this(label, null);
     }
 
-    /**
-     * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator, VertexAnnotator)
-     */
-    public CommunityGenerator(final String label, final EdgeAnnotator edgeAnnotator,
-                              final VertexAnnotator vertexAnnotator) {
+    public CommunityGenerator(final String label, final Consumer<Edge> annotator) {
+        this(label, annotator, null);
+    }
+
+    public CommunityGenerator(final String label, final Consumer<Edge> edgeAnnotator, final BiConsumer<Vertex,Map<String,Object>> vertexAnnotator) {
         this(label, edgeAnnotator, vertexAnnotator, null);
     }
 
     /**
-     * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator, VertexAnnotator, java.util.Optional)
+     * @see AbstractGenerator#AbstractGenerator(String, java.util.Optional, java.util.Optional, java.util.Optional)
      */
-    public CommunityGenerator(final String label, final EdgeAnnotator edgeAnnotator,
-                              final VertexAnnotator vertexAnnotator, final Supplier<Long> seedGenerator) {
-        super(label, edgeAnnotator, vertexAnnotator, Optional.ofNullable(seedGenerator));
+    public CommunityGenerator(final String label, final Consumer<Edge> edgeAnnotator,
+                              final BiConsumer<Vertex,Map<String,Object>> vertexAnnotator,
+                              final Supplier<Long> seedGenerator) {
+        super(label, Optional.ofNullable(edgeAnnotator), Optional.ofNullable(vertexAnnotator), Optional.ofNullable(seedGenerator));
         random = new Random(this.seedSupplier.get());
-    }
-
-    /**
-     * @see AbstractGenerator#AbstractGenerator(String)
-     */
-    public CommunityGenerator(final String label) {
-        this(label, EdgeAnnotator.NONE);
     }
 
     /**

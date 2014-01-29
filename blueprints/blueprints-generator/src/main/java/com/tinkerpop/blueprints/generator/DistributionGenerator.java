@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.generator;
 
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -24,25 +26,19 @@ public class DistributionGenerator extends AbstractGenerator {
 
     private boolean allowLoops = true;
 
-    /**
-     * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator, VertexAnnotator, java.util.Optional)
-     */
-    public DistributionGenerator(final String label, final EdgeAnnotator annotator, final Supplier<Long> seedGenerator) {
-        super(label, annotator, VertexAnnotator.NONE, Optional.ofNullable(seedGenerator));
-    }
-
-    /**
-     * @see AbstractGenerator#AbstractGenerator(String, EdgeAnnotator)
-     */
-    public DistributionGenerator(final String label, final EdgeAnnotator annotator) {
-        super(label, annotator);
-    }
-
-    /**
-     * @see AbstractGenerator#AbstractGenerator(String)
-     */
     public DistributionGenerator(final String label) {
         super(label);
+    }
+
+    public DistributionGenerator(final String label, final Consumer<Edge> annotator) {
+        this(label, annotator, null);
+    }
+
+    /**
+     * @see AbstractGenerator#AbstractGenerator(String, java.util.Optional, java.util.Optional, java.util.Optional)
+     */
+    public DistributionGenerator(final String label, final Consumer<Edge> annotator, final Supplier<Long> seedGenerator) {
+        super(label, Optional.ofNullable(annotator), Optional.empty(), Optional.ofNullable(seedGenerator));
     }
 
     /**

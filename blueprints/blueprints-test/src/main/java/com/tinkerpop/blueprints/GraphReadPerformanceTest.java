@@ -8,7 +8,6 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
 import com.tinkerpop.blueprints.generator.Distribution;
 import com.tinkerpop.blueprints.generator.DistributionGenerator;
-import com.tinkerpop.blueprints.generator.EdgeAnnotator;
 import com.tinkerpop.blueprints.generator.PowerLawDistribution;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule;
@@ -52,7 +51,7 @@ public class GraphReadPerformanceTest {
 
             final Distribution inDist = new PowerLawDistribution(2.3);
             final Distribution outDist = new PowerLawDistribution(2.8);
-            final DistributionGenerator generator = new DistributionGenerator("knows", EdgeAnnotator.NONE, r::nextLong);
+            final DistributionGenerator generator = new DistributionGenerator("knows", null, r::nextLong);
             generator.setOutDistribution(inDist);
             generator.setOutDistribution(outDist);
             generator.generate(g, numVertices * 3);

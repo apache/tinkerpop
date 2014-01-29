@@ -5,6 +5,8 @@ import com.tinkerpop.blueprints.Vertex;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -16,8 +18,8 @@ import java.util.function.Supplier;
 public abstract class AbstractGenerator {
 
     private final String label;
-    private final EdgeAnnotator edgeAnnotator;
-    private final VertexAnnotator vertexAnnotator;
+    private final Optional<Consumer<Edge>> edgeAnnotator;
+    private final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexAnnotator;
     protected final Supplier<Long> seedSupplier;
 
     /**
@@ -25,12 +27,12 @@ public abstract class AbstractGenerator {
      * not supplied then the system clock is used to generate a seed.
      *
      * @param label           Label for the generated edges
-     * @param edgeAnnotator   EdgeAnnotator to use for annotating newly generated edges.
-     * @param vertexAnnotator VertexAnnotator to use for annotating process vertices.
+     * @param edgeAnnotator   {@link Consumer} to use for annotating newly generated edges.
+     * @param vertexAnnotator {@link Consumer} to use for annotating process vertices.
      * @param seedGenerator A {@link Supplier} function to provide seeds to {@link java.util.Random}
      */
-    public AbstractGenerator(final String label, final EdgeAnnotator edgeAnnotator,
-                             final VertexAnnotator vertexAnnotator, final Optional<Supplier<Long>> seedGenerator) {
+    public AbstractGenerator(final String label, final Optional<Consumer<Edge>> edgeAnnotator,
+                             final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexAnnotator, final Optional<Supplier<Long>> seedGenerator) {
         if (label == null || label.isEmpty()) throw new IllegalArgumentException("Label cannot be empty");
         if (edgeAnnotator == null) throw new IllegalArgumentException("edgeAnnotator");
         if (vertexAnnotator == null) throw new IllegalArgumentException("vertexAnnotator");
@@ -48,8 +50,8 @@ public abstract class AbstractGenerator {
      * @param edgeAnnotator   EdgeAnnotator to use for annotating newly generated edges.
      * @param vertexAnnotator VertexAnnotator to use for annotating process vertices.
      */
-    public AbstractGenerator(final String label, final EdgeAnnotator edgeAnnotator,
-                             final VertexAnnotator vertexAnnotator) {
+    public AbstractGenerator(final String label, final Optional<Consumer<Edge>> edgeAnnotator,
+                             final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexAnnotator) {
         this(label, edgeAnnotator, vertexAnnotator, Optional.empty());
     }
 
@@ -59,8 +61,8 @@ public abstract class AbstractGenerator {
      * @param label     Label for the generated edges
      * @param annotator EdgeAnnotator to use for annotating newly generated edges.
      */
-    public AbstractGenerator(final String label, final EdgeAnnotator annotator) {
-        this(label, annotator, VertexAnnotator.NONE);
+    public AbstractGenerator(final String label, final Optional<Consumer<Edge>> annotator) {
+        this(label, annotator, Optional.empty());
     }
 
     /**
@@ -69,7 +71,7 @@ public abstract class AbstractGenerator {
      * @param label Label for the generated edges
      */
     public AbstractGenerator(final String label) {
-        this(label, EdgeAnnotator.NONE);
+        this(label, Optional.empty());
     }
 
     /**
@@ -80,27 +82,27 @@ public abstract class AbstractGenerator {
     }
 
     /**
-     * Returns the {@link EdgeAnnotator} for this generator
+     * Returns the {@link Consumer} for this generator
      */
-    public final EdgeAnnotator getEdgeAnnotator() {
+    public final Optional<Consumer<Edge>> getEdgeAnnotator() {
         return edgeAnnotator;
     }
 
     /**
      * Returns the {@link VertexAnnotator} for this generator
      */
-    public final VertexAnnotator getVertexAnnotator() {
+    public final Optional<BiConsumer<Vertex,Map<String,Object>>> getVertexAnnotator() {
         return vertexAnnotator;
     }
 
     protected final Edge addEdge(final Vertex out, final Vertex in) {
         final Edge e = out.addEdge(label, in);
-        edgeAnnotator.annotate(e);
+        edgeAnnotator.ifPresent(c->c.accept(e));
         return e;
     }
 
     protected final Vertex processVertex(final Vertex vertex, final Map<String, Object> context) {
-        vertexAnnotator.annotate(vertex, context);
+        vertexAnnotator.ifPresent(c->c.accept(vertex, context));
         return vertex;
     }
 
