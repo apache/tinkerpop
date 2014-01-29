@@ -32,7 +32,8 @@ public abstract class AbstractGenerator {
      * @param seedGenerator A {@link Supplier} function to provide seeds to {@link java.util.Random}
      */
     public AbstractGenerator(final String label, final Optional<Consumer<Edge>> edgeAnnotator,
-                             final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexAnnotator, final Optional<Supplier<Long>> seedGenerator) {
+                             final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexAnnotator,
+                             final Optional<Supplier<Long>> seedGenerator) {
         if (label == null || label.isEmpty()) throw new IllegalArgumentException("Label cannot be empty");
         if (edgeAnnotator == null) throw new IllegalArgumentException("edgeAnnotator");
         if (vertexAnnotator == null) throw new IllegalArgumentException("vertexAnnotator");
