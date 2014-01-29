@@ -18,7 +18,8 @@ import java.util.ServiceLoader;
 public final class OpLoader {
     private static final Logger logger = LoggerFactory.getLogger(OpLoader.class);
 
-    private static final Map<String,OpProcessor> processors = new HashMap<>();
+    private static final Map<String, OpProcessor> processors = new HashMap<>();
+
     static {
         ServiceLoader.load(OpProcessor.class).forEach(op -> {
             final String name = op.getName();

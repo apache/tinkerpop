@@ -32,5 +32,5 @@ public class Tokens {
     public static final String ARGS_INFO_TYPE_IMPORTS = "imports";
 
     public static final List<String> INFO_TYPES = Arrays.asList(ARGS_INFO_TYPE_DEPDENENCIES,
-                                                                ARGS_INFO_TYPE_IMPORTS);
+            ARGS_INFO_TYPE_IMPORTS);
 }

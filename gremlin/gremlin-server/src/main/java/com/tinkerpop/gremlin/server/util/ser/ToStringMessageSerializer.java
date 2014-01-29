@@ -39,7 +39,7 @@ public class ToStringMessageSerializer implements MessageSerializer {
 
     @Override
     public String[] mimeTypesSupported() {
-        return new String[] {"text/plain"};
+        return new String[]{"text/plain"};
     }
 }
 

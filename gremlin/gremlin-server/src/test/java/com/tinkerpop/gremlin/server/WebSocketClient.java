@@ -62,13 +62,11 @@ class WebSocketClient {
             final ArrayBlockingQueue<Optional<JsonNode>> queue = responses.get(requestId);
             if (queue != null) {
                 queue.put(response);
-            }
-            else {
+            } else {
                 // no queue for some reason....why ???
                 System.out.println(String.format("No queue found in the response map*: %s", requestId));
             }
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             // just trap this one ???
             System.out.println("Error reading the queue in the response map.");
             e.printStackTrace();

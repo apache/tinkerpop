@@ -20,6 +20,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     protected final Set<String> extraStaticImports = new HashSet<>();
 
     private static final List<String> imports = new ArrayList<>();
+
     static {
         imports.add("com.tinkerpop.blueprints.*");
         imports.add("com.tinkerpop.blueprints.computer.*");

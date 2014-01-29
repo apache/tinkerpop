@@ -55,6 +55,7 @@ public enum ResultCode {
 
 
     private final int value;
+
     private ResultCode(final int value) {
         this.value = value;
     }

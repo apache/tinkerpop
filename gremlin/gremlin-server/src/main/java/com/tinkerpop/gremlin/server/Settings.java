@@ -97,7 +97,8 @@ public class Settings {
     /**
      * Settings must be instantiated from {@link #read(String)} or {@link #read(java.io.InputStream)} methods.
      */
-    private Settings() {}
+    private Settings() {
+    }
 
     public Optional<ServerMetrics> optionalMetrics() {
         return Optional.ofNullable(metrics);

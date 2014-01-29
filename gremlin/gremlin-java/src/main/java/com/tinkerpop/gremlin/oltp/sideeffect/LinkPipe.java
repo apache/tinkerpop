@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.oltp.sideeffect;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.gremlin.oltp.map.MapPipe;
 import com.tinkerpop.gremlin.Pipeline;
+import com.tinkerpop.gremlin.oltp.map.MapPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 
 /**

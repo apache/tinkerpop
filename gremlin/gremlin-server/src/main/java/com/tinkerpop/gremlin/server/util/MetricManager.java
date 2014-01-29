@@ -264,7 +264,7 @@ public enum MetricManager {
     public synchronized void addGangliaReporter(final String groupOrHost, final int port,
                                                 final GMetric.UDPAddressingMode addressingMode, final int ttl, final Boolean protocol31,
                                                 final UUID hostUUID, final String spoof, final long reportIntervalInMS) throws IOException {
-        if (null  == groupOrHost || groupOrHost.isEmpty())
+        if (null == groupOrHost || groupOrHost.isEmpty())
             throw new IllegalArgumentException("groupOrHost cannot be null or empty");
 
         if (null == addressingMode)

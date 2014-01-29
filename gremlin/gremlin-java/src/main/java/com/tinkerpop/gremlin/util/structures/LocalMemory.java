@@ -1,6 +1,6 @@
-package com.tinkerpop.gremlin.util;
+package com.tinkerpop.gremlin.util.structures;
 
-import com.tinkerpop.gremlin.PipelineMemory;
+import com.tinkerpop.gremlin.Memory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LocalPipelineMemory implements PipelineMemory {
+public class LocalMemory implements Memory {
 
     private final Map<String, Object> variables = new HashMap<>();
 
