@@ -84,13 +84,15 @@ public abstract class AbstractGenerator {
     /**
      * Returns the {@link Consumer} for this generator
      */
+    @SuppressWarnings("UnusedDeclaration")
     public final Optional<Consumer<Edge>> getEdgeAnnotator() {
         return edgeAnnotator;
     }
 
     /**
-     * Returns the {@link VertexAnnotator} for this generator
+     * Returns the {@link BiConsumer} for this generator
      */
+    @SuppressWarnings("UnusedDeclaration")
     public final Optional<BiConsumer<Vertex,Map<String,Object>>> getVertexAnnotator() {
         return vertexAnnotator;
     }
