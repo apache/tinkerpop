@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 /**
  * Generates a synthetic network for a given out- and (optionally) in-degree distribution.
@@ -128,12 +129,10 @@ public class DistributionGenerator extends AbstractGenerator {
 
         final long seed = this.seedSupplier.get();
         Random outRandom = new Random(seed);
-        ArrayList<Vertex> outStubs = new ArrayList<>(expectedNumEdges);
+        final ArrayList<Vertex> outStubs = new ArrayList<>(expectedNumEdges);
         for (Vertex v : out) {
-            int degree = outDist.nextValue(outRandom);
-            for (int i = 0; i < degree; i++) {
-                outStubs.add(v);
-            }
+            final int degree = outDist.nextValue(outRandom);
+            IntStream.range(0, degree).forEach(i->outStubs.add(v));
         }
 
         Collections.shuffle(outStubs);
