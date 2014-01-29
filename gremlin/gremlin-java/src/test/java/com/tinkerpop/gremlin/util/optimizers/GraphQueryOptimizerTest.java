@@ -6,7 +6,6 @@ import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.oltp.filter.HasPipe;
 import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
-import com.tinkerpop.gremlin.util.optimizers.GraphQueryOptimizer;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -20,7 +19,7 @@ public class GraphQueryOptimizerTest {
     @Test
     public void shouldPutHasParametersIntoGraphQueryBuilder() {
         Gremlin<Vertex, Vertex> gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
-        gremlin.getOptimizers().clear();
+        gremlin.optimizers().get().clear();
         gremlin.V().has("age", 29);
         assertEquals(2, gremlin.getPipes().size());
         assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
@@ -32,8 +31,8 @@ public class GraphQueryOptimizerTest {
         assertFalse(gremlin.hasNext());
 
         gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
-        gremlin.getOptimizers().clear();
-        gremlin.registerOptimizer(new GraphQueryOptimizer());
+        gremlin.optimizers().get().clear();
+        gremlin.optimizers().register(new GraphQueryOptimizer());
         gremlin.V().has("age", 29);
         assertEquals(1, gremlin.getPipes().size());
         assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
@@ -48,13 +47,13 @@ public class GraphQueryOptimizerTest {
     @Test
     public void shouldReturnTheSameResultsAfterOptimization() {
         Gremlin a = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
-        a.getOptimizers().clear();
+        a.optimizers().get().clear();
         a.V().has("age", 29);
         assertTrue(a.hasNext());
 
         Gremlin b = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
-        b.getOptimizers().clear();
-        b.registerOptimizer(new GraphQueryOptimizer());
+        b.optimizers().get().clear();
+        b.optimizers().register(new GraphQueryOptimizer());
         b.V().has("age", 29);
         assertTrue(b.hasNext());
 

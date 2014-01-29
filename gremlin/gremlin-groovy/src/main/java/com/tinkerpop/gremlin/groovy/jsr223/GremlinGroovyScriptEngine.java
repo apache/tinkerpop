@@ -90,13 +90,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     @Override
     public synchronized void use(final String group, final String artifact, final String version) {
-        final Map<String, Object> dependency = new HashMap<String,Object>(){{
+        final Map<String, Object> dependency = new HashMap<String, Object>() {{
             put("group", group);
             put("module", artifact);
             put("version", version);
         }};
 
-        final Map<String, Object> args = new HashMap<String,Object>(){{
+        final Map<String, Object> args = new HashMap<String, Object>() {{
             put("classLoader", loader);
         }};
 
@@ -131,7 +131,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         final Set<String> staticImports = new HashSet<>();
         final Set<String> imports = new HashSet<>();
 
-        importStatements.forEach(s-> {
+        importStatements.forEach(s -> {
             final String trimmed = s.trim();
             if (patternImportStatic.matcher(trimmed).matches()) {
                 final int pos = trimmed.indexOf(STATIC);

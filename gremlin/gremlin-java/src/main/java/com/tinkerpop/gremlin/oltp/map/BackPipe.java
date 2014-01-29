@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.util.GremlinHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BackPipe<S,E> extends MapPipe<S, E> {
+public class BackPipe<S, E> extends MapPipe<S, E> {
 
     public String as;
 

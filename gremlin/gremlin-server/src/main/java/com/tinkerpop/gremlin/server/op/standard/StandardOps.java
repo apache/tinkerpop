@@ -75,7 +75,7 @@ final class StandardOps {
         if (infoType.equals(Tokens.ARGS_INFO_TYPE_DEPDENENCIES))
             infoToShow = scriptEngines.dependencies();
         else if (infoType.equals(Tokens.ARGS_INFO_TYPE_IMPORTS))
-            infoToShow  = scriptEngines.imports();
+            infoToShow = scriptEngines.imports();
         else {
             // this shouldn't happen if validations are working properly.  will bomb and log as error to server logs
             // thus killing the connection
@@ -105,7 +105,7 @@ final class StandardOps {
         final MessageSerializer serializer = MessageSerializer.select(
                 msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
                 MessageSerializer.DEFAULT_RESULT_SERIALIZER);
-        final List<Map<String,String>> usings = (List<Map<String,String>>) msg.args.get(Tokens.ARGS_COORDINATES);
+        final List<Map<String, String>> usings = (List<Map<String, String>>) msg.args.get(Tokens.ARGS_COORDINATES);
         usings.forEach(c -> {
             final String group = c.get(Tokens.ARGS_COORDINATES_GROUP);
             final String artifact = c.get(Tokens.ARGS_COORDINATES_ARTIFACT);
@@ -113,7 +113,7 @@ final class StandardOps {
             logger.info("Loading plugin [group={},artifact={},version={}]", group, artifact, version);
             context.getGremlinExecutor().getSharedScriptEngines().use(group, artifact, version);
 
-            final Map<String,String> coords = new HashMap<String,String>() {{
+            final Map<String, String> coords = new HashMap<String, String>() {{
                 put("group", group);
                 put("artifact", artifact);
                 put("version", version);
@@ -249,7 +249,7 @@ final class StandardOps {
             throw new OpProcessorException(errorMessage, serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context));
         } finally {
             // try to cancel the serialization task if its still running somehow
-            serializing.ifPresent(f->f.cancel(true));
+            serializing.ifPresent(f -> f.cancel(true));
 
             // the stopwatch was only started after a script was evaluated
             if (evaluated)

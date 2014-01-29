@@ -7,11 +7,12 @@ import com.tinkerpop.blueprints.query.util.GraphQueryBuilder;
 import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
-import com.tinkerpop.gremlin.util.LocalPipelineMemory;
 import com.tinkerpop.gremlin.util.optimizers.GraphQueryOptimizer;
 import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.util.optimizers.IdentityOptimizer;
+import com.tinkerpop.gremlin.util.optimizers.LocalOptimizers;
 import com.tinkerpop.gremlin.util.optimizers.VertexQueryOptimizer;
+import com.tinkerpop.gremlin.util.structures.LocalMemory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,19 +23,19 @@ import java.util.List;
  */
 public class Gremlin<S, E> implements Pipeline<S, E> {
 
-    private final PipelineMemory memory = new LocalPipelineMemory();
+    private final Memory memory = new LocalMemory();
+    private final Optimizers optimizers = new LocalOptimizers();
     private final List<Pipe> pipes = new ArrayList<>();
-    private final List<Optimizer> optimizers = new ArrayList<>();
     private final Graph graph;
     private boolean firstNext = true;
 
     protected Gremlin(final Graph graph, final boolean useDefaultOptimizers) {
         this.graph = graph;
         if (useDefaultOptimizers) {
-            this.optimizers.add(new IdentityOptimizer());
-            this.optimizers.add(new HolderOptimizer());
-            this.optimizers.add(new VertexQueryOptimizer());
-            this.optimizers.add(new GraphQueryOptimizer());
+            this.optimizers.register(new IdentityOptimizer());
+            this.optimizers.register(new HolderOptimizer());
+            this.optimizers.register(new VertexQueryOptimizer());
+            this.optimizers.register(new GraphQueryOptimizer());
         }
     }
 
@@ -53,15 +54,11 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         return new Gremlin(graph, useDefaultOptimizers);
     }
 
-    public void registerOptimizer(final Optimizer optimizer) {
-        this.optimizers.add(optimizer);
-    }
-
-    public List<Optimizer> getOptimizers() {
+    public Optimizers optimizers() {
         return this.optimizers;
     }
 
-    public PipelineMemory memory() {
+    public Memory memory() {
         return this.memory;
     }
 
@@ -102,7 +99,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     }
 
     public <S, E> Pipeline<S, E> addPipe(final Pipe<?, E> pipe) {
-        if (this.optimizers.stream()
+        if (this.optimizers.get().stream()
                 .filter(optimizer -> optimizer instanceof Optimizer.StepOptimizer)
                 .map(optimizer -> ((Optimizer.StepOptimizer) optimizer).optimize(this, pipe))
                 .reduce(true, (a, b) -> a && b)) {
@@ -136,7 +133,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         else
             return;
 
-        this.optimizers.stream()
+        this.optimizers.get().stream()
                 .filter(optimizer -> optimizer instanceof Optimizer.FinalOptimizer)
                 .map(optimizer -> ((Optimizer.FinalOptimizer) optimizer).optimize(this)).count();
     }

@@ -32,10 +32,10 @@ public interface MessageSerializer {
      * invoking {@link #mimeTypesSupported()} and mapping each mime type returned in that array back to the associated
      * {@link MessageSerializer} in the @{link Map},
      */
-    static final Map<String, MessageSerializer> serializers = new HashMap<String, MessageSerializer>(){{
+    static final Map<String, MessageSerializer> serializers = new HashMap<String, MessageSerializer>() {{
         final ServiceLoader<MessageSerializer> serviceLoader = ServiceLoader.load(MessageSerializer.class);
-        StreamFactory.stream(serviceLoader.iterator()).flatMap(serializer->
-                Stream.of(serializer.mimeTypesSupported()).map(mimeType->Arrays.asList(mimeType, serializer))
+        StreamFactory.stream(serviceLoader.iterator()).flatMap(serializer ->
+                Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Arrays.asList(mimeType, serializer))
         ).forEach(l -> put(l.get(0).toString(), (MessageSerializer) l.get(1)));
     }};
 
@@ -59,8 +59,8 @@ public interface MessageSerializer {
     /**
      * Serialize a result message.
      *
-     * @param o the result
-     * @param code the response code
+     * @param o       the result
+     * @param code    the response code
      * @param context the context of the server and request
      * @return the result serialized to a String
      */

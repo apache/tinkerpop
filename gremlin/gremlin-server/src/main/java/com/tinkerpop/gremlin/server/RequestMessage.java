@@ -41,7 +41,8 @@ public class RequestMessage {
      */
     public Map<String, Object> args = new HashMap<>();
 
-    private RequestMessage() {}
+    private RequestMessage() {
+    }
 
     private RequestMessage(final String op) {
         this.op = op;
@@ -49,7 +50,7 @@ public class RequestMessage {
 
     public <T> Optional<T> optionalArgs(final String key) {
         final Object o = args.get(key);
-        return  o == null ? Optional.empty() : Optional.of((T) o);
+        return o == null ? Optional.empty() : Optional.of((T) o);
     }
 
     /**

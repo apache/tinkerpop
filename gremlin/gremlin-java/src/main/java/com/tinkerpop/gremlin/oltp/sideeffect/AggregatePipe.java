@@ -4,7 +4,6 @@ import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.oltp.map.FlatMapPipe;
 import com.tinkerpop.gremlin.util.FunctionRing;
-import com.tinkerpop.gremlin.util.GremlinHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.Pipeline;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

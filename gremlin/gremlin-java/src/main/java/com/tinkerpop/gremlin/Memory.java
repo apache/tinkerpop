@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface PipelineMemory {
+public interface Memory {
 
     public <T> void set(final String variable, final T value);
 

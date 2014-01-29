@@ -28,7 +28,7 @@ public class ScriptEngines {
     /**
      * {@code ScriptEngine} objects configured for the server keyed on the language name.
      */
-    private Map<String,ScriptEngine> scriptEngines = new ConcurrentHashMap<>();
+    private Map<String, ScriptEngine> scriptEngines = new ConcurrentHashMap<>();
 
     private static final GremlinGroovyScriptEngineFactory gremlinGroovyScriptEngineFactory = new GremlinGroovyScriptEngineFactory();
 
@@ -63,7 +63,7 @@ public class ScriptEngines {
      * {@link DependencyManager} interface.
      */
     public void addImports(final Set<String> imports) {
-        getDependencyManagers().forEach(dm ->  dm.addImports(imports));
+        getDependencyManagers().forEach(dm -> dm.addImports(imports));
     }
 
     /**
@@ -82,7 +82,7 @@ public class ScriptEngines {
     /**
      * List dependencies for those {@code ScriptEngine} objects that implement the {@link DependencyManager} interface.
      */
-    public Map<String,List<Map>> dependencies() {
+    public Map<String, List<Map>> dependencies() {
         final Map m = new HashMap();
         scriptEngines.entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof DependencyManager)

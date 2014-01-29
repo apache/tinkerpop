@@ -5,10 +5,10 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import com.tinkerpop.gremlin.oltp.map.FlatMapPipe;
 import com.tinkerpop.gremlin.Gremlin;
 import com.tinkerpop.gremlin.oltp.filter.HasPipe;
 import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
+import com.tinkerpop.gremlin.oltp.map.FlatMapPipe;
 import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
 import org.junit.Test;
@@ -23,7 +23,7 @@ public class VertexQueryOptimizerTest {
     @Test
     public void shouldPutHasParametersIntoVertexEdgeQueryBuilder() {
         Gremlin<Vertex, Edge> gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
-        gremlin.getOptimizers().clear();
+        gremlin.optimizers().get().clear();
         gremlin.V().outE("knows").has("weight", 1.0f);
         assertEquals(3, gremlin.getPipes().size());
         assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
@@ -40,8 +40,8 @@ public class VertexQueryOptimizerTest {
         assertFalse(gremlin.hasNext());
 
         gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
-        gremlin.getOptimizers().clear();
-        gremlin.registerOptimizer(new VertexQueryOptimizer());
+        gremlin.optimizers().get().clear();
+        gremlin.optimizers().register(new VertexQueryOptimizer());
         gremlin.V().outE("knows").has("weight", 1.0f);
         assertEquals(2, gremlin.getPipes().size());
         assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
@@ -61,13 +61,13 @@ public class VertexQueryOptimizerTest {
     @Test
     public void shouldReturnTheSameResultsAfterOptimization() {
         Gremlin a = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
-        a.getOptimizers().clear();
+        a.optimizers().get().clear();
         a.V().outE("knows").has("weight", 1.0f);
         assertTrue(a.hasNext());
 
         Gremlin b = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
-        b.getOptimizers().clear();
-        b.registerOptimizer(new VertexQueryOptimizer());
+        b.optimizers().get().clear();
+        b.optimizers().register(new VertexQueryOptimizer());
         b.V().outE("knows").has("weight", 1.0f);
         assertTrue(b.hasNext());
 
@@ -79,7 +79,7 @@ public class VertexQueryOptimizerTest {
     @Test
     public void shouldNotRemoveEdgeVertexPipeIfTraversalIsGoingBackwards() {
         Gremlin gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
-        gremlin.getOptimizers().clear();
+        gremlin.optimizers().get().clear();
         gremlin.V().outE().outV();
         assertEquals(3, gremlin.getPipes().size());
         assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
@@ -104,7 +104,7 @@ public class VertexQueryOptimizerTest {
     @Test
     public void shouldRemoveEdgeVertexPipeIfTraversalIsGoingForward() {
         Gremlin gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
-        gremlin.getOptimizers().clear();
+        gremlin.optimizers().get().clear();
         gremlin.V().outE().inV();
         assertEquals(3, gremlin.getPipes().size());
         assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);

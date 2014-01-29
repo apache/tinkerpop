@@ -14,8 +14,8 @@ public class GroupCountOptimizer implements Optimizer.FinalOptimizer {
 
     public Pipeline optimize(final Pipeline pipeline) {
         // if pipeline has a GroupCountPipe, replace it with a Gremlin OLAP GroupCountPipe using ReductionMemory
-        for (Pipe pipe : (List<Pipe>) pipeline.getPipes()){
-            if(pipe instanceof GroupCountPipe) {
+        for (Pipe pipe : (List<Pipe>) pipeline.getPipes()) {
+            if (pipe instanceof GroupCountPipe) {
                 //pipe.get
             }
         }

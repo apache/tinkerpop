@@ -65,7 +65,9 @@ import java.util.function.Supplier;
  */
 public interface Pipeline<S, E> extends Iterator<E> {
 
-    public PipelineMemory memory();
+    public Memory memory();
+
+    public Optimizers optimizers();
 
     public Pipeline<Vertex, Vertex> V();
 
@@ -74,10 +76,6 @@ public interface Pipeline<S, E> extends Iterator<E> {
     public Pipeline<Vertex, Vertex> v(final Object... ids);
 
     public Pipeline<Edge, Edge> e(final Object... ids);
-
-    public void registerOptimizer(final Optimizer optimizer);
-
-    public List<Optimizer> getOptimizers();
 
     public void addStarts(final Iterator<Holder<S>> starts);
 

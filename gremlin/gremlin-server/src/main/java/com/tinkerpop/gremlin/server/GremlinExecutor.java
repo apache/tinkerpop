@@ -40,7 +40,8 @@ public class GremlinExecutor {
      * @param settings the Gremlin Server configuration
      */
     public GremlinExecutor(final Settings settings) {
-        if (logger.isDebugEnabled()) logger.debug("Initializing GremlinExecutor.  This should not happen more than once.");
+        if (logger.isDebugEnabled())
+            logger.debug("Initializing GremlinExecutor.  This should not happen more than once.");
         sharedScriptEngines = createScriptEngine(settings);
 
         this.settings = settings;
@@ -50,7 +51,7 @@ public class GremlinExecutor {
      * Evaluate the {@link RequestMessage} within a {@code ScriptEngine} instance.
      *
      * @param message the current message
-     * @param graphs the list of {@link com.tinkerpop.blueprints.Graph} instances configured for the server
+     * @param graphs  the list of {@link com.tinkerpop.blueprints.Graph} instances configured for the server
      * @return the result from the evaluation
      */
     public Object eval(final RequestMessage message, final Graphs graphs)
@@ -86,12 +87,12 @@ public class GremlinExecutor {
 
     private synchronized static ScriptEngines createScriptEngine(final Settings settings) {
         final ScriptEngines scriptEngines = new ScriptEngines();
-        for (Map.Entry<String,Settings.ScriptEngineSettings> config: settings.scriptEngines.entrySet()) {
+        for (Map.Entry<String, Settings.ScriptEngineSettings> config : settings.scriptEngines.entrySet()) {
             scriptEngines.reload(config.getKey(), new HashSet<>(config.getValue().imports),
                     new HashSet<>(config.getValue().staticImports));
         }
 
-        settings.use.forEach(u-> {
+        settings.use.forEach(u -> {
             if (u.size() != 3)
                 logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
             else {
@@ -107,9 +108,9 @@ public class GremlinExecutor {
         return this.sharedScriptEngines;
     }
 
-    private static Map<String,Object> extractBindingsFromMessage(final RequestMessage msg) {
+    private static Map<String, Object> extractBindingsFromMessage(final RequestMessage msg) {
         final Map<String, Object> m = new HashMap<>();
-        final Optional<Map<String,Object>> bindingsInMessage = msg.optionalArgs(Tokens.ARGS_BINDINGS);
+        final Optional<Map<String, Object>> bindingsInMessage = msg.optionalArgs(Tokens.ARGS_BINDINGS);
         return bindingsInMessage.orElse(m);
     }
 }

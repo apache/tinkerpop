@@ -36,7 +36,7 @@ import java.util.Optional;
 public class JsonMessageSerializerV1d0 implements MessageSerializer {
     private static final Logger logger = LoggerFactory.getLogger(JsonMessageSerializerV1d0.class);
 
-    static final Version JSON_SERIALIZATION_VERSION = new Version(1,0,0,"","com.tinkerpop.gremlin", "gremlin-server");
+    static final Version JSON_SERIALIZATION_VERSION = new Version(1, 0, 0, "", "com.tinkerpop.gremlin", "gremlin-server");
 
     public static final String TOKEN_RESULT = "result";
     public static final String TOKEN_ID = "id";
@@ -91,7 +91,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
     @Override
     public String serializeResult(final Object o, final ResultCode code, final Context context) {
         try {
-            final Map<String,Object> result = new HashMap<>();
+            final Map<String, Object> result = new HashMap<>();
             result.put(TOKEN_CODE, code.getValue());
             result.put(TOKEN_RESULT, o);
             result.put(TOKEN_VERSION, JSON_SERIALIZATION_VERSION.toString());

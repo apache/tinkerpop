@@ -15,7 +15,7 @@ public class GremlinGroovy<S, E> extends Gremlin<S, E> {
     }
 
     public static GremlinGroovy<?, ?> of() {
-        return new GremlinGroovy<>(EmptyGraph.instance(),true);
+        return new GremlinGroovy<>(EmptyGraph.instance(), true);
     }
 
     public static GremlinGroovy<?, ?> of(final Graph graph) {
