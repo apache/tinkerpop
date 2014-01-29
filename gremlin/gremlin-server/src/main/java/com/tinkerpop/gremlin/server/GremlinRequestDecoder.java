@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.server;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import org.javatuples.Pair;
 
 import java.util.List;
 
@@ -16,18 +17,18 @@ import java.util.List;
 class GremlinRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
-        final String[] parts = segmentMessage(frame.text());
+        final Pair<String, String> parts = segmentMessage(frame.text());
 
         // if the message cannot be deserialized it is passed through as an invalid message
-        objects.add(MessageSerializer.select(parts[0], MessageSerializer.DEFAULT_REQUEST_SERIALIZER)
-                                     .deserializeRequest(parts[1]).orElse(RequestMessage.INVALID));
+        objects.add(MessageSerializer.select(parts.getValue0(), MessageSerializer.DEFAULT_REQUEST_SERIALIZER)
+                                     .deserializeRequest(parts.getValue1()).orElse(RequestMessage.INVALID));
     }
 
-    private static String[] segmentMessage(final String msg) {
+    private static Pair<String, String> segmentMessage(final String msg) {
         final int splitter = msg.indexOf("|-");
         if (splitter == -1)
-            return new String[] {"application/json", msg};
+            return Pair.with("application/json", msg);
 
-        return new String[] {msg.substring(0, splitter), msg.substring(splitter + 2)};
+        return Pair.with(msg.substring(0, splitter), msg.substring(splitter + 2));
     }
 }
