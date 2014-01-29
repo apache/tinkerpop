@@ -22,9 +22,6 @@ public class SizableIterable<T> implements Iterable<T> {
      * Wraps the given Iterable with the given size.
      * <p/>
      * NOTE: the size MUST be the size of the Iterable. This is not verified.
-     *
-     * @param iterable
-     * @param size
      */
     public SizableIterable(final Iterable<T> iterable, final int size) {
         if (iterable == null)
@@ -56,7 +53,7 @@ public class SizableIterable<T> implements Iterable<T> {
      *
      * @return The size of the given Iterable.
      */
-    public static final <T> int sizeOf(final Iterable<T> iterable) {
+    public static <T> int sizeOf(final Iterable<T> iterable) {
         if (iterable instanceof Collection) {
             return ((Collection<T>) iterable).size();
         } else if (iterable instanceof SizableIterable) {
