@@ -75,6 +75,14 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
+    /**
+     * Construct a {@link Function} that enhances the features of {@link com.tinkerpop.blueprints.Element#getProperty(String)}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link Function} that accepts a {@link Function} with
+     *         {@link com.tinkerpop.blueprints.Element#getProperty(String)} ()} signature
+     *         and returns an enhanced strategy {@link Function} with the same signature
+     */
     public default <V> UnaryOperator<Function<String, Property<V>>> getElementGetProperty(final Strategy.Context<Element> ctx) {
         return UnaryOperator.identity();
     }
