@@ -11,8 +11,6 @@ import com.tinkerpop.blueprints.generator.DistributionGenerator;
 import com.tinkerpop.blueprints.generator.EdgeAnnotator;
 import com.tinkerpop.blueprints.generator.PowerLawDistribution;
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -25,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -56,8 +55,7 @@ public class GraphReadPerformanceTest {
             final DistributionGenerator generator = new DistributionGenerator("knows", EdgeAnnotator.NONE, r::nextLong);
             generator.setOutDistribution(inDist);
             generator.setOutDistribution(outDist);
-            final int numEdges = generator.generate(g, numVertices * 3);
-            System.out.println(String.format("Generated graph with %s vertices and %s edges", numVertices, numEdges));
+            generator.generate(g, numVertices * 3);
         }
 
         @Test
@@ -68,7 +66,7 @@ public class GraphReadPerformanceTest {
             // read the vertices 10 times over
             for (int ix = 0; ix < 10; ix++) {
                 ids.stream().map(g::v).map(v->v.get()).forEach(v-> {
-                    v.getValue("name");
+                    assertNotNull(v.getValue("name"));
                     counter.incrementAndGet();
                 });
 
