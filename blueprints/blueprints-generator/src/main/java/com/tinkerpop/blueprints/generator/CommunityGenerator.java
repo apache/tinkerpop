@@ -87,6 +87,7 @@ public class CommunityGenerator extends AbstractGenerator {
     /**
      * Returns the configured cross community percentage.
      */
+    @SuppressWarnings("UnusedDeclaration")
     public double getCrossCommunityPercentage() {
         return crossCommunityPercentage;
     }
