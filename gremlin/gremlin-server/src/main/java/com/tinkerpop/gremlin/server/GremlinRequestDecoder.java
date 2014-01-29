@@ -7,17 +7,20 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import java.util.List;
 
 /**
+ * Decodes the contents of a {@link TextWebSocketFrame}.  The frame contains text where there is either a delimited
+ * string, separated by a "|-".  The part before that delimiter is the mime type of the message that follows the
+ * delimiter.  If no delimiter is present, the decoder assumes "application/json".
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class GremlinRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
-        // message consists of two parts.  the first part has the mime type of the incoming message and the
-        // second part is the message itself.  these two parts are separated by a "|-". if there aren't two parts
-        // assume application/json and that the entire message is that format (i.e. there is no "mimetype|-")
         final String[] parts = segmentMessage(frame.text());
+
+        // if the message cannot be deserialized it is passed through as an invalid message
         objects.add(MessageSerializer.select(parts[0], MessageSerializer.DEFAULT_REQUEST_SERIALIZER)
-                .deserializeRequest(parts[1]).orElse(RequestMessage.INVALID));
+                                     .deserializeRequest(parts[1]).orElse(RequestMessage.INVALID));
     }
 
     private static String[] segmentMessage(final String msg) {
