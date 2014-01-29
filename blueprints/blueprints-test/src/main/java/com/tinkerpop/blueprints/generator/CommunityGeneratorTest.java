@@ -49,6 +49,8 @@ public class CommunityGeneratorTest {
             communityGeneratorTest(communityDistribution, degreeDistribution, crossPcent);
         }
 
+        // todo: make this test like the DistributionGeneratorTest.
+
         private void communityGeneratorTest(final Distribution community, final Distribution degree, final double crossPercentage) {
             final int numNodes = 100;
             final Graph graph = g;
