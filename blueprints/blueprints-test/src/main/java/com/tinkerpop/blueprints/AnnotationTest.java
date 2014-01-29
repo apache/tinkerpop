@@ -1,10 +1,10 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.Graph.Features.AnnotationFeatures;
 import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.blueprints.Graph.Features.GraphAnnotationFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexAnnotationFeatures;
-import com.tinkerpop.blueprints.Graph.Features.AnnotationFeatures;
+import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.blueprints.util.StringFactory;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;

@@ -1,7 +1,6 @@
 package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.AnnotatedList;
-import com.tinkerpop.blueprints.AnnotatedValue;
 import com.tinkerpop.blueprints.Annotations;
 import com.tinkerpop.blueprints.Property;
 

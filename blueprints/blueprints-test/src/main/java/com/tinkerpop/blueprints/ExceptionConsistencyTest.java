@@ -14,15 +14,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import static com.tinkerpop.blueprints.Graph.Features.GraphAnnotationFeatures.FEATURE_ANNOTATIONS;
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
+import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
-import static com.tinkerpop.blueprints.Graph.Features.GraphAnnotationFeatures.FEATURE_ANNOTATIONS;
-import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 /**
  * Ensure that exception handling is consistent within Blueprints. It may be necessary to throw exceptions in an
  * appropriate order in order to ensure that these tests pass.  Note that some exception consistency checks are

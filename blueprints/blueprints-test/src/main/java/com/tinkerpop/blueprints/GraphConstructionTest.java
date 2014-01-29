@@ -1,7 +1,6 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
-import com.tinkerpop.blueprints.strategy.PartitionGraphStrategy;
 import com.tinkerpop.blueprints.util.GraphFactory;
 import org.junit.Test;
 
@@ -9,11 +8,9 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests that support the creation of {@link Graph} instances which occurs via {@link GraphFactory}.

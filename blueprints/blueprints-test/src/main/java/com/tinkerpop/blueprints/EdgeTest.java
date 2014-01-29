@@ -13,10 +13,7 @@ import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_I
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_LONG_VALUES;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

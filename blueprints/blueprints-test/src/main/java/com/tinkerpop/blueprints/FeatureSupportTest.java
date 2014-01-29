@@ -2,10 +2,10 @@ package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.Graph.Features.EdgeFeatures;
 import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.blueprints.Graph.Features.GraphFeatures;
 import com.tinkerpop.blueprints.Graph.Features.GraphAnnotationFeatures;
-import com.tinkerpop.blueprints.Graph.Features.VertexFeatures;
+import com.tinkerpop.blueprints.Graph.Features.GraphFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexAnnotationFeatures;
+import com.tinkerpop.blueprints.Graph.Features.VertexFeatures;
 import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import com.tinkerpop.blueprints.strategy.PartitionGraphStrategy;
