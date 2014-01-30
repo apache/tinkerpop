@@ -104,7 +104,7 @@ public class CommunityGenerator extends AbstractGenerator {
 
 
     /**
-     * Generates a synthetic network for provided vertices in the given graphh such that the provided expected number
+     * Generates a synthetic network for provided vertices in the given graph such that the provided expected number
      * of communities are generated with the specified expected number of edges.
      *
      * @return The actual number of edges generated. May be different from the expected number.
@@ -145,26 +145,43 @@ public class CommunityGenerator extends AbstractGenerator {
                     Vertex selected = null;
                     if (random.nextDouble() < crossCommunityPercentage || (community.size() - 1 <= inlinks.size())) {
                         //Cross community
+                        int tries = 0;
                         ArrayList<Vertex> othercomm = null;
-                        while (selected == null) {
+
+                        // this limit on the number of tries prevents infinite loop where the selected vertex to
+                        // link to doesn't exist given the nature and structure of the graph.
+                        while (selected == null && tries < 100) {
+                            // choose another community to connect to and make sure it's not in the current
+                            // community of the current vertex
                             while (othercomm == null) {
                                 othercomm = communities.get(random.nextInt(communities.size()));
                                 if (othercomm.equals(community)) othercomm = null;
                             }
                             selected = othercomm.get(random.nextInt(othercomm.size()));
                             if (outlinks.contains(selected)) selected = null;
+
+                            tries++;
                         }
-                        outlinks.add(selected);
+
+                        // if tries expires then the value of selected is null in which case it should not be added.
+                        if (selected != null) outlinks.add(selected);
                     } else {
                         //In community
-                        while (selected == null) {
+                        int tries = 0;
+                        while (selected == null && tries < 100) {
                             selected = community.get(random.nextInt(community.size()));
                             if (v.equals(selected) || inlinks.contains(selected)) selected = null;
+                            tries++;
                         }
-                        inlinks.add(selected);
+
+                        if (selected != null) inlinks.add(selected);
                     }
-                    addEdge(v, selected);
-                    addedEdges++;
+
+                    // only add an edge if the vertex was actually selected.
+                    if (selected != null) {
+                        addEdge(v, selected);
+                        addedEdges++;
+                    }
                 }
             }
         }

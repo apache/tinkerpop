@@ -44,7 +44,7 @@ public class CommunityGeneratorTest {
         public double crossPcent;
 
         @Test
-        @Ignore("Make not lock or cause exceptions")
+        // @Ignore("Make not lock or cause exceptions")
         public void shouldGenerateGraph() {
             communityGeneratorTest(communityDistribution, degreeDistribution, crossPcent);
         }
