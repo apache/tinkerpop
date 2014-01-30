@@ -39,7 +39,7 @@ public class ExceptionConsistencyTest {
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "providedKeyValuesMustBeAMultipleOfTwo",
-            "providedKeyValuesMustHaveALegalKeyOnEvenIndices"
+            "providedKeyValuesMustHaveAStringOnEvenIndices"
     })
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "propertyValueCanNotBeNull",
@@ -244,23 +244,22 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Test exceptions around {@link Annotations}.
+     * Test exceptions around {@link Graph.Annotations}.
      */
     @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Annotations.Exceptions.class, methods = {
-            "annotationValueCanNotBeNull",
-            "annotationKeyCanNotBeNull",
+    @ExceptionCoverage(exceptionClass = Graph.Annotations.Exceptions.class, methods = {
+            "graphAnnotationValueCanNotBeNull",
+            "graphAnnotationKeyCanNotBeNull",
             "annotationKeyValueIsReserved",
-            "annotationKeyCanNotBeEmpty"
+            "graphAnnotationKeyCanNotBeEmpty"
     })
     public static class GraphAnnotationsTest extends AbstractBlueprintsTest {
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {"k", null, Annotations.Exceptions.annotationValueCanNotBeNull()},
-                    {null, "v", Annotations.Exceptions.annotationKeyCanNotBeNull()},
-                    {AnnotatedValue.Key.VALUE, "v", Annotations.Exceptions.annotationKeyValueIsReserved()},
-                    {"", "v", Annotations.Exceptions.annotationKeyCanNotBeEmpty()}});
+                    {"k", null, Graph.Annotations.Exceptions.graphAnnotationValueCanNotBeNull()},
+                    {null, "v", Graph.Annotations.Exceptions.graphAnnotationKeyCanNotBeNull()},
+                    {"", "v", Graph.Annotations.Exceptions.graphAnnotationKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)
@@ -286,16 +285,14 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Tests for exceptions with {@link AnnotatedList} and {@link AnnotatedValue}.
+     * Tests for exceptions with {@link AnnotatedValue}.
      */
     @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Annotations.Exceptions.class, methods = {
+    @ExceptionCoverage(exceptionClass = AnnotatedValue.Exceptions.class, methods = {
             "annotationKeyValueIsReserved",
-            "annotationKeyCanNotBeEmpty",
-            "annotationValueCanNotBeNull"
-    })
-    @ExceptionCoverage(exceptionClass = AnnotatedList.Exceptions.class, methods = {
-            "providedKeyValuesMustHaveALegalKeyOnEvenIndices",
+            "graphAnnotationKeyCanNotBeEmpty",
+            "graphAnnotationValueCanNotBeNull",
+            "providedKeyValuesMustHaveAStringOnEvenIndices",
             "providedKeyValuesMustBeAMultipleOfTwo"
     })
     public static class AnnotatedListValueTest extends AbstractBlueprintsTest {
@@ -303,13 +300,13 @@ public class ExceptionConsistencyTest {
         @Parameterized.Parameters(name = "{index}: expect - {1}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {new Object[]{"odd", "number", "arguments"}, AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {new Object[]{"odd"}, AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {new Object[]{"odd", "number", 123, "test"}, AnnotatedList.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    {new Object[]{"odd", null}, Annotations.Exceptions.annotationValueCanNotBeNull()},
-                    {new Object[]{null, "val"}, AnnotatedList.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    {new Object[]{AnnotatedValue.Key.VALUE, "v"}, Annotations.Exceptions.annotationKeyValueIsReserved()},
-                    {new Object[]{"", "val"}, Annotations.Exceptions.annotationKeyCanNotBeEmpty()}});
+                    {new Object[]{"odd", "number", "arguments"}, AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {new Object[]{"odd"}, AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {new Object[]{"odd", "number", 123, "test"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
+                    {new Object[]{"odd", null}, AnnotatedValue.Exceptions.annotationValueCanNotBeNull()},
+                    {new Object[]{null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
+                    {new Object[]{AnnotatedValue.Key.VALUE, "v"}, AnnotatedValue.Exceptions.annotationKeyValueIsReserved()},
+                    {new Object[]{"", "val"}, AnnotatedValue.Exceptions.annotationKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)

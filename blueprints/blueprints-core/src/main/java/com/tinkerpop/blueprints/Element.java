@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.util.ElementHelper;
+
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -29,6 +31,11 @@ public abstract interface Element {
     public <V> Property<V> getProperty(final String key);
 
     public <V> void setProperty(final String key, final V value);
+
+    public default void setProperties(final Object... keyValues) {
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
+        ElementHelper.attachProperties(this, keyValues);
+    }
 
     public default <V> V getValue(final String key) throws NoSuchElementException {
         final Property<V> property = this.getProperty(key);

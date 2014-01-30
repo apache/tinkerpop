@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Blueprints Test Suite for {@link com.tinkerpop.blueprints.Annotations} and {@link AnnotatedList} operations.
+ * Blueprints Test Suite for {@link Graph.Annotations} and {@link AnnotatedList} operations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -31,7 +31,7 @@ import static org.junit.Assume.assumeThat;
 public class AnnotationTest {
 
     /**
-     * Basic tests to ensure that {@link Annotations}, {@link AnnotatedList}, and {@link AnnotatedValue} have
+     * Basic tests to ensure that {@link Graph.Annotations}, {@link AnnotatedList}, and {@link AnnotatedValue} have
      * appropriate {@link String} representations.
      */
     public static class StringRepresentationTest extends AbstractBlueprintsTest {
@@ -63,7 +63,7 @@ public class AnnotationTest {
         @Test
         @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_STRING_VALUES)
         public void testAnnotations() {
-            final Annotations annotations = g.annotations();
+            final Graph.Annotations annotations = g.annotations();
             annotations.set("xo", "test1");
             annotations.set("yo", "test2");
             annotations.set("zo", "test3");
@@ -73,7 +73,7 @@ public class AnnotationTest {
     }
 
     /**
-     * Tests for feature support on {@link Annotations} and {@link AnnotatedList}.  The tests validate if
+     * Tests for feature support on {@link Graph.Annotations} and {@link AnnotatedList}.  The tests validate if
      * {@link com.tinkerpop.blueprints.Graph.Features.AnnotationFeatures} should be turned on or off and if the
      * enabled features are properly supported by the implementation.  Note that these tests are run in a separate
      * test class as they are "parameterized" tests.
@@ -151,7 +151,7 @@ public class AnnotationTest {
         @Test
         public void shouldSetValueOnGraph() throws Exception {
             assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(true));
-            final Annotations annotations = g.annotations();
+            final Graph.Annotations annotations = g.annotations();
             annotations.set("key", value);
 
             if (value instanceof Map)

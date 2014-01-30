@@ -20,7 +20,7 @@ class TinkerHelper {
     protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
         if (label == null)
             throw Edge.Exceptions.edgeLabelCanNotBeNull();
-        ElementHelper.legalKeyValues(keyValues);
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
 
         Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
 
@@ -33,7 +33,7 @@ class TinkerHelper {
         }
 
         edge = new TinkerEdge(idString.toString(), outVertex, label, inVertex, graph);
-        ElementHelper.attachKeyValues(edge, keyValues);
+        ElementHelper.attachProperties(edge, keyValues);
         graph.edges.put(edge.getId().toString(), edge);
         TinkerHelper.addOutEdge(outVertex, label, edge);
         TinkerHelper.addInEdge(inVertex, label, edge);
