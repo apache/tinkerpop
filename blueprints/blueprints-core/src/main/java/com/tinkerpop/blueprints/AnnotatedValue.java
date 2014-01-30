@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.blueprints.util.AnnotatedListHelper;
+
 import java.util.Optional;
 import java.util.Set;
 
@@ -11,7 +13,6 @@ public interface AnnotatedValue<V> {
     public class Key {
 
         private Key() {
-
         }
 
         public static final String VALUE = "value";
@@ -34,8 +35,17 @@ public interface AnnotatedValue<V> {
 
     public Set<String> getAnnotationKeys();
 
+    public default void setAnnotations(final Object... keyValues) {
+        AnnotatedListHelper.legalAnnotationKeyValueArray(keyValues);
+        AnnotatedListHelper.attachAnnotations(this, keyValues);
+    }
 
     public static class Exceptions {
+
+        public static IllegalArgumentException annotatedValueCanNotBeNull() {
+            return new IllegalArgumentException("Annotated value can not be null");
+        }
+
         public static IllegalArgumentException annotationKeyIsReserved(final String key) {
             return new IllegalArgumentException("Annotation key is reserved: " + key);
         }

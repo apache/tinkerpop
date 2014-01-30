@@ -1,7 +1,6 @@
 package com.tinkerpop.blueprints.query.util;
 
 import com.tinkerpop.blueprints.AnnotatedValue;
-import com.tinkerpop.blueprints.Annotations;
 import com.tinkerpop.blueprints.Contains;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
@@ -61,7 +60,7 @@ public class HasContainer {
     }
 
     public <V> boolean test(final AnnotatedValue<V> annotatedValue) {
-        if (this.key.equals(Annotations.Key.VALUE))
+        if (this.key.equals(AnnotatedValue.Key.VALUE))
             return this.predicate.test(annotatedValue.getValue(), this.value);
 
         if (!annotatedValue.getAnnotation(this.key).isPresent())

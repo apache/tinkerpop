@@ -9,6 +9,7 @@ import org.apache.commons.configuration.Configuration;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * An {@link Graph} is a container object for a collection of {@link Vertex}, {@link Edge}, and {@link Property}
@@ -51,6 +52,52 @@ public interface Graph extends AutoCloseable {
     public Strategy strategy();
 
     public Annotations annotations();
+
+    public interface Annotations {
+
+        public class Key {
+
+            private Key() {
+
+            }
+
+            private static final String HIDDEN_PREFIX = "%&%";
+
+            public static String hidden(final String key) {
+                return HIDDEN_PREFIX.concat(key);
+            }
+        }
+
+        public void set(final String key, final Object value);
+
+        public <T> Optional<T> get(final String key);
+
+        public Set<String> getKeys();
+
+        public static class Exceptions {
+
+            public static IllegalArgumentException graphAnnotationKeyIsReserved(final String key) {
+                return new IllegalArgumentException("Graph annotation key is reserved: " + key);
+            }
+
+            public static IllegalArgumentException graphAnnotationKeyCanNotBeEmpty() {
+                return new IllegalArgumentException("Graph annotation key can not be the empty string");
+            }
+
+            public static IllegalArgumentException graphAnnotationKeyCanNotBeNull() {
+                return new IllegalArgumentException("Graph annotation key can not be null");
+            }
+
+            public static IllegalArgumentException graphAnnotationValueCanNotBeNull() {
+                return new IllegalArgumentException("Graph annotation value can not be null");
+            }
+
+            public static UnsupportedOperationException dataTypeOfGraphAnnotationValueNotSupported(final Object val) {
+                return new UnsupportedOperationException(String.format("Graph annotation value [%s] is of type %s is not supported", val, val.getClass()));
+            }
+        }
+
+    }
 
     public default Graph.Features getFeatures() {
         return new Features() {

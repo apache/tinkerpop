@@ -23,7 +23,7 @@ public class ElementHelper {
      * @param key   the key of the property
      * @param value the value of the property
      * @throws IllegalArgumentException whether the key/value pair is legal and if not, a clear reason exception
-     *         message is provided
+     *                                  message is provided
      */
     public static void validateProperty(final String key, final Object value) throws IllegalArgumentException {
         if (null == value)
@@ -42,14 +42,14 @@ public class ElementHelper {
      * Determines whether a list of key/values are legal, ensuring that there are an even number of values submitted
      * and that the key values in the list of arguments are {@link String} or {@link Property.Key} objects.
      *
-     * @param keyValues a list of key/value pairs
+     * @param propertyKeyValues a list of key/value pairs
      * @throws IllegalArgumentException if something in the pairs is illegal
      */
-    public static void legalKeyValues(final Object... keyValues) throws IllegalArgumentException {
-        if (keyValues.length % 2 != 0)
+    public static void legalPropertyKeyValueArray(final Object... propertyKeyValues) throws IllegalArgumentException {
+        if (propertyKeyValues.length % 2 != 0)
             throw Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (!(keyValues[i] instanceof String))
+        for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
+            if (!(propertyKeyValues[i] instanceof String))
                 throw Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
         }
     }
@@ -74,7 +74,7 @@ public class ElementHelper {
      *
      * @param keyValues a list of key/value pairs
      * @return the value associated with {@link Property.Key#LABEL}
-     * @throws ClassCastException if the value of the label is not a {@link String}
+     * @throws ClassCastException   if the value of the label is not a {@link String}
      * @throws NullPointerException if the value for the {@link Property.Key#LABEL} key is {@code null}
      */
     public static Optional<String> getLabelValue(final Object... keyValues) {
@@ -89,18 +89,18 @@ public class ElementHelper {
      * Assign key/value pairs as properties to an {@link Element}.  If the value of {@link Property.Key#ID} or
      * {@link Property.Key#LABEL} is in the set of pairs, then they are ignored.
      *
-     * @param element the graph element to assign the {@code keyValues}
-     * @param keyValues the key/value pairs to assign to the {@code element}
-     * @throws ClassCastException if the value of the key is not a {@link String}
+     * @param element           the graph element to assign the {@code keyValues}
+     * @param propertyKeyValues the key/value pairs to assign to the {@code element}
+     * @throws ClassCastException       if the value of the key is not a {@link String}
      * @throws IllegalArgumentException if the value of {@code element} is null
      */
-    public static void attachKeyValues(final Element element, final Object... keyValues) {
+    public static void attachProperties(final Element element, final Object... propertyKeyValues) {
         if (null == element)
             throw Graph.Exceptions.argumentCanNotBeNull("element");
 
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (!keyValues[i].equals(Property.Key.ID) && !keyValues[i].equals(Property.Key.LABEL))
-                element.setProperty((String) keyValues[i], keyValues[i + 1]);
+        for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
+            if (!propertyKeyValues[i].equals(Property.Key.ID) && !propertyKeyValues[i].equals(Property.Key.LABEL))
+                element.setProperty((String) propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
     }
 

@@ -79,7 +79,7 @@ public class ElementHelperTest {
     @Test
     public void shouldAllowEvenNumberOfKeyValues() {
         try {
-            ElementHelper.legalKeyValues("key", "test", "no-value-for-this-one");
+            ElementHelper.legalPropertyKeyValueArray("key", "test", "no-value-for-this-one");
             fail("Should fail as there is an odd number of key-values");
         } catch (IllegalArgumentException iae) {
             assertEquals(Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo().getMessage(), iae.getMessage());
@@ -89,7 +89,7 @@ public class ElementHelperTest {
     @Test
     public void shouldNotAllowEvenNumberOfKeyValuesAndInvalidKeys() {
         try {
-            ElementHelper.legalKeyValues("key", "test", "value-for-this-one", 1, 1, "none");
+            ElementHelper.legalPropertyKeyValueArray("key", "test", "value-for-this-one", 1, 1, "none");
             fail("Should fail as there is an even number of key-values, but a bad key");
         } catch (IllegalArgumentException iae) {
             assertEquals(Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices().getMessage(), iae.getMessage());
@@ -98,7 +98,7 @@ public class ElementHelperTest {
 
     @Test
     public void shouldAllowEvenNumberOfKeyValuesAndValidKeys() {
-        ElementHelper.legalKeyValues("key", "test", "value-for-this-one", 1, Property.Key.hidden("1"), "none");
+        ElementHelper.legalPropertyKeyValueArray("key", "test", "value-for-this-one", 1, Property.Key.hidden("1"), "none");
     }
 
     @Test
@@ -149,7 +149,7 @@ public class ElementHelperTest {
     @Test
     public void shouldAttachKeyValuesButNotLabelsOrId() {
         final Element mockElement = mock(Element.class);
-        ElementHelper.attachKeyValues(mockElement, "test", 123, Property.Key.ID, 321, Property.Key.LABEL, "friends");
+        ElementHelper.attachProperties(mockElement, "test", 123, Property.Key.ID, 321, Property.Key.LABEL, "friends");
         verify(mockElement, times(1)).setProperty("test", 123);
         verify(mockElement, times(0)).setProperty(Property.Key.ID, 321);
         verify(mockElement, times(0)).setProperty(Property.Key.LABEL, "friends");
@@ -158,13 +158,13 @@ public class ElementHelperTest {
     @Test(expected = ClassCastException.class)
     public void shouldFailTryingToAttachNonStringKey() {
         final Element mockElement = mock(Element.class);
-        ElementHelper.attachKeyValues(mockElement, "test", 123, 321, "test");
+        ElementHelper.attachProperties(mockElement, "test", 123, 321, "test");
     }
 
     @Test
     public void shouldFailTryingToAttachKeysToNullElement() {
         try {
-            ElementHelper.attachKeyValues(null, "test", 123, 321, "test");
+            ElementHelper.attachProperties(null, "test", 123, 321, "test");
             fail("Should throw exception since the element argument is null");
         } catch (IllegalArgumentException iae) {
             assertEquals(Graph.Exceptions.argumentCanNotBeNull("element").getMessage(), iae.getMessage());

@@ -1,7 +1,7 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.AnnotatedValue;
-import com.tinkerpop.blueprints.util.AnnotationHelper;
+import com.tinkerpop.blueprints.util.AnnotatedListHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.io.Serializable;
@@ -19,8 +19,8 @@ public class TinkerAnnotatedValue<V> implements AnnotatedValue<V>, Serializable 
     private final Map<String, Object> annotations = new HashMap<>();
 
     public TinkerAnnotatedValue(final V value, final Object... keyValues) {
-        AnnotationHelper.validatedAnnotatedValue(value);
-        AnnotationHelper.legalKeyValues(keyValues);
+        AnnotatedListHelper.validateAnnotatedValue(value);
+        AnnotatedListHelper.legalAnnotationKeyValueArray(keyValues);
         this.value = value;
         for (int i = 0; i < keyValues.length; i = i + 2) {
             this.annotations.put((String) keyValues[i], keyValues[i + 1]);
@@ -37,7 +37,7 @@ public class TinkerAnnotatedValue<V> implements AnnotatedValue<V>, Serializable 
     }
 
     public void setAnnotation(final String key, final Object value) {
-        AnnotationHelper.validateAnnotation(key, value);
+        AnnotatedListHelper.validateAnnotation(key, value);
         this.annotations.put(key, value);
     }
 

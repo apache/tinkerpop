@@ -22,7 +22,7 @@ public class ExceptionCoverageTest {
         // these are the classes that have Exceptions that need to be checked.
         final Class[] blueprintsExceptions = {
                 AnnotatedList.Exceptions.class,
-                Annotations.Exceptions.class,
+                Graph.Annotations.Exceptions.class,
                 Edge.Exceptions.class,
                 Element.Exceptions.class,
                 Graph.Exceptions.class,
@@ -37,7 +37,7 @@ public class ExceptionCoverageTest {
         // like the first set listed (and labelled as such) below in the list assignments.
         final Set<String> ignore = new HashSet<String>() {{
             // these exceptions is not used directly...they are called by other exception methods.
-            add("com.tinkerpop.blueprints.Annotations$Exceptions#annotationKeyIsReserved");
+            add("com.tinkerpop.blueprints.Annotations$Exceptions#graphAnnotationKeyIsReserved");
             add("com.tinkerpop.blueprints.Property$Exceptions#propertyKeyIsReserved");
 
             // this is a general exception to be used as needed.  it is not explicitly tested:
@@ -54,10 +54,10 @@ public class ExceptionCoverageTest {
 
         // implemented exceptions are the classes that potentially contains exception consistency checks.
         final Set<String> implementedExceptions = Stream.concat(Stream.of(ExceptionConsistencyTest.class.getDeclaredClasses()),
-                                                                Stream.of(FeatureSupportTest.class.getDeclaredClasses()))
-            .flatMap(c -> Stream.of(c.getAnnotationsByType(ExceptionCoverage.class)))
-            .flatMap(ec -> Stream.of(ec.methods()).map(m -> String.format("%s#%s", ec.exceptionClass().getName(), m)))
-            .collect(Collectors.<String>toSet());
+                Stream.of(FeatureSupportTest.class.getDeclaredClasses()))
+                .flatMap(c -> Stream.of(c.getAnnotationsByType(ExceptionCoverage.class)))
+                .flatMap(ec -> Stream.of(ec.methods()).map(m -> String.format("%s#%s", ec.exceptionClass().getName(), m)))
+                .collect(Collectors.<String>toSet());
 
         // evaluate each of the blueprints exceptions and find the list of exception methods...assert them against
         // the list of implementedExceptions to make sure they are covered.

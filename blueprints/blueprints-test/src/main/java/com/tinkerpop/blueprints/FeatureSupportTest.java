@@ -183,12 +183,12 @@ public class FeatureSupportTest  {
     }
 
     /**
-     * Feature checks that test {@link Graph} {@link Annotations} and {@link Vertex} {@link AnnotatedList}
+     * Feature checks that test {@link Graph} {@link Graph.Annotations} and {@link Vertex} {@link AnnotatedList}
      * functionality to determine if a feature should be on when it is marked as not supported.
      */
     @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Annotations.Exceptions.class, methods = {
-            "dataTypeOfAnnotationValueNotSupported"
+    @ExceptionCoverage(exceptionClass = Graph.Annotations.Exceptions.class, methods = {
+            "dataTypeOfGraphAnnotationValueNotSupported"
     })
     public static class AnnotationFunctionalityTest extends AbstractBlueprintsTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
@@ -208,11 +208,11 @@ public class FeatureSupportTest  {
         public void shouldEnableFeatureOnGraphIfNotEnabled() throws Exception {
             assumeThat(g.getFeatures().supports(GraphAnnotationFeatures.class, featureName), is(false));
             try {
-               final Annotations annotations = g.annotations();
+               final Graph.Annotations annotations = g.annotations();
                 annotations.set("key", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphAnnotationFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
-                assertEquals(Annotations.Exceptions.dataTypeOfAnnotationValueNotSupported(value).getMessage(), e.getMessage());
+                assertEquals(Graph.Annotations.Exceptions.dataTypeOfGraphAnnotationValueNotSupported(value).getMessage(), e.getMessage());
             }
         }
 
@@ -226,7 +226,7 @@ public class FeatureSupportTest  {
                 al.get().addValue("v", "t", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
-                assertEquals(Annotations.Exceptions.dataTypeOfAnnotationValueNotSupported(value).getMessage(), e.getMessage());
+                assertEquals(Graph.Annotations.Exceptions.dataTypeOfGraphAnnotationValueNotSupported(value).getMessage(), e.getMessage());
             }
         }
     }

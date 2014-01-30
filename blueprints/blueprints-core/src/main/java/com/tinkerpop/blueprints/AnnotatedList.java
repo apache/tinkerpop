@@ -24,8 +24,8 @@ public interface AnnotatedList<V> {
             return new IllegalArgumentException("The provided key/value array must be a multiple of two");
         }
 
-        public static IllegalArgumentException providedKeyValuesMustHaveALegalKeyOnEvenIndices() {
-            return new IllegalArgumentException("The provided key/value array must have a String key or Annotation.Key on even array indices");
+        public static IllegalArgumentException providedKeyValuesMustHaveAStringOnEvenIndices() {
+            return new IllegalArgumentException("The provided key/value array must have a String key on even array indices");
         }
     }
 }
