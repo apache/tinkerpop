@@ -289,11 +289,12 @@ public class ExceptionConsistencyTest {
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = AnnotatedValue.Exceptions.class, methods = {
-            "annotationKeyValueIsReserved",
-            "graphAnnotationKeyCanNotBeEmpty",
-            "graphAnnotationValueCanNotBeNull",
+            "providedKeyValuesMustBeAMultipleOfTwo",
             "providedKeyValuesMustHaveAStringOnEvenIndices",
-            "providedKeyValuesMustBeAMultipleOfTwo"
+            "annotationValueCanNotBeNull",
+            "annotationKeyValueIsReserved",
+            "annotationKeyCanNotBeEmpty",
+            "annotationKeyCanNotBeNull"
     })
     public static class AnnotatedListValueTest extends AbstractBlueprintsTest {
 
@@ -305,6 +306,7 @@ public class ExceptionConsistencyTest {
                     {new Object[]{"odd", "number", 123, "test"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
                     {new Object[]{"odd", null}, AnnotatedValue.Exceptions.annotationValueCanNotBeNull()},
                     {new Object[]{null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
+                    {new Object[]{(String) null, "val"}, AnnotatedValue.Exceptions.annotationKeyCanNotBeNull()},
                     {new Object[]{AnnotatedValue.Key.VALUE, "v"}, AnnotatedValue.Exceptions.annotationKeyValueIsReserved()},
                     {new Object[]{"", "val"}, AnnotatedValue.Exceptions.annotationKeyCanNotBeEmpty()}});
         }

@@ -1,7 +1,7 @@
 package com.tinkerpop.blueprints;
 
 import com.tinkerpop.blueprints.computer.GraphComputer;
-import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +16,8 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ExceptionCoverageTest {
-    @Ignore
+
+    @Test
     public void shouldCoverAllExceptionsInTests() {
 
         // these are the classes that have Exceptions that need to be checked.
@@ -37,13 +38,17 @@ public class ExceptionCoverageTest {
         // like the first set listed (and labelled as such) below in the list assignments.
         final Set<String> ignore = new HashSet<String>() {{
             // these exceptions is not used directly...they are called by other exception methods.
-            add("com.tinkerpop.blueprints.Annotations$Exceptions#graphAnnotationKeyIsReserved");
+            add("com.tinkerpop.blueprints.AnnotatedValue$Exceptions#annotationKeyIsReserved");
             add("com.tinkerpop.blueprints.Property$Exceptions#propertyKeyIsReserved");
+            add("com.tinkerpop.blueprints.Graph$Annotations$Exceptions#graphAnnotationKeyIsReserved");
 
             // this is a general exception to be used as needed.  it is not explicitly tested:
             add("com.tinkerpop.blueprints.Graph$Exceptions#argumentCanNotBeNull");
 
             // todo: need to write consistency tests for the following items still...........
+            add("com.tinkerpop.blueprints.Element$Exceptions#providedKeyValuesMustHaveALegalKeyOnEvenIndices");
+            add("com.tinkerpop.blueprints.AnnotatedValue$Exceptions#annotatedValueCanNotBeNull");
+            add("com.tinkerpop.blueprints.AnnotatedValue$Exceptions#dataTypeOfAnnotationValueNotSupported");
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#constantComputeKeyHasAlreadyBeenSet");
