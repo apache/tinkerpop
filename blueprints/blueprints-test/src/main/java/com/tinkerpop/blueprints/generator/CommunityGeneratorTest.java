@@ -64,4 +64,6 @@ public class CommunityGeneratorTest {
             assertEquals(numEdges, SizableIterable.sizeOf(graph.query().edges()));
         }
     }
+
+    // todo: add tests for annotations.
 }
