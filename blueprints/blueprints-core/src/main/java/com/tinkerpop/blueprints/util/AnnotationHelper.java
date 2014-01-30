@@ -1,8 +1,8 @@
 package com.tinkerpop.blueprints.util;
 
 import com.tinkerpop.blueprints.AnnotatedList;
+import com.tinkerpop.blueprints.AnnotatedValue;
 import com.tinkerpop.blueprints.Annotations;
-import com.tinkerpop.blueprints.Property;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -19,7 +19,7 @@ public class AnnotationHelper {
             throw Annotations.Exceptions.annotationValueCanNotBeNull();
         if (null == key)
             throw Annotations.Exceptions.annotationKeyCanNotBeNull();
-        if (key.equals(Property.Key.ID))
+        if (key.equals(AnnotatedValue.Key.VALUE))
             throw Annotations.Exceptions.annotationKeyValueIsReserved();
         if (key.isEmpty())
             throw Annotations.Exceptions.annotationKeyCanNotBeEmpty();
@@ -29,15 +29,11 @@ public class AnnotationHelper {
         if (keyValues.length % 2 != 0)
             throw AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
         for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (!(keyValues[i] instanceof String) && !(keyValues[i] instanceof Property.Key))
+            if (!(keyValues[i] instanceof String))
                 throw AnnotatedList.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices();
-        }
-    }
+            else if (keyValues[i].equals(AnnotatedValue.Key.VALUE))
+                throw AnnotatedValue.Exceptions.annotationKeyValueIsReserved();
 
-    public static void attachKeyValues(final Annotations annotations, final Object... keyValues) {
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (!keyValues[i].equals(Annotations.Key.VALUE))
-                annotations.set((String) keyValues[i], keyValues[i + 1]);
         }
     }
 }

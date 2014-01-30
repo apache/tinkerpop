@@ -19,10 +19,8 @@ import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMP
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+
 /**
  * Ensure that exception handling is consistent within Blueprints. It may be necessary to throw exceptions in an
  * appropriate order in order to ensure that these tests pass.  Note that some exception consistency checks are
@@ -52,13 +50,13 @@ public class ExceptionConsistencyTest {
         @Parameterized.Parameters(name = "{index}: expect - {1}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    { new Object[] {"odd", "number", "arguments"},Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    { new Object[] {"odd"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    { new Object[] {"odd", "number", 123, "test"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    { new Object[] {"odd", null}, Property.Exceptions.propertyValueCanNotBeNull()},
-                    { new Object[] {null, "val"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    { new Object[] {"", "val"}, Property.Exceptions.propertyKeyCanNotBeEmpty()}});
-            }
+                    {new Object[]{"odd", "number", "arguments"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {new Object[]{"odd"}, Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {new Object[]{"odd", "number", 123, "test"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
+                    {new Object[]{"odd", null}, Property.Exceptions.propertyValueCanNotBeNull()},
+                    {new Object[]{null, "val"}, Element.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
+                    {new Object[]{"", "val"}, Property.Exceptions.propertyKeyCanNotBeEmpty()}});
+        }
 
         @Parameterized.Parameter(value = 0)
         public Object[] arguments;
@@ -147,11 +145,11 @@ public class ExceptionConsistencyTest {
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    { "k", null, Property.Exceptions.propertyValueCanNotBeNull()},
-                    { null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
-                    { Property.Key.ID, "v", Property.Exceptions.propertyKeyIdIsReserved()},
-                    { Property.Key.LABEL, "v", Property.Exceptions.propertyKeyLabelIsReserved()},
-                    { "", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()}});
+                    {"k", null, Property.Exceptions.propertyValueCanNotBeNull()},
+                    {null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
+                    {Property.Key.ID, "v", Property.Exceptions.propertyKeyIdIsReserved()},
+                    {Property.Key.LABEL, "v", Property.Exceptions.propertyKeyLabelIsReserved()},
+                    {"", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)
@@ -259,10 +257,10 @@ public class ExceptionConsistencyTest {
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    { "k", null, Annotations.Exceptions.annotationValueCanNotBeNull()},
-                    { null, "v", Annotations.Exceptions.annotationKeyCanNotBeNull()},
-                    { Property.Key.ID, "v", Annotations.Exceptions.annotationKeyValueIsReserved()},
-                    { "", "v", Annotations.Exceptions.annotationKeyCanNotBeEmpty()}});
+                    {"k", null, Annotations.Exceptions.annotationValueCanNotBeNull()},
+                    {null, "v", Annotations.Exceptions.annotationKeyCanNotBeNull()},
+                    {AnnotatedValue.Key.VALUE, "v", Annotations.Exceptions.annotationKeyValueIsReserved()},
+                    {"", "v", Annotations.Exceptions.annotationKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)
@@ -305,13 +303,13 @@ public class ExceptionConsistencyTest {
         @Parameterized.Parameters(name = "{index}: expect - {1}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    { new Object[] {"odd", "number", "arguments"},AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    { new Object[] {"odd"}, AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    { new Object[] {"odd", "number", 123, "test"}, AnnotatedList.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    { new Object[] {"odd", null}, Annotations.Exceptions.annotationValueCanNotBeNull()},
-                    { new Object[] {null, "val"}, AnnotatedList.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
-                    { new Object[] {Property.Key.ID, "v"}, Annotations.Exceptions.annotationKeyValueIsReserved()},
-                    { new Object[] {"", "val"}, Annotations.Exceptions.annotationKeyCanNotBeEmpty()}});
+                    {new Object[]{"odd", "number", "arguments"}, AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {new Object[]{"odd"}, AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {new Object[]{"odd", "number", 123, "test"}, AnnotatedList.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
+                    {new Object[]{"odd", null}, Annotations.Exceptions.annotationValueCanNotBeNull()},
+                    {new Object[]{null, "val"}, AnnotatedList.Exceptions.providedKeyValuesMustHaveALegalKeyOnEvenIndices()},
+                    {new Object[]{AnnotatedValue.Key.VALUE, "v"}, Annotations.Exceptions.annotationKeyValueIsReserved()},
+                    {new Object[]{"", "val"}, Annotations.Exceptions.annotationKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)
@@ -649,7 +647,7 @@ public class ExceptionConsistencyTest {
 
         @Override
         public void execute(final Vertex vertex, final Messenger messenger, final GraphMemory graphMemory) {
-            vertex.query().edges().forEach(e->e.setProperty(this.key, this.val));
+            vertex.query().edges().forEach(e -> e.setProperty(this.key, this.val));
         }
 
         @Override

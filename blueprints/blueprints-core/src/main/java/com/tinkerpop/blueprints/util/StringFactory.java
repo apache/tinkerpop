@@ -77,7 +77,7 @@ public class StringFactory {
      * Construct the representation for a {@link AnnotatedValue}.
      */
     public static String annotatedValueString(final AnnotatedValue annotatedValue) {
-        return L_BRACKET + annotatedValue.getValue() + COLON + EMPTY_MAP + R_BRACKET;
+        return L_BRACKET + annotatedValue.getValue() + COLON + annotatedValue.getAnnotationKeys() + R_BRACKET;
     }
 
     /**

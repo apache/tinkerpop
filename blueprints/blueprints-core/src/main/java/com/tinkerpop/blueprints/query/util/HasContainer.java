@@ -64,10 +64,10 @@ public class HasContainer {
         if (this.key.equals(Annotations.Key.VALUE))
             return this.predicate.test(annotatedValue.getValue(), this.value);
 
-        if (null == annotatedValue.getAnnotations() || !annotatedValue.getAnnotations().get(this.key).isPresent())
+        if (!annotatedValue.getAnnotation(this.key).isPresent())
             return false;
 
-        return this.predicate.test(annotatedValue.getAnnotations().get(this.key).get(), this.value);
+        return this.predicate.test(annotatedValue.getAnnotation(this.key).get(), this.value);
     }
 
     public static <V> boolean testAll(final AnnotatedValue<V> annotatedValue, final List<HasContainer> hasContainers) {
