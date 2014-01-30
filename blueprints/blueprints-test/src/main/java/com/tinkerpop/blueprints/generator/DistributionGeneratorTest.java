@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -86,7 +87,7 @@ public class DistributionGeneratorTest {
 
         private void distributionGeneratorTest(final Graph graph, final DistributionGenerator generator) {
             generator.setOutDistribution(inDistribution);
-            if (outDistribution != null) generator.setOutDistribution(outDistribution);
+            Optional.ofNullable(outDistribution).ifPresent(generator::setOutDistribution);
             final int numEdges = generator.generate(graph, numberOfVertices * 10);
             tryCommit(graph, g -> assertEquals(numEdges, SizableIterable.sizeOf(g.query().edges())));
         }
