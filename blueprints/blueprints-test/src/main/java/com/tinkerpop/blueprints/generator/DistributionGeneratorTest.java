@@ -82,7 +82,7 @@ public class DistributionGeneratorTest {
         @Override
         protected void prepareGraph(final Graph g) throws Exception {
             final int numNodes = numberOfVertices;
-            for (int i = 0; i < numNodes; i++) g.addVertex(Property.Key.ID, i);
+            for (int i = 0; i < numNodes; i++) g.addVertex("oid", i);
         }
 
         private void distributionGeneratorTest(final Graph graph, final DistributionGenerator generator) {

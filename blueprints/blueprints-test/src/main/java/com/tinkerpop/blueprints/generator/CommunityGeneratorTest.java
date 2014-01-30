@@ -1,8 +1,13 @@
 package com.tinkerpop.blueprints.generator;
 
 import com.tinkerpop.blueprints.AbstractBlueprintsTest;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.StreamFactory;
+import org.apache.commons.configuration.Configuration;
+import org.javatuples.Pair;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -10,8 +15,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -43,24 +52,67 @@ public class CommunityGeneratorTest {
         @Parameterized.Parameter(value = 2)
         public double crossPcent;
 
+        private static final int numberOfVertices = 100;
+
         @Test
-        // @Ignore("Make not lock or cause exceptions")
-        public void shouldGenerateGraph() {
-            communityGeneratorTest(communityDistribution, degreeDistribution, crossPcent);
+        public void shouldGenerateRandomGraph() throws Exception {
+            final CommunityGenerator generator = new CommunityGenerator("knows");
+            communityGeneratorTest(g, generator);
+
+            final Configuration configuration = graphProvider.newGraphConfiguration("g1");
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            prepareGraph(g1);
+            final CommunityGenerator generator1 = new CommunityGenerator("knows");
+            communityGeneratorTest(g1, generator1);
+
+            assertNotEquals(StreamFactory.stream(g.query().edges()).count(), StreamFactory.stream(g1.query().edges()).count());
+
+            // ensure that not every vertex has the same number of edges between graphs
+            assertFalse(StreamFactory.stream(g.query().vertices())
+                    .map(v -> Pair.with(v.getValue("oid"), StreamFactory.stream(v.query().direction(Direction.BOTH).edges()).count()))
+                    .allMatch(p -> {
+                        final Vertex v = g1.query().has("oid", p.getValue0()).vertices().iterator().next();
+                        return p.getValue1() == StreamFactory.stream(v.query().direction(Direction.BOTH).edges()).count();
+                    }));
+
+            graphProvider.clear(g1, configuration);
         }
 
-        // todo: make this test like the DistributionGeneratorTest.
+        @Test
+        public void shouldGenerateSameGraph() throws Exception {
+            final CommunityGenerator generator = new CommunityGenerator("knows", null , null, ()->123456789l);
+            communityGeneratorTest(g, generator);
 
-        private void communityGeneratorTest(final Distribution community, final Distribution degree, final double crossPercentage) {
-            final int numNodes = 100;
-            final Graph graph = g;
-            for (int i = 0; i < numNodes; i++) graph.addVertex(Property.Key.ID, i);
+            final Configuration configuration = graphProvider.newGraphConfiguration("g1");
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            prepareGraph(g1);
+            final CommunityGenerator generator1 = new CommunityGenerator("knows", null , null, ()->123456789l);
+            communityGeneratorTest(g1, generator1);
 
-            final CommunityGenerator generator = new CommunityGenerator("knows");
-            generator.setCommunityDistribution(community);
-            generator.setDegreeDistribution(degree);
-            generator.setCrossCommunityPercentage(crossPercentage);
-            final int numEdges = generator.generate(graph, numNodes / 10, numNodes * 10);
+            assertEquals(StreamFactory.stream(g.query().edges()).count(), StreamFactory.stream(g1.query().edges()).count());
+
+            // ensure that every vertex has the same number of edges between graphs.
+            assertTrue(StreamFactory.stream(g.query().vertices())
+                    .map(v -> Pair.with(v.getValue("oid"), StreamFactory.stream(v.query().direction(Direction.BOTH).edges()).count()))
+                    .allMatch(p -> {
+                        final Vertex v = g1.query().has("oid", p.getValue0()).vertices().iterator().next();
+                        return p.getValue1() == StreamFactory.stream(v.query().direction(Direction.BOTH).edges()).count();
+                    }));
+
+            graphProvider.clear(g1, configuration);
+        }
+
+        @Override
+        protected void prepareGraph(final Graph g) throws Exception {
+            final int numNodes = numberOfVertices;
+            for (int i = 0; i < numNodes; i++) g.addVertex("oid", i);
+        }
+
+        private void communityGeneratorTest(final Graph graph, final CommunityGenerator generator) {
+            generator.setCommunityDistribution(communityDistribution);
+            generator.setDegreeDistribution(degreeDistribution);
+            generator.setCrossCommunityPercentage(crossPcent);
+            final int numEdges = generator.generate(graph, numberOfVertices / 10, numberOfVertices * 10);
             assertEquals(numEdges, SizableIterable.sizeOf(graph.query().edges()));
         }
     }
