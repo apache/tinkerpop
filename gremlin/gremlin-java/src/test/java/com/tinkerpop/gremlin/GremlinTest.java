@@ -170,10 +170,10 @@ public class GremlinTest {
     @Test
     public void testUnion() {
         Graph g = TinkerFactory.createClassic();
-        Gremlin.of(g).v(1).union(
+        Gremlin.of(g).v(1).as("x").union(
                 Gremlin.of().out("knows"),
                 Gremlin.of().out("created").in("created")
-        ).value("name").forEach(System.out::println);
+        ).jump("x", h -> h.getLoops() < 2).value("name").path().forEach(System.out::println);
 
     }
 }

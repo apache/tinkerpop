@@ -55,6 +55,10 @@ public class SimpleHolder<T> implements Holder<T> {
         this.loops++;
     }
 
+    public void resetLoops() {
+        this.loops = 0;
+    }
+
     public <R> SimpleHolder<R> makeChild(final String as, final R r) {
         final SimpleHolder<R> holder = new SimpleHolder<>(r);
         holder.future = this.future;

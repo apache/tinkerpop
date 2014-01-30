@@ -71,7 +71,7 @@ public class GremlinCounterMessage extends GremlinMessage {
                 message.setCounter(count);
                 messenger.sendMessage(
                         vertex,
-                        MessageType.Global.of(GremlinVertexProgram.GREMLIN_MESSAGE, Messenger.getHostingVertices(end)),
+                        MessageType.Global.of(GremlinVertexProgram.GREMLIN_MESSAGE, GremlinMessage.getHostingVertices(end)),
                         message);
             } else {
                 MapHelper.incr(tracker.getObjectTracks(), holder, count);

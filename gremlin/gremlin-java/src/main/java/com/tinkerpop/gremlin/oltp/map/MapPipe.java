@@ -25,8 +25,8 @@ public class MapPipe<S, E> extends AbstractPipe<S, E> {
     protected Holder<E> processNextStart() {
         while (true) {
             final Holder<S> holder = this.starts.next();
-            holder.setFuture(this.getNextPipe().getAs());
             final E temp = this.function.apply(holder);
+            holder.setFuture(this.getNextPipe().getAs());
             if (NO_OBJECT != temp)
                 if (holder.get().equals(temp)) // no path extension (i.e. a filter, identity, side-effect)
                     return (Holder<E>) holder.makeSibling();

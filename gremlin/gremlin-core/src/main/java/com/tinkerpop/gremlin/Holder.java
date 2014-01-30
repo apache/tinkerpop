@@ -27,6 +27,8 @@ public interface Holder<T> extends Serializable {
 
     public void incrLoops();
 
+    public void resetLoops();
+
     public String getFuture();
 
     public void setFuture(final String as);

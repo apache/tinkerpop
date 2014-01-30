@@ -23,16 +23,4 @@ public interface Messenger<M extends Serializable> {
 
     public void sendMessage(final Vertex vertex, final MessageType messageType, final M message);
 
-    public static List<Vertex> getHostingVertices(final Object object) {
-        if (object instanceof Vertex)
-            return Arrays.asList((Vertex) object);
-        else if (object instanceof Edge)
-            return Arrays.asList(((Edge) object).getVertex(Direction.OUT));
-        else if (object instanceof Property)
-            return getHostingVertices(((Property) object).getElement());
-        else
-            throw new IllegalStateException("The host of the object is unknown: " + object.toString());
-
-    }
-
 }

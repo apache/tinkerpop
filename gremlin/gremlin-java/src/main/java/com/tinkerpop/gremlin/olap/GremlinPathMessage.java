@@ -85,7 +85,7 @@ public class GremlinPathMessage extends GremlinMessage {
             if (end instanceof Element || end instanceof Property) {
                 messenger.sendMessage(
                         vertex,
-                        MessageType.Global.of(GremlinVertexProgram.GREMLIN_MESSAGE, Messenger.getHostingVertices(end)),
+                        MessageType.Global.of(GremlinVertexProgram.GREMLIN_MESSAGE, GremlinMessage.getHostingVertices(end)),
                         GremlinPathMessage.of(holder));
             } else {
                 if (end instanceof Path) {
