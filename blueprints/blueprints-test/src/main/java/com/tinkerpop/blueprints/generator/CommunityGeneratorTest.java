@@ -117,5 +117,47 @@ public class CommunityGeneratorTest {
         }
     }
 
-    // todo: add tests for annotations.
+
+    public static class AnnotatorTest extends AbstractBlueprintsTest {
+        @Test
+        public void shouldAnnotateEdges() {
+            final CommunityGenerator generator = new CommunityGenerator("knows", e->e.setProperty("data", "test"));
+            final Distribution dist = new NormalDistribution(2);
+            generator.setCommunityDistribution(dist);
+            generator.setDegreeDistribution(dist);
+            generator.setCrossCommunityPercentage(0.0);
+            generator.generate(g, 100, 1000);
+            tryCommit(g, g -> assertTrue(StreamFactory.stream(g.query().edges()).allMatch(e -> e.getValue("data").equals("test"))));
+        }
+
+        @Test
+        public void shouldAnnotateVertices() {
+            final CommunityGenerator generator = new CommunityGenerator("knows", e->e.setProperty("data", "test"));
+            final Distribution dist = new NormalDistribution(2);
+            generator.setCommunityDistribution(dist);
+            generator.setDegreeDistribution(dist);
+            generator.setCrossCommunityPercentage(0.0);
+            generator.generate(g, 100, 1000);
+            tryCommit(g, g -> assertTrue(StreamFactory.stream(g.query().edges()).allMatch(e -> e.getValue("data").equals("test"))));
+        }
+
+        @Test
+        public void shouldAnnotateVerticesEdges() {
+            final CommunityGenerator generator = new CommunityGenerator("knows", e->e.setProperty("data", "test"), (v,m)-> {
+                m.forEach(v::setProperty);
+                v.setProperty("test", "data");
+            });
+            final Distribution dist = new NormalDistribution(2);
+            generator.setCommunityDistribution(dist);
+            generator.setDegreeDistribution(dist);
+            generator.setCrossCommunityPercentage(0.0);
+            generator.generate(g, 100, 1000);
+            tryCommit(g, g -> {
+                assertTrue(StreamFactory.stream(g.query().edges()).allMatch(e -> e.getValue("data").equals("test")));
+                assertTrue(StreamFactory.stream(g.query().vertices()).allMatch(
+                    v -> v.getValue("test").equals("data") && v.getProperty("communityIndex").isPresent()
+                ));
+            });
+        }
+    }
 }

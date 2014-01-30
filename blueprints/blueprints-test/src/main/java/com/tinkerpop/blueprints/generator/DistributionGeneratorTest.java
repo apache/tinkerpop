@@ -99,7 +99,7 @@ public class DistributionGeneratorTest {
             final DistributionGenerator generator = new DistributionGenerator("knows", e->e.setProperty("data", "test"));
             final Distribution dist = new NormalDistribution(2);
             generator.setOutDistribution(dist);
-            generator.setOutDistribution(dist);
+            generator.setInDistribution(dist);
             generator.generate(g, 100);
             tryCommit(g, g -> assertTrue(StreamFactory.stream(g.query().edges()).allMatch(e -> e.getValue("data").equals("test"))));
         }
