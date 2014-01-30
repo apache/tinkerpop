@@ -1,13 +1,12 @@
 package com.tinkerpop.blueprints.util;
 
-import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.AnnotatedValue;
 import com.tinkerpop.blueprints.Graph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AnnotatedListHelper {
+public class AnnotatedValueHelper {
 
     public static void validateAnnotatedValue(final Object value) throws IllegalArgumentException {
         if (null == value)
@@ -27,10 +26,12 @@ public class AnnotatedListHelper {
 
     public static void legalAnnotationKeyValueArray(final Object... annotationKeyValues) throws IllegalArgumentException {
         if (annotationKeyValues.length % 2 != 0)
-            throw AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
+            throw AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
         for (int i = 0; i < annotationKeyValues.length; i = i + 2) {
             if (!(annotationKeyValues[i] instanceof String))
-                throw AnnotatedList.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices();
+                throw AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices();
+            else
+                AnnotatedValueHelper.validateAnnotation((String) annotationKeyValues[i], annotationKeyValues[i + 1]);
         }
     }
 

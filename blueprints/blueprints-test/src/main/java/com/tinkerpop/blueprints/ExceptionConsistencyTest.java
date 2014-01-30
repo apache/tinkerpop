@@ -285,15 +285,13 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Tests for exceptions with {@link AnnotatedList} and {@link AnnotatedValue}.
+     * Tests for exceptions with {@link AnnotatedValue}.
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = AnnotatedValue.Exceptions.class, methods = {
             "annotationKeyValueIsReserved",
             "graphAnnotationKeyCanNotBeEmpty",
-            "graphAnnotationValueCanNotBeNull"
-    })
-    @ExceptionCoverage(exceptionClass = AnnotatedList.Exceptions.class, methods = {
+            "graphAnnotationValueCanNotBeNull",
             "providedKeyValuesMustHaveAStringOnEvenIndices",
             "providedKeyValuesMustBeAMultipleOfTwo"
     })
@@ -302,11 +300,11 @@ public class ExceptionConsistencyTest {
         @Parameterized.Parameters(name = "{index}: expect - {1}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {new Object[]{"odd", "number", "arguments"}, AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {new Object[]{"odd"}, AnnotatedList.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {new Object[]{"odd", "number", 123, "test"}, AnnotatedList.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
+                    {new Object[]{"odd", "number", "arguments"}, AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {new Object[]{"odd"}, AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {new Object[]{"odd", "number", 123, "test"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
                     {new Object[]{"odd", null}, AnnotatedValue.Exceptions.annotationValueCanNotBeNull()},
-                    {new Object[]{null, "val"}, AnnotatedList.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
+                    {new Object[]{null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
                     {new Object[]{AnnotatedValue.Key.VALUE, "v"}, AnnotatedValue.Exceptions.annotationKeyValueIsReserved()},
                     {new Object[]{"", "val"}, AnnotatedValue.Exceptions.annotationKeyCanNotBeEmpty()}});
         }

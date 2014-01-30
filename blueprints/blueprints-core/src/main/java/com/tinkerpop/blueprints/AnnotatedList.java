@@ -18,14 +18,4 @@ public interface AnnotatedList<V> {
     public static Object make() {
         return MAKE;
     }
-
-    public static class Exceptions {
-        public static IllegalArgumentException providedKeyValuesMustBeAMultipleOfTwo() {
-            return new IllegalArgumentException("The provided key/value array must be a multiple of two");
-        }
-
-        public static IllegalArgumentException providedKeyValuesMustHaveAStringOnEvenIndices() {
-            return new IllegalArgumentException("The provided key/value array must have a String key on even array indices");
-        }
-    }
 }

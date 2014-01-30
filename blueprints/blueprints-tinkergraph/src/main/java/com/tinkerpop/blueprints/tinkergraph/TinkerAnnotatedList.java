@@ -20,8 +20,8 @@ public class TinkerAnnotatedList<V> implements AnnotatedList<V>, Serializable {
 
     final List<AnnotatedValue<V>> annotatedValues = new ArrayList<>();
 
-    public AnnotatedValue<V> addValue(final V value, final Object... keyValues) {
-        final AnnotatedValue<V> annotatedValue = new TinkerAnnotatedValue<V>(value, keyValues) {
+    public AnnotatedValue<V> addValue(final V value, final Object... annotationKeyValues) {
+        final AnnotatedValue<V> annotatedValue = new TinkerAnnotatedValue<V>(value, annotationKeyValues) {
             public void remove() {
                 annotatedValues.remove(this);
             }

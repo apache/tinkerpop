@@ -1,6 +1,6 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.util.AnnotatedListHelper;
+import com.tinkerpop.blueprints.util.AnnotatedValueHelper;
 
 import java.util.Optional;
 import java.util.Set;
@@ -36,11 +36,19 @@ public interface AnnotatedValue<V> {
     public Set<String> getAnnotationKeys();
 
     public default void setAnnotations(final Object... keyValues) {
-        AnnotatedListHelper.legalAnnotationKeyValueArray(keyValues);
-        AnnotatedListHelper.attachAnnotations(this, keyValues);
+        AnnotatedValueHelper.legalAnnotationKeyValueArray(keyValues);
+        AnnotatedValueHelper.attachAnnotations(this, keyValues);
     }
 
     public static class Exceptions {
+
+        public static IllegalArgumentException providedKeyValuesMustBeAMultipleOfTwo() {
+            return new IllegalArgumentException("The provided annotation key/value array must be a multiple of two");
+        }
+
+        public static IllegalArgumentException providedKeyValuesMustHaveAStringOnEvenIndices() {
+            return new IllegalArgumentException("The provided annotation key/value array must have a String key on even array indices");
+        }
 
         public static IllegalArgumentException annotatedValueCanNotBeNull() {
             return new IllegalArgumentException("Annotated value can not be null");
