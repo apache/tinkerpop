@@ -166,4 +166,14 @@ public class GremlinTest {
 
 
     }
+
+    @Test
+    public void testUnion() {
+        Graph g = TinkerFactory.createClassic();
+        Gremlin.of(g).v(1).union(
+                Gremlin.of().out("knows"),
+                Gremlin.of().out("created").in("created")
+        ).value("name").forEach(System.out::println);
+
+    }
 }
