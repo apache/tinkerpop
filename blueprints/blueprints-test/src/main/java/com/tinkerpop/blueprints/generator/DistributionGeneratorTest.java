@@ -15,6 +15,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -23,7 +24,7 @@ import static org.junit.Assert.assertNotEquals;
 public class DistributionGeneratorTest {
 
     @RunWith(Parameterized.class)
-    public static class DifferentDistributionTest extends AbstractBlueprintsTest {
+    public static class DifferentDistributionsTest extends AbstractBlueprintsTest {
 
         @Parameterized.Parameters(name = "{index}: test({0},{1})")
         public static Iterable<Object[]> data() {
@@ -88,6 +89,18 @@ public class DistributionGeneratorTest {
             if (outDistribution != null) generator.setOutDistribution(outDistribution);
             final int numEdges = generator.generate(graph, numberOfVertices * 10);
             tryCommit(graph, g -> assertEquals(numEdges, SizableIterable.sizeOf(g.query().edges())));
+        }
+    }
+
+    public static class AnnotatorTest extends AbstractBlueprintsTest {
+        @Test
+        public void shouldAnnotateEdges() {
+            final DistributionGenerator generator = new DistributionGenerator("knows", e->e.setProperty("data", "test"));
+            final Distribution dist = new NormalDistribution(2);
+            generator.setOutDistribution(dist);
+            generator.setOutDistribution(dist);
+            generator.generate(g, 100);
+            tryCommit(g, g -> assertTrue(StreamFactory.stream(g.query().edges()).allMatch(e -> e.getValue("data").equals("test"))));
         }
     }
 }
