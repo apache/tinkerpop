@@ -44,8 +44,6 @@ public class GraphQueryOptimizer implements Optimizer.StepOptimizer {
                 final IntervalPipe intervalPipe = (IntervalPipe) pipe;
                 graphQueryPipe.queryBuilder.has(intervalPipe.startContainer.key, intervalPipe.startContainer.predicate, intervalPipe.startContainer.value);
                 graphQueryPipe.queryBuilder.has(intervalPipe.endContainer.key, intervalPipe.endContainer.predicate, intervalPipe.endContainer.value);
-            } else {
-                throw new IllegalStateException("This pipe should not be accessible via this optimizer: " + pipe.getClass());
             }
             graphQueryPipe.generateHolderIterator(false);
             return false;

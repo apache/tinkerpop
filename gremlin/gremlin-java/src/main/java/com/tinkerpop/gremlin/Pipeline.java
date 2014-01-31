@@ -20,9 +20,9 @@ import com.tinkerpop.gremlin.oltp.filter.RangePipe;
 import com.tinkerpop.gremlin.oltp.filter.RetainPipe;
 import com.tinkerpop.gremlin.oltp.filter.SimplePathPipe;
 import com.tinkerpop.gremlin.oltp.map.AnnotatedListQueryPipe;
-import com.tinkerpop.gremlin.oltp.map.AnnotatedValuePipe;
 import com.tinkerpop.gremlin.oltp.map.BackPipe;
 import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
+import com.tinkerpop.gremlin.oltp.map.ElementPropertyValuePipe;
 import com.tinkerpop.gremlin.oltp.map.FlatMapPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.oltp.map.JumpPipe;
@@ -31,7 +31,6 @@ import com.tinkerpop.gremlin.oltp.map.MatchPipe;
 import com.tinkerpop.gremlin.oltp.map.OrderPipe;
 import com.tinkerpop.gremlin.oltp.map.PathPipe;
 import com.tinkerpop.gremlin.oltp.map.PropertyPipe;
-import com.tinkerpop.gremlin.oltp.map.PropertyValuePipe;
 import com.tinkerpop.gremlin.oltp.map.SelectPipe;
 import com.tinkerpop.gremlin.oltp.map.ShufflePipe;
 import com.tinkerpop.gremlin.oltp.map.UnionPipe;
@@ -177,23 +176,19 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default <E2> Pipeline<S, E2> value() {
-        return this.addPipe(new PropertyValuePipe<>(this));
+        return this.addPipe(new ValuePipe<>(this));
     }
 
     public default <E2> Pipeline<S, E2> value(final String key) {
-        return this.addPipe(new ValuePipe<>(this, key));
+        return this.addPipe(new ElementPropertyValuePipe<>(this, key));
     }
 
     public default <E2> Pipeline<S, E2> value(final String key, final E2 defaultValue) {
-        return this.addPipe(new ValuePipe<>(this, key, defaultValue));
+        return this.addPipe(new ElementPropertyValuePipe<>(this, key, defaultValue));
     }
 
     public default <E2> Pipeline<S, E2> value(final String key, final Supplier<E2> defaultSupplier) {
-        return this.addPipe(new ValuePipe<>(this, key, defaultSupplier));
-    }
-
-    public default <E2> Pipeline<S, E2> values() {
-        return this.addPipe(new AnnotatedValuePipe<>(this));
+        return this.addPipe(new ElementPropertyValuePipe<>(this, key, defaultSupplier));
     }
 
     public default Pipeline<S, AnnotatedValue> values(final String key) {

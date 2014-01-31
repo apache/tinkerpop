@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.oltp.filter.HasPipe;
 import com.tinkerpop.gremlin.oltp.filter.IntervalPipe;
 import com.tinkerpop.gremlin.oltp.filter.RangePipe;
 import com.tinkerpop.gremlin.oltp.map.AnnotatedListQueryPipe;
-import com.tinkerpop.gremlin.oltp.map.AnnotatedValuePipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
+import com.tinkerpop.gremlin.oltp.map.ValuePipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class AnnotatedListQueryOptimizer implements Optimizer.StepOptimizer {
                     HasPipe.class,
                     IntervalPipe.class,
                     RangePipe.class,
-                    AnnotatedValuePipe.class));
+                    ValuePipe.class));
 
     public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
         if (!COMPILED_PIPES.stream().filter(c -> c.isAssignableFrom(pipe.getClass())).findFirst().isPresent())
@@ -46,7 +46,7 @@ public class AnnotatedListQueryOptimizer implements Optimizer.StepOptimizer {
         }
 
         if (null != annotatedListQueryPipe && !GremlinHelper.isLabeled(annotatedListQueryPipe)) {
-            if (pipe instanceof AnnotatedValuePipe) {
+            if (pipe instanceof ValuePipe) {
                 annotatedListQueryPipe.generateFunction(false);
             } else if (pipe instanceof HasPipe) {
                 final HasPipe hasPipe = (HasPipe) pipe;
@@ -59,8 +59,6 @@ public class AnnotatedListQueryOptimizer implements Optimizer.StepOptimizer {
                 final RangePipe rangePipe = (RangePipe) pipe;
                 annotatedListQueryPipe.low = rangePipe.low;
                 annotatedListQueryPipe.high = rangePipe.high;
-            } else {
-                throw new IllegalStateException("This pipe should not be accessible via this optimizer: " + pipe.getClass());
             }
             return false;
         }

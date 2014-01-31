@@ -66,8 +66,6 @@ public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
                 final RangePipe rangePipe = (RangePipe) pipe;
                 vertexQueryPipe.low = rangePipe.low;
                 vertexQueryPipe.high = rangePipe.high;
-            } else {
-                throw new IllegalStateException("This pipe should not be accessible via this optimizer: " + pipe.getClass());
             }
             vertexQueryPipe.generateFunction();
             return false;
