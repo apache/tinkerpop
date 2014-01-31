@@ -181,7 +181,7 @@ public class GremlinTest {
     @Test
     public void testAnnotatedList() {
         Graph g = TinkerFactory.createModern();
-        Pipeline gremlin = Gremlin.of(g).v(1).list("locations").identity().has("endTime").interval("startTime", 1997, 2005).value();
+        Pipeline gremlin = Gremlin.of(g).V().has("locations").annotatedValues("locations").has("startTime",2004).value();
         System.out.println(gremlin);
         gremlin.forEach(System.out::println);
 

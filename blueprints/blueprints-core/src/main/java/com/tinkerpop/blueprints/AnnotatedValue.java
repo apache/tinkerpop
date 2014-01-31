@@ -10,12 +10,13 @@ import java.util.Set;
  */
 public interface AnnotatedValue<V> {
 
+    public static final String VALUE = "value";
+
     public class Key {
 
         private Key() {
         }
 
-        public static final String VALUE = "value";
         private static final String HIDDEN_PREFIX = "%&%";
 
         public static String hidden(final String key) {
@@ -59,7 +60,7 @@ public interface AnnotatedValue<V> {
         }
 
         public static IllegalArgumentException annotationKeyValueIsReserved() {
-            return annotationKeyIsReserved(Key.VALUE);
+            return annotationKeyIsReserved(VALUE);
         }
 
         public static IllegalArgumentException annotationKeyCanNotBeEmpty() {

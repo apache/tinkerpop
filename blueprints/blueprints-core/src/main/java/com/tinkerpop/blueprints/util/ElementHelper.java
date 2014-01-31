@@ -6,6 +6,8 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -163,5 +165,20 @@ public class ElementHelper {
 
     }
 
-
+    public static Map<String, Object> propertyMap(final Element element, final String... propertyKeys) {
+        final Map<String, Object> values = new HashMap<>();
+        if (null == propertyKeys || propertyKeys.length == 0) {
+            element.getPropertyKeys().forEach(key -> values.put(key, element.getValue(key)));
+        } else {
+            for (final String key : propertyKeys) {
+                if (key.equals(Element.ID))
+                    values.put(Element.ID, element.getId());
+                else if (key.equals(Element.LABEL))
+                    values.put(Element.LABEL, element.getLabel());
+                else
+                    element.getProperty(key).ifPresent(v -> values.put(key, v));
+            }
+        }
+        return values;
+    }
 }

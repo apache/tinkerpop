@@ -307,7 +307,7 @@ public class ExceptionConsistencyTest {
                     {new Object[]{"odd", null}, AnnotatedValue.Exceptions.annotationValueCanNotBeNull()},
                     {new Object[]{null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
                     {new Object[]{(String) null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
-                    {new Object[]{AnnotatedValue.Key.VALUE, "v"}, AnnotatedValue.Exceptions.annotationKeyValueIsReserved()},
+                    {new Object[]{AnnotatedValue.VALUE, "v"}, AnnotatedValue.Exceptions.annotationKeyValueIsReserved()},
                     {new Object[]{"", "val"}, AnnotatedValue.Exceptions.annotationKeyCanNotBeEmpty()}});
         }
 

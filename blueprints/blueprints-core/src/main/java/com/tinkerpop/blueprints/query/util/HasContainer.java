@@ -61,7 +61,7 @@ public class HasContainer {
 
     public <V> boolean test(final AnnotatedValue<V> annotatedValue) {
         if (null != this.value) {
-            if (this.key.equals(AnnotatedValue.Key.VALUE))
+            if (this.key.equals(AnnotatedValue.VALUE))
                 return this.predicate.test(annotatedValue.getValue(), this.value);
 
             if (!annotatedValue.getAnnotation(this.key).isPresent())

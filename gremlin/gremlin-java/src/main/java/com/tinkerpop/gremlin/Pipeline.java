@@ -20,6 +20,8 @@ import com.tinkerpop.gremlin.oltp.filter.RangePipe;
 import com.tinkerpop.gremlin.oltp.filter.RetainPipe;
 import com.tinkerpop.gremlin.oltp.filter.SimplePathPipe;
 import com.tinkerpop.gremlin.oltp.map.AnnotatedListQueryPipe;
+import com.tinkerpop.gremlin.oltp.map.AnnotationPipe;
+import com.tinkerpop.gremlin.oltp.map.AnnotationsPipe;
 import com.tinkerpop.gremlin.oltp.map.BackPipe;
 import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
 import com.tinkerpop.gremlin.oltp.map.ElementPropertyValuePipe;
@@ -31,11 +33,11 @@ import com.tinkerpop.gremlin.oltp.map.MatchPipe;
 import com.tinkerpop.gremlin.oltp.map.OrderPipe;
 import com.tinkerpop.gremlin.oltp.map.PathPipe;
 import com.tinkerpop.gremlin.oltp.map.PropertyPipe;
+import com.tinkerpop.gremlin.oltp.map.PropertyValuesPipe;
 import com.tinkerpop.gremlin.oltp.map.SelectPipe;
 import com.tinkerpop.gremlin.oltp.map.ShufflePipe;
 import com.tinkerpop.gremlin.oltp.map.UnionPipe;
 import com.tinkerpop.gremlin.oltp.map.ValuePipe;
-import com.tinkerpop.gremlin.oltp.map.ValuesPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.AggregatePipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.GroupByPipe;
@@ -98,6 +100,14 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public default Pipeline<S, E> identity() {
         return this.addPipe(new IdentityPipe(this));
+    }
+
+    public default <E2> Pipeline<S, E2> annotation(final String annotationKey) {
+        return this.addPipe(new AnnotationPipe<>(this, annotationKey));
+    }
+
+    public default Pipeline<S, Map<String, Object>> annotations(final String... annotationKeys) {
+        return this.addPipe(new AnnotationsPipe(this, annotationKeys));
     }
 
     public default Pipeline<S, Vertex> out(final int branchFactor, final String... labels) {
@@ -168,8 +178,8 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new OrderPipe<>(this, comparator));
     }
 
-    public default <E2> Pipeline<S, Property<E2>> property(final String key) {
-        return this.addPipe(new PropertyPipe<>(this, key));
+    public default <E2> Pipeline<S, Property<E2>> property(final String propertyKey) {
+        return this.addPipe(new PropertyPipe<>(this, propertyKey));
     }
 
     public default Pipeline<S, E> shuffle() {
@@ -180,24 +190,24 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new ValuePipe<>(this));
     }
 
-    public default <E2> Pipeline<S, E2> value(final String key) {
-        return this.addPipe(new ElementPropertyValuePipe<>(this, key));
+    public default <E2> Pipeline<S, E2> value(final String propertyKey) {
+        return this.addPipe(new ElementPropertyValuePipe<>(this, propertyKey));
     }
 
-    public default <E2> Pipeline<S, E2> value(final String key, final E2 defaultValue) {
-        return this.addPipe(new ElementPropertyValuePipe<>(this, key, defaultValue));
+    public default <E2> Pipeline<S, E2> value(final String propertyKey, final E2 defaultValue) {
+        return this.addPipe(new ElementPropertyValuePipe<>(this, propertyKey, defaultValue));
     }
 
-    public default <E2> Pipeline<S, E2> value(final String key, final Supplier<E2> defaultSupplier) {
-        return this.addPipe(new ElementPropertyValuePipe<>(this, key, defaultSupplier));
+    public default <E2> Pipeline<S, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
+        return this.addPipe(new ElementPropertyValuePipe<>(this, propertyKey, defaultSupplier));
     }
 
-    public default <E2> Pipeline<S, AnnotatedValue<E2>> list(final String key) {
-        return this.addPipe(new AnnotatedListQueryPipe<>(this, key, new AnnotatedListQueryBuilder()));
+    public default <E2> Pipeline<S, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
+        return this.addPipe(new AnnotatedListQueryPipe<>(this, propertyKey, new AnnotatedListQueryBuilder()));
     }
 
-    public default Pipeline<S, Map<String, Object>> values(final String... keys) {
-        return this.addPipe(new ValuesPipe(this, keys));
+    public default Pipeline<S, Map<String, Object>> values(final String... propertyKeys) {
+        return this.addPipe(new PropertyValuesPipe(this, propertyKeys));
     }
 
     public default Pipeline<S, Path> path(final Function... pathFunctions) {
