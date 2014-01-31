@@ -14,6 +14,7 @@ import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.oltp.filter.DedupPipe;
 import com.tinkerpop.gremlin.oltp.filter.ExceptPipe;
 import com.tinkerpop.gremlin.oltp.filter.FilterPipe;
+import com.tinkerpop.gremlin.oltp.filter.HasAnnotationPipe;
 import com.tinkerpop.gremlin.oltp.filter.HasPipe;
 import com.tinkerpop.gremlin.oltp.filter.IntervalPipe;
 import com.tinkerpop.gremlin.oltp.filter.RangePipe;
@@ -287,6 +288,24 @@ public interface Pipeline<S, E> extends Iterator<E> {
     public default <E2> Pipeline<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
         return this.addPipe(new HasPipe(this, new HasContainer(key, predicate, value)));
     }
+
+    ///////////
+    public default Pipeline<S, Element> has(final String propertyKey, final String annotationKey, final BiPredicate biPredicate, final Object annotationValue) {
+        return this.addPipe(new HasAnnotationPipe(this, propertyKey, new HasContainer(annotationKey, biPredicate, annotationValue)));
+    }
+
+    public default Pipeline<S, Element> has(final String propertyKey, final String annotationKey, final T t, final Object annotationValue) {
+        return this.has(propertyKey, annotationKey, T.convert(t), annotationValue);
+    }
+
+    public default Pipeline<S, Element> has(final String propertyKey, final String annotationKey, final Object annotationValue) {
+        return this.has(propertyKey, annotationKey, Compare.EQUAL, annotationValue);
+    }
+
+    public default Pipeline<S, Element> hasNot(final String propertyKey, final String annotationKey, final Object annotationValue) {
+        return this.has(propertyKey, annotationKey, Compare.NOT_EQUAL, annotationValue);
+    }
+    //////////
 
     public default <E2> Pipeline<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
         return this.addPipe(new IntervalPipe(this,
