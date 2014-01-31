@@ -31,12 +31,12 @@ public class TinkerFactory {
     public static TinkerGraph createModern() {
         final TinkerGraph g = TinkerGraph.open();
 
-        final Vertex marko = g.addVertex(Element.ID, 1, "name", "marko", "locations", AnnotatedList.make());
-        final Vertex stephen = g.addVertex(Element.ID, 7, "name", "stephen", "locations", AnnotatedList.make());
-        final Vertex matthias = g.addVertex(Element.ID, 8, "name", "matthias", "locations", AnnotatedList.make());
-        final Vertex daniel = g.addVertex(Element.ID, 9, "name", "daniel", "locations", AnnotatedList.make());
-        final Vertex gremlin = g.addVertex(Element.ID, 10, "name", "gremlin");
-        final Vertex blueprints = g.addVertex(Element.ID, 11, "name", "blueprints");
+        final Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person", "name", "marko", "locations", AnnotatedList.make());
+        final Vertex stephen = g.addVertex(Element.ID, 7, Element.LABEL, "person", "name", "stephen", "locations", AnnotatedList.make());
+        final Vertex matthias = g.addVertex(Element.ID, 8, Element.LABEL, "person", "name", "matthias", "locations", AnnotatedList.make());
+        final Vertex daniel = g.addVertex(Element.ID, 9, Element.LABEL, "person", "name", "daniel", "locations", AnnotatedList.make());
+        final Vertex gremlin = g.addVertex(Element.ID, 10, Element.LABEL, "software", "name", "gremlin");
+        final Vertex blueprints = g.addVertex(Element.ID, 11, Element.LABEL, "software", "name", "blueprints");
 
         AnnotatedList<String> locations = marko.getValue("locations");
         locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
