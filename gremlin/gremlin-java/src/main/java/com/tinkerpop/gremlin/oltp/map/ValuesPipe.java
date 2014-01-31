@@ -20,10 +20,10 @@ public class ValuesPipe extends MapPipe<Element, Map<String, Object>> {
                 element.getPropertyKeys().forEach(key -> values.put(key, element.getValue(key)));
             } else {
                 for (final String key : keys) {
-                    if (key.equals(Property.Key.ID))
-                        values.put(Property.Key.ID, element.getId());
-                    else if (key.equals(Property.Key.LABEL))
-                        values.put(Property.Key.LABEL, element.getLabel());
+                    if (key.equals(Element.ID))
+                        values.put(Element.ID, element.getId());
+                    else if (key.equals(Element.LABEL))
+                        values.put(Element.LABEL, element.getLabel());
                     else
                         element.getProperty(key).ifPresent(v -> values.put(key, v));
                 }

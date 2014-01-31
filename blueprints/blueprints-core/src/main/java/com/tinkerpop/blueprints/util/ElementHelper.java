@@ -30,9 +30,9 @@ public class ElementHelper {
             throw Property.Exceptions.propertyValueCanNotBeNull();
         if (null == key)
             throw Property.Exceptions.propertyKeyCanNotBeNull();
-        if (key.equals(Property.Key.ID))
+        if (key.equals(Element.ID))
             throw Property.Exceptions.propertyKeyIdIsReserved();
-        if (key.equals(Property.Key.LABEL))
+        if (key.equals(Element.LABEL))
             throw Property.Exceptions.propertyKeyLabelIsReserved();
         if (key.isEmpty())
             throw Property.Exceptions.propertyKeyCanNotBeEmpty();
@@ -40,7 +40,7 @@ public class ElementHelper {
 
     /**
      * Determines whether a list of key/values are legal, ensuring that there are an even number of values submitted
-     * and that the key values in the list of arguments are {@link String} or {@link Property.Key} objects.
+     * and that the key values in the list of arguments are {@link String} or {@link Element} objects.
      *
      * @param propertyKeyValues a list of key/value pairs
      * @throws IllegalArgumentException if something in the pairs is illegal
@@ -55,39 +55,39 @@ public class ElementHelper {
     }
 
     /**
-     * Extracts the value of the {@link Property.Key#ID} key from the list of arguments.
+     * Extracts the value of the {@link Element#ID} key from the list of arguments.
      *
      * @param keyValues a list of key/value pairs
-     * @return the value associated with {@link Property.Key#ID}
-     * @throws NullPointerException if the value for the {@link Property.Key#ID} key is {@code null}
+     * @return the value associated with {@link Element#ID}
+     * @throws NullPointerException if the value for the {@link Element#ID} key is {@code null}
      */
     public static Optional<Object> getIdValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (keyValues[i].equals(Property.Key.ID))
+            if (keyValues[i].equals(Element.ID))
                 return Optional.of(keyValues[i + 1]);
         }
         return Optional.empty();
     }
 
     /**
-     * Extracts the value of the {@link Property.Key#LABEL} key from the list of arguments.
+     * Extracts the value of the {@link Element#LABEL} key from the list of arguments.
      *
      * @param keyValues a list of key/value pairs
-     * @return the value associated with {@link Property.Key#LABEL}
+     * @return the value associated with {@link Element#LABEL}
      * @throws ClassCastException   if the value of the label is not a {@link String}
-     * @throws NullPointerException if the value for the {@link Property.Key#LABEL} key is {@code null}
+     * @throws NullPointerException if the value for the {@link Element#LABEL} key is {@code null}
      */
     public static Optional<String> getLabelValue(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (keyValues[i].equals(Property.Key.LABEL))
+            if (keyValues[i].equals(Element.LABEL))
                 return Optional.of((String) keyValues[i + 1]);
         }
         return Optional.empty();
     }
 
     /**
-     * Assign key/value pairs as properties to an {@link Element}.  If the value of {@link Property.Key#ID} or
-     * {@link Property.Key#LABEL} is in the set of pairs, then they are ignored.
+     * Assign key/value pairs as properties to an {@link Element}.  If the value of {@link Element#ID} or
+     * {@link Element#LABEL} is in the set of pairs, then they are ignored.
      *
      * @param element           the graph element to assign the {@code keyValues}
      * @param propertyKeyValues the key/value pairs to assign to the {@code element}
@@ -99,7 +99,7 @@ public class ElementHelper {
             throw Graph.Exceptions.argumentCanNotBeNull("element");
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
-            if (!propertyKeyValues[i].equals(Property.Key.ID) && !propertyKeyValues[i].equals(Property.Key.LABEL))
+            if (!propertyKeyValues[i].equals(Element.ID) && !propertyKeyValues[i].equals(Element.LABEL))
                 element.setProperty((String) propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
     }

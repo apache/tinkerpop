@@ -23,7 +23,7 @@ class TinkerEdge extends TinkerElement implements Edge {
         super(id, label, graph);
         this.outVertex = outVertex;
         this.inVertex = inVertex;
-        this.graph.edgeIndex.autoUpdate(Property.Key.LABEL, this.label, null, this);
+        this.graph.edgeIndex.autoUpdate(Element.LABEL, this.label, null, this);
     }
 
     private TinkerEdge(final TinkerEdge edge, final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {

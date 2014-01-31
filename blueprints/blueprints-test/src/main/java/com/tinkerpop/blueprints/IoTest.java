@@ -108,7 +108,7 @@ public class IoTest extends AbstractBlueprintsTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldProperlyEncodeWithGraphML() throws Exception {
-        final Vertex v = g.addVertex(Property.Key.ID, "1");
+        final Vertex v = g.addVertex(Element.ID, "1");
         v.setProperty("text", "\u00E9");
 
         final GraphMLWriter w = new GraphMLWriter.Builder(g).build();

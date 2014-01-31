@@ -2,7 +2,7 @@ package com.tinkerpop.blueprints.query.util;
 
 import com.tinkerpop.blueprints.Contains;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Property;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
 
@@ -21,7 +21,7 @@ import java.util.function.BiPredicate;
 public abstract class DefaultGraphQuery extends DefaultQuery implements GraphQuery {
 
     public GraphQuery ids(final Object... ids) {
-        this.hasContainers.add(new HasContainer(Property.Key.ID, Contains.IN, Arrays.asList(ids)));
+        this.hasContainers.add(new HasContainer(Element.ID, Contains.IN, Arrays.asList(ids)));
         return this;
     }
 

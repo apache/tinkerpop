@@ -16,6 +16,10 @@ import java.util.Set;
  */
 public abstract interface Element {
 
+    public static final String ID = "id";
+    public static final String LABEL = "label";
+    public static final String DEFAULT_LABEL = "default";
+
     public Object getId();
 
     public String getLabel();

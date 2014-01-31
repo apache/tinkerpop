@@ -145,7 +145,7 @@ public class TinkerGraph implements Graph, Serializable {
                         idString = TinkerHelper.getNextId(this);
                     }
 
-                    final Vertex vertex = new TinkerVertex(idString.toString(), null == label ? Property.Key.DEFAULT_LABEL.toString() : label, this);
+                    final Vertex vertex = new TinkerVertex(idString.toString(), null == label ? Element.DEFAULT_LABEL.toString() : label, this);
                     this.vertices.put(vertex.getId().toString(), vertex);
                     ElementHelper.attachProperties(vertex, kvs);
                     return vertex;

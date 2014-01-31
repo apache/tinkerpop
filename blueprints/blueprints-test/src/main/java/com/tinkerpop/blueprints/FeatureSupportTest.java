@@ -123,7 +123,7 @@ public class FeatureSupportTest  {
         @Test
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void ifAnIdCanBeAssignedToVertexThenItMustSupportUserSuppliedIds() throws Exception {
-            final Vertex v = g.addVertex(Property.Key.ID, BlueprintsStandardSuite.GraphManager.get().convertId(99999943835l));
+            final Vertex v = g.addVertex(Element.ID, BlueprintsStandardSuite.GraphManager.get().convertId(99999943835l));
             tryCommit(g, graph -> assertThat(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS),
                     v.getId().toString(),
                     is(not("99999943835"))));

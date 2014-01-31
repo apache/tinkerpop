@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin;
 
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
@@ -108,12 +109,12 @@ public class GremlinTest {
     public void testLoop() {
 
         TinkerGraph g = TinkerGraph.open(Optional.empty());
-        Vertex a = g.addVertex(Property.Key.ID, "1");
-        Vertex b = g.addVertex(Property.Key.ID, "2");
-        Vertex c = g.addVertex(Property.Key.ID, "3");
-        Vertex d = g.addVertex(Property.Key.ID, "4");
-        Vertex e = g.addVertex(Property.Key.ID, "5");
-        Vertex f = g.addVertex(Property.Key.ID, "6");
+        Vertex a = g.addVertex(Element.ID, "1");
+        Vertex b = g.addVertex(Element.ID, "2");
+        Vertex c = g.addVertex(Element.ID, "3");
+        Vertex d = g.addVertex(Element.ID, "4");
+        Vertex e = g.addVertex(Element.ID, "5");
+        Vertex f = g.addVertex(Element.ID, "6");
         a.addEdge("next", b);
         b.addEdge("next", c);
         c.addEdge("next", d);

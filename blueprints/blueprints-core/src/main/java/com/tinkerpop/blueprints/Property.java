@@ -20,9 +20,6 @@ public abstract interface Property<V> {
         private Key() {
         }
 
-        public static final String ID = "id";
-        public static final String LABEL = "label";
-        public static final String DEFAULT_LABEL = "default";
         private static final String HIDDEN_PREFIX = "%&%";
 
         public static String hidden(final String key) {
@@ -104,11 +101,11 @@ public abstract interface Property<V> {
         }
 
         public static IllegalArgumentException propertyKeyIdIsReserved() {
-            return propertyKeyIsReserved(Property.Key.ID);
+            return propertyKeyIsReserved(Element.ID);
         }
 
         public static IllegalArgumentException propertyKeyLabelIsReserved() {
-            return propertyKeyIsReserved(Property.Key.LABEL);
+            return propertyKeyIsReserved(Element.LABEL);
         }
 
         public static IllegalArgumentException propertyKeyCanNotBeEmpty() {

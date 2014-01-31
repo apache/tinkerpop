@@ -9,18 +9,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_BOOLEAN_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_DOUBLE_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_LONG_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.*;
 import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -83,7 +74,7 @@ public class VertexTest extends AbstractBlueprintsTest {
     @Test
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
-        final Vertex v = g.addVertex(Property.Key.ID, BlueprintsStandardSuite.GraphManager.get().convertId("1"));
+        final Vertex v = g.addVertex(Element.ID, BlueprintsStandardSuite.GraphManager.get().convertId("1"));
         final Vertex u = g.query().ids(BlueprintsStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
         assertEquals(v, u);
     }
@@ -105,7 +96,7 @@ public class VertexTest extends AbstractBlueprintsTest {
     @Test
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
-        final Vertex v = g.addVertex(Property.Key.ID, BlueprintsStandardSuite.GraphManager.get().convertId("1"));
+        final Vertex v = g.addVertex(Element.ID, BlueprintsStandardSuite.GraphManager.get().convertId("1"));
         final Vertex u = g.query().ids(BlueprintsStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
         assertEquals(v, u);
 
@@ -193,7 +184,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(keys.contains("location"));
         assertTrue(keys.contains("status"));
 
-        final Map<String,Property> m = v.getProperties();
+        final Map<String, Property> m = v.getProperties();
         assertEquals(3, m.size());
         assertEquals("name", m.get("name").getKey());
         assertEquals("location", m.get("location").getKey());
@@ -209,7 +200,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(keys.contains("name"));
         assertTrue(keys.contains("location"));
 
-        v.getProperties().values().stream().forEach(p->p.remove());
+        v.getProperties().values().stream().forEach(p -> p.remove());
 
         keys = v.getPropertyKeys();
         assertEquals(0, keys.size());
@@ -223,7 +214,7 @@ public class VertexTest extends AbstractBlueprintsTest {
 
         tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(25, 0));
 
-        for(Vertex v : g.query().vertices()) {
+        for (Vertex v : g.query().vertices()) {
             v.remove();
             tryCommit(g);
         }

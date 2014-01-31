@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.AbstractBlueprintsTest;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.FeatureRequirement;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
@@ -26,7 +27,7 @@ public class IdGraphStrategyTest extends AbstractBlueprintsTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldInjectAnIdAndReturnBySpecifiedId() {
-        final Vertex v = g.addVertex(Property.Key.ID, "test", "something", "else");
+        final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
 
         assertNotNull(v);
         assertEquals("test", v.getId());

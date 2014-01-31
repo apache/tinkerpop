@@ -3,7 +3,6 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
@@ -66,7 +65,7 @@ public class TinkerGraphQuery extends DefaultGraphQuery {
     }
 
     private void stringifyIds() {
-        this.hasContainers.stream().filter(h -> h.key.equals(Property.Key.ID)).forEach(h -> {
+        this.hasContainers.stream().filter(h -> h.key.equals(Element.ID)).forEach(h -> {
             final List<String> ids = new ArrayList<>();
             ((List<Object>) h.value).forEach(v -> ids.add(v.toString()));
             h.value = ids;

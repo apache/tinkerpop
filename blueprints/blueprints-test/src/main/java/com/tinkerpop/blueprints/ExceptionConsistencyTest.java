@@ -104,7 +104,7 @@ public class ExceptionConsistencyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void testGraphAddVertex() throws Exception {
             try {
-                this.g.addVertex(Property.Key.ID, "");
+                this.g.addVertex(Element.ID, "");
                 fail("Call to addVertex should have thrown an exception when ID was specified as it is not supported");
             } catch (Exception ex) {
                 final Exception expectedException = Vertex.Exceptions.userSuppliedIdsNotSupported();
@@ -118,7 +118,7 @@ public class ExceptionConsistencyTest {
         public void testGraphAddEdge() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
-                v.addEdge("label", v, Property.Key.ID, "");
+                v.addEdge("label", v, Element.ID, "");
                 fail("Call to addEdge should have thrown an exception when ID was specified as it is not supported");
             } catch (Exception ex) {
                 final Exception expectedException = Edge.Exceptions.userSuppliedIdsNotSupported();
@@ -147,8 +147,8 @@ public class ExceptionConsistencyTest {
             return Arrays.asList(new Object[][]{
                     {"k", null, Property.Exceptions.propertyValueCanNotBeNull()},
                     {null, "v", Property.Exceptions.propertyKeyCanNotBeNull()},
-                    {Property.Key.ID, "v", Property.Exceptions.propertyKeyIdIsReserved()},
-                    {Property.Key.LABEL, "v", Property.Exceptions.propertyKeyLabelIsReserved()},
+                    {Element.ID, "v", Property.Exceptions.propertyKeyIdIsReserved()},
+                    {Element.LABEL, "v", Property.Exceptions.propertyKeyLabelIsReserved()},
                     {"", "v", Property.Exceptions.propertyKeyCanNotBeEmpty()}});
         }
 
@@ -391,9 +391,9 @@ public class ExceptionConsistencyTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void testAssignSameIdOnVertex() {
-            g.addVertex(Property.Key.ID, 1000l);
+            g.addVertex(Element.ID, 1000l);
             try {
-                g.addVertex(Property.Key.ID, 1000l);
+                g.addVertex(Element.ID, 1000l);
                 fail("Assigning the same ID to an Element should throw an exception");
             } catch (Exception ex) {
                 final Exception expectedException = Graph.Exceptions.vertexWithIdAlreadyExists(1000l);
@@ -407,10 +407,10 @@ public class ExceptionConsistencyTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void testAssignSameIdOnEdge() {
             final Vertex v = g.addVertex();
-            v.addEdge("label", v, Property.Key.ID, 1000l);
+            v.addEdge("label", v, Element.ID, 1000l);
 
             try {
-                v.addEdge("label", v, Property.Key.ID, 1000l);
+                v.addEdge("label", v, Element.ID, 1000l);
                 fail("Assigning the same ID to an Element should throw an exception");
             } catch (Exception ex) {
                 final Exception expectedException = Graph.Exceptions.edgeWithIdAlreadyExist(1000l);

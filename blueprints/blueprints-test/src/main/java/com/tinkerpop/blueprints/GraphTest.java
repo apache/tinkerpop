@@ -122,7 +122,7 @@ public class GraphTest extends AbstractBlueprintsTest {
         final List<Edge> edges = new ArrayList<>();
         final Random random = new Random();
 
-        IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Property.Key.ID, i)));
+        IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Element.ID, i)));
         tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         IntStream.range(0, edgeCount).forEach(i -> {
@@ -158,7 +158,7 @@ public class GraphTest extends AbstractBlueprintsTest {
         final List<Vertex> vertices = new ArrayList<>();
         final List<Edge> edges = new ArrayList<>();
 
-        IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Property.Key.ID, i)));
+        IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Element.ID, i)));
         tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         for (int i = 0; i < vertexCount; i = i + 2) {
@@ -190,10 +190,10 @@ public class GraphTest extends AbstractBlueprintsTest {
         final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
         final Graph graph = this.g;
 
-        final Vertex a = graph.addVertex(Property.Key.ID, graphProvider.convertId("1"));
-        final Vertex b = graph.addVertex(Property.Key.ID, graphProvider.convertId("2"));
-        final Vertex c = graph.addVertex(Property.Key.ID, graphProvider.convertId("3"));
-        final Vertex d = graph.addVertex(Property.Key.ID, graphProvider.convertId("4"));
+        final Vertex a = graph.addVertex(Element.ID, graphProvider.convertId("1"));
+        final Vertex b = graph.addVertex(Element.ID, graphProvider.convertId("2"));
+        final Vertex c = graph.addVertex(Element.ID, graphProvider.convertId("3"));
+        final Vertex d = graph.addVertex(Element.ID, graphProvider.convertId("4"));
 
         tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(4, 0));
 

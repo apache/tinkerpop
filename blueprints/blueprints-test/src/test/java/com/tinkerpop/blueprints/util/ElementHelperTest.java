@@ -54,8 +54,8 @@ public class ElementHelperTest {
     @Test
     public void shouldValidatePropertyAndNotAllowIdKey() {
         try {
-            ElementHelper.validateProperty(Property.Key.ID, "test");
-            fail(String.format("Should fail as property key %s is reserved", Property.Key.ID));
+            ElementHelper.validateProperty(Element.ID, "test");
+            fail(String.format("Should fail as property key %s is reserved", Element.ID));
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyKeyIdIsReserved().getMessage(), iae.getMessage());
         }
@@ -64,8 +64,8 @@ public class ElementHelperTest {
     @Test
     public void shouldValidatePropertyAndAllowLabelKey() {
         try {
-            ElementHelper.validateProperty(Property.Key.LABEL, "test");
-            fail(String.format("Should fail as property key %s is reserved", Property.Key.LABEL));
+            ElementHelper.validateProperty(Element.LABEL, "test");
+            fail(String.format("Should fail as property key %s is reserved", Element.LABEL));
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyKeyLabelIsReserved().getMessage(), iae.getMessage());
         }
@@ -103,12 +103,12 @@ public class ElementHelperTest {
 
     @Test
     public void shouldFindTheIdValueAlone() {
-        assertEquals(123l, ElementHelper.getIdValue(Property.Key.ID, 123l).get());
+        assertEquals(123l, ElementHelper.getIdValue(Element.ID, 123l).get());
     }
 
     @Test
     public void shouldFindTheIdValueInSet() {
-        assertEquals(123l, ElementHelper.getIdValue("test", 321, Property.Key.ID, 123l, "testagain", "that").get());
+        assertEquals(123l, ElementHelper.getIdValue("test", 321, Element.ID, 123l, "testagain", "that").get());
     }
 
     @Test
@@ -118,17 +118,17 @@ public class ElementHelperTest {
 
     @Test(expected = NullPointerException.class)
     public void shouldNotFindAnIdValueBecauseItIsNull() {
-        ElementHelper.getIdValue("test", 321, Property.Key.ID, null, "testagain", "that");
+        ElementHelper.getIdValue("test", 321, Element.ID, null, "testagain", "that");
     }
 
     @Test
     public void shouldFindTheLabelValueAlone() {
-        assertEquals("friend", ElementHelper.getLabelValue(Property.Key.LABEL, "friend").get());
+        assertEquals("friend", ElementHelper.getLabelValue(Element.LABEL, "friend").get());
     }
 
     @Test
     public void shouldFindTheLabelValueInSet() {
-        assertEquals("friend", ElementHelper.getLabelValue("test", 321, Property.Key.LABEL, "friend", "testagain", "that").get());
+        assertEquals("friend", ElementHelper.getLabelValue("test", 321, Element.LABEL, "friend", "testagain", "that").get());
     }
 
     @Test
@@ -138,21 +138,21 @@ public class ElementHelperTest {
 
     @Test(expected = ClassCastException.class)
     public void shouldNotFindTheLabelBecauseItIsNotString() {
-        ElementHelper.getLabelValue("test", 321, Property.Key.LABEL, 4545, "testagain", "that");
+        ElementHelper.getLabelValue("test", 321, Element.LABEL, 4545, "testagain", "that");
     }
 
     @Test(expected = NullPointerException.class)
     public void shouldNotFindTheLabelBecauseItIsNull() {
-        ElementHelper.getLabelValue("test", 321, Property.Key.LABEL, null, "testagain", "that");
+        ElementHelper.getLabelValue("test", 321, Element.LABEL, null, "testagain", "that");
     }
 
     @Test
     public void shouldAttachKeyValuesButNotLabelsOrId() {
         final Element mockElement = mock(Element.class);
-        ElementHelper.attachProperties(mockElement, "test", 123, Property.Key.ID, 321, Property.Key.LABEL, "friends");
+        ElementHelper.attachProperties(mockElement, "test", 123, Element.ID, 321, Element.LABEL, "friends");
         verify(mockElement, times(1)).setProperty("test", 123);
-        verify(mockElement, times(0)).setProperty(Property.Key.ID, 321);
-        verify(mockElement, times(0)).setProperty(Property.Key.LABEL, "friends");
+        verify(mockElement, times(0)).setProperty(Element.ID, 321);
+        verify(mockElement, times(0)).setProperty(Element.LABEL, "friends");
     }
 
     @Test(expected = ClassCastException.class)

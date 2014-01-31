@@ -32,9 +32,9 @@ public class HasContainer {
 
     public boolean test(final Element element) {
         if (null != this.value) {
-            if (this.key.equals(Property.Key.ID))
+            if (this.key.equals(Element.ID))
                 return this.predicate.test(element.getId(), this.value);
-            else if (this.key.equals(Property.Key.LABEL))
+            else if (this.key.equals(Element.LABEL))
                 return this.predicate.test(element.getLabel(), this.value);
             else {
                 final Property property = element.getProperty(this.key);
