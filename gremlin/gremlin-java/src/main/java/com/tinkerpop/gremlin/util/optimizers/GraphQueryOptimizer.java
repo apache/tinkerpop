@@ -8,36 +8,45 @@ import com.tinkerpop.gremlin.oltp.filter.IntervalPipe;
 import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GraphQueryOptimizer implements Optimizer.StepOptimizer {
 
+    private static final List<Class> COMPILED_PIPES = new ArrayList<Class>(
+            Arrays.asList(IdentityPipe.class,
+                    HasPipe.class,
+                    IntervalPipe.class));
+
     public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
-        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe))
+        if (!COMPILED_PIPES.stream().filter(c -> c.isAssignableFrom(pipe.getClass())).findFirst().isPresent())
             return true;
 
         GraphQueryPipe graphQueryPipe = null;
         for (int i = pipeline.getPipes().size() - 1; i >= 0; i--) {
-            if (pipeline.getPipes().get(i) instanceof GraphQueryPipe) {
-                graphQueryPipe = (GraphQueryPipe) pipeline.getPipes().get(i);
+            final Pipe tempPipe = (Pipe) pipeline.getPipes().get(i);
+            if (tempPipe instanceof GraphQueryPipe) {
+                graphQueryPipe = (GraphQueryPipe) tempPipe;
                 break;
-            } else if (!(pipeline.getPipes().get(i) instanceof IdentityPipe
-                    || pipeline.getPipes().get(i) instanceof HasPipe
-                    || pipeline.getPipes().get(i) instanceof IntervalPipe))
+            } else if (!COMPILED_PIPES.stream().filter(c -> c.isAssignableFrom(tempPipe.getClass())).findFirst().isPresent())
                 break;
         }
 
         if (null != graphQueryPipe) {
             if (pipe instanceof HasPipe) {
-                graphQueryPipe.queryBuilder.has(((HasPipe) pipe).hasContainer.key, ((HasPipe) pipe).hasContainer.predicate, ((HasPipe) pipe).hasContainer.value);
+                final HasPipe hasPipe = (HasPipe) pipe;
+                graphQueryPipe.queryBuilder.has(hasPipe.hasContainer.key, hasPipe.hasContainer.predicate, hasPipe.hasContainer.value);
             } else if (pipe instanceof IntervalPipe) {
-                graphQueryPipe.queryBuilder.has(((IntervalPipe) pipe).startContainer.key, ((IntervalPipe) pipe).startContainer.predicate, ((IntervalPipe) pipe).startContainer.value);
-                graphQueryPipe.queryBuilder.has(((IntervalPipe) pipe).endContainer.key, ((IntervalPipe) pipe).endContainer.predicate, ((IntervalPipe) pipe).endContainer.value);
+                final IntervalPipe intervalPipe = (IntervalPipe) pipe;
+                graphQueryPipe.queryBuilder.has(intervalPipe.startContainer.key, intervalPipe.startContainer.predicate, intervalPipe.startContainer.value);
+                graphQueryPipe.queryBuilder.has(intervalPipe.endContainer.key, intervalPipe.endContainer.predicate, intervalPipe.endContainer.value);
             } else {
                 throw new IllegalStateException("This pipe should not be accessible via this optimizer: " + pipe.getClass());
             }
-
             graphQueryPipe.generateHolderIterator(false);
             return false;
         }

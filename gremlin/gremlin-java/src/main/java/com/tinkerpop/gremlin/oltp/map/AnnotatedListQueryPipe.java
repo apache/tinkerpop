@@ -19,19 +19,17 @@ public class AnnotatedListQueryPipe<V> extends FlatMapPipe<Vertex, AnnotatedValu
     public int high = Integer.MAX_VALUE;
     private int counter = 0;
     private final int branchFactor;
-    public boolean returnAnnotatedValues;
 
-    public AnnotatedListQueryPipe(final Pipeline pipeline, final String propertyKey, final boolean returnAnnotatedValues, final AnnotatedListQueryBuilder queryBuilder) {
+    public AnnotatedListQueryPipe(final Pipeline pipeline, final String propertyKey, final AnnotatedListQueryBuilder queryBuilder) {
         super(pipeline);
         this.propertyKey = propertyKey;
         this.queryBuilder = queryBuilder;
         this.branchFactor = this.queryBuilder.limit;
-        this.returnAnnotatedValues = returnAnnotatedValues;
-        generateFunction();
+        generateFunction(true);
     }
 
-    public void generateFunction() {
-        if (this.returnAnnotatedValues)
+    public void generateFunction(final boolean returnAnnotatedValues) {
+        if (returnAnnotatedValues)
             this.setFunction(holder -> this.generateBuilder().build(holder.get().getValue(this.propertyKey)).annotatedValues().iterator());
         else
             this.setFunction(holder -> this.generateBuilder().build(holder.get().getValue(this.propertyKey)).values().iterator());

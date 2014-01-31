@@ -16,4 +16,8 @@ public interface Optimizer {
     public interface RuntimeOptimizer extends Optimizer {
         public void optimize(final Pipeline pipeline);
     }
+
+    /*public static boolean classContainedIn(final Class clazz, final List<Class> classes) {
+        return classes.stream().filter(c -> c.isAssignableFrom(clazz)).findFirst().isPresent();
+    }*/
 }

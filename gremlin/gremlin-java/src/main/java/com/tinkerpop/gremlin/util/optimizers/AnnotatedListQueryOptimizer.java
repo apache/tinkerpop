@@ -11,13 +11,24 @@ import com.tinkerpop.gremlin.oltp.map.AnnotatedValuePipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AnnotatedListQueryOptimizer implements Optimizer.StepOptimizer {
 
+    private static final List<Class> COMPILED_PIPES = new ArrayList<Class>(
+            Arrays.asList(IdentityPipe.class,
+                    HasPipe.class,
+                    IntervalPipe.class,
+                    RangePipe.class,
+                    AnnotatedValuePipe.class));
+
     public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
-        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe || pipe instanceof RangePipe || pipe instanceof AnnotatedValuePipe))
+        if (!COMPILED_PIPES.stream().filter(c -> c.isAssignableFrom(pipe.getClass())).findFirst().isPresent())
             return true;
         else {
             if (GremlinHelper.isLabeled(pipe))
@@ -26,20 +37,17 @@ public class AnnotatedListQueryOptimizer implements Optimizer.StepOptimizer {
 
         AnnotatedListQueryPipe annotatedListQueryPipe = null;
         for (int i = pipeline.getPipes().size() - 1; i >= 0; i--) {
-            if (pipeline.getPipes().get(i) instanceof AnnotatedListQueryPipe) {
-                annotatedListQueryPipe = (AnnotatedListQueryPipe) pipeline.getPipes().get(i);
+            final Pipe tempPipe = (Pipe) pipeline.getPipes().get(i);
+            if (tempPipe instanceof AnnotatedListQueryPipe) {
+                annotatedListQueryPipe = (AnnotatedListQueryPipe) tempPipe;
                 break;
-            } else if (!(pipeline.getPipes().get(i) instanceof IdentityPipe
-                    || pipeline.getPipes().get(i) instanceof HasPipe
-                    || pipeline.getPipes().get(i) instanceof IntervalPipe
-                    || pipeline.getPipes().get(i) instanceof RangePipe))
+            } else if (!COMPILED_PIPES.stream().filter(c -> c.isAssignableFrom(tempPipe.getClass())).findFirst().isPresent())
                 break;
         }
 
         if (null != annotatedListQueryPipe && !GremlinHelper.isLabeled(annotatedListQueryPipe)) {
             if (pipe instanceof AnnotatedValuePipe) {
-                annotatedListQueryPipe.returnAnnotatedValues = false;
-                annotatedListQueryPipe.generateFunction();
+                annotatedListQueryPipe.generateFunction(false);
             } else if (pipe instanceof HasPipe) {
                 final HasPipe hasPipe = (HasPipe) pipe;
                 annotatedListQueryPipe.queryBuilder.has(hasPipe.hasContainer.key, hasPipe.hasContainer.predicate, hasPipe.hasContainer.value);
@@ -54,7 +62,6 @@ public class AnnotatedListQueryOptimizer implements Optimizer.StepOptimizer {
             } else {
                 throw new IllegalStateException("This pipe should not be accessible via this optimizer: " + pipe.getClass());
             }
-            annotatedListQueryPipe.generateFunction();
             return false;
         }
 

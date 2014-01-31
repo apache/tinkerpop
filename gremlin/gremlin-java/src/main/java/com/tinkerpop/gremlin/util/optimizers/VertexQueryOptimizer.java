@@ -12,13 +12,24 @@ import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
 
+    private static final List<Class> COMPILED_PIPES = new ArrayList<Class>(
+            Arrays.asList(IdentityPipe.class,
+                    HasPipe.class,
+                    IntervalPipe.class,
+                    RangePipe.class,
+                    EdgeVertexPipe.class));
+
     public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
-        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe || pipe instanceof RangePipe || pipe instanceof EdgeVertexPipe))
+        if (!COMPILED_PIPES.stream().filter(c -> c.isAssignableFrom(pipe.getClass())).findFirst().isPresent())
             return true;
         else {
             if (GremlinHelper.isLabeled(pipe))
@@ -27,13 +38,11 @@ public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
 
         VertexQueryPipe vertexQueryPipe = null;
         for (int i = pipeline.getPipes().size() - 1; i >= 0; i--) {
-            if (pipeline.getPipes().get(i) instanceof VertexQueryPipe) {
-                vertexQueryPipe = (VertexQueryPipe) pipeline.getPipes().get(i);
+            final Pipe tempPipe = (Pipe) pipeline.getPipes().get(i);
+            if (tempPipe instanceof VertexQueryPipe) {
+                vertexQueryPipe = (VertexQueryPipe) tempPipe;
                 break;
-            } else if (!(pipeline.getPipes().get(i) instanceof IdentityPipe
-                    || pipeline.getPipes().get(i) instanceof HasPipe
-                    || pipeline.getPipes().get(i) instanceof IntervalPipe
-                    || pipeline.getPipes().get(i) instanceof RangePipe))
+            } else if (!COMPILED_PIPES.stream().filter(c -> c.isAssignableFrom(tempPipe.getClass())).findFirst().isPresent())
                 break;
         }
 

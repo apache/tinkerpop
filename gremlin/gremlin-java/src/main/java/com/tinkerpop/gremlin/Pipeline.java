@@ -197,7 +197,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, AnnotatedValue> values(final String key) {
-        return this.addPipe(new AnnotatedListQueryPipe(this, key, true, new AnnotatedListQueryBuilder()));
+        return this.addPipe(new AnnotatedListQueryPipe(this, key, new AnnotatedListQueryBuilder()));
     }
 
     public default Pipeline<S, Path> path(final Function... pathFunctions) {
