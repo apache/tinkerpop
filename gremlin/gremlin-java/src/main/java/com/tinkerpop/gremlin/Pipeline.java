@@ -35,6 +35,7 @@ import com.tinkerpop.gremlin.oltp.map.SelectPipe;
 import com.tinkerpop.gremlin.oltp.map.ShufflePipe;
 import com.tinkerpop.gremlin.oltp.map.UnionPipe;
 import com.tinkerpop.gremlin.oltp.map.ValuePipe;
+import com.tinkerpop.gremlin.oltp.map.ValuesPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.AggregatePipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.GroupByPipe;
@@ -191,8 +192,12 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new ElementPropertyValuePipe<>(this, key, defaultSupplier));
     }
 
-    public default Pipeline<S, AnnotatedValue> values(final String key) {
-        return this.addPipe(new AnnotatedListQueryPipe(this, key, new AnnotatedListQueryBuilder()));
+    public default <E2> Pipeline<S, AnnotatedValue<E2>> list(final String key) {
+        return this.addPipe(new AnnotatedListQueryPipe<>(this, key, new AnnotatedListQueryBuilder()));
+    }
+
+    public default Pipeline<S, Map<String, Object>> values(final String... keys) {
+        return this.addPipe(new ValuesPipe(this, keys));
     }
 
     public default Pipeline<S, Path> path(final Function... pathFunctions) {
@@ -253,27 +258,27 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new ExceptPipe<>(this, exceptionCollection));
     }
 
-    public default Pipeline<S, Element> has(final String key) {
+    public default <E2> Pipeline<S, E2> has(final String key) {
         return this.addPipe(new HasPipe(this, new HasContainer(key, Contains.IN)));
     }
 
-    public default Pipeline<S, Element> has(final String key, final Object value) {
+    public default <E2> Pipeline<S, E2> has(final String key, final Object value) {
         return has(key, Compare.EQUAL, value);
     }
 
-    public default Pipeline<S, Element> has(final String key, final T t, final Object value) {
+    public default <E2> Pipeline<S, E2> has(final String key, final T t, final Object value) {
         return this.has(key, T.convert(t), value);
     }
 
-    public default Pipeline<S, Element> hasNot(final String key) {
+    public default <E2> Pipeline<S, E2> hasNot(final String key) {
         return this.addPipe(new HasPipe(this, new HasContainer(key, Contains.NOT_IN)));
     }
 
-    public default Pipeline<S, Element> has(final String key, final BiPredicate predicate, final Object value) {
+    public default <E2> Pipeline<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
         return this.addPipe(new HasPipe(this, new HasContainer(key, predicate, value)));
     }
 
-    public default Pipeline<S, Element> interval(final String key, final Comparable startValue, final Comparable endValue) {
+    public default <E2> Pipeline<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
         return this.addPipe(new IntervalPipe(this,
                 new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue),
                 new HasContainer(key, Compare.LESS_THAN, endValue)));

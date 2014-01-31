@@ -17,13 +17,13 @@ public class HasPipe<S> extends FilterPipe<S> {
         super(pipeline);
         this.hasContainer = hasContainer;
         this.setPredicate(holder -> {
-            final S temp = holder.get();
-            if (temp instanceof Element)
-                return hasContainer.test((Element) temp);
-            else if (temp instanceof AnnotatedValue)
-                return hasContainer.test((AnnotatedValue) temp);
+            final S s = holder.get();
+            if (s instanceof Element)
+                return hasContainer.test((Element) s);
+            else if (s instanceof AnnotatedValue)
+                return hasContainer.test((AnnotatedValue) s);
             else
-                throw new IllegalArgumentException("The provided class can not be check with has(): " + temp.getClass());
+                throw new IllegalArgumentException("The provided class can not be check with has(): " + s.getClass());
 
         });
     }

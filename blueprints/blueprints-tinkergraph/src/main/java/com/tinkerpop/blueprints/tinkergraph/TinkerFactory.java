@@ -2,7 +2,6 @@ package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
 /**
@@ -43,30 +42,31 @@ public class TinkerFactory {
         locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
         locations.addValue("brussels", "startTime", 2004, "endTime", 2005);
         locations.addValue("santa fe", "startTime", 2005, "endTime", 2014);
-        marko.addEdge("created", gremlin, "date", 2009);
-        marko.addEdge("uses", gremlin, "skill", 0.9f);
-        marko.addEdge("created", blueprints, "date", 2010);
 
         locations = stephen.getValue("locations");
         locations.addValue("centreville", "startTime", 1990, "endTime", 2000);
         locations.addValue("dulles", "startTime", 2000, "endTime", 2006);
         locations.addValue("purcellville", "startTime", 2006, "endTime", 2014);
-        stephen.addEdge("created", blueprints, "date", 2011);
-        stephen.addEdge("created", gremlin, "date", 2014);
 
         locations = matthias.getValue("locations");
         locations.addValue("bremen", "startTime", 2004, "endTime", 2007);
-        locations.addValue("maryland", "startTime", 2007, "endTime", 2011);
+        locations.addValue("baltimore", "startTime", 2007, "endTime", 2011);
         locations.addValue("oakland", "startTime", 2011, "endTime", 2014);
-        matthias.addEdge("created", blueprints, "date", 2012);
 
         locations = daniel.getValue("locations");
         locations.addValue("spremberg", "startTime", 1982, "endTime", 2005);
         locations.addValue("kaiserslautern", "startTime", 2005, "endTime", 2009);
         locations.addValue("aachen", "startTime", 2009, "endTime", 2014);
-        daniel.addEdge("uses", gremlin, "skill", 1.0f);
 
+        marko.addEdge("created", gremlin, "date", 2009);
+        marko.addEdge("uses", gremlin, "skill", 0.9f);
+        marko.addEdge("created", blueprints, "date", 2010);
+        stephen.addEdge("created", blueprints, "date", 2011);
+        stephen.addEdge("created", gremlin, "date", 2014);
+        matthias.addEdge("created", blueprints, "date", 2012);
+        daniel.addEdge("uses", gremlin, "skill", 1.0f);
         gremlin.addEdge("dependsOn", blueprints);
+
 
         return g;
     }
