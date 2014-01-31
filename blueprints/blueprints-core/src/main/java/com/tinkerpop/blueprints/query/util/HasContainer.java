@@ -60,13 +60,19 @@ public class HasContainer {
     }
 
     public <V> boolean test(final AnnotatedValue<V> annotatedValue) {
-        if (this.key.equals(AnnotatedValue.Key.VALUE))
-            return this.predicate.test(annotatedValue.getValue(), this.value);
+        if (null != this.value) {
+            if (this.key.equals(AnnotatedValue.Key.VALUE))
+                return this.predicate.test(annotatedValue.getValue(), this.value);
 
-        if (!annotatedValue.getAnnotation(this.key).isPresent())
-            return false;
+            if (!annotatedValue.getAnnotation(this.key).isPresent())
+                return false;
 
-        return this.predicate.test(annotatedValue.getAnnotation(this.key).get(), this.value);
+            return this.predicate.test(annotatedValue.getAnnotation(this.key).get(), this.value);
+        } else {
+            return Contains.IN.equals(this.predicate) ?
+                    annotatedValue.getAnnotation(this.key).isPresent() :
+                    !annotatedValue.getAnnotation(this.key).isPresent();
+        }
     }
 
     public static <V> boolean testAll(final AnnotatedValue<V> annotatedValue, final List<HasContainer> hasContainers) {
@@ -82,7 +88,7 @@ public class HasContainer {
     }
 
     public String toString() {
-        return "[" + this.key + "," + this.predicate + "," + this.value + "]";
+        return this.value == null ? "[" + this.key + "," + this.predicate + "]" : "[" + this.key + "," + this.predicate + "," + this.value + "]";
     }
 
 }

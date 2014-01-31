@@ -18,7 +18,7 @@ import com.tinkerpop.gremlin.util.GremlinHelper;
 public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
 
     public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
-        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe || pipe instanceof EdgeVertexPipe || pipe instanceof RangePipe))
+        if (!(pipe instanceof HasPipe || pipe instanceof IntervalPipe || pipe instanceof RangePipe || pipe instanceof EdgeVertexPipe))
             return true;
         else {
             if (GremlinHelper.isLabeled(pipe))

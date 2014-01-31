@@ -1,7 +1,6 @@
 package com.tinkerpop.blueprints.tinkergraph;
 
 import com.tinkerpop.blueprints.AnnotatedList;
-import com.tinkerpop.blueprints.AnnotatedValue;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
@@ -37,10 +36,15 @@ public class TinkerFactory {
         final Vertex daniel = g.addVertex(Property.Key.ID, 8, "name", "daniel", "locations", AnnotatedList.make());
         final Vertex matthias = g.addVertex(Property.Key.ID, 9, "name", "matthias", "locations", AnnotatedList.make());
 
-        final AnnotatedList<String> locations = marko.getValue("locations");
+        AnnotatedList<String> locations = marko.getValue("locations");
         locations.addValue("california", "startTime", 1997, "endTime", 2004);
         locations.addValue("belgium", "startTime", 2004, "endTime", 2005);
         locations.addValue("new mexico", "startTime", 2005, "endTime", 2014);
+
+        locations = matthias.getValue("locations");
+        locations.addValue("germany", "startTime", 2004, "endTime", 2007);
+        locations.addValue("maryland", "startTime", 2007, "endTime", 2011);
+        locations.addValue("california", "startTime", 2011, "endTime", 2014);
 
         return g;
     }
@@ -49,5 +53,7 @@ public class TinkerFactory {
         final Graph g = TinkerFactory.createModern();
         AnnotatedList<String> locations = g.v(1).get().getValue("locations");
         locations.query().has("value", "california").annotatedValues().forEach(System.out::println);
+
+        // g.v(1).value('locations')
     }
 }

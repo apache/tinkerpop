@@ -8,6 +8,9 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * A collection of helpful methods for creating standard {@link Object#toString()} representations of graph-related
@@ -63,7 +66,7 @@ public class StringFactory {
     /**
      * Construct the representation for a {@link AnnotatedList}.
      */
-    public static String annotatedListString(final AnnotatedList annotatedList) {
+    public static String annotatedListString(final AnnotatedList<?> annotatedList) {
         final StringBuilder builder = new StringBuilder(L_BRACKET);
         annotatedList.query().limit(2).values().forEach(v -> builder.append(v).append(COMMA_SPACE));
         if (builder.length() > 1)
@@ -75,8 +78,10 @@ public class StringFactory {
     /**
      * Construct the representation for a {@link AnnotatedValue}.
      */
-    public static String annotatedValueString(final AnnotatedValue annotatedValue) {
-        return L_BRACKET + annotatedValue.getValue() + COLON + annotatedValue.getAnnotationKeys() + R_BRACKET;
+    public static String annotatedValueString(final AnnotatedValue<?> annotatedValue) {
+        final Map<String, Object> annotations = new HashMap<>();
+        annotatedValue.getAnnotationKeys().forEach(key -> annotations.put(key, annotatedValue.getAnnotation(key).get()));
+        return L_BRACKET + annotatedValue.getValue() + COLON + annotations.toString() + R_BRACKET;
     }
 
     /**

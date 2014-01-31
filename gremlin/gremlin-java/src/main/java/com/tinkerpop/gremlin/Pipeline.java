@@ -8,6 +8,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.query.util.AnnotatedListQueryBuilder;
 import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.oltp.filter.DedupPipe;
@@ -18,6 +19,8 @@ import com.tinkerpop.gremlin.oltp.filter.IntervalPipe;
 import com.tinkerpop.gremlin.oltp.filter.RangePipe;
 import com.tinkerpop.gremlin.oltp.filter.RetainPipe;
 import com.tinkerpop.gremlin.oltp.filter.SimplePathPipe;
+import com.tinkerpop.gremlin.oltp.map.AnnotatedListQueryPipe;
+import com.tinkerpop.gremlin.oltp.map.AnnotatedValuePipe;
 import com.tinkerpop.gremlin.oltp.map.BackPipe;
 import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
 import com.tinkerpop.gremlin.oltp.map.FlatMapPipe;
@@ -33,7 +36,6 @@ import com.tinkerpop.gremlin.oltp.map.SelectPipe;
 import com.tinkerpop.gremlin.oltp.map.ShufflePipe;
 import com.tinkerpop.gremlin.oltp.map.UnionPipe;
 import com.tinkerpop.gremlin.oltp.map.ValuePipe;
-import com.tinkerpop.gremlin.oltp.map.ValuesPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.AggregatePipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.GroupByPipe;
@@ -190,8 +192,12 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.addPipe(new ValuePipe<>(this, key, defaultSupplier));
     }
 
-    public default Pipeline<S, Map<String, Object>> values(final String... keys) {
-        return this.addPipe(new ValuesPipe(this, keys));
+    public default <E2> Pipeline<S, E2> values() {
+        return this.addPipe(new AnnotatedValuePipe<>(this));
+    }
+
+    public default Pipeline<S, AnnotatedValue> values(final String key) {
+        return this.addPipe(new AnnotatedListQueryPipe(this, key, true, new AnnotatedListQueryBuilder()));
     }
 
     public default Pipeline<S, Path> path(final Function... pathFunctions) {

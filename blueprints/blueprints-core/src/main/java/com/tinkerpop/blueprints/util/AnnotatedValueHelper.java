@@ -31,7 +31,7 @@ public class AnnotatedValueHelper {
             if (!(annotationKeyValues[i] instanceof String))
                 throw AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices();
             else
-                AnnotatedValueHelper.validateAnnotation((String) annotationKeyValues[i], annotationKeyValues[i + 1]);
+                validateAnnotation((String) annotationKeyValues[i], annotationKeyValues[i + 1]);
         }
     }
 

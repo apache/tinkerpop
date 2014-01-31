@@ -13,7 +13,7 @@ public class ValuesTest extends com.tinkerpop.gremlin.test.map.ValuesTest {
 
     Graph g = TinkerFactory.createClassic();
 
-    @Test
+    /*@Test
     public void testCompliance() {
         ComplianceTest.testCompliance(this.getClass());
     }
@@ -36,5 +36,5 @@ public class ValuesTest extends com.tinkerpop.gremlin.test.map.ValuesTest {
     @Test
     public void g_v1_outXcreatedX_values() {
         super.g_v1_outXcreatedX_values(Gremlin.of(g).v(1).out("created").values());
-    }
+    }*/
 }

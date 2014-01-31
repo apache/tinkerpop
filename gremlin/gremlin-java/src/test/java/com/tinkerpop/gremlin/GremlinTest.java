@@ -176,4 +176,14 @@ public class GremlinTest {
         ).jump("x", h -> h.getLoops() < 2).value("name").path().forEach(System.out::println);
 
     }
+
+    @Test
+    public void testAnnotatedList() {
+        Graph g = TinkerFactory.createModern();
+        Pipeline gremlin = Gremlin.of(g).v(1).values("locations").has("endTime").interval("startTime", 1997, 2005).values();
+        System.out.println(gremlin);
+        gremlin.forEach(System.out::println);
+
+        // g.v(1).values().has().has()
+    }
 }

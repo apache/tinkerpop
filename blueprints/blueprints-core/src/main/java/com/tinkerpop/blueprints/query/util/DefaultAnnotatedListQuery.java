@@ -1,6 +1,5 @@
 package com.tinkerpop.blueprints.query.util;
 
-import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.AnnotatedValue;
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.query.AnnotatedListQuery;
@@ -12,12 +11,6 @@ import java.util.function.BiPredicate;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class DefaultAnnotatedListQuery<V> extends DefaultQuery implements AnnotatedListQuery<V> {
-
-    public final AnnotatedList annotatedList;
-
-    public DefaultAnnotatedListQuery(final AnnotatedList annotatedList) {
-        this.annotatedList = annotatedList;
-    }
 
     public AnnotatedListQuery<V> has(final String key, final Object value) {
         this.hasContainers.add(new HasContainer(key, Compare.EQUAL, value));

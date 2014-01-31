@@ -11,7 +11,7 @@ public interface AnnotatedList<V> {
 
     public static final Object MAKE = new Object();
 
-    public AnnotatedValue<V> addValue(final V value, final Object... keyValues);
+    public AnnotatedValue<V> addValue(final V value, final Object... annotationKeyValues);
 
     public AnnotatedListQuery<V> query();
 

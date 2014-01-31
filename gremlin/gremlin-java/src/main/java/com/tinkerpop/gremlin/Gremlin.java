@@ -7,6 +7,7 @@ import com.tinkerpop.blueprints.query.util.GraphQueryBuilder;
 import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
+import com.tinkerpop.gremlin.util.optimizers.AnnotatedListQueryOptimizer;
 import com.tinkerpop.gremlin.util.optimizers.GraphQueryOptimizer;
 import com.tinkerpop.gremlin.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.util.optimizers.IdentityOptimizer;
@@ -35,6 +36,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
             this.optimizers.register(new IdentityOptimizer());
             this.optimizers.register(new HolderOptimizer());
             this.optimizers.register(new VertexQueryOptimizer());
+            this.optimizers.register(new AnnotatedListQueryOptimizer());
             this.optimizers.register(new GraphQueryOptimizer());
         }
     }

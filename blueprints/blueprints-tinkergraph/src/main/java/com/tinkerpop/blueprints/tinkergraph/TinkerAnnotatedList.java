@@ -31,7 +31,7 @@ public class TinkerAnnotatedList<V> implements AnnotatedList<V>, Serializable {
     }
 
     public AnnotatedListQuery<V> query() {
-        return new DefaultAnnotatedListQuery<V>(this) {
+        return new DefaultAnnotatedListQuery<V>() {
             @Override
             public Iterable<AnnotatedValue<V>> annotatedValues() {
                 return (Iterable) StreamFactory.stream(annotatedValues.iterator())
