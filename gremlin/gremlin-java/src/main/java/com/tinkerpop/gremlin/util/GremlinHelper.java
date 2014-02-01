@@ -66,11 +66,22 @@ public class GremlinHelper {
     public static void removePipe(final Pipe pipe, final Pipeline pipeline) {
         final List<Pipe> pipes = pipeline.getPipes();
         final int index = pipes.indexOf(pipe);
-        if (index - 1 >= 0 && index + 1 <= pipes.size()) {
+        if (index - 1 >= 0 && index + 1 < pipes.size()) {
             pipes.get(index - 1).setNextPipe(pipes.get(index + 1));
             pipes.get(index + 1).setPreviousPipe(pipes.get(index - 1));
         }
-        pipes.remove(index);
+        pipes.remove(pipe);
+    }
+
+    public static void insertPipe(final Pipe pipe, final int index, final Pipeline pipeline) {
+        final List<Pipe> pipes = pipeline.getPipes();
+        Pipe leftPipe = pipes.get(index-1);
+        Pipe rightPipe = pipes.get(index);
+        leftPipe.setNextPipe(pipe);
+        pipe.setPreviousPipe(leftPipe);
+        pipe.setNextPipe(rightPipe);
+        rightPipe.setPreviousPipe(pipe);
+        pipes.add(index, pipe);
     }
 
     public static String makePipeString(final Pipe pipe, final Object... arguments) {

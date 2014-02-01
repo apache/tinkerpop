@@ -181,9 +181,19 @@ public class GremlinTest {
     @Test
     public void testAnnotatedList() {
         Graph g = TinkerFactory.createModern();
-        Pipeline gremlin = Gremlin.of(g).V().has("locations").has("locations", "startTime", 2004).value("name");
+        Pipeline gremlin = Gremlin.of(g).V().out("created").in("created").has("locations").has("locations", "startTime", 2004).value("name").dedup();
         System.out.println(gremlin);
         gremlin.forEach(System.out::println);
+
+        // g.v(1).values().has().has()
+    }
+
+    @Test
+    public void testDedupOptimizer() {
+        Graph g = TinkerFactory.createModern();
+        Pipeline gremlin = Gremlin.of(g).V().value("name").dedup().dedup();
+        gremlin.forEach(System.out::println);
+        System.out.println(gremlin);
 
         // g.v(1).values().has().has()
     }
