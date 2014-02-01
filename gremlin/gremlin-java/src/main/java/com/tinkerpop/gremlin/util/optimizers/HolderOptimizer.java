@@ -10,10 +10,23 @@ import com.tinkerpop.gremlin.oltp.map.PathPipe;
 import com.tinkerpop.gremlin.oltp.map.SelectPipe;
 import com.tinkerpop.gremlin.oltp.sideeffect.LinkPipe;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class HolderOptimizer implements Optimizer.FinalOptimizer {
+
+    private static final List<Class> PATH_PIPES = new ArrayList<Class>(
+            Arrays.asList(
+                    PathPipe.class,
+                    BackPipe.class,
+                    SelectPipe.class,
+                    SimplePathPipe.class,
+                    MatchPipe.class,
+                    LinkPipe.class));
 
     public Pipeline optimize(final Pipeline pipeline) {
         final boolean trackPaths = HolderOptimizer.trackPaths(pipeline);
@@ -25,13 +38,10 @@ public class HolderOptimizer implements Optimizer.FinalOptimizer {
     }
 
     public static <S, E> boolean trackPaths(final Pipeline<S, E> pipeline) {
-        return pipeline.getPipes().stream().filter(pipe ->
-                pipe instanceof PathPipe
-                        || pipe instanceof BackPipe
-                        || pipe instanceof SelectPipe
-                        || pipe instanceof SimplePathPipe
-                        || pipe instanceof MatchPipe
-                        || pipe instanceof LinkPipe).findFirst().isPresent();
+        return pipeline.getPipes().stream()
+                .filter(pipe -> PATH_PIPES.stream().filter(c -> c.isAssignableFrom(pipe.getClass())).findFirst().isPresent())
+                .findFirst()
+                .isPresent();
     }
 
     public static <S, E> void doPathTracking(final Pipeline<S, E> pipeline) {

@@ -21,15 +21,16 @@ import java.util.List;
  */
 public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
 
-    private static final List<Class> COMPILED_PIPES = new ArrayList<Class>(
-            Arrays.asList(IdentityPipe.class,
+    private static final List<Class> PIPES_TO_FOLD = new ArrayList<Class>(
+            Arrays.asList(
+                    IdentityPipe.class,
                     HasPipe.class,
                     IntervalPipe.class,
                     RangePipe.class,
                     EdgeVertexPipe.class));
 
     public boolean optimize(final Pipeline pipeline, final Pipe pipe) {
-        if (!COMPILED_PIPES.stream().filter(c -> c.isAssignableFrom(pipe.getClass())).findFirst().isPresent())
+        if (!PIPES_TO_FOLD.stream().filter(c -> c.isAssignableFrom(pipe.getClass())).findFirst().isPresent())
             return true;
         else {
             if (GremlinHelper.isLabeled(pipe))
@@ -42,7 +43,7 @@ public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
             if (tempPipe instanceof VertexQueryPipe) {
                 vertexQueryPipe = (VertexQueryPipe) tempPipe;
                 break;
-            } else if (!COMPILED_PIPES.stream().filter(c -> c.isAssignableFrom(tempPipe.getClass())).findFirst().isPresent())
+            } else if (!PIPES_TO_FOLD.stream().filter(c -> c.isAssignableFrom(tempPipe.getClass())).findFirst().isPresent())
                 break;
         }
 

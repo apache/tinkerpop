@@ -19,10 +19,10 @@ import java.util.List;
 public class DedupOptimizer implements Optimizer.FinalOptimizer {
 
     private static final List<Class> BIJECTIVE_PIPES = new ArrayList<Class>(
-            Arrays.asList(IdentityPipe.class,
+            Arrays.asList(
+                    IdentityPipe.class,
                     PropertyPipe.class,
-                    OrderPipe.class,
-                    IdentityPipe.class
+                    OrderPipe.class
             ));
 
     public Pipeline optimize(final Pipeline pipeline) {
