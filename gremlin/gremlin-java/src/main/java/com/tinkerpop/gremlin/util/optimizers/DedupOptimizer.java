@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class DedupOptimizer implements Optimizer.FinalOptimizer {
 
-    private static final List<Class> MAP_PIPES = new ArrayList<Class>(
+    private static final List<Class> BIJECTIVE_PIPES = new ArrayList<Class>(
             Arrays.asList(IdentityPipe.class,
                     PropertyPipe.class,
                     OrderPipe.class,
@@ -34,7 +34,7 @@ public class DedupOptimizer implements Optimizer.FinalOptimizer {
                 if (pipe1 instanceof DedupPipe && !((DedupPipe) pipe1).hasUniqueFunction) {
                     for (int j = i; j >= 0; j--) {
                         final Pipe pipe2 = (Pipe) pipeline.getPipes().get(j);
-                        if (MAP_PIPES.stream().filter(c -> c.isAssignableFrom(pipe2.getClass())).findFirst().isPresent()) {
+                        if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(pipe2.getClass())).findFirst().isPresent()) {
                             GremlinHelper.removePipe(pipe1, pipeline);
                             GremlinHelper.insertPipe(pipe1, j, pipeline);
                             done = false;
