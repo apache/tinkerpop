@@ -168,7 +168,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Vertex> bothV() {
-        return this.addPipe(new FlatMapPipe<Edge, Vertex>(this, edge -> Arrays.asList(edge.get().getVertex(Direction.OUT), edge.get().getVertex(Direction.IN)).iterator()));
+        return this.addPipe(new EdgeVertexPipe(this, Direction.BOTH));
     }
 
     public default Pipeline<S, E> order() {

@@ -18,6 +18,7 @@ public class AggregateTest {
     }
 
     public void g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;

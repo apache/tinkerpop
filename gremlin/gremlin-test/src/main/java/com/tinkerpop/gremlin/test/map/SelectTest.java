@@ -18,6 +18,7 @@ public class SelectTest {
     }
 
     public void g_v1_asXaX_outXknowsX_asXbX_select(final Iterator<Path> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -30,6 +31,7 @@ public class SelectTest {
     }
 
     public void g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Iterator<Path> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -43,6 +45,7 @@ public class SelectTest {
     }
 
     public void g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Iterator<Path> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;
@@ -55,6 +58,7 @@ public class SelectTest {
     }
 
     public void g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Iterator<Path> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         while (pipe.hasNext()) {
             counter++;

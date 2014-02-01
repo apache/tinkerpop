@@ -17,6 +17,7 @@ public class JumpTest {
     }
 
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         List<String> names = new ArrayList<String>();
         while (pipe.hasNext()) {
             names.add(pipe.next());

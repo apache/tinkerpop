@@ -18,11 +18,13 @@ public class RetainTest {
     }
 
     public void g_v1_out_retainXg_v2X(Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         assertEquals("vadas", pipe.next().<String>getValue("name"));
         assertFalse(pipe.hasNext());
     }
 
     public void g_v1_out_aggregateXxX_out_retainXxX(Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         assertEquals("lop", pipe.next().<String>getValue("name"));
         assertFalse(pipe.hasNext());
     }

@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.oltp.map;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipeline;
-import com.tinkerpop.gremlin.util.NonHolderIterator;
+import com.tinkerpop.gremlin.util.UnHolderIterator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +26,7 @@ public class OrderPipe<S> extends FlatMapPipe<S, S> {
             list.add(holder);
             list.addAll(StreamFactory.stream(getPreviousPipe()).collect(Collectors.<Holder<S>>toList()));
             Collections.sort(list, this.comparator);
-            return new NonHolderIterator<>(list.iterator());
+            return new UnHolderIterator<>(list.iterator());
         });
     }
 }

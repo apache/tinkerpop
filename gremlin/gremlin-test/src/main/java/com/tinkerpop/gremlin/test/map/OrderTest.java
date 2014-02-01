@@ -19,6 +19,7 @@ public class OrderTest {
     }
 
     public void g_V_name_order(final Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         final List<String> names = StreamFactory.stream(pipe).collect(Collectors.toList());
         assertEquals(names.size(), 6);
         assertEquals("josh", names.get(0));
@@ -30,6 +31,7 @@ public class OrderTest {
     }
 
     public void g_V_name_orderXabX(final Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         final List<String> names = StreamFactory.stream(pipe).collect(Collectors.toList());
         assertEquals(names.size(), 6);
         assertEquals("josh", names.get(5));

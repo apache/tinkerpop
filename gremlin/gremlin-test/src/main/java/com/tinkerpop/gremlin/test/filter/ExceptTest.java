@@ -22,6 +22,7 @@ public class ExceptTest {
     }
 
     public void g_v1_out_exceptXg_v2X(Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<Vertex>();
         while (pipe.hasNext()) {
@@ -35,11 +36,13 @@ public class ExceptTest {
     }
 
     public void g_v1_out_aggregateXxX_out_exceptXxX(Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         assertEquals("ripple", pipe.next().<String>getValue("name"));
         assertFalse(pipe.hasNext());
     }
 
     public void g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
         List<String> names = Arrays.asList(pipe.next(), pipe.next());
         assertFalse(pipe.hasNext());
         assertEquals(2, names.size());

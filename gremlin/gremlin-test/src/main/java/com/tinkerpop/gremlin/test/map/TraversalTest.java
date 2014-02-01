@@ -2,16 +2,17 @@ package com.tinkerpop.gremlin.test.map;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.StreamFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -178,7 +179,7 @@ public class TraversalTest {
     }
 
     public void g_V_outE_hasXweight_1X_outV(final Iterator<Vertex> pipe) {
-        System.out.println(pipe);
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Map<Object, Integer> counts = new HashMap<>();
         while (pipe.hasNext()) {
@@ -196,7 +197,7 @@ public class TraversalTest {
     }
 
     public void g_V_out_outE_inV_inE_inV_both_name(final Iterator<String> pipe) {
-        System.out.println(pipe);
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Map<String, Integer> counts = new HashMap<>();
         while (pipe.hasNext()) {
@@ -212,6 +213,23 @@ public class TraversalTest {
 
         assertEquals(10, counter);
         assertFalse(pipe.hasNext());
+    }
+
+    public void g_v1_outEXknowsX_bothV_name(final Iterator<String> pipe) {
+        System.out.println("Testing: " + pipe);
+        List<String> names = StreamFactory.stream(pipe).collect(Collectors.toList());
+        assertEquals(4, names.size());
+        assertTrue(names.contains("marko"));
+        assertTrue(names.contains("josh"));
+        assertTrue(names.contains("vadas"));
+        names.remove("marko");
+        assertEquals(3, names.size());
+        names.remove("marko");
+        assertEquals(2, names.size());
+        names.remove("josh");
+        assertEquals(1, names.size());
+        names.remove("vadas");
+        assertEquals(0, names.size());
     }
 
     // VERTEX EDGE LABEL ADJACENCY

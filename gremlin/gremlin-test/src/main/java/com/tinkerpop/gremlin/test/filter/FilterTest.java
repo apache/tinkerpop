@@ -20,11 +20,13 @@ public class FilterTest {
     }
 
     public void g_V_filterXfalseX(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         assertFalse(pipe.hasNext());
         assertFalse(pipe.hasNext());
     }
 
     public void g_V_filterXtrueX(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<Vertex>();
         while (pipe.hasNext()) {
@@ -37,6 +39,7 @@ public class FilterTest {
     }
 
     public void g_V_filterXlang_eq_javaX(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<Vertex>();
         while (pipe.hasNext()) {
@@ -51,11 +54,13 @@ public class FilterTest {
     }
 
     public void g_v1_out_filterXage_gt_30X(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         assertEquals(Integer.valueOf(32), pipe.next().<Integer>getValue("age"));
         assertFalse(pipe.hasNext());
     }
 
     public void g_V_filterXname_startsWith_m_OR_name_startsWith_pX(final Iterator<Vertex> pipe) {
+        System.out.println("Testing: " + pipe);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<Vertex>();
         while (pipe.hasNext()) {

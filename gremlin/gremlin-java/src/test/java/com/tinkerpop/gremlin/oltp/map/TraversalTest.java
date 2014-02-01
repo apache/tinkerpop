@@ -99,6 +99,11 @@ public class TraversalTest extends com.tinkerpop.gremlin.test.map.TraversalTest 
     }
 
     @Test
+    public void g_v1_outEXknowsX_bothV_name() {
+        super.g_v1_outEXknowsX_bothV_name(Gremlin.of(g).v(1).outE("knows").bothV().value("name"));
+    }
+
+    @Test
     public void g_v1_outXknowsX() {
         super.g_v1_outXknowsX(Gremlin.of(g).v(1).out("knows"));
     }
