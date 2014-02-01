@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.oltp.filter.DedupPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
 import com.tinkerpop.gremlin.oltp.map.OrderPipe;
-import com.tinkerpop.gremlin.oltp.map.PropertyPipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
 
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ public class DedupOptimizer implements Optimizer.FinalOptimizer {
     private static final List<Class> BIJECTIVE_PIPES = new ArrayList<Class>(
             Arrays.asList(
                     IdentityPipe.class,
-                    PropertyPipe.class,
                     OrderPipe.class
             ));
 
