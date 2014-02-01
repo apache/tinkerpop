@@ -28,13 +28,12 @@ public class HolderOptimizer implements Optimizer.FinalOptimizer {
                     MatchPipe.class,
                     LinkPipe.class));
 
-    public Pipeline optimize(final Pipeline pipeline) {
+    public void optimize(final Pipeline pipeline) {
         final boolean trackPaths = HolderOptimizer.trackPaths(pipeline);
         pipeline.getPipes().forEach(pipe -> {
             if (pipe instanceof GraphQueryPipe)
                 ((GraphQueryPipe) pipe).generateHolderIterator(trackPaths);
         });
-        return pipeline;
     }
 
     public static <S, E> boolean trackPaths(final Pipeline<S, E> pipeline) {

@@ -25,7 +25,7 @@ public class DedupOptimizer implements Optimizer.FinalOptimizer {
                     OrderPipe.class
             ));
 
-    public Pipeline optimize(final Pipeline pipeline) {
+    public void optimize(final Pipeline pipeline) {
         boolean done = false;
         while (!done) {
             done = true;
@@ -40,16 +40,11 @@ public class DedupOptimizer implements Optimizer.FinalOptimizer {
                             done = false;
                             break;
                         }
-
                     }
                 }
                 if (!done)
                     break;
             }
-
         }
-
-        return pipeline;
-
     }
 }

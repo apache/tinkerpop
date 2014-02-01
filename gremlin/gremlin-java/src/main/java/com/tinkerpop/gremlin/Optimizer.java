@@ -10,7 +10,7 @@ public interface Optimizer {
     }
 
     public interface FinalOptimizer extends Optimizer {
-        public Pipeline optimize(final Pipeline pipeline);
+        public void optimize(final Pipeline pipeline);
     }
 
     public interface RuntimeOptimizer extends Optimizer {

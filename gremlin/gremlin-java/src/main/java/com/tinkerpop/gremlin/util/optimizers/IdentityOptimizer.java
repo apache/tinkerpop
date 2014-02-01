@@ -14,11 +14,10 @@ import java.util.stream.Collectors;
  */
 public class IdentityOptimizer implements Optimizer.FinalOptimizer {
 
-    public Pipeline optimize(final Pipeline pipeline) {
+    public void optimize(final Pipeline pipeline) {
         ((List<Pipe>) pipeline.getPipes()).stream()
                 .filter(pipe -> pipe instanceof IdentityPipe && !GremlinHelper.isLabeled(pipe))
                 .collect(Collectors.<Pipe>toList())
                 .forEach(pipe -> GremlinHelper.removePipe(pipe, pipeline));
-        return pipeline;
     }
 }

@@ -132,14 +132,10 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     }
 
     private void finalOptimize() {
-        if (this.firstNext)
-            this.firstNext = false;
-        else
-            return;
+        if (!this.firstNext) return;
 
-        this.optimizers.get().stream()
-                .filter(optimizer -> optimizer instanceof Optimizer.FinalOptimizer)
-                .map(optimizer -> ((Optimizer.FinalOptimizer) optimizer).optimize(this)).count();
+        this.optimizers.doFinalOptimizers(this);
+        this.firstNext = false;
     }
 
     public boolean equals(final Object object) {

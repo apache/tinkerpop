@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.util.optimizers;
 
 import com.tinkerpop.gremlin.Optimizer;
 import com.tinkerpop.gremlin.Optimizers;
+import com.tinkerpop.gremlin.Pipeline;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,10 @@ public class SimpleOptimizers implements Optimizers {
 
     public List<Optimizer> get() {
         return this.optimizers;
+    }
+
+    public void doFinalOptimizers(final Pipeline pipeline) {
+        this.optimizers.stream().filter(o -> o instanceof Optimizer.FinalOptimizer).forEach(o -> ((Optimizer.FinalOptimizer) o).optimize(pipeline));
     }
 
 
