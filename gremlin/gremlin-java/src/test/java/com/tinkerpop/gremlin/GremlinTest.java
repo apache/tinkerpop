@@ -191,7 +191,7 @@ public class GremlinTest {
     @Test
     public void testDedupOptimizer() {
         Graph g = TinkerFactory.createModern();
-        Pipeline gremlin = Gremlin.of(g).V().value("name").dedup().dedup();
+        Pipeline gremlin = Gremlin.of(g).V().value("name").order().dedup();
         gremlin.forEach(System.out::println);
         System.out.println(gremlin);
 

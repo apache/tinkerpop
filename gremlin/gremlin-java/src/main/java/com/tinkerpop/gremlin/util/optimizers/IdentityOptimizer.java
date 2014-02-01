@@ -18,7 +18,7 @@ public class IdentityOptimizer implements Optimizer.FinalOptimizer {
         ((List<Pipe>) pipeline.getPipes()).stream()
                 .filter(pipe -> pipe instanceof IdentityPipe && !GremlinHelper.isLabeled(pipe))
                 .collect(Collectors.<Pipe>toList())
-                .stream().forEach(pipe -> GremlinHelper.removePipe(pipe, pipeline));
+                .forEach(pipe -> GremlinHelper.removePipe(pipe, pipeline));
         return pipeline;
     }
 }

@@ -21,7 +21,7 @@ import com.tinkerpop.gremlin.oltp.filter.RangePipe;
 import com.tinkerpop.gremlin.oltp.filter.RetainPipe;
 import com.tinkerpop.gremlin.oltp.filter.SimplePathPipe;
 import com.tinkerpop.gremlin.oltp.map.AnnotatedListQueryPipe;
-import com.tinkerpop.gremlin.oltp.map.AnnotationPipe;
+import com.tinkerpop.gremlin.oltp.map.AnnotatedValueAnnotationValuePipe;
 import com.tinkerpop.gremlin.oltp.map.AnnotationsPipe;
 import com.tinkerpop.gremlin.oltp.map.BackPipe;
 import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
@@ -104,7 +104,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default <E2> Pipeline<S, E2> annotation(final String annotationKey) {
-        return this.addPipe(new AnnotationPipe<>(this, annotationKey));
+        return this.addPipe(new AnnotatedValueAnnotationValuePipe<>(this, annotationKey));
     }
 
     public default Pipeline<S, Map<String, Object>> annotations(final String... annotationKeys) {
