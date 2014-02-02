@@ -180,17 +180,21 @@ public class AnnotationTest {
         @Test
         public void shouldSetValueOnVertex() throws Exception {
             assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(true));
-            final Vertex v = g.addVertex("key", value);
+            final Vertex v = g.addVertex();
+            v.setProperty("key", AnnotatedList.make());
+            final Property<AnnotatedList<String>> keys = v.getProperty("key");
+            keys.get().addValue("test", "k", value);
 
+            final AnnotatedList al = v.getValue("key");
             if (value instanceof Map)
                 tryCommit(g, graph -> {
-                    final Map map = v.<Map>getProperty("key").get();
+                    final Map map = (Map) al.get(0).getAnnotation("k").get();
                     assertEquals(((Map) value).size(), map.size());
                     ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
                 });
             else if (value instanceof List)
                 tryCommit(g, graph -> {
-                    final List l = v.<List>getProperty("key").get();
+                    final List l = (List) al.get(0).getAnnotation("k").get();
                     assertEquals(((List) value).size(), l.size());
                     for (int ix = 0; ix < ((List) value).size(); ix++) {
                         assertEquals(((List) value).get(ix), l.get(ix));
@@ -198,11 +202,13 @@ public class AnnotationTest {
                 });
             else if (value instanceof MockSerializable)
                 tryCommit(g, graph -> {
-                    final MockSerializable mock = v.<MockSerializable>getProperty("key").get();
+                    final MockSerializable mock = (MockSerializable) al.get(0).getAnnotation("k").get();
                     assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
                 });
-            else
-                tryCommit(g, graph->assertEquals(value, v.getProperty("key").get()));
+            else {
+                final Object o = al.get(0).getAnnotation("k").get();
+                tryCommit(g, graph->assertEquals(value, o));
+            }
         }
     }
 
