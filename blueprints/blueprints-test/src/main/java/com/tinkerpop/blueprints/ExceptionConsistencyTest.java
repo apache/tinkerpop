@@ -294,27 +294,32 @@ public class ExceptionConsistencyTest {
             "annotationValueCanNotBeNull",
             "annotationKeyValueIsReserved",
             "annotationKeyCanNotBeEmpty",
-            "annotationKeyCanNotBeNull"
+            "annotationKeyCanNotBeNull",
+            "annotatedValueCanNotBeNull"
     })
     public static class AnnotatedValueTest extends AbstractBlueprintsTest {
 
-        @Parameterized.Parameters(name = "{index}: expect - {1}")
+        @Parameterized.Parameters(name = "{index}: expect - {0,1}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {new Object[]{"odd", "number", "arguments"}, AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {new Object[]{"odd"}, AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {new Object[]{"odd", "number", 123, "test"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
-                    {new Object[]{"odd", null}, AnnotatedValue.Exceptions.annotationValueCanNotBeNull()},
-                    {new Object[]{null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
-                    {new Object[]{(String) null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
-                    {new Object[]{AnnotatedValue.VALUE, "v"}, AnnotatedValue.Exceptions.annotationKeyValueIsReserved()},
-                    {new Object[]{"", "val"}, AnnotatedValue.Exceptions.annotationKeyCanNotBeEmpty()}});
+                    {null, new Object[]{"good", "odd", "number", "arguments"}, AnnotatedValue.Exceptions.annotatedValueCanNotBeNull()},
+                    {"something", new Object[]{"odd", "number", "arguments"}, AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {"something", new Object[]{"odd"}, AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
+                    {"something", new Object[]{"odd", "number", 123, "test"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
+                    {"something", new Object[]{"odd", null}, AnnotatedValue.Exceptions.annotationValueCanNotBeNull()},
+                    {"something", new Object[]{null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
+                    {"something", new Object[]{(String) null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
+                    {"something", new Object[]{AnnotatedValue.VALUE, "v"}, AnnotatedValue.Exceptions.annotationKeyValueIsReserved()},
+                    {"something", new Object[]{"", "val"}, AnnotatedValue.Exceptions.annotationKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)
-        public Object[] arguments;
+        public String annotatedValue;
 
         @Parameterized.Parameter(value = 1)
+        public Object[] arguments;
+
+        @Parameterized.Parameter(value = 2)
         public Exception expectedException;
 
         @Test
@@ -324,7 +329,7 @@ public class ExceptionConsistencyTest {
                 final Vertex v = this.g.addVertex();
                 v.setProperty("names", AnnotatedList.make());
                 final Property<AnnotatedList<String>> names = v.getProperty("names");
-                names.get().addValue("antonio", arguments);
+                names.get().addValue(annotatedValue, arguments);
                 fail(String.format("Call to addValue should have thrown an exception with these arguments [%s]", arguments));
             } catch (Exception ex) {
                 assertEquals(expectedException.getClass(), ex.getClass());
