@@ -296,7 +296,7 @@ public class ExceptionConsistencyTest {
             "annotationKeyCanNotBeEmpty",
             "annotationKeyCanNotBeNull"
     })
-    public static class AnnotatedListValueTest extends AbstractBlueprintsTest {
+    public static class AnnotatedValueTest extends AbstractBlueprintsTest {
 
         @Parameterized.Parameters(name = "{index}: expect - {1}")
         public static Iterable<Object[]> data() {
