@@ -46,7 +46,6 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.blueprints.Graph$Exceptions#argumentCanNotBeNull");
 
             // todo: need to write consistency tests for the following items still...........
-            add("com.tinkerpop.blueprints.Element$Exceptions#providedKeyValuesMustHaveALegalKeyOnEvenIndices");
             add("com.tinkerpop.blueprints.AnnotatedValue$Exceptions#annotatedValueCanNotBeNull");
             add("com.tinkerpop.blueprints.AnnotatedValue$Exceptions#dataTypeOfAnnotationValueNotSupported");
             add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");

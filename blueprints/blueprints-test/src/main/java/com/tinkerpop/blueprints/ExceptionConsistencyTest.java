@@ -39,7 +39,7 @@ public class ExceptionConsistencyTest {
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "providedKeyValuesMustBeAMultipleOfTwo",
-            "providedKeyValuesMustHaveAStringOnEvenIndices"
+            "providedKeyValuesMustHaveALegalKeyOnEvenIndices"
     })
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "propertyValueCanNotBeNull",
