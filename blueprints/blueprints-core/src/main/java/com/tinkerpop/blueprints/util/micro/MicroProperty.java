@@ -11,6 +11,7 @@ import com.tinkerpop.blueprints.util.StreamFactory;
 import com.tinkerpop.blueprints.util.StringFactory;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -86,13 +87,10 @@ public class MicroProperty<V> implements Property, Serializable {
     }
 
     public Property<V> inflate(final Graph graph) {
-        final Property<V> property = (this.getElement() instanceof Vertex) ?
-                graph.query().ids(this.getElement().getId()).vertices().iterator().next().getProperty(this.key) :
-                graph.query().ids(this.getElement().getId()).edges().iterator().next().getProperty(this.key);
-        if (!this.isPresent())
-            throw new IllegalStateException("The micro property could not be found at the provided graph");
-        else
-            return property;
+        final Element element = (this.getElement() instanceof Vertex) ?
+            graph.v(this.getElement().getId()).orElseThrow(() -> new IllegalStateException("The micro vertex could not be found at the provided graph")) :
+            graph.e(this.getElement().getId()).orElseThrow(() -> new IllegalStateException("The micro edge could not be found at the provided graph"));
+        return Optional.<Property<V>>of(element.getProperty(this.key)).orElseThrow(() -> new IllegalStateException("The micro property could not be found at the provided graph"));
     }
 
     public static MicroProperty deflate(final Property property) {
