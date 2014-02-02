@@ -69,11 +69,7 @@ public class MicroProperty<V> implements Property, Serializable {
 
     public Property<V> inflate(final Vertex hostVertex) {
         if (this.getElement() instanceof Vertex) {
-            final Property property = hostVertex.getProperty(this.key);
-            if (!property.isPresent())
-                throw new IllegalStateException("The micro property could not be be found at the provided vertex");
-            else
-                return property;
+            return Optional.<Property<V>>of(hostVertex.getProperty(this.key)).orElseThrow(() -> new IllegalStateException("The micro property could not be be found at the provided vertex"));
         } else {
             final String label = this.getElement().getLabel();
             final Object id = this.getElement().getId();

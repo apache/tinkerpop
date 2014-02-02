@@ -299,7 +299,7 @@ public class ExceptionConsistencyTest {
     })
     public static class AnnotatedValueTest extends AbstractBlueprintsTest {
 
-        @Parameterized.Parameters(name = "{index}: expect - {0,1}")
+        @Parameterized.Parameters(name = "{index}: expect - {0},{1}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {null, new Object[]{"good", "odd", "number", "arguments"}, AnnotatedValue.Exceptions.annotatedValueCanNotBeNull()},
