@@ -34,7 +34,7 @@ public class MicroVertex extends MicroElement implements Vertex {
     }
 
     public Vertex inflate(final Graph graph) {
-        return graph.query().ids(this.id).vertices().iterator().next();
+        return graph.v(this.id).orElseThrow(() -> new IllegalStateException("The micro vertex could not be found at the provided graph"));
     }
 
     public static MicroVertex deflate(final Vertex vertex) {
