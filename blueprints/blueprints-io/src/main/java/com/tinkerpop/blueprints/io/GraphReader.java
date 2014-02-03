@@ -7,5 +7,5 @@ import java.io.InputStream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphReader {
-    public void inputGraph(InputStream graphInputStream) throws IOException;
+    public void inputGraph(final InputStream graphInputStream) throws IOException;
 }

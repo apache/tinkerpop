@@ -7,5 +7,5 @@ import java.io.OutputStream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphWriter {
-    public void outputGraph(OutputStream graphMLOutputStream) throws IOException;
+    public void outputGraph(final OutputStream graphMLOutputStream) throws IOException;
 }

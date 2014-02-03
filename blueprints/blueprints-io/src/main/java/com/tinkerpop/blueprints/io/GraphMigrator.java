@@ -7,7 +7,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
 /**
- * GraphMigrator takes the data in one graph and pipes it to another graph.
+ * {@link GraphMigrator} takes the data in one graph and pipes it to another graph.
  *
  * @author Alex Averbuch (alex.averbuch@gmail.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -45,15 +45,13 @@ public final class GraphMigrator {
             }
         };
 
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    writer.outputGraph(outPipe);
-                    outPipe.flush();
-                    outPipe.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        new Thread(() -> {
+            try {
+                writer.outputGraph(outPipe);
+                outPipe.flush();
+                outPipe.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }).start();
 
