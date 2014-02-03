@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.server;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.javatuples.Pair;
 
 import java.util.List;
@@ -15,18 +14,14 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GremlinRequestDecoder extends MessageToMessageDecoder<WebSocketFrame> {
+class GremlinRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
     @Override
-    protected void decode(final ChannelHandlerContext channelHandlerContext, final WebSocketFrame frame, final List<Object> objects) throws Exception {
-        if (frame instanceof TextWebSocketFrame) {
-            final Pair<String, String> parts = segmentMessage(((TextWebSocketFrame) frame).text());
+    protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
+        final Pair<String, String> parts = segmentMessage((frame).text());
 
-            // if the message cannot be deserialized it is passed through as an invalid message
-            objects.add(MessageSerializer.select(parts.getValue0(), MessageSerializer.DEFAULT_REQUEST_SERIALIZER)
-                                         .deserializeRequest(parts.getValue1()).orElse(RequestMessage.INVALID));
-        } else {
-            System.out.println("what?????????"  + frame);
-        }
+        // if the message cannot be deserialized it is passed through as an invalid message
+        objects.add(MessageSerializer.select(parts.getValue0(), MessageSerializer.DEFAULT_REQUEST_SERIALIZER)
+                                     .deserializeRequest(parts.getValue1()).orElse(RequestMessage.INVALID));
     }
 
     private static Pair<String, String> segmentMessage(final String msg) {
