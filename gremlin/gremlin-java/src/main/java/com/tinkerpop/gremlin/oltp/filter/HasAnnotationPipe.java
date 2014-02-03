@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.oltp.filter;
 
 import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.GremlinHelper;
@@ -18,9 +19,13 @@ public class HasAnnotationPipe extends FilterPipe<Element> {
         super(pipeline);
         this.propertyKey = propertyKey;
         this.hasContainer = hasContainer;
-        this.setPredicate(holder -> holder.get().<AnnotatedList>getValue(this.propertyKey)
-                .query().has(this.hasContainer.key, this.hasContainer.predicate, this.hasContainer.value)
-                .annotatedValues().iterator().hasNext());
+        this.setPredicate(holder -> {
+            final Property<AnnotatedList> property = holder.get().getProperty(this.propertyKey);
+            return property.isPresent() &&
+                    property.get().query()
+                            .has(this.hasContainer.key, this.hasContainer.predicate, this.hasContainer.value)
+                            .annotatedValues().iterator().hasNext();
+        });
     }
 
     public String toString() {

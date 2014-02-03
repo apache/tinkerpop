@@ -171,21 +171,22 @@ public class GremlinTest {
     @Test
     public void testUnion() {
         Graph g = TinkerFactory.createClassic();
-        Gremlin.of(g).v(1).as("x").union(
+        /*Gremlin.of(g).v(1).as("x").union(
                 Gremlin.of().out("knows"),
                 Gremlin.of().out("created").in("created")
-        ).jump("x", h -> h.getLoops() < 2).value("name").path().forEach(System.out::println);
+        ).jump("x", h -> h.getLoops() < 2).value("name").path().forEach(System.out::println);*/
 
+        System.out.println(Gremlin.of(g).V().identity().as("x").has("age").value("age"));
     }
 
     @Test
     public void testAnnotatedList() {
         Graph g = TinkerFactory.createModern();
-        Pipeline gremlin = Gremlin.of(g).V().out("created").in("created").has("locations").has("locations", "startTime", 2004).value("name").dedup();
+        Pipeline gremlin = Gremlin.of(g).V().value("locations").dedup();
         System.out.println(gremlin);
         gremlin.forEach(System.out::println);
 
-        // g.v(1).values().has().has()
+
     }
 
     @Test

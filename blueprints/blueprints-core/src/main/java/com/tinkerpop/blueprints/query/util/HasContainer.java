@@ -88,7 +88,11 @@ public class HasContainer {
     }
 
     public String toString() {
-        return this.value == null ? "[" + this.key + "," + this.predicate + "]" : "[" + this.key + "," + this.predicate + "," + this.value + "]";
+        return this.value == null ?
+                (this.predicate == Contains.IN ?
+                        "[" + this.key + "]" :
+                        "[!" + this.key + "]") :
+                "[" + this.key + "," + this.predicate + "," + this.value + "]";
     }
 
 }

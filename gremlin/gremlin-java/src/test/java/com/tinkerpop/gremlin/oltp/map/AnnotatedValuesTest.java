@@ -23,7 +23,7 @@ public class AnnotatedValuesTest extends com.tinkerpop.gremlin.test.map.Annotate
     }
 
     @Test
-    public void g_V_hasXlocationsX_annotatedValuesXlocationsX_hasXstartTime_2005X_value() {
-        super.g_V_hasXlocationsX_annotatedValuesXlocationsX_hasXstartTime_2005X_value(Gremlin.of(g).V().has("locations").annotatedValues("locations").has("startTime", 2005).value());
+    public void g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value() {
+        super.g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value(Gremlin.of(g).V().annotatedValues("locations").has("startTime", 2005).value());
     }
 }

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.oltp.filter.HasPipe;
 import com.tinkerpop.gremlin.oltp.filter.IntervalPipe;
 import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
+import com.tinkerpop.gremlin.util.GremlinHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

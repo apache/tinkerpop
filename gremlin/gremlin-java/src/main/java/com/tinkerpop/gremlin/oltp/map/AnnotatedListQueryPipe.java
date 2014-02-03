@@ -1,12 +1,16 @@
 package com.tinkerpop.gremlin.oltp.map;
 
+import com.tinkerpop.blueprints.AnnotatedList;
 import com.tinkerpop.blueprints.AnnotatedValue;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.util.AnnotatedListQueryBuilder;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.util.GremlinHelper;
+
+import java.util.Collections;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,9 +34,21 @@ public class AnnotatedListQueryPipe<V> extends FlatMapPipe<Vertex, AnnotatedValu
 
     public void generateFunction(final boolean returnAnnotatedValues) {
         if (returnAnnotatedValues)
-            this.setFunction(holder -> this.generateBuilder().build(holder.get().getValue(this.propertyKey)).annotatedValues().iterator());
+            this.setFunction(holder -> {
+                final Property<AnnotatedList> property = holder.get().getProperty(this.propertyKey);
+                return (property.isPresent()) ?
+                        this.generateBuilder().build(holder.get().getValue(this.propertyKey)).annotatedValues().iterator() :
+                        Collections.emptyIterator();
+
+            });
         else
-            this.setFunction(holder -> this.generateBuilder().build(holder.get().getValue(this.propertyKey)).values().iterator());
+            this.setFunction(holder -> {
+                final Property<AnnotatedList> property = holder.get().getProperty(this.propertyKey);
+                return (property.isPresent()) ?
+                        this.generateBuilder().build(holder.get().getValue(this.propertyKey)).values().iterator() :
+                        Collections.emptyIterator();
+
+            });
     }
 
     private AnnotatedListQueryBuilder generateBuilder() {

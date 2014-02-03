@@ -100,7 +100,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> identity() {
-        return this.addPipe(new IdentityPipe(this));
+        return this.addPipe(new IdentityPipe<>(this));
     }
 
     public default <E2> Pipeline<S, E2> annotation(final String annotationKey) {
@@ -172,7 +172,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> order() {
-        return this.addPipe(new OrderPipe<E>(this, (a, b) -> ((Comparable) a.get()).compareTo(b.get())));
+        return this.addPipe(new OrderPipe<E>(this, (a, b) -> ((Comparable<E>) a.get()).compareTo(b.get())));
     }
 
     public default Pipeline<S, E> order(final Comparator<Holder<E>> comparator) {
@@ -212,15 +212,15 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, Path> path(final Function... pathFunctions) {
-        return this.addPipe(new PathPipe(this, pathFunctions));
+        return this.addPipe(new PathPipe<>(this, pathFunctions));
     }
 
     public default <E2> Pipeline<S, E2> back(final String as) {
-        return this.addPipe(new BackPipe(this, as));
+        return this.addPipe(new BackPipe<>(this, as));
     }
 
     public default <E2> Pipeline<S, E2> match(final String inAs, final String outAs, final Pipeline... pipelines) {
-        return this.addPipe(new MatchPipe(this, inAs, outAs, pipelines));
+        return this.addPipe(new MatchPipe<>(this, inAs, outAs, pipelines));
     }
 
     public default Pipeline<S, Path> select(final List<String> asLabels, Function... stepFunctions) {
@@ -258,7 +258,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default Pipeline<S, E> except(final String variable) {
-        return this.addPipe(new ExceptPipe<>(this, variable));
+        return this.addPipe(new ExceptPipe<E>(this, variable));
     }
 
     public default Pipeline<S, E> except(final E exceptionObject) {
@@ -270,7 +270,7 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default <E2> Pipeline<S, E2> has(final String key) {
-        return this.addPipe(new HasPipe(this, new HasContainer(key, Contains.IN)));
+        return this.addPipe(new HasPipe<>(this, new HasContainer(key, Contains.IN)));
     }
 
     public default <E2> Pipeline<S, E2> has(final String key, final Object value) {
@@ -282,14 +282,19 @@ public interface Pipeline<S, E> extends Iterator<E> {
     }
 
     public default <E2> Pipeline<S, E2> hasNot(final String key) {
-        return this.addPipe(new HasPipe(this, new HasContainer(key, Contains.NOT_IN)));
+        return this.addPipe(new HasPipe<>(this, new HasContainer(key, Contains.NOT_IN)));
     }
 
     public default <E2> Pipeline<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
-        return this.addPipe(new HasPipe(this, new HasContainer(key, predicate, value)));
+        return this.addPipe(new HasPipe<>(this, new HasContainer(key, predicate, value)));
     }
 
     ///////////
+
+    /*public default Pipeline<S, Element> has(final String propertyKey, final String annotationKey) {
+        return this.addPipe(new HasAnnotationPipe(this, propertyKey, new HasContainer(annotationKey, Contains.IN)));
+    }*/
+
     public default Pipeline<S, Element> has(final String propertyKey, final String annotationKey, final BiPredicate biPredicate, final Object annotationValue) {
         return this.addPipe(new HasAnnotationPipe(this, propertyKey, new HasContainer(annotationKey, biPredicate, annotationValue)));
     }
@@ -302,9 +307,9 @@ public interface Pipeline<S, E> extends Iterator<E> {
         return this.has(propertyKey, annotationKey, Compare.EQUAL, annotationValue);
     }
 
-    public default Pipeline<S, Element> hasNot(final String propertyKey, final String annotationKey, final Object annotationValue) {
-        return this.has(propertyKey, annotationKey, Compare.NOT_EQUAL, annotationValue);
-    }
+    /*public default Pipeline<S, Element> hasNot(final String propertyKey, final String annotationKey) {
+        return this.addPipe(new HasAnnotationPipe(this, propertyKey, new HasContainer(annotationKey, Contains.NOT_IN)));
+    }*/
     //////////
 
     public default <E2> Pipeline<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {

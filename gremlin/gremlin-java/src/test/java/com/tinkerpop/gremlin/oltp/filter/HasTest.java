@@ -50,7 +50,7 @@ public class HasTest extends com.tinkerpop.gremlin.test.filter.HasTest {
 
     @Test
     public void g_E_hasXlabelXknowsX() {
-        super.g_E_hasXlabelXknowsX(Gremlin.of(g).E().has("label", T.eq, "knows"));
+        super.g_E_hasXlabelXknowsX(Gremlin.of(g).E().has("label", "knows"));
     }
 
     @Test

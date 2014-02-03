@@ -26,7 +26,7 @@ public class AnnotatedValuesTest {
         locations.forEach(av -> assertTrue(av.getValue().equals("brussels") || av.getValue().equals("santa fe")));
     }
 
-    public void g_V_hasXlocationsX_annotatedValuesXlocationsX_hasXstartTime_2005X_value(final Iterator<String> pipe) {
+    public void g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value(final Iterator<String> pipe) {
         System.out.println("Testing: " + pipe);
         final List<String> locations = StreamFactory.stream(pipe).collect(Collectors.toList());
         assertEquals(2, locations.size());

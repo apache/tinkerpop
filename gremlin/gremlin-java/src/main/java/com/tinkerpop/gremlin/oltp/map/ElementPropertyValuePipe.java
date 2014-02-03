@@ -20,7 +20,7 @@ public class ElementPropertyValuePipe<E> extends MapPipe<Element, E> {
         this.key = key;
         this.defaultValue = Optional.empty();
         this.defaultSupplier = Optional.empty();
-        this.setFunction(holder -> holder.get().<E>getValue(key));
+        this.setFunction(holder -> holder.get().<E>getProperty(key).orElse((E) NO_OBJECT));
     }
 
     public ElementPropertyValuePipe(final Pipeline pipeline, final String key, final E defaultValue) {
