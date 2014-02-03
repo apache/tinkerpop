@@ -141,20 +141,10 @@ public class GremlinServer {
             pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
             pipeline.addLast("http-response-encoder", new HttpResponseEncoder());
             pipeline.addLast("request-handler", new WebSocketServerProtocolHandler("/gremlin"));
-            //pipeline.addLast("yo", new CustomTextFrameHandler());
-
             pipeline.addLast("gremlin-decoder", new GremlinRequestDecoder());
 
             final EventExecutorGroup gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool);
             pipeline.addLast(gremlinGroup, "gremlin-handler", new GremlinOpHandler(settings, graphs.get(), gremlinExecutor));
-        }
-    }
-
-    public class CustomTextFrameHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
-        @Override
-        protected void messageReceived(ChannelHandlerContext ctx, TextWebSocketFrame frame) throws Exception {
-            final String request = frame.text();
-            ctx.channel().writeAndFlush(new TextWebSocketFrame(String.format("{\"requestId\":\"%s\",\"result\":2}", java.util.UUID.randomUUID())));
         }
     }
 }
