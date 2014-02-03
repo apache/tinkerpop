@@ -180,6 +180,16 @@ public class GremlinTest {
     }
 
     @Test
+    public void testIntersect() {
+        Graph g = TinkerFactory.createClassic();
+        Gremlin.of(g).V().as("x").intersect(
+                Gremlin.of().out("knows"),
+                Gremlin.of().out("created")
+        ).path().forEach(System.out::println);
+
+    }
+
+    @Test
     public void testAnnotatedList() {
         Graph g = TinkerFactory.createModern();
         Pipeline gremlin = Gremlin.of(g).V().value("locations").dedup();

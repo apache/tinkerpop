@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.Pipeline;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -63,6 +64,16 @@ public class GremlinHelper {
         }
     }
 
+    public static void iterate(final Iterator iterator) {
+        try {
+            while (true) {
+                iterator.next();
+            }
+        } catch (final NoSuchElementException e) {
+
+        }
+    }
+
     public static void removePipe(final Pipe pipe, final Pipeline pipeline) {
         final List<Pipe> pipes = pipeline.getPipes();
         final int index = pipes.indexOf(pipe);
@@ -75,8 +86,8 @@ public class GremlinHelper {
 
     public static void insertPipe(final Pipe pipe, final int index, final Pipeline pipeline) {
         final List<Pipe> pipes = pipeline.getPipes();
-        Pipe leftPipe = pipes.get(index-1);
-        Pipe rightPipe = pipes.get(index);
+        final Pipe leftPipe = pipes.get(index - 1);
+        final Pipe rightPipe = pipes.get(index);
         leftPipe.setNextPipe(pipe);
         pipe.setPreviousPipe(leftPipe);
         pipe.setNextPipe(rightPipe);

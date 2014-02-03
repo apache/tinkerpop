@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.util;
 import com.tinkerpop.gremlin.Pipeline;
 
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -21,8 +22,16 @@ public class PipelineRing<S, E> {
         return this.pipelines[this.currentPipeline];
     }
 
+    public void reset() {
+        this.currentPipeline = -1;
+    }
+
     public int size() {
         return this.pipelines.length;
+    }
+
+    public Stream<Pipeline<S, E>> stream() {
+        return Stream.of(this.pipelines);
     }
 
     public void forEach(final Consumer<Pipeline<S, E>> consumer) {

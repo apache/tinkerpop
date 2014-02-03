@@ -28,6 +28,7 @@ import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
 import com.tinkerpop.gremlin.oltp.map.ElementPropertyValuePipe;
 import com.tinkerpop.gremlin.oltp.map.FlatMapPipe;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
+import com.tinkerpop.gremlin.oltp.map.IntersectPipe;
 import com.tinkerpop.gremlin.oltp.map.JumpPipe;
 import com.tinkerpop.gremlin.oltp.map.MapPipe;
 import com.tinkerpop.gremlin.oltp.map.MatchPipe;
@@ -233,6 +234,10 @@ public interface Pipeline<S, E> extends Iterator<E> {
 
     public default <E2> Pipeline<S, E2> union(final Pipeline<?, E2>... pipelines) {
         return this.addPipe(new UnionPipe(this, pipelines));
+    }
+
+    public default <E2> Pipeline<S, E2> intersect(final Pipeline<?, E2>... pipelines) {
+        return this.addPipe(new IntersectPipe(this, pipelines));
     }
 
     /*public default <E2> Pipeline<S, E2> unroll() {

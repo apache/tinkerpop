@@ -20,7 +20,7 @@ public class UnionPipe<S, E> extends AbstractPipe<S, E> {
         this.pipelineRing = new PipelineRing<>(pipelines);
     }
 
-    public Holder<E> processNextStart() {
+    protected Holder<E> processNextStart() {
         while (true) {
             int counter = 0;
             while (counter++ < this.pipelineRing.size()) {
