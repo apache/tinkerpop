@@ -37,7 +37,7 @@ class GremlinOpHandler extends SimpleChannelInboundHandler<RequestMessage> {
     }
 
     @Override
-    public void channelRead0(final ChannelHandlerContext ctx, final RequestMessage msg) throws Exception {
+    public void messageReceived(final ChannelHandlerContext ctx, final RequestMessage msg) throws Exception {
         try {
             // choose a processor to do the work based on the request message.
             final Optional<OpProcessor> processor = OpLoader.getProcessor(msg.processor);

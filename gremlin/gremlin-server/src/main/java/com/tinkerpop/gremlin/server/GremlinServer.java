@@ -3,15 +3,18 @@ package com.tinkerpop.gremlin.server;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
@@ -138,10 +141,20 @@ public class GremlinServer {
             pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
             pipeline.addLast("http-response-encoder", new HttpResponseEncoder());
             pipeline.addLast("request-handler", new WebSocketServerProtocolHandler("/gremlin"));
+            //pipeline.addLast("yo", new CustomTextFrameHandler());
+
             pipeline.addLast("gremlin-decoder", new GremlinRequestDecoder());
 
             final EventExecutorGroup gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool);
             pipeline.addLast(gremlinGroup, "gremlin-handler", new GremlinOpHandler(settings, graphs.get(), gremlinExecutor));
+        }
+    }
+
+    public class CustomTextFrameHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+        @Override
+        protected void messageReceived(ChannelHandlerContext ctx, TextWebSocketFrame frame) throws Exception {
+            final String request = frame.text();
+            ctx.channel().writeAndFlush(new TextWebSocketFrame(String.format("{\"requestId\":\"%s\",\"result\":2}", java.util.UUID.randomUUID())));
         }
     }
 }
