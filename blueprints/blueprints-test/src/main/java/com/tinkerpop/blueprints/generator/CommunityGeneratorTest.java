@@ -6,7 +6,6 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
