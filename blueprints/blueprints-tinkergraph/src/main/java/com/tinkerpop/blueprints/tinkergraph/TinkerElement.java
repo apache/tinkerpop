@@ -24,14 +24,13 @@ abstract class TinkerElement implements Element, Serializable {
     protected TinkerGraphComputer.State state = TinkerGraphComputer.State.STANDARD;
     protected TinkerVertexMemory vertexMemory;
 
-    private transient final Strategy.Context<Element> strategyContext;
-
+    private transient final Strategy.Context<Element> elementStrategyContext;
 
     protected TinkerElement(final String id, final String label, final TinkerGraph graph) {
         this.graph = graph;
         this.id = id;
         this.label = label;
-        this.strategyContext = new Strategy.Context<Element>(this.graph, this);
+        this.elementStrategyContext = new Strategy.Context<Element>(this.graph, this);
     }
 
     public int hashCode() {
@@ -51,7 +50,7 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public <V> Property<V> getProperty(final String key) {
-        return this.graph.strategy.compose(s -> s.<V>getElementGetProperty(strategyContext), k -> {
+        return this.graph.strategy.compose(s -> s.<V>getElementGetProperty(elementStrategyContext), k -> {
             if (TinkerGraphComputer.State.STANDARD == this.state) {
                 return this.properties.getOrDefault(k, Property.empty());
             } else if (TinkerGraphComputer.State.CENTRIC == this.state) {

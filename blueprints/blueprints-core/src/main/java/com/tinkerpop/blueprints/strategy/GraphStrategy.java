@@ -65,38 +65,42 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link Supplier} that enhances the features of {@link com.tinkerpop.blueprints.Vertex#remove()}.
+     * Construct a {@link Supplier} that enhances the features of {@link com.tinkerpop.blueprints.Element#remove()}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link Function} that accepts a {@link Function} with
-     *         {@link com.tinkerpop.blueprints.Vertex#remove()} signature
+     *         {@link com.tinkerpop.blueprints.Element#remove()} signature
      *         and returns an enhanced strategy {@link Function} with the same signature
      */
-    public default UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<Vertex> ctx) {
-        return UnaryOperator.identity();
-    }
-
-    /**
-     * Construct a {@link Supplier} that enhances the features of {@link com.tinkerpop.blueprints.Edge#remove()}.
-     *
-     * @param ctx the context within which this strategy function is called
-     * @return a {@link Function} that accepts a {@link Function} with
-     *         {@link com.tinkerpop.blueprints.Edge#remove()} signature
-     *         and returns an enhanced strategy {@link Function} with the same signature
-     */
-    public default UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.Context<Edge> ctx) {
+    public default UnaryOperator<Supplier<Void>> getRemoveElementStrategy(final Strategy.Context<? extends Element> ctx) {
         return UnaryOperator.identity();
     }
 
     /**
      * Construct a {@link Function} that enhances the features of {@link com.tinkerpop.blueprints.Element#getProperty(String)}.
+     * If a strategy must implement different scenarios for a {@link Vertex} versus an {@link Edge} the implementation
+     * should check for the type of {@link Element} on the {@link Strategy.Context}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link Function} that accepts a {@link Function} with
      *         {@link com.tinkerpop.blueprints.Element#getProperty(String)} signature
      *         and returns an enhanced strategy {@link Function} with the same signature
      */
-    public default <V> UnaryOperator<Function<String, Property<V>>> getElementGetProperty(final Strategy.Context<Element> ctx) {
+    public default <V> UnaryOperator<Function<String, Property<V>>> getElementGetProperty(final Strategy.Context<? extends Element> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
+     * Construct a {@link BiConsumer} that enhances the features of {@link com.tinkerpop.blueprints.Element#setProperty(String, Object)}.
+     * If a strategy must implement different scenarios for a {@link Vertex} versus an {@link Edge} the implementation
+     * should check for the type of {@link Element} on the {@link Strategy.Context}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link Function} that accepts a {@link BiConsumer} with
+     *         {@link com.tinkerpop.blueprints.Element#setProperty(String,Object)} signature
+     *         and returns an enhanced strategy {@link BiConsumer} with the same signature
+     */
+    public default <V> UnaryOperator<BiConsumer<String, V>> getElementSetProperty(final Strategy.Context<? extends Element> ctx) {
         return UnaryOperator.identity();
     }
 

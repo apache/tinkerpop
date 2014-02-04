@@ -43,23 +43,30 @@ class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public <V> void setProperty(final String key, final V value) {
-        ElementHelper.validateProperty(key, value);
-        if (TinkerGraphComputer.State.STANDARD == this.state) {
-            final Property oldProperty = super.getProperty(key);
-            if (value == AnnotatedList.make()) {
-                if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList))
-                    this.properties.put(key, new TinkerProperty<>(this, key, new TinkerAnnotatedList<>()));
-            } else
-                this.properties.put(key, new TinkerProperty<>(this, key, value));
-            this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
-        } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
-            if (this.vertexMemory.getComputeKeys().containsKey(key))
-                this.vertexMemory.setProperty(this, key, value);
-            else
-                throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-        } else {
-            throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeWritten();
-        }
+        // The first argument to compose() gets the GraphStrategy to use and provides it the Context of the setProperty
+        // call. The second argument to compose() is the TinkerGraph implementation of setProperty as a lambda where
+        // the argument refer to the arguments to setProperty. Note that arguments passes through the GraphStrategy
+        // implementations first so at this point the values within them may not be the same as they originally were.
+        // The composed function must then be applied with the arguments originally passed to setProperty.
+        this.graph.strategy.compose(s -> s.<V>getElementSetProperty(strategyContext), (k,v) -> {
+            ElementHelper.validateProperty(k, v);
+            if (TinkerGraphComputer.State.STANDARD == this.state) {
+                final Property oldProperty = super.getProperty(k);
+                if (v == AnnotatedList.make()) {
+                    if (!this.properties.containsKey(k) || !(this.properties.get(k) instanceof AnnotatedList))
+                        this.properties.put(k, new TinkerProperty<>(this, k, new TinkerAnnotatedList<>()));
+                } else
+                    this.properties.put(k, new TinkerProperty<>(this, k, v));
+                this.graph.vertexIndex.autoUpdate(k, v, oldProperty.isPresent() ? oldProperty.get() : null, this);
+            } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
+                if (this.vertexMemory.getComputeKeys().containsKey(key))
+                    this.vertexMemory.setProperty(this, k, v);
+                else
+                    throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(k);
+            } else {
+                throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeWritten();
+            }
+        }).accept(key, value);
     }
 
     public VertexQuery query() {
@@ -89,7 +96,7 @@ class TinkerVertex extends TinkerElement implements Vertex {
         // implementations first so at this point the values within them may not be the same as they originally were.
         // The composed function must then be applied with the arguments originally passed to remove.
         this.graph.strategy().compose(
-                s -> s.getRemoveVertexStrategy(strategyContext),
+                s -> s.getRemoveElementStrategy(strategyContext),
                 () -> {
                     if (!graph.vertices.containsKey(this.id))
                         throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);

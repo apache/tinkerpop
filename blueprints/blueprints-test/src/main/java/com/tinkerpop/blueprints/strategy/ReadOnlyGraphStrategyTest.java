@@ -8,9 +8,9 @@ import com.tinkerpop.blueprints.Vertex;
 import org.junit.Test;
 
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
+import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -47,6 +47,40 @@ public class ReadOnlyGraphStrategyTest extends AbstractBlueprintsTest {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("friend", v);
         assertException(e::remove);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void shouldNotAllowVertexSetProperties() {
+        final Vertex v = g.addVertex();
+        assertException(()->v.setProperties("test", "test"));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void shouldNotAllowVertexSetProperty() {
+        final Vertex v = g.addVertex();
+        assertException(()->v.setProperty("test", "test"));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void shouldNotAllowEdgeSetProperties() {
+        final Vertex v = g.addVertex();
+        final Edge e = v.addEdge("friend", v);
+        assertException(()->e.setProperties("test", "test"));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void shouldNotAllowEdgeSetProperty() {
+        final Vertex v = g.addVertex();
+        final Edge e = v.addEdge("friend", v);
+        assertException(()->e.setProperty("test", "test"));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
@@ -31,12 +32,12 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<Vertex> ctx) {
-        return readOnlySupplier();
+    public <V> UnaryOperator<BiConsumer<String, V>> getElementSetProperty(Strategy.Context<? extends Element> ctx) {
+        return readOnlyBiConsumer();
     }
 
     @Override
-    public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.Context<Edge> ctx) {
+    public UnaryOperator<Supplier<Void>> getRemoveElementStrategy(final Strategy.Context<? extends Element> ctx) {
         return readOnlySupplier();
     }
 

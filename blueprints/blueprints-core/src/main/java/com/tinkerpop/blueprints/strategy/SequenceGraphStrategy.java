@@ -35,11 +35,6 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<Vertex> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getRemoveVertexStrategy(ctx));
-    }
-
-    @Override
     public UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(Strategy.Context<GraphQuery> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getGraphQueryVerticesStrategy(ctx));
     }
