@@ -13,6 +13,9 @@ public class EmptyPipe<S, E> implements Pipe<S, E> {
 
     private static final Pipe INSTANCE = new EmptyPipe<>();
 
+    private EmptyPipe() {
+    }
+
     public void addStarts(final Iterator<Holder<S>> iterator) {
 
     }
@@ -50,7 +53,7 @@ public class EmptyPipe<S, E> implements Pipe<S, E> {
     }
 
     public Holder<E> next() {
-        throw new FastNoSuchElementException();
+        throw FastNoSuchElementException.instance();
     }
 
     public static <S, E> Pipe<S, E> instance() {

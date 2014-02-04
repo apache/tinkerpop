@@ -13,10 +13,10 @@ import java.util.Queue;
 public class ExpandablePipeIterator<E> implements Iterator<Holder<E>> {
 
     private final ExpandableIterator<Holder<E>> expander = new ExpandableIterator<>();
-    private Pipe<?, E> pipe = EmptyPipe.instance();
+    private Pipe<?, E> hostPipe = EmptyPipe.instance();
 
-    public ExpandablePipeIterator(final Pipe<?, E> pipe) {
-        this.pipe = pipe;
+    public ExpandablePipeIterator(final Pipe<?, E> hostPipe) {
+        this.hostPipe = hostPipe;
     }
 
     public void clear() {
@@ -24,12 +24,12 @@ public class ExpandablePipeIterator<E> implements Iterator<Holder<E>> {
     }
 
     public boolean hasNext() {
-        return this.pipe.getPreviousPipe().hasNext() || this.expander.hasNext();
+        return this.hostPipe.getPreviousPipe().hasNext() || this.expander.hasNext();
     }
 
     public Holder<E> next() {
-        if (this.pipe.getPreviousPipe().hasNext())
-            return (Holder<E>) this.pipe.getPreviousPipe().next();
+        if (this.hostPipe.getPreviousPipe().hasNext())
+            return (Holder<E>) this.hostPipe.getPreviousPipe().next();
         else
             return this.expander.next();
     }

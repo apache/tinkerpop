@@ -23,7 +23,7 @@ public class JumpPipe<S> extends MapPipe<S, S> {
             if (ifPredicate.test(holder)) {
                 holder.setFuture(as);
                 if (null == jumpPipe)
-                    GremlinHelper.getAs(as, getPipeline()).addStarts((Iterator) new SingleIterator<>(holder));
+                    GremlinHelper.getAs(as, this.pipeline).addStarts((Iterator) new SingleIterator<>(holder));
                 else
                     jumpPipe.addStarts((Iterator) new SingleIterator<>(holder));
                 return (S) (emitPredicate.test(holder) ? holder.get() : Pipe.NO_OBJECT);

@@ -64,7 +64,7 @@ public class ResultHookClosure extends Closure {
 
         public Object next() {
             if (count > array.length)
-                throw new FastNoSuchElementException();
+                throw FastNoSuchElementException.instance();
 
             return array[count++];
         }

@@ -10,6 +10,9 @@ public class FastNoSuchElementException extends NoSuchElementException {
     private static final long serialVersionUID = 2303108654138257697L;
     private static final FastNoSuchElementException instance = new FastNoSuchElementException();
 
+    private FastNoSuchElementException() {
+    }
+
     /**
      * Retrieve a singleton, fast {@link NoSuchElementException} without a stack trace.
      */
