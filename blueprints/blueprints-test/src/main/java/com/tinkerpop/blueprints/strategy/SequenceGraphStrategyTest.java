@@ -26,38 +26,39 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldAppendPropertyValuesInOrderToVertex() {
-        g.strategy().set(Optional.of(new SequenceGraphStrategy(
-            new GraphStrategy() {
-                @Override
-                public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
-                    return (f) -> (args) -> {
-                        final List<Object> o = new ArrayList<>(Arrays.asList(args));
-                        o.addAll(Arrays.asList("anonymous", "working1"));
-                        return f.apply(o.toArray());
-                    };
+        g.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.addAll(Arrays.asList("anonymous", "working1"));
+                            return f.apply(o.toArray());
+                        };
+                    }
+                },
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.addAll(Arrays.asList("anonymous", "working2"));
+                            o.addAll(Arrays.asList("try", "anything"));
+                            return f.apply(o.toArray());
+                        };
+                    }
+                },
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.addAll(Arrays.asList("anonymous", "working3"));
+                            return f.apply(o.toArray());
+                        };
+                    }
                 }
-            },
-            new GraphStrategy() {
-                @Override
-                public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
-                    return (f) -> (args) -> {
-                        final List<Object> o = new ArrayList<>(Arrays.asList(args));
-                        o.addAll(Arrays.asList("anonymous", "working2"));
-                        o.addAll(Arrays.asList("try","anything"));
-                        return f.apply(o.toArray());
-                    };
-                }
-            },
-            new GraphStrategy() {
-                @Override
-                public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
-                    return (f) -> (args) -> {
-                        final List<Object> o = new ArrayList<>(Arrays.asList(args));
-                        o.addAll(Arrays.asList("anonymous", "working3"));
-                        return f.apply(o.toArray());
-                    };
-                }
-            })));
+        )));
 
         final Vertex v = g.addVertex("any", "thing");
 
@@ -70,35 +71,36 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
     @Test(expected = RuntimeException.class)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldShortCircuitStrategyWithException() {
-        g.strategy().set(Optional.of(new SequenceGraphStrategy(
-            new GraphStrategy() {
-                @Override
-                public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
-                    return (f) -> (args) -> {
-                        final List<Object> o = new ArrayList<>(Arrays.asList(args));
-                        o.addAll(Arrays.asList("anonymous", "working1"));
-                        return f.apply(o.toArray());
-                    };
+        g.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.addAll(Arrays.asList("anonymous", "working1"));
+                            return f.apply(o.toArray());
+                        };
+                    }
+                },
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            throw new RuntimeException("test");
+                        };
+                    }
+                },
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return (f) -> (args) -> {
+                            final List<Object> o = new ArrayList<>(Arrays.asList(args));
+                            o.addAll(Arrays.asList("anonymous", "working3"));
+                            return f.apply(o.toArray());
+                        };
+                    }
                 }
-            },
-            new GraphStrategy() {
-                @Override
-                public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
-                    return (f) -> (args) -> {
-                        throw new RuntimeException("test");
-                    };
-                }
-            },
-            new GraphStrategy() {
-                @Override
-                public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
-                    return (f) -> (args) -> {
-                        final List<Object> o = new ArrayList<>(Arrays.asList(args));
-                        o.addAll(Arrays.asList("anonymous", "working3"));
-                        return f.apply(o.toArray());
-                    };
-                }
-            })));
+        )));
 
         g.addVertex("any", "thing");
     }
@@ -106,7 +108,7 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldShortCircuitStrategyWithNoOp() {
-        g.strategy().set(Optional.of(new SequenceGraphStrategy(
+        g.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -133,7 +135,8 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
                             return f.apply(o.toArray());
                         };
                     }
-                })));
+                }
+        )));
 
         assertNull(g.addVertex("any", "thing"));
     }
@@ -141,7 +144,7 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldDoSomethingBeforeAndAfter() {
-        g.strategy().set(Optional.of(new SequenceGraphStrategy(
+        g.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -178,7 +181,8 @@ public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
                             return f.apply(o.toArray());
                         };
                     }
-                })));
+                }
+        )));
 
         final Vertex v = g.addVertex("any", "thing");
 

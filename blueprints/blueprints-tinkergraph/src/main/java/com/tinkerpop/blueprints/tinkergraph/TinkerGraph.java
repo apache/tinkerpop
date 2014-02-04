@@ -3,7 +3,6 @@ package com.tinkerpop.blueprints.tinkergraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Transaction;
 import com.tinkerpop.blueprints.Vertex;
@@ -72,7 +71,7 @@ public class TinkerGraph implements Graph, Serializable {
      * enforced by the Blueprints Test suite.
      */
     private TinkerGraph(final Optional<GraphStrategy> strategy) {
-        this.strategy.set(strategy);
+        this.strategy.setGraphStrategy(strategy);
     }
 
     /**

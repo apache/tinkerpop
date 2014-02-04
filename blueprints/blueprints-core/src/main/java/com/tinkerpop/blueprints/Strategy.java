@@ -20,7 +20,7 @@ public interface Strategy  {
      * Set the {@link GraphStrategy} to utilized in the various Blueprints methods that it supports.  Set to
      * {@link Optional#EMPTY} by default.
      */
-    public void set(final Optional<? extends GraphStrategy> strategy);
+    public void setGraphStrategy(final Optional<? extends GraphStrategy> strategy);
 
     /**
      * Gets the {@link GraphStrategy} for the {@link Graph}.
@@ -88,7 +88,7 @@ public interface Strategy  {
         private Optional<? extends GraphStrategy> strategy = Optional.empty();
 
         @Override
-        public void set(final Optional<? extends GraphStrategy> strategy) {
+        public void setGraphStrategy(final Optional<? extends GraphStrategy> strategy) {
             if (null == strategy)
                 throw Graph.Exceptions.argumentCanNotBeNull("strategy");
             this.strategy = strategy;
@@ -112,7 +112,7 @@ public interface Strategy  {
         };
 
         @Override
-        public void set(final Optional<? extends GraphStrategy> strategy) {
+        public void setGraphStrategy(final Optional<? extends GraphStrategy> strategy) {
             if (null == strategy)
                 throw Graph.Exceptions.argumentCanNotBeNull("strategy");
             this.strategy.set(strategy);
