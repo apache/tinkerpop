@@ -121,10 +121,16 @@ public interface Graph extends AutoCloseable {
         }
 
         public interface GraphFeatures extends FeatureSet {
+            public static final String FEATURE_ANNOTATIONS = "Annotations";
             public static final String FEATURE_COMPUTER = "Computer";
             public static final String FEATURE_TRANSACTIONS = "Transactions";
             public static final String FEATURE_STRATEGY = "Strategy";
             public static final String FEATURE_PERSISTENCE = "Persistence";
+
+            @FeatureDescriptor(name = FEATURE_ANNOTATIONS)
+            public default boolean supportsAnnotations() {
+                return true;
+            }
 
             @FeatureDescriptor(name = FEATURE_COMPUTER)
             public default boolean supportsComputer() {
@@ -417,6 +423,11 @@ public interface Graph extends AutoCloseable {
     }
 
     public static class Exceptions {
+
+        public static UnsupportedOperationException graphAnnotationsNotSupported() {
+            return new UnsupportedOperationException("Graph does not support graph annotations");
+        }
+
         public static UnsupportedOperationException transactionsNotSupported() {
             return new UnsupportedOperationException("Graph does not support transactions");
         }

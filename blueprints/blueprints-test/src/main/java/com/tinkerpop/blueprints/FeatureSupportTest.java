@@ -18,6 +18,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.Optional;
 
+import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_ANNOTATIONS;
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
@@ -45,6 +46,7 @@ public class FeatureSupportTest  {
      * as not supported.
      */
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
+            "graphAnnotationsNotSupported",
             "graphComputerNotSupported",
             "transactionsNotSupported",
             "graphStrategyNotSupported"
@@ -78,6 +80,21 @@ public class FeatureSupportTest  {
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_TRANSACTIONS));
             } catch (UnsupportedOperationException e) {
                 assertEquals(Graph.Exceptions.transactionsNotSupported().getMessage(), e.getMessage());
+            }
+        }
+
+        /**
+         * A {@link Graph} that does not support {@link GraphFeatures#FEATURE_ANNOTATIONS} must call
+         * {@link com.tinkerpop.blueprints.Graph.Exceptions#graphAnnotationsNotSupported()}.
+         */
+        @Test
+        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_STRATEGY, supported = false)
+        public void ifAGraphAcceptsAnnotationsThenItMustSupportAnnotations() throws Exception {
+            try {
+                g.strategy();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_ANNOTATIONS));
+            } catch (UnsupportedOperationException e) {
+                assertEquals(Graph.Exceptions.graphAnnotationsNotSupported().getMessage(), e.getMessage());
             }
         }
 
