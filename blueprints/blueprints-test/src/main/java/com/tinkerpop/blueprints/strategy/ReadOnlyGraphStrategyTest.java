@@ -7,8 +7,10 @@ import com.tinkerpop.blueprints.Vertex;
 import org.junit.Test;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -18,10 +20,26 @@ public class ReadOnlyGraphStrategyTest extends AbstractBlueprintsTest {
         super(Optional.of(new ReadOnlyGraphStrategy()));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
-    public void shouldNotAllowRemoveVertex() {
-        final Vertex v = g.addVertex();
-        v.remove();
+    public void shouldNotAllowAddVertex() {
+        assertException(g::addVertex);
+    }
+
+    private void assertException(final SupplierThatThrows stt) {
+        try {
+            stt.get();
+        } catch (Exception ex) {
+            final Exception expectedException = ReadOnlyGraphStrategy.Exceptions.graphUsesReadOnlyStrategy();
+            assertEquals(expectedException.getClass(), ex.getClass());
+            assertEquals(expectedException.getMessage(), ex.getMessage());
+
+        }
+
+    }
+
+    @FunctionalInterface
+    public interface SupplierThatThrows {
+        public void get();
     }
 }

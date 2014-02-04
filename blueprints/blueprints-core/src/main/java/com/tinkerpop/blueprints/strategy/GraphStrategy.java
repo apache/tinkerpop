@@ -76,6 +76,18 @@ public interface GraphStrategy {
     }
 
     /**
+     * Construct a {@link Supplier} that enhances the features of {@link com.tinkerpop.blueprints.Edge#remove()}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link Function} that accepts a {@link Function} with
+     *         {@link com.tinkerpop.blueprints.Edge#remove()} signature
+     *         and returns an enhanced strategy {@link Function} with the same signature
+     */
+    public default UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.Context<Edge> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
      * Construct a {@link Function} that enhances the features of {@link com.tinkerpop.blueprints.Element#getProperty(String)}.
      *
      * @param ctx the context within which this strategy function is called

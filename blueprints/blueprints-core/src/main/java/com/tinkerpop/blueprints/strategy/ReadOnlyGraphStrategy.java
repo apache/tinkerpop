@@ -16,16 +16,39 @@ import java.util.function.UnaryOperator;
 public class ReadOnlyGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<Graph> ctx) {
-        return (f) -> (keyValues) -> { throw new UnsupportedOperationException("readonly"); };
+        return readOnlyFunction();
     }
 
     @Override
     public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<Vertex> ctx) {
-        return (f) -> (label, v, keyValues) -> { throw new UnsupportedOperationException("readonly"); };
+        return readOnlyTriFunction();
     }
 
     @Override
     public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<Vertex> ctx) {
-        return (f) -> () -> { throw new UnsupportedOperationException("readonly"); };
+        return readOnlySupplier();
+    }
+
+    @Override
+    public UnaryOperator<Supplier<Void>> getRemoveEdgeStrategy(final Strategy.Context<Edge> ctx) {
+        return readOnlySupplier();
+    }
+
+    public static <T> UnaryOperator<Supplier<T>> readOnlySupplier() {
+        return (f) -> () -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
+    }
+
+    public static <T, U> UnaryOperator<Function<T, U>> readOnlyFunction() {
+        return (f) -> (t) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
+    }
+
+    public static <T, U, V, W> UnaryOperator<TriFunction<T, U, V, W>> readOnlyTriFunction() {
+        return (f) -> (t, u, v) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
+    }
+
+    public static class Exceptions {
+        public static UnsupportedOperationException graphUsesReadOnlyStrategy() {
+            return new UnsupportedOperationException(String.format("Graph uses %s and is therefore unmodifiable", ReadOnlyGraphStrategy.class));
+        }
     }
 }
