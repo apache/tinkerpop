@@ -182,15 +182,15 @@ public class GremlinTest {
     @Test
     public void testIntersect() {
         Graph g = TinkerFactory.createClassic();
-        Gremlin.of(g).V().intersect(
+        /*Gremlin.of(g).V().intersect(
                 Gremlin.of().out("knows"),
                 Gremlin.of().out("created")
-        ).path(v -> ((Vertex) v).getValue("name")).forEach(System.out::println);
+        ).path(v -> ((Vertex) v).getValue("name")).forEach(System.out::println);*/
 
         Gremlin.of(g).V().match("a", "b",
-                Gremlin.of().as("a").identity().as("b"),
-                Gremlin.of().as("b").out("knows"),
-                Gremlin.of().as("b").out("created")
+                Gremlin.of().as("a").out("knows").as("c"),
+                Gremlin.of().as("a").out("created").as("c"),
+                Gremlin.of().as("c").identity().as("b")
         ).path(v -> ((Vertex) v).getValue("name")).forEach(System.out::println);
 
     }

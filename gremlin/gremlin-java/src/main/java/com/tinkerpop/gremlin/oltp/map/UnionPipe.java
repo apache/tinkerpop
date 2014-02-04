@@ -25,15 +25,10 @@ public class UnionPipe<S, E> extends AbstractPipe<S, E> {
             int counter = 0;
             while (counter++ < this.pipelineRing.size()) {
                 final Pipeline<S, E> p = this.pipelineRing.next();
-                if (p.hasNext()) {
-                    final Holder<E> holder = GremlinHelper.getEnd(p).next();
-                    holder.setFuture(this.getNextPipe().getAs());
-                    return holder;
-                }
+                if (p.hasNext()) return GremlinHelper.getEnd(p).next();
             }
             final Holder<S> start = this.starts.next();
             this.pipelineRing.forEach(p -> p.addStarts(new SingleIterator<>(start.makeSibling())));
         }
-
     }
 }

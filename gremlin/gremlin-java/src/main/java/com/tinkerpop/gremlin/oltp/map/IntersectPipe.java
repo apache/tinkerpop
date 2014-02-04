@@ -28,9 +28,7 @@ public class IntersectPipe<S, E> extends AbstractPipe<S, E> {
                 while (counter++ < this.pipelineRing.size()) {
                     final Pipeline<S, E> pipeline = this.pipelineRing.next();
                     if (pipeline.hasNext()) {
-                        final Holder<E> holder = GremlinHelper.getEnd(pipeline).next();
-                        holder.setFuture(this.getNextPipe().getAs());
-                        return holder;
+                        return GremlinHelper.getEnd(pipeline).next();
                     }
                 }
                 this.drainState = false;

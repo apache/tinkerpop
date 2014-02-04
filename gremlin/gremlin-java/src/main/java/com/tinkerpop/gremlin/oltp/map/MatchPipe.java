@@ -60,7 +60,6 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
             if (this.endPipeline.hasNext()) {
                 final Holder<E> holder = (Holder<E>) GremlinHelper.getEnd(this.endPipeline).next();
                 if (doPredicates(this.outAs, holder)) {
-                    holder.setFuture(this.getNextPipe().getAs());
                     return holder;
                 }
             } else {
