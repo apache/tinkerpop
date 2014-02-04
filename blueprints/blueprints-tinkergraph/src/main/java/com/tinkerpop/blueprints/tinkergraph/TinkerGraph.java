@@ -171,13 +171,32 @@ public class TinkerGraph implements Graph, Serializable {
 
         private final Map<String, Object> annotations = new HashMap<>();
 
+        /**
+         * The context to be passed to the {@link GraphStrategy} when triggered.  The context wraps the {@link Annotations}
+         * instance providing that reference to the {@link GraphStrategy}.
+         * <p/>
+         * <b>Reference Implementation Help:</b> It is best to declare this field once and re-use for the life of the
+         * {@link Annotations} rather than construct the new instances at the time they are needed.
+         */
+        private transient Strategy.Context<Graph.Annotations> graphContext
+                = new Strategy.Context<Graph.Annotations>(TinkerGraph.this, this);
+
         public <T> Optional<T> get(final String key) {
             return Optional.ofNullable((T) this.annotations.get(key));
         }
 
         public void set(final String key, final Object value) {
-            GraphHelper.validateAnnotation(key, value);
-            this.annotations.put(key, value);
+            // The first argument to compose() gets the GraphStrategy to use and provides it the Context of the set
+            // call. The second argument to compose() is the TinkerGraph implementation of set as a lambda where
+            // the argument refer to the arguments to set. Note that arguments passes through the GraphStrategy
+            // implementations first so at this point the values within them may not be the same as they originally were.
+            // The composed function must then be applied with the arguments originally passed to set.
+            strategy.compose(
+                s -> s.getGraphAnnotationsSet(graphContext),
+                (k,v) -> {
+                    GraphHelper.validateAnnotation(k, v);
+                    this.annotations.put(k, v);
+                }).accept(key, value);
         }
 
         public Set<String> getKeys() {

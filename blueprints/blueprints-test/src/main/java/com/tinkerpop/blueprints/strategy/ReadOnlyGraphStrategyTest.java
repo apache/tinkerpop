@@ -49,6 +49,12 @@ public class ReadOnlyGraphStrategyTest extends AbstractBlueprintsTest {
         assertException(e::remove);
     }
 
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+    public void shouldNotAllowGraphAnnotationSet() {
+        assertException(() -> g.annotations().set("test", "fail"));
+    }
+
     private void assertException(final SupplierThatThrows stt) {
         try {
             g.strategy().setGraphStrategy(readOnlyGraphStrategy);

@@ -9,6 +9,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.util.function.TriFunction;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -92,10 +93,23 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link Function} that accepts a {@link Function} with
-     *         {@link com.tinkerpop.blueprints.Element#getProperty(String)} ()} signature
+     *         {@link com.tinkerpop.blueprints.Element#getProperty(String)} signature
      *         and returns an enhanced strategy {@link Function} with the same signature
      */
     public default <V> UnaryOperator<Function<String, Property<V>>> getElementGetProperty(final Strategy.Context<Element> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
+     * Construct a {@link BiConsumer} that enhances the features of
+     * {@link com.tinkerpop.blueprints.Graph.Annotations#set(String, Object)}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link Function} that accepts a {@link BiConsumer} with
+     *         {@link com.tinkerpop.blueprints.Graph.Annotations#set(String, Object)} signature
+     *         and returns an enhanced strategy {@link BiConsumer} with the same signature
+     */
+    public default UnaryOperator<BiConsumer<String,Object>> getGraphAnnotationsSet(final Strategy.Context<Graph.Annotations> ctx) {
         return UnaryOperator.identity();
     }
 

@@ -6,6 +6,7 @@ import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.function.TriFunction;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -25,6 +26,11 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
+    public UnaryOperator<BiConsumer<String, Object>> getGraphAnnotationsSet(Strategy.Context<Graph.Annotations> ctx) {
+        return readOnlyBiConsumer();
+    }
+
+    @Override
     public UnaryOperator<Supplier<Void>> getRemoveVertexStrategy(final Strategy.Context<Vertex> ctx) {
         return readOnlySupplier();
     }
@@ -40,6 +46,10 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
 
     public static <T, U> UnaryOperator<Function<T, U>> readOnlyFunction() {
         return (f) -> (t) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
+    }
+
+    public static <T, U> UnaryOperator<BiConsumer<T, U>> readOnlyBiConsumer() {
+        return (f) -> (t,u) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
     }
 
     public static <T, U, V, W> UnaryOperator<TriFunction<T, U, V, W>> readOnlyTriFunction() {
