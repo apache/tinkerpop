@@ -68,11 +68,23 @@ public interface GraphStrategy {
      * Construct a {@link Supplier} that enhances the features of {@link com.tinkerpop.blueprints.Element#remove()}.
      *
      * @param ctx the context within which this strategy function is called
-     * @return a {@link Function} that accepts a {@link Function} with
+     * @return a {@link Function} that accepts a {@link Supplier} with
      *         {@link com.tinkerpop.blueprints.Element#remove()} signature
-     *         and returns an enhanced strategy {@link Function} with the same signature
+     *         and returns an enhanced strategy {@link Supplier} with the same signature
      */
     public default UnaryOperator<Supplier<Void>> getRemoveElementStrategy(final Strategy.Context<? extends Element> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
+     * Construct a {@link Supplier} that enhances the features of {@link com.tinkerpop.blueprints.Property#remove()}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link Function} that accepts a {@link Supplier} with
+     *         {@link com.tinkerpop.blueprints.Property#remove()} signature
+     *         and returns an enhanced strategy {@link Supplier} with the same signature
+     */
+    public default <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(final Strategy.Context<Property<V>> ctx) {
         return UnaryOperator.identity();
     }
 

@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.AbstractBlueprintsTest;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.FeatureRequirement;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import org.junit.Test;
 
@@ -81,6 +82,29 @@ public class ReadOnlyGraphStrategyTest extends AbstractBlueprintsTest {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("friend", v);
         assertException(()->e.setProperty("test", "test"));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void shouldNotAllowVertexPropertyRemoval() {
+        final Vertex v = g.addVertex();
+        v.setProperty("test", "test");
+        final Property<String> p = v.getProperty("test");
+        assertEquals("test", p.get());
+        assertException(p::remove);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void shouldNotAllowEdgePropertyRemoval() {
+        final Vertex v = g.addVertex();
+        final Edge e = v.addEdge("friend", v);
+        e.setProperties("test", "test");
+        final Property<String> p = e.getProperty("test");
+        assertEquals("test", p.get());
+        assertException(p::remove);
     }
 
     @Test

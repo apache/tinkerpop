@@ -3,6 +3,7 @@ package com.tinkerpop.blueprints.strategy;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.function.TriFunction;
@@ -38,6 +39,11 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Supplier<Void>> getRemoveElementStrategy(final Strategy.Context<? extends Element> ctx) {
+        return readOnlySupplier();
+    }
+
+    @Override
+    public <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(final Strategy.Context<Property<V>> ctx) {
         return readOnlySupplier();
     }
 
