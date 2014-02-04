@@ -14,6 +14,9 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
+ * This {@link GraphStrategy} prevents the graph from being modified and will throw a
+ * {@link UnsupportedOperationException} if an attempt is made to do so.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ReadOnlyGraphStrategy implements GraphStrategy {
