@@ -1,7 +1,9 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Strategy;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.query.GraphQuery;
@@ -10,6 +12,7 @@ import com.tinkerpop.blueprints.util.function.TriFunction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -42,6 +45,31 @@ public class SequenceGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Function<Object[], GraphQuery>> getGraphQueryIdsStrategy(Strategy.Context<GraphQuery> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getGraphQueryIdsStrategy(ctx));
+    }
+
+    @Override
+    public UnaryOperator<Supplier<Void>> getRemoveElementStrategy(Strategy.Context<? extends Element> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getRemoveElementStrategy(ctx));
+    }
+
+    @Override
+    public <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(Strategy.Context<Property<V>> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getRemovePropertyStrategy(ctx));
+    }
+
+    @Override
+    public <V> UnaryOperator<Function<String, Property<V>>> getElementGetProperty(Strategy.Context<? extends Element> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getElementGetProperty(ctx));
+    }
+
+    @Override
+    public <V> UnaryOperator<BiConsumer<String, V>> getElementSetProperty(Strategy.Context<? extends Element> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getElementSetProperty(ctx));
+    }
+
+    @Override
+    public UnaryOperator<BiConsumer<String, Object>> getGraphAnnotationsSet(Strategy.Context<Graph.Annotations> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getGraphAnnotationsSet(ctx));
     }
 
     /**
