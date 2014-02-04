@@ -51,6 +51,8 @@ public class MatchPipe<S, E> extends AbstractPipe<S, E> {
                 }
             }
         }
+        if (null == this.endPipeline)
+            throw new IllegalStateException("One of the match pipelines must be an end pipeline");
     }
 
     protected Holder<E> processNextStart() {
