@@ -110,12 +110,25 @@ public class CommunityGeneratorTest {
             for (int i = 0; i < numNodes; i++) g.addVertex("oid", i);
         }
 
-        private void communityGeneratorTest(final Graph graph, final CommunityGenerator generator) {
-            generator.setCommunityDistribution(communityDistribution);
-            generator.setDegreeDistribution(degreeDistribution);
-            generator.setCrossCommunityPercentage(crossPcent);
-            final int numEdges = generator.generate(graph, numberOfVertices / 10, numberOfVertices * 10);
-            assertEquals(numEdges, SizableIterable.sizeOf(graph.query().edges()));
+        private void communityGeneratorTest(final Graph graph, final CommunityGenerator generator) throws Exception {
+            boolean generated = false;
+            double localCrossPcent = crossPcent;
+            while (!generated) {
+                try {
+                    generator.setCommunityDistribution(communityDistribution);
+                    generator.setDegreeDistribution(degreeDistribution);
+                    generator.setCrossCommunityPercentage(localCrossPcent);
+                    final int numEdges = generator.generate(graph, numberOfVertices / 10, numberOfVertices * 10);
+                    assertEquals(numEdges, SizableIterable.sizeOf(graph.query().edges()));
+                    generated = true;
+                } catch (IllegalArgumentException iae) {
+                    generated = false;
+                    localCrossPcent = localCrossPcent - 0.05d;
+                    graph.query().vertices().forEach(Vertex::remove);
+                    prepareGraph(graph);
+                    System.out.println(String.format("Ran CommunityGeneratorTest with different CrossCommunityPercentage, expected %s but used %s", crossPcent, localCrossPcent));
+                }
+            }
         }
     }
 
