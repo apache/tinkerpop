@@ -3,19 +3,17 @@ package com.tinkerpop.blueprints.generator;
 import com.tinkerpop.blueprints.AbstractBlueprintsTest;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
-import org.junit.Ignore;
+import org.javatuples.Triplet;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -69,10 +67,12 @@ public class CommunityGeneratorTest {
 
             // ensure that not every vertex has the same number of edges between graphs
             assertFalse(StreamFactory.stream(g.query().vertices())
-                    .map(v -> Pair.with(v.getValue("oid"), StreamFactory.stream(v.query().direction(Direction.BOTH).edges()).count()))
+                    .map(v -> Triplet.with(v.getValue("oid"), StreamFactory.stream(v.query().direction(Direction.IN).edges()).count(),
+                            StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count()))
                     .allMatch(p -> {
                         final Vertex v = g1.query().has("oid", p.getValue0()).vertices().iterator().next();
-                        return p.getValue1() == StreamFactory.stream(v.query().direction(Direction.BOTH).edges()).count();
+                        return p.getValue1() == StreamFactory.stream(v.query().direction(Direction.IN).edges()).count()
+                                && p.getValue2() == StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count();
                     }));
 
             graphProvider.clear(g1, configuration);
@@ -93,10 +93,12 @@ public class CommunityGeneratorTest {
 
             // ensure that every vertex has the same number of edges between graphs.
             assertTrue(StreamFactory.stream(g.query().vertices())
-                    .map(v -> Pair.with(v.getValue("oid"), StreamFactory.stream(v.query().direction(Direction.BOTH).edges()).count()))
+                    .map(v -> Triplet.with(v.getValue("oid"), StreamFactory.stream(v.query().direction(Direction.IN).edges()).count(),
+                            StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count()))
                     .allMatch(p -> {
                         final Vertex v = g1.query().has("oid", p.getValue0()).vertices().iterator().next();
-                        return p.getValue1() == StreamFactory.stream(v.query().direction(Direction.BOTH).edges()).count();
+                        return p.getValue1() == StreamFactory.stream(v.query().direction(Direction.IN).edges()).count()
+                                && p.getValue2() == StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count();
                     }));
 
             graphProvider.clear(g1, configuration);
