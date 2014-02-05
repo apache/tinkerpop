@@ -4,6 +4,7 @@ import com.tinkerpop.blueprints.computer.GraphComputer;
 import com.tinkerpop.blueprints.query.GraphQuery;
 import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import com.tinkerpop.blueprints.util.FeatureDescriptor;
+import com.tinkerpop.gremlin.Gremlin;
 import org.apache.commons.configuration.Configuration;
 
 import java.lang.reflect.InvocationTargetException;
@@ -42,6 +43,8 @@ public interface Graph extends AutoCloseable {
         final Iterator<Edge> itty = this.query().ids(id).edges().iterator();
         return itty.hasNext() ? Optional.of(itty.next()) : Optional.empty();
     }
+
+    public <A extends Gremlin<?, Vertex>> A V();
 
     public GraphQuery query();
 

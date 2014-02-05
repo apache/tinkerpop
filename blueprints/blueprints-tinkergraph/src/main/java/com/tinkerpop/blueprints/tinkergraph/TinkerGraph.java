@@ -12,6 +12,9 @@ import com.tinkerpop.blueprints.strategy.GraphStrategy;
 import com.tinkerpop.blueprints.util.ElementHelper;
 import com.tinkerpop.blueprints.util.GraphHelper;
 import com.tinkerpop.blueprints.util.StringFactory;
+import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.util.DefaultGremlin;
+import com.tinkerpop.gremlin.util.HolderIterator;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
@@ -124,6 +127,12 @@ public class TinkerGraph implements Graph, Serializable {
 
     ////////////// BLUEPRINTS API METHODS //////////////////
 
+    public <A extends Gremlin<?, Vertex>> A V() {
+        Gremlin gremlin = new DefaultGremlin<Object, Vertex>();
+        gremlin.addStarts(new HolderIterator<>(this.query().vertices().iterator()));
+        return (A) gremlin;
+    }
+
     public Vertex addVertex(final Object... keyValues) {
         // The first argument to compose() gets the GraphStrategy to use and provides it the Context of the addVertex
         // call. The second argument to compose() is the TinkerGraph implementation of addVertex as a lambda where
@@ -192,11 +201,11 @@ public class TinkerGraph implements Graph, Serializable {
             // implementations first so at this point the values within them may not be the same as they originally were.
             // The composed function must then be applied with the arguments originally passed to set.
             strategy.compose(
-                s -> s.getGraphAnnotationsSet(graphContext),
-                (k,v) -> {
-                    GraphHelper.validateAnnotation(k, v);
-                    this.annotations.put(k, v);
-                }).accept(key, value);
+                    s -> s.getGraphAnnotationsSet(graphContext),
+                    (k, v) -> {
+                        GraphHelper.validateAnnotation(k, v);
+                        this.annotations.put(k, v);
+                    }).accept(key, value);
         }
 
         public Set<String> getKeys() {
