@@ -28,7 +28,7 @@ public class GremlinTest {
     public void testPipeline() {
 
         TinkerGraph g = TinkerFactory.createClassic();
-        Gremlin.of(g).V()
+        GremlinJ.of(g).V()
                 .out("knows").out("created")
                 .has("name")
                 .value("name").path()
@@ -36,21 +36,21 @@ public class GremlinTest {
 
         System.out.println("--------------");
 
-        Gremlin.of(g).V().as("x").out("knows").back("x").path().sideEffect(System.out::println).iterate();
+        GremlinJ.of(g).V().as("x").out("knows").back("x").path().sideEffect(System.out::println).iterate();
 
         System.out.println("--------------");
 
-        Gremlin.of(g).v("1").as("x").out()
+        GremlinJ.of(g).v("1").as("x").out()
                 .jump("x", o -> o.getLoops() < 2)
                 .path().sideEffect(System.out::println).iterate();
 
         System.out.println("--------------");
 
-        System.out.println(Gremlin.of(g).V().both().groupCount());
+        System.out.println(GremlinJ.of(g).V().both().groupCount());
 
         System.out.println("--------------");
 
-        Gremlin.of(g).V()
+        GremlinJ.of(g).V()
                 .both()
                 .dedup(e -> e.getProperty("name").isPresent())
                 .sideEffect(System.out::println)
@@ -63,7 +63,7 @@ public class GremlinTest {
     @Test
     public void testSelect() {
         TinkerGraph g = TinkerFactory.createClassic();
-        Gremlin.of(g)
+        GremlinJ.of(g)
                 .V().as("x")
                 .out().as("y")
                 .select(As.of("x", "y"), v -> ((Vertex) v).getValue("name"))
@@ -73,34 +73,34 @@ public class GremlinTest {
     @Test
     public void testMatch() {
         TinkerGraph g = TinkerFactory.createClassic();
-        Gremlin.of(g).V()
+        GremlinJ.of(g).V()
                 .match("a", "d",
-                        Gremlin.of().as("a").out("created").as("b"),
-                        Gremlin.of().as("b").has("name", "lop"),
-                        Gremlin.of().as("b").in("created").as("c"),
-                        Gremlin.of().as("c").has("age", 29),
-                        Gremlin.of().as("c").out("knows").as("d"))
+                        GremlinJ.of().as("a").out("created").as("b"),
+                        GremlinJ.of().as("b").has("name", "lop"),
+                        GremlinJ.of().as("b").in("created").as("c"),
+                        GremlinJ.of().as("c").has("age", 29),
+                        GremlinJ.of().as("c").out("knows").as("d"))
                 .select(As.of("a", "d"), v -> ((Vertex) v).getValue("name")).forEach(System.out::println);
 
         System.out.println("--------------");
 
-        Gremlin.of(g).V()
+        GremlinJ.of(g).V()
                 .match("a", "c",
-                        Gremlin.of().as("a").out("created").as("b"),
-                        Gremlin.of().as("a").out("knows").as("b"),
-                        Gremlin.of().as("b").identity().as("c"))
+                        GremlinJ.of().as("a").out("created").as("b"),
+                        GremlinJ.of().as("a").out("knows").as("b"),
+                        GremlinJ.of().as("b").identity().as("c"))
                 .value("name").path()
                 .sideEffect(System.out::println).iterate();
 
         System.out.println("--------------");
 
-        Gremlin.of(g).V()
+        GremlinJ.of(g).V()
                 .match("a", "b",
-                        Gremlin.of().as("a").out("knows").has("name", "josh"),
-                        Gremlin.of().as("a").out("created").has("name", "lop"),
-                        Gremlin.of().as("a").out("created").as("b"),
-                        Gremlin.of().as("b").has("lang", "java"),
-                        Gremlin.of().as("b").in("created").has("name", "peter"))
+                        GremlinJ.of().as("a").out("knows").has("name", "josh"),
+                        GremlinJ.of().as("a").out("created").has("name", "lop"),
+                        GremlinJ.of().as("a").out("created").as("b"),
+                        GremlinJ.of().as("b").has("lang", "java"),
+                        GremlinJ.of().as("b").in("created").has("name", "peter"))
                 .value("name").path()
                 .sideEffect(System.out::println).iterate();
     }
@@ -122,7 +122,7 @@ public class GremlinTest {
         e.addEdge("next", f);
         f.addEdge("next", a);
 
-        Gremlin.of(g).v(a.getId()).as("x").out()
+        GremlinJ.of(g).v(a.getId()).as("x").out()
                 .jump("x", o -> o.getLoops() < 8, o -> true)
                 .sideEffect(o -> System.out.println(o.getLoops()))
                 .path().sideEffect(System.out::println).iterate();
@@ -132,15 +132,15 @@ public class GremlinTest {
     @Test
     public void testLoop2() {
         TinkerGraph g = TinkerFactory.createClassic();
-        Gremlin.of(g).V().as("x").out().jump("x", o -> o.getLoops() < 2).property("name").forEach(System.out::println);
-        Gremlin.of(g).V().as("x").jump("y", o -> o.getLoops() > 1).out().jump("x").property("name").as("y").forEach(System.out::println);
+        GremlinJ.of(g).V().as("x").out().jump("x", o -> o.getLoops() < 2).property("name").forEach(System.out::println);
+        GremlinJ.of(g).V().as("x").jump("y", o -> o.getLoops() > 1).out().jump("x").property("name").as("y").forEach(System.out::println);
     }
 
     @Test
     public void testValues() {
         Graph g = TinkerFactory.createClassic();
         //Gremlin.of(g).V().values("name","age","label","id").forEach(System.out::println);
-        Pipeline gremlin = Gremlin.of(g).v(1).out("created").aggregate("x").in("created").out("created").except("x").value("name");
+        Pipeline gremlin = GremlinJ.of(g).v(1).out("created").aggregate("x").in("created").out("created").except("x").value("name");
         gremlin.forEach(System.out::println);
         System.out.println(((Collection<Vertex>) gremlin.memory().get("x")).iterator().next().<String>getValue("name"));
 
@@ -150,20 +150,20 @@ public class GremlinTest {
     @Test
     public void testRange() {
         Graph graph = TinkerFactory.createClassic();
-        Gremlin<Vertex, Vertex> g = (Gremlin) Gremlin.of(graph);
+        GremlinJ<Vertex, Vertex> g = (GremlinJ) GremlinJ.of(graph);
         assertEquals(3l, g.V().range(0, 2).count());
 
         //g.v(1).out().forEach(System.out::println);
         System.out.println(g.v(1).out().tree(o -> ((Vertex) o).getValue("name")));
 
-        Gremlin.of(graph).V().out().remove();
+        GremlinJ.of(graph).V().out().remove();
         System.out.println(graph);
     }
 
     @Test
     public void testOrder() {
         Graph g = TinkerFactory.createClassic();
-        Gremlin.of(g).V().<String>value("name").order((a, b) -> b.get().compareTo(a.get())).path().forEach(System.out::println);
+        GremlinJ.of(g).V().<String>value("name").order((a, b) -> b.get().compareTo(a.get())).path().forEach(System.out::println);
 
 
     }
@@ -176,7 +176,7 @@ public class GremlinTest {
                 Gremlin.of().out("created").in("created")
         ).jump("x", h -> h.getLoops() < 2).value("name").path().forEach(System.out::println);*/
 
-        System.out.println(Gremlin.of(g).V().identity().as("x").has("age").value("age"));
+        System.out.println(GremlinJ.of(g).V().identity().as("x").has("age").value("age"));
     }
 
     @Test
@@ -187,10 +187,10 @@ public class GremlinTest {
                 Gremlin.of().out("created")
         ).path(v -> ((Vertex) v).getValue("name")).forEach(System.out::println);*/
 
-        Gremlin.of(g).V().match("a", "b",
-                Gremlin.of().as("a").out("knows").as("c"),
-                Gremlin.of().as("a").out("created").as("c"),
-                Gremlin.of().as("c").identity().as("b")
+        GremlinJ.of(g).V().match("a", "b",
+                GremlinJ.of().as("a").out("knows").as("c"),
+                GremlinJ.of().as("a").out("created").as("c"),
+                GremlinJ.of().as("c").identity().as("b")
         ).path(v -> ((Vertex) v).getValue("name")).forEach(System.out::println);
 
     }
@@ -198,7 +198,7 @@ public class GremlinTest {
     @Test
     public void testAnnotatedList() {
         Graph g = TinkerFactory.createModern();
-        Pipeline gremlin = Gremlin.of(g).V().value("locations").dedup();
+        Pipeline gremlin = GremlinJ.of(g).V().value("locations").dedup();
         System.out.println(gremlin);
         gremlin.forEach(System.out::println);
 
@@ -208,7 +208,7 @@ public class GremlinTest {
     @Test
     public void testDedupOptimizer() {
         Graph g = TinkerFactory.createModern();
-        Pipeline gremlin = Gremlin.of(g).V().value("name").order().dedup();
+        Pipeline gremlin = GremlinJ.of(g).V().value("name").order().dedup();
         gremlin.forEach(System.out::println);
         System.out.println(gremlin);
 

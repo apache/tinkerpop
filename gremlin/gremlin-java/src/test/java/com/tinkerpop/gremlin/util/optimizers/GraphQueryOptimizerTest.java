@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.util.optimizers;
 import com.tinkerpop.blueprints.Compare;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.oltp.filter.HasPipe;
 import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class GraphQueryOptimizerTest {
 
     @Test
     public void shouldPutHasParametersIntoGraphQueryBuilder() {
-        Gremlin<Vertex, Vertex> gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
+        GremlinJ<Vertex, Vertex> gremlin = (GremlinJ) GremlinJ.of(TinkerFactory.createClassic());
         gremlin.optimizers().get().clear();
         gremlin.V().has("age", 29);
         assertEquals(2, gremlin.getPipes().size());
@@ -32,7 +32,7 @@ public class GraphQueryOptimizerTest {
         assertEquals("marko", gremlin.next().<String>getValue("name"));
         assertFalse(gremlin.hasNext());
 
-        gremlin = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
+        gremlin = (GremlinJ) GremlinJ.of(TinkerFactory.createClassic());
         gremlin.optimizers().get().clear();
         gremlin.optimizers().register(new GraphQueryOptimizer());
         gremlin.V().has("age", 29);
@@ -48,12 +48,12 @@ public class GraphQueryOptimizerTest {
 
     @Test
     public void shouldReturnTheSameResultsAfterOptimization() {
-        Gremlin a = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
+        GremlinJ a = (GremlinJ) GremlinJ.of(TinkerFactory.createClassic());
         a.optimizers().get().clear();
         a.V().has("age", 29);
         assertTrue(a.hasNext());
 
-        Gremlin b = (Gremlin) Gremlin.of(TinkerFactory.createClassic());
+        GremlinJ b = (GremlinJ) GremlinJ.of(TinkerFactory.createClassic());
         b.optimizers().get().clear();
         b.optimizers().register(new GraphQueryOptimizer());
         b.V().has("age", 29);

@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Gremlin<S, E> implements Pipeline<S, E> {
+public class GremlinJ<S, E> implements Pipeline<S, E> {
 
     private final Memory memory = new LocalMemory();
     private final Optimizers optimizers = new SimpleOptimizers();
@@ -31,7 +31,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     private final Graph graph;
     private boolean firstNext = true;
 
-    protected Gremlin(final Graph graph, final boolean useDefaultOptimizers) {
+    protected GremlinJ(final Graph graph, final boolean useDefaultOptimizers) {
         this.graph = graph;
         if (useDefaultOptimizers) {
             this.optimizers.register(new IdentityOptimizer());
@@ -43,19 +43,19 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
         }
     }
 
-    public static Gremlin<?, ?> of() {
-        Gremlin gremlin = Gremlin.of(EmptyGraph.instance());
+    public static GremlinJ<?, ?> of() {
+        GremlinJ gremlin = GremlinJ.of(EmptyGraph.instance());
         gremlin.addPipe(new IdentityPipe(gremlin));
         return gremlin;
 
     }
 
-    public static Gremlin<?, ?> of(final Graph graph) {
-        return new Gremlin(graph, true);
+    public static GremlinJ<?, ?> of(final Graph graph) {
+        return new GremlinJ(graph, true);
     }
 
-    public static Gremlin<?, ?> of(final Graph graph, final boolean useDefaultOptimizers) {
-        return new Gremlin(graph, useDefaultOptimizers);
+    public static GremlinJ<?, ?> of(final Graph graph, final boolean useDefaultOptimizers) {
+        return new GremlinJ(graph, useDefaultOptimizers);
     }
 
     public Optimizers optimizers() {
@@ -67,31 +67,31 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
     }
 
     // TODO: Is this good?
-    public Gremlin<S, E> with(final Object... variablesValues) {
+    public GremlinJ<S, E> with(final Object... variablesValues) {
         for (int i = 0; i < variablesValues.length; i = i + 2) {
             this.memory().set((String) variablesValues[i], variablesValues[i + 1]);
         }
         return this;
     }
 
-    public Gremlin<Vertex, Vertex> V() {
+    public GremlinJ<Vertex, Vertex> V() {
         this.addPipe(new GraphQueryPipe(this, this.graph, new GraphQueryBuilder(), Vertex.class));
-        return (Gremlin<Vertex, Vertex>) this;
+        return (GremlinJ<Vertex, Vertex>) this;
     }
 
-    public Gremlin<Edge, Edge> E() {
+    public GremlinJ<Edge, Edge> E() {
         this.addPipe(new GraphQueryPipe(this, this.graph, new GraphQueryBuilder(), Edge.class));
-        return (Gremlin<Edge, Edge>) this;
+        return (GremlinJ<Edge, Edge>) this;
     }
 
-    public Gremlin<Vertex, Vertex> v(final Object... ids) {
+    public GremlinJ<Vertex, Vertex> v(final Object... ids) {
         this.addPipe(new GraphQueryPipe(this, this.graph, new GraphQueryBuilder().ids(ids), Vertex.class));
-        return (Gremlin<Vertex, Vertex>) this;
+        return (GremlinJ<Vertex, Vertex>) this;
     }
 
-    public Gremlin<Edge, Edge> e(final Object... ids) {
+    public GremlinJ<Edge, Edge> e(final Object... ids) {
         this.addPipe(new GraphQueryPipe(this, this.graph, new GraphQueryBuilder().ids(ids), Edge.class));
-        return (Gremlin<Edge, Edge>) this;
+        return (GremlinJ<Edge, Edge>) this;
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {
@@ -114,7 +114,7 @@ public class Gremlin<S, E> implements Pipeline<S, E> {
             }
             this.pipes.add(pipe);
         }
-        return (Gremlin<S, E>) this;
+        return (GremlinJ<S, E>) this;
     }
 
     public boolean hasNext() {

@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.olap.map;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.olap.util.GremlinResult;
 import com.tinkerpop.gremlin.util.As;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class SelectTest extends com.tinkerpop.gremlin.test.map.SelectTest {
 
     @Test
     public void g_v1_asXaX_outXknowsX_asXbX_select() {
-        super.g_v1_asXaX_outXknowsX_asXbX_select(new GremlinResult<>(g, () -> Gremlin.of().v("1").as("a").out("knows").as("b").select()));
+        super.g_v1_asXaX_outXknowsX_asXbX_select(new GremlinResult<>(g, () -> GremlinJ.of().v("1").as("a").out("knows").as("b").select()));
     }
 
     @Test
@@ -26,7 +26,7 @@ public class SelectTest extends com.tinkerpop.gremlin.test.map.SelectTest {
 
     @Test
     public void g_v1_asXaX_outXknowsX_asXbX_selectXaX() {
-        super.g_v1_asXaX_outXknowsX_asXbX_selectXaX(new GremlinResult<>(g, () -> Gremlin.of().v("1").as("a").out("knows").as("b").select(As.of("a"))));
+        super.g_v1_asXaX_outXknowsX_asXbX_selectXaX(new GremlinResult<>(g, () -> GremlinJ.of().v("1").as("a").out("knows").as("b").select(As.of("a"))));
     }
 
     @Test

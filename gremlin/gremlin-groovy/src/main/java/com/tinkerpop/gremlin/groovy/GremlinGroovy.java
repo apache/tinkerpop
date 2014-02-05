@@ -2,13 +2,13 @@ package com.tinkerpop.gremlin.groovy;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.gremlin.EmptyGraph;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import groovy.lang.Closure;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinGroovy<S, E> extends Gremlin<S, E> {
+public class GremlinGroovy<S, E> extends GremlinJ<S, E> {
 
     protected GremlinGroovy(final Graph graph, final boolean useDefaultOptimizers) {
         super(graph, useDefaultOptimizers);
@@ -37,4 +37,5 @@ public class GremlinGroovy<S, E> extends Gremlin<S, E> {
     public GremlinGroovy<S, E> jump(final String as) {
         return (GremlinGroovy<S, E>) super.jump(as);
     }
+
 }

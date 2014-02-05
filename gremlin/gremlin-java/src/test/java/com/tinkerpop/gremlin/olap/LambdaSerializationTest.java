@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.olap;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.util.HolderIterator;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class LambdaSerializationTest {
         Graph g = TinkerFactory.createClassic();
         ByteArrayOutputStream outBytes = new ByteArrayOutputStream(10);
         ObjectOutputStream out = new ObjectOutputStream(outBytes);
-        final SerializedSupplier<Pipeline> supplier = () -> Gremlin.of().out().filter(h -> true);
+        final SerializedSupplier<Pipeline> supplier = () -> GremlinJ.of().out().filter(h -> true);
         out.writeObject(supplier);
 
         ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(outBytes.toByteArray()));

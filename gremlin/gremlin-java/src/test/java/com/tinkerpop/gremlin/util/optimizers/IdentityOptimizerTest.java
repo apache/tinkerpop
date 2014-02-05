@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.util.optimizers;
 
 import com.tinkerpop.gremlin.EmptyGraph;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.Pipeline;
 import com.tinkerpop.gremlin.SimpleHolder;
@@ -22,7 +22,7 @@ public class IdentityOptimizerTest {
 
     @Test
     public void shouldRemoveIdentityPipes() {
-        Pipeline gremlin = Gremlin.of(EmptyGraph.instance(), false).identity().identity().identity();
+        Pipeline gremlin = GremlinJ.of(EmptyGraph.instance(), false).identity().identity().identity();
         System.out.println(gremlin);
         assertEquals(3, gremlin.getPipes().size());
         new IdentityOptimizer().optimize(gremlin);
@@ -31,7 +31,7 @@ public class IdentityOptimizerTest {
 
     @Test
     public void shouldNotRemoveAsNamedIdentityPipes() {
-        Pipeline gremlin = Gremlin.of(EmptyGraph.instance(), false).identity().as("x").identity().identity().as("y");
+        Pipeline gremlin = GremlinJ.of(EmptyGraph.instance(), false).identity().as("x").identity().identity().as("y");
         assertEquals(3, gremlin.getPipes().size());
         new IdentityOptimizer().optimize(gremlin);
         assertEquals(2, gremlin.getPipes().size());
@@ -55,7 +55,7 @@ public class IdentityOptimizerTest {
     @Test
     public void shouldStillMaintainGlobalChain() {
         // NO OPTIMIZER
-        Pipeline gremlin = Gremlin.of(EmptyGraph.instance(), false).identity().as("x").identity().identity().as("y");
+        Pipeline gremlin = GremlinJ.of(EmptyGraph.instance(), false).identity().as("x").identity().identity().as("y");
         gremlin.addStarts(new SingleIterator<>(new SimpleHolder<>("marko")));
         assertEquals(3, gremlin.getPipes().size());
         assertTrue(gremlin.hasNext());
@@ -69,7 +69,7 @@ public class IdentityOptimizerTest {
         }
 
         // WITH OPTIMIZER
-        gremlin = Gremlin.of(EmptyGraph.instance(), false).identity().as("x").identity().identity().as("y");
+        gremlin = GremlinJ.of(EmptyGraph.instance(), false).identity().as("x").identity().identity().as("y");
         assertEquals(3, gremlin.getPipes().size());
         new IdentityOptimizer().optimize(gremlin);
         gremlin.addStarts(new SingleIterator<>(new SimpleHolder<>("marko")));

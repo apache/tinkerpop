@@ -5,7 +5,7 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.Pipe;
 import com.tinkerpop.gremlin.util.GremlinHelper;
@@ -40,7 +40,7 @@ public class GremlinCounterMessage extends GremlinMessage {
                                   final Iterable<GremlinCounterMessage> messages,
                                   final Messenger messenger,
                                   final GremlinCounters tracker,
-                                  final Gremlin gremlin) {
+                                  final GremlinJ gremlin) {
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final Map<Holder, Long> localCounts = new HashMap<>();
@@ -81,7 +81,7 @@ public class GremlinCounterMessage extends GremlinMessage {
     }
 
     private boolean executeCounts(final GremlinCounters tracker,
-                                  final Gremlin gremlin, Map<Holder, Long> localCounts) {
+                                  final GremlinJ gremlin, Map<Holder, Long> localCounts) {
 
         if (this.holder.isDone()) {
             this.holder.deflate();

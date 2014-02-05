@@ -5,7 +5,7 @@ import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.computer.Messenger;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.MicroPath;
 import com.tinkerpop.gremlin.Path;
@@ -34,7 +34,7 @@ public class GremlinPathMessage extends GremlinMessage {
                                   final Iterable<GremlinPathMessage> messages,
                                   final Messenger messenger,
                                   final GremlinPaths tracker,
-                                  final Gremlin gremlin) {
+                                  final GremlinJ gremlin) {
 
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
@@ -65,7 +65,7 @@ public class GremlinPathMessage extends GremlinMessage {
 
     private boolean executePaths(final Vertex vertex, final Messenger messenger,
                                  final GremlinPaths tracker,
-                                 final Gremlin gremlin) {
+                                 final GremlinJ gremlin) {
         if (this.holder.isDone()) {
             this.holder.deflate();
             MapHelper.incr(tracker.getDoneGraphTracks(), this.holder.get(), this.holder);

@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.oltp.sideffect;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;
 
@@ -27,7 +27,7 @@ public class SideEffectTest extends com.tinkerpop.gremlin.test.sideeffect.SideEf
     @Test
     public void g_v1_sideEffectXstore_aX_valueXnameX() {
         final List<Vertex> a = new ArrayList<>();
-        super.g_v1_sideEffectXstore_aX_valueXnameX(Gremlin.of(g).v(1).sideEffect(holder -> {
+        super.g_v1_sideEffectXstore_aX_valueXnameX(GremlinJ.of(g).v(1).sideEffect(holder -> {
             a.clear();
             a.add(holder.get());
         }).value("name"));
@@ -38,7 +38,7 @@ public class SideEffectTest extends com.tinkerpop.gremlin.test.sideeffect.SideEf
     public void g_v1_out_sideEffectXincr_cX_valueXnameX() {
         final List<Integer> c = new ArrayList<>();
         c.add(0);
-        super.g_v1_out_sideEffectXincr_cX_valueXnameX(Gremlin.of(g).v(1).out().sideEffect(holder -> {
+        super.g_v1_out_sideEffectXincr_cX_valueXnameX(GremlinJ.of(g).v(1).out().sideEffect(holder -> {
             Integer temp = c.get(0);
             c.clear();
             c.add(temp + 1);
@@ -48,7 +48,7 @@ public class SideEffectTest extends com.tinkerpop.gremlin.test.sideeffect.SideEf
 
     @Test
     public void g_v1_out_sideEffectXX_valueXnameX() {
-        super.g_v1_out_sideEffectXX_valueXnameX(Gremlin.of(g).v(1).out().sideEffect(holder -> {
+        super.g_v1_out_sideEffectXX_valueXnameX(GremlinJ.of(g).v(1).out().sideEffect(holder -> {
         }).value("name"));
     }
 }

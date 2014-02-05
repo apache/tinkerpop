@@ -9,7 +9,7 @@ import com.tinkerpop.blueprints.computer.Messenger;
 import com.tinkerpop.blueprints.computer.VertexProgram;
 import com.tinkerpop.blueprints.query.util.HasContainer;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.Holder;
 import com.tinkerpop.gremlin.PathHolder;
 import com.tinkerpop.gremlin.Pipe;
@@ -35,9 +35,9 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     public static final String TRACK_PATHS = "trackPaths";
     // TODO: public static final String MESSAGES_SENT = "messagesSent";
     public static final String GREMLIN_TRACKER = "gremlinTracker";
-    private final Supplier<Gremlin> gremlinSupplier;
+    private final Supplier<GremlinJ> gremlinSupplier;
 
-    private GremlinVertexProgram(final Supplier<Gremlin> gremlinSupplier) {
+    private GremlinVertexProgram(final Supplier<GremlinJ> gremlinSupplier) {
         this.gremlinSupplier = gremlinSupplier;
     }
 
@@ -56,7 +56,7 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     }
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
-        final Gremlin gremlin = graphMemory.<Supplier<Gremlin>>get(GREMLIN_PIPELINE).get();
+        final GremlinJ gremlin = graphMemory.<Supplier<GremlinJ>>get(GREMLIN_PIPELINE).get();
         if (null != graphMemory.getReductionMemory())
             gremlin.addPipe(new ReductionPipe(gremlin, graphMemory.getReductionMemory()));
         // the head is always an IdentityPipe so simply skip it
@@ -88,7 +88,7 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     }
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
-        final Gremlin gremlin = graphMemory.<Supplier<Gremlin>>get(GREMLIN_PIPELINE).get();
+        final GremlinJ gremlin = graphMemory.<Supplier<GremlinJ>>get(GREMLIN_PIPELINE).get();
         if (null != graphMemory.getReductionMemory())
             gremlin.addPipe(new ReductionPipe(gremlin, graphMemory.getReductionMemory()));
         if (graphMemory.<Boolean>get(TRACK_PATHS)) {
@@ -123,9 +123,9 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     }
 
     public static class Builder {
-        private Supplier<Gremlin> gremlin;
+        private Supplier<GremlinJ> gremlin;
 
-        public Builder gremlin(final Supplier<Gremlin> gremlin) {
+        public Builder gremlin(final Supplier<GremlinJ> gremlin) {
             this.gremlin = gremlin;
             return this;
         }

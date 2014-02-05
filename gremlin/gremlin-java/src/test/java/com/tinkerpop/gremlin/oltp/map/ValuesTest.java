@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.oltp.map;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;
 
@@ -20,21 +20,21 @@ public class ValuesTest extends com.tinkerpop.gremlin.test.map.ValuesTest {
 
     @Test
     public void g_V_values() {
-        super.g_V_values(Gremlin.of(g).V().values());
+        super.g_V_values(GremlinJ.of(g).V().values());
     }
 
     @Test
     public void g_V_valuesXname_ageX() {
-        super.g_V_valuesXname_ageX(Gremlin.of(g).V().values("name", "age"));
+        super.g_V_valuesXname_ageX(GremlinJ.of(g).V().values("name", "age"));
     }
 
     @Test
     public void g_E_valuesXid_label_weightX() {
-        super.g_E_valuesXid_label_weightX(Gremlin.of(g).E().values("id", "label", "weight"));
+        super.g_E_valuesXid_label_weightX(GremlinJ.of(g).E().values("id", "label", "weight"));
     }
 
     @Test
     public void g_v1_outXcreatedX_values() {
-        super.g_v1_outXcreatedX_values(Gremlin.of(g).v(1).out("created").values());
+        super.g_v1_outXcreatedX_values(GremlinJ.of(g).v(1).out("created").values());
     }
 }

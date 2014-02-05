@@ -4,7 +4,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
 import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.olap.util.GremlinResult;
 import org.junit.Test;
 
@@ -23,10 +23,10 @@ public class GremlinVertexProgramTest {
     public void testGremlinOLAP() throws Exception {
         final Graph g = TinkerFactory.createClassic();
         final ComputeResult result =
-                g.compute().program(GremlinVertexProgram.create().gremlin(() -> (Gremlin)
+                g.compute().program(GremlinVertexProgram.create().gremlin(() -> (GremlinJ)
                         //Gremlin.of().out("created").in("created").value("name").map(o -> o.toString().length()))
                         //Gremlin.of().out().out().property("name").value().path())
-                        Gremlin.of().V().as("x").outE().inV().jump("x", o -> o.getLoops() < 2).value("name").map(s -> s.toString().length()).path())
+                        GremlinJ.of().V().as("x").outE().inV().jump("x", o -> o.getLoops() < 2).value("name").map(s -> s.toString().length()).path())
                         .build())
                         .submit().get();
 
@@ -53,7 +53,7 @@ public class GremlinVertexProgramTest {
     public void testIterable() throws Exception {
         final Graph g = TinkerFactory.createClassic();
         final BiFunction<String, Iterator<Integer>, Long> reduction = (k, v) -> StreamFactory.stream(v).count();
-        new GremlinResult<>(g, () -> Gremlin.of().v("1").both().both().value("name")).forEachRemaining(System.out::println);
+        new GremlinResult<>(g, () -> GremlinJ.of().v("1").both().both().value("name")).forEachRemaining(System.out::println);
 
     }
 }

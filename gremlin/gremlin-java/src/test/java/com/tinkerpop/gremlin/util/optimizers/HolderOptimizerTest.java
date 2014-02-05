@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.util.optimizers;
 
 import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
-import com.tinkerpop.gremlin.Gremlin;
+import com.tinkerpop.gremlin.GremlinJ;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -14,7 +14,7 @@ public class HolderOptimizerTest {
 
     @Test
     public void shouldTurnPathTrackingOn() {
-        Gremlin gremlin = Gremlin.of(TinkerGraph.open()).V();
+        GremlinJ gremlin = GremlinJ.of(TinkerGraph.open()).V();
         gremlin.optimizers().get().clear();
         new HolderOptimizer().optimize(gremlin);
         assertFalse(false);
