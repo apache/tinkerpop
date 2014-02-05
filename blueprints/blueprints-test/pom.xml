@@ -19,11 +19,6 @@
         </dependency>
         <dependency>
             <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-io</artifactId>
-            <version>${parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.tinkerpop.blueprints</groupId>
             <artifactId>blueprints-generator</artifactId>
             <version>${parent.version}</version>
         </dependency>

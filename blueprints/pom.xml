@@ -33,7 +33,6 @@
 
     <modules>
         <module>blueprints-core</module>
-        <module>blueprints-io</module>
         <module>blueprints-generator</module>
         <module>blueprints-test</module>
         <module>blueprints-tinkergraph</module>

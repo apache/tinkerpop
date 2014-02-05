@@ -33,11 +33,6 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-io</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.tinkerpop.gremlin</groupId>
             <artifactId>gremlin-core</artifactId>
             <version>${project.parent.version}</version>
