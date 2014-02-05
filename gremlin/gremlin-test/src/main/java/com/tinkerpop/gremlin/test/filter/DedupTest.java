@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.test.filter;
 
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import java.util.Iterator;
 import java.util.List;

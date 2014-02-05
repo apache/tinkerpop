@@ -1,11 +1,12 @@
 package com.tinkerpop.gremlin.util.optimizers;
 
-import com.tinkerpop.blueprints.Compare;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.process.oltp.util.optimizers.GraphQueryOptimizer;
+import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.oltp.filter.HasPipe;
-import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
+import com.tinkerpop.gremlin.process.oltp.map.GraphQueryPipe;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

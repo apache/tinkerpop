@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.groovy
 
-import com.tinkerpop.gremlin.Pipe
-import com.tinkerpop.gremlin.Pipeline
-import com.tinkerpop.gremlin.Tokens
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import com.tinkerpop.gremlin.groovy.loaders.GraphLoader
 import com.tinkerpop.gremlin.groovy.loaders.PipeLoader
+import com.tinkerpop.gremlin.process.Pipe
+import com.tinkerpop.gremlin.process.Tokens
+import com.tinkerpop.gremlin.process.Traversal
 import groovy.grape.Grape
 
 /**
@@ -23,7 +23,7 @@ class GremlinLoader {
 
     public static void load() {
 
-        Pipeline.getMethods().each {
+        Traversal.getMethods().each {
             if (it.getReturnType().equals(Pipeline.class)) {
                 addStep(it.getName())
             }

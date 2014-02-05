@@ -1,12 +1,12 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.AnnotatedList;
-import com.tinkerpop.blueprints.Compare;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.junit.Test;
 
 import java.io.File;

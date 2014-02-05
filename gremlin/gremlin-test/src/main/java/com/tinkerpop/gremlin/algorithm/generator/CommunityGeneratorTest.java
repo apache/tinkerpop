@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.algorithm.generator;
 
 import com.tinkerpop.blueprints.AbstractBlueprintsTest;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Triplet;
 import org.junit.Test;

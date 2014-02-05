@@ -2,9 +2,11 @@ package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.AbstractBlueprintsTest;
 import com.tinkerpop.blueprints.FeatureRequirement;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Strategy;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Strategy;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategy;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -14,7 +16,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;

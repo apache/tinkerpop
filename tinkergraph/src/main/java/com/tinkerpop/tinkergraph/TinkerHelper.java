@@ -1,8 +1,8 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.HashSet;
 import java.util.Set;

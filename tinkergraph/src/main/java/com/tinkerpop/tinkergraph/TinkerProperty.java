@@ -1,11 +1,11 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Strategy;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.ElementHelper;
-import com.tinkerpop.blueprints.util.StringFactory;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Strategy;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 

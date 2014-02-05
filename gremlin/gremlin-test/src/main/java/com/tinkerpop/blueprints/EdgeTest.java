@@ -1,17 +1,21 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.util.StringFactory;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Map;
 import java.util.Set;
 
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_BOOLEAN_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_DOUBLE_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_LONG_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_BOOLEAN_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_DOUBLE_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_LONG_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

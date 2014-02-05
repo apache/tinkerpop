@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.test.filter;
 
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashSet;
 import java.util.Iterator;

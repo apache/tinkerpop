@@ -1,8 +1,8 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.AnnotatedList;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

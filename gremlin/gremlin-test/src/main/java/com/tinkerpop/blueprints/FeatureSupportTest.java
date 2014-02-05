@@ -1,15 +1,21 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.Graph.Features.EdgeFeatures;
-import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.blueprints.Graph.Features.GraphAnnotationFeatures;
-import com.tinkerpop.blueprints.Graph.Features.GraphFeatures;
-import com.tinkerpop.blueprints.Graph.Features.VertexAnnotationFeatures;
-import com.tinkerpop.blueprints.Graph.Features.VertexFeatures;
-import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
-import com.tinkerpop.blueprints.strategy.GraphStrategy;
-import com.tinkerpop.blueprints.strategy.PartitionGraphStrategy;
-import com.tinkerpop.blueprints.util.GraphFactory;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.GraphAnnotationFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.VertexAnnotationFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.PartitionGraphStrategy;
+import com.tinkerpop.gremlin.structure.util.GraphFactory;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -18,11 +24,11 @@ import org.junit.runners.Parameterized;
 
 import java.util.Optional;
 
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_ANNOTATIONS;
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
-import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_ANNOTATIONS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
@@ -42,7 +48,7 @@ public class FeatureSupportTest  {
     private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
     /**
-     * Feature checks that test {@link com.tinkerpop.blueprints.Graph} functionality to determine if a feature should be on when it is marked
+     * Feature checks that test {@link com.tinkerpop.gremlin.structure.Graph} functionality to determine if a feature should be on when it is marked
      * as not supported.
      */
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
@@ -54,8 +60,8 @@ public class FeatureSupportTest  {
     public static class GraphFunctionalityTest extends AbstractBlueprintsTest {
 
         /**
-         * A {@link com.tinkerpop.blueprints.Graph} that does not support {@link com.tinkerpop.blueprints.Graph.Features.GraphFeatures#FEATURE_COMPUTER} must call
-         * {@link com.tinkerpop.blueprints.Graph.Exceptions#graphComputerNotSupported()}.
+         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_COMPUTER} must call
+         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#graphComputerNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_COMPUTER, supported = false)
@@ -69,8 +75,8 @@ public class FeatureSupportTest  {
         }
 
         /**
-         * A {@link com.tinkerpop.blueprints.Graph} that does not support {@link com.tinkerpop.blueprints.Graph.Features.GraphFeatures#FEATURE_TRANSACTIONS} must call
-         * {@link com.tinkerpop.blueprints.Graph.Exceptions#transactionsNotSupported()}.
+         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_TRANSACTIONS} must call
+         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#transactionsNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_TRANSACTIONS, supported = false)
@@ -84,8 +90,8 @@ public class FeatureSupportTest  {
         }
 
         /**
-         * A {@link com.tinkerpop.blueprints.Graph} that does not support {@link com.tinkerpop.blueprints.Graph.Features.GraphFeatures#FEATURE_ANNOTATIONS} must call
-         * {@link com.tinkerpop.blueprints.Graph.Exceptions#graphAnnotationsNotSupported()}.
+         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_ANNOTATIONS} must call
+         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#graphAnnotationsNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_STRATEGY, supported = false)
@@ -99,8 +105,8 @@ public class FeatureSupportTest  {
         }
 
         /**
-         * A {@link com.tinkerpop.blueprints.Graph} that does not support {@link com.tinkerpop.blueprints.Graph.Features.GraphFeatures#FEATURE_STRATEGY} must call
-         * {@link com.tinkerpop.blueprints.Graph.Exceptions#graphStrategyNotSupported()}.
+         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_STRATEGY} must call
+         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#graphStrategyNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_STRATEGY, supported = false)
@@ -114,9 +120,9 @@ public class FeatureSupportTest  {
         }
 
         /**
-         * If given a non-empty {@link com.tinkerpop.blueprints.strategy.GraphStrategy} a graph that does not support
-         * {@link com.tinkerpop.blueprints.Graph.Features.GraphFeatures#FEATURE_STRATEGY} should throw
-         * {@link com.tinkerpop.blueprints.Graph.Exceptions#graphStrategyNotSupported()}.
+         * If given a non-empty {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} a graph that does not support
+         * {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_STRATEGY} should throw
+         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#graphStrategyNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_STRATEGY, supported = false)
@@ -132,7 +138,7 @@ public class FeatureSupportTest  {
     }
 
     /**
-     * Feature checks that test {@link com.tinkerpop.blueprints.Vertex} functionality to determine if a feature should be on when it is marked
+     * Feature checks that test {@link com.tinkerpop.gremlin.structure.Vertex} functionality to determine if a feature should be on when it is marked
      * as not supported.
      */
     public static class VertexFunctionalityTest extends AbstractBlueprintsTest {
@@ -148,7 +154,7 @@ public class FeatureSupportTest  {
     }
 
     /**
-     * Feature checks that test {@link com.tinkerpop.blueprints.Element} {@link com.tinkerpop.blueprints.Property} functionality to determine if a feature should be on
+     * Feature checks that test {@link com.tinkerpop.gremlin.structure.Element} {@link com.tinkerpop.gremlin.structure.Property} functionality to determine if a feature should be on
      * when it is marked as not supported.
      */
     @RunWith(Parameterized.class)
@@ -200,7 +206,7 @@ public class FeatureSupportTest  {
     }
 
     /**
-     * Feature checks that test {@link com.tinkerpop.blueprints.Graph} {@link com.tinkerpop.blueprints.Graph.Annotations} and {@link com.tinkerpop.blueprints.Vertex} {@link com.tinkerpop.blueprints.AnnotatedList}
+     * Feature checks that test {@link com.tinkerpop.gremlin.structure.Graph} {@link com.tinkerpop.gremlin.structure.Graph.Annotations} and {@link com.tinkerpop.gremlin.structure.Vertex} {@link com.tinkerpop.gremlin.structure.AnnotatedList}
      * functionality to determine if a feature should be on when it is marked as not supported.
      */
     @RunWith(Parameterized.class)

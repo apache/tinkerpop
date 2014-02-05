@@ -1,7 +1,7 @@
 package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.blueprints.BlueprintsStandardSuite;
-import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runner.RunWith;
 

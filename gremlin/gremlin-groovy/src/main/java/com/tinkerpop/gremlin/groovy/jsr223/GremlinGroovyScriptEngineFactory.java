@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
-import com.tinkerpop.gremlin.Tokens;
+import com.tinkerpop.gremlin.process.Tokens;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;

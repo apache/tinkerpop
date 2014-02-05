@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.oltp.filter;
 
-import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.GremlinJ;
-import com.tinkerpop.gremlin.T;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;
 

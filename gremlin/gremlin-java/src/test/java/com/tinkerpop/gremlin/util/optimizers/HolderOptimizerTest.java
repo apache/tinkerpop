@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.util.optimizers;
 
+import com.tinkerpop.gremlin.process.oltp.util.optimizers.HolderOptimizer;
 import com.tinkerpop.tinkergraph.TinkerGraph;
 import com.tinkerpop.gremlin.GremlinJ;
 import org.junit.Test;

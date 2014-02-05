@@ -1,6 +1,7 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.util.FeatureDescriptor;
+import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

@@ -1,12 +1,12 @@
 package com.tinkerpop.tinkergraph;
 
 
-import com.tinkerpop.blueprints.computer.ComputeResult;
-import com.tinkerpop.blueprints.computer.GraphComputer;
-import com.tinkerpop.blueprints.computer.GraphMemory;
-import com.tinkerpop.blueprints.computer.VertexMemory;
-import com.tinkerpop.blueprints.computer.VertexProgram;
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.process.olap.ComputeResult;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.process.olap.GraphMemory;
+import com.tinkerpop.gremlin.process.olap.VertexMemory;
+import com.tinkerpop.gremlin.process.olap.VertexProgram;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;

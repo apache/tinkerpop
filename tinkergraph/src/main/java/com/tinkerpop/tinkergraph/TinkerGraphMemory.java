@@ -1,7 +1,7 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.computer.GraphSystemMemory;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.process.olap.GraphSystemMemory;
 
 import java.util.Map;
 import java.util.Set;

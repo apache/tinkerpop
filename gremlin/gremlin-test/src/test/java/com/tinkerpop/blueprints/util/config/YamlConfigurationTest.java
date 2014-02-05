@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.util.config;
 
+import com.tinkerpop.gremlin.structure.util.config.YamlConfiguration;
 import org.junit.Test;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;

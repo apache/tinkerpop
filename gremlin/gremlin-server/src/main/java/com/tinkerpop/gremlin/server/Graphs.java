@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.util.GraphFactory;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +49,7 @@ public class Graphs {
     }
 
     /**
-     * Rollback transactions across all {@link com.tinkerpop.blueprints.Graph} objects.
+     * Rollback transactions across all {@link com.tinkerpop.gremlin.structure.Graph} objects.
      */
     public void rollbackAll() {
         graphs.entrySet().forEach(e-> {
@@ -60,7 +60,7 @@ public class Graphs {
     }
 
     /**
-     * Commit transactions across all {@link com.tinkerpop.blueprints.Graph} objects.
+     * Commit transactions across all {@link com.tinkerpop.gremlin.structure.Graph} objects.
      */
     public void commitAll() {
         graphs.entrySet().forEach(e->{

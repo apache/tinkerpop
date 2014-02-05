@@ -78,7 +78,7 @@ public class Settings {
     public ServerMetrics metrics = null;
 
     /**
-     * {@link Map} of {@link com.tinkerpop.blueprints.Graph} objects keyed by their binding name.
+     * {@link Map} of {@link com.tinkerpop.gremlin.structure.Graph} objects keyed by their binding name.
      */
     public Map<String, String> graphs;
 

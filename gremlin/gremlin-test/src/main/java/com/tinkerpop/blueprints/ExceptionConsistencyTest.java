@@ -1,9 +1,18 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.computer.GraphComputer;
-import com.tinkerpop.blueprints.computer.GraphMemory;
-import com.tinkerpop.blueprints.computer.Messenger;
-import com.tinkerpop.blueprints.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.process.olap.GraphMemory;
+import com.tinkerpop.gremlin.process.olap.Messenger;
+import com.tinkerpop.gremlin.process.olap.VertexProgram;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.AnnotatedValue;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Transaction;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -14,11 +23,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import static com.tinkerpop.blueprints.Graph.Features.GraphAnnotationFeatures.FEATURE_ANNOTATIONS;
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
-import static com.tinkerpop.blueprints.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphAnnotationFeatures.FEATURE_ANNOTATIONS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -36,8 +45,8 @@ import static org.junit.Assert.fail;
 public class ExceptionConsistencyTest {
 
     /**
-     * Checks that properties added to an {@link com.tinkerpop.blueprints.Element} are validated in a consistent way when they are added at
-     * {@link com.tinkerpop.blueprints.Vertex} or {@link com.tinkerpop.blueprints.Edge} construction by throwing an appropriate exception.
+     * Checks that properties added to an {@link com.tinkerpop.gremlin.structure.Element} are validated in a consistent way when they are added at
+     * {@link com.tinkerpop.gremlin.structure.Vertex} or {@link com.tinkerpop.gremlin.structure.Edge} construction by throwing an appropriate exception.
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
@@ -132,8 +141,8 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Checks that properties added to an {@link com.tinkerpop.blueprints.Element} are validated in a consistent way when they are set after
-     * {@link com.tinkerpop.blueprints.Vertex} or {@link com.tinkerpop.blueprints.Edge} construction by throwing an appropriate exception.
+     * Checks that properties added to an {@link com.tinkerpop.gremlin.structure.Element} are validated in a consistent way when they are set after
+     * {@link com.tinkerpop.gremlin.structure.Vertex} or {@link com.tinkerpop.gremlin.structure.Edge} construction by throwing an appropriate exception.
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
@@ -225,7 +234,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Test exceptions around use of {@link com.tinkerpop.blueprints.Direction} with the incorrect context.
+     * Test exceptions around use of {@link com.tinkerpop.gremlin.structure.Direction} with the incorrect context.
      */
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "bothIsNotSupported"
@@ -247,7 +256,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Test exceptions around {@link com.tinkerpop.blueprints.Graph.Annotations}.
+     * Test exceptions around {@link com.tinkerpop.gremlin.structure.Graph.Annotations}.
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = Graph.Annotations.Exceptions.class, methods = {
@@ -288,7 +297,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Tests for exceptions with {@link com.tinkerpop.blueprints.AnnotatedValue}.
+     * Tests for exceptions with {@link com.tinkerpop.gremlin.structure.AnnotatedValue}.
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = AnnotatedValue.Exceptions.class, methods = {
@@ -342,7 +351,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Addition of an {@link com.tinkerpop.blueprints.Edge} without a label should throw an exception.
+     * Addition of an {@link com.tinkerpop.gremlin.structure.Edge} without a label should throw an exception.
      */
     @ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
             "edgeLabelCanNotBeNull"
@@ -363,7 +372,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Tests around exceptions when working with {@link com.tinkerpop.blueprints.Transaction}.
+     * Tests around exceptions when working with {@link com.tinkerpop.gremlin.structure.Transaction}.
      */
     @ExceptionCoverage(exceptionClass = Transaction.Exceptions.class, methods = {
             "transactionAlreadyOpen"
@@ -389,7 +398,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Test exceptions where the same ID is assigned twice to an {@link com.tinkerpop.blueprints.Element},
+     * Test exceptions where the same ID is assigned twice to an {@link com.tinkerpop.gremlin.structure.Element},
      */
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
             "vertexWithIdAlreadyExists",
@@ -430,7 +439,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Test exceptions around use of {@link com.tinkerpop.blueprints.Element#getValue(String)}.
+     * Test exceptions around use of {@link com.tinkerpop.gremlin.structure.Element#getValue(String)}.
      */
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "propertyDoesNotExist"
@@ -469,7 +478,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * An {@link com.tinkerpop.blueprints.Element} can only be removed once.
+     * An {@link com.tinkerpop.gremlin.structure.Element} can only be removed once.
      */
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "elementHasAlreadyBeenRemovedOrDoesNotExist"
@@ -556,8 +565,8 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Tests specific to setting {@link com.tinkerpop.blueprints.Element} properties with
-     * {@link com.tinkerpop.blueprints.computer.GraphComputer}.
+     * Tests specific to setting {@link com.tinkerpop.gremlin.structure.Element} properties with
+     * {@link com.tinkerpop.gremlin.process.olap.GraphComputer}.
      */
     @ExceptionCoverage(exceptionClass = GraphComputer.Exceptions.class, methods = {
             "providedKeyIsNotAComputeKey"
@@ -603,7 +612,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Mock {@link com.tinkerpop.blueprints.computer.VertexProgram} that just dummies up a way to set a property on a {@link com.tinkerpop.blueprints.Vertex}.
+     * Mock {@link com.tinkerpop.gremlin.process.olap.VertexProgram} that just dummies up a way to set a property on a {@link com.tinkerpop.gremlin.structure.Vertex}.
      */
     private static class MockVertexProgramForVertex implements VertexProgram {
         private final String key;
@@ -636,7 +645,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Mock {@link com.tinkerpop.blueprints.computer.VertexProgram} that just dummies up a way to set a property on an {@link com.tinkerpop.blueprints.Edge}.
+     * Mock {@link com.tinkerpop.gremlin.process.olap.VertexProgram} that just dummies up a way to set a property on an {@link com.tinkerpop.gremlin.structure.Edge}.
      */
     private static class MockVertexProgramForEdge implements VertexProgram {
         private final String key;

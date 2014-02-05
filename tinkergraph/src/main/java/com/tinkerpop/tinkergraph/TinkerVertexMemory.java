@@ -1,11 +1,11 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.computer.GraphComputer;
-import com.tinkerpop.blueprints.computer.VertexProgram;
-import com.tinkerpop.blueprints.computer.VertexSystemMemory;
-import com.tinkerpop.blueprints.computer.util.VertexMemoryHelper;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.process.olap.VertexProgram;
+import com.tinkerpop.gremlin.process.olap.VertexSystemMemory;
+import com.tinkerpop.gremlin.process.olap.util.VertexMemoryHelper;
 
 import java.util.HashMap;
 import java.util.Map;

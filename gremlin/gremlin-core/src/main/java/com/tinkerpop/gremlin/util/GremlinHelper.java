@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.util;
 
-import com.tinkerpop.gremlin.Gremlin;
-import com.tinkerpop.gremlin.Pipe;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Pipe;
 
 import java.util.Iterator;
 import java.util.List;
@@ -22,24 +22,24 @@ public class GremlinHelper {
         return !as.startsWith(UNDERSCORE);
     }
 
-    public static <S, E> Pipe<S, E> getAs(final String as, final Gremlin<?, ?> pipeline) {
+    public static <S, E> Pipe<S, E> getAs(final String as, final Traversal<?, ?> pipeline) {
         return (Pipe) pipeline.getPipes().stream()
                 .filter(p -> as.equals(p.getAs()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("The provided name does not exist: " + as));
     }
 
-    public static boolean asExists(final String as, final Gremlin<?, ?> pipeline) {
+    public static boolean asExists(final String as, final Traversal<?, ?> pipeline) {
         return pipeline.getPipes().stream()
                 .filter(p -> as.equals(p.getAs()))
                 .findFirst().isPresent();
     }
 
-    public static <S, E> Pipe<S, ?> getStart(final Gremlin<S, E> pipeline) {
+    public static <S, E> Pipe<S, ?> getStart(final Traversal<S, E> pipeline) {
         return pipeline.getPipes().get(0);
     }
 
-    public static <S, E> Pipe<?, E> getEnd(final Gremlin<S, E> pipeline) {
+    public static <S, E> Pipe<?, E> getEnd(final Traversal<S, E> pipeline) {
         return pipeline.getPipes().get(pipeline.getPipes().size() - 1);
     }
 
@@ -74,7 +74,7 @@ public class GremlinHelper {
         }
     }
 
-    public static void removePipe(final Pipe pipe, final Gremlin pipeline) {
+    public static void removePipe(final Pipe pipe, final Traversal pipeline) {
         final List<Pipe> pipes = pipeline.getPipes();
         final int index = pipes.indexOf(pipe);
         if (index - 1 >= 0 && index + 1 < pipes.size()) {
@@ -84,7 +84,7 @@ public class GremlinHelper {
         pipes.remove(pipe);
     }
 
-    public static void insertPipe(final Pipe pipe, final int index, final Gremlin pipeline) {
+    public static void insertPipe(final Pipe pipe, final int index, final Traversal pipeline) {
         final List<Pipe> pipes = pipeline.getPipes();
         final Pipe leftPipe = pipes.get(index - 1);
         final Pipe rightPipe = pipes.get(index);

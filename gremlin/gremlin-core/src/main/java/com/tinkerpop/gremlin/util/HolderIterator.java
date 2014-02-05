@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.util;
 
-import com.tinkerpop.gremlin.Holder;
-import com.tinkerpop.gremlin.Pipe;
-import com.tinkerpop.gremlin.SimpleHolder;
+import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.SimpleHolder;
 
 import java.util.Iterator;
 

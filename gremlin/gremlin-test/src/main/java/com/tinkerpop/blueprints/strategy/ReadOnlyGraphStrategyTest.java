@@ -1,17 +1,19 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.AbstractBlueprintsTest;
-import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.blueprints.FeatureRequirement;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy;
 import org.junit.Test;
 
 import java.util.Optional;
 
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
 
 /**

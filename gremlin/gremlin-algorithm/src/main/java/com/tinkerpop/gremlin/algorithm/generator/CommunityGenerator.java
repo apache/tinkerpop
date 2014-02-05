@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.algorithm.generator;
 
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.HashMap;

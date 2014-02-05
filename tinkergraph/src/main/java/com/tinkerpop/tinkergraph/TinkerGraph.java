@@ -1,19 +1,19 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Strategy;
-import com.tinkerpop.blueprints.Transaction;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.computer.GraphComputer;
-import com.tinkerpop.blueprints.query.GraphQuery;
-import com.tinkerpop.blueprints.strategy.GraphStrategy;
-import com.tinkerpop.blueprints.util.ElementHelper;
-import com.tinkerpop.blueprints.util.GraphHelper;
-import com.tinkerpop.blueprints.util.StringFactory;
-import com.tinkerpop.gremlin.Gremlin;
-import com.tinkerpop.gremlin.util.DefaultGremlin;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Strategy;
+import com.tinkerpop.gremlin.structure.Transaction;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.structure.query.GraphQuery;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.util.GraphHelper;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.DefaultTraversal;
 import com.tinkerpop.gremlin.util.HolderIterator;
 import org.apache.commons.configuration.Configuration;
 
@@ -42,24 +42,24 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
     /**
-     * Define the method by which {@link com.tinkerpop.blueprints.strategy.GraphStrategy} implementations are executed.
+     * Define the method by which {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} implementations are executed.
      * <p/>
-     * <b>Reference Implementation Help:</b> Implementers may use the existing implementations on the {@link com.tinkerpop.blueprints.Strategy}
+     * <b>Reference Implementation Help:</b> Implementers may use the existing implementations on the {@link com.tinkerpop.gremlin.structure.Strategy}
      * class or write their own if deemed necessary.
      */
     protected transient Strategy strategy = new Strategy.Simple();
 
     /**
-     * The context to be passed to the {@link com.tinkerpop.blueprints.strategy.GraphStrategy} when triggered.  The context wraps the {@link com.tinkerpop.blueprints.Graph}
-     * instance providing that reference to the {@link com.tinkerpop.blueprints.strategy.GraphStrategy}.
+     * The context to be passed to the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} when triggered.  The context wraps the {@link com.tinkerpop.gremlin.structure.Graph}
+     * instance providing that reference to the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
      * <p/>
      * <b>Reference Implementation Help:</b> It is best to declare this field once and re-use for the life of the
-     * {@link com.tinkerpop.blueprints.Graph} rather than construct the new instances at the time they are needed.
+     * {@link com.tinkerpop.gremlin.structure.Graph} rather than construct the new instances at the time they are needed.
      */
     private transient Strategy.Context<Graph> graphContext = new Strategy.Context<Graph>(this, this);
 
     /**
-     * An empty private constructor that initializes {@link TinkerGraph} with no {@link com.tinkerpop.blueprints.strategy.GraphStrategy}.  Primarily
+     * An empty private constructor that initializes {@link TinkerGraph} with no {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily
      * used for purposes of serialization issues.
      */
     private TinkerGraph() {
@@ -70,7 +70,7 @@ public class TinkerGraph implements Graph, Serializable {
      * Internally create a new {@link TinkerGraph} instance.
      * <p/>
      * <b>Reference Implementation Help:</b> All Graph implementations are to be constructed through the open() method
-     * and therefore {@link com.tinkerpop.blueprints.Graph} implementations should maintain a private or protected constructor.  This rule is
+     * and therefore {@link com.tinkerpop.gremlin.structure.Graph} implementations should maintain a private or protected constructor.  This rule is
      * enforced by the Blueprints Test suite.
      */
     private TinkerGraph(final Optional<GraphStrategy> strategy) {
@@ -80,7 +80,7 @@ public class TinkerGraph implements Graph, Serializable {
     /**
      * Open a new {@link TinkerGraph} instance.
      * <p/>
-     * <b>Reference Implementation Help:</b> If a {@link com.tinkerpop.blueprints.Graph } implementation does not require a
+     * <b>Reference Implementation Help:</b> If a {@link com.tinkerpop.gremlin.structure.Graph } implementation does not require a
      * {@link org.apache.commons.configuration.Configuration} (or perhaps has a default configuration) it can choose to implement a zero argument
      * open() method. This is an optional constructor method for TinkerGraph. It is not enforced by the Blueprints
      * Test Suite.
@@ -103,20 +103,20 @@ public class TinkerGraph implements Graph, Serializable {
      * Open a new {@link TinkerGraph} instance.
      * <p/>
      * <b>Reference Implementation Help:</b> This method is the one use by the
-     * {@link com.tinkerpop.blueprints.util.GraphFactory} to instantiate {@link com.tinkerpop.blueprints.Graph} instances.  This method must
+     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory} to instantiate {@link com.tinkerpop.gremlin.structure.Graph} instances.  This method must
      * be overridden for the Blueprint Test Suite to pass.
      *
      * @param configuration the configuration for the instance
      * @param strategy      a strategy to apply
-     * @param <G>           the {@link com.tinkerpop.blueprints.Graph} instance
-     * @return a newly opened {@link com.tinkerpop.blueprints.Graph}
+     * @param <G>           the {@link com.tinkerpop.gremlin.structure.Graph} instance
+     * @return a newly opened {@link com.tinkerpop.gremlin.structure.Graph}
      */
     public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<GraphStrategy> strategy) {
         return (G) new TinkerGraph(strategy);
     }
 
     /**
-     * This method supports serialization of {@link TinkerGraph} where the objects related to {@link com.tinkerpop.blueprints.strategy.GraphStrategy}
+     * This method supports serialization of {@link TinkerGraph} where the objects related to {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}
      * are initialized properly.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -127,10 +127,10 @@ public class TinkerGraph implements Graph, Serializable {
 
     ////////////// BLUEPRINTS API METHODS //////////////////
 
-    public <A extends Gremlin<?, Vertex>> A V() {
-        Gremlin gremlin = new DefaultGremlin<Object, Vertex>();
-        gremlin.addStarts(new HolderIterator<>(this.query().vertices().iterator()));
-        return (A) gremlin;
+    public <A extends Traversal<?, Vertex>> A V() {
+        Traversal traversal = new DefaultTraversal<Object, Vertex>();
+        traversal.addStarts(new HolderIterator<>(this.query().vertices().iterator()));
+        return (A) traversal;
     }
 
     public Vertex addVertex(final Object... keyValues) {
@@ -181,8 +181,8 @@ public class TinkerGraph implements Graph, Serializable {
         private final Map<String, Object> annotations = new HashMap<>();
 
         /**
-         * The context to be passed to the {@link com.tinkerpop.blueprints.strategy.GraphStrategy} when triggered.  The context wraps the {@link Annotations}
-         * instance providing that reference to the {@link com.tinkerpop.blueprints.strategy.GraphStrategy}.
+         * The context to be passed to the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} when triggered.  The context wraps the {@link Annotations}
+         * instance providing that reference to the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
          * <p/>
          * <b>Reference Implementation Help:</b> It is best to declare this field once and re-use for the life of the
          * {@link Annotations} rather than construct the new instances at the time they are needed.

@@ -1,6 +1,6 @@
 package com.tinkerpop.blueprints.query.util;
 
-import com.tinkerpop.blueprints.Compare;
+import com.tinkerpop.gremlin.structure.Compare;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

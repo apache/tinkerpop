@@ -1,6 +1,11 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -15,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_PERSISTENCE;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_PERSISTENCE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -183,7 +188,7 @@ public class GraphTest extends AbstractBlueprintsTest {
     }
 
     /**
-     * Create a small {@link com.tinkerpop.blueprints.Graph} and ensure that counts of edges per vertex are correct.
+     * Create a small {@link com.tinkerpop.gremlin.structure.Graph} and ensure that counts of edges per vertex are correct.
      */
     @Test
     public void shouldEvaluateConnectivityPatterns() {

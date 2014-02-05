@@ -1,9 +1,9 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.Serializable;
 import java.util.ArrayList;

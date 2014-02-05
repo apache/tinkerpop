@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.server.util.ser;
 
-import com.tinkerpop.blueprints.Compare;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.tinkergraph.TinkerGraph;
 import com.tinkerpop.gremlin.server.Context;

@@ -51,7 +51,7 @@ public class GremlinExecutor {
      * Evaluate the {@link RequestMessage} within a {@code ScriptEngine} instance.
      *
      * @param message the current message
-     * @param graphs  the list of {@link com.tinkerpop.blueprints.Graph} instances configured for the server
+     * @param graphs  the list of {@link com.tinkerpop.gremlin.structure.Graph} instances configured for the server
      * @return the result from the evaluation
      */
     public Object eval(final RequestMessage message, final Graphs graphs)

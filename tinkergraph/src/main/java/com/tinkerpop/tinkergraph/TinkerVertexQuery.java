@@ -1,12 +1,12 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.computer.GraphComputer;
-import com.tinkerpop.blueprints.query.util.DefaultVertexQuery;
-import com.tinkerpop.blueprints.query.util.HasContainer;
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.structure.query.util.DefaultVertexQuery;
+import com.tinkerpop.gremlin.structure.query.util.HasContainer;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;

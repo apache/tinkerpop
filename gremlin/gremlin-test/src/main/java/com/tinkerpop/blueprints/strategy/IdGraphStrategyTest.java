@@ -1,16 +1,17 @@
 package com.tinkerpop.blueprints.strategy;
 
 import com.tinkerpop.blueprints.AbstractBlueprintsTest;
-import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.blueprints.FeatureRequirement;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.strategy.IdGraphStrategy;
 import org.junit.Test;
 
 import java.util.Optional;
 
-import static com.tinkerpop.blueprints.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

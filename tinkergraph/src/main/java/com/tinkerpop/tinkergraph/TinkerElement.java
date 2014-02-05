@@ -1,10 +1,10 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Strategy;
-import com.tinkerpop.blueprints.computer.GraphComputer;
-import com.tinkerpop.blueprints.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Strategy;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
 import java.util.HashMap;

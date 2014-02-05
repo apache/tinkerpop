@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.util;
 
-import com.tinkerpop.gremlin.Gremlin;
-import com.tinkerpop.gremlin.Holder;
-import com.tinkerpop.gremlin.Pipe;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Pipe;
 
 import java.util.Iterator;
 
@@ -36,7 +36,7 @@ public class EmptyPipe<S, E> implements Pipe<S, E> {
         return instance();
     }
 
-    public <S, E> Gremlin<S, E> getPipeline() {
+    public <S, E> Traversal<S, E> getPipeline() {
         return null;
     }
 

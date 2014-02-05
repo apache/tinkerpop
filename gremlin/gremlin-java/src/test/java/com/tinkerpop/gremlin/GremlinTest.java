@@ -1,12 +1,13 @@
 package com.tinkerpop.gremlin;
 
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.process.Pipeline;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.tinkergraph.TinkerGraph;
-import com.tinkerpop.gremlin.util.As;
+import com.tinkerpop.gremlin.process.oltp.util.As;
 import org.junit.Test;
 
 import java.util.Collection;

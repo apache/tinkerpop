@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.test.map;
 
-import com.tinkerpop.blueprints.AnnotatedValue;
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.AnnotatedValue;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import java.util.Iterator;
 import java.util.List;

@@ -1,6 +1,13 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.structure.AnnotatedValue;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Transaction;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -38,20 +45,20 @@ public class ExceptionCoverageTest {
         // like the first set listed (and labelled as such) below in the list assignments.
         final Set<String> ignore = new HashSet<String>() {{
             // these exceptions is not used directly...they are called by other exception methods.
-            add("com.tinkerpop.blueprints.AnnotatedValue$Exceptions#annotationKeyIsReserved");
-            add("com.tinkerpop.blueprints.Property$Exceptions#propertyKeyIsReserved");
-            add("com.tinkerpop.blueprints.Graph$Annotations$Exceptions#graphAnnotationKeyIsReserved");
+            add("com.tinkerpop.gremlin.structure.AnnotatedValue$Exceptions#annotationKeyIsReserved");
+            add("com.tinkerpop.gremlin.structure.Property$Exceptions#propertyKeyIsReserved");
+            add("com.tinkerpop.gremlin.structure.Graph$Annotations$Exceptions#graphAnnotationKeyIsReserved");
 
             // this is a general exception to be used as needed.  it is not explicitly tested:
-            add("com.tinkerpop.blueprints.Graph$Exceptions#argumentCanNotBeNull");
+            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#argumentCanNotBeNull");
 
             // todo: need to write consistency tests for the following items still...........
-            add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
-            add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
-            add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#constantComputeKeyHasAlreadyBeenSet");
-            add("com.tinkerpop.blueprints.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
-            add("com.tinkerpop.blueprints.Transaction$Exceptions#transactionMustBeOpenToReadWrite");
-            add("com.tinkerpop.blueprints.Transaction$Exceptions#openTransactionsOnClose");
+            add("com.tinkerpop.gremlin.process.olap.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
+            add("com.tinkerpop.gremlin.process.olap.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
+            add("com.tinkerpop.gremlin.process.olap.GraphComputer$Exceptions#constantComputeKeyHasAlreadyBeenSet");
+            add("com.tinkerpop.gremlin.process.olap.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
+            add("com.tinkerpop.gremlin.structure.Transaction$Exceptions#transactionMustBeOpenToReadWrite");
+            add("com.tinkerpop.gremlin.structure.Transaction$Exceptions#openTransactionsOnClose");
         }};
 
         // implemented exceptions are the classes that potentially contains exception consistency checks.

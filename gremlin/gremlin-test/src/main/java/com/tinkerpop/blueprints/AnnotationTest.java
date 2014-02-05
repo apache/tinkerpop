@@ -1,11 +1,16 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.Graph.Features.AnnotationFeatures;
-import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.blueprints.Graph.Features.GraphAnnotationFeatures;
-import com.tinkerpop.blueprints.Graph.Features.VertexAnnotationFeatures;
-import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
-import com.tinkerpop.blueprints.util.StringFactory;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.AnnotatedValue;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.GraphAnnotationFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.VertexAnnotationFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -23,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Blueprints Test Suite for {@link com.tinkerpop.blueprints.Graph.Annotations} and {@link com.tinkerpop.blueprints.AnnotatedList} operations.
+ * Blueprints Test Suite for {@link com.tinkerpop.gremlin.structure.Graph.Annotations} and {@link com.tinkerpop.gremlin.structure.AnnotatedList} operations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -31,7 +36,7 @@ import static org.junit.Assume.assumeThat;
 public class AnnotationTest {
 
     /**
-     * Basic tests to ensure that {@link com.tinkerpop.blueprints.Graph.Annotations}, {@link com.tinkerpop.blueprints.AnnotatedList}, and {@link com.tinkerpop.blueprints.AnnotatedValue} have
+     * Basic tests to ensure that {@link com.tinkerpop.gremlin.structure.Graph.Annotations}, {@link com.tinkerpop.gremlin.structure.AnnotatedList}, and {@link com.tinkerpop.gremlin.structure.AnnotatedValue} have
      * appropriate {@link String} representations.
      */
     public static class StringRepresentationTest extends AbstractBlueprintsTest {
@@ -73,8 +78,8 @@ public class AnnotationTest {
     }
 
     /**
-     * Tests for feature support on {@link com.tinkerpop.blueprints.Graph.Annotations} and {@link com.tinkerpop.blueprints.AnnotatedList}.  The tests validate if
-     * {@link com.tinkerpop.blueprints.Graph.Features.AnnotationFeatures} should be turned on or off and if the
+     * Tests for feature support on {@link com.tinkerpop.gremlin.structure.Graph.Annotations} and {@link com.tinkerpop.gremlin.structure.AnnotatedList}.  The tests validate if
+     * {@link com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures} should be turned on or off and if the
      * enabled features are properly supported by the implementation.  Note that these tests are run in a separate
      * test class as they are "parameterized" tests.
      */

@@ -10,11 +10,11 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Property;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.MessageSerializer;
 import com.tinkerpop.gremlin.server.RequestMessage;
@@ -56,7 +56,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
 
     /**
      * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write
-     * out {@link com.tinkerpop.blueprints.Graph} objects and {@code toString} for unknown objects.
+     * out {@link com.tinkerpop.gremlin.structure.Graph} objects and {@code toString} for unknown objects.
      */
     private static final ObjectMapper mapper = new ObjectMapper() {{
         // empty beans should be just toString'd

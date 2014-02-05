@@ -1,11 +1,14 @@
 package com.tinkerpop.gremlin.olap;
 
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.computer.ComputeResult;
+import com.tinkerpop.gremlin.process.olap.gremlin.GremlinCounters;
+import com.tinkerpop.gremlin.process.olap.gremlin.GremlinPaths;
+import com.tinkerpop.gremlin.process.olap.gremlin.GremlinVertexProgram;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.tinkergraph.TinkerFactory;
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import com.tinkerpop.gremlin.GremlinJ;
-import com.tinkerpop.gremlin.olap.util.GremlinResult;
+import com.tinkerpop.gremlin.process.olap.gremlin.GremlinResult;
 import org.junit.Test;
 
 import java.util.Iterator;

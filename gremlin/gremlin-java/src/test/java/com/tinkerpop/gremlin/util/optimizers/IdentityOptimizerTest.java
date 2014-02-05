@@ -1,12 +1,13 @@
 package com.tinkerpop.gremlin.util.optimizers;
 
-import com.tinkerpop.gremlin.EmptyGraph;
+import com.tinkerpop.gremlin.process.oltp.util.optimizers.IdentityOptimizer;
+import com.tinkerpop.gremlin.structure.util.EmptyGraph;
 import com.tinkerpop.gremlin.GremlinJ;
-import com.tinkerpop.gremlin.Pipe;
-import com.tinkerpop.gremlin.Pipeline;
-import com.tinkerpop.gremlin.SimpleHolder;
+import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.Pipeline;
+import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.oltp.map.IdentityPipe;
-import com.tinkerpop.gremlin.util.SingleIterator;
+import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
 import org.junit.Test;
 
 import java.util.List;

@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.olap.map;
 
-import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.GremlinJ;
-import com.tinkerpop.gremlin.olap.util.GremlinResult;
-import com.tinkerpop.gremlin.util.As;
+import com.tinkerpop.gremlin.process.olap.gremlin.GremlinResult;
+import com.tinkerpop.gremlin.process.oltp.util.As;
 import org.junit.Test;
 
 /**

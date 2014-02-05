@@ -1,8 +1,7 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.blueprints.Graph
-import com.tinkerpop.gremlin.groovy.GremlinGroovy
 import com.tinkerpop.gremlin.groovy.GremlinLoader
+import com.tinkerpop.gremlin.structure.Graph
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

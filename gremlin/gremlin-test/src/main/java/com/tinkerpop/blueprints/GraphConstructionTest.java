@@ -1,7 +1,8 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.strategy.GraphStrategy;
-import com.tinkerpop.blueprints.util.GraphFactory;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.util.GraphFactory;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
 import java.lang.reflect.Modifier;
@@ -13,13 +14,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests that support the creation of {@link com.tinkerpop.blueprints.Graph} instances which occurs via {@link com.tinkerpop.blueprints.util.GraphFactory}.
+ * Tests that support the creation of {@link com.tinkerpop.gremlin.structure.Graph} instances which occurs via {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphConstructionTest extends AbstractBlueprintsTest{
     /**
-     * All Blueprints implementations should be constructable through {@link com.tinkerpop.blueprints.util.GraphFactory}.
+     * All Blueprints implementations should be constructable through {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
      */
     @Test
     public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() {

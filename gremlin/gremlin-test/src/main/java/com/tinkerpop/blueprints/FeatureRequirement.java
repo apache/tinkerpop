@@ -1,5 +1,7 @@
 package com.tinkerpop.blueprints;
 
+import com.tinkerpop.gremlin.structure.Graph;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;

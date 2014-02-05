@@ -1,6 +1,6 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.computer.GraphMemory;
+import com.tinkerpop.gremlin.process.olap.GraphMemory;
 
 import java.util.HashMap;
 import java.util.Iterator;

@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.test.sideeffect;
 
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Map;

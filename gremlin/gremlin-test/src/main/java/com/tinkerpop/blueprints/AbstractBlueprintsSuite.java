@@ -1,8 +1,9 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.strategy.GraphStrategy;
-import com.tinkerpop.blueprints.util.GraphFactory;
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.util.GraphFactory;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runners.Suite;
@@ -73,7 +74,7 @@ public abstract class AbstractBlueprintsSuite extends Suite {
     public static interface GraphProvider {
 
         /**
-         * Creates a new {@link com.tinkerpop.blueprints.Graph} instance using the default {@link org.apache.commons.configuration.Configuration} from
+         * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance using the default {@link org.apache.commons.configuration.Configuration} from
          * {@link #standardGraphConfiguration()}.
          */
         default public Graph standardTestGraph() {
@@ -81,31 +82,31 @@ public abstract class AbstractBlueprintsSuite extends Suite {
         }
 
         /**
-         * Creates a new {@link com.tinkerpop.blueprints.Graph} instance from the Configuration object using {@link com.tinkerpop.blueprints.util.GraphFactory}.
+         * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
          */
         default public Graph openTestGraph(final Configuration config) {
             return openTestGraph(config, Optional.empty());
         }
 
         /**
-         * Creates a new {@link com.tinkerpop.blueprints.Graph} instance from the Configuration object using {@link com.tinkerpop.blueprints.util.GraphFactory}.
+         * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
          */
         default public Graph openTestGraph(final Configuration config, final Optional<? extends GraphStrategy> strategy) {
             return GraphFactory.open(config ,strategy);
         }
 
         /**
-         * Gets the {@link org.apache.commons.configuration.Configuration} object that can construct a {@link com.tinkerpop.blueprints.Graph} instance from {@link com.tinkerpop.blueprints.util.GraphFactory}.
-         * Note that this method should create a {@link com.tinkerpop.blueprints.Graph} using the {@code graphName} of "standard", meaning it
-         * should always return a configuration instance that generates the same {@link com.tinkerpop.blueprints.Graph} from the
-         * {@link com.tinkerpop.blueprints.util.GraphFactory}.
+         * Gets the {@link org.apache.commons.configuration.Configuration} object that can construct a {@link com.tinkerpop.gremlin.structure.Graph} instance from {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
+         * Note that this method should create a {@link com.tinkerpop.gremlin.structure.Graph} using the {@code graphName} of "standard", meaning it
+         * should always return a configuration instance that generates the same {@link com.tinkerpop.gremlin.structure.Graph} from the
+         * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
          */
         default public Configuration standardGraphConfiguration() {
             return newGraphConfiguration("standard", Collections.<String, Object>emptyMap());
         }
 
         /**
-         * Clears a {@link com.tinkerpop.blueprints.Graph} of all data and settings.  Implementations will have different ways of handling this.
+         * Clears a {@link com.tinkerpop.gremlin.structure.Graph} of all data and settings.  Implementations will have different ways of handling this.
          * For a brute force approach, implementers can simply delete data directories provided in the configuration.
          * Implementers may choose a more elegant approach if it exists.
          */
@@ -157,7 +158,7 @@ public abstract class AbstractBlueprintsSuite extends Suite {
     public static abstract class AbstractGraphProvider implements GraphProvider {
 
         /**
-         * Provides a basic configuration for a particular {@link com.tinkerpop.blueprints.Graph} instance and used the {@code graphName}
+         * Provides a basic configuration for a particular {@link com.tinkerpop.gremlin.structure.Graph} instance and used the {@code graphName}
          * to ensure that the instance is unique.  It is up to the Blueprints implementation to determine how
          * best to use the {@code graphName} to ensure uniqueness.  For example, Neo4j, might use the {@code graphName}
          * might be used to create a different sub-directory where the graph is stored.

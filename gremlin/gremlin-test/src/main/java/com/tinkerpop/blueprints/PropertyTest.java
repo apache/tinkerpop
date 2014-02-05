@@ -1,9 +1,12 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.blueprints.Graph.Features.PropertyFeatures;
-import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
-import com.tinkerpop.blueprints.util.StringFactory;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -21,7 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Blueprints Test Suite for {@link com.tinkerpop.blueprints.Property} operations.
+ * Blueprints Test Suite for {@link com.tinkerpop.gremlin.structure.Property} operations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -29,7 +32,7 @@ import static org.junit.Assume.assumeThat;
 public class PropertyTest {
 
     /**
-     * Basic tests for the {@link com.tinkerpop.blueprints.Property} class.
+     * Basic tests for the {@link com.tinkerpop.gremlin.structure.Property} class.
      */
     public static class BasicPropertyTest extends AbstractBlueprintsTest {
         @Test
@@ -41,7 +44,7 @@ public class PropertyTest {
     }
 
     /**
-     * Tests for feature support on {@link com.tinkerpop.blueprints.Property}.  The tests validate if {@link com.tinkerpop.blueprints.Graph.Features.PropertyFeatures}
+     * Tests for feature support on {@link com.tinkerpop.gremlin.structure.Property}.  The tests validate if {@link com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures}
      * should be turned on or off and if the enabled features are properly supported by the implementation.  Note that
      * these tests are run in a separate test class as they are "parameterized" tests.
      */

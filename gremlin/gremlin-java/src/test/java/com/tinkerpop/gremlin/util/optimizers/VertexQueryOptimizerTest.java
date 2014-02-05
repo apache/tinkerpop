@@ -1,15 +1,16 @@
 package com.tinkerpop.gremlin.util.optimizers;
 
-import com.tinkerpop.blueprints.Compare;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.process.oltp.util.optimizers.VertexQueryOptimizer;
+import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.oltp.filter.HasPipe;
-import com.tinkerpop.gremlin.oltp.map.EdgeVertexPipe;
+import com.tinkerpop.gremlin.process.oltp.map.EdgeVertexPipe;
 import com.tinkerpop.gremlin.oltp.map.FlatMapPipe;
-import com.tinkerpop.gremlin.oltp.map.GraphQueryPipe;
+import com.tinkerpop.gremlin.process.oltp.map.GraphQueryPipe;
 import com.tinkerpop.gremlin.oltp.map.VertexQueryPipe;
 import org.junit.Test;
 

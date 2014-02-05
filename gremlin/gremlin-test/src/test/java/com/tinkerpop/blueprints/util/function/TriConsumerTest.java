@@ -1,5 +1,6 @@
 package com.tinkerpop.blueprints.util.function;
 
+import com.tinkerpop.gremlin.structure.util.function.TriConsumer;
 import org.junit.Test;
 
 import java.util.ArrayList;

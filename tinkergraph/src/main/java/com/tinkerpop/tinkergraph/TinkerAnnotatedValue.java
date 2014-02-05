@@ -1,8 +1,8 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.AnnotatedValue;
-import com.tinkerpop.blueprints.util.AnnotatedValueHelper;
-import com.tinkerpop.blueprints.util.StringFactory;
+import com.tinkerpop.gremlin.structure.AnnotatedValue;
+import com.tinkerpop.gremlin.structure.util.AnnotatedValueHelper;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.HashMap;

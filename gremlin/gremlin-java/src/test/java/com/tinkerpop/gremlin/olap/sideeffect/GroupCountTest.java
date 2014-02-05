@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.olap.sideeffect;
 
-import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;

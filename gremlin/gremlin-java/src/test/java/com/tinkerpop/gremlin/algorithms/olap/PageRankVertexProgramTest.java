@@ -1,12 +1,13 @@
 package com.tinkerpop.gremlin.algorithms.olap;
 
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.computer.ComputeResult;
-import com.tinkerpop.blueprints.computer.MessageType;
-import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
+import com.tinkerpop.gremlin.algorithm.olap.PageRankVertexProgram;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.process.olap.ComputeResult;
+import com.tinkerpop.gremlin.process.olap.MessageType;
+import com.tinkerpop.gremlin.structure.query.util.VertexQueryBuilder;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import junit.framework.TestCase;
 

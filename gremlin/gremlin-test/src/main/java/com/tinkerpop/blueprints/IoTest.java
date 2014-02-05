@@ -1,11 +1,14 @@
 package com.tinkerpop.blueprints;
 
-import com.tinkerpop.blueprints.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.blueprints.Graph.Features.VertexPropertyFeatures;
-import com.tinkerpop.blueprints.io.GraphReader;
-import com.tinkerpop.blueprints.io.graphml.GraphMLReader;
-import com.tinkerpop.blueprints.io.graphml.GraphMLWriter;
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import com.tinkerpop.gremlin.structure.io.GraphReader;
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
@@ -28,9 +31,9 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
-import static com.tinkerpop.blueprints.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
 
 /**

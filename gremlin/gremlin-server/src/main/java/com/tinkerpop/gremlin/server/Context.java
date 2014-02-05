@@ -48,7 +48,7 @@ public class Context {
     }
 
     /**
-     * Gets the set of {@link com.tinkerpop.blueprints.Graph} objects configured in Gremlin Server.
+     * Gets the set of {@link com.tinkerpop.gremlin.structure.Graph} objects configured in Gremlin Server.
      */
     public Graphs getGraphs() {
         return graphs;

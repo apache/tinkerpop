@@ -1,13 +1,13 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.Compare;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Strategy;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.query.GraphQuery;
-import com.tinkerpop.blueprints.query.util.DefaultGraphQuery;
-import com.tinkerpop.blueprints.query.util.HasContainer;
+import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Strategy;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.query.GraphQuery;
+import com.tinkerpop.gremlin.structure.query.util.DefaultGraphQuery;
+import com.tinkerpop.gremlin.structure.query.util.HasContainer;
 
 import java.util.ArrayList;
 import java.util.List;

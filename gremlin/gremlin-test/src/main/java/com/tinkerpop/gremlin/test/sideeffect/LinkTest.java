@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.test.sideeffect;
 
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Iterator;

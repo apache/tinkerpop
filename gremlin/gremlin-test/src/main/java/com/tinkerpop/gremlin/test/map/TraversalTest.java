@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.test.map;
 
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;

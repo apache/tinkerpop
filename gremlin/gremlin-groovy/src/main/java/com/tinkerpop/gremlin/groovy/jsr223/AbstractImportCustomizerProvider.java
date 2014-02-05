@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
-import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.gremlin.structure.Direction;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import java.util.ArrayList;

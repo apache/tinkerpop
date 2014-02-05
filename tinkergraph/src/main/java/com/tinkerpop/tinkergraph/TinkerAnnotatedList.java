@@ -1,12 +1,12 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.AnnotatedList;
-import com.tinkerpop.blueprints.AnnotatedValue;
-import com.tinkerpop.blueprints.query.AnnotatedListQuery;
-import com.tinkerpop.blueprints.query.util.DefaultAnnotatedListQuery;
-import com.tinkerpop.blueprints.query.util.HasContainer;
-import com.tinkerpop.blueprints.util.StreamFactory;
-import com.tinkerpop.blueprints.util.StringFactory;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.AnnotatedValue;
+import com.tinkerpop.gremlin.structure.query.AnnotatedListQuery;
+import com.tinkerpop.gremlin.structure.query.util.DefaultAnnotatedListQuery;
+import com.tinkerpop.gremlin.structure.query.util.HasContainer;
+import com.tinkerpop.gremlin.structure.util.StreamFactory;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
