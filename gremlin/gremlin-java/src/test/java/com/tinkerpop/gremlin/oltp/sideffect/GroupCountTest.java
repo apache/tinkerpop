@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.oltp.sideffect;
 
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
+import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;

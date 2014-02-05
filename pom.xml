@@ -22,8 +22,8 @@
         </license>
     </licenses>
     <modules>
-        <module>blueprints</module>
         <module>gremlin</module>
+        <module>tinkergraph</module>
     </modules>
 
     <properties>

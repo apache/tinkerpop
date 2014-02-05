@@ -4,8 +4,8 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Property;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
-import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
+import com.tinkerpop.tinkergraph.TinkerFactory;
+import com.tinkerpop.tinkergraph.TinkerGraph;
 import com.tinkerpop.gremlin.util.As;
 import org.junit.Test;
 

@@ -23,13 +23,8 @@
     <inceptionYear>2009</inceptionYear>
     <dependencies>
         <dependency>
-            <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-core</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-tinkergraph</artifactId>
+            <groupId>com.tinkerpop</groupId>
+            <artifactId>tinkergraph</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.olap.filter;
 
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
+import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.T;
 import com.tinkerpop.gremlin.olap.util.GremlinResult;

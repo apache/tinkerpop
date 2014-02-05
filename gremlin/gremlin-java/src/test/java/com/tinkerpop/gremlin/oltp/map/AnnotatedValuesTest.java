@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.oltp.map;
 
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
+import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.GremlinJ;
 import org.junit.Test;
 

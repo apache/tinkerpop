@@ -35,6 +35,7 @@
 
     <modules>
         <module>gremlin-core</module>
+        <module>gremlin-algorithm</module>
         <module>gremlin-test</module>
         <module>gremlin-java</module>
         <module>gremlin-groovy</module>

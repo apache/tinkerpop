@@ -7,7 +7,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.computer.ComputeResult;
 import com.tinkerpop.blueprints.computer.MessageType;
 import com.tinkerpop.blueprints.query.util.VertexQueryBuilder;
-import com.tinkerpop.blueprints.tinkergraph.TinkerFactory;
+import com.tinkerpop.tinkergraph.TinkerFactory;
 import junit.framework.TestCase;
 
 import java.util.HashMap;

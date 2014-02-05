@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.util.optimizers;
 
-import com.tinkerpop.blueprints.tinkergraph.TinkerGraph;
+import com.tinkerpop.tinkergraph.TinkerGraph;
 import com.tinkerpop.gremlin.GremlinJ;
 import org.junit.Test;
 

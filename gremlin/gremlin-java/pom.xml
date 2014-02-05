@@ -28,19 +28,14 @@
     <inceptionYear>2009</inceptionYear>
     <dependencies>
         <dependency>
-            <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-core</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.tinkerpop.gremlin</groupId>
             <artifactId>gremlin-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <!-- TESTING -->
         <dependency>
-            <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-tinkergraph</artifactId>
+            <groupId>com.tinkerpop</groupId>
+            <artifactId>tinkergraph</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
