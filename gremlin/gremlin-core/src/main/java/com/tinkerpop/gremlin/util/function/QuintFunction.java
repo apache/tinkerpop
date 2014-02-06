@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util.function;
+package com.tinkerpop.gremlin.util.function;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -12,12 +12,14 @@ import java.util.function.Function;
  * @param <A> the type of the first argument in the function
  * @param <B> the type of the second argument in the function
  * @param <C> the type of the third argument in the function
+ * @param <D> the type of the fourth argument in the function
+ * @param <E> the type of the fifth argument in the function
  * @param <R> the type of the result of the function
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @FunctionalInterface
-public interface TriFunction<A,B,C,R> {
+public interface QuintFunction<A,B,C,D,E,R> {
 
     /**
      * Applies this function to the given arguments.
@@ -25,9 +27,11 @@ public interface TriFunction<A,B,C,R> {
      * @param a the first argument to the function
      * @param b the second argument to the function
      * @param c the third argument to the function
+     * @param d the fourth argument to the function
+     * @param e the fifth argument to the function
      * @return the function result
      */
-    public R apply(final A a, final B b, final C c);
+    public R apply(final A a, final B b, final C c, final D d, final E e);
 
     /**
      * Returns a composed function that first applies this function to its input, and then applies the after function
@@ -39,8 +43,8 @@ public interface TriFunction<A,B,C,R> {
      * @return a composed function that first applies this function and then applies the {@code after} function.
      * @throws NullPointerException if {@code after} is null
      */
-    public default <V> TriFunction<A, B, C, V> andThen(final Function<? super R, ? extends V> after) {
+    public default <V> QuintFunction<A, B, C, D, E, V> andThen(final Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
-        return (A a, B b, C c) -> after.apply(apply(a, b, c));
+        return (A a, B b, C c, D d, E e) -> after.apply(apply(a, b, c, d, e));
     }
 }

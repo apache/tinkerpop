@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util.function;
+package com.tinkerpop.gremlin.util.function;
 
 import org.junit.Test;
 
@@ -9,17 +9,17 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TriFunctionTest {
+public class HexFunctionTest {
     @Test
     public void shouldApplyCurrentFunctionAndThenAnotherSuppliedOne() {
-        final TriFunction<String, String, String, String> f = (a,b,c) -> a + b + c;
+        final HexFunction<String, String, String, String, String, String, String> f = (a,b,c,d,e,g) -> a + b + c + d + e + g;
         final UnaryOperator<String> after = (s) -> s + "last";
-        assertEquals("123last", f.andThen(after).apply("1", "2", "3"));
+        assertEquals("123456last", f.andThen(after).apply("1", "2", "3", "4", "5", "6"));
     }
 
     @Test(expected = NullPointerException.class)
     public void shouldThrowIfAfterFunctionIsNull() {
-        final TriFunction<String, String, String, String> f = (a,b,c) -> a + b + c;
+        final HexFunction<String, String, String, String, String, String, String> f = (a,b,c,d,e,g) -> a + b + c + e + g;
         f.andThen(null);
     }
 }

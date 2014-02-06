@@ -41,7 +41,7 @@ public class IoTest extends AbstractBlueprintsTest {
 
     // todo: should expand test here significantly.  see blueprints2
 
-    private static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure//util/io/graphml/";
+    private static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/util/io/graphml/";
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)

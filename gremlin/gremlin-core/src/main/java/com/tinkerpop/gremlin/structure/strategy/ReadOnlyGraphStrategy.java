@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.function.TriFunction;
+import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;

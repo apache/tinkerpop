@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.GraphQuery;
-import com.tinkerpop.gremlin.structure.util.function.TriFunction;
+import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -52,7 +52,7 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link com.tinkerpop.gremlin.structure.util.function.TriFunction} that enhances the features of
+     * Construct a {@link com.tinkerpop.gremlin.util.function.TriFunction} that enhances the features of
      * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)}.
      *
      * @param ctx the context within which this strategy function is called

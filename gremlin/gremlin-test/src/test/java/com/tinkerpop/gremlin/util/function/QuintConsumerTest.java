@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util.function;
+package com.tinkerpop.gremlin.util.function;
 
 import org.junit.Test;
 

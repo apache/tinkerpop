@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util.function;
+package com.tinkerpop.gremlin.util.function;
 
 import org.junit.Test;
 
@@ -9,17 +9,17 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class QuintFunctionTest {
+public class QuadFunctionTest {
     @Test
     public void shouldApplyCurrentFunctionAndThenAnotherSuppliedOne() {
-        final QuintFunction<String, String, String, String, String, String> f = (a,b,c,d,e) -> a + b + c + d + e;
+        final QuadFunction<String, String, String, String, String> f = (a,b,c,d) -> a + b + c + d;
         final UnaryOperator<String> after = (s) -> s + "last";
-        assertEquals("12345last", f.andThen(after).apply("1", "2", "3", "4", "5"));
+        assertEquals("1234last", f.andThen(after).apply("1", "2", "3", "4"));
     }
 
     @Test(expected = NullPointerException.class)
     public void shouldThrowIfAfterFunctionIsNull() {
-        final QuintFunction<String, String, String, String, String, String> f = (a,b,c,d,e) -> a + b + c + e;
+        final QuadFunction<String, String, String, String, String> f = (a,b,c,d) -> a + b + c;
         f.andThen(null);
     }
 }
