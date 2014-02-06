@@ -1,8 +1,8 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.blueprints.AbstractBlueprintsSuite;
-import com.tinkerpop.blueprints.BlueprintsPerformanceSuite;
-import com.tinkerpop.blueprints.BlueprintsStandardSuite;
+import com.tinkerpop.gremlin.structure.blueprints.AbstractBlueprintsSuite;
+import com.tinkerpop.gremlin.structure.blueprints.BlueprintsPerformanceSuite;
+import com.tinkerpop.gremlin.structure.blueprints.BlueprintsStandardSuite;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runner.RunWith;

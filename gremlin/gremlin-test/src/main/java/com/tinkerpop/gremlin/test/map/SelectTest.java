@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.test.map;
 
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
 

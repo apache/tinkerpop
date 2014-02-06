@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.algorithm.generator;
 
-import com.tinkerpop.blueprints.AbstractBlueprintsTest;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.blueprints.AbstractBlueprintsTest;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
