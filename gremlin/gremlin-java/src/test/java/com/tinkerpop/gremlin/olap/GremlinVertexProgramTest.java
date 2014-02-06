@@ -1,28 +1,19 @@
 package com.tinkerpop.gremlin.olap;
 
-import com.tinkerpop.gremlin.process.olap.gremlin.GremlinCounters;
-import com.tinkerpop.gremlin.process.olap.gremlin.GremlinPaths;
-import com.tinkerpop.gremlin.process.olap.gremlin.GremlinVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.process.olap.ComputeResult;
-import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
-import com.tinkerpop.gremlin.GremlinJ;
-import com.tinkerpop.gremlin.process.olap.gremlin.GremlinResult;
+import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GremlinVertexProgramTest {
 
-    @Test
+    /*@Test
     public void testGremlinOLAP() throws Exception {
         final Graph g = TinkerFactory.createClassic();
         final ComputeResult result =
@@ -50,13 +41,13 @@ public class GremlinVertexProgramTest {
                 tracker.getDoneObjectTracks().forEach((a, b) -> Stream.generate(() -> 1).limit(b).forEach(t -> System.out.println("==>" + a)));
             });
         }
-    }
+    }*/
 
     @Test
     public void testIterable() throws Exception {
         final Graph g = TinkerFactory.createClassic();
         final BiFunction<String, Iterator<Integer>, Long> reduction = (k, v) -> StreamFactory.stream(v).count();
-        new GremlinResult<>(g, () -> GremlinJ.of().v("1").both().both().value("name")).forEachRemaining(System.out::println);
+        //   new GremlinResult<>(g, () -> GremlinJ.of().v("1").both().both().value("name")).forEachRemaining(System.out::println);
 
     }
 }

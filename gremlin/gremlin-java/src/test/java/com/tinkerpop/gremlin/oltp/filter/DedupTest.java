@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.oltp.filter;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
-import com.tinkerpop.gremlin.GremlinJ;
 import com.tinkerpop.gremlin.test.ComplianceTest;
 import org.junit.Test;
 
@@ -20,11 +19,11 @@ public class DedupTest extends com.tinkerpop.gremlin.test.filter.DedupTest {
 
     @Test
     public void g_V_both_dedup_name() {
-        super.g_V_both_dedup_name(GremlinJ.of(g).V().both().dedup().value("name"));
+        //super.g_V_both_dedup_name(GremlinJ.of(g).V().both().dedup().value("name"));
     }
 
     @Test
     public void g_V_both_dedupXlangX_name() {
-        super.g_V_both_dedupXlangX_name(GremlinJ.of(g).V().both().dedup(v -> v.getProperty("lang").orElse(null)).value("name"));
+        //super.g_V_both_dedupXlangX_name(GremlinJ.of(g).V().both().dedup(v -> v.getProperty("lang").orElse(null)).value("name"));
     }
 }
