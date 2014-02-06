@@ -9,7 +9,6 @@ public class FunctionRing<A, B> {
 
     public Function<A, B>[] functions;
     private int currentFunction = -1;
-    private static final Function IDENTITY = a -> a;
 
     public FunctionRing(final Function... functions) {
         this.functions = functions;
@@ -17,7 +16,7 @@ public class FunctionRing<A, B> {
 
     public Function<A, B> next() {
         if (this.functions.length == 0) {
-            return IDENTITY;
+            return (Function<A, B>) Function.identity();
         } else {
             this.currentFunction = (this.currentFunction + 1) % this.functions.length;
             return this.functions[this.currentFunction];
