@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.oltp.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -76,14 +76,6 @@ public interface Traversal<S, E> extends Iterator<E> {
 
     public Optimizers optimizers();
 
-    /*public Traversal<Vertex, Vertex> V();
-
-    public Traversal<Edge, Edge> E();
-
-    public Traversal<Vertex, Vertex> v(final Object... ids);
-
-    public Traversal<Edge, Edge> e(final Object... ids);*/
-
     public void addStarts(final Iterator<Holder<S>> starts);
 
     public <S, E> Traversal<S, E> addPipe(final com.tinkerpop.gremlin.process.Pipe<?, E> pipe);

@@ -3,9 +3,9 @@ package com.tinkerpop.gremlin.process.oltp;
 import com.tinkerpop.gremlin.process.Pipe;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.util.EmptyPipe;
-import com.tinkerpop.gremlin.util.ExpandablePipeIterator;
-import com.tinkerpop.gremlin.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.EmptyPipe;
+import com.tinkerpop.gremlin.process.util.ExpandablePipeIterator;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

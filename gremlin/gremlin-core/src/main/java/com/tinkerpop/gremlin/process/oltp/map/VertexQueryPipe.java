@@ -5,8 +5,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.Iterator;
 

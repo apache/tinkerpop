@@ -1,7 +1,8 @@
-package com.tinkerpop.gremlin.util;
+package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.util.EmptyPipe;
 
 import java.util.Iterator;
 import java.util.LinkedList;

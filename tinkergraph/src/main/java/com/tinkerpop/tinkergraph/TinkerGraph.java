@@ -13,8 +13,8 @@ import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.GraphHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.util.DefaultTraversal;
-import com.tinkerpop.gremlin.util.HolderIterator;
+import com.tinkerpop.gremlin.process.util.DefaultTraversal;
+import com.tinkerpop.gremlin.process.util.HolderIterator;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;

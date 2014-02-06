@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.util;
+package com.tinkerpop.gremlin.process.util;
 
 import java.util.NoSuchElementException;
 

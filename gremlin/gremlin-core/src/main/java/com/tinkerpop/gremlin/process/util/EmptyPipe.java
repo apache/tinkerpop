@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.util;
+package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Holder;

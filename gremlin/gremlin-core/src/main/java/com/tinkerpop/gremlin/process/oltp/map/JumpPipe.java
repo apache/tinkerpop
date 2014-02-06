@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Pipe;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
-import com.tinkerpop.gremlin.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.Iterator;
 import java.util.function.Predicate;

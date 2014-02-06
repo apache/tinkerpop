@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.MicroPath;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Pipe;
-import com.tinkerpop.gremlin.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

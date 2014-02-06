@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.AbstractPipe;
 import com.tinkerpop.gremlin.process.oltp.util.PipelineRing;
 import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
-import com.tinkerpop.gremlin.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

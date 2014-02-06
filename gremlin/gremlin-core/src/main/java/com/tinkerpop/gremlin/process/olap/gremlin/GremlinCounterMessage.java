@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Pipe;
-import com.tinkerpop.gremlin.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.HashMap;
 import java.util.Map;
