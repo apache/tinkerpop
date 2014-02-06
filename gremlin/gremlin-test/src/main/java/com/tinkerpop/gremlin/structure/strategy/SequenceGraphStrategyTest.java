@@ -1,12 +1,10 @@
-package com.tinkerpop.gremlin.structure.blueprints.strategy;
+package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.structure.AbstractBlueprintsTest;
+import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.blueprints.AbstractBlueprintsTest;
-import com.tinkerpop.gremlin.structure.blueprints.FeatureRequirement;
-import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategy;
 import org.junit.Test;
 
 import java.util.ArrayList;

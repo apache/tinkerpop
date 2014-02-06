@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.algorithm.generator;
 
+import com.tinkerpop.gremlin.structure.AbstractBlueprintsTest;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.blueprints.AbstractBlueprintsTest;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Triplet;

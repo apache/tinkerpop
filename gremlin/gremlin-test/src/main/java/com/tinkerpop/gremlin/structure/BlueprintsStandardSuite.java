@@ -1,11 +1,11 @@
-package com.tinkerpop.gremlin.structure.blueprints;
+package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
 import com.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
-import com.tinkerpop.gremlin.structure.blueprints.strategy.IdGraphStrategyTest;
-import com.tinkerpop.gremlin.structure.blueprints.strategy.PartitionGraphStrategyTest;
-import com.tinkerpop.gremlin.structure.blueprints.strategy.ReadOnlyGraphStrategyTest;
-import com.tinkerpop.gremlin.structure.blueprints.strategy.SequenceGraphStrategyTest;
+import com.tinkerpop.gremlin.structure.strategy.IdGraphStrategyTest;
+import com.tinkerpop.gremlin.structure.strategy.PartitionGraphStrategyTest;
+import com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategyTest;
+import com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategyTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 

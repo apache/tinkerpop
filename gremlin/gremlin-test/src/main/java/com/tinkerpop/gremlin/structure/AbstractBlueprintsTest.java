@@ -1,6 +1,5 @@
-package com.tinkerpop.gremlin.structure.blueprints;
+package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;

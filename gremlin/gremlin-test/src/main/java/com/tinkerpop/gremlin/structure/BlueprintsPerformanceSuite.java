@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.blueprints;
+package com.tinkerpop.gremlin.structure;
 
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;

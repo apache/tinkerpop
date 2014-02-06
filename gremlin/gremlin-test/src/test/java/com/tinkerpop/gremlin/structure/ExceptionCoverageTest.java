@@ -1,9 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.structure.blueprints.ExceptionConsistencyTest;
-import com.tinkerpop.gremlin.structure.blueprints.ExceptionCoverage;
-import com.tinkerpop.gremlin.structure.blueprints.FeatureSupportTest;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -14,7 +11,7 @@ import java.util.stream.Stream;
 import static org.junit.Assert.assertTrue;
 
 /**
- * A set of tests that ensure that the {@link com.tinkerpop.gremlin.structure.blueprints.ExceptionConsistencyTest} covers all defined Blueprints exceptions.
+ * A set of tests that ensure that the {@link ExceptionConsistencyTest} covers all defined Blueprints exceptions.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

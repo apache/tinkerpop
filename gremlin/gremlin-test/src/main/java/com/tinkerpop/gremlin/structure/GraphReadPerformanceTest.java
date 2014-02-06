@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.blueprints;
+package com.tinkerpop.gremlin.structure;
 
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import com.carrotsearch.junitbenchmarks.BenchmarkRule;
@@ -9,8 +9,6 @@ import com.carrotsearch.junitbenchmarks.annotation.LabelType;
 import com.tinkerpop.gremlin.algorithm.generator.Distribution;
 import com.tinkerpop.gremlin.algorithm.generator.DistributionGenerator;
 import com.tinkerpop.gremlin.algorithm.generator.PowerLawDistribution;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule;
 import org.junit.Test;

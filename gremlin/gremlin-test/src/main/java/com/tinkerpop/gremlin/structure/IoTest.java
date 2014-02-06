@@ -1,10 +1,7 @@
-package com.tinkerpop.gremlin.structure.blueprints;
+package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
@@ -44,7 +41,7 @@ public class IoTest extends AbstractBlueprintsTest {
 
     // todo: should expand test here significantly.  see blueprints2
 
-    private static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/blueprints/util/io/graphml/";
+    private static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure//util/io/graphml/";
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
