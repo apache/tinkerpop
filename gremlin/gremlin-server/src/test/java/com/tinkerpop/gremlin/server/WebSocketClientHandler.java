@@ -55,7 +55,7 @@ class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     @Override
-    protected void messageReceived(final ChannelHandlerContext ctx, final Object msg) throws Exception {
+    protected void channelRead0(final ChannelHandlerContext ctx, final Object msg) throws Exception {
         final Channel ch = ctx.channel();
         if (!handshaker.isHandshakeComplete()) {
             // web socket client connected
