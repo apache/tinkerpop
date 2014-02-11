@@ -1,5 +1,11 @@
 package com.tinkerpop.tinkergraph;
 
+import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.SimpleHolder;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
+import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -7,7 +13,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.query.VertexQuery;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -48,7 +53,7 @@ class TinkerVertex extends TinkerElement implements Vertex {
         // the argument refer to the arguments to setProperty. Note that arguments passes through the GraphStrategy
         // implementations first so at this point the values within them may not be the same as they originally were.
         // The composed function must then be applied with the arguments originally passed to setProperty.
-        this.graph.strategy.compose(s -> s.<V>getElementSetProperty(strategyContext), (k,v) -> {
+        this.graph.strategy.compose(s -> s.<V>getElementSetProperty(strategyContext), (k, v) -> {
             ElementHelper.validateProperty(k, v);
             if (TinkerGraphComputer.State.STANDARD == this.state) {
                 final Property oldProperty = super.getProperty(k);
@@ -111,5 +116,25 @@ class TinkerVertex extends TinkerElement implements Vertex {
 
     public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {
         return new TinkerVertex(this, state, centricId, vertexMemory);
+    }
+
+    //////////////////////
+
+    public <A extends Traversal<Vertex, Vertex>> A out(final String... labels) {
+        final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
+        return (A) traversal.out(labels);
+    }
+
+    public <A extends Traversal<Vertex, Vertex>> A in(final String... labels) {
+        final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
+        return (A) traversal.in(labels);
+    }
+
+    public <A extends Traversal<Vertex, Vertex>> A both(final String... labels) {
+        final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
+        return (A) traversal.both(labels);
     }
 }

@@ -1,7 +1,7 @@
-package com.tinkerpop.gremlin.oltp.filter;
+package com.tinkerpop.tinkergraph.process.oltp.filter;
 
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.process.oltp.ComplianceTest;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
@@ -19,17 +19,17 @@ public class FilterTest extends com.tinkerpop.gremlin.process.oltp.filter.Filter
 
     @Test
     public void g_V_filterXfalseX() {
-        //  super.g_V_filterXfalseX(GremlinJ.of(g).V().filter(v -> false));
+        super.g_V_filterXfalseX(g.V().filter(v -> false));
     }
 
     @Test
     public void g_V_filterXtrueX() {
-        //   super.g_V_filterXtrueX(GremlinJ.of(g).V().filter(v -> true));
+        super.g_V_filterXtrueX(g.V().filter(v -> true));
     }
 
     @Test
     public void g_V_filterXlang_eq_javaX() {
-        // super.g_V_filterXlang_eq_javaX(GremlinJ.of(g).V().filter(v -> v.get().<String>getProperty("lang").orElse("none").equals("java")));
+        super.g_V_filterXlang_eq_javaX(g.V().filter(v -> v.get().<String>getProperty("lang").orElse("none").equals("java")));
     }
 
     @Test
@@ -39,9 +39,9 @@ public class FilterTest extends com.tinkerpop.gremlin.process.oltp.filter.Filter
 
     @Test
     public void g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
-        //   super.g_V_filterXname_startsWith_m_OR_name_startsWith_pX(GremlinJ.of(g).V().filter(v -> {
-        //       final String name = v.get().getValue("name");
-        //       return name.startsWith("m") || name.startsWith("p");
-        //   }));
+        super.g_V_filterXname_startsWith_m_OR_name_startsWith_pX(g.V().filter(v -> {
+            final String name = v.get().getValue("name");
+            return name.startsWith("m") || name.startsWith("p");
+        }));
     }
 }

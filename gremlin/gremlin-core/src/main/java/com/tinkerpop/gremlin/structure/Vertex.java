@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.query.VertexQuery;
 
 /**
@@ -19,6 +20,12 @@ public interface Vertex extends Element {
     public VertexQuery query();
 
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
+
+    public <A extends Traversal<Vertex, Vertex>> A out(final String... labels);
+
+    public <A extends Traversal<Vertex, Vertex>> A in(final String... labels);
+
+    public <A extends Traversal<Vertex, Vertex>> A both(final String... labels);
 
     public static class Exceptions {
         public static UnsupportedOperationException userSuppliedIdsNotSupported() {

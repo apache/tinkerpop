@@ -1,7 +1,8 @@
-package com.tinkerpop.gremlin.oltp.filter;
+package com.tinkerpop.tinkergraph.process.oltp.filter;
 
-import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.oltp.ComplianceTest;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
@@ -20,18 +21,17 @@ public class HasTest extends com.tinkerpop.gremlin.process.oltp.filter.HasTest {
 
     @Test
     public void g_V_hasXname_markoX() {
-        //   super.g_V_hasXname_markoX(GremlinJ.of(g, false).V().has("name", "marko"));   // TODO: Do this everywhere? More programmatic way to do this?
-        //    super.g_V_hasXname_markoX(GremlinJ.of(g).V().has("name", "marko"));
+        super.g_V_hasXname_markoX(g.V().has("name", "marko"));
     }
 
     @Test
     public void g_V_hasXname_blahX() {
-        //  super.g_V_hasXname_blahX(GremlinJ.of(g).V().has("name", "blah"));
+        super.g_V_hasXname_blahX(g.V().has("name", "blah"));
     }
 
     @Test
     public void g_V_hasXblahX() {
-        //  super.g_V_hasXblahX(GremlinJ.of(g).V().has("blah"));
+        super.g_V_hasXblahX(g.V().has("blah"));
     }
 
     @Test
@@ -41,12 +41,12 @@ public class HasTest extends com.tinkerpop.gremlin.process.oltp.filter.HasTest {
 
     @Test
     public void g_V_hasXage_gt_30X() {
-        //  super.g_V_hasXage_gt_30X(GremlinJ.of(g).V().has("age", T.gt, 30));
+        super.g_V_hasXage_gt_30X(g.V().has("age", T.gt, 30));
     }
 
     @Test
     public void g_E_hasXlabelXknowsX() {
-        //  super.g_E_hasXlabelXknowsX(GremlinJ.of(g).E().has("label", "knows"));
+        //super.g_E_hasXlabelXknowsX(g.E().has("label", "knows"));
     }
 
     @Test

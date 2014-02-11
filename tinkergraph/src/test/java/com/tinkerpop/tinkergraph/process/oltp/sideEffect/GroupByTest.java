@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.oltp.sideffect;
+package com.tinkerpop.tinkergraph.process.oltp.sideEffect;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;

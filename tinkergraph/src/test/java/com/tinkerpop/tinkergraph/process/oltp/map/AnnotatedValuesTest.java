@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.oltp.map;
+package com.tinkerpop.tinkergraph.process.oltp.map;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
@@ -23,6 +23,6 @@ public class AnnotatedValuesTest extends com.tinkerpop.gremlin.process.oltp.map.
 
     @Test
     public void g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value() {
-        // super.g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value(GremlinJ.of(g).V().annotatedValues("locations").has("startTime", 2005).value());
+        super.g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value(g.V().annotatedValues("locations").has("startTime", 2005).value());
     }
 }

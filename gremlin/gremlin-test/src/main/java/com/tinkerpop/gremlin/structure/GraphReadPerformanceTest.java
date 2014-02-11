@@ -64,7 +64,7 @@ public class GraphReadPerformanceTest {
 
             // read the vertices 10 times over
             for (int ix = 0; ix < 10; ix++) {
-                ids.stream().map(g::v).map(v->v.get()).forEach(v-> {
+                ids.stream().map(g::v).forEach(v -> {
                     assertNotNull(v.getValue("name"));
                     counter.incrementAndGet();
                 });

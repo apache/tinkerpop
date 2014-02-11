@@ -1,7 +1,7 @@
-package com.tinkerpop.gremlin.oltp.map;
+package com.tinkerpop.tinkergraph.process.oltp.map;
 
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.process.oltp.ComplianceTest;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
@@ -19,22 +19,22 @@ public class TraversalTest extends com.tinkerpop.gremlin.process.oltp.map.Traver
 
     @Test
     public void g_V() {
-        // super.g_V(GremlinJ.of(g).V());
+        super.g_V(g.V());
     }
 
     @Test
     public void g_v1_out() {
-        // super.g_v1_out(GremlinJ.of(g).v(1).out());
+        super.g_v1_out(g.v(1).out());
     }
 
     @Test
     public void g_v2_in() {
-        // super.g_v2_in(GremlinJ.of(g).v(2).in());
+        super.g_v2_in(g.v(2).in());
     }
 
     @Test
     public void g_v4_both() {
-        // super.g_v4_both(GremlinJ.of(g).v(4).both());
+        super.g_v4_both(g.v(4).both());
     }
 
     @Test

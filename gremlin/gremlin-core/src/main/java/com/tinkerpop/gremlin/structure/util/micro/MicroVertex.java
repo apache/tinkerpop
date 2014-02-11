@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.micro;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -34,11 +35,23 @@ public class MicroVertex extends MicroElement implements Vertex {
     }
 
     public Vertex inflate(final Graph graph) {
-        return graph.v(this.id).orElseThrow(() -> new IllegalStateException("The micro vertex could not be found at the provided graph"));
+        return graph.v(this.id);
     }
 
     public static MicroVertex deflate(final Vertex vertex) {
         return new MicroVertex(vertex);
+    }
+
+    public <A extends Traversal<Vertex, Vertex>> A out(final String... labels) {
+        throw new IllegalStateException();
+    }
+
+    public <A extends Traversal<Vertex, Vertex>> A in(final String... labels) {
+        throw new IllegalStateException();
+    }
+
+    public <A extends Traversal<Vertex, Vertex>> A both(final String... labels) {
+        throw new IllegalStateException();
     }
 
 }

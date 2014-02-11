@@ -1,7 +1,7 @@
-package com.tinkerpop.gremlin.oltp.filter;
+package com.tinkerpop.tinkergraph.process.oltp.filter;
 
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.process.oltp.ComplianceTest;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
@@ -25,7 +25,7 @@ public class RangeTest extends com.tinkerpop.gremlin.process.oltp.filter.RangeTe
 
     @Test
     public void g_V_outX1X_rangeX0_2X() {
-        // super.g_V_outX1X_rangeX0_2X(GremlinJ.of(g).V().out(1).range(0, 2));
+        super.g_V_outX1X_rangeX0_2X(g.V().out(1).range(0, 2));
     }
 
     @Test

@@ -84,8 +84,8 @@ public class MicroProperty<V> implements Property, Serializable {
 
     public Property<V> inflate(final Graph graph) {
         final Element element = (this.getElement() instanceof Vertex) ?
-            graph.v(this.getElement().getId()).orElseThrow(() -> new IllegalStateException("The micro vertex could not be found at the provided graph")) :
-            graph.e(this.getElement().getId()).orElseThrow(() -> new IllegalStateException("The micro edge could not be found at the provided graph"));
+                graph.v(this.getElement().getId()) :
+                graph.e(this.getElement().getId());
         return Optional.<Property<V>>of(element.getProperty(this.key)).orElseThrow(() -> new IllegalStateException("The micro property could not be found at the provided graph"));
     }
 

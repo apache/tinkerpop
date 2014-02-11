@@ -1,20 +1,21 @@
 package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.process.oltp.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.util.DefaultTraversal;
+import com.tinkerpop.gremlin.process.util.HolderIterator;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.query.GraphQuery;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.GraphHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
-import com.tinkerpop.gremlin.process.util.HolderIterator;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
@@ -129,6 +130,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     public <A extends Traversal<?, Vertex>> A V() {
         Traversal traversal = new DefaultTraversal<Object, Vertex>();
+        traversal.optimizers().register(new HolderOptimizer());
         traversal.addStarts(new HolderIterator<>(this.query().vertices().iterator()));
         return (A) traversal;
     }

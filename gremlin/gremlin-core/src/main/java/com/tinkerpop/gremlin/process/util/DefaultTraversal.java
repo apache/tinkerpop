@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.util;
 
+import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Memory;
 import com.tinkerpop.gremlin.process.Optimizers;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.map.IdentityPipe;
 
 import java.util.ArrayList;
@@ -17,6 +17,7 @@ import java.util.List;
 public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     private final List<Pipe> pipes = new ArrayList<>();
+    private final Optimizers optimizers = new DefaultOptimizers();
 
     public DefaultTraversal() {
         this.addPipe(new IdentityPipe(this));
@@ -31,7 +32,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public Optimizers optimizers() {
-        return null;
+        return optimizers;
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {

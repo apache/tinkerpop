@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.PathHolder;
 import com.tinkerpop.gremlin.process.Pipe;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 
@@ -32,10 +33,9 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
     }
 
     public Holder<T> next() {
-        return new SimpleHolder<>(this.iterator.next());
-        // return this.trackPaths ?
-        //         new PathHolder<>(this.pipe.getAs(), this.iterator.next()) :
-        //         new SimpleHolder<>(this.iterator.next());
+        return this.trackPaths ?
+                new PathHolder<>(this.pipe.getAs(), this.iterator.next()) :
+                new SimpleHolder<>(this.iterator.next());
     }
 }
 

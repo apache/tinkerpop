@@ -1,7 +1,8 @@
-package com.tinkerpop.gremlin.oltp.map;
+package com.tinkerpop.tinkergraph.process.oltp.map;
 
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.process.oltp.ComplianceTest;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
@@ -32,9 +33,9 @@ public class PathTest extends com.tinkerpop.gremlin.process.oltp.map.PathTest {
 
     @Test
     public void g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX() {
-        //  super.g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX(
-        //          GremlinJ.of(g).V().as("x").out()
-        //                 .jump("x", o -> o.getLoops() < 2)
-        //                 .path(v -> v, v -> ((Vertex) v).getValue("name"), v -> ((Vertex) v).getValue("lang")));
+//        super.g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX(
+ //               g.V().as("x").out()
+  //                      .jump("x", o -> o.getLoops() < 2)
+   //                     .path(v -> v, v -> ((Vertex) v).getValue("name"), v -> ((Vertex) v).getValue("lang")));
     }
 }

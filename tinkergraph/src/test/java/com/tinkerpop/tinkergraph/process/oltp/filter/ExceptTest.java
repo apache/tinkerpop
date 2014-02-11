@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.oltp.filter;
+package com.tinkerpop.tinkergraph.process.oltp.filter;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.process.oltp.ComplianceTest;

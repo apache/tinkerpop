@@ -41,7 +41,7 @@ public class MicroEdge extends MicroElement implements Edge {
     }
 
     public Edge inflate(final Graph graph) {
-        return graph.e(this.id).orElseThrow(() -> new IllegalStateException("The micro edge could not be found at the provided graph"));
+        return graph.e(this.id);
     }
 
     public static MicroEdge deflate(final Edge edge) {
