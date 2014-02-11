@@ -37,7 +37,7 @@
         <module>gremlin-core</module>
         <module>gremlin-algorithm</module>
         <module>gremlin-test</module>
-        <module>gremlin-java</module>
+        <!--<module>gremlin-java</module>-->
         <module>gremlin-groovy</module>
         <module>gremlin-server</module>
     </modules>
