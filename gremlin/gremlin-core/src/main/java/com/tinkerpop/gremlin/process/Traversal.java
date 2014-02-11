@@ -78,7 +78,7 @@ public interface Traversal<S, E> extends Iterator<E> {
 
     public void addStarts(final Iterator<Holder<S>> starts);
 
-    public <S, E> Traversal<S, E> addPipe(final com.tinkerpop.gremlin.process.Pipe<?, E> pipe);
+    public <S, E> Traversal<S, E> addPipe(final Pipe<?, E> pipe);
 
     public List<Pipe> getPipes();
 

@@ -1,14 +1,14 @@
 package com.tinkerpop.gremlin.oltp.sideffect;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.test.ComplianceTest;
+import com.tinkerpop.gremlin.process.oltp.ComplianceTest;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupCountTest extends com.tinkerpop.gremlin.test.sideeffect.GroupCountTest {
+public class GroupCountTest extends com.tinkerpop.gremlin.process.oltp.sideEffect.GroupCountTest {
 
     private final Graph g = TinkerFactory.createClassic();
 

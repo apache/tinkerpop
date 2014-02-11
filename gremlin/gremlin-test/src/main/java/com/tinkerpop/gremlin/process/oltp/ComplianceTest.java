@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.test;
+package com.tinkerpop.gremlin.process.oltp;
 
 import org.junit.Test;
 

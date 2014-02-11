@@ -7,7 +7,7 @@ import org.junit.Test;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupByTest extends com.tinkerpop.gremlin.test.sideeffect.GroupByTest {
+public class GroupByTest extends com.tinkerpop.gremlin.process.oltp.sideEffect.GroupByTest {
 
     private final Graph g = TinkerFactory.createClassic();
 

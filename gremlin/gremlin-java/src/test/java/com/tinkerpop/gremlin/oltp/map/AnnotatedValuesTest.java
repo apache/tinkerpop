@@ -7,7 +7,7 @@ import org.junit.Test;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AnnotatedValuesTest extends com.tinkerpop.gremlin.test.map.AnnotatedValuesTest {
+public class AnnotatedValuesTest extends com.tinkerpop.gremlin.process.oltp.map.AnnotatedValuesTest {
 
     Graph g = TinkerFactory.createModern();
 

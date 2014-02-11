@@ -1,14 +1,14 @@
 package com.tinkerpop.gremlin.olap.sideeffect;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.test.ComplianceTest;
+import com.tinkerpop.gremlin.process.oltp.ComplianceTest;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TreeTest extends com.tinkerpop.gremlin.test.sideeffect.TreeTest {
+public class TreeTest extends com.tinkerpop.gremlin.process.oltp.sideEffect.TreeTest {
 
     private final Graph g = TinkerFactory.createClassic();
 

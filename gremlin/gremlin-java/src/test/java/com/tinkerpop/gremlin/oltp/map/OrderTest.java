@@ -1,14 +1,14 @@
 package com.tinkerpop.gremlin.oltp.map;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.test.ComplianceTest;
+import com.tinkerpop.gremlin.process.oltp.ComplianceTest;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class OrderTest extends com.tinkerpop.gremlin.test.map.OrderTest {
+public class OrderTest extends com.tinkerpop.gremlin.process.oltp.map.OrderTest {
 
     Graph g = TinkerFactory.createClassic();
 

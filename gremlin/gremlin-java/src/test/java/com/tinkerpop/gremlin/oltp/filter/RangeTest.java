@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.oltp.filter;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.test.ComplianceTest;
+import com.tinkerpop.gremlin.process.oltp.ComplianceTest;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
@@ -9,7 +9,7 @@ import org.junit.Test;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class RangeTest extends com.tinkerpop.gremlin.test.filter.RangeTest {
+public class RangeTest extends com.tinkerpop.gremlin.process.oltp.filter.RangeTest {
 
     private final Graph g = TinkerFactory.createClassic();
 

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.test.filter;
+package com.tinkerpop.gremlin.process.oltp.filter;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;

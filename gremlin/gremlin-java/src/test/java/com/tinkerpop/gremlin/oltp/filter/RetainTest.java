@@ -1,14 +1,14 @@
 package com.tinkerpop.gremlin.oltp.filter;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.test.ComplianceTest;
+import com.tinkerpop.gremlin.process.oltp.ComplianceTest;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RetainTest extends com.tinkerpop.gremlin.test.filter.RetainTest {
+public class RetainTest extends com.tinkerpop.gremlin.process.oltp.filter.RetainTest {
 
     final Graph g = TinkerFactory.createClassic();
 

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.test.map;
+package com.tinkerpop.gremlin.process.oltp.map;
 
 import java.util.ArrayList;
 import java.util.Iterator;

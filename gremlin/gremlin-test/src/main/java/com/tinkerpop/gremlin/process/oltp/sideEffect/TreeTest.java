@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.test.sideeffect;
+package com.tinkerpop.gremlin.process.oltp.sideEffect;
 
 import java.util.Map;
 

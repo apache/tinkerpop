@@ -7,7 +7,7 @@ import org.junit.Test;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SelectTest extends com.tinkerpop.gremlin.test.map.SelectTest {
+public class SelectTest extends com.tinkerpop.gremlin.process.oltp.map.SelectTest {
 
     private final Graph g = TinkerFactory.createClassic();
 
