@@ -391,7 +391,7 @@ public interface Traversal<S, E> extends Iterator<E> {
 
     public default Traversal<S, E> as(final String as) {
         if (GremlinHelper.asExists(as, this))
-            throw new IllegalStateException("The named pipe already exists");
+            throw new IllegalStateException("The named step already exists");
         final List<Step> steps = this.getSteps();
         steps.get(steps.size() - 1).setAs(as);
         return this;

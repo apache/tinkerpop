@@ -30,6 +30,6 @@ public class IntervalStep<S> extends FilterStep<S> {
     }
 
     public String toString() {
-        return GremlinHelper.makePipeString(this, this.startContainer, this.endContainer);
+        return GremlinHelper.makeStepString(this, this.startContainer, this.endContainer);
     }
 }

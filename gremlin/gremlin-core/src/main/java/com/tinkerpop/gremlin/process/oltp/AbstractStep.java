@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
-import com.tinkerpop.gremlin.process.util.ExpandablePipeIterator;
+import com.tinkerpop.gremlin.process.util.ExpandableStepIterator;
 import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.Iterator;
@@ -18,7 +18,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     private static final String UNDERSCORE = "_";
     protected String as;
     protected final Traversal traversal;
-    protected ExpandablePipeIterator<S> starts;
+    protected ExpandableStepIterator<S> starts;
     private Holder<E> nextEnd;
     private boolean available;
 
@@ -27,7 +27,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
-        this.starts = new ExpandablePipeIterator((Step) this);
+        this.starts = new ExpandableStepIterator((Step) this);
         this.as = UNDERSCORE + this.traversal.getSteps().size();
     }
 
@@ -86,13 +86,13 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         }
     }
 
-    public <S, E> Traversal<S, E> getPipeline() {
+    public <S, E> Traversal<S, E> getTraversal() {
         return this.traversal;
     }
 
     protected abstract Holder<E> processNextStart() throws NoSuchElementException;
 
     public String toString() {
-        return GremlinHelper.makePipeString(this);
+        return GremlinHelper.makeStepString(this);
     }
 }

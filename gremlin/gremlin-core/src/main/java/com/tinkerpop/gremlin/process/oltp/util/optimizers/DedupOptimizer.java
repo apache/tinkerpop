@@ -33,8 +33,8 @@ public class DedupOptimizer implements Optimizer.FinalOptimizer {
                     for (int j = i; j >= 0; j--) {
                         final Step step2 = (Step) traversal.getSteps().get(j);
                         if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findFirst().isPresent()) {
-                            GremlinHelper.removePipe(step1, traversal);
-                            GremlinHelper.insertPipe(step1, j, traversal);
+                            GremlinHelper.removeStep(step1, traversal);
+                            GremlinHelper.insertStep(step1, j, traversal);
                             done = false;
                             break;
                         }

@@ -74,7 +74,7 @@ public class GremlinHelper {
         }
     }
 
-    public static void removePipe(final Step step, final Traversal traversal) {
+    public static void removeStep(final Step step, final Traversal traversal) {
         final List<Step> steps = traversal.getSteps();
         final int index = steps.indexOf(step);
         if (index - 1 >= 0 && index + 1 < steps.size()) {
@@ -84,7 +84,7 @@ public class GremlinHelper {
         steps.remove(step);
     }
 
-    public static void insertPipe(final Step step, final int index, final Traversal traversal) {
+    public static void insertStep(final Step step, final int index, final Traversal traversal) {
         final List<Step> steps = traversal.getSteps();
         final Step leftStep = steps.get(index - 1);
         final Step rightStep = steps.get(index);
@@ -95,7 +95,7 @@ public class GremlinHelper {
         steps.add(index, step);
     }
 
-    public static String makePipeString(final Step step, final Object... arguments) {
+    public static String makeStepString(final Step step, final Object... arguments) {
         final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
         if (arguments.length > 0) {
             builder.append("(");

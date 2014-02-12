@@ -17,6 +17,6 @@ public class BackStep<S, E> extends MapStep<S, E> {
     }
 
     public String toString() {
-        return GremlinHelper.makePipeString(this, this.as);
+        return GremlinHelper.makeStepString(this, this.as);
     }
 }

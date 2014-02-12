@@ -33,6 +33,6 @@ public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> {
     }
 
     public String toString() {
-        return GremlinHelper.makePipeString(this, this.direction);
+        return GremlinHelper.makeStepString(this, this.direction);
     }
 }

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.oltp.util;
+package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Step;
@@ -10,12 +10,12 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExpandablePipeIterator<E> implements Iterator<Holder<E>> {
+public class ExpandableStepIterator<E> implements Iterator<Holder<E>> {
 
     private final ExpandableIterator<Holder<E>> expander = new ExpandableIterator<>();
     private Step<?, E> hostStep = EmptyStep.instance();
 
-    public ExpandablePipeIterator(final Step<?, E> hostStep) {
+    public ExpandableStepIterator(final Step<?, E> hostStep) {
         this.hostStep = hostStep;
     }
 

@@ -47,9 +47,9 @@ public class GraphQueryStep extends FlatMapStep<Element, Element> {
 
     public String toString() {
         if (this.queryBuilder.hasContainers.size() > 0)
-            return GremlinHelper.makePipeString(this, this.returnClass.getSimpleName().toLowerCase(), this.queryBuilder);
+            return GremlinHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase(), this.queryBuilder);
         else
-            return GremlinHelper.makePipeString(this, this.returnClass.getSimpleName().toLowerCase());
+            return GremlinHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase());
     }
 
 }

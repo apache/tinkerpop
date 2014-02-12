@@ -72,7 +72,7 @@ public class VertexQueryStep<E extends Element> extends FlatMapStep<Vertex, E> {
     }
 
     public String toString() {
-        return GremlinHelper.makePipeString(this, this.returnClass.getSimpleName().toLowerCase(), this.queryBuilder);
+        return GremlinHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase(), this.queryBuilder);
     }
 
 }

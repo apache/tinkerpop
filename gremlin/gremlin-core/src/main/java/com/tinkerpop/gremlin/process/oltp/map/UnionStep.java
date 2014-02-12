@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.oltp.map;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.AbstractStep;
-import com.tinkerpop.gremlin.process.oltp.util.PipelineRing;
+import com.tinkerpop.gremlin.process.oltp.util.TraversalRing;
 import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
@@ -12,12 +12,12 @@ import com.tinkerpop.gremlin.process.util.GremlinHelper;
  */
 public class UnionStep<S, E> extends AbstractStep<S, E> {
 
-    public final PipelineRing<S, E> traversalRing;
+    public final TraversalRing<S, E> traversalRing;
 
     @SafeVarargs
     public UnionStep(final Traversal traversal, final Traversal<S, E>... traversals) {
         super(traversal);
-        this.traversalRing = new PipelineRing<>(traversals);
+        this.traversalRing = new TraversalRing<>(traversals);
     }
 
     protected Holder<E> processNextStart() {

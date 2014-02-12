@@ -29,6 +29,6 @@ public class HasAnnotationStep extends FilterStep<Element> {
     }
 
     public String toString() {
-        return GremlinHelper.makePipeString(this, this.propertyKey, this.hasContainer);
+        return GremlinHelper.makeStepString(this, this.propertyKey, this.hasContainer);
     }
 }

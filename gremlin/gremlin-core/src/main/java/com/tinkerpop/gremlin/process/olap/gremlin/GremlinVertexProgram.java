@@ -30,7 +30,7 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     private MessageType.Global global = MessageType.Global.of(GREMLIN_MESSAGE);
 
     protected static final String GREMLIN_MESSAGE = "gremlinMessage";
-    private static final String GREMLIN_PIPELINE = "gremlinPipeline";
+    private static final String GREMLIN_TRAVERSAL = "gremlinTraversal";
     private static final String VOTE_TO_HALT = "voteToHalt";
     public static final String TRACK_PATHS = "trackPaths";
     // TODO: public static final String MESSAGES_SENT = "messagesSent";
@@ -42,7 +42,7 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     }
 
     public void setup(final GraphMemory graphMemory) {
-        graphMemory.setIfAbsent(GREMLIN_PIPELINE, this.gremlinSupplier);
+        graphMemory.setIfAbsent(GREMLIN_TRAVERSAL, this.gremlinSupplier);
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
         graphMemory.setIfAbsent(TRACK_PATHS, HolderOptimizer.trackPaths(this.gremlinSupplier.get()));
     }
@@ -56,28 +56,28 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     }
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
-        final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_PIPELINE).get();
+        final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_TRAVERSAL).get();
         if (null != graphMemory.getReductionMemory())
             gremlin.addStep(new ReductionStep(gremlin, graphMemory.getReductionMemory()));
         // the head is always an IdentityStep so simply skip it
-        final GraphQueryStep graphQueryPipe = (GraphQueryStep) gremlin.getSteps().get(1);
+        final GraphQueryStep graphQueryStep = (GraphQueryStep) gremlin.getSteps().get(1);
         final String future = (gremlin.getSteps().size() == 2) ? Holder.NO_FUTURE : ((Step) gremlin.getSteps().get(2)).getAs();
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final List<HasContainer> hasContainers = graphQueryPipe.queryBuilder.hasContainers;
-        if (graphQueryPipe.returnClass.equals(Vertex.class) && HasContainer.testAll(vertex, hasContainers)) {
+        final List<HasContainer> hasContainers = graphQueryStep.queryBuilder.hasContainers;
+        if (graphQueryStep.returnClass.equals(Vertex.class) && HasContainer.testAll(vertex, hasContainers)) {
             final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
-                    new PathHolder<>(graphQueryPipe.getAs(), vertex) :
+                    new PathHolder<>(graphQueryStep.getAs(), vertex) :
                     new SimpleHolder<>(vertex);
             holder.setFuture(future);
             messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(holder));
             voteToHalt.set(false);
-        } else if (graphQueryPipe.returnClass.equals(Edge.class)) {
+        } else if (graphQueryStep.returnClass.equals(Edge.class)) {
             StreamFactory.stream(vertex.query().direction(Direction.OUT).edges())
                     .filter(edge -> HasContainer.testAll(edge, hasContainers))
                     .forEach(e -> {
                         final Holder<Edge> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
-                                new PathHolder<>(graphQueryPipe.getAs(), e) :
+                                new PathHolder<>(graphQueryStep.getAs(), e) :
                                 new SimpleHolder<>(e);
                         holder.setFuture(future);
                         messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), GremlinMessage.of(holder));
@@ -88,7 +88,7 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     }
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
-        final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_PIPELINE).get();
+        final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_TRAVERSAL).get();
         if (null != graphMemory.getReductionMemory())
             gremlin.addStep(new ReductionStep(gremlin, graphMemory.getReductionMemory()));
         if (graphMemory.<Boolean>get(TRACK_PATHS)) {

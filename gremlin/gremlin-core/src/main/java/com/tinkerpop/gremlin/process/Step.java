@@ -17,7 +17,7 @@ public interface Step<S, E> extends Iterator<Holder<E>>, Serializable {
 
     public Step<E, ?> getNextStep();
 
-    public <S, E> Traversal<S, E> getPipeline();
+    public <S, E> Traversal<S, E> getTraversal();
 
     public String getAs();
 

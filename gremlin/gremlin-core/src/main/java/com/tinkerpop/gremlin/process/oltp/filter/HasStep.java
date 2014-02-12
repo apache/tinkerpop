@@ -29,6 +29,6 @@ public class HasStep<S> extends FilterStep<S> {
     }
 
     public String toString() {
-        return GremlinHelper.makePipeString(this, this.hasContainer);
+        return GremlinHelper.makeStepString(this, this.hasContainer);
     }
 }

@@ -18,6 +18,6 @@ public class IdentityOptimizer implements Optimizer.FinalOptimizer {
         ((List<Step>) traversal.getSteps()).stream()
                 .filter(pipe -> pipe instanceof IdentityStep && !GremlinHelper.isLabeled(pipe))
                 .collect(Collectors.<Step>toList())
-                .forEach(pipe -> GremlinHelper.removePipe(pipe, traversal));
+                .forEach(pipe -> GremlinHelper.removeStep(pipe, traversal));
     }
 }

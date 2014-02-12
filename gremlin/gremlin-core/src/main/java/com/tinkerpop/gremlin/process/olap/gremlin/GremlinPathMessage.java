@@ -54,7 +54,7 @@ public class GremlinPathMessage extends GremlinMessage {
                 } else {
                     final Step step = GremlinHelper.getAs(holder.getFuture(), gremlin);
                     step.addStarts(new SingleIterator(holder));
-                    if (processPipe(step, vertex, messenger, tracker))
+                    if (processStep(step, vertex, messenger, tracker))
                         voteToHalt.set(false);
                 }
             });
@@ -75,10 +75,10 @@ public class GremlinPathMessage extends GremlinMessage {
         final Step step = GremlinHelper.getAs(this.holder.getFuture(), gremlin);
         MapHelper.incr(tracker.getGraphTracks(), this.holder.get(), this.holder);
         step.addStarts(new SingleIterator(this.holder));
-        return processPipe(step, vertex, messenger, tracker);
+        return processStep(step, vertex, messenger, tracker);
     }
 
-    private static boolean processPipe(final Step<?, ?> step, final Vertex vertex, final Messenger messenger, final GremlinPaths tracker) {
+    private static boolean processStep(final Step<?, ?> step, final Vertex vertex, final Messenger messenger, final GremlinPaths tracker) {
         final boolean messageSent = step.hasNext();
         step.forEachRemaining(holder -> {
             final Object end = holder.get();

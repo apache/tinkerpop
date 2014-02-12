@@ -17,10 +17,10 @@ import java.util.Map;
  */
 public class MatchStep<S, E> extends AbstractStep<S, E> {
 
-    private final Map<String, List<Traversal>> predicatePipelines = new HashMap<>();
-    private final Map<String, List<Traversal>> internalPipelines = new HashMap<>();
-    private Traversal endPipeline = null;
-    private String endPipelineStartAs;
+    private final Map<String, List<Traversal>> predicateTraversals = new HashMap<>();
+    private final Map<String, List<Traversal>> internalTraversals = new HashMap<>();
+    private Traversal endTraversal = null;
+    private String endTraversalStartAs;
     private final String inAs;
     private final String outAs;
 
@@ -35,30 +35,30 @@ public class MatchStep<S, E> extends AbstractStep<S, E> {
                 throw new IllegalArgumentException("All match traversals must have their start pipe labeled");
             }
             if (!GremlinHelper.isLabeled(end)) {
-                final List<Traversal> list = this.predicatePipelines.getOrDefault(start, new ArrayList<>());
-                this.predicatePipelines.put(start, list);
+                final List<Traversal> list = this.predicateTraversals.getOrDefault(start, new ArrayList<>());
+                this.predicateTraversals.put(start, list);
                 list.add(p1);
             } else {
                 if (end.equals(this.outAs)) {
-                    if (null != this.endPipeline)
+                    if (null != this.endTraversal)
                         throw new IllegalArgumentException("There can only be one outAs labeled end traversal");
-                    this.endPipeline = p1;
-                    this.endPipelineStartAs = GremlinHelper.getStart(p1).getAs();
+                    this.endTraversal = p1;
+                    this.endTraversalStartAs = GremlinHelper.getStart(p1).getAs();
                 } else {
-                    final List<Traversal> list = this.internalPipelines.getOrDefault(start, new ArrayList<>());
-                    this.internalPipelines.put(start, list);
+                    final List<Traversal> list = this.internalTraversals.getOrDefault(start, new ArrayList<>());
+                    this.internalTraversals.put(start, list);
                     list.add(p1);
                 }
             }
         }
-        if (null == this.endPipeline)
+        if (null == this.endTraversal)
             throw new IllegalStateException("One of the match traversals must be an end traversal");
     }
 
     protected Holder<E> processNextStart() {
         while (true) {
-            if (this.endPipeline.hasNext()) {
-                final Holder<E> holder = (Holder<E>) GremlinHelper.getEnd(this.endPipeline).next();
+            if (this.endTraversal.hasNext()) {
+                final Holder<E> holder = (Holder<E>) GremlinHelper.getEnd(this.endTraversal).next();
                 if (doPredicates(this.outAs, holder)) {
                     return holder;
                 }
@@ -74,12 +74,12 @@ public class MatchStep<S, E> extends AbstractStep<S, E> {
         if (!doPredicates(as, holder))
             return;
 
-        if (as.equals(this.endPipelineStartAs)) {
-            this.endPipeline.addStarts(new SingleIterator<>(holder));
+        if (as.equals(this.endTraversalStartAs)) {
+            this.endTraversal.addStarts(new SingleIterator<>(holder));
             return;
         }
 
-        for (final Traversal traversal : this.internalPipelines.get(as)) {
+        for (final Traversal traversal : this.internalTraversals.get(as)) {
             traversal.addStarts(new SingleIterator<>(holder));
             final Step<?, ?> endStep = GremlinHelper.getEnd(traversal);
             while (endStep.hasNext()) {
@@ -90,8 +90,8 @@ public class MatchStep<S, E> extends AbstractStep<S, E> {
     }
 
     private boolean doPredicates(final String as, final Holder holder) {
-        if (this.predicatePipelines.containsKey(as)) {
-            for (final Traversal traversal : this.predicatePipelines.get(as)) {
+        if (this.predicateTraversals.containsKey(as)) {
+            for (final Traversal traversal : this.predicateTraversals.get(as)) {
                 traversal.addStarts(new SingleIterator<>(holder));
                 if (!GremlinHelper.hasNextIteration(traversal))
                     return false;

@@ -59,7 +59,7 @@ public class GremlinCounterMessage extends GremlinMessage {
                 for (int i = 0; i < counts; i++) {
                     step.addStarts(new SingleIterator(holder));
                 }
-                if (processPipe(step, localCounts))
+                if (processStep(step, localCounts))
                     voteToHalt.set(false);
             }
         });
@@ -96,10 +96,10 @@ public class GremlinCounterMessage extends GremlinMessage {
         for (int i = 0; i < this.counter; i++) {
             step.addStarts(new SingleIterator(this.holder));
         }
-        return processPipe(step, localCounts);
+        return processStep(step, localCounts);
     }
 
-    private static boolean processPipe(final Step<?, ?> step, final Map<Holder, Long> localCounts) {
+    private static boolean processStep(final Step<?, ?> step, final Map<Holder, Long> localCounts) {
         final boolean messageSent = step.hasNext();
         step.forEachRemaining(holder -> MapHelper.incr(localCounts, holder, 1l));
         return messageSent;

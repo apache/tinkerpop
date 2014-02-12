@@ -34,6 +34,6 @@ public class LinkStep extends MapStep<Vertex, Vertex> {
     }
 
     public String toString() {
-        return GremlinHelper.makePipeString(this, this.direction.name(), this.label, this.as);
+        return GremlinHelper.makeStepString(this, this.direction.name(), this.label, this.as);
     }
 }

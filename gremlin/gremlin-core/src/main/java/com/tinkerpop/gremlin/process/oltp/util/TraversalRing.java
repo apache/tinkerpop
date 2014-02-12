@@ -8,12 +8,12 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PipelineRing<S, E> {
+public class TraversalRing<S, E> {
 
     public Traversal<S, E>[] traversals;
     private int currentPipeline = -1;
 
-    public PipelineRing(final Traversal<S, E>... traversals) {
+    public TraversalRing(final Traversal<S, E>... traversals) {
         this.traversals = traversals;
     }
 

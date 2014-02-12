@@ -36,6 +36,6 @@ public class RangeStep<S> extends FilterStep<S> {
     }
 
     public String toString() {
-        return GremlinHelper.makePipeString(this, this.low, this.high);
+        return GremlinHelper.makeStepString(this, this.low, this.high);
     }
 }

@@ -36,7 +36,7 @@ public class EmptyStep<S, E> implements Step<S, E> {
         return instance();
     }
 
-    public <S, E> Traversal<S, E> getPipeline() {
+    public <S, E> Traversal<S, E> getTraversal() {
         return null;
     }
 

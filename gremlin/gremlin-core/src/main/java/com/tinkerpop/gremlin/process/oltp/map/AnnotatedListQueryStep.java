@@ -86,6 +86,6 @@ public class AnnotatedListQueryStep<V> extends FlatMapStep<Vertex, AnnotatedValu
     }
 
     public String toString() {
-        return GremlinHelper.makePipeString(this, this.queryBuilder);
+        return GremlinHelper.makeStepString(this, this.queryBuilder);
     }
 }
