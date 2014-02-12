@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.oltp.util;
+package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Holder;
 

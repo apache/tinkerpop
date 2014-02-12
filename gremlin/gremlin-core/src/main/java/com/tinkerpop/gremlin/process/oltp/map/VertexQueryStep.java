@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.process.oltp.map;
 
+import com.tinkerpop.gremlin.process.oltp.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.Iterator;

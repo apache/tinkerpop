@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Optimizer;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.map.IdentityStep;
-import com.tinkerpop.gremlin.process.oltp.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.List;
 import java.util.stream.Collectors;

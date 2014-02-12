@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.oltp.filter.RangeStep;
 import com.tinkerpop.gremlin.process.oltp.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.oltp.map.IdentityStep;
 import com.tinkerpop.gremlin.process.oltp.map.VertexQueryStep;
-import com.tinkerpop.gremlin.process.oltp.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;

@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.filter.DedupStep;
 import com.tinkerpop.gremlin.process.oltp.map.IdentityStep;
 import com.tinkerpop.gremlin.process.oltp.map.OrderStep;
-import com.tinkerpop.gremlin.process.oltp.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

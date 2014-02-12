@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.oltp.sideeffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.map.MapStep;
-import com.tinkerpop.gremlin.process.oltp.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
 

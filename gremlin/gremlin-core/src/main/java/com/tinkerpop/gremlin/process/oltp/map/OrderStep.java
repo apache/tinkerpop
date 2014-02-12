@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.oltp.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.oltp.util.UnHolderIterator;
+import com.tinkerpop.gremlin.process.util.UnHolderIterator;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import com.tinkerpop.gremlin.process.Holder;
 

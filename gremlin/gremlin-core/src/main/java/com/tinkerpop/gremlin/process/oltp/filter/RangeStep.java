@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.oltp.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.oltp.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.concurrent.atomic.AtomicInteger;

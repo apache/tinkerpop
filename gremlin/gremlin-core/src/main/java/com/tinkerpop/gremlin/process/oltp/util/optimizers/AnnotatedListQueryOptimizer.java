@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.oltp.filter.RangeStep;
 import com.tinkerpop.gremlin.process.oltp.map.AnnotatedListQueryStep;
 import com.tinkerpop.gremlin.process.oltp.map.IdentityStep;
 import com.tinkerpop.gremlin.process.oltp.map.ValueStep;
-import com.tinkerpop.gremlin.process.oltp.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

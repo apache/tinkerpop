@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.oltp;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.util.EmptyStep;
+import com.tinkerpop.gremlin.process.oltp.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.ExpandableStepIterator;
 import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
