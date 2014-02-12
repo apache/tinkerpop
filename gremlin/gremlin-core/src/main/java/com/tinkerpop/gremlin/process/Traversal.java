@@ -1,40 +1,40 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.oltp.filter.DedupPipe;
-import com.tinkerpop.gremlin.process.oltp.filter.ExceptPipe;
-import com.tinkerpop.gremlin.process.oltp.filter.FilterPipe;
-import com.tinkerpop.gremlin.process.oltp.filter.HasAnnotationPipe;
-import com.tinkerpop.gremlin.process.oltp.filter.HasPipe;
-import com.tinkerpop.gremlin.process.oltp.filter.IntervalPipe;
-import com.tinkerpop.gremlin.process.oltp.filter.RangePipe;
-import com.tinkerpop.gremlin.process.oltp.filter.RetainPipe;
-import com.tinkerpop.gremlin.process.oltp.filter.SimplePathPipe;
-import com.tinkerpop.gremlin.process.oltp.map.AnnotatedListQueryPipe;
-import com.tinkerpop.gremlin.process.oltp.map.AnnotatedValueAnnotationValuePipe;
-import com.tinkerpop.gremlin.process.oltp.map.AnnotationsPipe;
-import com.tinkerpop.gremlin.process.oltp.map.BackPipe;
-import com.tinkerpop.gremlin.process.oltp.map.EdgeVertexPipe;
-import com.tinkerpop.gremlin.process.oltp.map.ElementPropertyValuePipe;
-import com.tinkerpop.gremlin.process.oltp.map.FlatMapPipe;
-import com.tinkerpop.gremlin.process.oltp.map.IdentityPipe;
-import com.tinkerpop.gremlin.process.oltp.map.IntersectPipe;
-import com.tinkerpop.gremlin.process.oltp.map.JumpPipe;
-import com.tinkerpop.gremlin.process.oltp.map.MapPipe;
-import com.tinkerpop.gremlin.process.oltp.map.MatchPipe;
-import com.tinkerpop.gremlin.process.oltp.map.OrderPipe;
-import com.tinkerpop.gremlin.process.oltp.map.PathPipe;
-import com.tinkerpop.gremlin.process.oltp.map.PropertyPipe;
-import com.tinkerpop.gremlin.process.oltp.map.PropertyValuesPipe;
-import com.tinkerpop.gremlin.process.oltp.map.SelectPipe;
-import com.tinkerpop.gremlin.process.oltp.map.ShufflePipe;
-import com.tinkerpop.gremlin.process.oltp.map.UnionPipe;
-import com.tinkerpop.gremlin.process.oltp.map.ValuePipe;
-import com.tinkerpop.gremlin.process.oltp.map.VertexQueryPipe;
-import com.tinkerpop.gremlin.process.oltp.sideeffect.AggregatePipe;
-import com.tinkerpop.gremlin.process.oltp.sideeffect.GroupByPipe;
-import com.tinkerpop.gremlin.process.oltp.sideeffect.GroupCountPipe;
-import com.tinkerpop.gremlin.process.oltp.sideeffect.LinkPipe;
-import com.tinkerpop.gremlin.process.oltp.sideeffect.SideEffectPipe;
+import com.tinkerpop.gremlin.process.oltp.filter.DedupStep;
+import com.tinkerpop.gremlin.process.oltp.filter.ExceptStep;
+import com.tinkerpop.gremlin.process.oltp.filter.FilterStep;
+import com.tinkerpop.gremlin.process.oltp.filter.HasAnnotationStep;
+import com.tinkerpop.gremlin.process.oltp.filter.HasStep;
+import com.tinkerpop.gremlin.process.oltp.filter.IntervalStep;
+import com.tinkerpop.gremlin.process.oltp.filter.RangeStep;
+import com.tinkerpop.gremlin.process.oltp.filter.RetainStep;
+import com.tinkerpop.gremlin.process.oltp.filter.SimplePathStep;
+import com.tinkerpop.gremlin.process.oltp.map.AnnotatedListQueryStep;
+import com.tinkerpop.gremlin.process.oltp.map.AnnotatedValueAnnotationValueStep;
+import com.tinkerpop.gremlin.process.oltp.map.AnnotationsStep;
+import com.tinkerpop.gremlin.process.oltp.map.BackStep;
+import com.tinkerpop.gremlin.process.oltp.map.EdgeVertexStep;
+import com.tinkerpop.gremlin.process.oltp.map.ElementPropertyValueStep;
+import com.tinkerpop.gremlin.process.oltp.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.oltp.map.IdentityStep;
+import com.tinkerpop.gremlin.process.oltp.map.IntersectStep;
+import com.tinkerpop.gremlin.process.oltp.map.JumpStep;
+import com.tinkerpop.gremlin.process.oltp.map.MapStep;
+import com.tinkerpop.gremlin.process.oltp.map.MatchStep;
+import com.tinkerpop.gremlin.process.oltp.map.OrderStep;
+import com.tinkerpop.gremlin.process.oltp.map.PathStep;
+import com.tinkerpop.gremlin.process.oltp.map.PropertyStep;
+import com.tinkerpop.gremlin.process.oltp.map.PropertyValuesStep;
+import com.tinkerpop.gremlin.process.oltp.map.SelectStep;
+import com.tinkerpop.gremlin.process.oltp.map.ShuffleStep;
+import com.tinkerpop.gremlin.process.oltp.map.UnionStep;
+import com.tinkerpop.gremlin.process.oltp.map.ValueStep;
+import com.tinkerpop.gremlin.process.oltp.map.VertexQueryStep;
+import com.tinkerpop.gremlin.process.oltp.sideeffect.AggregateStep;
+import com.tinkerpop.gremlin.process.oltp.sideeffect.GroupByStep;
+import com.tinkerpop.gremlin.process.oltp.sideeffect.GroupCountStep;
+import com.tinkerpop.gremlin.process.oltp.sideeffect.LinkStep;
+import com.tinkerpop.gremlin.process.oltp.sideeffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.oltp.util.FunctionRing;
 import com.tinkerpop.gremlin.process.oltp.util.GremlinHelper;
 import com.tinkerpop.gremlin.process.oltp.util.MapHelper;
@@ -78,34 +78,34 @@ public interface Traversal<S, E> extends Iterator<E> {
 
     public void addStarts(final Iterator<Holder<S>> starts);
 
-    public <S, E> Traversal<S, E> addPipe(final Pipe<?, E> pipe);
+    public <S, E> Traversal<S, E> addStep(final Step<?, E> step);
 
-    public List<Pipe> getPipes();
+    public List<Step> getSteps();
 
     ///////////////////// TRANSFORM STEPS /////////////////////
 
     public default <E2> Traversal<S, E2> map(final Function<Holder<E>, E2> function) {
-        return this.addPipe(new MapPipe<>(this, function));
+        return this.addStep(new MapStep<>(this, function));
     }
 
     public default <E2> Traversal<S, E2> flatMap(final Function<Holder<E>, Iterator<E2>> function) {
-        return this.addPipe(new FlatMapPipe<>(this, function));
+        return this.addStep(new FlatMapStep<>(this, function));
     }
 
     public default Traversal<S, E> identity() {
-        return this.addPipe(new IdentityPipe<>(this));
+        return this.addStep(new IdentityStep<>(this));
     }
 
     public default <E2> Traversal<S, E2> annotation(final String annotationKey) {
-        return this.addPipe(new AnnotatedValueAnnotationValuePipe<>(this, annotationKey));
+        return this.addStep(new AnnotatedValueAnnotationValueStep<>(this, annotationKey));
     }
 
     public default Traversal<S, Map<String, Object>> annotations(final String... annotationKeys) {
-        return this.addPipe(new AnnotationsPipe(this, annotationKeys));
+        return this.addStep(new AnnotationsStep(this, annotationKeys));
     }
 
     public default Traversal<S, Vertex> out(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexQueryPipe<>(this, new VertexQueryBuilder().direction(Direction.OUT).limit(branchFactor).labels(labels), Vertex.class));
+        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.OUT).limit(branchFactor).labels(labels), Vertex.class));
     }
 
     public default Traversal<S, Vertex> out(final String... labels) {
@@ -113,7 +113,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Vertex> in(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexQueryPipe<>(this, new VertexQueryBuilder().direction(Direction.IN).limit(branchFactor).labels(labels), Vertex.class));
+        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.IN).limit(branchFactor).labels(labels), Vertex.class));
     }
 
     public default Traversal<S, Vertex> in(final String... labels) {
@@ -121,7 +121,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Vertex> both(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexQueryPipe<>(this, new VertexQueryBuilder().direction(Direction.BOTH).limit(branchFactor).labels(labels), Vertex.class));
+        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.BOTH).limit(branchFactor).labels(labels), Vertex.class));
     }
 
     public default Traversal<S, Vertex> both(final String... labels) {
@@ -129,7 +129,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Edge> outE(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexQueryPipe<>(this, new VertexQueryBuilder().direction(Direction.OUT).limit(branchFactor).labels(labels), Edge.class));
+        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.OUT).limit(branchFactor).labels(labels), Edge.class));
     }
 
     public default Traversal<S, Edge> outE(final String... labels) {
@@ -137,7 +137,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Edge> inE(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexQueryPipe<>(this, new VertexQueryBuilder().direction(Direction.IN).limit(branchFactor).labels(labels), Edge.class));
+        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.IN).limit(branchFactor).labels(labels), Edge.class));
     }
 
     public default Traversal<S, Edge> inE(final String... labels) {
@@ -145,7 +145,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Edge> bothE(final int branchFactor, final String... labels) {
-        return this.addPipe(new VertexQueryPipe<>(this, new VertexQueryBuilder().direction(Direction.BOTH).limit(branchFactor).labels(labels), Edge.class));
+        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.BOTH).limit(branchFactor).labels(labels), Edge.class));
     }
 
     public default Traversal<S, Edge> bothE(final String... labels) {
@@ -153,121 +153,121 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Vertex> inV() {
-        return this.addPipe(new EdgeVertexPipe(this, Direction.IN));
+        return this.addStep(new EdgeVertexStep(this, Direction.IN));
     }
 
     public default Traversal<S, Vertex> outV() {
-        return this.addPipe(new EdgeVertexPipe(this, Direction.OUT));
+        return this.addStep(new EdgeVertexStep(this, Direction.OUT));
     }
 
     public default Traversal<S, Vertex> bothV() {
-        return this.addPipe(new EdgeVertexPipe(this, Direction.BOTH));
+        return this.addStep(new EdgeVertexStep(this, Direction.BOTH));
     }
 
     public default Traversal<S, E> order() {
-        return this.addPipe(new OrderPipe<E>(this, (a, b) -> ((Comparable<E>) a.get()).compareTo(b.get())));
+        return this.addStep(new OrderStep<E>(this, (a, b) -> ((Comparable<E>) a.get()).compareTo(b.get())));
     }
 
     public default Traversal<S, E> order(final Comparator<Holder<E>> comparator) {
-        return this.addPipe(new OrderPipe<>(this, comparator));
+        return this.addStep(new OrderStep<>(this, comparator));
     }
 
     public default <E2> Traversal<S, Property<E2>> property(final String propertyKey) {
-        return this.addPipe(new PropertyPipe<>(this, propertyKey));
+        return this.addStep(new PropertyStep<>(this, propertyKey));
     }
 
     public default Traversal<S, E> shuffle() {
-        return this.addPipe(new ShufflePipe<>(this));
+        return this.addStep(new ShuffleStep<>(this));
     }
 
     public default <E2> Traversal<S, E2> value() {
-        return this.addPipe(new ValuePipe<>(this));
+        return this.addStep(new ValueStep<>(this));
     }
 
     public default <E2> Traversal<S, E2> value(final String propertyKey) {
-        return this.addPipe(new ElementPropertyValuePipe<>(this, propertyKey));
+        return this.addStep(new ElementPropertyValueStep<>(this, propertyKey));
     }
 
     public default <E2> Traversal<S, E2> value(final String propertyKey, final E2 defaultValue) {
-        return this.addPipe(new ElementPropertyValuePipe<>(this, propertyKey, defaultValue));
+        return this.addStep(new ElementPropertyValueStep<>(this, propertyKey, defaultValue));
     }
 
     public default <E2> Traversal<S, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return this.addPipe(new ElementPropertyValuePipe<>(this, propertyKey, defaultSupplier));
+        return this.addStep(new ElementPropertyValueStep<>(this, propertyKey, defaultSupplier));
     }
 
     public default <E2> Traversal<S, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-        return this.addPipe(new AnnotatedListQueryPipe<>(this, propertyKey, new AnnotatedListQueryBuilder()));
+        return this.addStep(new AnnotatedListQueryStep<>(this, propertyKey, new AnnotatedListQueryBuilder()));
     }
 
     public default Traversal<S, Map<String, Object>> values(final String... propertyKeys) {
-        return this.addPipe(new PropertyValuesPipe(this, propertyKeys));
+        return this.addStep(new PropertyValuesStep(this, propertyKeys));
     }
 
     public default Traversal<S, Path> path(final Function... pathFunctions) {
-        return this.addPipe(new PathPipe<>(this, pathFunctions));
+        return this.addStep(new PathStep<>(this, pathFunctions));
     }
 
     public default <E2> Traversal<S, E2> back(final String as) {
-        return this.addPipe(new BackPipe<>(this, as));
+        return this.addStep(new BackStep<>(this, as));
     }
 
-    public default <E2> Traversal<S, E2> match(final String inAs, final String outAs, final Traversal... pipelines) {
-        return this.addPipe(new MatchPipe<>(this, inAs, outAs, pipelines));
+    public default <E2> Traversal<S, E2> match(final String inAs, final String outAs, final Traversal... traversals) {
+        return this.addStep(new MatchStep<>(this, inAs, outAs, traversals));
     }
 
     public default Traversal<S, Path> select(final List<String> asLabels, Function... stepFunctions) {
-        return this.addPipe(new SelectPipe(this, asLabels, stepFunctions));
+        return this.addStep(new SelectStep(this, asLabels, stepFunctions));
     }
 
     public default Traversal<S, Path> select(final Function... stepFunctions) {
-        return this.addPipe(new SelectPipe(this, Arrays.asList(), stepFunctions));
+        return this.addStep(new SelectStep(this, Arrays.asList(), stepFunctions));
     }
 
-    public default <E2> Traversal<S, E2> union(final Traversal<?, E2>... pipelines) {
-        return this.addPipe(new UnionPipe(this, pipelines));
+    public default <E2> Traversal<S, E2> union(final Traversal<?, E2>... traversals) {
+        return this.addStep(new UnionStep(this, traversals));
     }
 
-    public default <E2> Traversal<S, E2> intersect(final Traversal<?, E2>... pipelines) {
-        return this.addPipe(new IntersectPipe(this, pipelines));
+    public default <E2> Traversal<S, E2> intersect(final Traversal<?, E2>... traversals) {
+        return this.addStep(new IntersectStep(this, traversals));
     }
 
     /*public default <E2> Traversal<S, E2> unroll() {
-        return this.addPipe(new FlatMapPipe<List, Object>(this, l -> l.get().iterator()));
+        return this.addStep(new FlatMapStep<List, Object>(this, l -> l.get().iterator()));
     }
 
     public default <E2> Traversal<S, E2> rollup() {
-        return this.addPipe(new Map<Object, List>(this, o -> o);
+        return this.addStep(new Map<Object, List>(this, o -> o);
     }*/
 
     ///////////////////// FILTER STEPS /////////////////////
 
     public default Traversal<S, E> filter(final Predicate<Holder<E>> predicate) {
-        return this.addPipe(new FilterPipe<>(this, predicate));
+        return this.addStep(new FilterStep<>(this, predicate));
     }
 
     public default Traversal<S, E> dedup() {
-        return this.addPipe(new DedupPipe<>(this));
+        return this.addStep(new DedupStep<>(this));
     }
 
     public default Traversal<S, E> dedup(final Function<E, ?> uniqueFunction) {
-        return this.addPipe(new DedupPipe<>(this, uniqueFunction));
+        return this.addStep(new DedupStep<>(this, uniqueFunction));
     }
 
     public default Traversal<S, E> except(final String variable) {
-        return this.addPipe(new ExceptPipe<E>(this, variable));
+        return this.addStep(new ExceptStep<E>(this, variable));
     }
 
     public default Traversal<S, E> except(final E exceptionObject) {
-        return this.addPipe(new ExceptPipe<>(this, exceptionObject));
+        return this.addStep(new ExceptStep<>(this, exceptionObject));
     }
 
     public default Traversal<S, E> except(final Collection<E> exceptionCollection) {
-        return this.addPipe(new ExceptPipe<>(this, exceptionCollection));
+        return this.addStep(new ExceptStep<>(this, exceptionCollection));
     }
 
     public default <E2> Traversal<S, E2> has(final String key) {
-        return this.addPipe(new HasPipe<>(this, new HasContainer(key, Contains.IN)));
+        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.IN)));
     }
 
     public default <E2> Traversal<S, E2> has(final String key, final Object value) {
@@ -279,21 +279,21 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default <E2> Traversal<S, E2> hasNot(final String key) {
-        return this.addPipe(new HasPipe<>(this, new HasContainer(key, Contains.NOT_IN)));
+        return this.addStep(new HasStep<>(this, new HasContainer(key, Contains.NOT_IN)));
     }
 
     public default <E2> Traversal<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
-        return this.addPipe(new HasPipe<>(this, new HasContainer(key, predicate, value)));
+        return this.addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
     }
 
     ///////////
 
     /*public default Traversal<S, Element> has(final String propertyKey, final String annotationKey) {
-        return this.addPipe(new HasAnnotationPipe(this, propertyKey, new HasContainer(annotationKey, Contains.IN)));
+        return this.addStep(new HasAnnotationStep(this, propertyKey, new HasContainer(annotationKey, Contains.IN)));
     }*/
 
     public default Traversal<S, Element> has(final String propertyKey, final String annotationKey, final BiPredicate biPredicate, final Object annotationValue) {
-        return this.addPipe(new HasAnnotationPipe(this, propertyKey, new HasContainer(annotationKey, biPredicate, annotationValue)));
+        return this.addStep(new HasAnnotationStep(this, propertyKey, new HasContainer(annotationKey, biPredicate, annotationValue)));
     }
 
     public default Traversal<S, Element> has(final String propertyKey, final String annotationKey, final T t, final Object annotationValue) {
@@ -305,72 +305,72 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     /*public default Traversal<S, Element> hasNot(final String propertyKey, final String annotationKey) {
-        return this.addPipe(new HasAnnotationPipe(this, propertyKey, new HasContainer(annotationKey, Contains.NOT_IN)));
+        return this.addStep(new HasAnnotationStep(this, propertyKey, new HasContainer(annotationKey, Contains.NOT_IN)));
     }*/
     //////////
 
     public default <E2> Traversal<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
-        return this.addPipe(new IntervalPipe(this,
+        return this.addStep(new IntervalStep(this,
                 new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue),
                 new HasContainer(key, Compare.LESS_THAN, endValue)));
     }
 
     public default Traversal<S, E> range(final int low, final int high) {
-        return this.addPipe(new RangePipe<>(this, low, high));
+        return this.addStep(new RangeStep<>(this, low, high));
     }
 
     public default Traversal<S, E> retain(final String variable) {
-        return this.addPipe(new RetainPipe<>(this, variable));
+        return this.addStep(new RetainStep<>(this, variable));
     }
 
     public default Traversal<S, E> retain(final E retainObject) {
-        return this.addPipe(new RetainPipe<>(this, retainObject));
+        return this.addStep(new RetainStep<>(this, retainObject));
     }
 
     public default Traversal<S, E> retain(final Collection<E> retainCollection) {
-        return this.addPipe(new RetainPipe<>(this, retainCollection));
+        return this.addStep(new RetainStep<>(this, retainCollection));
     }
 
     public default Traversal<S, E> simplePath() {
-        return this.addPipe(new SimplePathPipe<>(this));
+        return this.addStep(new SimplePathStep<>(this));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     public default Traversal<S, E> sideEffect(final Consumer<Holder<E>> consumer) {
-        return this.addPipe(new SideEffectPipe<>(this, consumer));
+        return this.addStep(new SideEffectStep<>(this, consumer));
     }
 
     public default Traversal<S, E> aggregate(final String variable, final Function<E, ?>... preAggregateFunctions) {
-        return this.addPipe(new AggregatePipe<>(this, variable, preAggregateFunctions));
+        return this.addStep(new AggregateStep<>(this, variable, preAggregateFunctions));
     }
 
     public default Traversal<S, E> groupBy(final String variable, final Function<E, ?> keyFunction, final Function<E, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
-        return this.addPipe(new GroupByPipe(this, variable, keyFunction, valueFunction, reduceFunction));
+        return this.addStep(new GroupByStep(this, variable, keyFunction, valueFunction, reduceFunction));
     }
 
     public default Traversal<S, E> groupBy(final String variable, final Function<E, ?> keyFunction, final Function<E, ?> valueFunction) {
-        return this.addPipe(new GroupByPipe(this, variable, keyFunction, valueFunction));
+        return this.addStep(new GroupByStep(this, variable, keyFunction, valueFunction));
     }
 
     public default Traversal<S, E> groupBy(final String variable, final Function<E, ?> keyFunction) {
-        return this.addPipe(new GroupByPipe(this, variable, keyFunction));
+        return this.addStep(new GroupByStep(this, variable, keyFunction));
     }
 
     public default Traversal<S, E> groupCount(final String variable, final Function<E, ?>... preGroupFunctions) {
-        return this.addPipe(new GroupCountPipe<>(this, variable, preGroupFunctions));
+        return this.addStep(new GroupCountStep<>(this, variable, preGroupFunctions));
     }
 
     public default Traversal<S, Vertex> linkIn(final String label, final String as) {
-        return this.addPipe(new LinkPipe(this, Direction.IN, label, as));
+        return this.addStep(new LinkStep(this, Direction.IN, label, as));
     }
 
     public default Traversal<S, Vertex> linkOut(final String label, final String as) {
-        return this.addPipe(new LinkPipe(this, Direction.OUT, label, as));
+        return this.addStep(new LinkStep(this, Direction.OUT, label, as));
     }
 
     public default Traversal<S, Vertex> linkBoth(final String label, final String as) {
-        return this.addPipe(new LinkPipe(this, Direction.BOTH, label, as));
+        return this.addStep(new LinkStep(this, Direction.BOTH, label, as));
     }
 
     ///////////////////// BRANCH STEPS /////////////////////
@@ -384,7 +384,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, E> jump(final String as, final Predicate<Holder<E>> ifPredicate, final Predicate<Holder<E>> emitPredicate) {
-        return this.addPipe(new JumpPipe<>(this, as, ifPredicate, emitPredicate));
+        return this.addStep(new JumpStep<>(this, as, ifPredicate, emitPredicate));
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
@@ -392,8 +392,8 @@ public interface Traversal<S, E> extends Iterator<E> {
     public default Traversal<S, E> as(final String as) {
         if (GremlinHelper.asExists(as, this))
             throw new IllegalStateException("The named pipe already exists");
-        final List<Pipe> pipes = this.getPipes();
-        pipes.get(pipes.size() - 1).setAs(as);
+        final List<Step> steps = this.getSteps();
+        steps.get(steps.size() - 1).setAs(as);
         return this;
 
     }
@@ -482,12 +482,12 @@ public interface Traversal<S, E> extends Iterator<E> {
         final Map<Object, Object> reduceMap = new HashMap<>();
         try {
             while (true) {
-                GroupByPipe.doGroup(this.next(), groupMap, (Function) keyFunction, (Function) valueFunction);
+                GroupByStep.doGroup(this.next(), groupMap, (Function) keyFunction, (Function) valueFunction);
             }
         } catch (final NoSuchElementException e) {
         }
         if (null != reduceFunction) {
-            GroupByPipe.doReduce(groupMap, reduceMap, (Function) reduceFunction);
+            GroupByStep.doReduce(groupMap, reduceMap, (Function) reduceFunction);
             return (Map<K, V>) reduceMap;
         } else {
             return (Map<K, V>) groupMap;
@@ -498,11 +498,11 @@ public interface Traversal<S, E> extends Iterator<E> {
         final Tree<Object> tree = new Tree<>();
         Tree<Object> depth = tree;
         HolderOptimizer.doPathTracking(this);
-        final Pipe endPipe = GremlinHelper.getEnd(this);
+        final Step endStep = GremlinHelper.getEnd(this);
         final FunctionRing functionRing = new FunctionRing(branchFunctions);
         try {
             while (true) {
-                final Path path = ((Holder) endPipe.next()).getPath();
+                final Path path = ((Holder) endStep.next()).getPath();
                 for (int i = 0; i < path.size(); i++) {
                     final Object object = functionRing.next().apply(path.get(i));
                     if (!depth.containsKey(object))

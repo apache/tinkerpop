@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.olap.gremlin;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.util.MapHelper;
 import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
@@ -9,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.Pipe;
 import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.HashMap;
@@ -55,11 +55,11 @@ public class GremlinCounterMessage extends GremlinMessage {
             if (holder.isDone()) {
                 MapHelper.incr(tracker.getDoneObjectTracks(), holder, counts);
             } else {
-                final Pipe pipe = GremlinHelper.getAs(holder.getFuture(), gremlin);
+                final Step step = GremlinHelper.getAs(holder.getFuture(), gremlin);
                 for (int i = 0; i < counts; i++) {
-                    pipe.addStarts(new SingleIterator(holder));
+                    step.addStarts(new SingleIterator(holder));
                 }
-                if (processPipe(pipe, localCounts))
+                if (processPipe(step, localCounts))
                     voteToHalt.set(false);
             }
         });
@@ -89,19 +89,19 @@ public class GremlinCounterMessage extends GremlinMessage {
             return false;
         }
 
-        final Pipe pipe = GremlinHelper.getAs(this.holder.getFuture(), gremlin);
+        final Step step = GremlinHelper.getAs(this.holder.getFuture(), gremlin);
 
 
         MapHelper.incr(tracker.getGraphTracks(), this.holder, this.counter);
         for (int i = 0; i < this.counter; i++) {
-            pipe.addStarts(new SingleIterator(this.holder));
+            step.addStarts(new SingleIterator(this.holder));
         }
-        return processPipe(pipe, localCounts);
+        return processPipe(step, localCounts);
     }
 
-    private static boolean processPipe(final Pipe<?, ?> pipe, final Map<Holder, Long> localCounts) {
-        final boolean messageSent = pipe.hasNext();
-        pipe.forEachRemaining(holder -> MapHelper.incr(localCounts, holder, 1l));
+    private static boolean processPipe(final Step<?, ?> step, final Map<Holder, Long> localCounts) {
+        final boolean messageSent = step.hasNext();
+        step.forEachRemaining(holder -> MapHelper.incr(localCounts, holder, 1l));
         return messageSent;
     }
 }

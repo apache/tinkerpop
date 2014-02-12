@@ -16,12 +16,12 @@ public class ValuesTest {
         assertTrue(true);
     }
 
-    public void g_V_values(final Iterator<Map<String, Object>> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_V_values(final Iterator<Map<String, Object>> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            final Map<String, Object> values = pipe.next();
+            final Map<String, Object> values = step.next();
             final String name = (String) values.get("name");
             assertEquals(2, values.size());
             if (name.equals("marko")) {
@@ -43,12 +43,12 @@ public class ValuesTest {
         assertEquals(6, counter);
     }
 
-    public void g_V_valuesXname_ageX(final Iterator<Map<String, Object>> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_V_valuesXname_ageX(final Iterator<Map<String, Object>> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            final Map<String, Object> values = pipe.next();
+            final Map<String, Object> values = step.next();
             final String name = (String) values.get("name");
             if (name.equals("marko")) {
                 assertEquals(29, values.get("age"));
@@ -75,12 +75,12 @@ public class ValuesTest {
         assertEquals(6, counter);
     }
 
-    public void g_E_valuesXid_label_weightX(final Iterator<Map<String, Object>> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_E_valuesXid_label_weightX(final Iterator<Map<String, Object>> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            final Map<String, Object> values = pipe.next();
+            final Map<String, Object> values = step.next();
             final Integer id = Integer.valueOf(values.get("id").toString());
             if (id == 7) {
                 assertEquals("knows", values.get("label"));
@@ -113,11 +113,11 @@ public class ValuesTest {
         assertEquals(6, counter);
     }
 
-    public void g_v1_outXcreatedX_values(final Iterator<Map<String, Object>> pipe) {
-        System.out.println("Testing: " + pipe);
-        assertTrue(pipe.hasNext());
-        final Map<String, Object> values = pipe.next();
-        assertFalse(pipe.hasNext());
+    public void g_v1_outXcreatedX_values(final Iterator<Map<String, Object>> step) {
+        System.out.println("Testing: " + step);
+        assertTrue(step.hasNext());
+        final Map<String, Object> values = step.next();
+        assertFalse(step.hasNext());
         assertEquals("lop", values.get("name"));
         assertEquals("java", values.get("lang"));
         assertEquals(2, values.size());

@@ -17,12 +17,12 @@ public class SelectTest {
         assertTrue(true);
     }
 
-    public void g_v1_asXaX_outXknowsX_asXbX_select(final Iterator<Path> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_asXaX_outXknowsX_asXbX_select(final Iterator<Path> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Path path = pipe.next();
+            Path path = step.next();
             assertEquals(2, path.size());
             assertEquals("1", ((Vertex) path.get(0)).getId().toString());
             assertTrue(((Vertex) path.get(1)).getId().toString().equals("2") || ((Vertex) path.get(1)).getId().toString().equals("4"));
@@ -30,12 +30,12 @@ public class SelectTest {
         assertEquals(2, counter);
     }
 
-    public void g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Iterator<Path> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Iterator<Path> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Path path = pipe.next();
+            Path path = step.next();
             assertEquals(2, path.size());
             assertEquals("marko", path.get(0).toString());
             assertTrue(path.get(1).toString().equals("josh") || path.get(1).toString().equals("vadas"));
@@ -44,12 +44,12 @@ public class SelectTest {
         assertEquals(2, counter);
     }
 
-    public void g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Iterator<Path> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Iterator<Path> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Path path = pipe.next();
+            Path path = step.next();
             assertEquals(1, path.size());
             assertEquals("1", ((Vertex) path.get(0)).getId().toString());
             assertEquals("1", ((Vertex) path.get("a")).getId().toString());
@@ -57,12 +57,12 @@ public class SelectTest {
         assertEquals(2, counter);
     }
 
-    public void g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Iterator<Path> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Iterator<Path> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Path path = pipe.next();
+            Path path = step.next();
             assertEquals(1, path.size());
             assertEquals("marko", path.get(0).toString());
             assertEquals("marko", path.get("a").toString());

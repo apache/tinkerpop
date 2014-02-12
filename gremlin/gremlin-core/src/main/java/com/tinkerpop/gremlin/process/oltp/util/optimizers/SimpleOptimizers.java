@@ -22,8 +22,8 @@ public class SimpleOptimizers implements Optimizers {
         return this.optimizers;
     }
 
-    public void doFinalOptimizers(final Traversal pipeline) {
-        this.optimizers.stream().filter(o -> o instanceof Optimizer.FinalOptimizer).forEach(o -> ((Optimizer.FinalOptimizer) o).optimize(pipeline));
+    public void doFinalOptimizers(final Traversal traversal) {
+        this.optimizers.stream().filter(o -> o instanceof Optimizer.FinalOptimizer).forEach(o -> ((Optimizer.FinalOptimizer) o).optimize(traversal));
     }
 
 

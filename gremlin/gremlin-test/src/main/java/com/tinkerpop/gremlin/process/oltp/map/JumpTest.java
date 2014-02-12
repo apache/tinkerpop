@@ -16,11 +16,11 @@ public class JumpTest {
         assertTrue(true);
     }
 
-    public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(Iterator<String> step) {
+        System.out.println("Testing: " + step);
         List<String> names = new ArrayList<String>();
-        while (pipe.hasNext()) {
-            names.add(pipe.next());
+        while (step.hasNext()) {
+            names.add(step.next());
         }
         assertEquals(2, names.size());
         assertTrue(names.contains("ripple"));

@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.oltp.util;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.PathHolder;
-import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 
 import java.util.Iterator;
@@ -13,18 +13,18 @@ import java.util.Iterator;
 public class HolderIterator<T> implements Iterator<Holder<T>> {
 
     private final Iterator<T> iterator;
-    private final Pipe pipe;
+    private final Step step;
     private final boolean trackPaths;
 
-    public HolderIterator(final Pipe pipe, final Iterator<T> iterator) {
+    public HolderIterator(final Step step, final Iterator<T> iterator) {
         this.iterator = iterator;
-        this.pipe = pipe;
+        this.step = step;
         this.trackPaths = true;
     }
 
     public HolderIterator(final Iterator<T> iterator) {
         this.iterator = iterator;
-        this.pipe = null;
+        this.step = null;
         this.trackPaths = false;
     }
 
@@ -34,7 +34,7 @@ public class HolderIterator<T> implements Iterator<Holder<T>> {
 
     public Holder<T> next() {
         return this.trackPaths ?
-                new PathHolder<>(this.pipe.getAs(), this.iterator.next()) :
+                new PathHolder<>(this.step.getAs(), this.iterator.next()) :
                 new SimpleHolder<>(this.iterator.next());
     }
 }

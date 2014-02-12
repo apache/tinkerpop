@@ -21,45 +21,45 @@ public class BackTest {
         assertTrue(true);
     }
 
-    public void g_v1_asXhereX_out_backXhereX(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_asXhereX_out_backXhereX(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            assertEquals("marko", pipe.next().<String>getValue("name"));
+            assertEquals("marko", step.next().<String>getValue("name"));
         }
         assertEquals(3, counter);
     }
 
 
-    public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            final Vertex vertex = pipe.next();
+            final Vertex vertex = step.next();
             assertEquals("java", vertex.<String>getValue("lang"));
             assertTrue(vertex.getValue("name").equals("ripple") || vertex.getValue("name").equals("lop"));
         }
         assertEquals(2, counter);
     }
 
-    public void g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(final Iterator<Edge> pipe) {
-        System.out.println("Testing: " + pipe);
-        final Edge edge = pipe.next();
+    public void g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(final Iterator<Edge> step) {
+        System.out.println("Testing: " + step);
+        final Edge edge = step.next();
         assertEquals("knows", edge.getLabel());
         assertEquals("7", edge.getId());
         assertEquals(0.5f, edge.<Float>getValue("weight"), 0.0001f);
-        assertFalse(pipe.hasNext());
+        assertFalse(step.hasNext());
     }
 
-    public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         final Set<String> names = new HashSet<>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            names.add(pipe.next());
+            names.add(step.next());
         }
         assertEquals(2, counter);
         assertEquals(2, names.size());
@@ -67,15 +67,15 @@ public class BackTest {
         assertTrue(names.contains("lop"));
     }
 
-    public void g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Iterator<Edge> pipe) {
-        System.out.println("Testing: " + pipe);
-        assertTrue(pipe.hasNext());
-        assertTrue(pipe.hasNext());
-        Edge edge = pipe.next();
+    public void g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Iterator<Edge> step) {
+        System.out.println("Testing: " + step);
+        assertTrue(step.hasNext());
+        assertTrue(step.hasNext());
+        Edge edge = step.next();
         assertEquals("8", edge.getId());
         assertEquals("knows", edge.getLabel());
         assertEquals(Float.valueOf(1.0f), edge.<Float>getValue("weight"));
-        assertFalse(pipe.hasNext());
-        assertFalse(pipe.hasNext());
+        assertFalse(step.hasNext());
+        assertFalse(step.hasNext());
     }
 }

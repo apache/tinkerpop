@@ -2,14 +2,14 @@ package com.tinkerpop.gremlin.process.olap.gremlin;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.PathHolder;
-import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
-import com.tinkerpop.gremlin.process.oltp.map.GraphQueryPipe;
+import com.tinkerpop.gremlin.process.oltp.map.GraphQueryStep;
 import com.tinkerpop.gremlin.process.oltp.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -58,10 +58,10 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
         final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_PIPELINE).get();
         if (null != graphMemory.getReductionMemory())
-            gremlin.addPipe(new ReductionPipe(gremlin, graphMemory.getReductionMemory()));
-        // the head is always an IdentityPipe so simply skip it
-        final GraphQueryPipe graphQueryPipe = (GraphQueryPipe) gremlin.getPipes().get(1);
-        final String future = (gremlin.getPipes().size() == 2) ? Holder.NO_FUTURE : ((Pipe) gremlin.getPipes().get(2)).getAs();
+            gremlin.addStep(new ReductionStep(gremlin, graphMemory.getReductionMemory()));
+        // the head is always an IdentityStep so simply skip it
+        final GraphQueryStep graphQueryPipe = (GraphQueryStep) gremlin.getSteps().get(1);
+        final String future = (gremlin.getSteps().size() == 2) ? Holder.NO_FUTURE : ((Step) gremlin.getSteps().get(2)).getAs();
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final List<HasContainer> hasContainers = graphQueryPipe.queryBuilder.hasContainers;
@@ -90,7 +90,7 @@ public class GremlinVertexProgram<M extends GremlinMessage> implements VertexPro
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
         final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_PIPELINE).get();
         if (null != graphMemory.getReductionMemory())
-            gremlin.addPipe(new ReductionPipe(gremlin, graphMemory.getReductionMemory()));
+            gremlin.addStep(new ReductionStep(gremlin, graphMemory.getReductionMemory()));
         if (graphMemory.<Boolean>get(TRACK_PATHS)) {
             final GremlinPaths tracker = new GremlinPaths(vertex);
             graphMemory.and(VOTE_TO_HALT, GremlinPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, gremlin));

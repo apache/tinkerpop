@@ -6,15 +6,15 @@ package com.tinkerpop.gremlin.process;
 public interface Optimizer {
 
     public interface StepOptimizer extends Optimizer {
-        public boolean optimize(final Traversal pipeline, final com.tinkerpop.gremlin.process.Pipe pipe);
+        public boolean optimize(final Traversal traversal, final Step step);
     }
 
     public interface FinalOptimizer extends Optimizer {
-        public void optimize(final Traversal pipeline);
+        public void optimize(final Traversal traversal);
     }
 
     public interface RuntimeOptimizer extends Optimizer {
-        public void optimize(final Traversal pipeline);
+        public void optimize(final Traversal traversal);
     }
 
     /*public static boolean classContainedIn(final Class clazz, final List<Class> classes) {

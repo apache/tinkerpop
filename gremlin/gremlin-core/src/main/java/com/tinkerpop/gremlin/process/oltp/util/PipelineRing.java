@@ -10,16 +10,16 @@ import java.util.stream.Stream;
  */
 public class PipelineRing<S, E> {
 
-    public Traversal<S, E>[] pipelines;
+    public Traversal<S, E>[] traversals;
     private int currentPipeline = -1;
 
-    public PipelineRing(final Traversal<S, E>... pipelines) {
-        this.pipelines = pipelines;
+    public PipelineRing(final Traversal<S, E>... traversals) {
+        this.traversals = traversals;
     }
 
     public Traversal<S, E> next() {
-        this.currentPipeline = (this.currentPipeline + 1) % this.pipelines.length;
-        return this.pipelines[this.currentPipeline];
+        this.currentPipeline = (this.currentPipeline + 1) % this.traversals.length;
+        return this.traversals[this.currentPipeline];
     }
 
     public void reset() {
@@ -27,16 +27,16 @@ public class PipelineRing<S, E> {
     }
 
     public int size() {
-        return this.pipelines.length;
+        return this.traversals.length;
     }
 
     public Stream<Traversal<S, E>> stream() {
-        return Stream.of(this.pipelines);
+        return Stream.of(this.traversals);
     }
 
     public void forEach(final Consumer<Traversal<S, E>> consumer) {
-        for (int i = 0; i < this.pipelines.length; i++) {
-            consumer.accept(this.pipelines[i]);
+        for (int i = 0; i < this.traversals.length; i++) {
+            consumer.accept(this.traversals[i]);
         }
     }
 

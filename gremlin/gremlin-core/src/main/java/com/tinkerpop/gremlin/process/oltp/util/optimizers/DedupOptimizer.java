@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.process.oltp.util.optimizers;
 
 import com.tinkerpop.gremlin.process.Optimizer;
-import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.oltp.filter.DedupPipe;
-import com.tinkerpop.gremlin.process.oltp.map.IdentityPipe;
-import com.tinkerpop.gremlin.process.oltp.map.OrderPipe;
+import com.tinkerpop.gremlin.process.oltp.filter.DedupStep;
+import com.tinkerpop.gremlin.process.oltp.map.IdentityStep;
+import com.tinkerpop.gremlin.process.oltp.map.OrderStep;
 import com.tinkerpop.gremlin.process.oltp.util.GremlinHelper;
 
 import java.util.ArrayList;
@@ -19,22 +19,22 @@ public class DedupOptimizer implements Optimizer.FinalOptimizer {
 
     private static final List<Class> BIJECTIVE_PIPES = new ArrayList<Class>(
             Arrays.asList(
-                    IdentityPipe.class,
-                    OrderPipe.class
+                    IdentityStep.class,
+                    OrderStep.class
             ));
 
-    public void optimize(final Traversal pipeline) {
+    public void optimize(final Traversal traversal) {
         boolean done = false;
         while (!done) {
             done = true;
-            for (int i = 0; i < pipeline.getPipes().size(); i++) {
-                final Pipe pipe1 = (Pipe) pipeline.getPipes().get(i);
-                if (pipe1 instanceof DedupPipe && !((DedupPipe) pipe1).hasUniqueFunction) {
+            for (int i = 0; i < traversal.getSteps().size(); i++) {
+                final Step step1 = (Step) traversal.getSteps().get(i);
+                if (step1 instanceof DedupStep && !((DedupStep) step1).hasUniqueFunction) {
                     for (int j = i; j >= 0; j--) {
-                        final Pipe pipe2 = (Pipe) pipeline.getPipes().get(j);
-                        if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(pipe2.getClass())).findFirst().isPresent()) {
-                            GremlinHelper.removePipe(pipe1, pipeline);
-                            GremlinHelper.insertPipe(pipe1, j, pipeline);
+                        final Step step2 = (Step) traversal.getSteps().get(j);
+                        if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findFirst().isPresent()) {
+                            GremlinHelper.removePipe(step1, traversal);
+                            GremlinHelper.insertPipe(step1, j, traversal);
                             done = false;
                             break;
                         }

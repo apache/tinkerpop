@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.process.oltp.util.optimizers;
 
 import com.tinkerpop.gremlin.process.Optimizer;
-import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.oltp.map.IdentityPipe;
+import com.tinkerpop.gremlin.process.oltp.map.IdentityStep;
 import com.tinkerpop.gremlin.process.oltp.util.GremlinHelper;
 
 import java.util.List;
@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
  */
 public class IdentityOptimizer implements Optimizer.FinalOptimizer {
 
-    public void optimize(final Traversal pipeline) {
-        ((List<Pipe>) pipeline.getPipes()).stream()
-                .filter(pipe -> pipe instanceof IdentityPipe && !GremlinHelper.isLabeled(pipe))
-                .collect(Collectors.<Pipe>toList())
-                .forEach(pipe -> GremlinHelper.removePipe(pipe, pipeline));
+    public void optimize(final Traversal traversal) {
+        ((List<Step>) traversal.getSteps()).stream()
+                .filter(pipe -> pipe instanceof IdentityStep && !GremlinHelper.isLabeled(pipe))
+                .collect(Collectors.<Step>toList())
+                .forEach(pipe -> GremlinHelper.removePipe(pipe, traversal));
     }
 }

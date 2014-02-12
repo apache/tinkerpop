@@ -19,9 +19,9 @@ public class DedupTest {
         assertTrue(true);
     }
 
-    public void g_V_both_dedup_name(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
-        final List<String> names = StreamFactory.stream(pipe).collect(Collectors.toList());
+    public void g_V_both_dedup_name(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
+        final List<String> names = StreamFactory.stream(step).collect(Collectors.toList());
         assertEquals(6, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("vadas"));
@@ -29,15 +29,15 @@ public class DedupTest {
         assertTrue(names.contains("josh"));
         assertTrue(names.contains("ripple"));
         assertTrue(names.contains("peter"));
-        assertFalse(pipe.hasNext());
+        assertFalse(step.hasNext());
     }
 
-    public void g_V_both_dedupXlangX_name(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
-        final List<String> names = StreamFactory.stream(pipe).collect(Collectors.toList());
+    public void g_V_both_dedupXlangX_name(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
+        final List<String> names = StreamFactory.stream(step).collect(Collectors.toList());
         assertEquals(2, names.size());
         assertTrue(names.contains("marko") || names.contains("peter") || names.contains("josh") || names.contains("vadas"));
         assertTrue(names.contains("lop") || names.contains("ripple"));
-        assertFalse(pipe.hasNext());
+        assertFalse(step.hasNext());
     }
 }

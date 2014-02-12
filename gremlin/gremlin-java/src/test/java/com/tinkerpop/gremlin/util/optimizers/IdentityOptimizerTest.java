@@ -11,21 +11,21 @@ public class IdentityOptimizerTest {
     public void shouldRemoveIdentityPipes() {
       /*  Pipeline gremlin = GremlinJ.of(EmptyGraph.instance(), false).identity().identity().identity();
         System.out.println(gremlin);
-        assertEquals(3, gremlin.getPipes().size());
+        assertEquals(3, gremlin.getSteps().size());
         new IdentityOptimizer().optimize(gremlin);
-        assertEquals(0, gremlin.getPipes().size());*/
+        assertEquals(0, gremlin.getSteps().size());*/
     }
 
     @Test
     public void shouldNotRemoveAsNamedIdentityPipes() {
       /*  Pipeline gremlin = GremlinJ.of(EmptyGraph.instance(), false).identity().as("x").identity().identity().as("y");
-        assertEquals(3, gremlin.getPipes().size());
+        assertEquals(3, gremlin.getSteps().size());
         new IdentityOptimizer().optimize(gremlin);
-        assertEquals(2, gremlin.getPipes().size());
+        assertEquals(2, gremlin.getSteps().size());
         boolean foundX = false;
         int counter = 0;
-        for (final Pipe pipe : (List<Pipe>) gremlin.getPipes()) {
-            if (pipe instanceof IdentityPipe)
+        for (final Step pipe : (List<Step>) gremlin.getSteps()) {
+            if (pipe instanceof IdentityStep)
                 assertTrue(!pipe.getAs().startsWith("_"));
             if (pipe.getAs().equals("x")) {
                 assertFalse(foundX);
@@ -44,31 +44,31 @@ public class IdentityOptimizerTest {
       /*  // NO OPTIMIZER
         Pipeline gremlin = GremlinJ.of(EmptyGraph.instance(), false).identity().as("x").identity().identity().as("y");
         gremlin.addStarts(new SingleIterator<>(new SimpleHolder<>("marko")));
-        assertEquals(3, gremlin.getPipes().size());
+        assertEquals(3, gremlin.getSteps().size());
         assertTrue(gremlin.hasNext());
         assertEquals("marko", gremlin.next());
         assertFalse(gremlin.hasNext());
-        for (int i = 0; i < gremlin.getPipes().size(); i++) {
+        for (int i = 0; i < gremlin.getSteps().size(); i++) {
             if (i > 0)
-                assertEquals(((Pipe) gremlin.getPipes().get(i)).getPreviousPipe(), gremlin.getPipes().get(i - 1));
-            if (i < gremlin.getPipes().size() - 1)
-                assertEquals(((Pipe) gremlin.getPipes().get(i)).getNextPipe(), gremlin.getPipes().get(i + 1));
+                assertEquals(((Step) gremlin.getSteps().get(i)).getPreviousStep(), gremlin.getSteps().get(i - 1));
+            if (i < gremlin.getSteps().size() - 1)
+                assertEquals(((Step) gremlin.getSteps().get(i)).getNextStep(), gremlin.getSteps().get(i + 1));
         }
 
         // WITH OPTIMIZER
         gremlin = GremlinJ.of(EmptyGraph.instance(), false).identity().as("x").identity().identity().as("y");
-        assertEquals(3, gremlin.getPipes().size());
+        assertEquals(3, gremlin.getSteps().size());
         new IdentityOptimizer().optimize(gremlin);
         gremlin.addStarts(new SingleIterator<>(new SimpleHolder<>("marko")));
-        assertEquals(2, gremlin.getPipes().size());
+        assertEquals(2, gremlin.getSteps().size());
         assertTrue(gremlin.hasNext());
         assertEquals("marko", gremlin.next());
         assertFalse(gremlin.hasNext());
-        for (int i = 0; i < gremlin.getPipes().size(); i++) {
+        for (int i = 0; i < gremlin.getSteps().size(); i++) {
             if (i > 0)
-                assertEquals(((Pipe) gremlin.getPipes().get(i)).getPreviousPipe(), gremlin.getPipes().get(i - 1));
-            if (i < gremlin.getPipes().size() - 1)
-                assertEquals(((Pipe) gremlin.getPipes().get(i)).getNextPipe(), gremlin.getPipes().get(i + 1));
+                assertEquals(((Step) gremlin.getSteps().get(i)).getPreviousStep(), gremlin.getSteps().get(i - 1));
+            if (i < gremlin.getSteps().size() - 1)
+                assertEquals(((Step) gremlin.getSteps().get(i)).getNextStep(), gremlin.getSteps().get(i + 1));
         }
     } */
     }

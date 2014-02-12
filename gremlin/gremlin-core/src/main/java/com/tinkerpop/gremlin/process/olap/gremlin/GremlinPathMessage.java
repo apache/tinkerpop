@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.olap.gremlin;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.util.MapHelper;
 import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
@@ -11,7 +12,6 @@ import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.MicroPath;
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.Pipe;
 import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -52,9 +52,9 @@ public class GremlinPathMessage extends GremlinMessage {
                         MapHelper.incr(tracker.getDoneObjectTracks(), object, holder);
                     }
                 } else {
-                    final Pipe pipe = GremlinHelper.getAs(holder.getFuture(), gremlin);
-                    pipe.addStarts(new SingleIterator(holder));
-                    if (processPipe(pipe, vertex, messenger, tracker))
+                    final Step step = GremlinHelper.getAs(holder.getFuture(), gremlin);
+                    step.addStarts(new SingleIterator(holder));
+                    if (processPipe(step, vertex, messenger, tracker))
                         voteToHalt.set(false);
                 }
             });
@@ -72,15 +72,15 @@ public class GremlinPathMessage extends GremlinMessage {
             return false;
         }
 
-        final Pipe pipe = GremlinHelper.getAs(this.holder.getFuture(), gremlin);
+        final Step step = GremlinHelper.getAs(this.holder.getFuture(), gremlin);
         MapHelper.incr(tracker.getGraphTracks(), this.holder.get(), this.holder);
-        pipe.addStarts(new SingleIterator(this.holder));
-        return processPipe(pipe, vertex, messenger, tracker);
+        step.addStarts(new SingleIterator(this.holder));
+        return processPipe(step, vertex, messenger, tracker);
     }
 
-    private static boolean processPipe(final Pipe<?, ?> pipe, final Vertex vertex, final Messenger messenger, final GremlinPaths tracker) {
-        final boolean messageSent = pipe.hasNext();
-        pipe.forEachRemaining(holder -> {
+    private static boolean processPipe(final Step<?, ?> step, final Vertex vertex, final Messenger messenger, final GremlinPaths tracker) {
+        final boolean messageSent = step.hasNext();
+        step.forEachRemaining(holder -> {
             final Object end = holder.get();
             if (end instanceof Element || end instanceof Property) {
                 messenger.sendMessage(

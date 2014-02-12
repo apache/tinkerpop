@@ -19,12 +19,12 @@ public class LinkTest {
         assertTrue(true);
     }
 
-    public void test_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void test_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         List<Vertex> cocreators = new ArrayList<Vertex>();
         List<Object> ids = new ArrayList<Object>();
-        while (pipe.hasNext()) {
-            Vertex vertex = pipe.next();
+        while (step.hasNext()) {
+            Vertex vertex = step.next();
             cocreators.add(vertex);
             ids.add(vertex.getId());
         }

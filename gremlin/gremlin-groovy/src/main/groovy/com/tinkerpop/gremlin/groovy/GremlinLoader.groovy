@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.groovy
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import com.tinkerpop.gremlin.groovy.loaders.GraphLoader
 import com.tinkerpop.gremlin.groovy.loaders.PipeLoader
-import com.tinkerpop.gremlin.process.Pipe
+import com.tinkerpop.gremlin.process.Step
 import com.tinkerpop.gremlin.process.Tokens
 import com.tinkerpop.gremlin.process.Traversal
 import groovy.grape.Grape
@@ -43,28 +43,28 @@ class GremlinLoader {
         }
     }
 
-    /*private static GremlinGroovyPipeline compose(final Object start, final Pipe pipe) {
+    /*private static GremlinGroovyPipeline compose(final Object start, final Step step) {
         GremlinGroovyPipeline pipeline
         if (start instanceof GremlinGroovyPipeline) {
             pipeline = start
-            if (null != pipe)
-                pipeline.addPipe(pipe)
-        } else if (start instanceof Pipe) {
+            if (null != step)
+                pipeline.addStep(step)
+        } else if (start instanceof Step) {
             pipeline = new GremlinGroovyPipeline()
-            pipeline.addPipe(start)
-            if (null != pipe)
-                pipeline.addPipe(pipe)
+            pipeline.addStep(start)
+            if (null != step)
+                pipeline.addStep(step)
         } else {
             pipeline = new GremlinGroovyPipeline(start)
-            if (null != pipe)
-                pipeline.addPipe(pipe)
+            if (null != step)
+                pipeline.addStep(step)
         }
 
         return pipeline
     }*/
 
-    public static Pipe compile(final String script) {
-        return (Pipe) engine.eval(script, engine.createBindings())
+    public static Step compile(final String script) {
+        return (Step) engine.eval(script, engine.createBindings())
     }
 
     public static void addStep(final String stepName) {

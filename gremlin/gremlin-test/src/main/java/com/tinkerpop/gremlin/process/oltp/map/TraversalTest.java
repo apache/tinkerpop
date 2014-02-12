@@ -27,25 +27,25 @@ public class TraversalTest {
 
     // VERTEX ADJACENCY
 
-    public void g_V(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_V(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            vertices.add(pipe.next());
+            vertices.add(step.next());
         }
         assertEquals(6, vertices.size());
         assertEquals(6, counter);
     }
 
-    public void g_v1_out(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_out(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Vertex vertex = pipe.next();
+            Vertex vertex = step.next();
             vertices.add(vertex);
             assertTrue(vertex.getValue("name").equals("vadas") ||
                     vertex.getValue("name").equals("josh") ||
@@ -55,23 +55,23 @@ public class TraversalTest {
         assertEquals(3, vertices.size());
     }
 
-    public void g_v2_in(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v2_in(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            assertEquals(pipe.next().getValue("name"), "marko");
+            assertEquals(step.next().getValue("name"), "marko");
         }
         assertEquals(1, counter);
     }
 
-    public void g_v4_both(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v4_both(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Vertex vertex = pipe.next();
+            Vertex vertex = step.next();
             vertices.add(vertex);
             assertTrue(vertex.getValue("name").equals("marko") ||
                     vertex.getValue("name").equals("ripple") ||
@@ -81,19 +81,19 @@ public class TraversalTest {
         assertEquals(3, vertices.size());
     }
 
-    public void g_v1_outX1_knowsX_name(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
-        final String name = pipe.next();
+    public void g_v1_outX1_knowsX_name(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
+        final String name = step.next();
         assertTrue(name.equals("vadas") || name.equals("josh"));
-        assertFalse(pipe.hasNext());
+        assertFalse(step.hasNext());
     }
 
-    public void g_V_bothX1_createdX_name(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_V_bothX1_createdX_name(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            final String name = pipe.next();
+            final String name = step.next();
             assertTrue(name.equals("marko") || name.equals("lop") || name.equals("josh") || name.equals("ripple") || name.equals("peter"));
         }
         assertEquals(5, counter);
@@ -101,25 +101,25 @@ public class TraversalTest {
 
     // EDGE ADJACENCY
 
-    public void g_E(final Iterator<Edge> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_E(final Iterator<Edge> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Set<Edge> edges = new HashSet<>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            edges.add(pipe.next());
+            edges.add(step.next());
         }
         assertEquals(6, edges.size());
         assertEquals(6, counter);
     }
 
-    public void g_v1_outE(final Iterator<Edge> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_outE(final Iterator<Edge> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Set<Edge> edges = new HashSet<>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Edge edge = pipe.next();
+            Edge edge = step.next();
             edges.add(edge);
             assertTrue(edge.getLabel().equals("knows") || edge.getLabel().equals("created"));
         }
@@ -127,23 +127,23 @@ public class TraversalTest {
         assertEquals(3, edges.size());
     }
 
-    public void g_v2_inE(final Iterator<Edge> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v2_inE(final Iterator<Edge> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            assertEquals(pipe.next().getLabel(), "knows");
+            assertEquals(step.next().getLabel(), "knows");
         }
         assertEquals(1, counter);
     }
 
-    public void g_v4_bothE(final Iterator<Edge> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v4_bothE(final Iterator<Edge> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Set<Edge> edges = new HashSet<>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Edge edge = pipe.next();
+            Edge edge = step.next();
             edges.add(edge);
             assertTrue(edge.getLabel().equals("knows") || edge.getLabel().equals("created"));
         }
@@ -151,41 +151,41 @@ public class TraversalTest {
         assertEquals(3, edges.size());
     }
 
-    public void g_v4_bothEX1_createdX(final Iterator<Edge> pipe) {
-        System.out.println("Testing: " + pipe);
-        final Edge edge = pipe.next();
+    public void g_v4_bothEX1_createdX(final Iterator<Edge> step) {
+        System.out.println("Testing: " + step);
+        final Edge edge = step.next();
         assertEquals("created", edge.getLabel());
         assertTrue(edge.getValue("weight").equals(1.0f) || edge.getValue("weight").equals(0.4f));
-        assertFalse(pipe.hasNext());
+        assertFalse(step.hasNext());
     }
 
-    public void g_V_inEX2_knowsX_outV_name(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_V_inEX2_knowsX_outV_name(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            assertEquals(pipe.next(), "marko");
+            assertEquals(step.next(), "marko");
         }
-        assertFalse(pipe.hasNext());
+        assertFalse(step.hasNext());
         assertEquals(2, counter);
     }
 
     // EDGE/VERTEX ADJACENCY
 
-    public void g_v1_outE_inV(final Iterator<Vertex> pipe) {
-        this.g_v1_out(pipe);
+    public void g_v1_outE_inV(final Iterator<Vertex> step) {
+        this.g_v1_out(step);
     }
 
-    public void g_v2_inE_outV(final Iterator<Vertex> pipe) {
-        this.g_v2_in(pipe);
+    public void g_v2_inE_outV(final Iterator<Vertex> step) {
+        this.g_v2_in(step);
     }
 
-    public void g_V_outE_hasXweight_1X_outV(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_V_outE_hasXweight_1X_outV(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Map<Object, Integer> counts = new HashMap<>();
-        while (pipe.hasNext()) {
-            final Object id = pipe.next().getId();
+        while (step.hasNext()) {
+            final Object id = step.next().getId();
             int previousCount = counts.getOrDefault(id, 0);
             counts.put(id, previousCount + 1);
             counter++;
@@ -195,15 +195,15 @@ public class TraversalTest {
         assertEquals(1, counts.get("4").intValue());
 
         assertEquals(2, counter);
-        assertFalse(pipe.hasNext());
+        assertFalse(step.hasNext());
     }
 
-    public void g_V_out_outE_inV_inE_inV_both_name(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_V_out_outE_inV_inE_inV_both_name(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Map<String, Integer> counts = new HashMap<>();
-        while (pipe.hasNext()) {
-            final String key = pipe.next();
+        while (step.hasNext()) {
+            final String key = step.next();
             int previousCount = counts.getOrDefault(key, 0);
             counts.put(key, previousCount + 1);
             counter++;
@@ -214,12 +214,12 @@ public class TraversalTest {
         assertEquals(3, counts.get("peter").intValue());
 
         assertEquals(10, counter);
-        assertFalse(pipe.hasNext());
+        assertFalse(step.hasNext());
     }
 
-    public void g_v1_outEXknowsX_bothV_name(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
-        List<String> names = StreamFactory.stream(pipe).collect(Collectors.toList());
+    public void g_v1_outEXknowsX_bothV_name(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
+        List<String> names = StreamFactory.stream(step).collect(Collectors.toList());
         assertEquals(4, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("josh"));
@@ -236,13 +236,13 @@ public class TraversalTest {
 
     // VERTEX EDGE LABEL ADJACENCY
 
-    public void g_v1_outXknowsX(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_outXknowsX(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Vertex vertex = pipe.next();
+            Vertex vertex = step.next();
             vertices.add(vertex);
             assertTrue(vertex.getValue("name").equals("vadas") ||
                     vertex.getValue("name").equals("josh"));
@@ -251,25 +251,25 @@ public class TraversalTest {
         assertEquals(2, vertices.size());
     }
 
-    public void g_v1_outXknows_createdX(final Iterator<Vertex> pipe) {
-        this.g_v1_out(pipe);
+    public void g_v1_outXknows_createdX(final Iterator<Vertex> step) {
+        this.g_v1_out(step);
     }
 
-    public void g_v1_outEXknowsX_inV(final Iterator<Vertex> pipe) {
-        this.g_v1_outXknowsX(pipe);
+    public void g_v1_outEXknowsX_inV(final Iterator<Vertex> step) {
+        this.g_v1_outXknowsX(step);
     }
 
-    public void g_v1_outEXknows_createdX_inV(final Iterator<Vertex> pipe) {
-        this.g_v1_outE_inV(pipe);
+    public void g_v1_outEXknows_createdX_inV(final Iterator<Vertex> step) {
+        this.g_v1_outE_inV(step);
     }
 
-    public void g_V_out_out(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_V_out_out(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Vertex vertex = pipe.next();
+            Vertex vertex = step.next();
             vertices.add(vertex);
             assertTrue(vertex.getValue("name").equals("lop") ||
                     vertex.getValue("name").equals("ripple"));
@@ -278,19 +278,19 @@ public class TraversalTest {
         assertEquals(2, vertices.size());
     }
 
-    public void g_v1_out_out_out(final Iterator<Vertex> pipe) {
-        assertFalse(pipe.hasNext());
+    public void g_v1_out_out_out(final Iterator<Vertex> step) {
+        assertFalse(step.hasNext());
     }
 
     // PROPERTY TESTING
 
-    public void g_v1_out_propertyXnameX(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_out_propertyXnameX(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Set<String> names = new HashSet<>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            String name = pipe.next();
+            String name = step.next();
             names.add(name);
             assertTrue(name.equals("vadas") ||
                     name.equals("josh") ||

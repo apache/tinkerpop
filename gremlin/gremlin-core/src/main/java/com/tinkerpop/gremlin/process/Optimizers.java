@@ -11,5 +11,5 @@ public interface Optimizers {
 
     public void register(final Optimizer optimizer);
 
-    public void doFinalOptimizers(final Traversal pipeline);
+    public void doFinalOptimizers(final Traversal traversal);
 }

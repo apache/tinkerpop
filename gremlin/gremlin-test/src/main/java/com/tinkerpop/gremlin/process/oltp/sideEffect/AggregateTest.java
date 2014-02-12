@@ -17,12 +17,12 @@ public class AggregateTest {
         assertTrue(true);
     }
 
-    public void g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Vertex vertex = pipe.next();
+            Vertex vertex = step.next();
             assertTrue(vertex.getValue("name").equals("peter") || vertex.getValue("name").equals("josh"));
         }
         assertEquals(2, counter);

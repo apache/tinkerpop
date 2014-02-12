@@ -3,9 +3,13 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Memory;
 import com.tinkerpop.gremlin.process.Optimizers;
-import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.oltp.map.IdentityPipe;
+import com.tinkerpop.gremlin.process.oltp.map.GraphQueryStep;
+import com.tinkerpop.gremlin.process.oltp.map.IdentityStep;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.query.util.GraphQueryBuilder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,15 +20,20 @@ import java.util.List;
  */
 public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
-    private final List<Pipe> pipes = new ArrayList<>();
+    private final List<Step> steps = new ArrayList<>();
     private final Optimizers optimizers = new DefaultOptimizers();
+    private boolean firstNext = true;
 
     public DefaultTraversal() {
-        this.addPipe(new IdentityPipe(this));
+        this.addStep(new IdentityStep(this));
     }
 
-    public List<Pipe> getPipes() {
-        return this.pipes;
+    public DefaultTraversal(final Graph graph) {
+        this.addStep(new GraphQueryStep(this, graph, new GraphQueryBuilder(), Vertex.class));
+    }
+
+    public List<Step> getSteps() {
+        return this.steps;
     }
 
     public Memory memory() {
@@ -36,30 +45,38 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {
-        ((Pipe<S, ?>) this.pipes.get(0)).addStarts(starts);
+        ((Step<S, ?>) this.steps.get(0)).addStarts(starts);
     }
 
-    public <S, E> Traversal<S, E> addPipe(final Pipe<?, E> pipe) {
+    public <S, E> Traversal<S, E> addStep(final Step<?, E> step) {
 
-        if (this.pipes.size() > 0) {
-            pipe.setPreviousPipe(this.pipes.get(this.pipes.size() - 1));
-            this.pipes.get(this.pipes.size() - 1).setNextPipe(pipe);
+        if (this.steps.size() > 0) {
+            step.setPreviousStep(this.steps.get(this.steps.size() - 1));
+            this.steps.get(this.steps.size() - 1).setNextStep(step);
         }
-        this.pipes.add(pipe);
+        this.steps.add(step);
 
         return (Traversal<S, E>) this;
     }
 
     public boolean hasNext() {
-        return this.pipes.get(this.pipes.size() - 1).hasNext();
+        if (this.firstNext) {
+            this.optimizers().doFinalOptimizers(this);
+            this.firstNext = false;
+        }
+        return this.steps.get(this.steps.size() - 1).hasNext();
     }
 
     public E next() {
-        return ((Holder<E>) this.pipes.get(this.pipes.size() - 1).next()).get();
+        if (this.firstNext) {
+            this.optimizers().doFinalOptimizers(this);
+            this.firstNext = false;
+        }
+        return ((Holder<E>) this.steps.get(this.steps.size() - 1).next()).get();
     }
 
     public String toString() {
-        return this.getPipes().toString();
+        return this.getSteps().toString();
     }
 
     public boolean equals(final Object object) {

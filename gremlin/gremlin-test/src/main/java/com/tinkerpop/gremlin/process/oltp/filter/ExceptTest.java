@@ -21,13 +21,13 @@ public class ExceptTest {
         assertTrue(true);
     }
 
-    public void g_v1_out_exceptXg_v2X(Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
+    public void g_v1_out_exceptXg_v2X(Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<Vertex>();
-        while (pipe.hasNext()) {
+        while (step.hasNext()) {
             counter++;
-            Vertex vertex = pipe.next();
+            Vertex vertex = step.next();
             vertices.add(vertex);
             assertTrue(vertex.getValue("name").equals("josh") || vertex.getValue("name").equals("lop"));
         }
@@ -35,16 +35,16 @@ public class ExceptTest {
         assertEquals(2, vertices.size());
     }
 
-    public void g_v1_out_aggregateXxX_out_exceptXxX(Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
-        assertEquals("ripple", pipe.next().<String>getValue("name"));
-        assertFalse(pipe.hasNext());
+    public void g_v1_out_aggregateXxX_out_exceptXxX(Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
+        assertEquals("ripple", step.next().<String>getValue("name"));
+        assertFalse(step.hasNext());
     }
 
-    public void g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
-        List<String> names = Arrays.asList(pipe.next(), pipe.next());
-        assertFalse(pipe.hasNext());
+    public void g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(Iterator<String> step) {
+        System.out.println("Testing: " + step);
+        List<String> names = Arrays.asList(step.next(), step.next());
+        assertFalse(step.hasNext());
         assertEquals(2, names.size());
         assertTrue(names.contains("peter"));
         assertTrue(names.contains("josh"));

@@ -129,7 +129,7 @@ public class TinkerGraph implements Graph, Serializable {
     ////////////// BLUEPRINTS API METHODS //////////////////
 
     public <A extends Traversal<?, Vertex>> A V() {
-        Traversal traversal = new DefaultTraversal<Object, Vertex>();
+        Traversal traversal = new DefaultTraversal<Object, Vertex>(this);
         traversal.optimizers().register(new HolderOptimizer());
         traversal.addStarts(new HolderIterator<>(this.query().vertices().iterator()));
         return (A) traversal;

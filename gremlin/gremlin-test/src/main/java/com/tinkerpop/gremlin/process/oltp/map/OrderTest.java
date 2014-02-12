@@ -18,9 +18,9 @@ public class OrderTest {
         assertTrue(true);
     }
 
-    public void g_V_name_order(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
-        final List<String> names = StreamFactory.stream(pipe).collect(Collectors.toList());
+    public void g_V_name_order(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
+        final List<String> names = StreamFactory.stream(step).collect(Collectors.toList());
         assertEquals(names.size(), 6);
         assertEquals("josh", names.get(0));
         assertEquals("lop", names.get(1));
@@ -30,9 +30,9 @@ public class OrderTest {
         assertEquals("vadas", names.get(5));
     }
 
-    public void g_V_name_orderXabX(final Iterator<String> pipe) {
-        System.out.println("Testing: " + pipe);
-        final List<String> names = StreamFactory.stream(pipe).collect(Collectors.toList());
+    public void g_V_name_orderXabX(final Iterator<String> step) {
+        System.out.println("Testing: " + step);
+        final List<String> names = StreamFactory.stream(step).collect(Collectors.toList());
         assertEquals(names.size(), 6);
         assertEquals("josh", names.get(5));
         assertEquals("lop", names.get(4));
@@ -44,7 +44,7 @@ public class OrderTest {
 
     }
 
-    public void g_V_orderXa_nameXb_nameX_name(final Iterator<String> pipe) {
-        this.g_V_name_order(pipe);
+    public void g_V_orderXa_nameXb_nameX_name(final Iterator<String> step) {
+        this.g_V_name_order(step);
     }
 }

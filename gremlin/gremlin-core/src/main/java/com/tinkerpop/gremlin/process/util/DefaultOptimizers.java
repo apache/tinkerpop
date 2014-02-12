@@ -22,10 +22,10 @@ public class DefaultOptimizers implements Optimizers {
         this.optimizers.add(optimizer);
     }
 
-    public void doFinalOptimizers(final Traversal pipeline) {
+    public void doFinalOptimizers(final Traversal traversal) {
         this.optimizers.stream()
                 .filter(o -> o instanceof Optimizer.FinalOptimizer)
-                .forEach(o -> ((Optimizer.FinalOptimizer) o).optimize(pipeline));
+                .forEach(o -> ((Optimizer.FinalOptimizer) o).optimize(traversal));
     }
 
 

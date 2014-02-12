@@ -12,16 +12,16 @@ public class VertexQueryOptimizerTest {
        /* GremlinJ<Vertex, Edge> gremlin = (GremlinJ) GremlinJ.of(TinkerFactory.createClassic());
         gremlin.optimizers().get().clear();
         gremlin.V().outE("knows").has("weight", 1.0f);
-        assertEquals(3, gremlin.getPipes().size());
-        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
-        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
-        assertTrue(gremlin.getPipes().get(2) instanceof HasPipe);
-        assertEquals(Direction.OUT, ((VertexQueryPipe) gremlin.getPipes().get(1)).queryBuilder.direction);
-        assertEquals(1, ((VertexQueryPipe) gremlin.getPipes().get(1)).queryBuilder.labels.length);
-        assertEquals("knows", ((VertexQueryPipe) gremlin.getPipes().get(1)).queryBuilder.labels[0]);
-        assertEquals("weight", ((HasPipe) gremlin.getPipes().get(2)).hasContainer.key);
-        assertEquals(Compare.EQUAL, ((HasPipe) gremlin.getPipes().get(2)).hasContainer.predicate);
-        assertEquals(1.0f, ((HasPipe) gremlin.getPipes().get(2)).hasContainer.value);
+        assertEquals(3, gremlin.getSteps().size());
+        assertTrue(gremlin.getSteps().get(0) instanceof GraphQueryStep);
+        assertTrue(gremlin.getSteps().get(1) instanceof VertexQueryStep);
+        assertTrue(gremlin.getSteps().get(2) instanceof HasStep);
+        assertEquals(Direction.OUT, ((VertexQueryStep) gremlin.getSteps().get(1)).queryBuilder.direction);
+        assertEquals(1, ((VertexQueryStep) gremlin.getSteps().get(1)).queryBuilder.labels.length);
+        assertEquals("knows", ((VertexQueryStep) gremlin.getSteps().get(1)).queryBuilder.labels[0]);
+        assertEquals("weight", ((HasStep) gremlin.getSteps().get(2)).hasContainer.key);
+        assertEquals(Compare.EQUAL, ((HasStep) gremlin.getSteps().get(2)).hasContainer.predicate);
+        assertEquals(1.0f, ((HasStep) gremlin.getSteps().get(2)).hasContainer.value);
         assertTrue(gremlin.hasNext());
         assertEquals("8", gremlin.next().getId());
         assertFalse(gremlin.hasNext());
@@ -30,15 +30,15 @@ public class VertexQueryOptimizerTest {
         gremlin.optimizers().get().clear();
         gremlin.optimizers().register(new VertexQueryOptimizer());
         gremlin.V().outE("knows").has("weight", 1.0f);
-        assertEquals(2, gremlin.getPipes().size());
-        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
-        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
-        assertEquals(Direction.OUT, ((VertexQueryPipe) gremlin.getPipes().get(1)).queryBuilder.direction);
-        assertEquals(1, ((VertexQueryPipe) gremlin.getPipes().get(1)).queryBuilder.labels.length);
-        assertEquals("knows", ((VertexQueryPipe) gremlin.getPipes().get(1)).queryBuilder.labels[0]);
-        assertEquals("weight", ((VertexQueryPipe) gremlin.getPipes().get(1)).queryBuilder.hasContainers.get(0).key);
-        assertEquals(Compare.EQUAL, ((VertexQueryPipe) gremlin.getPipes().get(1)).queryBuilder.hasContainers.get(0).predicate);
-        assertEquals(1.0f, ((VertexQueryPipe) gremlin.getPipes().get(1)).queryBuilder.hasContainers.get(0).value);
+        assertEquals(2, gremlin.getSteps().size());
+        assertTrue(gremlin.getSteps().get(0) instanceof GraphQueryStep);
+        assertTrue(gremlin.getSteps().get(1) instanceof VertexQueryStep);
+        assertEquals(Direction.OUT, ((VertexQueryStep) gremlin.getSteps().get(1)).queryBuilder.direction);
+        assertEquals(1, ((VertexQueryStep) gremlin.getSteps().get(1)).queryBuilder.labels.length);
+        assertEquals("knows", ((VertexQueryStep) gremlin.getSteps().get(1)).queryBuilder.labels[0]);
+        assertEquals("weight", ((VertexQueryStep) gremlin.getSteps().get(1)).queryBuilder.hasContainers.get(0).key);
+        assertEquals(Compare.EQUAL, ((VertexQueryStep) gremlin.getSteps().get(1)).queryBuilder.hasContainers.get(0).predicate);
+        assertEquals(1.0f, ((VertexQueryStep) gremlin.getSteps().get(1)).queryBuilder.hasContainers.get(0).value);
         assertTrue(gremlin.hasNext());
         assertEquals("8", gremlin.next().getId());
         assertFalse(gremlin.hasNext());*/
@@ -68,24 +68,24 @@ public class VertexQueryOptimizerTest {
      /*   GremlinJ gremlin = (GremlinJ) GremlinJ.of(TinkerFactory.createClassic());
         gremlin.optimizers().get().clear();
         gremlin.V().outE().outV();
-        assertEquals(3, gremlin.getPipes().size());
-        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
-        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
-        assertTrue(gremlin.getPipes().get(2) instanceof EdgeVertexPipe);
+        assertEquals(3, gremlin.getSteps().size());
+        assertTrue(gremlin.getSteps().get(0) instanceof GraphQueryStep);
+        assertTrue(gremlin.getSteps().get(1) instanceof VertexQueryStep);
+        assertTrue(gremlin.getSteps().get(2) instanceof EdgeVertexStep);
 
         gremlin = (GremlinJ) GremlinJ.of(TinkerFactory.createClassic());
         gremlin.V().outE().outV();
-        assertEquals(3, gremlin.getPipes().size());
-        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
-        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
-        assertTrue(gremlin.getPipes().get(2) instanceof EdgeVertexPipe);
+        assertEquals(3, gremlin.getSteps().size());
+        assertTrue(gremlin.getSteps().get(0) instanceof GraphQueryStep);
+        assertTrue(gremlin.getSteps().get(1) instanceof VertexQueryStep);
+        assertTrue(gremlin.getSteps().get(2) instanceof EdgeVertexStep);
 
         gremlin = (GremlinJ) GremlinJ.of(TinkerFactory.createClassic());
         gremlin.V().outE().bothV();
-        assertEquals(3, gremlin.getPipes().size());
-        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
-        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
-        assertTrue(gremlin.getPipes().get(2) instanceof FlatMapPipe); */
+        assertEquals(3, gremlin.getSteps().size());
+        assertTrue(gremlin.getSteps().get(0) instanceof GraphQueryStep);
+        assertTrue(gremlin.getSteps().get(1) instanceof VertexQueryStep);
+        assertTrue(gremlin.getSteps().get(2) instanceof FlatMapStep); */
     }
 
     @Test
@@ -93,15 +93,15 @@ public class VertexQueryOptimizerTest {
        /* GremlinJ gremlin = (GremlinJ) GremlinJ.of(TinkerFactory.createClassic());
         gremlin.optimizers().get().clear();
         gremlin.V().outE().inV();
-        assertEquals(3, gremlin.getPipes().size());
-        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
-        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe);
-        assertTrue(gremlin.getPipes().get(2) instanceof EdgeVertexPipe);
+        assertEquals(3, gremlin.getSteps().size());
+        assertTrue(gremlin.getSteps().get(0) instanceof GraphQueryStep);
+        assertTrue(gremlin.getSteps().get(1) instanceof VertexQueryStep);
+        assertTrue(gremlin.getSteps().get(2) instanceof EdgeVertexStep);
 
         gremlin = (GremlinJ) GremlinJ.of(TinkerFactory.createClassic());
         gremlin.V().outE().inV();
-        assertEquals(2, gremlin.getPipes().size());
-        assertTrue(gremlin.getPipes().get(0) instanceof GraphQueryPipe);
-        assertTrue(gremlin.getPipes().get(1) instanceof VertexQueryPipe); */
+        assertEquals(2, gremlin.getSteps().size());
+        assertTrue(gremlin.getSteps().get(0) instanceof GraphQueryStep);
+        assertTrue(gremlin.getSteps().get(1) instanceof VertexQueryStep); */
     }
 }

@@ -16,12 +16,12 @@ public class IntervalTest {
         assertTrue(true);
     }
 
-    public void g_v1_outE_intervalXweight_0_06X_inV(final Iterator<Vertex> pipe) {
-        System.out.println("Testing: " + pipe);
-        while (pipe.hasNext()) {
-            Vertex vertex = pipe.next();
+    public void g_v1_outE_intervalXweight_0_06X_inV(final Iterator<Vertex> step) {
+        System.out.println("Testing: " + step);
+        while (step.hasNext()) {
+            Vertex vertex = step.next();
             assertTrue(vertex.getValue("name").equals("vadas") || vertex.getValue("name").equals("lop"));
         }
-        assertFalse(pipe.hasNext());
+        assertFalse(step.hasNext());
     }
 }

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.oltp.util;
 
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.Step;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -13,10 +13,10 @@ import java.util.Queue;
 public class ExpandablePipeIterator<E> implements Iterator<Holder<E>> {
 
     private final ExpandableIterator<Holder<E>> expander = new ExpandableIterator<>();
-    private Pipe<?, E> hostPipe = EmptyPipe.instance();
+    private Step<?, E> hostStep = EmptyStep.instance();
 
-    public ExpandablePipeIterator(final Pipe<?, E> hostPipe) {
-        this.hostPipe = hostPipe;
+    public ExpandablePipeIterator(final Step<?, E> hostStep) {
+        this.hostStep = hostStep;
     }
 
     public void clear() {
@@ -24,12 +24,12 @@ public class ExpandablePipeIterator<E> implements Iterator<Holder<E>> {
     }
 
     public boolean hasNext() {
-        return this.hostPipe.getPreviousPipe().hasNext() || this.expander.hasNext();
+        return this.hostStep.getPreviousStep().hasNext() || this.expander.hasNext();
     }
 
     public Holder<E> next() {
-        if (this.hostPipe.getPreviousPipe().hasNext())
-            return (Holder<E>) this.hostPipe.getPreviousPipe().next();
+        if (this.hostStep.getPreviousStep().hasNext())
+            return (Holder<E>) this.hostStep.getPreviousStep().next();
         else
             return this.expander.next();
     }

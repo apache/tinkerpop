@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.oltp.util;
 
-import com.tinkerpop.gremlin.process.Pipe;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 
 import java.util.Iterator;
@@ -14,33 +14,33 @@ public class GremlinHelper {
 
     private static final String UNDERSCORE = "_";
 
-    public static boolean isLabeled(final Pipe pipe) {
-        return !pipe.getAs().startsWith(UNDERSCORE);
+    public static boolean isLabeled(final Step step) {
+        return !step.getAs().startsWith(UNDERSCORE);
     }
 
     public static boolean isLabeled(final String as) {
         return !as.startsWith(UNDERSCORE);
     }
 
-    public static <S, E> Pipe<S, E> getAs(final String as, final Traversal<?, ?> pipeline) {
-        return (Pipe) pipeline.getPipes().stream()
+    public static <S, E> Step<S, E> getAs(final String as, final Traversal<?, ?> traversal) {
+        return (Step) traversal.getSteps().stream()
                 .filter(p -> as.equals(p.getAs()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("The provided name does not exist: " + as));
     }
 
-    public static boolean asExists(final String as, final Traversal<?, ?> pipeline) {
-        return pipeline.getPipes().stream()
+    public static boolean asExists(final String as, final Traversal<?, ?> traversal) {
+        return traversal.getSteps().stream()
                 .filter(p -> as.equals(p.getAs()))
                 .findFirst().isPresent();
     }
 
-    public static <S, E> Pipe<S, ?> getStart(final Traversal<S, E> pipeline) {
-        return pipeline.getPipes().get(0);
+    public static <S, E> Step<S, ?> getStart(final Traversal<S, E> traversal) {
+        return traversal.getSteps().get(0);
     }
 
-    public static <S, E> Pipe<?, E> getEnd(final Traversal<S, E> pipeline) {
-        return pipeline.getPipes().get(pipeline.getPipes().size() - 1);
+    public static <S, E> Step<?, E> getEnd(final Traversal<S, E> traversal) {
+        return traversal.getSteps().get(traversal.getSteps().size() - 1);
     }
 
     public static boolean areEqual(final Iterator a, final Iterator b) {
@@ -74,29 +74,29 @@ public class GremlinHelper {
         }
     }
 
-    public static void removePipe(final Pipe pipe, final Traversal pipeline) {
-        final List<Pipe> pipes = pipeline.getPipes();
-        final int index = pipes.indexOf(pipe);
-        if (index - 1 >= 0 && index + 1 < pipes.size()) {
-            pipes.get(index - 1).setNextPipe(pipes.get(index + 1));
-            pipes.get(index + 1).setPreviousPipe(pipes.get(index - 1));
+    public static void removePipe(final Step step, final Traversal traversal) {
+        final List<Step> steps = traversal.getSteps();
+        final int index = steps.indexOf(step);
+        if (index - 1 >= 0 && index + 1 < steps.size()) {
+            steps.get(index - 1).setNextStep(steps.get(index + 1));
+            steps.get(index + 1).setPreviousStep(steps.get(index - 1));
         }
-        pipes.remove(pipe);
+        steps.remove(step);
     }
 
-    public static void insertPipe(final Pipe pipe, final int index, final Traversal pipeline) {
-        final List<Pipe> pipes = pipeline.getPipes();
-        final Pipe leftPipe = pipes.get(index - 1);
-        final Pipe rightPipe = pipes.get(index);
-        leftPipe.setNextPipe(pipe);
-        pipe.setPreviousPipe(leftPipe);
-        pipe.setNextPipe(rightPipe);
-        rightPipe.setPreviousPipe(pipe);
-        pipes.add(index, pipe);
+    public static void insertPipe(final Step step, final int index, final Traversal traversal) {
+        final List<Step> steps = traversal.getSteps();
+        final Step leftStep = steps.get(index - 1);
+        final Step rightStep = steps.get(index);
+        leftStep.setNextStep(step);
+        step.setPreviousStep(leftStep);
+        step.setNextStep(rightStep);
+        rightStep.setPreviousStep(step);
+        steps.add(index, step);
     }
 
-    public static String makePipeString(final Pipe pipe, final Object... arguments) {
-        final StringBuilder builder = new StringBuilder(pipe.getClass().getSimpleName());
+    public static String makePipeString(final Step step, final Object... arguments) {
+        final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
         if (arguments.length > 0) {
             builder.append("(");
             for (int i = 0; i < arguments.length; i++) {
@@ -105,8 +105,8 @@ public class GremlinHelper {
             }
             builder.append(")");
         }
-        if (GremlinHelper.isLabeled(pipe))
-            builder.append("@").append(pipe.getAs());
+        if (GremlinHelper.isLabeled(step))
+            builder.append("@").append(step.getAs());
         return builder.toString();
     }
 }
