@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.oltp.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.query.util.HasContainer;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,6 +30,6 @@ public class IntervalStep<S> extends FilterStep<S> {
     }
 
     public String toString() {
-        return GremlinHelper.makeStepString(this, this.startContainer, this.endContainer);
+        return TraversalHelper.makeStepString(this, this.startContainer, this.endContainer);
     }
 }

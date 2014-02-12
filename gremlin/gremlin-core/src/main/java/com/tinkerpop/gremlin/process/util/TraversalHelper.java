@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinHelper {
+public class TraversalHelper {
 
     private static final String UNDERSCORE = "_";
 
@@ -105,7 +105,7 @@ public class GremlinHelper {
             }
             builder.append(")");
         }
-        if (GremlinHelper.isLabeled(step))
+        if (TraversalHelper.isLabeled(step))
             builder.append("@").append(step.getAs());
         return builder.toString();
     }

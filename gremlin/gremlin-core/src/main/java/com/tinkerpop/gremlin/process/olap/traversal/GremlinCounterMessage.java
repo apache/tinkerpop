@@ -1,16 +1,16 @@
-package com.tinkerpop.gremlin.process.olap.gremlin;
+package com.tinkerpop.gremlin.process.olap.traversal;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.util.MapHelper;
 import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class GremlinCounterMessage extends GremlinMessage {
             if (holder.isDone()) {
                 MapHelper.incr(tracker.getDoneObjectTracks(), holder, counts);
             } else {
-                final Step step = GremlinHelper.getAs(holder.getFuture(), gremlin);
+                final Step step = TraversalHelper.getAs(holder.getFuture(), gremlin);
                 for (int i = 0; i < counts; i++) {
                     step.addStarts(new SingleIterator(holder));
                 }
@@ -89,7 +89,7 @@ public class GremlinCounterMessage extends GremlinMessage {
             return false;
         }
 
-        final Step step = GremlinHelper.getAs(this.holder.getFuture(), gremlin);
+        final Step step = TraversalHelper.getAs(this.holder.getFuture(), gremlin);
 
 
         MapHelper.incr(tracker.getGraphTracks(), this.holder, this.counter);

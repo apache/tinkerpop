@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.oltp.filter.RangeStep;
 import com.tinkerpop.gremlin.process.oltp.map.AnnotatedListQueryStep;
 import com.tinkerpop.gremlin.process.oltp.map.IdentityStep;
 import com.tinkerpop.gremlin.process.oltp.map.ValueStep;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +32,7 @@ public class AnnotatedListQueryOptimizer implements Optimizer.StepOptimizer {
         if (!PIPES_TO_FOLD.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
             return true;
         else {
-            if (GremlinHelper.isLabeled(step))
+            if (TraversalHelper.isLabeled(step))
                 return true;
         }
 
@@ -46,7 +46,7 @@ public class AnnotatedListQueryOptimizer implements Optimizer.StepOptimizer {
                 break;
         }
 
-        if (null != annotatedListQueryPipe && !GremlinHelper.isLabeled(annotatedListQueryPipe)) {
+        if (null != annotatedListQueryPipe && !TraversalHelper.isLabeled(annotatedListQueryPipe)) {
             if (step instanceof ValueStep) {
                 annotatedListQueryPipe.generateFunction(false);
             } else if (step instanceof HasStep) {

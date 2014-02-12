@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.oltp.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,6 +36,6 @@ public class RangeStep<S> extends FilterStep<S> {
     }
 
     public String toString() {
-        return GremlinHelper.makeStepString(this, this.low, this.high);
+        return TraversalHelper.makeStepString(this, this.low, this.high);
     }
 }

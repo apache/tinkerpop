@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.olap.gremlin;
+package com.tinkerpop.gremlin.process.olap.traversal;
 
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;

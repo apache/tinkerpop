@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.oltp.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.ExpandableStepIterator;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -93,6 +93,6 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected abstract Holder<E> processNextStart() throws NoSuchElementException;
 
     public String toString() {
-        return GremlinHelper.makeStepString(this);
+        return TraversalHelper.makeStepString(this);
     }
 }

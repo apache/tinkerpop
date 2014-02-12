@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.AbstractStep;
 import com.tinkerpop.gremlin.process.oltp.util.TraversalRing;
 import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -28,7 +28,7 @@ public class IntersectStep<S, E> extends AbstractStep<S, E> {
                 while (counter++ < this.traversalRing.size()) {
                     final Traversal<S, E> traversal = this.traversalRing.next();
                     if (traversal.hasNext()) {
-                        return GremlinHelper.getEnd(traversal).next();
+                        return TraversalHelper.getEnd(traversal).next();
                     }
                 }
                 this.drainState = false;
@@ -39,7 +39,7 @@ public class IntersectStep<S, E> extends AbstractStep<S, E> {
                 if (this.traversalRing.stream().map(p -> p.hasNext()).reduce(true, (a, b) -> a && b))
                     this.drainState = true;
                 else
-                    this.traversalRing.stream().forEach(GremlinHelper::iterate);
+                    this.traversalRing.stream().forEach(TraversalHelper::iterate);
             }
         }
     }

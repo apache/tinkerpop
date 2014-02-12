@@ -2,11 +2,11 @@ package com.tinkerpop.gremlin.process.oltp.map;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.GraphQueryBuilder;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
 import com.tinkerpop.gremlin.process.util.HolderIterator;
 
 /**
@@ -47,9 +47,9 @@ public class GraphQueryStep extends FlatMapStep<Element, Element> {
 
     public String toString() {
         if (this.queryBuilder.hasContainers.size() > 0)
-            return GremlinHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase(), this.queryBuilder);
+            return TraversalHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase(), this.queryBuilder);
         else
-            return GremlinHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase());
+            return TraversalHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase());
     }
 
 }

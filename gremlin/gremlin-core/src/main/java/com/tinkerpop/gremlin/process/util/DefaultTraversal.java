@@ -80,7 +80,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public boolean equals(final Object object) {
-        return object instanceof Iterator && GremlinHelper.areEqual(this, (Iterator) object);
+        return object instanceof Iterator && TraversalHelper.areEqual(this, (Iterator) object);
     }
 
 }

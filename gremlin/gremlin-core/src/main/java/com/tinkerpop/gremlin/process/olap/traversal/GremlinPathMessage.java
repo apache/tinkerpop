@@ -1,9 +1,10 @@
-package com.tinkerpop.gremlin.process.olap.gremlin;
+package com.tinkerpop.gremlin.process.olap.traversal;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.util.MapHelper;
 import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -12,7 +13,6 @@ import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.MicroPath;
 import com.tinkerpop.gremlin.process.Path;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,7 +52,7 @@ public class GremlinPathMessage extends GremlinMessage {
                         MapHelper.incr(tracker.getDoneObjectTracks(), object, holder);
                     }
                 } else {
-                    final Step step = GremlinHelper.getAs(holder.getFuture(), gremlin);
+                    final Step step = TraversalHelper.getAs(holder.getFuture(), gremlin);
                     step.addStarts(new SingleIterator(holder));
                     if (processStep(step, vertex, messenger, tracker))
                         voteToHalt.set(false);
@@ -72,7 +72,7 @@ public class GremlinPathMessage extends GremlinMessage {
             return false;
         }
 
-        final Step step = GremlinHelper.getAs(this.holder.getFuture(), gremlin);
+        final Step step = TraversalHelper.getAs(this.holder.getFuture(), gremlin);
         MapHelper.incr(tracker.getGraphTracks(), this.holder.get(), this.holder);
         step.addStarts(new SingleIterator(this.holder));
         return processStep(step, vertex, messenger, tracker);

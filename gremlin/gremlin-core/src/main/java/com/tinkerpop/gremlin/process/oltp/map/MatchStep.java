@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.AbstractStep;
 import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,12 +29,12 @@ public class MatchStep<S, E> extends AbstractStep<S, E> {
         this.inAs = inAs;
         this.outAs = outAs;
         for (final Traversal p1 : traversals) {
-            final String start = GremlinHelper.getStart(p1).getAs();
-            final String end = GremlinHelper.getEnd(p1).getAs();
-            if (!GremlinHelper.isLabeled(start)) {
+            final String start = TraversalHelper.getStart(p1).getAs();
+            final String end = TraversalHelper.getEnd(p1).getAs();
+            if (!TraversalHelper.isLabeled(start)) {
                 throw new IllegalArgumentException("All match traversals must have their start pipe labeled");
             }
-            if (!GremlinHelper.isLabeled(end)) {
+            if (!TraversalHelper.isLabeled(end)) {
                 final List<Traversal> list = this.predicateTraversals.getOrDefault(start, new ArrayList<>());
                 this.predicateTraversals.put(start, list);
                 list.add(p1);
@@ -43,7 +43,7 @@ public class MatchStep<S, E> extends AbstractStep<S, E> {
                     if (null != this.endTraversal)
                         throw new IllegalArgumentException("There can only be one outAs labeled end traversal");
                     this.endTraversal = p1;
-                    this.endTraversalStartAs = GremlinHelper.getStart(p1).getAs();
+                    this.endTraversalStartAs = TraversalHelper.getStart(p1).getAs();
                 } else {
                     final List<Traversal> list = this.internalTraversals.getOrDefault(start, new ArrayList<>());
                     this.internalTraversals.put(start, list);
@@ -58,7 +58,7 @@ public class MatchStep<S, E> extends AbstractStep<S, E> {
     protected Holder<E> processNextStart() {
         while (true) {
             if (this.endTraversal.hasNext()) {
-                final Holder<E> holder = (Holder<E>) GremlinHelper.getEnd(this.endTraversal).next();
+                final Holder<E> holder = (Holder<E>) TraversalHelper.getEnd(this.endTraversal).next();
                 if (doPredicates(this.outAs, holder)) {
                     return holder;
                 }
@@ -81,7 +81,7 @@ public class MatchStep<S, E> extends AbstractStep<S, E> {
 
         for (final Traversal traversal : this.internalTraversals.get(as)) {
             traversal.addStarts(new SingleIterator<>(holder));
-            final Step<?, ?> endStep = GremlinHelper.getEnd(traversal);
+            final Step<?, ?> endStep = TraversalHelper.getEnd(traversal);
             while (endStep.hasNext()) {
                 final Holder temp = endStep.next();
                 doMatch(endStep.getAs(), temp);
@@ -93,7 +93,7 @@ public class MatchStep<S, E> extends AbstractStep<S, E> {
         if (this.predicateTraversals.containsKey(as)) {
             for (final Traversal traversal : this.predicateTraversals.get(as)) {
                 traversal.addStarts(new SingleIterator<>(holder));
-                if (!GremlinHelper.hasNextIteration(traversal))
+                if (!TraversalHelper.hasNextIteration(traversal))
                     return false;
             }
         }

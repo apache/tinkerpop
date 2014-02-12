@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.oltp.filter.RangeStep;
 import com.tinkerpop.gremlin.process.oltp.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.oltp.map.IdentityStep;
 import com.tinkerpop.gremlin.process.oltp.map.VertexQueryStep;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
         if (!PIPES_TO_FOLD.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
             return true;
         else {
-            if (GremlinHelper.isLabeled(step))
+            if (TraversalHelper.isLabeled(step))
                 return true;
         }
 
@@ -47,7 +47,7 @@ public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
                 break;
         }
 
-        if (null != vertexQueryPipe && !GremlinHelper.isLabeled(vertexQueryPipe)) {
+        if (null != vertexQueryPipe && !TraversalHelper.isLabeled(vertexQueryPipe)) {
             if (step instanceof EdgeVertexStep) {
                 if (((EdgeVertexStep) step).direction.equals(vertexQueryPipe.queryBuilder.direction.opposite()))
                     vertexQueryPipe.returnClass = Vertex.class;

@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.AbstractStep;
 import com.tinkerpop.gremlin.process.oltp.util.TraversalRing;
 import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -25,7 +25,7 @@ public class UnionStep<S, E> extends AbstractStep<S, E> {
             int counter = 0;
             while (counter++ < this.traversalRing.size()) {
                 final Traversal<S, E> p = this.traversalRing.next();
-                if (p.hasNext()) return GremlinHelper.getEnd(p).next();
+                if (p.hasNext()) return TraversalHelper.getEnd(p).next();
             }
             final Holder<S> start = this.starts.next();
             this.traversalRing.forEach(p -> p.addStarts(new SingleIterator<>(start.makeSibling())));

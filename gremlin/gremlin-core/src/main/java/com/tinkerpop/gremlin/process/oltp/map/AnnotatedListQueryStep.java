@@ -3,12 +3,12 @@ package com.tinkerpop.gremlin.process.oltp.map;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.oltp.util.FastNoSuchElementException;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.AnnotatedListQueryBuilder;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
 
 import java.util.Collections;
 
@@ -86,6 +86,6 @@ public class AnnotatedListQueryStep<V> extends FlatMapStep<Vertex, AnnotatedValu
     }
 
     public String toString() {
-        return GremlinHelper.makeStepString(this, this.queryBuilder);
+        return TraversalHelper.makeStepString(this, this.queryBuilder);
     }
 }

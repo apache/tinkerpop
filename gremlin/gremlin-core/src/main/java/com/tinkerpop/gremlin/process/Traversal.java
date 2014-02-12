@@ -39,7 +39,7 @@ import com.tinkerpop.gremlin.process.oltp.util.FunctionRing;
 import com.tinkerpop.gremlin.process.oltp.util.MapHelper;
 import com.tinkerpop.gremlin.process.oltp.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.oltp.util.structures.Tree;
-import com.tinkerpop.gremlin.process.util.GremlinHelper;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -390,7 +390,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default Traversal<S, E> as(final String as) {
-        if (GremlinHelper.asExists(as, this))
+        if (TraversalHelper.asExists(as, this))
             throw new IllegalStateException("The named step already exists");
         final List<Step> steps = this.getSteps();
         steps.get(steps.size() - 1).setAs(as);
@@ -498,7 +498,7 @@ public interface Traversal<S, E> extends Iterator<E> {
         final Tree<Object> tree = new Tree<>();
         Tree<Object> depth = tree;
         HolderOptimizer.doPathTracking(this);
-        final Step endStep = GremlinHelper.getEnd(this);
+        final Step endStep = TraversalHelper.getEnd(this);
         final FunctionRing functionRing = new FunctionRing(branchFunctions);
         try {
             while (true) {
