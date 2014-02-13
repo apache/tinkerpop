@@ -24,7 +24,7 @@ public class TinkerEdgesStep extends EdgesStep {
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
     public TinkerEdgesStep(final Traversal traversal, final TinkerGraph graph) {
-        super(traversal, TinkerHelper.getEdges(graph).iterator());
+        super(traversal);
         this.graph = graph;
         this.generateHolderIterator(false);
     }

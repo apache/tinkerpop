@@ -24,7 +24,7 @@ public class TinkerVerticesStep extends VerticesStep {
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
     public TinkerVerticesStep(final Traversal traversal, final TinkerGraph graph) {
-        super(traversal, TinkerHelper.getVertices(graph).iterator());
+        super(traversal);
         this.graph = graph;
         this.generateHolderIterator(false);
     }
