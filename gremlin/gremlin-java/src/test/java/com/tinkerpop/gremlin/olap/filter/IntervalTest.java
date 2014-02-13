@@ -19,6 +19,6 @@ public class IntervalTest extends com.tinkerpop.gremlin.process.steps.filter.Int
 
     @Test
     public void g_v1_outE_intervalXweight_0_06X_inV() {
-        // super.g_v1_outE_intervalXweight_0_06X_inV(new GremlinResult<>(g, () -> GremlinJ.of().v(1).outE().interval("weight", 0.0f, 0.6f).inV()));
+        // super.g_v1_outE_intervalXweight_0_06X_inV(new TraversalResult<>(g, () -> GremlinJ.of().v(1).outE().interval("weight", 0.0f, 0.6f).inV()));
     }
 }

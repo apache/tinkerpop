@@ -19,6 +19,6 @@ public class JumpTest extends com.tinkerpop.gremlin.process.steps.map.JumpTest {
 
     @Test
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
-        // super.g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(new GremlinResult<>(g, () -> GremlinJ.of().v("1").as("x").out().jump("x", h -> h.getLoops() < 2).value("name")));
+        // super.g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(new TraversalResult<>(g, () -> GremlinJ.of().v("1").as("x").out().jump("x", h -> h.getLoops() < 2).value("name")));
     }
 }

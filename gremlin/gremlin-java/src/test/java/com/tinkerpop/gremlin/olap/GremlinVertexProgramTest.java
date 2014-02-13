@@ -17,7 +17,7 @@ public class GremlinVertexProgramTest {
     public void testGremlinOLAP() throws Exception {
         final Graph g = TinkerFactory.createClassic();
         final ComputeResult result =
-                g.compute().program(GremlinVertexProgram.create().gremlin(() -> (GremlinJ)
+                g.compute().program(TraversalVertexProgram.create().gremlin(() -> (GremlinJ)
                         //Gremlin.of().out("created").in("created").value("name").map(o -> o.toString().length()))
                         //Gremlin.of().out().out().property("name").value().path())
                         GremlinJ.of().V().as("x").outE().inV().jump("x", o -> o.getLoops() < 2).value("name").map(s -> s.toString().length()).path())
@@ -26,17 +26,17 @@ public class GremlinVertexProgramTest {
 
         /////////// GREMLIN REPL LOOK
 
-        if (result.getGraphMemory().get(GremlinVertexProgram.TRACK_PATHS)) {
+        if (result.getGraphMemory().get(TraversalVertexProgram.TRACK_PATHS)) {
             System.out.println("gremlin> " + result.getGraphMemory().<Supplier>get("gremlinPipeline").get());
             StreamFactory.stream(g.query().vertices()).forEach(v -> {
-                final GremlinPaths tracker = result.getVertexMemory().<GremlinPaths>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).get();
+                final TraversalPaths tracker = result.getVertexMemory().<TraversalPaths>getProperty(v, TraversalVertexProgram.GREMLIN_TRACKER).get();
                 tracker.getDoneGraphTracks().forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a)));
                 tracker.getDoneObjectTracks().forEach((a, b) -> Stream.generate(() -> 1).limit(((List) b).size()).forEach(t -> System.out.println("==>" + a)));
             });
         } else {
             System.out.println("gremlin> " + result.getGraphMemory().<Supplier>get("gremlinPipeline").get());
             StreamFactory.stream(g.query().vertices()).forEach(v -> {
-                final GremlinCounters tracker = result.getVertexMemory().<GremlinCounters>getProperty(v, GremlinVertexProgram.GREMLIN_TRACKER).get();
+                final TraversalCounters tracker = result.getVertexMemory().<TraversalCounters>getProperty(v, TraversalVertexProgram.GREMLIN_TRACKER).get();
                 tracker.getDoneGraphTracks().forEach((a, b) -> Stream.generate(() -> 1).limit(b).forEach(t -> System.out.println("==>" + a)));
                 tracker.getDoneObjectTracks().forEach((a, b) -> Stream.generate(() -> 1).limit(b).forEach(t -> System.out.println("==>" + a)));
             });
@@ -47,7 +47,7 @@ public class GremlinVertexProgramTest {
     public void testIterable() throws Exception {
         final Graph g = TinkerFactory.createClassic();
         final BiFunction<String, Iterator<Integer>, Long> reduction = (k, v) -> StreamFactory.stream(v).count();
-        //   new GremlinResult<>(g, () -> GremlinJ.of().v("1").both().both().value("name")).forEachRemaining(System.out::println);
+        //   new TraversalResult<>(g, () -> GremlinJ.of().v("1").both().both().value("name")).forEachRemaining(System.out::println);
 
     }
 }

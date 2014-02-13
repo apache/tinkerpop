@@ -24,7 +24,7 @@ public class GroupCountTest extends com.tinkerpop.gremlin.process.steps.sideEffe
 
     @Test
     public void g_V_outXcreatedX_name_groupCount() {
-        //super.g_V_outXcreatedX_name_groupCount(new GremlinResult<>(g, () -> Gremlin.of().V().out("created").value("name").groupCount());
+        //super.g_V_outXcreatedX_name_groupCount(new TraversalResult<>(g, () -> Gremlin.of().V().out("created").value("name").groupCount());
     }
 
     @Test

@@ -19,13 +19,13 @@ public class PathTest extends com.tinkerpop.gremlin.process.steps.map.PathTest {
 
     @Test
     public void g_v1_propertyXnameX_path() {
-        // super.g_v1_propertyXnameX_path(new GremlinResult<>(g, () -> GremlinJ.of().v("1").value("name").path()));
+        // super.g_v1_propertyXnameX_path(new TraversalResult<>(g, () -> GremlinJ.of().v("1").value("name").path()));
     }
 
     @Test
     public void g_v1_out_pathXage_nameX() {
         //super.g_v1_out_pathXage_nameX(
-        //        new GremlinResult<>(g, () -> Gremlin.of().v("1").out().path(v -> ((Vertex) v).getValue("age"), v -> ((Vertex) v).getValue("name"))));
+        //        new TraversalResult<>(g, () -> Gremlin.of().v("1").out().path(v -> ((Vertex) v).getValue("age"), v -> ((Vertex) v).getValue("name"))));
 
     }
 
