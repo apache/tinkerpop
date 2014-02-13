@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.Messenger;

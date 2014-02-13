@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.algorithm.generator;
 
-import com.tinkerpop.gremlin.structure.AbstractGremlinTest;
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;

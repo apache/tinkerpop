@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.junit.Test;
 

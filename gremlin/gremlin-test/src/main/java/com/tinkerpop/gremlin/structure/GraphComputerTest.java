@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import org.junit.Test;
 
 /**

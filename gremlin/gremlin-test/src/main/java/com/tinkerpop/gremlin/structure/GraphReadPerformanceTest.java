@@ -6,6 +6,7 @@ import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.algorithm.generator.Distribution;
 import com.tinkerpop.gremlin.algorithm.generator.DistributionGenerator;
 import com.tinkerpop.gremlin.algorithm.generator.PowerLawDistribution;

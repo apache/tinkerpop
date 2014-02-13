@@ -1,5 +1,9 @@
-package com.tinkerpop.gremlin.structure;
+package com.tinkerpop.gremlin;
 
+import com.tinkerpop.gremlin.structure.AbstractStructureSuite;
+import com.tinkerpop.gremlin.structure.FeatureRequirement;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.StructureStandardSuite;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;

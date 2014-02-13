@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.GraphAnnotationFeatures;

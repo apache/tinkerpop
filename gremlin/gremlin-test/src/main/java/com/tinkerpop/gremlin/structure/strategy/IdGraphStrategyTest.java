@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.structure.AbstractGremlinTest;
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
