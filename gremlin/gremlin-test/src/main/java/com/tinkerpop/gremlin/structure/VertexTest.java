@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -84,8 +85,8 @@ public class VertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
-        final Vertex v = g.addVertex(Element.ID, StructureStandardSuite.GraphManager.get().convertId("1"));
-        final Vertex u = g.query().ids(StructureStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
+        final Vertex v = g.addVertex(Element.ID, GraphManager.get().convertId("1"));
+        final Vertex u = g.query().ids(GraphManager.get().convertId("1")).vertices().iterator().next();
         assertEquals(v, u);
     }
 
@@ -106,8 +107,8 @@ public class VertexTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
-        final Vertex v = g.addVertex(Element.ID, StructureStandardSuite.GraphManager.get().convertId("1"));
-        final Vertex u = g.query().ids(StructureStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
+        final Vertex v = g.addVertex(Element.ID, GraphManager.get().convertId("1"));
+        final Vertex u = g.query().ids(GraphManager.get().convertId("1")).vertices().iterator().next();
         assertEquals(v, u);
 
         final Set<Vertex> set = new HashSet<>();
@@ -115,8 +116,8 @@ public class VertexTest extends AbstractGremlinTest {
         set.add(v);
         set.add(u);
         set.add(u);
-        set.add(g.query().ids(StructureStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
-        set.add(g.query().ids(StructureStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
+        set.add(g.query().ids(GraphManager.get().convertId("1")).vertices().iterator().next());
+        set.add(g.query().ids(GraphManager.get().convertId("1")).vertices().iterator().next());
 
         assertEquals(1, set.size());
         assertEquals(v.hashCode(), u.hashCode());

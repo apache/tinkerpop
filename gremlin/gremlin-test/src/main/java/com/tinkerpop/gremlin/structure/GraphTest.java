@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.GraphManager;
+import com.tinkerpop.gremlin.GraphProvider;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.junit.Test;
 
@@ -87,7 +89,7 @@ public class GraphTest extends AbstractGremlinTest {
         g.query().vertices().forEach(Vertex::remove);
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
 
-        final String edgeLabel = StructureStandardSuite.GraphManager.get().convertLabel("test");
+        final String edgeLabel = GraphManager.get().convertLabel("test");
         Vertex v1 = g.addVertex();
         Vertex v2 = g.addVertex();
         Edge e = v1.addEdge(edgeLabel, v2);
@@ -132,7 +134,7 @@ public class GraphTest extends AbstractGremlinTest {
                 final Vertex a = vertices.get(random.nextInt(vertices.size()));
                 final Vertex b = vertices.get(random.nextInt(vertices.size()));
                 if (a != b) {
-                    edges.add(a.addEdge(AbstractStructureSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
+                    edges.add(a.addEdge(GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
                     created = true;
                 }
             }
@@ -165,7 +167,7 @@ public class GraphTest extends AbstractGremlinTest {
         for (int i = 0; i < vertexCount; i = i + 2) {
             final Vertex a = vertices.get(i);
             final Vertex b = vertices.get(i + 1);
-            edges.add(a.addEdge(AbstractStructureSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
+            edges.add(a.addEdge(GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
         }
 
         tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, vertexCount / 2));
@@ -188,7 +190,7 @@ public class GraphTest extends AbstractGremlinTest {
      */
     @Test
     public void shouldEvaluateConnectivityPatterns() {
-        final AbstractStructureSuite.GraphProvider graphProvider = AbstractStructureSuite.GraphManager.get();
+        final GraphProvider graphProvider = GraphManager.get();
         final Graph graph = this.g;
 
         final Vertex a = graph.addVertex(Element.ID, graphProvider.convertId("1"));
@@ -268,7 +270,7 @@ public class GraphTest extends AbstractGremlinTest {
 
     @Test
     public void shouldTraverseInOutFromVertexWithSingleEdgeLabelFilter() {
-        final AbstractStructureSuite.GraphProvider graphProvider = AbstractStructureSuite.GraphManager.get();
+        final GraphProvider graphProvider = GraphManager.get();
         final Graph graph = g;
 
         final Vertex a = graph.addVertex();
@@ -317,7 +319,7 @@ public class GraphTest extends AbstractGremlinTest {
 
     @Test
     public void shouldTraverseInOutFromVertexWithMultipleEdgeLabelFilter() {
-        final AbstractStructureSuite.GraphProvider graphProvider = AbstractStructureSuite.GraphManager.get();
+        final GraphProvider graphProvider = GraphManager.get();
         final Graph graph = g;
         final Vertex a = graph.addVertex();
         final Vertex b = graph.addVertex();
@@ -353,7 +355,7 @@ public class GraphTest extends AbstractGremlinTest {
 
     @Test
     public void shouldTestTreeConnectivity() {
-        final AbstractStructureSuite.GraphProvider graphProvider = AbstractStructureSuite.GraphManager.get();
+        final GraphProvider graphProvider = GraphManager.get();
         final Graph graph = g;
 
         int branchSize = 11;
@@ -400,7 +402,7 @@ public class GraphTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_PERSISTENCE)
     public void shouldPersistDataOnClose() throws Exception {
-        final AbstractStructureSuite.GraphProvider graphProvider = AbstractStructureSuite.GraphManager.get();
+        final GraphProvider graphProvider = GraphManager.get();
         final Graph graph = g;
 
         final Vertex v = graph.addVertex();

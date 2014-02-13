@@ -1,5 +1,6 @@
 package com.tinkerpop.tinkergraph;
 
+import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.structure.StructureStandardSuite;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
@@ -17,7 +18,7 @@ import java.util.Map;
  */
 @RunWith(StructureStandardSuite.class)
 @StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class)
-public class TinkerGraphStructureStandardTest extends StructureStandardSuite.AbstractGraphProvider {
+public class TinkerGraphStructureStandardTest extends AbstractGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName) {

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.GraphAnnotationFeatures;
@@ -141,7 +142,7 @@ public class FeatureSupportTest  {
         @Test
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void ifAnIdCanBeAssignedToVertexThenItMustSupportUserSuppliedIds() throws Exception {
-            final Vertex v = g.addVertex(Element.ID, StructureStandardSuite.GraphManager.get().convertId(99999943835l));
+            final Vertex v = g.addVertex(Element.ID, GraphManager.get().convertId(99999943835l));
             tryCommit(g, graph -> assertThat(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS),
                     v.getId().toString(),
                     is(not("99999943835"))));
@@ -196,7 +197,7 @@ public class FeatureSupportTest  {
         private Edge createEdgeForPropertyFeatureTests() {
             final Vertex vertexA = g.addVertex();
             final Vertex vertexB = g.addVertex();
-            return vertexA.addEdge(StructureStandardSuite.GraphManager.get().convertLabel("knows"), vertexB);
+            return vertexA.addEdge(GraphManager.get().convertLabel("knows"), vertexB);
         }
     }
 

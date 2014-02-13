@@ -1,9 +1,7 @@
 package com.tinkerpop.gremlin;
 
-import com.tinkerpop.gremlin.structure.AbstractStructureSuite;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.StructureStandardSuite;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
@@ -29,7 +27,7 @@ public abstract class AbstractGremlinTest {
     protected Graph g;
     protected Configuration config;
     protected Optional<? extends GraphStrategy> strategyToTest;
-    protected AbstractStructureSuite.GraphProvider graphProvider;
+    protected GraphProvider graphProvider;
 
     @Rule
     public TestName name = new TestName();
@@ -44,7 +42,7 @@ public abstract class AbstractGremlinTest {
 
     @Before
     public void setup() throws Exception {
-        graphProvider = StructureStandardSuite.GraphManager.get();
+        graphProvider = GraphManager.get();
         config = graphProvider.standardGraphConfiguration();
         g = graphProvider.openTestGraph(config, strategyToTest);
 

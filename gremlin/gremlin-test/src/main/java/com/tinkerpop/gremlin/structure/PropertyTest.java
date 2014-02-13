@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
@@ -176,7 +177,7 @@ public class PropertyTest {
         private Edge createEdgeForPropertyFeatureTests() {
             final Vertex vertexA = g.addVertex();
             final Vertex vertexB = g.addVertex();
-            return vertexA.addEdge(StructureStandardSuite.GraphManager.get().convertLabel("knows"), vertexB);
+            return vertexA.addEdge(GraphManager.get().convertLabel("knows"), vertexB);
         }
     }
 
