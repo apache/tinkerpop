@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.algorithm.olap;
 
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
@@ -56,9 +56,10 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.setProperty(PAGE_RANK, newPageRank);
             if (this.weighted)
-                messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getProperty(EDGE_COUNT).orElse(0.0d));
-            else
                 messenger.sendMessage(vertex, this.messageType, newPageRank);
+            else
+                messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getProperty(EDGE_COUNT).orElse(0.0d));
+
         }
     }
 
