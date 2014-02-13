@@ -23,7 +23,7 @@ public class TinkerGraphStructureStandardTest extends StructureStandardSuite.Abs
     public Map<String, Object> getBaseConfiguration(final String graphName) {
         // todo: when tinkergraph has persistence this will need to change to ensure unique graphs are generated...now it's all in memory
         return new HashMap<String, Object>() {{
-            put("blueprints.graph", TinkerGraph.class.getName());
+            put("gremlin.graph", TinkerGraph.class.getName());
         }};
     }
 
@@ -31,9 +31,9 @@ public class TinkerGraphStructureStandardTest extends StructureStandardSuite.Abs
     public void clear(final Graph g, final Configuration configuration) throws Exception {
         g.close();
 
-        if (configuration.containsKey("blueprints.tg.directory")) {
+        if (configuration.containsKey("gremlin.tg.directory")) {
             // this is a non-in-memory configuration so blow away the directory
-            final File graphDirectory = new File(configuration.getString("blueprints.tg.directory"));
+            final File graphDirectory = new File(configuration.getString("gremlin.tg.directory"));
             graphDirectory.delete();
         }
     }

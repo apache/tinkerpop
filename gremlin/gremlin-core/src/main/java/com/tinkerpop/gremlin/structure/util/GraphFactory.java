@@ -36,9 +36,9 @@ public class GraphFactory {
         if (null == strategy)
             throw Graph.Exceptions.argumentCanNotBeNull("strategy");
 
-        final String clazz = configuration.getString("blueprints.graph", null);
+        final String clazz = configuration.getString("gremlin.graph", null);
         if (null == clazz)
-            throw new RuntimeException("Configuration must contain a valid 'blueprints.graph' setting");
+            throw new RuntimeException("Configuration must contain a valid 'gremlin.graph' setting");
 
         final Class graphClass;
         try {
