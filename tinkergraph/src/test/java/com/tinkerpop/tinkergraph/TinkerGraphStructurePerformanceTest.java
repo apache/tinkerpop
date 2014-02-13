@@ -18,7 +18,7 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(StructurePerformanceSuite.class)
-@StructureStandardSuite.GraphProviderClass(TinkerGraphStructurePerformanceTest.class)
+@StructurePerformanceSuite.GraphProviderClass(TinkerGraphStructurePerformanceTest.class)
 public class TinkerGraphStructurePerformanceTest extends AbstractStructureSuite.AbstractGraphProvider {
 
     @Override
