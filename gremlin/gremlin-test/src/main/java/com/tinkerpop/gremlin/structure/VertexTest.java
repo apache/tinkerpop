@@ -11,18 +11,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_BOOLEAN_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_DOUBLE_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_LONG_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.*;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -86,7 +77,7 @@ public class VertexTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
         final Vertex v = g.addVertex(Element.ID, GraphManager.get().convertId("1"));
-        final Vertex u = g.query().ids(GraphManager.get().convertId("1")).vertices().iterator().next();
+        final Vertex u = g.v(GraphManager.get().convertId("1"));
         assertEquals(v, u);
     }
 
@@ -95,20 +86,20 @@ public class VertexTest extends AbstractGremlinTest {
         final Vertex v = g.addVertex();
         assertNotNull(v);
 
-        final Vertex u = g.query().ids(v.getId()).vertices().iterator().next();
+        final Vertex u = g.v(v.getId());
         assertNotNull(u);
         assertEquals(v, u);
 
-        assertEquals(g.query().ids(u.getId()).vertices().iterator().next(), g.query().ids(u.getId()).vertices().iterator().next());
-        assertEquals(g.query().ids(v.getId()).vertices().iterator().next(), g.query().ids(u.getId()).vertices().iterator().next());
-        assertEquals(g.query().ids(v.getId()).vertices().iterator().next(), g.query().ids(v.getId()).vertices().iterator().next());
+        assertEquals(g.v(u.getId()), g.v(u.getId()));
+        assertEquals(g.v(v.getId()), g.v(u.getId()));
+        assertEquals(g.v(v.getId()), g.v(v.getId()));
     }
 
     @Test
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
         final Vertex v = g.addVertex(Element.ID, GraphManager.get().convertId("1"));
-        final Vertex u = g.query().ids(GraphManager.get().convertId("1")).vertices().iterator().next();
+        final Vertex u = g.v(GraphManager.get().convertId("1"));
         assertEquals(v, u);
 
         final Set<Vertex> set = new HashSet<>();
@@ -116,8 +107,8 @@ public class VertexTest extends AbstractGremlinTest {
         set.add(v);
         set.add(u);
         set.add(u);
-        set.add(g.query().ids(GraphManager.get().convertId("1")).vertices().iterator().next());
-        set.add(g.query().ids(GraphManager.get().convertId("1")).vertices().iterator().next());
+        set.add(g.v(GraphManager.get().convertId("1")));
+        set.add(g.v(GraphManager.get().convertId("1")));
 
         assertEquals(1, set.size());
         assertEquals(v.hashCode(), u.hashCode());
@@ -225,7 +216,7 @@ public class VertexTest extends AbstractGremlinTest {
 
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 0));
 
-        for (Vertex v : g.query().vertices()) {
+        for (Vertex v : g.V().toList()) {
             v.remove();
             tryCommit(g);
         }

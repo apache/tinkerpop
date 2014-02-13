@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Optimizer;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.steps.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.steps.map.BackStep;
-import com.tinkerpop.gremlin.process.steps.map.GraphQueryStep;
 import com.tinkerpop.gremlin.process.steps.map.MatchStep;
 import com.tinkerpop.gremlin.process.steps.map.PathStep;
 import com.tinkerpop.gremlin.process.steps.map.SelectStep;

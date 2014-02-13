@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.olap;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.GraphQuery;
 import com.tinkerpop.gremlin.structure.query.util.VertexQueryBuilder;
 
 import java.util.Arrays;
@@ -29,29 +28,16 @@ public abstract class MessageType {
     }
 
     public static class Global extends MessageType {
-        private final GraphQuery query;
         private final Iterable<Vertex> vertices;
 
         private Global(final String label) {
             super(label);
-            this.query = null;
-            this.vertices = null;
-        }
-
-        private Global(final String label, final GraphQuery query) {
-            super(label);
-            this.query = query;
             this.vertices = null;
         }
 
         private Global(final String label, final Iterable<Vertex> vertices) {
             super(label);
-            this.query = null;
             this.vertices = vertices;
-        }
-
-        public static Global of(final String label, final GraphQuery query) {
-            return new Global(label, query);
         }
 
         public static Global of(final String label, final Iterable<Vertex> vertices) {
@@ -67,9 +53,7 @@ public abstract class MessageType {
         }
 
         public Iterable<Vertex> vertices() {
-            if (null == this.query && null == this.vertices)
-                throw new IllegalStateException("This message type instance can only be used for retrieving messages, not sending as no vertices are provided");
-            return null == this.query ? this.vertices : this.query.vertices();
+            return this.vertices;
         }
     }
 

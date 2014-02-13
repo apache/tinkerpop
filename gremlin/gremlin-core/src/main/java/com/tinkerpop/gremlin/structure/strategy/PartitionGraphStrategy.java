@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.GraphQuery;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.ArrayList;
@@ -74,11 +73,11 @@ public class PartitionGraphStrategy implements GraphStrategy {
         };
     }
 
-    @Override
+    /*@Override
     public UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(final Strategy.Context<GraphQuery> ctx) {
         return (f) -> () -> {
             ctx.getCurrent().has(this.partitionKey, Contains.IN, this.readPartitions);
             return f.get();
         };
-    }
+    }*/
 }

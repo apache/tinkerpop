@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.algorithm.generator;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -12,9 +11,7 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -56,23 +53,23 @@ public class DistributionGeneratorTest {
             final DistributionGenerator generator1 = new DistributionGenerator("knows");
             distributionGeneratorTest(g1, generator1);
 
-            assertNotEquals(StreamFactory.stream(g.query().edges()).count(), StreamFactory.stream(g1.query().edges()).count());
+            assertNotEquals(g.E().count(), g1.E().count());
 
             graphProvider.clear(g1, configuration);
         }
 
         @Test
         public void shouldGenerateSameGraph() throws Exception {
-            final DistributionGenerator generator = new DistributionGenerator("knows", null, ()->123456789l);
+            final DistributionGenerator generator = new DistributionGenerator("knows", null, () -> 123456789l);
             distributionGeneratorTest(g, generator);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("g1");
             final Graph g1 = graphProvider.openTestGraph(configuration);
             prepareGraph(g1);
-            final DistributionGenerator generator1 = new DistributionGenerator("knows", null, ()->123456789l);
+            final DistributionGenerator generator1 = new DistributionGenerator("knows", null, () -> 123456789l);
             distributionGeneratorTest(g1, generator1);
 
-            assertEquals(StreamFactory.stream(g.query().edges()).count(), StreamFactory.stream(g1.query().edges()).count());
+            assertEquals(g.E().count(), g1.E().count());
 
             graphProvider.clear(g1, configuration);
         }
@@ -87,19 +84,19 @@ public class DistributionGeneratorTest {
             generator.setOutDistribution(inDistribution);
             Optional.ofNullable(outDistribution).ifPresent(generator::setOutDistribution);
             final int numEdges = generator.generate(graph, numberOfVertices * 10);
-            tryCommit(graph, g -> assertEquals(numEdges, SizableIterable.sizeOf(g.query().edges())));
+            tryCommit(graph, g -> assertEquals(numEdges, g.E().count()));
         }
     }
 
     public static class AnnotatorTest extends AbstractGremlinTest {
         @Test
         public void shouldAnnotateEdges() {
-            final DistributionGenerator generator = new DistributionGenerator("knows", e->e.setProperty("data", "test"));
+            final DistributionGenerator generator = new DistributionGenerator("knows", e -> e.setProperty("data", "test"));
             final Distribution dist = new NormalDistribution(2);
             generator.setOutDistribution(dist);
             generator.setInDistribution(dist);
             generator.generate(g, 100);
-            tryCommit(g, g -> assertTrue(StreamFactory.stream(g.query().edges()).allMatch(e -> e.getValue("data").equals("test"))));
+            tryCommit(g, g -> assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test"))));
         }
     }
 }

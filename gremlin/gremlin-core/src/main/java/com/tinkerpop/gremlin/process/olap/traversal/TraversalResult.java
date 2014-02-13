@@ -1,12 +1,13 @@
 package com.tinkerpop.gremlin.process.olap.traversal;
 
-import com.tinkerpop.gremlin.process.util.MicroPath;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.util.MicroPath;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class TraversalResult<T> implements Iterator<T> {
             final GraphMemory.ReductionMemory reductionMemory = this.computeResult.getGraphMemory().getReductionMemory();
             this.itty = StreamFactory.stream(reductionMemory.getKeys()).map(key -> Arrays.asList(key, reductionMemory.get(key).get())).iterator();
         } else if (HolderOptimizer.trackPaths(this.gremlinSupplier.get())) {
-            this.itty = StreamFactory.stream(this.graph.query().vertices()).flatMap(vertex -> {
+            this.itty = StreamFactory.stream((Iterator<Vertex>) this.graph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
                         .map(v -> this.computeResult.getVertexMemory().<TraversalPaths>getProperty(v, TraversalVertexProgram.GREMLIN_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
@@ -84,7 +85,7 @@ public class TraversalResult<T> implements Iterator<T> {
                         });
             }).iterator();
         } else {
-            this.itty = StreamFactory.stream(this.graph.query().vertices()).flatMap(vertex -> {
+            this.itty = StreamFactory.stream((Iterator<Vertex>) this.graph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
                         .map(v -> this.computeResult.getVertexMemory().<TraversalCounters>getProperty(v, TraversalVertexProgram.GREMLIN_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)

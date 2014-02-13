@@ -8,10 +8,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.GraphQuery;
-import com.tinkerpop.gremlin.structure.query.util.DefaultGraphQuery;
-
-import java.util.Collections;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,21 +38,6 @@ public class EmptyGraph implements Graph {
     @Override
     public Vertex addVertex(Object... keyValues) {
         throw new IllegalStateException(MESSAGE);
-    }
-
-    @Override
-    public GraphQuery query() {
-        return new DefaultGraphQuery() {
-            @Override
-            public Iterable<Edge> edges() {
-                return Collections.emptyList();
-            }
-
-            @Override
-            public Iterable<Vertex> vertices() {
-                return Collections.emptyList();
-            }
-        };
     }
 
     @Override

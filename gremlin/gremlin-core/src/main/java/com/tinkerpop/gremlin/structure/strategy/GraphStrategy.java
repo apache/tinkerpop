@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.GraphQuery;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.function.BiConsumer;
@@ -129,29 +128,13 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
-    /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of
-     * {@link com.tinkerpop.gremlin.structure.query.GraphQuery#vertices()}.
-     *
-     * @param ctx the context within which this strategy function is called
-     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
-     *         {@link com.tinkerpop.gremlin.structure.query.GraphQuery#vertices()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
-     */
+    /*
     public default UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(final Strategy.Context<GraphQuery> ctx) {
         return UnaryOperator.identity();
     }
 
-    /**
-     * Construct a {@link java.util.function.Function} that enhances the features of
-     * {@link com.tinkerpop.gremlin.structure.query.GraphQuery#ids(Object...)}.
-     *
-     * @param ctx the context within which this strategy function is called
-     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
-     *         {@link com.tinkerpop.gremlin.structure.query.GraphQuery#ids(Object...)} signature
-     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
-     */
+
     public default UnaryOperator<Function<Object[], GraphQuery>> getGraphQueryIdsStrategy(final Strategy.Context<GraphQuery> ctx) {
         return UnaryOperator.identity();
-    }
+    } */
 }

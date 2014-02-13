@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.server.util.ser;
 
+import com.tinkerpop.gremlin.server.Context;
+import com.tinkerpop.gremlin.server.RequestMessage;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -7,8 +9,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.tinkergraph.TinkerGraph;
-import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.RequestMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Ignore;
@@ -21,10 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -173,7 +170,7 @@ public class JsonResultSerializerV1d0Test {
         ////// final Vertex.Property withMetaProperties = v.setProperty("xyz", 321);
         ///// withMetaProperties.setProperty("audit", "stephen");
 
-        final Iterator iterable = g.query().vertices().iterator();
+        final Iterator iterable = g.V().toList().iterator();
         final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
@@ -214,7 +211,7 @@ public class JsonResultSerializerV1d0Test {
         final Vertex v = g.addVertex("abc", 123);
         v.setProperty(Property.Key.hidden("hidden"), "stephen");
 
-        final Iterator iterable = g.query().vertices().iterator();
+        final Iterator iterable = g.V().toList().iterator();
         final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
@@ -291,7 +288,7 @@ public class JsonResultSerializerV1d0Test {
         final Edge e = v1.addEdge("test", v2);
         e.setProperty("abc", 123);
 
-        final Iterable<Edge> iterable = g.query().edges();
+        final Iterable<Edge> iterable = g.E().toList();
         final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
 
         final JSONObject json = new JSONObject(results);
@@ -336,7 +333,7 @@ public class JsonResultSerializerV1d0Test {
 
         v.setProperty("friends", friends);
 
-        final Iterator iterable = g.query().vertices().iterator();
+        final Iterator iterable = g.V().toList().iterator();
         final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
@@ -372,7 +369,7 @@ public class JsonResultSerializerV1d0Test {
     public void serializeToJsonMapWithElementForKey() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
         final Map<Vertex, Integer> map = new HashMap<>();
-        map.put(g.query().has("name", Compare.EQUAL, "marko").vertices().iterator().next(), 1000);
+        map.put(g.V().<Vertex>has("name", Compare.EQUAL, "marko").next(), 1000);
 
         final String results = SERIALIZER.serializeResult(map, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);

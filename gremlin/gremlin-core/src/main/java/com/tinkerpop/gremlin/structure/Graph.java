@@ -2,15 +2,11 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.steps.map.VerticesStep;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
-import com.tinkerpop.gremlin.structure.query.GraphQuery;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
@@ -37,20 +33,16 @@ public interface Graph extends AutoCloseable {
     public Vertex addVertex(final Object... keyValues);
 
     public default Vertex v(final Object id) {
-        final Iterator<Vertex> itty = this.query().ids(id).vertices().iterator();
-        return itty.next();
+        return (Vertex) this.V().has(Element.ID, id).next();
     }
 
     public default Edge e(final Object id) {
-        final Iterator<Edge> itty = this.query().ids(id).edges().iterator();
-        return itty.next();
+        return (Edge) this.E().has(Element.ID, id).next();
     }
 
     public <A extends Traversal<?, Vertex>> A V();
 
     public <A extends Traversal<?, Edge>> A E();
-
-    public GraphQuery query();
 
     public GraphComputer compute();
 

@@ -34,7 +34,7 @@ public class IdGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("test", v.getProperty(Property.Key.hidden(idKey)).get());
         assertEquals("else", v.getProperty("something").get());
 
-        final Vertex found = g.query().ids("test").vertices().iterator().next();
+        final Vertex found = g.v("test");
         assertEquals(v, found);
     }
 }

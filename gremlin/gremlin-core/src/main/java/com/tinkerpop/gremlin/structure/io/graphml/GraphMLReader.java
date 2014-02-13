@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -102,10 +101,10 @@ public class GraphMLReader implements GraphReader {
                             final String vertexIdIn = reader.getAttributeValue(null, GraphMLTokens.TARGET);
 
                             if (!vertexIdKey.isPresent())
-                                edgeOutVertex = StreamFactory.stream(graph.query().ids(vertexIdOut).vertices()).findFirst()
+                                edgeOutVertex = graph.V().<Vertex>has(Element.ID, vertexIdOut).toList().stream().findFirst()
                                         .orElseGet(() -> graph.addVertex(Element.ID, vertexIdOut));
                             else
-                                edgeOutVertex = StreamFactory.stream(graph.query().ids(vertexMappedIdMap.get(vertexIdOut)).vertices()).findFirst()
+                                edgeOutVertex = graph.V().<Vertex>has(Element.ID, vertexMappedIdMap.get(vertexIdOut)).toList().stream().findFirst()
                                         .orElseGet(() -> graph.addVertex(Element.ID, vertexIdOut));
 
                             // Default to standard ID system (in case no mapped ID is found later)
@@ -113,10 +112,10 @@ public class GraphMLReader implements GraphReader {
                                 vertexMappedIdMap.put(vertexIdOut, vertexIdOut);
 
                             if (!vertexIdKey.isPresent())
-                                edgeInVertex = StreamFactory.stream(graph.query().ids(vertexIdIn).vertices()).findFirst()
+                                edgeInVertex = graph.V().<Vertex>has(Element.ID, vertexIdIn).toList().stream().findFirst()
                                         .orElseGet(() -> graph.addVertex(Element.ID, vertexIdIn));
                             else
-                                edgeInVertex = StreamFactory.stream(graph.query().ids(vertexMappedIdMap.get(vertexIdIn)).vertices()).findFirst()
+                                edgeInVertex = graph.V().<Vertex>has(Element.ID, vertexMappedIdMap.get(vertexIdIn)).toList().stream().findFirst()
                                         .orElseGet(() -> graph.addVertex(Element.ID, vertexIdIn));
 
                             // Default to standard ID system (in case no mapped ID is found later)
@@ -159,7 +158,7 @@ public class GraphMLReader implements GraphReader {
 
                     if (elementName.equals(GraphMLTokens.NODE)) {
                         final String currentVertexId = vertexId;
-                        final Vertex currentVertex = StreamFactory.stream(graph.query().ids(vertexId).vertices()).findFirst()
+                        final Vertex currentVertex = graph.V().<Vertex>has(Element.ID, vertexId).toList().stream().findFirst()
                                 .orElseGet(() -> graph.addVertex(Element.ID, currentVertexId));
                         for (Map.Entry<String, Object> prop : vertexProps.entrySet()) {
                             currentVertex.setProperty(prop.getKey(), prop.getValue());

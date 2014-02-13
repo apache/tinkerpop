@@ -54,8 +54,8 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadGraphML() throws IOException {
         readGraphMLIntoGraph(g);
 
-        assertEquals(6, StreamFactory.stream(g.query().vertices()).count());
-        assertEquals(6, StreamFactory.stream(g.query().edges()).count());
+        assertEquals(6, g.V().count());
+        assertEquals(6, g.E().count());
     }
 
     @Test
@@ -130,7 +130,7 @@ public class IoTest extends AbstractGremlinTest {
             r.inputGraph(in);
         }
 
-        final Vertex v2 = g2.query().ids("1").vertices().iterator().next();
+        final Vertex v2 = g2.v("1");
         assertEquals("\u00E9", v2.getProperty("text").get());
 
         // need to manually close the "g2" instance

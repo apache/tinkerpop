@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.GraphQuery;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.GraphHelper;
@@ -131,6 +130,14 @@ public class TinkerGraph implements Graph, Serializable {
 
     ////////////// BLUEPRINTS API METHODS //////////////////
 
+    public Vertex v(final Object id) {
+        return this.vertices.get(id.toString());
+    }
+
+    public Edge e(final Object id) {
+        return this.edges.get(id.toString());
+    }
+
     public <A extends Traversal<?, Vertex>> A V() {
         Traversal traversal = new DefaultTraversal<Object, Vertex>();
         traversal.addStep(new TinkerVerticesStep(traversal, this));
@@ -172,10 +179,6 @@ public class TinkerGraph implements Graph, Serializable {
                     ElementHelper.attachProperties(vertex, kvs);
                     return vertex;
                 }).apply(keyValues);
-    }
-
-    public GraphQuery query() {
-        return new TinkerGraphQuery(this);
     }
 
     public GraphComputer compute() {

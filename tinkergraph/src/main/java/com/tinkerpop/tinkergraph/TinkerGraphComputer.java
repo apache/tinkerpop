@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.VertexMemory;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import java.util.Iterator;
@@ -55,7 +56,7 @@ public class TinkerGraphComputer implements GraphComputer {
             this.vertexProgram.setup(this.graphMemory);
 
             while (true) {
-                StreamFactory.parallelStream(this.graph.query().vertices()).forEach(vertex ->
+                StreamFactory.parallelStream((Iterator<Vertex>) this.graph.V()).forEach(vertex ->
                         this.vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC,
                                 vertex.getId().toString(),
                                 this.vertexMemory), this.messenger, this.graphMemory));

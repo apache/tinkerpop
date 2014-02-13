@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.GraphQuery;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.ArrayList;
@@ -37,10 +36,10 @@ public class IdGraphStrategy implements GraphStrategy {
         };
     }
 
-    @Override
+    /*@Override
     public UnaryOperator<Function<Object[], GraphQuery>> getGraphQueryIdsStrategy(final Strategy.Context<GraphQuery> ctx) {
         // don't apply f because the implementation needs to be highjacked by the Strategy
         // TODO: is this bad?  didn't seem wrong with wrappers?
         return (f) -> (ids) -> ctx.getCurrent().has(idKey, Contains.IN, Arrays.asList(ids));
-    }
+    }*/
 }

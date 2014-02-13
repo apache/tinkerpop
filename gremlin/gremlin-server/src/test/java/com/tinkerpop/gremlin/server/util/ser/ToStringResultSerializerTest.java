@@ -31,7 +31,7 @@ public class ToStringResultSerializerTest {
     @Test
     public void serializeToStringAVertex() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
-        final Vertex v = g.query().has("name", Compare.EQUAL, "marko").vertices().iterator().next();
+        final Vertex v = (Vertex) g.V().has("name", Compare.EQUAL, "marko").next();
         final String results = serializer.serializeResult(v, new Context(msg, null, null, null, null));
         assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>v[1]", results);
     }

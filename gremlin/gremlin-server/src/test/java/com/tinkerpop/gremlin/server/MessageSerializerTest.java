@@ -1,18 +1,16 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
+import com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import com.tinkerpop.tinkergraph.TinkerGraph;
-import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
-import com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer;
 import org.junit.Test;
 
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -56,7 +54,7 @@ public class MessageSerializerTest {
     @Test
     public void serializeToStringAVertex() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
-        final Vertex v = g.query().has("name", Compare.EQUAL, "marko").vertices().iterator().next();
+        final Vertex v = g.V().<Vertex>has("name", Compare.EQUAL, "marko").next();
         final String results = MessageSerializer.select("text/plain", MessageSerializer.DEFAULT_RESULT_SERIALIZER).serializeResult(v, new Context(msg, null, null, null, null));
         assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>v[1]", results);
     }

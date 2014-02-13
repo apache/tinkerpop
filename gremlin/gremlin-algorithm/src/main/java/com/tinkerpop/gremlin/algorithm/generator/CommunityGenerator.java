@@ -99,7 +99,7 @@ public class CommunityGenerator extends AbstractGenerator {
      * @return The actual number of edges generated. May be different from the expected number.
      */
     public int generate(final Graph graph, final int expectedNumCommunities, final int expectedNumEdges) {
-        return generate(graph.query().vertices(), expectedNumCommunities, expectedNumEdges);
+        return generate(graph.V().toList(), expectedNumCommunities, expectedNumEdges);
     }
 
 

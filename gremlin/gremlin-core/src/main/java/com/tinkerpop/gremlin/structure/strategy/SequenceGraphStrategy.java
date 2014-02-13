@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.GraphQuery;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.ArrayList;
@@ -37,6 +36,7 @@ public class SequenceGraphStrategy implements GraphStrategy {
         return this.composeStrategyUnaryOperator(s -> s.getAddEdgeStrategy(ctx));
     }
 
+    /*
     @Override
     public UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(Strategy.Context<GraphQuery> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getGraphQueryVerticesStrategy(ctx));
@@ -45,7 +45,7 @@ public class SequenceGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Function<Object[], GraphQuery>> getGraphQueryIdsStrategy(Strategy.Context<GraphQuery> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getGraphQueryIdsStrategy(ctx));
-    }
+    }*/
 
     @Override
     public UnaryOperator<Supplier<Void>> getRemoveElementStrategy(Strategy.Context<? extends Element> ctx) {

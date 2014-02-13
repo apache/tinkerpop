@@ -14,10 +14,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -62,14 +59,14 @@ public class CommunityGeneratorTest {
             final CommunityGenerator generator1 = new CommunityGenerator("knows");
             communityGeneratorTest(g1, generator1);
 
-            assertNotEquals(StreamFactory.stream(g.query().edges()).count(), StreamFactory.stream(g1.query().edges()).count());
+            assertNotEquals(g.E().count(), g1.E().count());
 
             // ensure that not every vertex has the same number of edges between graphs
-            assertFalse(StreamFactory.stream(g.query().vertices())
+            assertFalse(g.V().toList().stream()
                     .map(v -> Triplet.with(v.getValue("oid"), StreamFactory.stream(v.query().direction(Direction.IN).edges()).count(),
                             StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count()))
                     .allMatch(p -> {
-                        final Vertex v = g1.query().has("oid", p.getValue0()).vertices().iterator().next();
+                        final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
                         return p.getValue1() == StreamFactory.stream(v.query().direction(Direction.IN).edges()).count()
                                 && p.getValue2() == StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count();
                     }));
@@ -79,23 +76,23 @@ public class CommunityGeneratorTest {
 
         @Test
         public void shouldGenerateSameGraph() throws Exception {
-            final CommunityGenerator generator = new CommunityGenerator("knows", null , null, ()->123456789l);
+            final CommunityGenerator generator = new CommunityGenerator("knows", null, null, () -> 123456789l);
             communityGeneratorTest(g, generator);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("g1");
             final Graph g1 = graphProvider.openTestGraph(configuration);
             prepareGraph(g1);
-            final CommunityGenerator generator1 = new CommunityGenerator("knows", null , null, ()->123456789l);
+            final CommunityGenerator generator1 = new CommunityGenerator("knows", null, null, () -> 123456789l);
             communityGeneratorTest(g1, generator1);
 
-            assertEquals(StreamFactory.stream(g.query().edges()).count(), StreamFactory.stream(g1.query().edges()).count());
+            assertEquals(g.E().count(), g1.E().count());
 
             // ensure that every vertex has the same number of edges between graphs.
-            assertTrue(StreamFactory.stream(g.query().vertices())
+            assertTrue(g.V().toList().stream()
                     .map(v -> Triplet.with(v.getValue("oid"), StreamFactory.stream(v.query().direction(Direction.IN).edges()).count(),
                             StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count()))
                     .allMatch(p -> {
-                        final Vertex v = g1.query().has("oid", p.getValue0()).vertices().iterator().next();
+                        final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
                         return p.getValue1() == StreamFactory.stream(v.query().direction(Direction.IN).edges()).count()
                                 && p.getValue2() == StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count();
                     }));
@@ -118,12 +115,12 @@ public class CommunityGeneratorTest {
                     generator.setDegreeDistribution(degreeDistribution);
                     generator.setCrossCommunityPercentage(localCrossPcent);
                     final int numEdges = generator.generate(graph, numberOfVertices / 10, numberOfVertices * 10);
-                    assertEquals(numEdges, SizableIterable.sizeOf(graph.query().edges()));
+                    assertEquals(numEdges, graph.E().count());
                     generated = true;
                 } catch (IllegalArgumentException iae) {
                     generated = false;
                     localCrossPcent = localCrossPcent - 0.05d;
-                    graph.query().vertices().forEach(Vertex::remove);
+                    g.V().forEach(Vertex::remove);
                     prepareGraph(graph);
                     System.out.println(String.format("Ran CommunityGeneratorTest with different CrossCommunityPercentage, expected %s but used %s", crossPcent, localCrossPcent));
                 }
@@ -135,29 +132,29 @@ public class CommunityGeneratorTest {
     public static class AnnotatorTest extends AbstractGremlinTest {
         @Test
         public void shouldAnnotateEdges() {
-            final CommunityGenerator generator = new CommunityGenerator("knows", e->e.setProperty("data", "test"));
+            final CommunityGenerator generator = new CommunityGenerator("knows", e -> e.setProperty("data", "test"));
             final Distribution dist = new NormalDistribution(2);
             generator.setCommunityDistribution(dist);
             generator.setDegreeDistribution(dist);
             generator.setCrossCommunityPercentage(0.0);
             generator.generate(g, 100, 1000);
-            tryCommit(g, g -> assertTrue(StreamFactory.stream(g.query().edges()).allMatch(e -> e.getValue("data").equals("test"))));
+            tryCommit(g, g -> assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test"))));
         }
 
         @Test
         public void shouldAnnotateVertices() {
-            final CommunityGenerator generator = new CommunityGenerator("knows", e->e.setProperty("data", "test"));
+            final CommunityGenerator generator = new CommunityGenerator("knows", e -> e.setProperty("data", "test"));
             final Distribution dist = new NormalDistribution(2);
             generator.setCommunityDistribution(dist);
             generator.setDegreeDistribution(dist);
             generator.setCrossCommunityPercentage(0.0);
             generator.generate(g, 100, 1000);
-            tryCommit(g, g -> assertTrue(StreamFactory.stream(g.query().edges()).allMatch(e -> e.getValue("data").equals("test"))));
+            tryCommit(g, g -> assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test"))));
         }
 
         @Test
         public void shouldAnnotateVerticesEdges() {
-            final CommunityGenerator generator = new CommunityGenerator("knows", e->e.setProperty("data", "test"), (v,m)-> {
+            final CommunityGenerator generator = new CommunityGenerator("knows", e -> e.setProperty("data", "test"), (v, m) -> {
                 m.forEach(v::setProperty);
                 v.setProperty("test", "data");
             });
@@ -167,9 +164,9 @@ public class CommunityGeneratorTest {
             generator.setCrossCommunityPercentage(0.0);
             generator.generate(g, 100, 1000);
             tryCommit(g, g -> {
-                assertTrue(StreamFactory.stream(g.query().edges()).allMatch(e -> e.getValue("data").equals("test")));
-                assertTrue(StreamFactory.stream(g.query().vertices()).allMatch(
-                    v -> v.getValue("test").equals("data") && v.getProperty("communityIndex").isPresent()
+                assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test")));
+                assertTrue(g.V().toList().stream().allMatch(
+                        v -> v.getValue("test").equals("data") && v.getProperty("communityIndex").isPresent()
                 ));
             });
         }

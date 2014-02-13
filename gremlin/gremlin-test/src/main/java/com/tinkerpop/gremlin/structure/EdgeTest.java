@@ -133,7 +133,7 @@ public class EdgeTest extends AbstractGremlinTest {
 
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 25));
 
-        for(Edge e : g.query().edges()) {
+        for(Edge e : g.E().toList()) {
             e.remove();
             tryCommit(g);
         }

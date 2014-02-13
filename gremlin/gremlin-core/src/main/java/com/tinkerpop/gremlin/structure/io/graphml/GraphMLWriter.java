@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLOutputFactory;
@@ -22,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * GraphMLWriter writes a Graph to a GraphML OutputStream.
@@ -134,7 +132,7 @@ public class GraphMLWriter implements GraphWriter {
 
     private void writeEdges(final XMLStreamWriter writer) throws XMLStreamException {
         if (normalize) {
-            final List<Edge> edges =  StreamFactory.stream(graph.query().edges()).collect(Collectors.toList());
+            final List<Edge> edges = graph.E().toList();
             Collections.sort(edges, ELEMENT_COMPARATOR);
 
             for (Edge edge : edges) {
@@ -169,7 +167,7 @@ public class GraphMLWriter implements GraphWriter {
                 writer.writeEndElement();
             }
         } else {
-            for (Edge edge : graph.query().edges()) {
+            for (Edge edge : graph.E().toList()) {
                 writer.writeStartElement(GraphMLTokens.EDGE);
                 writer.writeAttribute(GraphMLTokens.ID, edge.getId().toString());
                 writer.writeAttribute(GraphMLTokens.SOURCE, edge.getVertex(Direction.OUT).getId().toString());
@@ -223,12 +221,12 @@ public class GraphMLWriter implements GraphWriter {
         final Iterable<Vertex> vertices;
         if (normalize) {
             vertices = new ArrayList<>();
-            for (Vertex v : graph.query().vertices()) {
+            for (Vertex v : graph.V().toList()) {
                 ((Collection<Vertex>) vertices).add(v);
             }
             Collections.sort((List<Vertex>) vertices, ELEMENT_COMPARATOR);
         } else
-            vertices = graph.query().vertices();
+            vertices = graph.V().toList();
 
         return vertices;
     }
@@ -268,9 +266,9 @@ public class GraphMLWriter implements GraphWriter {
                 GraphMLTokens.GRAPHML_XMLNS + " " + this.xmlSchemaLocation.orElse(GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION));
     }
 
-    private Map<String,String> determineVertexTypes() {
+    private Map<String, String> determineVertexTypes() {
         final Map<String, String> vertexKeyTypes = new HashMap<>();
-        for (Vertex vertex : graph.query().vertices()) {
+        for (Vertex vertex : graph.V().toList()) {
             for (String key : vertex.getPropertyKeys()) {
                 if (!vertexKeyTypes.containsKey(key)) {
                     vertexKeyTypes.put(key, GraphMLWriter.getStringType(vertex.getProperty(key).get()));
@@ -281,9 +279,9 @@ public class GraphMLWriter implements GraphWriter {
         return vertexKeyTypes;
     }
 
-    private Map<String,String> determineEdgeTypes() {
+    private Map<String, String> determineEdgeTypes() {
         final Map<String, String> edgeKeyTypes = new HashMap<>();
-        for (Edge edge : graph.query().edges()) {
+        for (Edge edge : graph.E().toList()) {
             for (String key : edge.getPropertyKeys()) {
                 if (!edgeKeyTypes.containsKey(key))
                     edgeKeyTypes.put(key, GraphMLWriter.getStringType(edge.getProperty(key).get()));
@@ -321,7 +319,8 @@ public class GraphMLWriter implements GraphWriter {
 
         /**
          * Constructs a GraphMLWriter.
-         * @param g  The Graph instance to write out.
+         *
+         * @param g The Graph instance to write out.
          */
         public Builder(final Graph g) {
             if (null == g)

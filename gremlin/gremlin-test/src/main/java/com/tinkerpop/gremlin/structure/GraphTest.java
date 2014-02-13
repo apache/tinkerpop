@@ -20,10 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_PERSISTENCE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -46,14 +43,14 @@ public class GraphTest extends AbstractGremlinTest {
                 .collect(Collectors.toList());
 
         methods.forEach(m -> {
-                    try {
-                        assertNotNull(m.invoke(features));
-                        counter.incrementAndGet();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        fail("Exception while dynamically checking compliance on Feature implementation");
-                    }
-                });
+            try {
+                assertNotNull(m.invoke(features));
+                counter.incrementAndGet();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                fail("Exception while dynamically checking compliance on Feature implementation");
+            }
+        });
 
         // always should be some feature methods
         assertTrue(methods.size() > 0);
@@ -79,15 +76,15 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldProperlyCountVerticesAndEdgesOnAddRemove() {
         final Vertex v = g.addVertex();
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
-        assertEquals(v, g.query().vertices().iterator().next());
-        assertEquals(v.getId(), g.query().vertices().iterator().next().getId());
-        assertEquals(v.getLabel(), g.query().vertices().iterator().next().getLabel());
+        assertEquals(v, g.V().next());
+        assertEquals(v.getId(), g.V().next().getId());
+        assertEquals(v.getLabel(), g.V().next().getLabel());
         v.remove();
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
         g.addVertex();
         g.addVertex();
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 0));
-        g.query().vertices().forEach(Vertex::remove);
+        g.V().forEach(Vertex::remove);
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
 
         final String edgeLabel = GraphManager.get().convertLabel("test");
@@ -126,7 +123,7 @@ public class GraphTest extends AbstractGremlinTest {
         final List<Edge> edges = new ArrayList<>();
         final Random random = new Random();
 
-        IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Element.ID, i)));
+        IntStream.range(0, vertexCount).forEach(i -> vertices.add(g.addVertex(Element.ID, i)));
         tryCommit(g, AbstractGremlinSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         IntStream.range(0, edgeCount).forEach(i -> {
@@ -162,7 +159,7 @@ public class GraphTest extends AbstractGremlinTest {
         final List<Vertex> vertices = new ArrayList<>();
         final List<Edge> edges = new ArrayList<>();
 
-        IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Element.ID, i)));
+        IntStream.range(0, vertexCount).forEach(i -> vertices.add(g.addVertex(Element.ID, i)));
         tryCommit(g, AbstractGremlinSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         for (int i = 0; i < vertexCount; i = i + 2) {
@@ -208,20 +205,20 @@ public class GraphTest extends AbstractGremlinTest {
 
         tryCommit(graph, AbstractGremlinSuite.assertVertexEdgeCounts(4, 4));
 
-        for (Vertex v : graph.query().vertices()) {
+        for (Vertex v : graph.V().toList()) {
             assertEquals(1, v.query().direction(Direction.OUT).count());
             assertEquals(1, v.query().direction(Direction.IN).count());
         }
 
-        for (Edge x : graph.query().edges()) {
+        for (Edge x : graph.E().toList()) {
             assertEquals(graphProvider.convertLabel("knows"), x.getLabel());
         }
 
         if (graph.getFeatures().vertex().supportsUserSuppliedIds()) {
-            final Vertex va = graph.query().ids(graphProvider.convertId("1")).vertices().iterator().next();
-            final Vertex vb = graph.query().ids(graphProvider.convertId("2")).vertices().iterator().next();
-            final Vertex vc = graph.query().ids(graphProvider.convertId("3")).vertices().iterator().next();
-            final Vertex vd = graph.query().ids(graphProvider.convertId("4")).vertices().iterator().next();
+            final Vertex va = graph.v(graphProvider.convertId("1"));
+            final Vertex vb = graph.v(graphProvider.convertId("2"));
+            final Vertex vc = graph.v(graphProvider.convertId("3"));
+            final Vertex vd = graph.v(graphProvider.convertId("4"));
 
             assertEquals(a, va);
             assertEquals(b, vb);
@@ -424,12 +421,12 @@ public class GraphTest extends AbstractGremlinTest {
         AbstractGremlinSuite.assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
 
         if (graph.getFeatures().vertex().properties().supportsStringValues()) {
-            for (Vertex vertex : graph.query().vertices()) {
+            for (Vertex vertex : graph.V().toList()) {
                 assertTrue(vertex.getProperty("name").get().equals("marko") || vertex.getProperty("name").get().equals("pavel"));
             }
         }
 
-        for (Edge edge : graph.query().edges()) {
+        for (Edge edge : graph.E().toList()) {
             assertEquals(graphProvider.convertId("collaborator"), edge.getLabel());
             if (graph.getFeatures().edge().properties().supportsStringValues())
                 assertEquals("internet", edge.getProperty("location").get());

@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
-import com.tinkerpop.gremlin.process.steps.map.GraphQueryStep;
+import com.tinkerpop.gremlin.process.steps.map.VerticesStep;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -60,12 +60,11 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         if (null != graphMemory.getReductionMemory())
             gremlin.addStep(new ReductionStep(gremlin, graphMemory.getReductionMemory()));
         // the head is always an IdentityStep so simply skip it
-        final GraphQueryStep graphQueryStep = (GraphQueryStep) gremlin.getSteps().get(1);
+        final VerticesStep graphQueryStep = (VerticesStep) gremlin.getSteps().get(1);
         final String future = (gremlin.getSteps().size() == 2) ? Holder.NO_FUTURE : ((Step) gremlin.getSteps().get(2)).getAs();
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final List<HasContainer> hasContainers = graphQueryStep.queryBuilder.hasContainers;
-        if (graphQueryStep.returnClass.equals(Vertex.class) && HasContainer.testAll(vertex, hasContainers)) {
+        /*if (graphQueryStep.returnClass.equals(Vertex.class) && HasContainer.testAll(vertex, hasContainers)) {
             final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
                     new PathHolder<>(graphQueryStep.getAs(), vertex) :
                     new SimpleHolder<>(vertex);
@@ -83,7 +82,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                         messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), TraversalMessage.of(holder));
                         voteToHalt.set(false);
                     });
-        }
+        }  */
         graphMemory.and(VOTE_TO_HALT, voteToHalt.get());
     }
 

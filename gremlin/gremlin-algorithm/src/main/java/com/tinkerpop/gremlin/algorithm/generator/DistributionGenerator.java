@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
@@ -95,7 +96,7 @@ public class DistributionGenerator extends AbstractGenerator {
      * @return The number of generated edges. Not that this number may not be equal to the expected number of edges
      */
     public int generate(final Graph graph, final int expectedNumEdges) {
-        return generate(graph.query().vertices(), expectedNumEdges);
+        return generate(graph.V().toList(), expectedNumEdges);
     }
 
     /**
