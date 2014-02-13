@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.structure.AbstractBlueprintsTest;
+import com.tinkerpop.gremlin.structure.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Strategy;
@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNull;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SequenceGraphStrategyTest extends AbstractBlueprintsTest {
+public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldAppendPropertyValuesInOrderToVertex() {

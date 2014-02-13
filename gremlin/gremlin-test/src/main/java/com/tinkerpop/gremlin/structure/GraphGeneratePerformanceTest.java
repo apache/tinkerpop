@@ -23,7 +23,7 @@ public class GraphGeneratePerformanceTest {
     @AxisRange(min = 0, max = 1)
     @BenchmarkMethodChart(filePrefix = "blueprints-write")
     @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-blueprints-write")
-    public static class WriteToGraph extends AbstractBlueprintsTest {
+    public static class WriteToGraph extends AbstractGremlinTest {
 
         @Rule
         public TestRule benchmarkRun = new BenchmarkRule();

@@ -51,7 +51,7 @@ public class FeatureSupportTest  {
             "transactionsNotSupported",
             "graphStrategyNotSupported"
     })
-    public static class GraphFunctionalityTest extends AbstractBlueprintsTest {
+    public static class GraphFunctionalityTest extends AbstractGremlinTest {
 
         /**
          * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_COMPUTER} must call
@@ -135,7 +135,7 @@ public class FeatureSupportTest  {
      * Feature checks that test {@link com.tinkerpop.gremlin.structure.Vertex} functionality to determine if a feature should be on when it is marked
      * as not supported.
      */
-    public static class VertexFunctionalityTest extends AbstractBlueprintsTest {
+    public static class VertexFunctionalityTest extends AbstractGremlinTest {
 
         @Test
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
@@ -155,7 +155,7 @@ public class FeatureSupportTest  {
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "dataTypeOfPropertyValueNotSupported"
     })
-    public static class ElementPropertyFunctionalityTest extends AbstractBlueprintsTest {
+    public static class ElementPropertyFunctionalityTest extends AbstractGremlinTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
         @Parameterized.Parameters(name = "{index}: supports{0}({1})")
@@ -207,7 +207,7 @@ public class FeatureSupportTest  {
     @ExceptionCoverage(exceptionClass = Graph.Annotations.Exceptions.class, methods = {
             "dataTypeOfGraphAnnotationValueNotSupported"
     })
-    public static class AnnotationFunctionalityTest extends AbstractBlueprintsTest {
+    public static class AnnotationFunctionalityTest extends AbstractGremlinTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
         @Parameterized.Parameters(name = "{index}: supports{0}({1})")
@@ -252,7 +252,7 @@ public class FeatureSupportTest  {
      * Feature checks that simply evaluate conflicting feature definitions without evaluating the actual implementation
      * itself.
      */
-    public static class LogicalFeatureSupportTest extends AbstractBlueprintsTest {
+    public static class LogicalFeatureSupportTest extends AbstractGremlinTest {
 
         private EdgeFeatures edgeFeatures;
         private EdgePropertyFeatures edgePropertyFeatures;

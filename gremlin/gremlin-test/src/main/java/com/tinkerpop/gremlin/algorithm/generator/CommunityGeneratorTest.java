@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.algorithm.generator;
 
-import com.tinkerpop.gremlin.structure.AbstractBlueprintsTest;
+import com.tinkerpop.gremlin.structure.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 public class CommunityGeneratorTest {
 
     @RunWith(Parameterized.class)
-    public static class DifferentDistributionsTest extends AbstractBlueprintsTest {
+    public static class DifferentDistributionsTest extends AbstractGremlinTest {
 
         @Parameterized.Parameters(name = "{index}: {0}.test({1},{2})")
         public static Iterable<Object[]> data() {
@@ -132,7 +132,7 @@ public class CommunityGeneratorTest {
     }
 
 
-    public static class AnnotatorTest extends AbstractBlueprintsTest {
+    public static class AnnotatorTest extends AbstractGremlinTest {
         @Test
         public void shouldAnnotateEdges() {
             final CommunityGenerator generator = new CommunityGenerator("knows", e->e.setProperty("data", "test"));

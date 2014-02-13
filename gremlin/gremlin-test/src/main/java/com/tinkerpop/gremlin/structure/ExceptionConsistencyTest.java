@@ -48,7 +48,7 @@ public class ExceptionConsistencyTest {
             "propertyValueCanNotBeNull",
             "propertyKeyCanNotBeEmpty"
     })
-    public static class PropertyValidationOnAddTest extends AbstractBlueprintsTest {
+    public static class PropertyValidationOnAddTest extends AbstractGremlinTest {
 
         @Parameterized.Parameters(name = "{index}: expect - {1}")
         public static Iterable<Object[]> data() {
@@ -102,7 +102,7 @@ public class ExceptionConsistencyTest {
     @ExceptionCoverage(exceptionClass = Vertex.Exceptions.class, methods = {
             "userSuppliedIdsNotSupported"
     })
-    public static class AddElementWithIdTest extends AbstractBlueprintsTest {
+    public static class AddElementWithIdTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void testGraphAddVertex() throws Exception {
@@ -143,7 +143,7 @@ public class ExceptionConsistencyTest {
             "propertyKeyLabelIsReserved",
             "propertyKeyCanNotBeEmpty"
     })
-    public static class PropertyValidationOnSetTest extends AbstractBlueprintsTest {
+    public static class PropertyValidationOnSetTest extends AbstractGremlinTest {
 
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
@@ -230,7 +230,7 @@ public class ExceptionConsistencyTest {
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "bothIsNotSupported"
     })
-    public static class UseOfDirectionTest extends AbstractBlueprintsTest {
+    public static class UseOfDirectionTest extends AbstractGremlinTest {
         @Test
         public void testGetVertexOnEdge() {
             final Vertex v = g.addVertex();
@@ -256,7 +256,7 @@ public class ExceptionConsistencyTest {
             "annotationKeyValueIsReserved",
             "graphAnnotationKeyCanNotBeEmpty"
     })
-    public static class GraphAnnotationsTest extends AbstractBlueprintsTest {
+    public static class GraphAnnotationsTest extends AbstractGremlinTest {
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
@@ -300,7 +300,7 @@ public class ExceptionConsistencyTest {
             "annotationKeyCanNotBeNull",
             "annotatedValueCanNotBeNull"
     })
-    public static class AnnotatedValueTest extends AbstractBlueprintsTest {
+    public static class AnnotatedValueTest extends AbstractGremlinTest {
 
         @Parameterized.Parameters(name = "{index}: expect - {0},{1}")
         public static Iterable<Object[]> data() {
@@ -347,7 +347,7 @@ public class ExceptionConsistencyTest {
     @ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
             "edgeLabelCanNotBeNull"
     })
-    public static class EdgeLabelTest extends AbstractBlueprintsTest {
+    public static class EdgeLabelTest extends AbstractGremlinTest {
         @Test
         public void testNullEdgeLabel() {
             final Vertex v = g.addVertex();
@@ -368,7 +368,7 @@ public class ExceptionConsistencyTest {
     @ExceptionCoverage(exceptionClass = Transaction.Exceptions.class, methods = {
             "transactionAlreadyOpen"
     })
-    public static class TransactionTest extends AbstractBlueprintsTest {
+    public static class TransactionTest extends AbstractGremlinTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
@@ -395,7 +395,7 @@ public class ExceptionConsistencyTest {
             "vertexWithIdAlreadyExists",
             "edgeWithIdAlreadyExist"
     })
-    public static class SameIdUsageTest extends AbstractBlueprintsTest {
+    public static class SameIdUsageTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void testAssignSameIdOnVertex() {
@@ -435,7 +435,7 @@ public class ExceptionConsistencyTest {
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "propertyDoesNotExist"
     })
-    public static class ElementGetValueTest extends AbstractBlueprintsTest {
+    public static class ElementGetValueTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void testGetValueThatIsNotPresentOnVertex() {
@@ -474,7 +474,7 @@ public class ExceptionConsistencyTest {
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "elementHasAlreadyBeenRemovedOrDoesNotExist"
     })
-    public static class DuplicateRemovalTest extends AbstractBlueprintsTest {
+    public static class DuplicateRemovalTest extends AbstractGremlinTest {
         @Test
         public void shouldCauseExceptionIfEdgeRemovedMoreThanOnce() {
             final Vertex v1 = g.addVertex();
@@ -562,7 +562,7 @@ public class ExceptionConsistencyTest {
     @ExceptionCoverage(exceptionClass = GraphComputer.Exceptions.class, methods = {
             "providedKeyIsNotAComputeKey"
     })
-    public static class PropertyValidationOnSetGraphComputerTest extends AbstractBlueprintsTest {
+    public static class PropertyValidationOnSetGraphComputerTest extends AbstractGremlinTest {
 
         @Test
         public void testGraphVertexSetPropertyNoComputeKey() {

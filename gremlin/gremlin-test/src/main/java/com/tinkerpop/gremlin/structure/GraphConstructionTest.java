@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphConstructionTest extends AbstractBlueprintsTest{
+public class GraphConstructionTest extends AbstractGremlinTest {
     /**
      * All Blueprints implementations should be constructable through {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
      */

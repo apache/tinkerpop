@@ -37,7 +37,7 @@ import static org.junit.Assert.assertEquals;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IoTest extends AbstractBlueprintsTest {
+public class IoTest extends AbstractGremlinTest {
 
     // todo: should expand test here significantly.  see blueprints2
 

@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class EdgeTest extends AbstractBlueprintsTest {
+public class EdgeTest extends AbstractGremlinTest {
     @Test
     public void shouldHaveStandardStringRepresentation() {
         final Vertex v1 = g.addVertex();

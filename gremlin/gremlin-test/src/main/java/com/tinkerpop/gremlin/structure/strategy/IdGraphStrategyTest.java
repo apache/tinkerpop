@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.structure.AbstractBlueprintsTest;
+import com.tinkerpop.gremlin.structure.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IdGraphStrategyTest extends AbstractBlueprintsTest {
+public class IdGraphStrategyTest extends AbstractGremlinTest {
     private static final String idKey = "myId";
 
     public IdGraphStrategyTest() {

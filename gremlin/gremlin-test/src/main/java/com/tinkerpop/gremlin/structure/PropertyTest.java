@@ -31,7 +31,7 @@ public class PropertyTest {
     /**
      * Basic tests for the {@link com.tinkerpop.gremlin.structure.Property} class.
      */
-    public static class BasicPropertyTest extends AbstractBlueprintsTest {
+    public static class BasicPropertyTest extends AbstractGremlinTest {
         @Test
         public void shouldHaveStandardStringRepresentation() {
             final Vertex v = g.addVertex("name", "marko");
@@ -46,7 +46,7 @@ public class PropertyTest {
      * these tests are run in a separate test class as they are "parameterized" tests.
      */
     @RunWith(Parameterized.class)
-    public static class PropertyFeatureSupportTest extends AbstractBlueprintsTest {
+    public static class PropertyFeatureSupportTest extends AbstractGremlinTest {
         private static final Map testMap = new HashMap() {{
             put("testString", "try");
             put("testInteger", 123);

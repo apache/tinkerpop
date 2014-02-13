@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.structure.AbstractBlueprintsTest;
+import com.tinkerpop.gremlin.structure.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ReadOnlyGraphStrategyTest extends AbstractBlueprintsTest {
+public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     private static final Optional<GraphStrategy> readOnlyGraphStrategy = Optional.<GraphStrategy>of(new ReadOnlyGraphStrategy());
     public ReadOnlyGraphStrategyTest() {
     }

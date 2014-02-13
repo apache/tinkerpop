@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class VertexTest extends AbstractBlueprintsTest {
+public class VertexTest extends AbstractGremlinTest {
 
     @Test
     public void shouldHaveStandardStringRepresentation() {

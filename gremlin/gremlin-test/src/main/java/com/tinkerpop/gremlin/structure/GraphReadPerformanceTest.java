@@ -32,7 +32,7 @@ public class GraphReadPerformanceTest {
     @AxisRange(min = 0, max = 1)
     @BenchmarkMethodChart(filePrefix = "blueprints-read")
     @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-blueprints-read")
-    public static class ReadFromGraph extends AbstractBlueprintsTest {
+    public static class ReadFromGraph extends AbstractGremlinTest {
 
         @Rule
         public TestRule benchmarkRun = new BenchmarkRule();

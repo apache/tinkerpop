@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphTest extends AbstractBlueprintsTest {
+public class GraphTest extends AbstractGremlinTest {
 
     /**
      * Ensure compliance with Features by checking that all Features are exposed by the implementation.

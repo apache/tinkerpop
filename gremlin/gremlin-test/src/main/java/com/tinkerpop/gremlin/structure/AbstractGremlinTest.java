@@ -21,7 +21,7 @@ import static org.junit.Assume.assumeThat;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractBlueprintsTest {
+public abstract class AbstractGremlinTest {
     protected Graph g;
     protected Configuration config;
     protected Optional<? extends GraphStrategy> strategyToTest;
@@ -30,11 +30,11 @@ public abstract class AbstractBlueprintsTest {
     @Rule
     public TestName name = new TestName();
 
-    public AbstractBlueprintsTest() {
+    public AbstractGremlinTest() {
         this(Optional.empty());
     }
 
-    public AbstractBlueprintsTest(final Optional<? extends GraphStrategy> strategyToTest) {
+    public AbstractGremlinTest(final Optional<? extends GraphStrategy> strategyToTest) {
         this.strategyToTest = strategyToTest;
     }
 

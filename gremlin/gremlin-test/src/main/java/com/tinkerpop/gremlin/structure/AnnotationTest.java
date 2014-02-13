@@ -34,7 +34,7 @@ public class AnnotationTest {
      * Basic tests to ensure that {@link com.tinkerpop.gremlin.structure.Graph.Annotations}, {@link com.tinkerpop.gremlin.structure.AnnotatedList}, and {@link com.tinkerpop.gremlin.structure.AnnotatedValue} have
      * appropriate {@link String} representations.
      */
-    public static class StringRepresentationTest extends AbstractBlueprintsTest {
+    public static class StringRepresentationTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = VertexAnnotationFeatures.class, feature = VertexAnnotationFeatures.FEATURE_STRING_VALUES)
         public void testAnnotatedList() {
@@ -79,7 +79,7 @@ public class AnnotationTest {
      * test class as they are "parameterized" tests.
      */
     @RunWith(Parameterized.class)
-    public static class AnnotationFeatureSupportTest extends AbstractBlueprintsTest {
+    public static class AnnotationFeatureSupportTest extends AbstractGremlinTest {
         private static final Map testMap = new HashMap() {{
             put("testString", "try");
             put("testInteger", 123);

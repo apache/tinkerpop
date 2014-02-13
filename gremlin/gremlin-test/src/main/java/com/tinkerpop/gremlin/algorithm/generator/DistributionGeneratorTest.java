@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.algorithm.generator;
 
-import com.tinkerpop.gremlin.structure.AbstractBlueprintsTest;
+import com.tinkerpop.gremlin.structure.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 public class DistributionGeneratorTest {
 
     @RunWith(Parameterized.class)
-    public static class DifferentDistributionsTest extends AbstractBlueprintsTest {
+    public static class DifferentDistributionsTest extends AbstractGremlinTest {
 
         @Parameterized.Parameters(name = "{index}: test({0},{1})")
         public static Iterable<Object[]> data() {
@@ -91,7 +91,7 @@ public class DistributionGeneratorTest {
         }
     }
 
-    public static class AnnotatorTest extends AbstractBlueprintsTest {
+    public static class AnnotatorTest extends AbstractGremlinTest {
         @Test
         public void shouldAnnotateEdges() {
             final DistributionGenerator generator = new DistributionGenerator("knows", e->e.setProperty("data", "test"));
