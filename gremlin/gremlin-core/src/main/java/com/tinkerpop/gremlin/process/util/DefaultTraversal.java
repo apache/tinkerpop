@@ -5,11 +5,6 @@ import com.tinkerpop.gremlin.process.Memory;
 import com.tinkerpop.gremlin.process.Optimizers;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.steps.map.GraphQueryStep;
-import com.tinkerpop.gremlin.process.steps.map.IdentityStep;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.util.GraphQueryBuilder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,6 +17,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     private final List<Step> steps = new ArrayList<>();
     private final Optimizers optimizers = new DefaultOptimizers();
+    private final Memory memory = new DefaultMemory();
     private boolean firstNext = true;
 
     public List<Step> getSteps() {
@@ -29,7 +25,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public Memory memory() {
-        return null;
+        return this.memory;
     }
 
     public Optimizers optimizers() {

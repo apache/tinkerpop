@@ -1,7 +1,7 @@
 package com.tinkerpop.tinkergraph.process.steps.sideEffect;
 
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.process.steps.ComplianceTest;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
@@ -26,11 +26,11 @@ public class AggregateTest extends com.tinkerpop.gremlin.process.steps.sideEffec
 
     @Test
     public void g_V_valueXnameX_aggregateXaX_iterate_getXaX() {
-        //  super.g_V_valueXnameX_aggregateXaX_iterate_getXaX(GremlinJ.of(g).V().value("name").aggregate("x").iterate().memory().get("x"));
+        super.g_V_valueXnameX_aggregateXaX_iterate_getXaX(g.V().value("name").aggregate("x").iterate().memory().get("x"));
     }
 
     @Test
     public void g_V_aggregateXa_nameX_iterate_getXaX() {
-        //  super.g_V_aggregateXa_nameX_iterate_getXaX(GremlinJ.of(g).V().aggregate("a", v -> v.getValue("name")).iterate().memory().get("a"));
+        super.g_V_aggregateXa_nameX_iterate_getXaX(g.V().aggregate("a", v -> v.getValue("name")).iterate().memory().get("a"));
     }
 }
