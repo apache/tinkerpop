@@ -49,7 +49,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(v.getPropertyKeys().contains("name"));
         assertTrue(v.getPropertyKeys().contains("age"));
         assertFalse(v.getPropertyKeys().contains("location"));
-        BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
+        StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
 
         v.setProperty("name", "marko rodriguez");
         assertEquals(34, (int) v.getValue("age"));
@@ -61,7 +61,7 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(v.getPropertyKeys().contains("name"));
         assertTrue(v.getPropertyKeys().contains("age"));
         assertFalse(v.getPropertyKeys().contains("location"));
-        BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
+        StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
 
         v.setProperty("location", "santa fe");
         assertEquals(3, v.getProperties().size());
@@ -73,18 +73,18 @@ public class VertexTest extends AbstractBlueprintsTest {
         assertTrue(v.getPropertyKeys().contains("age"));
         assertTrue(v.getPropertyKeys().contains("location"));
         v.getProperty("location").remove();
-        BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
+        StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
         assertEquals(2, v.getProperties().size());
         v.getProperties().values().stream().forEach(Property::remove);
         assertEquals(0, v.getProperties().size());
-        BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
+        StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
     }
 
     @Test
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateVerticesEquivalentWithSuppliedIds() {
-        final Vertex v = g.addVertex(Element.ID, BlueprintsStandardSuite.GraphManager.get().convertId("1"));
-        final Vertex u = g.query().ids(BlueprintsStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
+        final Vertex v = g.addVertex(Element.ID, StructureStandardSuite.GraphManager.get().convertId("1"));
+        final Vertex u = g.query().ids(StructureStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
         assertEquals(v, u);
     }
 
@@ -105,8 +105,8 @@ public class VertexTest extends AbstractBlueprintsTest {
     @Test
     @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
-        final Vertex v = g.addVertex(Element.ID, BlueprintsStandardSuite.GraphManager.get().convertId("1"));
-        final Vertex u = g.query().ids(BlueprintsStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
+        final Vertex v = g.addVertex(Element.ID, StructureStandardSuite.GraphManager.get().convertId("1"));
+        final Vertex u = g.query().ids(StructureStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next();
         assertEquals(v, u);
 
         final Set<Vertex> set = new HashSet<>();
@@ -114,8 +114,8 @@ public class VertexTest extends AbstractBlueprintsTest {
         set.add(v);
         set.add(u);
         set.add(u);
-        set.add(g.query().ids(BlueprintsStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
-        set.add(g.query().ids(BlueprintsStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
+        set.add(g.query().ids(StructureStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
+        set.add(g.query().ids(StructureStandardSuite.GraphManager.get().convertId("1")).vertices().iterator().next());
 
         assertEquals(1, set.size());
         assertEquals(v.hashCode(), u.hashCode());
@@ -221,13 +221,13 @@ public class VertexTest extends AbstractBlueprintsTest {
             g.addVertex();
         }
 
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(25, 0));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 0));
 
         for (Vertex v : g.query().vertices()) {
             v.remove();
             tryCommit(g);
         }
 
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(0, 0));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
     }
 }

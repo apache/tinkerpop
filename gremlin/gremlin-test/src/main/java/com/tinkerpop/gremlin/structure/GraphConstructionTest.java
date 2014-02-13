@@ -47,6 +47,6 @@ public class GraphConstructionTest extends AbstractBlueprintsTest{
      */
     @Test
     public void shouldConstructAnEmptyGraph() {
-        BlueprintsStandardSuite.assertVertexEdgeCounts(0, 0).accept(g);
+        StructureStandardSuite.assertVertexEdgeCounts(0, 0).accept(g);
     }
 }

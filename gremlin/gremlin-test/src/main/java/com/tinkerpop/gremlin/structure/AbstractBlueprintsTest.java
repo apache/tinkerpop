@@ -25,7 +25,7 @@ public abstract class AbstractBlueprintsTest {
     protected Graph g;
     protected Configuration config;
     protected Optional<? extends GraphStrategy> strategyToTest;
-    protected AbstractBlueprintsSuite.GraphProvider graphProvider;
+    protected AbstractStructureSuite.GraphProvider graphProvider;
 
     @Rule
     public TestName name = new TestName();
@@ -40,7 +40,7 @@ public abstract class AbstractBlueprintsTest {
 
     @Before
     public void setup() throws Exception {
-        graphProvider = BlueprintsStandardSuite.GraphManager.get();
+        graphProvider = StructureStandardSuite.GraphManager.get();
         config = graphProvider.standardGraphConfiguration();
         g = graphProvider.openTestGraph(config, strategyToTest);
 

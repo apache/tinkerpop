@@ -1,8 +1,6 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.gremlin.structure.AbstractBlueprintsSuite;
-import com.tinkerpop.gremlin.structure.BlueprintsPerformanceSuite;
-import com.tinkerpop.gremlin.structure.BlueprintsStandardSuite;
+import com.tinkerpop.gremlin.structure.StructureStandardSuite;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runner.RunWith;
@@ -13,13 +11,13 @@ import java.util.Map;
 
 
 /**
- * Executes the Blueprints Performance Test Suite using TinkerGraph.
+ * Executes the Simple Blueprints Test Suite using TinkerGraph.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(BlueprintsPerformanceSuite.class)
-@BlueprintsStandardSuite.GraphProviderClass(TinkerGraphBlueprintsPerformanceTest.class)
-public class TinkerGraphBlueprintsPerformanceTest extends AbstractBlueprintsSuite.AbstractGraphProvider {
+@RunWith(StructureStandardSuite.class)
+@StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class)
+public class TinkerGraphStructureStandardTest extends StructureStandardSuite.AbstractGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName) {

@@ -74,41 +74,41 @@ public class GraphTest extends AbstractBlueprintsTest {
     @Test
     public void shouldProperlyCountVerticesAndEdgesOnAddRemove() {
         final Vertex v = g.addVertex();
-        BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
+        StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
         assertEquals(v, g.query().vertices().iterator().next());
         assertEquals(v.getId(), g.query().vertices().iterator().next().getId());
         assertEquals(v.getLabel(), g.query().vertices().iterator().next().getLabel());
         v.remove();
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(0, 0));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
         g.addVertex();
         g.addVertex();
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(2, 0));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 0));
         g.query().vertices().forEach(Vertex::remove);
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(0, 0));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
 
-        final String edgeLabel = BlueprintsStandardSuite.GraphManager.get().convertLabel("test");
+        final String edgeLabel = StructureStandardSuite.GraphManager.get().convertLabel("test");
         Vertex v1 = g.addVertex();
         Vertex v2 = g.addVertex();
         Edge e = v1.addEdge(edgeLabel, v2);
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(2, 1));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 1));
 
         // test removal of the edge itself
         e.remove();
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(2, 0));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 0));
 
         v1.addEdge(edgeLabel, v2);
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(2, 1));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 1));
 
         // test removal of the out vertex to remove the edge
         v1.remove();
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(1, 0));
 
         // test removal of the in vertex to remove the edge
         v1 = g.addVertex();
         v1.addEdge(edgeLabel, v2);
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(2, 1));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 1));
         v2.remove();
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(1, 0));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(1, 0));
     }
 
     /**
@@ -123,7 +123,7 @@ public class GraphTest extends AbstractBlueprintsTest {
         final Random random = new Random();
 
         IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Element.ID, i)));
-        tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, 0));
+        tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         IntStream.range(0, edgeCount).forEach(i -> {
             boolean created = false;
@@ -131,13 +131,13 @@ public class GraphTest extends AbstractBlueprintsTest {
                 final Vertex a = vertices.get(random.nextInt(vertices.size()));
                 final Vertex b = vertices.get(random.nextInt(vertices.size()));
                 if (a != b) {
-                    edges.add(a.addEdge(AbstractBlueprintsSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
+                    edges.add(a.addEdge(AbstractStructureSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
                     created = true;
                 }
             }
         });
 
-        tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, edgeCount));
+        tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, edgeCount));
 
         int counter = 0;
         for (Edge e : edges) {
@@ -145,7 +145,7 @@ public class GraphTest extends AbstractBlueprintsTest {
             e.remove();
 
             final int currentCounter = counter;
-            tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, edgeCount - currentCounter));
+            tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, edgeCount - currentCounter));
         }
     }
 
@@ -159,15 +159,15 @@ public class GraphTest extends AbstractBlueprintsTest {
         final List<Edge> edges = new ArrayList<>();
 
         IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Element.ID, i)));
-        tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, 0));
+        tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         for (int i = 0; i < vertexCount; i = i + 2) {
             final Vertex a = vertices.get(i);
             final Vertex b = vertices.get(i + 1);
-            edges.add(a.addEdge(AbstractBlueprintsSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
+            edges.add(a.addEdge(AbstractStructureSuite.GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
         }
 
-        tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(vertexCount, vertexCount / 2));
+        tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, vertexCount / 2));
 
         int counter = 0;
         for (Vertex v : vertices) {
@@ -176,7 +176,7 @@ public class GraphTest extends AbstractBlueprintsTest {
 
             if ((counter + 1) % 2 == 0) {
                 final int currentCounter = counter;
-                tryCommit(g, AbstractBlueprintsSuite.assertVertexEdgeCounts(
+                tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(
                         vertexCount - currentCounter, edges.size() - ((currentCounter + 1) / 2)));
             }
         }
@@ -187,7 +187,7 @@ public class GraphTest extends AbstractBlueprintsTest {
      */
     @Test
     public void shouldEvaluateConnectivityPatterns() {
-        final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
+        final AbstractStructureSuite.GraphProvider graphProvider = AbstractStructureSuite.GraphManager.get();
         final Graph graph = this.g;
 
         final Vertex a = graph.addVertex(Element.ID, graphProvider.convertId("1"));
@@ -195,14 +195,14 @@ public class GraphTest extends AbstractBlueprintsTest {
         final Vertex c = graph.addVertex(Element.ID, graphProvider.convertId("3"));
         final Vertex d = graph.addVertex(Element.ID, graphProvider.convertId("4"));
 
-        tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(4, 0));
+        tryCommit(graph, AbstractStructureSuite.assertVertexEdgeCounts(4, 0));
 
         final Edge e = a.addEdge(graphProvider.convertLabel("knows"), b);
         final Edge f = b.addEdge(graphProvider.convertLabel("knows"), c);
         final Edge g = c.addEdge(graphProvider.convertLabel("knows"), d);
         final Edge h = d.addEdge(graphProvider.convertLabel("knows"), a);
 
-        tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(4, 4));
+        tryCommit(graph, AbstractStructureSuite.assertVertexEdgeCounts(4, 4));
 
         for (Vertex v : graph.query().vertices()) {
             assertEquals(1, v.query().direction(Direction.OUT).count());
@@ -267,7 +267,7 @@ public class GraphTest extends AbstractBlueprintsTest {
 
     @Test
     public void shouldTraverseInOutFromVertexWithSingleEdgeLabelFilter() {
-        final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
+        final AbstractStructureSuite.GraphProvider graphProvider = AbstractStructureSuite.GraphManager.get();
         final Graph graph = g;
 
         final Vertex a = graph.addVertex();
@@ -316,7 +316,7 @@ public class GraphTest extends AbstractBlueprintsTest {
 
     @Test
     public void shouldTraverseInOutFromVertexWithMultipleEdgeLabelFilter() {
-        final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
+        final AbstractStructureSuite.GraphProvider graphProvider = AbstractStructureSuite.GraphManager.get();
         final Graph graph = g;
         final Vertex a = graph.addVertex();
         final Vertex b = graph.addVertex();
@@ -352,7 +352,7 @@ public class GraphTest extends AbstractBlueprintsTest {
 
     @Test
     public void shouldTestTreeConnectivity() {
-        final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
+        final AbstractStructureSuite.GraphProvider graphProvider = AbstractStructureSuite.GraphManager.get();
         final Graph graph = g;
 
         int branchSize = 11;
@@ -393,13 +393,13 @@ public class GraphTest extends AbstractBlueprintsTest {
             totalVertices = totalVertices + (int) Math.pow(branchSize, i);
         }
 
-        tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(totalVertices, totalVertices - 1));
+        tryCommit(graph, AbstractStructureSuite.assertVertexEdgeCounts(totalVertices, totalVertices - 1));
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_PERSISTENCE)
     public void shouldPersistDataOnClose() throws Exception {
-        final AbstractBlueprintsSuite.GraphProvider graphProvider = AbstractBlueprintsSuite.GraphManager.get();
+        final AbstractStructureSuite.GraphProvider graphProvider = AbstractStructureSuite.GraphManager.get();
         final Graph graph = g;
 
         final Vertex v = graph.addVertex();
@@ -413,11 +413,11 @@ public class GraphTest extends AbstractBlueprintsTest {
         if (graph.getFeatures().edge().properties().supportsStringValues())
             e.setProperty("location", "internet");
 
-        tryCommit(graph, AbstractBlueprintsSuite.assertVertexEdgeCounts(2, 1));
+        tryCommit(graph, AbstractStructureSuite.assertVertexEdgeCounts(2, 1));
         graph.close();
 
         final Graph reopenedGraph = graphProvider.standardTestGraph();
-        AbstractBlueprintsSuite.assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
+        AbstractStructureSuite.assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
 
         if (graph.getFeatures().vertex().properties().supportsStringValues()) {
             for (Vertex vertex : graph.query().vertices()) {

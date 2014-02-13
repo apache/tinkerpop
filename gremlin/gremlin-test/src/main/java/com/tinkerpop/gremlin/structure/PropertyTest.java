@@ -175,7 +175,7 @@ public class PropertyTest {
         private Edge createEdgeForPropertyFeatureTests() {
             final Vertex vertexA = g.addVertex();
             final Vertex vertexB = g.addVertex();
-            return vertexA.addEdge(BlueprintsStandardSuite.GraphManager.get().convertLabel("knows"), vertexB);
+            return vertexA.addEdge(StructureStandardSuite.GraphManager.get().convertLabel("knows"), vertexB);
         }
     }
 

@@ -130,13 +130,13 @@ public class EdgeTest extends AbstractBlueprintsTest {
             v.addEdge("friend", v);
         }
 
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(25, 25));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 25));
 
         for(Edge e : g.query().edges()) {
             e.remove();
             tryCommit(g);
         }
 
-        tryCommit(g, BlueprintsStandardSuite.assertVertexEdgeCounts(25, 0));
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 0));
     }
 }

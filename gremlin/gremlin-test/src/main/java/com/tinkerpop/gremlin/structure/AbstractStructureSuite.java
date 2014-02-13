@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractBlueprintsSuite extends Suite {
+public abstract class AbstractStructureSuite extends Suite {
 
     /**
      * The GraphProvider instance that will be used to generate a Graph instance.
@@ -39,7 +39,7 @@ public abstract class AbstractBlueprintsSuite extends Suite {
         public Class<? extends GraphProvider> value();
     }
 
-    public AbstractBlueprintsSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
+    public AbstractStructureSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
         super(builder, klass, testsToExecute);
 
         // figures out what the implementer assigned as the GraphProvider class and make it available to tests.
@@ -68,7 +68,7 @@ public abstract class AbstractBlueprintsSuite extends Suite {
 
     /**
      * Those developing Blueprints implementations must provide a GraphProvider implementation so that the
-     * BlueprintsStandardSuite knows how to instantiate their implementations.
+     * StructureStandardSuite knows how to instantiate their implementations.
      */
     public static interface GraphProvider {
 
@@ -128,7 +128,7 @@ public abstract class AbstractBlueprintsSuite extends Suite {
         }
 
         /**
-         * When implementing this method ensure that the BlueprintsStandardSuite can override any settings EXCEPT the
+         * When implementing this method ensure that the StructureStandardSuite can override any settings EXCEPT the
          * "blueprints.graph" setting which should be defined by the implementer. It should provide a
          * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
          *
@@ -138,7 +138,7 @@ public abstract class AbstractBlueprintsSuite extends Suite {
         public Configuration newGraphConfiguration(final String graphName, final Map<String, Object> configurationOverrides);
 
         /**
-         * When implementing this method ensure that the BlueprintsStandardSuite can override any settings EXCEPT the
+         * When implementing this method ensure that the StructureStandardSuite can override any settings EXCEPT the
          * "blueprints.graph" setting which should be defined by the implementer. It should provide a
          * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
          *

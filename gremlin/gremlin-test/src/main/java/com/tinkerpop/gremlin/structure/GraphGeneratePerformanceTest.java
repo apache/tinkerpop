@@ -36,7 +36,7 @@ public class GraphGeneratePerformanceTest {
                 g.addVertex();
             }
 
-            AbstractBlueprintsSuite.assertVertexEdgeCounts(verticesToGenerate, 0).accept(g);
+            AbstractStructureSuite.assertVertexEdgeCounts(verticesToGenerate, 0).accept(g);
         }
 
         @Test
@@ -52,7 +52,7 @@ public class GraphGeneratePerformanceTest {
                 lastVertex = Optional.of(v);
             }
 
-            AbstractBlueprintsSuite.assertVertexEdgeCounts(verticesToGenerate, verticesToGenerate - 1).accept(g);
+            AbstractStructureSuite.assertVertexEdgeCounts(verticesToGenerate, verticesToGenerate - 1).accept(g);
         }
     }
 }
