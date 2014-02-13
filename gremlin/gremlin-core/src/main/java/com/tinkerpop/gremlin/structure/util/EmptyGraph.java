@@ -1,12 +1,13 @@
 package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.query.GraphQuery;
 import com.tinkerpop.gremlin.structure.query.util.DefaultGraphQuery;
 
@@ -26,7 +27,12 @@ public class EmptyGraph implements Graph {
 
     @Override
     public <A extends Traversal<?, Vertex>> A V() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return (A) EmptyTraversal.instance();
+    }
+
+    @Override
+    public <A extends Traversal<?, Edge>> A E() {
+        return (A) EmptyTraversal.instance();
     }
 
     public static Graph instance() {
