@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
 import com.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
 import com.tinkerpop.gremlin.structure.strategy.IdGraphStrategyTest;
