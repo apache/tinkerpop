@@ -37,7 +37,7 @@ public class GraphGeneratePerformanceTest {
                 g.addVertex();
             }
 
-            AbstractStructureSuite.assertVertexEdgeCounts(verticesToGenerate, 0).accept(g);
+            AbstractGremlinSuite.assertVertexEdgeCounts(verticesToGenerate, 0).accept(g);
         }
 
         @Test
@@ -53,7 +53,7 @@ public class GraphGeneratePerformanceTest {
                 lastVertex = Optional.of(v);
             }
 
-            AbstractStructureSuite.assertVertexEdgeCounts(verticesToGenerate, verticesToGenerate - 1).accept(g);
+            AbstractGremlinSuite.assertVertexEdgeCounts(verticesToGenerate, verticesToGenerate - 1).accept(g);
         }
     }
 }

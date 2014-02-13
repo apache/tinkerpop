@@ -23,14 +23,14 @@ import org.junit.runners.model.RunnerBuilder;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(BlueprintsSuite.class)
  * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class)
- * public class MsAccessBlueprintsTest implements AbstractStructureSuite.GraphProvider {
+ * public class MsAccessBlueprintsTest implements AbstractGremlinSuite.GraphProvider {
  * }
  * </code>
- * Implementing AbstractStructureSuite.GraphProvider provides a way for the StructureStandardSuite to instantiate Graph instances
+ * Implementing AbstractGremlinSuite.GraphProvider provides a way for the StructureStandardSuite to instantiate Graph instances
  * from the implementation being tested to inject into tests in the suite.  The StructureStandardSuite will utilized
  * Features defined in the suite to determine which tests will be executed.
  */
-public class StructureStandardSuite extends AbstractStructureSuite {
+public class StructureStandardSuite extends AbstractGremlinSuite {
 
     /**
      * This list of tests in the suite that will be executed.  Blueprints developers should add to this list

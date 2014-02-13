@@ -126,7 +126,7 @@ public class GraphTest extends AbstractGremlinTest {
         final Random random = new Random();
 
         IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Element.ID, i)));
-        tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, 0));
+        tryCommit(g, AbstractGremlinSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         IntStream.range(0, edgeCount).forEach(i -> {
             boolean created = false;
@@ -140,7 +140,7 @@ public class GraphTest extends AbstractGremlinTest {
             }
         });
 
-        tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, edgeCount));
+        tryCommit(g, AbstractGremlinSuite.assertVertexEdgeCounts(vertexCount, edgeCount));
 
         int counter = 0;
         for (Edge e : edges) {
@@ -148,7 +148,7 @@ public class GraphTest extends AbstractGremlinTest {
             e.remove();
 
             final int currentCounter = counter;
-            tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, edgeCount - currentCounter));
+            tryCommit(g, AbstractGremlinSuite.assertVertexEdgeCounts(vertexCount, edgeCount - currentCounter));
         }
     }
 
@@ -162,7 +162,7 @@ public class GraphTest extends AbstractGremlinTest {
         final List<Edge> edges = new ArrayList<>();
 
         IntStream.range(0, vertexCount).forEach(i->vertices.add(g.addVertex(Element.ID, i)));
-        tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, 0));
+        tryCommit(g, AbstractGremlinSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         for (int i = 0; i < vertexCount; i = i + 2) {
             final Vertex a = vertices.get(i);
@@ -170,7 +170,7 @@ public class GraphTest extends AbstractGremlinTest {
             edges.add(a.addEdge(GraphManager.get().convertLabel("a" + UUID.randomUUID()), b));
         }
 
-        tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(vertexCount, vertexCount / 2));
+        tryCommit(g, AbstractGremlinSuite.assertVertexEdgeCounts(vertexCount, vertexCount / 2));
 
         int counter = 0;
         for (Vertex v : vertices) {
@@ -179,7 +179,7 @@ public class GraphTest extends AbstractGremlinTest {
 
             if ((counter + 1) % 2 == 0) {
                 final int currentCounter = counter;
-                tryCommit(g, AbstractStructureSuite.assertVertexEdgeCounts(
+                tryCommit(g, AbstractGremlinSuite.assertVertexEdgeCounts(
                         vertexCount - currentCounter, edges.size() - ((currentCounter + 1) / 2)));
             }
         }
@@ -198,14 +198,14 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex c = graph.addVertex(Element.ID, graphProvider.convertId("3"));
         final Vertex d = graph.addVertex(Element.ID, graphProvider.convertId("4"));
 
-        tryCommit(graph, AbstractStructureSuite.assertVertexEdgeCounts(4, 0));
+        tryCommit(graph, AbstractGremlinSuite.assertVertexEdgeCounts(4, 0));
 
         final Edge e = a.addEdge(graphProvider.convertLabel("knows"), b);
         final Edge f = b.addEdge(graphProvider.convertLabel("knows"), c);
         final Edge g = c.addEdge(graphProvider.convertLabel("knows"), d);
         final Edge h = d.addEdge(graphProvider.convertLabel("knows"), a);
 
-        tryCommit(graph, AbstractStructureSuite.assertVertexEdgeCounts(4, 4));
+        tryCommit(graph, AbstractGremlinSuite.assertVertexEdgeCounts(4, 4));
 
         for (Vertex v : graph.query().vertices()) {
             assertEquals(1, v.query().direction(Direction.OUT).count());
@@ -396,7 +396,7 @@ public class GraphTest extends AbstractGremlinTest {
             totalVertices = totalVertices + (int) Math.pow(branchSize, i);
         }
 
-        tryCommit(graph, AbstractStructureSuite.assertVertexEdgeCounts(totalVertices, totalVertices - 1));
+        tryCommit(graph, AbstractGremlinSuite.assertVertexEdgeCounts(totalVertices, totalVertices - 1));
     }
 
     @Test
@@ -416,11 +416,11 @@ public class GraphTest extends AbstractGremlinTest {
         if (graph.getFeatures().edge().properties().supportsStringValues())
             e.setProperty("location", "internet");
 
-        tryCommit(graph, AbstractStructureSuite.assertVertexEdgeCounts(2, 1));
+        tryCommit(graph, AbstractGremlinSuite.assertVertexEdgeCounts(2, 1));
         graph.close();
 
         final Graph reopenedGraph = graphProvider.standardTestGraph();
-        AbstractStructureSuite.assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
+        AbstractGremlinSuite.assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
 
         if (graph.getFeatures().vertex().properties().supportsStringValues()) {
             for (Vertex vertex : graph.query().vertices()) {

@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractStructureSuite extends Suite {
+public abstract class AbstractGremlinSuite extends Suite {
 
     /**
      * The GraphProvider instance that will be used to generate a Graph instance.
@@ -33,7 +33,7 @@ public abstract class AbstractStructureSuite extends Suite {
         public Class<? extends GraphProvider> value();
     }
 
-    public AbstractStructureSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
+    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
         super(builder, klass, testsToExecute);
 
         // figures out what the implementer assigned as the GraphProvider class and make it available to tests.
