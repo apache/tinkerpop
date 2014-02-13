@@ -15,7 +15,6 @@ import org.junit.runners.model.RunnerBuilder;
  * class file):
  * <code>
  *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(BlueprintsPerformanceSuite.class)
  * @StructurePerformanceSuite.GraphProviderClass(MsAccessBlueprintsPerformanceTest.class)
  * public class MsAccessStructurePerformanceTest implements AbstractStructureSuite.GraphProvider {
@@ -24,6 +23,8 @@ import org.junit.runners.model.RunnerBuilder;
  * Implementing AbstractStructureSuite.GraphProvider provides a way for the StructurePerformanceSuite to instantiate
  * Graph instances from the implementation being tested to inject into tests in the suite.  The
  * StructurePerformanceSuite will utilized Features defined in the suite to determine which tests will be executed.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 
 public class StructurePerformanceSuite extends AbstractStructureSuite {
