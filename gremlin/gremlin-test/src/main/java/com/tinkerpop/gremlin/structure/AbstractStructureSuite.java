@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Base Blueprints test suite from which different classes of tests can be exposed to implementers.
+ * Base Gremlin test suite from which different classes of tests can be exposed to implementers.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
