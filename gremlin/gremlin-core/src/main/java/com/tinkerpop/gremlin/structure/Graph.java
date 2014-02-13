@@ -2,9 +2,6 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
-import com.tinkerpop.gremlin.process.util.HolderIterator;
 import com.tinkerpop.gremlin.structure.query.GraphQuery;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
@@ -47,12 +44,9 @@ public interface Graph extends AutoCloseable {
         return itty.next();
     }
 
-    public default <A extends Traversal<?, Vertex>> A V() {
-        Traversal traversal = new DefaultTraversal<Object, Vertex>(this);
-        traversal.optimizers().register(new HolderOptimizer());
-        traversal.addStarts(new HolderIterator<>(this.query().vertices().iterator()));
-        return (A) traversal;
-    }
+    public <A extends Traversal<?, Vertex>> A V();
+
+    public <A extends Traversal<?, Edge>> A E();
 
     public GraphQuery query();
 

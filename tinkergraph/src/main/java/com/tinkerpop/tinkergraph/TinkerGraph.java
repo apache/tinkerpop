@@ -131,7 +131,14 @@ public class TinkerGraph implements Graph, Serializable {
     public <A extends Traversal<?, Vertex>> A V() {
         Traversal traversal = new DefaultTraversal<Object, Vertex>(this);
         traversal.optimizers().register(new HolderOptimizer());
-        traversal.addStarts(new HolderIterator<>(this.query().vertices().iterator()));
+        traversal.addStarts(new HolderIterator<>(this.vertices.values().iterator()));
+        return (A) traversal;
+    }
+
+    public <A extends Traversal<?, Edge>> A E() {
+        Traversal traversal = new DefaultTraversal<Object, Vertex>(this);
+        traversal.optimizers().register(new HolderOptimizer());
+        traversal.addStarts(new HolderIterator<>(this.edges.values().iterator()));
         return (A) traversal;
     }
 
