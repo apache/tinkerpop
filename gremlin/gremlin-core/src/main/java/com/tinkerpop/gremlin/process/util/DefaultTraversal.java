@@ -24,14 +24,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     private final Optimizers optimizers = new DefaultOptimizers();
     private boolean firstNext = true;
 
-    public DefaultTraversal() {
-        this.addStep(new IdentityStep(this));
-    }
-
-    public DefaultTraversal(final Graph graph) {
-        this.addStep(new GraphQueryStep(this, graph, new GraphQueryBuilder(), Vertex.class));
-    }
-
     public List<Step> getSteps() {
         return this.steps;
     }

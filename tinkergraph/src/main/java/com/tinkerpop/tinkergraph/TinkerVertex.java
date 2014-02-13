@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.process.steps.map.IdentityStep;
 import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
@@ -122,18 +123,21 @@ class TinkerVertex extends TinkerElement implements Vertex {
 
     public <A extends Traversal<Vertex, Vertex>> A out(final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStep(new IdentityStep<>(traversal));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return (A) traversal.out(labels);
     }
 
     public <A extends Traversal<Vertex, Vertex>> A in(final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStep(new IdentityStep<>(traversal));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return (A) traversal.in(labels);
     }
 
     public <A extends Traversal<Vertex, Vertex>> A both(final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStep(new IdentityStep<>(traversal));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return (A) traversal.both(labels);
     }

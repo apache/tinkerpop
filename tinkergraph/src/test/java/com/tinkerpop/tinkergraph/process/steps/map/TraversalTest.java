@@ -49,7 +49,7 @@ public class TraversalTest extends com.tinkerpop.gremlin.process.steps.map.Trave
 
     @Test
     public void g_E() {
-        //  super.g_E(GremlinJ.of(g).E());
+        super.g_E(g.E());
     }
 
     @Test

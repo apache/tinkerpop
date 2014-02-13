@@ -2,16 +2,19 @@ package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class TinkerHelper {
+public class TinkerHelper {
 
     protected static String getNextId(final TinkerGraph graph) {
         return Stream.generate(() -> ((Long) (++graph.currentId)).toString()).filter(id -> !graph.vertices.containsKey(id) && !graph.edges.containsKey(id)).findFirst().get();
@@ -57,5 +60,21 @@ class TinkerHelper {
             vertex.inEdges.put(label, edges);
         }
         edges.add(edge);
+    }
+
+    public static Collection<Vertex> getVertices(final TinkerGraph graph) {
+        return graph.vertices.values();
+    }
+
+    public static Collection<Edge> getEdges(final TinkerGraph graph) {
+        return graph.edges.values();
+    }
+
+    public static List<TinkerVertex> getVertexIndex(final TinkerGraph graph, final String key, final Object value) {
+        return graph.vertexIndex.get(key, value);
+    }
+
+    public static List<TinkerEdge> getEdgeIndex(final TinkerGraph graph, final String key, final Object value) {
+        return graph.edgeIndex.get(key, value);
     }
 }

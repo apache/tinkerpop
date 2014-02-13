@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
-import com.tinkerpop.gremlin.process.util.HolderIterator;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -16,6 +15,10 @@ import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.GraphHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.tinkergraph.process.steps.map.TinkerEdgesStep;
+import com.tinkerpop.tinkergraph.process.steps.map.TinkerVerticesStep;
+import com.tinkerpop.tinkergraph.process.steps.optimizers.TinkerEdgesOptimizer;
+import com.tinkerpop.tinkergraph.process.steps.optimizers.TinkerVerticesOptimizer;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
@@ -129,16 +132,18 @@ public class TinkerGraph implements Graph, Serializable {
     ////////////// BLUEPRINTS API METHODS //////////////////
 
     public <A extends Traversal<?, Vertex>> A V() {
-        Traversal traversal = new DefaultTraversal<Object, Vertex>(this);
+        Traversal traversal = new DefaultTraversal<Object, Vertex>();
+        traversal.addStep(new TinkerVerticesStep(traversal, this));
         traversal.optimizers().register(new HolderOptimizer());
-        traversal.addStarts(new HolderIterator<>(this.vertices.values().iterator()));
+        traversal.optimizers().register(new TinkerVerticesOptimizer());
         return (A) traversal;
     }
 
     public <A extends Traversal<?, Edge>> A E() {
-        Traversal traversal = new DefaultTraversal<Object, Vertex>(this);
+        Traversal traversal = new DefaultTraversal<Object, Edge>();
+        traversal.addStep(new TinkerEdgesStep(traversal, this));
         traversal.optimizers().register(new HolderOptimizer());
-        traversal.addStarts(new HolderIterator<>(this.edges.values().iterator()));
+        traversal.optimizers().register(new TinkerEdgesOptimizer());
         return (A) traversal;
     }
 
