@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.process.olap.traversal;
 
-import com.tinkerpop.gremlin.process.MicroPath;
+import com.tinkerpop.gremlin.process.util.MicroPath;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.olap.GraphMemory;
-import com.tinkerpop.gremlin.process.oltp.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 

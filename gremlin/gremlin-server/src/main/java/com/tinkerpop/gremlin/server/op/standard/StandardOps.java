@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.server.Tokens;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.LocalExecutorService;
 import com.tinkerpop.gremlin.server.util.MetricManager;
-import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
+import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.apache.commons.collections.iterators.ArrayIterator;

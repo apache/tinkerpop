@@ -6,7 +6,7 @@ import com.tinkerpop.tinkergraph.TinkerFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RangeTest extends com.tinkerpop.gremlin.process.oltp.filter.RangeTest {
+public class RangeTest extends com.tinkerpop.gremlin.process.steps.filter.RangeTest {
 
     private final Graph g = TinkerFactory.createClassic();
 

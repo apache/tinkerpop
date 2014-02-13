@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.olap.traversal;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.oltp.util.MapHelper;
-import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
+import com.tinkerpop.gremlin.process.steps.util.MapHelper;
+import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;

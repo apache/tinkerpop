@@ -2,7 +2,7 @@ package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.oltp.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.HolderIterator;
 import com.tinkerpop.gremlin.structure.Edge;

@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.olap.traversal;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphMemory;
-import com.tinkerpop.gremlin.process.oltp.map.MapStep;
+import com.tinkerpop.gremlin.process.steps.map.MapStep;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

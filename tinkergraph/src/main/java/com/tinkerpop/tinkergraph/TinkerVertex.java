@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.oltp.util.SingleIterator;
+import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
