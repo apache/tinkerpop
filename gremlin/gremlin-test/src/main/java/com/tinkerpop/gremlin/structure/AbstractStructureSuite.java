@@ -173,10 +173,10 @@ public abstract class AbstractStructureSuite extends Suite {
             getBaseConfiguration(graphName).entrySet().stream()
                     .forEach(e -> conf.setProperty(e.getKey(), e.getValue()));
 
-            // assign overrides but don't allow blueprints.graph setting to be overridden.  the test suite should
+            // assign overrides but don't allow gremlin.graph setting to be overridden.  the test suite should
             // not be able to override that.
             configurationOverrides.entrySet().stream()
-                    .filter(c -> !c.getKey().equals("blueprints.graph"))
+                    .filter(c -> !c.getKey().equals("gremlin.graph"))
                     .forEach(e -> conf.setProperty(e.getKey(), e.getValue()));
             return conf;
         }
