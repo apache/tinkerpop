@@ -1,12 +1,17 @@
 package com.tinkerpop.gremlin.process.steps.map;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -15,9 +20,19 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class PathTest {
+public abstract class PathTest extends AbstractGremlinTest {
 
-    public void g_v1_propertyXnameX_path(final Iterator<Path> step) {
+    public abstract Iterator<Path> get_g_v1_propertyXnameX_path();
+
+    public abstract Iterator<Path> get_g_v1_out_pathXage_nameX();
+
+    public abstract Iterator<Path> get_g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX();
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @Ignore("Get vertex query stuff straight")
+    public void g_v1_propertyXnameX_path() {
+        final Iterator<Path> step = get_g_v1_propertyXnameX_path();
         System.out.println("Testing: " + step);
         final Path path = step.next();
         assertFalse(step.hasNext());
@@ -27,7 +42,11 @@ public class PathTest {
         assertEquals("marko", path.<String>get(1));
     }
 
-    public void g_v1_out_pathXage_nameX(final Iterator<Path> step) {
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @Ignore("Path tracking is not supported by this Holder")
+    public void g_v1_out_pathXage_nameX() {
+        final Iterator<Path> step  = get_g_v1_out_pathXage_nameX();
         System.out.println("Testing: " + step);
         int counter = 0;
         final Set<String> names = new HashSet<>();
@@ -42,7 +61,10 @@ public class PathTest {
         assertEquals(3, names.size());
     }
 
-    public void g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX(final Iterator<Path> step) {
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX() {
+        final Iterator<Path> step = get_g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX();
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -54,5 +76,21 @@ public class PathTest {
             assertEquals("java", path.<String>get(2));
         }
         assertEquals(2, counter);
+    }
+
+    public static class JavaPathTest extends PathTest {
+        public Iterator<Path> get_g_v1_propertyXnameX_path() {
+            return null; // g.v(1).value("name").path();
+        }
+
+        public Iterator<Path> get_g_v1_out_pathXage_nameX() {
+            return g.v(1).out().path(v -> ((Vertex) v).getValue("age"), v -> ((Vertex) v).getValue("name"));
+        }
+
+        public Iterator<Path> get_g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX() {
+            return g.V().as("x").out()
+                        .jump("x", o -> o.getLoops() < 2)
+                        .path(v -> v, v -> ((Vertex) v).getValue("name"), v -> ((Vertex) v).getValue("lang"));
+        }
     }
 }

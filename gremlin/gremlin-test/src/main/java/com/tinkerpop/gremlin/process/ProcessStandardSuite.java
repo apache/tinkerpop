@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.steps.map.AnnotatedValuesTest;
 import com.tinkerpop.gremlin.process.steps.map.BackTest;
 import com.tinkerpop.gremlin.process.steps.map.JumpTest;
 import com.tinkerpop.gremlin.process.steps.map.OrderTest;
+import com.tinkerpop.gremlin.process.steps.map.PathTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -54,7 +55,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             AnnotatedValuesTest.JavaAnnotatedValuesTest.class,
             BackTest.JavaBackTest.class,
             JumpTest.JavaJumpTest.class,
-            OrderTest.JavaOrderTest.class
+            OrderTest.JavaOrderTest.class,
+            PathTest.JavaPathTest.class
     };
 
 
