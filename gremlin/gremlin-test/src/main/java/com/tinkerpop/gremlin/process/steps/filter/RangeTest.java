@@ -1,11 +1,13 @@
 package com.tinkerpop.gremlin.process.steps.filter;
 
-import com.tinkerpop.gremlin.AbstractToyGraphGremlinTest;
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Iterator;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -13,7 +15,7 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class RangeTest extends AbstractToyGraphGremlinTest {
+public abstract class RangeTest extends AbstractGremlinTest {
 
     public abstract Iterator<Vertex> get_g_v1_out_rangeX0_1X();
 
@@ -28,6 +30,7 @@ public abstract class RangeTest extends AbstractToyGraphGremlinTest {
     public abstract Iterator<Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV();
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_v1_out_rangeX0_1X() {
         final Iterator<Vertex> step = get_g_v1_out_rangeX0_1X();
         System.out.println("Testing: " + step);
@@ -40,6 +43,7 @@ public abstract class RangeTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_V_outX1X_rangeX0_2X() {
         final Iterator<Vertex> step = get_g_V_outX1X_rangeX0_2X();
         System.out.println("Testing: " + step);
@@ -52,6 +56,7 @@ public abstract class RangeTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV() {
         final Iterator<Vertex> step = get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV();
         System.out.println("Testing: " + step);
@@ -65,6 +70,7 @@ public abstract class RangeTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_v1_outXknowsX_outXcreatedX_rangeX0_0X() {
         final Iterator<Vertex> step = get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X();
         System.out.println("Testing: " + step);
@@ -78,6 +84,7 @@ public abstract class RangeTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_rangeX1_2X() {
         final Iterator<Vertex> step = get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X();
         System.out.println("Testing: " + step);
@@ -91,6 +98,7 @@ public abstract class RangeTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV() {
         final Iterator<Vertex> step = get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV();
         System.out.println("Testing: " + step);

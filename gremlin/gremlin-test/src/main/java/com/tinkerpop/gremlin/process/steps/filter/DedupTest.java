@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.steps.filter;
 
-import com.tinkerpop.gremlin.AbstractToyGraphGremlinTest;
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.junit.Test;
 
@@ -8,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -16,13 +18,14 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class DedupTest extends AbstractToyGraphGremlinTest {
+public abstract class DedupTest extends AbstractGremlinTest {
 
     public abstract Iterator<String> get_g_V_both_dedup_name();
 
     public abstract Iterator<String> get_g_V_both_dedupXlangX_name();
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_V_both_dedup_name() {
         final Iterator<String> step = get_g_V_both_dedup_name();
         System.out.println("Testing: " + step);
@@ -38,6 +41,7 @@ public abstract class DedupTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_V_both_dedupXlangX_name() {
         final Iterator<String> step = get_g_V_both_dedupXlangX_name();
         System.out.println("Testing: " + step);

@@ -1,12 +1,14 @@
 package com.tinkerpop.gremlin.process.steps.filter;
 
-import com.tinkerpop.gremlin.AbstractToyGraphGremlinTest;
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -14,11 +16,12 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class IntervalTest extends AbstractToyGraphGremlinTest {
+public abstract class IntervalTest extends AbstractGremlinTest {
 
     public abstract Iterator<Vertex> get_g_v1_outE_intervalXweight_0_06X_inV();
 
     @Test
+    @LoadGraphWith(CLASSIC)
     @Ignore("Need outE on Vertex")
     public void g_v1_outE_intervalXweight_0_06X_inV() {
         final Iterator<Vertex> step = get_g_v1_outE_intervalXweight_0_06X_inV();

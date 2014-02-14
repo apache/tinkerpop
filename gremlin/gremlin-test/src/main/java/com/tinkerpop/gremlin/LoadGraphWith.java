@@ -1,16 +1,26 @@
 package com.tinkerpop.gremlin;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * Annotations to define a graph example to load from test resources prior to test execution.  This annotation is
- * for use only with test that extend from {@link AbstractToyGraphGremlinTest}.
+ * for use only with test that extend from {@link AbstractGremlinTest}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@Inherited
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
 public @interface LoadGraphWith {
 
     public enum GraphData {
         CLASSIC,
-        GRATEFUL;
+        GRATEFUL,
+        MODERN;
 
 
         public String location() {

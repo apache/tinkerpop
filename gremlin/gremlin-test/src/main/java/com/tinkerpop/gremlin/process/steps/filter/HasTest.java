@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.steps.filter;
 
-import com.tinkerpop.gremlin.AbstractToyGraphGremlinTest;
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
@@ -11,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -19,7 +21,7 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class HasTest extends AbstractToyGraphGremlinTest {
+public abstract class HasTest extends AbstractGremlinTest {
 
     public abstract Iterator<Element> get_g_V_hasXname_markoX();
 
@@ -36,6 +38,7 @@ public abstract class HasTest extends AbstractToyGraphGremlinTest {
     public abstract Iterator<Element> get_g_E_hasXlabelXknows_createdX();
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_V_hasXname_markoX() {
         final Iterator<Element> step = get_g_V_hasXname_markoX();
         System.out.println("Testing: " + step);
@@ -44,6 +47,7 @@ public abstract class HasTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_V_hasXname_blahX() {
         final Iterator<Element> step = get_g_V_hasXname_blahX();
         System.out.println("Testing: " + step);
@@ -51,6 +55,7 @@ public abstract class HasTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_V_hasXage_gt_30X() {
         final Iterator<Element> step = get_g_V_hasXage_gt_30X();
         System.out.println("Testing: " + step);
@@ -62,6 +67,7 @@ public abstract class HasTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_v1_out_hasXid_2X() {
         final Iterator<Element> step = get_g_v1_out_hasXid_2X();
         System.out.println("Testing: " + step);
@@ -70,6 +76,7 @@ public abstract class HasTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_V_hasXblahX() {
         final Iterator<Element> step = get_g_V_hasXblahX();
         System.out.println("Testing: " + step);
@@ -77,6 +84,7 @@ public abstract class HasTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_E_hasXlabelXknowsX() {
         final Iterator<Element> step = get_g_E_hasXlabelXknowsX();
         System.out.println("Testing: " + step);
@@ -89,6 +97,7 @@ public abstract class HasTest extends AbstractToyGraphGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void g_E_hasXlabelXknows_createdX() {
         final Iterator<Element> step = get_g_E_hasXlabelXknows_createdX();
         System.out.println("Testing: " + step);
