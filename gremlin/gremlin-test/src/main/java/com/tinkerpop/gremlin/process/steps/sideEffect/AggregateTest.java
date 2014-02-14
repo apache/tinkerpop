@@ -1,19 +1,35 @@
 package com.tinkerpop.gremlin.process.steps.sideEffect;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.List;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class AggregateTest {
+public abstract class AggregateTest extends AbstractGremlinTest {
 
-    public void g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Iterator<Vertex> step) {
+    public abstract Iterator<Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX();
+
+    public abstract List<String> get_g_V_valueXnameX_aggregateXaX_iterate_getXaX();
+
+    public abstract List<String> get_g_V_aggregateXa_nameX_iterate_getXaX();
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @Ignore("Straighten out vertex query stuff")
+    public void g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX() {
+        final Iterator<Vertex> step = get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX();
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -24,7 +40,14 @@ public class AggregateTest {
         assertEquals(2, counter);
     }
 
-    public void g_V_valueXnameX_aggregateXaX_iterate_getXaX(final List<String> names) {
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_valueXnameX_aggregateXaX_iterate_getXaX() {
+        final List<String> names = get_g_V_valueXnameX_aggregateXaX_iterate_getXaX();
+        assert_g_V_valueXnameX_aggregateXaX_iterate_getXaX(names);
+    }
+
+    private void assert_g_V_valueXnameX_aggregateXaX_iterate_getXaX(List<String> names) {
         assertEquals(6, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("josh"));
@@ -34,7 +57,28 @@ public class AggregateTest {
         assertTrue(names.contains("ripple"));
     }
 
-    public void g_V_aggregateXa_nameX_iterate_getXaX(final List<String> names) {
-        this.g_V_valueXnameX_aggregateXaX_iterate_getXaX(names);
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_aggregateXa_nameX_iterate_getXaX() {
+        final List<String> names = get_g_V_aggregateXa_nameX_iterate_getXaX();
+        assert_g_V_valueXnameX_aggregateXaX_iterate_getXaX(names);
+    }
+
+    public static class JavaAggregateTest extends AggregateTest {
+
+        public Iterator<Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX() {
+            return null;
+            //  super.g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(
+            //          GremlinJ.of(g).with("x", new HashSet<>())
+            //                 .v(1).aggregate("x").out("created").in("created").except("x"));
+        }
+
+        public List<String> get_g_V_valueXnameX_aggregateXaX_iterate_getXaX() {
+            return g.V().value("name").aggregate("x").iterate().memory().get("x");
+        }
+
+        public List<String> get_g_V_aggregateXa_nameX_iterate_getXaX() {
+            return g.V().aggregate("a", v -> v.getValue("name")).iterate().memory().get("a");
+        }
     }
 }
