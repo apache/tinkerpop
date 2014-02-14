@@ -72,8 +72,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), TraversalMessage.of(holder));
             voteToHalt.set(false);
         } else if (startStep instanceof EdgesStep) {
-            StreamFactory.stream(vertex.query().direction(Direction.OUT).edges())
-                    .forEach(e -> {
+            vertex.outE().forEach(e -> {
                         final Holder<Edge> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
                                 new PathHolder<>(startStep.getAs(), e) :
                                 new SimpleHolder<>(e);

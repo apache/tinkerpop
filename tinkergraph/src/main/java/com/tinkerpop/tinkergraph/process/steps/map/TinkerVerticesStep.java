@@ -43,7 +43,7 @@ public class TinkerVerticesStep extends VerticesStep {
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         return ((null == indexedContainer) ?
                 TinkerHelper.getVertices(this.graph).parallelStream() :
-                TinkerHelper.getVertexIndex(this.graph, indexedContainer.key, indexedContainer.value).parallelStream())
+                TinkerHelper.queryVertexIndex(this.graph, indexedContainer.key, indexedContainer.value).parallelStream())
                 .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers))
                 .collect(Collectors.<Vertex>toList());
     }

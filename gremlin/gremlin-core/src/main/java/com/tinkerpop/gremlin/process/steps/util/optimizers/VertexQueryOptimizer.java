@@ -8,9 +8,7 @@ import com.tinkerpop.gremlin.process.steps.filter.IntervalStep;
 import com.tinkerpop.gremlin.process.steps.filter.RangeStep;
 import com.tinkerpop.gremlin.process.steps.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.steps.map.IdentityStep;
-import com.tinkerpop.gremlin.process.steps.map.VertexQueryStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +35,7 @@ public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
                 return true;
         }
 
-        VertexQueryStep vertexQueryPipe = null;
+        /*VertexQueryStep vertexQueryPipe = null;
         for (int i = traversal.getSteps().size() - 1; i >= 0; i--) {
             final Step tempStep = (Step) traversal.getSteps().get(i);
             if (tempStep instanceof VertexQueryStep) {
@@ -72,6 +70,7 @@ public class VertexQueryOptimizer implements Optimizer.StepOptimizer {
             return false;
         }
 
+        return true; */
         return true;
     }
 }

@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -35,7 +37,7 @@ public class MicroEdge extends MicroElement implements Edge {
     }
 
     public Edge inflate(final Vertex hostVertex) {
-        return StreamFactory.stream(hostVertex.query().direction(Direction.OUT).labels(this.label).edges())
+        return StreamFactory.stream((Iterator<Edge>) hostVertex.outE(this.label))
                 .filter(e -> e.getId().equals(this.id))
                 .findFirst().orElseThrow(() -> new IllegalStateException("The micro edge could not be be found at the provided vertex"));
     }

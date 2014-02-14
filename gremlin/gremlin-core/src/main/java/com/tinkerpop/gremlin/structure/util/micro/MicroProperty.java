@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.structure.util.micro;
 
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -11,6 +10,7 @@ import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.Optional;
 
 /**
@@ -73,7 +73,7 @@ public class MicroProperty<V> implements Property, Serializable {
         } else {
             final String label = this.getElement().getLabel();
             final Object id = this.getElement().getId();
-            return StreamFactory.stream(hostVertex.query().direction(Direction.OUT).labels(label).edges())
+            return StreamFactory.stream((Iterator<Edge>) hostVertex.outE(label))
                     .filter(e -> e.getId().equals(id))
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("The micro property could not be be found at the provided vertex's edges"))

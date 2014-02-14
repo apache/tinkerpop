@@ -1,10 +1,8 @@
 package com.tinkerpop.gremlin.algorithm.generator;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Triplet;
 import org.junit.Test;
@@ -63,12 +61,11 @@ public class CommunityGeneratorTest {
 
             // ensure that not every vertex has the same number of edges between graphs
             assertFalse(g.V().toList().stream()
-                    .map(v -> Triplet.with(v.getValue("oid"), StreamFactory.stream(v.query().direction(Direction.IN).edges()).count(),
-                            StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count()))
+                    .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
                     .allMatch(p -> {
                         final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
-                        return p.getValue1() == StreamFactory.stream(v.query().direction(Direction.IN).edges()).count()
-                                && p.getValue2() == StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count();
+                        return p.getValue1() == v.inE().count()
+                                && p.getValue2() == v.outE().count();
                     }));
 
             graphProvider.clear(g1, configuration);
@@ -89,12 +86,11 @@ public class CommunityGeneratorTest {
 
             // ensure that every vertex has the same number of edges between graphs.
             assertTrue(g.V().toList().stream()
-                    .map(v -> Triplet.with(v.getValue("oid"), StreamFactory.stream(v.query().direction(Direction.IN).edges()).count(),
-                            StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count()))
+                    .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
                     .allMatch(p -> {
                         final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
-                        return p.getValue1() == StreamFactory.stream(v.query().direction(Direction.IN).edges()).count()
-                                && p.getValue2() == StreamFactory.stream(v.query().direction(Direction.OUT).edges()).count();
+                        return p.getValue1() == v.inE().count()
+                                && p.getValue2() == v.outE().count();
                     }));
 
             graphProvider.clear(g1, configuration);

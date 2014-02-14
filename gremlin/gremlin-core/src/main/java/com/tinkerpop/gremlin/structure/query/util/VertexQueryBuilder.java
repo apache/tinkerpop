@@ -70,11 +70,12 @@ public class VertexQueryBuilder extends DefaultVertexQuery implements QueryBuild
 
 
     public VertexQuery build(final Vertex vertex) {
-        final VertexQuery query = vertex.query();
-        for (final HasContainer hasContainer : this.hasContainers) {
-            query.has(hasContainer.key, hasContainer.predicate, hasContainer.value);
-        }
-        return query.limit(this.limit).labels(this.labels).direction(this.direction);
+      //  final VertexQuery query = vertex.query();
+      //  for (final HasContainer hasContainer : this.hasContainers) {
+      //      query.has(hasContainer.key, hasContainer.predicate, hasContainer.value);
+      //  }
+      // return query.limit(this.limit).labels(this.labels).direction(this.direction);
+        return null;
     }
 
     public VertexQueryBuilder build() {

@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.GraphProvider;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -206,8 +205,8 @@ public class GraphTest extends AbstractGremlinTest {
         tryCommit(graph, AbstractGremlinSuite.assertVertexEdgeCounts(4, 4));
 
         for (Vertex v : graph.V().toList()) {
-            assertEquals(1, v.query().direction(Direction.OUT).count());
-            assertEquals(1, v.query().direction(Direction.IN).count());
+            assertEquals(1, v.outE().count());
+            assertEquals(1, v.inE().count());
         }
 
         for (Edge x : graph.E().toList()) {
@@ -225,27 +224,27 @@ public class GraphTest extends AbstractGremlinTest {
             assertEquals(c, vc);
             assertEquals(d, vd);
 
-            assertEquals(1, va.query().direction(Direction.IN).count());
-            assertEquals(1, va.query().direction(Direction.OUT).count());
-            assertEquals(1, vb.query().direction(Direction.IN).count());
-            assertEquals(1, vb.query().direction(Direction.OUT).count());
-            assertEquals(1, vc.query().direction(Direction.IN).count());
-            assertEquals(1, vc.query().direction(Direction.OUT).count());
-            assertEquals(1, vd.query().direction(Direction.IN).count());
-            assertEquals(1, vd.query().direction(Direction.OUT).count());
+            assertEquals(1, va.inE().count());
+            assertEquals(1, va.outE().count());
+            assertEquals(1, vb.inE().count());
+            assertEquals(1, vb.outE().count());
+            assertEquals(1, vc.inE().count());
+            assertEquals(1, vc.outE().count());
+            assertEquals(1, vd.inE().count());
+            assertEquals(1, vd.outE().count());
 
             final Edge i = a.addEdge(graphProvider.convertLabel("hates"), b);
 
-            assertEquals(1, va.query().direction(Direction.IN).count());
-            assertEquals(2, va.query().direction(Direction.OUT).count());
-            assertEquals(2, vb.query().direction(Direction.IN).count());
-            assertEquals(1, vb.query().direction(Direction.OUT).count());
-            assertEquals(1, vc.query().direction(Direction.IN).count());
-            assertEquals(1, vc.query().direction(Direction.OUT).count());
-            assertEquals(1, vd.query().direction(Direction.IN).count());
-            assertEquals(1, vd.query().direction(Direction.OUT).count());
+            assertEquals(1, va.inE().count());
+            assertEquals(2, va.outE().count());
+            assertEquals(2, vb.inE().count());
+            assertEquals(1, vb.outE().count());
+            assertEquals(1, vc.inE().count());
+            assertEquals(1, vc.outE().count());
+            assertEquals(1, vd.inE().count());
+            assertEquals(1, vd.outE().count());
 
-            for (Edge x : a.query().direction(Direction.OUT).edges()) {
+            for (Edge x : a.outE().toList()) {
                 assertTrue(x.getLabel().equals(graphProvider.convertId("knows")) || x.getLabel().equals(graphProvider.convertId("hates")));
             }
 
@@ -284,33 +283,33 @@ public class GraphTest extends AbstractGremlinTest {
         final Edge cHateA = c.addEdge(labelHate, a);
         final Edge cHateB = c.addEdge(labelHate, b);
 
-        List<Edge> results = StreamFactory.stream(a.query().direction(Direction.OUT).edges()).collect(Collectors.toList());
+        List<Edge> results = a.outE().toList();
         assertEquals(3, results.size());
         assertTrue(results.contains(aFriendB));
         assertTrue(results.contains(aFriendC));
         assertTrue(results.contains(aHateC));
 
-        results = StreamFactory.stream(a.query().direction(Direction.OUT).labels(labelFriend).edges()).collect(Collectors.toList());
+        results = a.outE(labelFriend).toList();
         assertEquals(2, results.size());
         assertTrue(results.contains(aFriendB));
         assertTrue(results.contains(aFriendC));
 
-        results = StreamFactory.stream(a.query().direction(Direction.OUT).labels(labelHate).edges()).collect(Collectors.toList());
+        results = a.outE(labelHate).toList();
         assertEquals(1, results.size());
         assertTrue(results.contains(aHateC));
 
-        results = StreamFactory.stream(a.query().direction(Direction.IN).labels(labelHate).edges()).collect(Collectors.toList());
+        results = a.inE(labelHate).toList();
         assertEquals(1, results.size());
         assertTrue(results.contains(cHateA));
 
-        results = StreamFactory.stream(a.query().direction(Direction.IN).labels(labelFriend).edges()).collect(Collectors.toList());
+        results = a.inE(labelFriend).toList();
         assertEquals(0, results.size());
 
-        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(labelHate).edges()).collect(Collectors.toList());
+        results = b.inE(labelHate).toList();
         assertEquals(1, results.size());
         assertTrue(results.contains(cHateB));
 
-        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(labelFriend).edges()).collect(Collectors.toList());
+        results = b.inE(labelFriend).toList();
         assertEquals(1, results.size());
         assertTrue(results.contains(aFriendB));
     }
@@ -332,22 +331,22 @@ public class GraphTest extends AbstractGremlinTest {
         final Edge cHateA = c.addEdge(labelHate, a);
         final Edge cHateB = c.addEdge(labelHate, b);
 
-        List<Edge> results = StreamFactory.stream(a.query().direction(Direction.OUT).labels(labelFriend, labelHate).edges()).collect(Collectors.toList());
+        List<Edge> results = a.outE(labelFriend, labelHate).toList();
         assertEquals(results.size(), 3);
         assertTrue(results.contains(aFriendB));
         assertTrue(results.contains(aFriendC));
         assertTrue(results.contains(aHateC));
 
-        results = StreamFactory.stream(a.query().direction(Direction.IN).labels(labelFriend, labelHate).edges()).collect(Collectors.toList());
+        results = a.inE(labelFriend, labelHate).toList();
         assertEquals(results.size(), 1);
         assertTrue(results.contains(cHateA));
 
-        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(labelFriend, labelHate).edges()).collect(Collectors.toList());
+        results = b.inE(labelFriend, labelHate).toList();
         assertEquals(results.size(), 2);
         assertTrue(results.contains(aFriendB));
         assertTrue(results.contains(cHateB));
 
-        results = StreamFactory.stream(b.query().direction(Direction.IN).labels(graphProvider.convertLabel("blah1"), graphProvider.convertLabel("blah2")).edges()).collect(Collectors.toList());
+        results = b.inE(graphProvider.convertLabel("blah1"), graphProvider.convertLabel("blah2")).toList();
         assertEquals(results.size(), 0);
     }
 
@@ -371,20 +370,20 @@ public class GraphTest extends AbstractGremlinTest {
             }
         }
 
-        assertEquals(0, start.query().direction(Direction.IN).count());
-        assertEquals(branchSize, start.query().direction(Direction.OUT).count());
-        for (Edge e : start.query().direction(Direction.OUT).edges()) {
+        assertEquals(0, start.inE().count());
+        assertEquals(branchSize, start.outE().count());
+        for (Edge e : start.outE().toList()) {
             assertEquals(graphProvider.convertId("test1"), e.getLabel());
-            assertEquals(branchSize, e.getVertex(Direction.IN).query().direction(Direction.OUT).count());
-            assertEquals(1, e.getVertex(Direction.IN).query().direction(Direction.IN).count());
-            for (Edge f : e.getVertex(Direction.IN).query().direction(Direction.OUT).edges()) {
+            assertEquals(branchSize, e.getVertex(Direction.IN).out().count());
+            assertEquals(1, e.getVertex(Direction.IN).inE().count());
+            for (Edge f : e.getVertex(Direction.IN).outE().toList()) {
                 assertEquals(graphProvider.convertId("test2"), f.getLabel());
-                assertEquals(branchSize, f.getVertex(Direction.IN).query().direction(Direction.OUT).count());
-                assertEquals(1, f.getVertex(Direction.IN).query().direction(Direction.IN).count());
-                for (Edge g : f.getVertex(Direction.IN).query().direction(Direction.OUT).edges()) {
+                assertEquals(branchSize, f.getVertex(Direction.IN).out().count());
+                assertEquals(1, f.getVertex(Direction.IN).in().count());
+                for (Edge g : f.getVertex(Direction.IN).outE().toList()) {
                     assertEquals(graphProvider.convertId("test3"), g.getLabel());
-                    assertEquals(0, g.getVertex(Direction.IN).query().direction(Direction.OUT).count());
-                    assertEquals(1, g.getVertex(Direction.IN).query().direction(Direction.IN).count());
+                    assertEquals(0, g.getVertex(Direction.IN).out().count());
+                    assertEquals(1, g.getVertex(Direction.IN).in().count());
                 }
             }
         }

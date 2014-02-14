@@ -43,7 +43,7 @@ public class TinkerEdgesStep extends EdgesStep {
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         return ((null == indexedContainer) ?
                 TinkerHelper.getEdges(this.graph).parallelStream() :
-                TinkerHelper.getEdgeIndex(this.graph, indexedContainer.key, indexedContainer.value).parallelStream())
+                TinkerHelper.queryEdgeIndex(this.graph, indexedContainer.key, indexedContainer.value).parallelStream())
                 .filter(e -> HasContainer.testAll((Edge) e, this.hasContainers))
                 .collect(Collectors.<Edge>toList());
     }

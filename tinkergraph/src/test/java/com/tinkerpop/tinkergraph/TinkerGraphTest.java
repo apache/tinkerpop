@@ -40,14 +40,16 @@ public class TinkerGraphTest {
         Stream.generate(() -> g.addVertex(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt())).limit(100000).count();
         assertEquals(100002, g.vertices.size());
         final Edge edge = marko.addEdge("knows", stephen);
-        System.out.println(g.V().has("name", Compare.EQUAL, "marko"));
-        System.out.println(marko.query().direction(Direction.OUT).labels("knows", "workedWith").vertices());
+        //System.out.println(g.V().has("name", Compare.EQUAL, "marko"));
+        //System.out.println(marko.out("knows", "workedWith").toString());
         g.createIndex("blah", Vertex.class);
 
         edge.setProperty("weight", 1.0f);
         edge.setProperty("creator", "stephen");
         assertEquals(edge.getValue("weight"), Float.valueOf(1.0f));
         assertEquals(edge.getProperty("creator").get(), "stephen");
+
+        //g.V().out().value("name").forEach(System.out::println);
     }
 
     @Test

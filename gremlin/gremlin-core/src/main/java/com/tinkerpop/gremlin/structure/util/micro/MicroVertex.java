@@ -54,4 +54,39 @@ public class MicroVertex extends MicroElement implements Vertex {
         throw new IllegalStateException();
     }
 
+    public <A extends Traversal<Vertex, Vertex>> A out(final int branchFactor, final String... labels) {
+        throw new IllegalStateException();
+    }
+
+    public <A extends Traversal<Vertex, Vertex>> A in(final int branchFactor, final String... labels) {
+        throw new IllegalStateException();
+    }
+
+    public <A extends Traversal<Vertex, Vertex>> A both(final int branchFactor, final String... labels) {
+        throw new IllegalStateException();
+    }
+
+    public <A extends Traversal<Vertex, Edge>> A outE(final String... labels) {
+        throw new IllegalStateException();
+    }
+
+    public <A extends Traversal<Vertex, Edge>> A inE(final String... labels) {
+        throw new IllegalStateException();
+    }
+
+    public <A extends Traversal<Vertex, Edge>> A bothE(final String... labels) {
+        throw new IllegalStateException();
+    }
+
+    public <A extends Traversal<Vertex, Edge>> A outE(final int branchFactor, final String... labels) {
+        throw new IllegalStateException();
+    }
+
+    public <A extends Traversal<Vertex, Edge>> A inE(final int branchFactor, final String... labels) {
+        throw new IllegalStateException();
+    }
+
+    public <A extends Traversal<Vertex, Edge>> A bothE(final int branchFactor, final String... labels) {
+        throw new IllegalStateException();
+    }
 }

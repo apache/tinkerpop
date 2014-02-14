@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.steps.util;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -8,11 +9,11 @@ import java.util.List;
  */
 public class MultiIterator<T> implements Iterator<T> {
 
-    private final List<Iterator<T>> iterators;
+    private final List<Iterator<T>> iterators = new ArrayList<>();
     private int current = 0;
 
-    public MultiIterator(final List<Iterator<T>> iterators) {
-        this.iterators = iterators;
+    public void addIterator(final Iterator<T> iterator) {
+        this.iterators.add(iterator);
     }
 
     public boolean hasNext() {

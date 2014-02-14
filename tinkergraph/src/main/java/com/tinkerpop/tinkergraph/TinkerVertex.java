@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.steps.map.IdentityStep;
 import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
@@ -14,9 +13,10 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.VertexQuery;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.tinkergraph.process.steps.map.TinkerVertexEdgesStep;
+import com.tinkerpop.tinkergraph.process.steps.map.TinkerVertexVerticesStep;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class TinkerVertex extends TinkerElement implements Vertex {
+public class TinkerVertex extends TinkerElement implements Vertex {
 
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
@@ -75,9 +75,9 @@ class TinkerVertex extends TinkerElement implements Vertex {
         }).accept(key, value);
     }
 
-    public VertexQuery query() {
+    /*public VertexQuery query() {
         return new TinkerVertexQuery(this, this.vertexMemory);
-    }
+    }*/
 
     public String toString() {
         return StringFactory.vertexString(this);
@@ -107,7 +107,7 @@ class TinkerVertex extends TinkerElement implements Vertex {
                     if (!graph.vertices.containsKey(this.id))
                         throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
 
-                    this.query().direction(Direction.BOTH).edges().forEach(Edge::remove);
+                    this.bothE().forEach(Edge::remove);
                     this.getProperties().clear();
                     graph.vertexIndex.removeElement(this);
                     graph.vertices.remove(this.id);
@@ -121,24 +121,45 @@ class TinkerVertex extends TinkerElement implements Vertex {
 
     //////////////////////
 
-    public <A extends Traversal<Vertex, Vertex>> A out(final String... labels) {
+    public <A extends Traversal<Vertex, Vertex>> A out(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        traversal.addStep(new IdentityStep<>(traversal));
+        traversal.addStep(new TinkerVertexVerticesStep(traversal, Direction.OUT, branchFactor, labels));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
-        return (A) traversal.out(labels);
+        return (A) traversal;
     }
 
-    public <A extends Traversal<Vertex, Vertex>> A in(final String... labels) {
+    public <A extends Traversal<Vertex, Vertex>> A in(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        traversal.addStep(new IdentityStep<>(traversal));
+        traversal.addStep(new TinkerVertexVerticesStep(traversal, Direction.IN, branchFactor, labels));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
-        return (A) traversal.in(labels);
+        return (A) traversal;
     }
 
-    public <A extends Traversal<Vertex, Vertex>> A both(final String... labels) {
+    public <A extends Traversal<Vertex, Vertex>> A both(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        traversal.addStep(new IdentityStep<>(traversal));
+        traversal.addStep(new TinkerVertexVerticesStep(traversal, Direction.BOTH, branchFactor, labels));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
-        return (A) traversal.both(labels);
+        return (A) traversal;
+    }
+
+    public <A extends Traversal<Vertex, Edge>> A outE(final int branchFactor, final String... labels) {
+        final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
+        traversal.addStep(new TinkerVertexEdgesStep(traversal, Direction.OUT, branchFactor, labels));
+        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
+        return (A) traversal;
+    }
+
+    public <A extends Traversal<Vertex, Edge>> A inE(final int branchFactor, final String... labels) {
+        final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
+        traversal.addStep(new TinkerVertexEdgesStep(traversal, Direction.IN, branchFactor, labels));
+        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
+        return (A) traversal;
+    }
+
+    public <A extends Traversal<Vertex, Edge>> A bothE(final int branchFactor, final String... labels) {
+        final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
+        traversal.addStep(new TinkerVertexEdgesStep(traversal, Direction.BOTH, branchFactor, labels));
+        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
+        return (A) traversal;
     }
 }

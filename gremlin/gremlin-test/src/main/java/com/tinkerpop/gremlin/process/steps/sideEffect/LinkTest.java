@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.steps.sideEffect;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -42,11 +41,11 @@ public abstract class LinkTest extends AbstractGremlinTest {
 
         for (Vertex vertex : cocreators) {
             if (vertex.getId().equals("1")) {
-                assertEquals(vertex.query().direction(Direction.OUT).labels("cocreator").count(), 4);
-                assertEquals(vertex.query().direction(Direction.IN).labels("cocreator").count(), 4);
+                assertEquals(vertex.outE("cocreator").count(), 4);
+                assertEquals(vertex.inE("cocreator").count(), 4);
             } else {
-                assertEquals(vertex.query().direction(Direction.OUT).labels("cocreator").count(), 1);
-                assertEquals(vertex.query().direction(Direction.IN).labels("cocreator").count(), 1);
+                assertEquals(vertex.outE("cocreator").count(), 1);
+                assertEquals(vertex.inE("cocreator").count(), 1);
             }
         }
     }

@@ -29,7 +29,8 @@ import com.tinkerpop.gremlin.process.steps.map.SelectStep;
 import com.tinkerpop.gremlin.process.steps.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.steps.map.UnionStep;
 import com.tinkerpop.gremlin.process.steps.map.ValueStep;
-import com.tinkerpop.gremlin.process.steps.map.VertexQueryStep;
+import com.tinkerpop.gremlin.process.steps.map.VertexEdgesStep;
+import com.tinkerpop.gremlin.process.steps.map.VertexVerticesStep;
 import com.tinkerpop.gremlin.process.steps.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.steps.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.steps.sideEffect.GroupCountStep;
@@ -50,7 +51,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.AnnotatedListQueryBuilder;
 import com.tinkerpop.gremlin.structure.query.util.HasContainer;
-import com.tinkerpop.gremlin.structure.query.util.VertexQueryBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,7 +105,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Vertex> out(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.OUT).limit(branchFactor).labels(labels), Vertex.class));
+        return this.addStep(new VertexVerticesStep(this, Direction.OUT, branchFactor, labels));
     }
 
     public default Traversal<S, Vertex> out(final String... labels) {
@@ -113,7 +113,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Vertex> in(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.IN).limit(branchFactor).labels(labels), Vertex.class));
+        return this.addStep(new VertexVerticesStep(this, Direction.IN, branchFactor, labels));
     }
 
     public default Traversal<S, Vertex> in(final String... labels) {
@@ -121,7 +121,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Vertex> both(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.BOTH).limit(branchFactor).labels(labels), Vertex.class));
+        return this.addStep(new VertexVerticesStep(this, Direction.BOTH, branchFactor, labels));
     }
 
     public default Traversal<S, Vertex> both(final String... labels) {
@@ -129,7 +129,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Edge> outE(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.OUT).limit(branchFactor).labels(labels), Edge.class));
+        return this.addStep(new VertexEdgesStep(this, Direction.OUT, branchFactor, labels));
     }
 
     public default Traversal<S, Edge> outE(final String... labels) {
@@ -137,7 +137,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Edge> inE(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.IN).limit(branchFactor).labels(labels), Edge.class));
+        return this.addStep(new VertexEdgesStep(this, Direction.IN, branchFactor, labels));
     }
 
     public default Traversal<S, Edge> inE(final String... labels) {
@@ -145,7 +145,7 @@ public interface Traversal<S, E> extends Iterator<E> {
     }
 
     public default Traversal<S, Edge> bothE(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexQueryStep<>(this, new VertexQueryBuilder().direction(Direction.BOTH).limit(branchFactor).labels(labels), Edge.class));
+        return this.addStep(new VertexEdgesStep(this, Direction.BOTH, branchFactor, labels));
     }
 
     public default Traversal<S, Edge> bothE(final String... labels) {
