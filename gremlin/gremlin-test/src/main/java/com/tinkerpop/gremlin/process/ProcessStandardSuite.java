@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.steps.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.steps.filter.FilterTest;
 import com.tinkerpop.gremlin.process.steps.filter.HasTest;
 import com.tinkerpop.gremlin.process.steps.filter.IntervalTest;
+import com.tinkerpop.gremlin.process.steps.filter.RangeTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -42,7 +43,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             ExceptTest.JavaExceptTest.class,
             FilterTest.JavaFilterTest.class,
             HasTest.JavaHasTest.class,
-            IntervalTest.JavaIntervalTest.class
+            IntervalTest.JavaIntervalTest.class,
+            RangeTest.JavaRangeTest.class
     };
 
 
