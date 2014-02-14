@@ -1,19 +1,37 @@
 package com.tinkerpop.gremlin.process.steps.map;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.Iterator;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SelectTest {
+public abstract class SelectTest extends AbstractGremlinTest {
 
-    public void g_v1_asXaX_outXknowsX_asXbX_select(final Iterator<Path> step) {
+    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select();
+
+    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX();
+
+    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX();
+
+    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX();
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @Ignore("Get vertex query stuff straight")
+    public void g_v1_asXaX_outXknowsX_asXbX_select() {
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_select();
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -26,7 +44,11 @@ public class SelectTest {
         assertEquals(2, counter);
     }
 
-    public void g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Iterator<Path> step) {
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @Ignore("Get vertex query stuff straight")
+    public void g_v1_asXaX_outXknowsX_asXbX_selectXnameX() {
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX();
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -40,7 +62,11 @@ public class SelectTest {
         assertEquals(2, counter);
     }
 
-    public void g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Iterator<Path> step) {
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @Ignore("Get vertex query stuff straight")
+    public void g_v1_asXaX_outXknowsX_asXbX_selectXaX() {
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXaX();
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -53,7 +79,11 @@ public class SelectTest {
         assertEquals(2, counter);
     }
 
-    public void g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Iterator<Path> step) {
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @Ignore("Get vertex query stuff straight")
+    public void g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX() {
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX();
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -64,5 +94,24 @@ public class SelectTest {
             assertEquals("marko", path.get("a").toString());
         }
         assertEquals(2, counter);
+    }
+
+    public static class JavaSelectTest extends SelectTest {
+
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select() {
+            return null; // g.v(1).as("a").out("knows").as("b").select());
+        }
+
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX() {
+            return null; //g.v(1).as("a").out("knows").as("b").select(v -> ((Vertex) v).getValue("name"));
+        }
+
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX() {
+            return null; //g.v(1).as("a").out("knows").as("b").select(As.of("a"));
+        }
+
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX() {
+            return null; // g.v(1).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));
+        }
     }
 }
