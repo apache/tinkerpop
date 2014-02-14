@@ -19,6 +19,7 @@ import com.tinkerpop.gremlin.process.steps.map.ValuesTest;
 import com.tinkerpop.gremlin.process.steps.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.steps.sideEffect.GroupByTest;
 import com.tinkerpop.gremlin.process.steps.sideEffect.GroupCountTest;
+import com.tinkerpop.gremlin.process.steps.sideEffect.LinkTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -68,7 +69,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             ValuesTest.JavaValuesTest.class,
             AggregateTest.JavaAggregateTest.class,
             GroupByTest.JavaGroupByTest.class,
-            GroupCountTest.JavaGroupCountTest.class
+            GroupCountTest.JavaGroupCountTest.class,
+            LinkTest.JavaLinkTest.class
     };
 
 

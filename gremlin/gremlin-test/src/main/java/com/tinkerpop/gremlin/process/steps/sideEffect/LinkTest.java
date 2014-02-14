@@ -1,26 +1,37 @@
 package com.tinkerpop.gremlin.process.steps.sideEffect;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class LinkTest {
+public abstract class LinkTest extends AbstractGremlinTest {
+    public abstract Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX();
 
-    public void test_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(final Iterator<Vertex> step) {
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @Ignore("Sort out vertex query stuffs")
+    public void g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX() {
+        final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX();
         System.out.println("Testing: " + step);
-        List<Vertex> cocreators = new ArrayList<Vertex>();
-        List<Object> ids = new ArrayList<Object>();
+        final List<Vertex> cocreators = new ArrayList<>();
+        final List<Object> ids = new ArrayList<>();
         while (step.hasNext()) {
-            Vertex vertex = step.next();
+            final Vertex vertex = step.next();
             cocreators.add(vertex);
             ids.add(vertex.getId());
         }
@@ -37,6 +48,13 @@ public class LinkTest {
                 assertEquals(vertex.query().direction(Direction.OUT).labels("cocreator").count(), 1);
                 assertEquals(vertex.query().direction(Direction.IN).labels("cocreator").count(), 1);
             }
+        }
+    }
+
+    public static class JavaLinkTest extends LinkTest {
+
+        public Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX() {
+            return null; //g.v(1).as("a").out("created").in("created").linkBoth("cocreator", "a");
         }
     }
 }
