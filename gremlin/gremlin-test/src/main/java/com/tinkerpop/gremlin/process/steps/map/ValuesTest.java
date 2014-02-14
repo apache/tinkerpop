@@ -1,8 +1,13 @@
 package com.tinkerpop.gremlin.process.steps.map;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
+import org.junit.Test;
+
 import java.util.Iterator;
 import java.util.Map;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -10,10 +15,22 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ValuesTest {
+public abstract class ValuesTest extends AbstractGremlinTest {
 
-    public void g_V_values(final Iterator<Map<String, Object>> step) {
+    public abstract Iterator<Map<String, Object>> get_g_V_values();
+
+    public abstract Iterator<Map<String, Object>> get_g_V_valuesXname_ageX();
+
+    public abstract Iterator<Map<String, Object>> get_g_E_valuesXid_label_weightX();
+
+    public abstract Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values();
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_values() {
+        final Iterator<Map<String, Object>> step = get_g_V_values();
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -40,7 +57,10 @@ public class ValuesTest {
         assertEquals(6, counter);
     }
 
-    public void g_V_valuesXname_ageX(final Iterator<Map<String, Object>> step) {
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_valuesXname_ageX() {
+        final Iterator<Map<String, Object>> step = get_g_V_valuesXname_ageX();
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -72,7 +92,10 @@ public class ValuesTest {
         assertEquals(6, counter);
     }
 
-    public void g_E_valuesXid_label_weightX(final Iterator<Map<String, Object>> step) {
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_E_valuesXid_label_weightX() {
+        final Iterator<Map<String, Object>> step = get_g_E_valuesXid_label_weightX();
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -110,7 +133,10 @@ public class ValuesTest {
         assertEquals(6, counter);
     }
 
-    public void g_v1_outXcreatedX_values(final Iterator<Map<String, Object>> step) {
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v1_outXcreatedX_values() {
+        final Iterator<Map<String, Object>> step = get_g_v1_outXcreatedX_values();
         System.out.println("Testing: " + step);
         assertTrue(step.hasNext());
         final Map<String, Object> values = step.next();
@@ -118,5 +144,24 @@ public class ValuesTest {
         assertEquals("lop", values.get("name"));
         assertEquals("java", values.get("lang"));
         assertEquals(2, values.size());
+    }
+
+    public static class JavaValuesTest extends ValuesTest {
+
+        public Iterator<Map<String, Object>> get_g_V_values() {
+            return g.V().values();
+        }
+
+        public Iterator<Map<String, Object>> get_g_V_valuesXname_ageX() {
+            return g.V().values("name", "age");
+        }
+
+        public Iterator<Map<String, Object>> get_g_E_valuesXid_label_weightX() {
+            return g.E().values("id", "label", "weight");
+        }
+
+        public Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values() {
+            return g.v(1).out("created").values();
+        }
     }
 }

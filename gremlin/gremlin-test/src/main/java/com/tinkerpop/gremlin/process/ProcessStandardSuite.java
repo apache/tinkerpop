@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.process.steps.map.OrderTest;
 import com.tinkerpop.gremlin.process.steps.map.PathTest;
 import com.tinkerpop.gremlin.process.steps.map.SelectTest;
 import com.tinkerpop.gremlin.process.steps.map.TraversalTest;
+import com.tinkerpop.gremlin.process.steps.map.ValuesTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -60,7 +61,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             OrderTest.JavaOrderTest.class,
             PathTest.JavaPathTest.class,
             SelectTest.JavaSelectTest.class,
-            TraversalTest.JavaTraversalTest.class
+            TraversalTest.JavaTraversalTest.class,
+            ValuesTest.JavaValuesTest.class
     };
 
 
