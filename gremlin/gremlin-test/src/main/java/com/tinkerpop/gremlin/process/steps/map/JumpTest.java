@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.steps.map;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -19,6 +21,7 @@ public abstract class JumpTest extends AbstractGremlinTest {
     public abstract Iterator<String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX();
 
     @Test
+    @LoadGraphWith(CLASSIC)
     @Ignore("Java gremlin doesn't compile.")
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
         final Iterator<String> step = get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX();
