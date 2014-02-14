@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.steps.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.steps.filter.RangeTest;
 import com.tinkerpop.gremlin.process.steps.filter.RetainTest;
 import com.tinkerpop.gremlin.process.steps.map.AnnotatedValuesTest;
+import com.tinkerpop.gremlin.process.steps.map.BackTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -48,7 +49,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             IntervalTest.JavaIntervalTest.class,
             RangeTest.JavaRangeTest.class,
             RetainTest.JavaRetainTest.class,
-            AnnotatedValuesTest.JavaAnnotatedValuesTest.class
+            AnnotatedValuesTest.JavaAnnotatedValuesTest.class,
+            BackTest.JavaBackTest.class
     };
 
 
