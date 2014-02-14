@@ -22,7 +22,6 @@ public abstract class IntervalTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Need outE on Vertex")
     public void g_v1_outE_intervalXweight_0_06X_inV() {
         final Iterator<Vertex> step = get_g_v1_outE_intervalXweight_0_06X_inV();
         System.out.println("Testing: " + step);
@@ -36,7 +35,7 @@ public abstract class IntervalTest extends AbstractGremlinTest {
     public static class JavaIntervalTest extends IntervalTest {
 
         public Iterator<Vertex> get_g_v1_outE_intervalXweight_0_06X_inV() {
-            return null; // g.v(1).outE().interval("weight", 0.0f, 0.6f).inV();
+            return g.v(1).outE().interval("weight", 0.0f, 0.6f).inV();
         }
     }
 }

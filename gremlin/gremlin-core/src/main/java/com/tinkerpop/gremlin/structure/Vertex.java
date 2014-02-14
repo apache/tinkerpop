@@ -18,6 +18,8 @@ public interface Vertex extends Element {
 
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
+    public <A extends Traversal<Vertex, Vertex>> A as(final String as);
+
     public default <A extends Traversal<Vertex, Vertex>> A out(final String... labels) {
         return this.out(Integer.MAX_VALUE, labels);
     }

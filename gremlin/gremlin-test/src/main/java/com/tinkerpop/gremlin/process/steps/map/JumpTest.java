@@ -22,7 +22,6 @@ public abstract class JumpTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Java gremlin doesn't compile.")
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
         final Iterator<String> step = get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX();
         System.out.println("Testing: " + step);
@@ -38,7 +37,7 @@ public abstract class JumpTest extends AbstractGremlinTest {
     public static class JavaJumpTest extends JumpTest {
 
         public Iterator<String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
-            return null; // g.v(1).as("x").out().jump("x", h -> h.getLoops() < 2).value("name");
+            return g.v(1).as("x").out().jump("x", h -> h.getLoops() < 2).value("name");
         }
     }
 }

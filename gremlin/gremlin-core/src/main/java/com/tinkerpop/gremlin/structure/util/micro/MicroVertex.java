@@ -42,6 +42,10 @@ public class MicroVertex extends MicroElement implements Vertex {
         return new MicroVertex(vertex);
     }
 
+    public <A extends Traversal<Vertex, Vertex>> A as(final String as) {
+        throw new IllegalStateException();
+    }
+
     public <A extends Traversal<Vertex, Vertex>> A out(final String... labels) {
         throw new IllegalStateException();
     }
