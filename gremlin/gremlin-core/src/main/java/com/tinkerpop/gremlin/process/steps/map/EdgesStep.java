@@ -2,12 +2,13 @@ package com.tinkerpop.gremlin.process.steps.map;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.steps.HolderGenerator;
 import com.tinkerpop.gremlin.structure.Edge;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class EdgesStep extends FlatMapStep<Edge, Edge> {
+public abstract class EdgesStep extends FlatMapStep<Edge, Edge> implements HolderGenerator {
 
     public EdgesStep(final Traversal traversal) {
         super(traversal);
