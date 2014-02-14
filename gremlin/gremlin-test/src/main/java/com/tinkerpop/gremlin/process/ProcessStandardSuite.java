@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.steps.filter.DedupTest;
 import com.tinkerpop.gremlin.process.steps.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.steps.filter.FilterTest;
+import com.tinkerpop.gremlin.process.steps.filter.HasTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -38,7 +39,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
     private static final Class<?>[] testsToExecute = new Class<?>[]{
             DedupTest.JavaDedupTest.class,
             ExceptTest.JavaExceptTest.class,
-            FilterTest.JavaFilterTest.class
+            FilterTest.JavaFilterTest.class,
+            HasTest.JavaHasTest.class
     };
 
 
