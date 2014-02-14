@@ -47,7 +47,7 @@
     <dependencies>
         <dependency>
             <groupId>com.tinkerpop.gremlin</groupId>
-            <artifactId>gremlin-java</artifactId>
+            <artifactId>gremlin-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -86,6 +86,12 @@
         <dependency>
             <groupId>com.tinkerpop.gremlin</groupId>
             <artifactId>gremlin-test</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tinkerpop</groupId>
+            <artifactId>tinkergraph</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
