@@ -14,10 +14,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class SideEffectTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_v1_sideEffectXstore_aX_valueXnameX(final Iterator<String> step) {
         assertEquals(step.next(), "marko");
         assertFalse(step.hasNext());

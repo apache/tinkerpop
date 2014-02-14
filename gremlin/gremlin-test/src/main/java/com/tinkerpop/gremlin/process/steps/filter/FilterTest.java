@@ -15,10 +15,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class FilterTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_V_filterXfalseX(final Iterator<Vertex> step) {
         System.out.println("Testing: " + step);
         assertFalse(step.hasNext());

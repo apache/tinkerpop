@@ -13,10 +13,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class SelectTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_v1_asXaX_outXknowsX_asXbX_select(final Iterator<Path> step) {
         System.out.println("Testing: " + step);
         int counter = 0;

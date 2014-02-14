@@ -15,10 +15,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class AnnotatedValuesTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X(final Iterator<AnnotatedValue<String>> step) {
         System.out.println("Testing: " + step);
         final List<AnnotatedValue<String>> locations = StreamFactory.stream(step).collect(Collectors.toList());

@@ -21,10 +21,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class TraversalTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     // VERTEX ADJACENCY
 
     public void g_V(final Iterator<Vertex> step) {

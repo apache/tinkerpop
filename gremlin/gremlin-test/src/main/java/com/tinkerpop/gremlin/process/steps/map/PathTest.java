@@ -17,10 +17,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class PathTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_v1_propertyXnameX_path(final Iterator<Path> step) {
         System.out.println("Testing: " + step);
         final Path path = step.next();

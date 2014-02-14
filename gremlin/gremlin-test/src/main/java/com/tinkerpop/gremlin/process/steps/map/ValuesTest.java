@@ -12,9 +12,6 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class ValuesTest {
-    public void testCompliance() {
-        assertTrue(true);
-    }
 
     public void g_V_values(final Iterator<Map<String, Object>> step) {
         System.out.println("Testing: " + step);

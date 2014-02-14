@@ -13,10 +13,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class GroupByTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_V_groupByXa_nameX(Map<String, List<Vertex>> map) {
         assertEquals(6, map.size());
         map.forEach((key, values) -> {

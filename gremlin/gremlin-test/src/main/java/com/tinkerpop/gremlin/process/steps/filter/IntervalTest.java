@@ -12,10 +12,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class IntervalTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_v1_outE_intervalXweight_0_06X_inV(final Iterator<Vertex> step) {
         System.out.println("Testing: " + step);
         while (step.hasNext()) {

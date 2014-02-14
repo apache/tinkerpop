@@ -10,10 +10,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class GroupCountTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_V_outXcreatedX_groupCountXnameX(final Map<Object, Long> map) {
         assertEquals(map.size(), 2);
         assertEquals(map.get("lop"), Long.valueOf(3l));

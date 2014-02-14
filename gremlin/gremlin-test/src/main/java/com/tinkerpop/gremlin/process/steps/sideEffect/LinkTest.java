@@ -15,10 +15,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class LinkTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void test_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(final Iterator<Vertex> step) {
         System.out.println("Testing: " + step);
         List<Vertex> cocreators = new ArrayList<Vertex>();

@@ -13,10 +13,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class RetainTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_v1_out_retainXg_v2X(Iterator<Vertex> step) {
         System.out.println("Testing: " + step);
         assertEquals("vadas", step.next().<String>getValue("name"));

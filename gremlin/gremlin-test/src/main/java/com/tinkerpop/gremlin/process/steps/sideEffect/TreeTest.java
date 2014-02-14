@@ -10,10 +10,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class TreeTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_v1_out_out_treeXnameX(final Map map) {
         assertEquals(1, map.size());
         assertTrue(map.containsKey("marko"));

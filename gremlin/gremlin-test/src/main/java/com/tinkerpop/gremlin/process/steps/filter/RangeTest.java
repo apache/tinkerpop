@@ -13,10 +13,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class RangeTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_v1_out_rangeX0_1X(final Iterator<Vertex> step) {
         System.out.println("Testing: " + step);
         int counter = 0;

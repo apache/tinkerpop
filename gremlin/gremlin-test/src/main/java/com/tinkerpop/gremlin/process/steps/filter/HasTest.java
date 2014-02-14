@@ -17,10 +17,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class HasTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_V_hasXname_markoX(final Iterator<Element> step) {
         System.out.println("Testing: " + step);
         assertEquals("marko", step.next().<String>getValue("name"));

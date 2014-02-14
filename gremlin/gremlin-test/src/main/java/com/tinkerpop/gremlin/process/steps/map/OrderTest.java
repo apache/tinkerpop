@@ -14,10 +14,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class OrderTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_V_name_order(final Iterator<String> step) {
         System.out.println("Testing: " + step);
         final List<String> names = StreamFactory.stream(step).collect(Collectors.toList());

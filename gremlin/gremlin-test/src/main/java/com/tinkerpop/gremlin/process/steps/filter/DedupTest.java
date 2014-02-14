@@ -17,11 +17,6 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class DedupTest extends AbstractToyGraphGremlinTest {
 
-    @Test
-    public void testCompliance() {
-        // no longer needed....to be compliant all abstract methods must be implemented
-    }
-
     public abstract Iterator<String> get_g_V_both_dedup_name();
 
     public abstract Iterator<String> get_g_V_both_dedupXlangX_name();

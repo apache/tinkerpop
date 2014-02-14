@@ -12,10 +12,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class JumpTest {
 
-    public void testCompliance() {
-        assertTrue(true);
-    }
-
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(Iterator<String> step) {
         System.out.println("Testing: " + step);
         List<String> names = new ArrayList<String>();
