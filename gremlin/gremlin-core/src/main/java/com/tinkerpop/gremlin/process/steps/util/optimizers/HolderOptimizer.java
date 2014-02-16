@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.steps.util.optimizers;
 
 import com.tinkerpop.gremlin.process.Optimizer;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.steps.HolderGenerator;
+import com.tinkerpop.gremlin.process.steps.HolderSource;
 import com.tinkerpop.gremlin.process.steps.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.steps.map.BackStep;
 import com.tinkerpop.gremlin.process.steps.map.MatchStep;
@@ -31,8 +31,8 @@ public class HolderOptimizer implements Optimizer.FinalOptimizer {
     public void optimize(final Traversal traversal) {
         final boolean trackPaths = HolderOptimizer.trackPaths(traversal);
         traversal.getSteps().forEach(pipe -> {
-            if (pipe instanceof HolderGenerator)
-                ((HolderGenerator) pipe).generateHolderIterator(trackPaths);
+            if (pipe instanceof HolderSource)
+                ((HolderSource) pipe).generateHolderIterator(trackPaths);
         });
     }
 
@@ -45,8 +45,8 @@ public class HolderOptimizer implements Optimizer.FinalOptimizer {
 
     public static <S, E> void doPathTracking(final Traversal<S, E> traversal) {
         traversal.getSteps().forEach(pipe -> {
-            if (pipe instanceof HolderGenerator)
-                ((HolderGenerator) pipe).generateHolderIterator(true);
+            if (pipe instanceof HolderSource)
+                ((HolderSource) pipe).generateHolderIterator(true);
         });
     }
 }
