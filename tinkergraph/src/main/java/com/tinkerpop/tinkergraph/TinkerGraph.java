@@ -2,8 +2,10 @@ package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.process.steps.map.IdentityStep;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
+import com.tinkerpop.gremlin.process.util.HolderIterator;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -151,6 +154,13 @@ public class TinkerGraph implements Graph, Serializable {
         traversal.addStep(new TinkerEdgesStep(traversal, this));
         traversal.optimizers().register(new HolderOptimizer());
         traversal.optimizers().register(new TinkerEdgesOptimizer());
+        return (A) traversal;
+    }
+
+    public <A extends Traversal<S, E>, S, E> A traversal(final Iterator<S> start) {
+        Traversal traversal = new DefaultTraversal<S, E>();
+        traversal.addStep(new IdentityStep(traversal));
+        traversal.addStarts(new HolderIterator<>(start));
         return (A) traversal;
     }
 

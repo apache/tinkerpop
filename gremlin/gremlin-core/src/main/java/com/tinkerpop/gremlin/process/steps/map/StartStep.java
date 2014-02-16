@@ -1,30 +1,27 @@
-package com.tinkerpop.tinkergraph.process.steps.map;
+package com.tinkerpop.gremlin.process.steps.map;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.PathHolder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.steps.HolderGenerator;
-import com.tinkerpop.gremlin.process.steps.map.MapStep;
 import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
-import com.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerVertexStep extends MapStep<Vertex, Vertex> implements HolderGenerator {
+public class StartStep<S> extends MapStep<S, S> implements HolderGenerator {
 
-    public Vertex vertex;
+    public S start;
 
-    public TinkerVertexStep(final Traversal traversal, final Vertex vertex) {
+    public StartStep(final Traversal traversal, final S start) {
         super(traversal);
-        this.vertex = vertex;
+        this.start = start;
         this.setFunction(Holder::get);
-        this.generateHolderIterator(false);
     }
 
     public void generateHolderIterator(final boolean trackPaths) {
-        final Holder<Vertex> holder = trackPaths ? new PathHolder<>(this.getAs(), this.vertex) : new SimpleHolder<>(this.vertex);
+        final Holder<S> holder = trackPaths ? new PathHolder<>(this.getAs(), this.start) : new SimpleHolder<>(this.start);
         holder.setFuture(this.getNextStep().getAs());
         this.starts.clear();
         this.starts.add(new SingleIterator(holder));

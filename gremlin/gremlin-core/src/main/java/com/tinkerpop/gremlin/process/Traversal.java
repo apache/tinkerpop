@@ -52,6 +52,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.AnnotatedListQueryBuilder;
 import com.tinkerpop.gremlin.structure.query.util.HasContainer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,7 +71,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Traversal<S, E> extends Iterator<E> {
+public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public Memory memory();
 
