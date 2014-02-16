@@ -37,7 +37,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public <S, E> Traversal<S, E> addStep(final Step<?, E> step) {
-
         if (this.steps.size() > 0) {
             step.setPreviousStep(this.steps.get(this.steps.size() - 1));
             this.steps.get(this.steps.size() - 1).setNextStep(step);

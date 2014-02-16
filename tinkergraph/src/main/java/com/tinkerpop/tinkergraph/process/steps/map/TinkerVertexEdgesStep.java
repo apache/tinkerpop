@@ -16,8 +16,6 @@ public class TinkerVertexEdgesStep extends VertexEdgesStep {
 
     public TinkerVertexEdgesStep(final Traversal traversal, final Direction direction, final int branchFactor, final String... labels) {
         super(traversal, direction, branchFactor, labels);
-        this.setFunction(holder -> (Iterator) StreamFactory.stream(TinkerHelper.getEdges((TinkerVertex) holder.get(), this.direction, this.labels)).limit(branchFactor).iterator());
+        this.setFunction(holder -> (Iterator) StreamFactory.stream(TinkerHelper.getEdges((TinkerVertex) holder.get(), this.direction, this.labels)).limit(this.branchFactor).iterator());
     }
-
-
 }

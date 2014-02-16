@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.process.steps.map;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.steps.util.As;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -29,7 +29,6 @@ public abstract class SelectTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Get vertex query stuff straight")
     public void g_v1_asXaX_outXknowsX_asXbX_select() {
         final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_select();
         System.out.println("Testing: " + step);
@@ -46,7 +45,6 @@ public abstract class SelectTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Get vertex query stuff straight")
     public void g_v1_asXaX_outXknowsX_asXbX_selectXnameX() {
         final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX();
         System.out.println("Testing: " + step);
@@ -64,7 +62,6 @@ public abstract class SelectTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Get vertex query stuff straight")
     public void g_v1_asXaX_outXknowsX_asXbX_selectXaX() {
         final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXaX();
         System.out.println("Testing: " + step);
@@ -81,7 +78,6 @@ public abstract class SelectTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Get vertex query stuff straight")
     public void g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX() {
         final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX();
         System.out.println("Testing: " + step);
@@ -99,19 +95,19 @@ public abstract class SelectTest extends AbstractGremlinTest {
     public static class JavaSelectTest extends SelectTest {
 
         public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select() {
-            return null; // g.v(1).as("a").out("knows").as("b").select());
+            return g.v(1).as("a").out("knows").as("b").select();
         }
 
         public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX() {
-            return null; //g.v(1).as("a").out("knows").as("b").select(v -> ((Vertex) v).getValue("name"));
+            return g.v(1).as("a").out("knows").as("b").select(v -> ((Vertex) v).getValue("name"));
         }
 
         public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX() {
-            return null; //g.v(1).as("a").out("knows").as("b").select(As.of("a"));
+            return g.v(1).as("a").out("knows").as("b").select(As.of("a"));
         }
 
         public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX() {
-            return null; // g.v(1).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));
+            return g.v(1).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));
         }
     }
 }

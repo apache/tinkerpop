@@ -11,10 +11,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,7 +32,6 @@ public abstract class BackTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Need vertex query support")
     public void g_v1_asXhereX_out_backXhereX() {
         final Iterator<Vertex> step = get_g_v1_asXhereX_out_backXhereX();
         System.out.println("Testing: " + step);
@@ -49,7 +46,6 @@ public abstract class BackTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Path tracking not supported by this holder")
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX() {
         final Iterator<Vertex> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX();
         System.out.println("Testing: " + step);
@@ -65,7 +61,6 @@ public abstract class BackTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Need vertex query support")
     public void g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX() {
         final Iterator<Edge> step = get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX();
         System.out.println("Testing: " + step);
@@ -78,7 +73,6 @@ public abstract class BackTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Path tracking not supported by this holder")
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX() {
         final Iterator<String> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX();
         System.out.println("Testing: " + step);
@@ -96,7 +90,7 @@ public abstract class BackTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Need vertex query support")
+    @Ignore("This has to do with as labeling a filter now that its not rolled into VertexQueryStep")
     public void g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX() {
         final Iterator<Edge> step = get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX();
         System.out.println("Testing: " + step);
@@ -112,7 +106,7 @@ public abstract class BackTest extends AbstractGremlinTest {
 
     public static class JavaBackTest extends BackTest {
         public Iterator<Vertex> get_g_v1_asXhereX_out_backXhereX() {
-            return null; // g.v(1).as("here").out().back("here");
+            return g.v(1).as("here").out().back("here");
         }
 
         public Iterator<Vertex> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX() {
@@ -124,11 +118,11 @@ public abstract class BackTest extends AbstractGremlinTest {
         }
 
         public Iterator<Edge> get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX() {
-            return null; // g.v(1).outE().as("here").inV().has("name", "vadas").back("here");
+            return g.v(1).outE().as("here").inV().has("name", "vadas").back("here");
         }
 
         public Iterator<Edge> get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX() {
-            return null; // g.v(1).outE("knows").has("weight", 1.0f).as("here").inV().has("name", "josh").back("here");
+            return g.v(1).outE("knows").has("weight", 1.0f).as("here").inV().has("name", "josh").back("here");
         }
     }
 }

@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.steps.map.IdentityStep;
 import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
+import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -17,6 +17,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.tinkergraph.process.steps.map.TinkerVertexEdgesStep;
+import com.tinkerpop.tinkergraph.process.steps.map.TinkerVertexStep;
 import com.tinkerpop.tinkergraph.process.steps.map.TinkerVertexVerticesStep;
 
 import java.util.HashMap;
@@ -124,34 +125,39 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     public <A extends Traversal<Vertex, Vertex>> A as(final String as) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        traversal.addStep(new IdentityStep<>(traversal));
-        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
+        traversal.optimizers().register(new HolderOptimizer());
+        traversal.addStep(new TinkerVertexStep(traversal, this));
         return (A) traversal.as(as);
     }
 
     public <A extends Traversal<Vertex, Vertex>> A out(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.optimizers().register(new HolderOptimizer());
+        traversal.addStep(new TinkerVertexStep(traversal, this));
         traversal.addStep(new TinkerVertexVerticesStep(traversal, Direction.OUT, branchFactor, labels));
-        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return (A) traversal;
     }
 
     public <A extends Traversal<Vertex, Vertex>> A in(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.optimizers().register(new HolderOptimizer());
+        traversal.addStep(new TinkerVertexStep(traversal, this));
         traversal.addStep(new TinkerVertexVerticesStep(traversal, Direction.IN, branchFactor, labels));
-        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return (A) traversal;
     }
 
     public <A extends Traversal<Vertex, Vertex>> A both(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.optimizers().register(new HolderOptimizer());
+        traversal.addStep(new TinkerVertexStep(traversal, this));
         traversal.addStep(new TinkerVertexVerticesStep(traversal, Direction.BOTH, branchFactor, labels));
-        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return (A) traversal;
     }
 
     public <A extends Traversal<Vertex, Edge>> A outE(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
+        traversal.optimizers().register(new HolderOptimizer());
+        traversal.addStep(new TinkerVertexStep(traversal, this));
         traversal.addStep(new TinkerVertexEdgesStep(traversal, Direction.OUT, branchFactor, labels));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return (A) traversal;
@@ -159,6 +165,8 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     public <A extends Traversal<Vertex, Edge>> A inE(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
+        traversal.optimizers().register(new HolderOptimizer());
+        traversal.addStep(new TinkerVertexStep(traversal, this));
         traversal.addStep(new TinkerVertexEdgesStep(traversal, Direction.IN, branchFactor, labels));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return (A) traversal;
@@ -166,6 +174,8 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     public <A extends Traversal<Vertex, Edge>> A bothE(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
+        traversal.optimizers().register(new HolderOptimizer());
+        traversal.addStep(new TinkerVertexStep(traversal, this));
         traversal.addStep(new TinkerVertexEdgesStep(traversal, Direction.BOTH, branchFactor, labels));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return (A) traversal;

@@ -49,7 +49,14 @@ public class TinkerGraphTest {
         assertEquals(edge.getValue("weight"), Float.valueOf(1.0f));
         assertEquals(edge.getProperty("creator").get(), "stephen");
 
-        //g.V().out().value("name").forEach(System.out::println);
+        //g.V().out().value("name").path().map(p -> p.get().getAsLabels()).forEach(System.out::println);
+        //marko.out().path().map(p -> p.get().getAsLabels()).forEach(System.out::println);
+    }
+
+    @Test
+    public void testPlay() {
+        final TinkerGraph g = TinkerFactory.createClassic();
+        System.out.println(g.v(1).outE().as("here").inV().has("name","vadas").back("here").toList());
     }
 
     @Test

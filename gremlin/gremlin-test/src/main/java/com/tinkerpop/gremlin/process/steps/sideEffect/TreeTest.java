@@ -21,7 +21,6 @@ public abstract class TreeTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Path tracking is not supported by this Holder")
     public void g_v1_out_out_treeXnameX() {
         final Map map = get_g_v1_out_out_treeXnameX();
         assertEquals(1, map.size());

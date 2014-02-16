@@ -7,7 +7,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -53,7 +52,7 @@ public class Path {
     }
 
     public List<String> getAsLabels() {
-        return this.asLabels.stream().collect(Collectors.toList());
+        return new ArrayList<>(this.asLabels);
     }
 
     public void renameLastStep(final String as) {

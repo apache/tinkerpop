@@ -12,9 +12,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,7 +28,7 @@ public abstract class PathTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Get vertex query stuff straight")
+    @Ignore("Need to make sure there are more steps off Vertex")
     public void g_v1_propertyXnameX_path() {
         final Iterator<Path> step = get_g_v1_propertyXnameX_path();
         System.out.println("Testing: " + step);
@@ -44,9 +42,8 @@ public abstract class PathTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Path tracking is not supported by this Holder")
     public void g_v1_out_pathXage_nameX() {
-        final Iterator<Path> step  = get_g_v1_out_pathXage_nameX();
+        final Iterator<Path> step = get_g_v1_out_pathXage_nameX();
         System.out.println("Testing: " + step);
         int counter = 0;
         final Set<String> names = new HashSet<>();
@@ -89,8 +86,8 @@ public abstract class PathTest extends AbstractGremlinTest {
 
         public Iterator<Path> get_g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX() {
             return g.V().as("x").out()
-                        .jump("x", o -> o.getLoops() < 2)
-                        .path(v -> v, v -> ((Vertex) v).getValue("name"), v -> ((Vertex) v).getValue("lang"));
+                    .jump("x", o -> o.getLoops() < 2)
+                    .path(v -> v, v -> ((Vertex) v).getValue("name"), v -> ((Vertex) v).getValue("lang"));
         }
     }
 }

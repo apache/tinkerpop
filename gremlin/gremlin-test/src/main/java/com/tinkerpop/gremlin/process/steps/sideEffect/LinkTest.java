@@ -23,7 +23,6 @@ public abstract class LinkTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Sort out vertex query stuffs")
     public void g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX() {
         final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX();
         System.out.println("Testing: " + step);
@@ -53,7 +52,7 @@ public abstract class LinkTest extends AbstractGremlinTest {
     public static class JavaLinkTest extends LinkTest {
 
         public Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX() {
-            return null; //g.v(1).as("a").out("created").in("created").linkBoth("cocreator", "a");
+            return g.v(1).as("a").out("created").in("created").linkBoth("cocreator", "a");
         }
     }
 }

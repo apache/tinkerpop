@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.steps;
 
+import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.steps.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.ExpandableStepIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -27,7 +27,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     public AbstractStep(final Traversal traversal) {
         this.traversal = traversal;
-        this.starts = new ExpandableStepIterator((Step) this);
+        this.starts = new ExpandableStepIterator<S>((Step) this);
         this.as = UNDERSCORE + this.traversal.getSteps().size();
     }
 
