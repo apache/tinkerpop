@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Optimizers;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.DedupOptimizer;
+import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.IdentityOptimizer;
 
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     private boolean firstNext = true;
 
     public DefaultTraversal() {
+        this.optimizers.register(new HolderOptimizer());
         this.optimizers.register(new DedupOptimizer());
         this.optimizers.register(new IdentityOptimizer());
     }

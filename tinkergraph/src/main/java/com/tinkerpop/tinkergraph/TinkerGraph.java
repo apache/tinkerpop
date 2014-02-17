@@ -3,7 +3,6 @@ package com.tinkerpop.tinkergraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.steps.map.IdentityStep;
-import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.HolderIterator;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -142,7 +141,6 @@ public class TinkerGraph implements Graph, Serializable {
     public <A extends Traversal<?, Vertex>> A V() {
         Traversal traversal = new DefaultTraversal<Object, Vertex>();
         traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
-        traversal.optimizers().register(new HolderOptimizer());
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
         return (A) traversal;
     }
@@ -150,7 +148,6 @@ public class TinkerGraph implements Graph, Serializable {
     public <A extends Traversal<?, Edge>> A E() {
         Traversal traversal = new DefaultTraversal<Object, Edge>();
         traversal.addStep(new TinkerGraphStep(traversal, Edge.class, this));
-        traversal.optimizers().register(new HolderOptimizer());
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
         return (A) traversal;
     }
