@@ -9,8 +9,6 @@ import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.Iterator;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -24,18 +22,18 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public <A extends Traversal<?, Vertex>> A V() {
-        return (A) EmptyTraversal.instance();
+    public Traversal<?, Vertex> V() {
+        return EmptyTraversal.instance();
     }
 
     @Override
-    public <A extends Traversal<?, Edge>> A E() {
-        return (A) EmptyTraversal.instance();
+    public Traversal<?, Edge> E() {
+        return EmptyTraversal.instance();
     }
 
     @Override
-    public <A extends Traversal<S, E>, S, E> A traversal(final Iterator<S> starts) {
-        return (A) EmptyTraversal.instance();
+    public <S, E> Traversal<S, E> traversal(final Object start) {
+        return EmptyTraversal.instance();
     }
 
     public static Graph instance() {

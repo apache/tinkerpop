@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
@@ -41,11 +40,11 @@ public interface Graph extends AutoCloseable {
         return (Edge) this.E().has(Element.ID, id).next();
     }
 
-    public <A extends Traversal<?, Vertex>> A V();
+    public Traversal<?, Vertex> V();
 
-    public <A extends Traversal<?, Edge>> A E();
+    public Traversal<?, Edge> E();
 
-    public <A extends Traversal<S, E>, S, E> A traversal(final Iterator<S> start);
+    public <S, E> Traversal<S, E> traversal(final Object start);
 
     public GraphComputer compute();
 
