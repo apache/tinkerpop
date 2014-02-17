@@ -16,8 +16,7 @@ import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.tinkergraph.process.steps.map.TinkerVertexEdgesStep;
-import com.tinkerpop.tinkergraph.process.steps.map.TinkerVertexVerticesStep;
+import com.tinkerpop.tinkergraph.process.steps.map.TinkerVertexStep;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -131,28 +130,28 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     public Traversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new TinkerVertexVerticesStep(traversal, Direction.OUT, branchFactor, labels));
+        traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, Direction.OUT, branchFactor, labels));
         return traversal;
     }
 
     public Traversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new TinkerVertexVerticesStep(traversal, Direction.IN, branchFactor, labels));
+        traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, Direction.IN, branchFactor, labels));
         return traversal;
     }
 
     public Traversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new TinkerVertexVerticesStep(traversal, Direction.BOTH, branchFactor, labels));
+        traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, Direction.BOTH, branchFactor, labels));
         return traversal;
     }
 
     public Traversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new TinkerVertexEdgesStep(traversal, Direction.OUT, branchFactor, labels));
+        traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.OUT, branchFactor, labels));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return traversal;
     }
@@ -160,7 +159,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     public Traversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new TinkerVertexEdgesStep(traversal, Direction.IN, branchFactor, labels));
+        traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.IN, branchFactor, labels));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return traversal;
     }
@@ -168,7 +167,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     public Traversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new TinkerVertexEdgesStep(traversal, Direction.BOTH, branchFactor, labels));
+        traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.BOTH, branchFactor, labels));
         traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return traversal;
     }

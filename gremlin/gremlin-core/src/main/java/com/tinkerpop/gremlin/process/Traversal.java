@@ -29,8 +29,7 @@ import com.tinkerpop.gremlin.process.steps.map.SelectStep;
 import com.tinkerpop.gremlin.process.steps.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.steps.map.UnionStep;
 import com.tinkerpop.gremlin.process.steps.map.ValueStep;
-import com.tinkerpop.gremlin.process.steps.map.VertexEdgesStep;
-import com.tinkerpop.gremlin.process.steps.map.VertexVerticesStep;
+import com.tinkerpop.gremlin.process.steps.map.VertexStep;
 import com.tinkerpop.gremlin.process.steps.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.steps.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.steps.sideEffect.GroupCountStep;
@@ -106,7 +105,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default Traversal<S, Vertex> out(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexVerticesStep(this, Direction.OUT, branchFactor, labels));
+        return this.addStep(new VertexStep(this, Vertex.class, Direction.OUT, branchFactor, labels));
     }
 
     public default Traversal<S, Vertex> out(final String... labels) {
@@ -114,7 +113,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default Traversal<S, Vertex> in(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexVerticesStep(this, Direction.IN, branchFactor, labels));
+        return this.addStep(new VertexStep(this, Vertex.class, Direction.IN, branchFactor, labels));
     }
 
     public default Traversal<S, Vertex> in(final String... labels) {
@@ -122,7 +121,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default Traversal<S, Vertex> both(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexVerticesStep(this, Direction.BOTH, branchFactor, labels));
+        return this.addStep(new VertexStep(this, Vertex.class, Direction.BOTH, branchFactor, labels));
     }
 
     public default Traversal<S, Vertex> both(final String... labels) {
@@ -130,7 +129,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default Traversal<S, Edge> outE(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexEdgesStep(this, Direction.OUT, branchFactor, labels));
+        return this.addStep(new VertexStep(this, Edge.class, Direction.OUT, branchFactor, labels));
     }
 
     public default Traversal<S, Edge> outE(final String... labels) {
@@ -138,7 +137,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default Traversal<S, Edge> inE(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexEdgesStep(this, Direction.IN, branchFactor, labels));
+        return this.addStep(new VertexStep(this, Edge.class, Direction.IN, branchFactor, labels));
     }
 
     public default Traversal<S, Edge> inE(final String... labels) {
@@ -146,7 +145,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default Traversal<S, Edge> bothE(final int branchFactor, final String... labels) {
-        return this.addStep(new VertexEdgesStep(this, Direction.BOTH, branchFactor, labels));
+        return this.addStep(new VertexStep(this, Edge.class, Direction.BOTH, branchFactor, labels));
     }
 
     public default Traversal<S, Edge> bothE(final String... labels) {
