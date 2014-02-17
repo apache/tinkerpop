@@ -18,43 +18,43 @@ public interface Vertex extends Element {
 
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
-    public <A extends Traversal<Vertex, Vertex>> A as(final String as);
+    public Traversal<Vertex, Vertex> as(final String as);
 
-    public default <A extends Traversal<Vertex, Vertex>> A out(final String... labels) {
+    public default Traversal<Vertex, Vertex> out(final String... labels) {
         return this.out(Integer.MAX_VALUE, labels);
     }
 
-    public default <A extends Traversal<Vertex, Vertex>> A in(final String... labels) {
+    public default Traversal<Vertex, Vertex> in(final String... labels) {
         return this.in(Integer.MAX_VALUE, labels);
     }
 
-    public default <A extends Traversal<Vertex, Vertex>> A both(final String... labels) {
+    public default Traversal<Vertex, Vertex> both(final String... labels) {
         return this.both(Integer.MAX_VALUE, labels);
     }
 
-    public <A extends Traversal<Vertex, Vertex>> A out(final int branchFactor, final String... labels);
+    public Traversal<Vertex, Vertex> out(final int branchFactor, final String... labels);
 
-    public <A extends Traversal<Vertex, Vertex>> A in(final int branchFactor, final String... labels);
+    public Traversal<Vertex, Vertex> in(final int branchFactor, final String... labels);
 
-    public <A extends Traversal<Vertex, Vertex>> A both(final int branchFactor, final String... labels);
+    public Traversal<Vertex, Vertex> both(final int branchFactor, final String... labels);
 
-    public default <A extends Traversal<Vertex, Edge>> A outE(final String... labels) {
+    public default Traversal<Vertex, Edge> outE(final String... labels) {
         return this.outE(Integer.MAX_VALUE, labels);
     }
 
-    public default <A extends Traversal<Vertex, Edge>> A inE(final String... labels) {
+    public default Traversal<Vertex, Edge> inE(final String... labels) {
         return this.inE(Integer.MAX_VALUE, labels);
     }
 
-    public default <A extends Traversal<Vertex, Edge>> A bothE(final String... labels) {
+    public default Traversal<Vertex, Edge> bothE(final String... labels) {
         return this.bothE(Integer.MAX_VALUE, labels);
     }
 
-    public <A extends Traversal<Vertex, Edge>> A outE(final int branchFactor, final String... labels);
+    public Traversal<Vertex, Edge> outE(final int branchFactor, final String... labels);
 
-    public <A extends Traversal<Vertex, Edge>> A inE(final int branchFactor, final String... labels);
+    public Traversal<Vertex, Edge> inE(final int branchFactor, final String... labels);
 
-    public <A extends Traversal<Vertex, Edge>> A bothE(final int branchFactor, final String... labels);
+    public Traversal<Vertex, Edge> bothE(final int branchFactor, final String... labels);
 
     public static class Exceptions {
         public static UnsupportedOperationException userSuppliedIdsNotSupported() {

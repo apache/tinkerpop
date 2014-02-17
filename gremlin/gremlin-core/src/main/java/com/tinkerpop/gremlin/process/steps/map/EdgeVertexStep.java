@@ -20,6 +20,7 @@ public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> {
         super(traversal);
         this.direction = direction;
         this.setFunction(holder -> {
+            System.out.println(holder.get());
             final List<Vertex> vertices = new ArrayList<>();
             if (this.direction.equals(Direction.IN) || this.direction.equals(Direction.BOTH)) {
                 vertices.add(holder.get().getVertex(Direction.IN));

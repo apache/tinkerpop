@@ -16,10 +16,8 @@ import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.GraphHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.tinkergraph.process.steps.map.TinkerEdgesStep;
-import com.tinkerpop.tinkergraph.process.steps.map.TinkerVerticesStep;
-import com.tinkerpop.tinkergraph.process.steps.optimizers.TinkerEdgesOptimizer;
-import com.tinkerpop.tinkergraph.process.steps.optimizers.TinkerVerticesOptimizer;
+import com.tinkerpop.tinkergraph.process.steps.map.TinkerGraphStep;
+import com.tinkerpop.tinkergraph.process.steps.optimizers.TinkerGraphStepOptimizer;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
@@ -143,17 +141,17 @@ public class TinkerGraph implements Graph, Serializable {
 
     public <A extends Traversal<?, Vertex>> A V() {
         Traversal traversal = new DefaultTraversal<Object, Vertex>();
-        traversal.addStep(new TinkerVerticesStep(traversal, this));
+        traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         traversal.optimizers().register(new HolderOptimizer());
-        traversal.optimizers().register(new TinkerVerticesOptimizer());
+        traversal.optimizers().register(new TinkerGraphStepOptimizer());
         return (A) traversal;
     }
 
     public <A extends Traversal<?, Edge>> A E() {
         Traversal traversal = new DefaultTraversal<Object, Edge>();
-        traversal.addStep(new TinkerEdgesStep(traversal, this));
+        traversal.addStep(new TinkerGraphStep(traversal, Edge.class, this));
         traversal.optimizers().register(new HolderOptimizer());
-        traversal.optimizers().register(new TinkerEdgesOptimizer());
+        traversal.optimizers().register(new TinkerGraphStepOptimizer());
         return (A) traversal;
     }
 

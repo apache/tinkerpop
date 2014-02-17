@@ -9,13 +9,10 @@ import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
-import com.tinkerpop.gremlin.process.steps.map.EdgesStep;
-import com.tinkerpop.gremlin.process.steps.map.VerticesStep;
+import com.tinkerpop.gremlin.process.steps.map.GraphStep;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,27 +56,27 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         if (null != graphMemory.getReductionMemory())
             gremlin.addStep(new ReductionStep(gremlin, graphMemory.getReductionMemory()));
         // the head is always an IdentityStep so simply skip it
-        final Step startStep = (VerticesStep) gremlin.getSteps().get(1);
+        final GraphStep startStep = (GraphStep) gremlin.getSteps().get(1);
         final String future = (gremlin.getSteps().size() == 2) ? Holder.NO_FUTURE : ((Step) gremlin.getSteps().get(2)).getAs();
 
         // TODO: Was doing some HasContainer.testAll() stuff prior to the big change (necessary?)
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        if (startStep instanceof VerticesStep) {
+        if (Vertex.class.isAssignableFrom(startStep.returnClass)) {
             final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
                     new PathHolder<>(startStep.getAs(), vertex) :
                     new SimpleHolder<>(vertex);
             holder.setFuture(future);
             messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), TraversalMessage.of(holder));
             voteToHalt.set(false);
-        } else if (startStep instanceof EdgesStep) {
+        } else if (Edge.class.isAssignableFrom(startStep.returnClass)) {
             vertex.outE().forEach(e -> {
-                        final Holder<Edge> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
-                                new PathHolder<>(startStep.getAs(), e) :
-                                new SimpleHolder<>(e);
-                        holder.setFuture(future);
-                        messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), TraversalMessage.of(holder));
-                        voteToHalt.set(false);
-                    });
+                final Holder<Edge> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
+                        new PathHolder<>(startStep.getAs(), e) :
+                        new SimpleHolder<>(e);
+                holder.setFuture(future);
+                messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), TraversalMessage.of(holder));
+                voteToHalt.set(false);
+            });
         }
         graphMemory.and(VOTE_TO_HALT, voteToHalt.get());
     }
