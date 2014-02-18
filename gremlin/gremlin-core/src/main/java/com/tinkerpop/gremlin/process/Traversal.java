@@ -51,6 +51,9 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.AnnotatedListQueryBuilder;
 import com.tinkerpop.gremlin.structure.query.util.HasContainer;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -540,5 +543,17 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             this.memory().set((String) variableValues[i], variableValues[i + 1]);
         }
         return this;
+    }
+
+    public default byte[] submit() {
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            final ObjectOutputStream out = new ObjectOutputStream(bos);
+            out.writeObject(this);
+            out.close();
+            return bos.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

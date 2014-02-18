@@ -32,7 +32,6 @@ public class TraversalResult<T> implements Iterator<T> {
         this.graph = graph;
         final GraphComputer computer = graph.compute();
         computer.program(TraversalVertexProgram.create().gremlin((Supplier) gremlinSupplier).build());
-        if (null != reduction) computer.reduction(reduction);
 
         try {
             this.computeResult = computer.submit().get();

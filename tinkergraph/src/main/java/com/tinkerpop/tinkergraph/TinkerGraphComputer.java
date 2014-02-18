@@ -6,13 +6,10 @@ import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.VertexMemory;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
-import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.function.BiFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,11 +41,6 @@ public class TinkerGraphComputer implements GraphComputer {
         return this;
     }
 
-    public <K, V, R> GraphComputer reduction(final BiFunction<K, Iterator<V>, R> reduction) {
-        this.graphMemory.reductionMemory = new TinkerReductionMemory<>(reduction);
-        return this;
-    }
-
     public Future<ComputeResult> submit() {
         return CompletableFuture.<ComputeResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
@@ -56,7 +48,7 @@ public class TinkerGraphComputer implements GraphComputer {
             this.vertexProgram.setup(this.graphMemory);
 
             while (true) {
-                StreamFactory.parallelStream((Iterator<Vertex>) this.graph.V()).forEach(vertex ->
+                StreamFactory.parallelStream(this.graph.V()).forEach(vertex ->
                         this.vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC,
                                 vertex.getId().toString(),
                                 this.vertexMemory), this.messenger, this.graphMemory));

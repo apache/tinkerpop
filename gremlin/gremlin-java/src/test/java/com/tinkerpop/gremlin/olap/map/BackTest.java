@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.olap.map;
+package com.tinkerpop.gremlin.process.olap.steps.map;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.process.steps.ComplianceTest;
@@ -9,13 +9,6 @@ import org.junit.Test;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class BackTest extends com.tinkerpop.gremlin.process.steps.map.BackTest {
-
-    private final Graph g = TinkerFactory.createClassic();
-
-    @Test
-    public void testCompliance() {
-        ComplianceTest.testCompliance(this.getClass());
-    }
 
     @Test
     public void g_v1_asXhereX_out_backXhereX() {

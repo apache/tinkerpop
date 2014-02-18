@@ -1,12 +1,10 @@
 package com.tinkerpop.gremlin.process.olap;
 
-import java.util.Iterator;
 import java.util.concurrent.Future;
-import java.util.function.BiFunction;
 
 /**
  * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} against the vertices in the
- * {@link Graph}. A {@link GraphComputer} maintains a {@link VertexMemory} (local vertex memory) and
+ * Graph. A {@link GraphComputer} maintains a {@link VertexMemory} (local vertex memory) and
  * {@link GraphMemory} (global graph memory). It is up to the {@link GraphComputer} implementation to determine the
  * appropriate memory structures given the computing substrate. All {@link GraphComputer} implementations also
  * maintains levels of memory isolation: Bulk Synchronous Parallel and Dirty Bulk Synchronous Parallel.
@@ -32,8 +30,6 @@ public interface GraphComputer {
     public GraphComputer isolation(final Isolation isolation);
 
     public GraphComputer program(final VertexProgram program);
-
-    public <K, V, R> GraphComputer reduction(final BiFunction<K, Iterator<V>, R> reduction);
 
     public Future<ComputeResult> submit();
 

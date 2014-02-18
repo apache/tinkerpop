@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.olap.map;
+package com.tinkerpop.gremlin.process.olap.steps.map;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
