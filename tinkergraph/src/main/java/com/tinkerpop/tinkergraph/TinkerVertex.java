@@ -121,12 +121,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     //////////////////////
 
-    public Traversal<Vertex, Vertex> as(final String as) {
-        final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
-        return traversal.as(as);
-    }
-
     public Traversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
         final DefaultTraversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));

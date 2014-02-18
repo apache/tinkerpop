@@ -40,9 +40,9 @@ public interface Graph extends AutoCloseable {
         return (Edge) this.E().has(Element.ID, id).next();
     }
 
-    public Traversal<?, Vertex> V();
+    public Traversal<Vertex, Vertex> V();
 
-    public Traversal<?, Edge> E();
+    public Traversal<Edge, Edge> E();
 
     public <S, E> Traversal<S, E> traversal(final Object start);
 

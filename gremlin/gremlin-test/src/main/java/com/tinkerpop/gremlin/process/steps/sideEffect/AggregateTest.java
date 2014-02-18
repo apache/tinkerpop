@@ -3,9 +3,9 @@ package com.tinkerpop.gremlin.process.steps.sideEffect;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,7 +27,6 @@ public abstract class AggregateTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Straighten out vertex query stuff")
     public void g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX() {
         final Iterator<Vertex> step = get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX();
         System.out.println("Testing: " + step);
@@ -67,10 +66,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     public static class JavaAggregateTest extends AggregateTest {
 
         public Iterator<Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX() {
-            return null;
-            //  super.g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(
-            //          GremlinJ.of(g).with("x", new HashSet<>())
-            //                 .v(1).aggregate("x").out("created").in("created").except("x"));
+            return g.v(1).with("x", new HashSet<>()).aggregate("x").out("created").in("created").except("x");
         }
 
         public List<String> get_g_V_valueXnameX_aggregateXaX_iterate_getXaX() {

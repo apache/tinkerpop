@@ -136,17 +136,17 @@ public class TinkerGraph implements Graph, Serializable {
         return this.edges.get(id.toString());
     }
 
-    public Traversal<?, Vertex> V() {
+    public Traversal<Vertex, Vertex> V() {
         Traversal traversal = new DefaultTraversal<Object, Vertex>();
-        traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
+        traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         return traversal;
     }
 
-    public Traversal<?, Edge> E() {
+    public Traversal<Edge, Edge> E() {
         Traversal traversal = new DefaultTraversal<Object, Edge>();
-        traversal.addStep(new TinkerGraphStep(traversal, Edge.class, this));
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
+        traversal.addStep(new TinkerGraphStep(traversal, Edge.class, this));
         return traversal;
     }
 

@@ -2,7 +2,8 @@ package com.tinkerpop.gremlin.process.steps.sideEffect;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
-import org.junit.Ignore;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -18,33 +19,33 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class SideEffectTest extends AbstractGremlinTest {
-    public abstract Iterator<String> get_g_v1_sideEffectXstore_aX_valueXnameX();
+    public abstract Traversal<Vertex, String> get_g_v1_sideEffectXstore_aX_valueXnameX();
 
-    public abstract Iterator<String> get_g_v1_out_sideEffectXincr_cX_valueXnameX();
+    public abstract Traversal<Vertex, String> get_g_v1_out_sideEffectXincr_cX_valueXnameX();
 
-    public abstract Iterator<String> get_g_v1_out_sideEffectXX_valueXnameX();
+    public abstract Traversal<Vertex, String> get_g_v1_out_sideEffectXX_valueXnameX();
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Sort out vertex query stuffs with sideeffect")
     public void g_v1_sideEffectXstore_aX_valueXnameX() {
-        final Iterator<String> step = get_g_v1_sideEffectXstore_aX_valueXnameX();
-        assertEquals(step.next(), "marko");
-        assertFalse(step.hasNext());
+        final Traversal<Vertex, String> traversal = get_g_v1_sideEffectXstore_aX_valueXnameX();
+        assertEquals(traversal.next(), "marko");
+        assertFalse(traversal.hasNext());
+        assertEquals(g.v(1), traversal.memory().<List<Vertex>>get("a").get(0));
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Sort out vertex query stuffs with sideeffect")
     public void g_v1_out_sideEffectXincr_cX_valueXnameX() {
-        final Iterator<String> step = get_g_v1_out_sideEffectXincr_cX_valueXnameX();
-        assert_g_v1_out_sideEffectXincr_cX_valueXnameX(step);
+        final Traversal<Vertex, String> traversal = get_g_v1_out_sideEffectXincr_cX_valueXnameX();
+        assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
+        assertEquals(new Integer(3), traversal.memory().<List<Integer>>get("c").get(0));
     }
 
-    private void assert_g_v1_out_sideEffectXincr_cX_valueXnameX(final Iterator<String> step) {
+    private void assert_g_v1_out_sideEffectXincr_cX_valueXnameX(final Iterator<String> traversal) {
         final List<String> names = new ArrayList<>();
-        while (step.hasNext()) {
-            names.add(step.next());
+        while (traversal.hasNext()) {
+            names.add(traversal.next());
         }
         assertEquals(3, names.size());
         assertTrue(names.contains("josh"));
@@ -54,39 +55,33 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Sort out vertex query stuffs with sideeffect")
     public void g_v1_out_sideEffectXX_valueXnameX() {
         final Iterator<String> step = get_g_v1_out_sideEffectXX_valueXnameX();
         assert_g_v1_out_sideEffectXincr_cX_valueXnameX(step);
     }
 
     public static class JavaSideEffectTest extends SideEffectTest {
-        public Iterator<String> get_g_v1_sideEffectXstore_aX_valueXnameX() {
-            return null;
-            //   final List<Vertex> a = new ArrayList<>();
-            //   super.g_v1_sideEffectXstore_aX_valueXnameX(GremlinJ.of(g).v(1).sideEffect(holder -> {
-            //       a.clear();
-            //       a.add(holder.get());
-            //   }).value("name"));
-            //   assertEquals(g.v(1).get(), a.get(0));
+        public Traversal<Vertex, String> get_g_v1_sideEffectXstore_aX_valueXnameX() {
+            final List<Vertex> a = new ArrayList<>();
+            return g.v(1).with("a", a).sideEffect(holder -> {
+                a.clear();
+                a.add(holder.get());
+            }).value("name");
         }
 
-        public Iterator<String> get_g_v1_out_sideEffectXincr_cX_valueXnameX() {
-            return null;
-            //   final List<Integer> c = new ArrayList<>();
-            //   c.add(0);
-            //   super.g_v1_out_sideEffectXincr_cX_valueXnameX(GremlinJ.of(g).v(1).out().sideEffect(holder -> {
-            //       Integer temp = c.get(0);
-            //       c.clear();
-            //       c.add(temp + 1);
-            //    }).value("name"));
-            //   assertEquals(new Integer(3), c.get(0));
+        public Traversal<Vertex, String> get_g_v1_out_sideEffectXincr_cX_valueXnameX() {
+            final List<Integer> c = new ArrayList<>();
+            c.add(0);
+            return g.v(1).with("c", c).out().sideEffect(holder -> {
+                Integer temp = c.get(0);
+                c.clear();
+                c.add(temp + 1);
+            }).value("name");
         }
 
-        public Iterator<String> get_g_v1_out_sideEffectXX_valueXnameX() {
-            return null;
-            //  super.g_v1_out_sideEffectXX_valueXnameX(GremlinJ.of(g).v(1).out().sideEffect(holder -> {
-            //   }).value("name"));
+        public Traversal<Vertex, String> get_g_v1_out_sideEffectXX_valueXnameX() {
+            return g.v(1).out().sideEffect(holder -> {
+            }).value("name");
         }
     }
 }

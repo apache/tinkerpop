@@ -22,12 +22,12 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public Traversal<?, Vertex> V() {
+    public Traversal<Vertex, Vertex> V() {
         return EmptyTraversal.instance();
     }
 
     @Override
-    public Traversal<?, Edge> E() {
+    public Traversal<Edge, Edge> E() {
         return EmptyTraversal.instance();
     }
 

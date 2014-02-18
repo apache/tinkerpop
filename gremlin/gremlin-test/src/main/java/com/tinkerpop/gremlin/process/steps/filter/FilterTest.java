@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.steps.filter;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -10,9 +11,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,51 +19,51 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class FilterTest extends AbstractGremlinTest {
 
-    public abstract Iterator<Vertex> get_g_V_filterXfalseX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_filterXfalseX();
 
-    public abstract Iterator<Vertex> get_g_V_filterXtrueX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_filterXtrueX();
 
-    public abstract Iterator<Vertex> get_g_V_filterXlang_eq_javaX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX();
 
-    public abstract Iterator<Vertex> get_g_v1_out_filterXage_gt_30X();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X();
 
-    public abstract Iterator<Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXfalseX() {
-        final Iterator<Vertex> step = get_g_V_filterXfalseX();
-        System.out.println("Testing: " + step);
-        assertFalse(step.hasNext());
-        assertFalse(step.hasNext());
+        final Iterator<Vertex> traversal = get_g_V_filterXfalseX();
+        System.out.println("Testing: " + traversal);
+        assertFalse(traversal.hasNext());
+        assertFalse(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXtrueX() {
-        final Iterator<Vertex> step = get_g_V_filterXtrueX();
-        System.out.println("Testing: " + step);
+        final Iterator<Vertex> traversal = get_g_V_filterXtrueX();
+        System.out.println("Testing: " + traversal);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<Vertex>();
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            vertices.add(step.next());
+            vertices.add(traversal.next());
         }
         assertEquals(6, counter);
         assertEquals(6, vertices.size());
-        assertFalse(step.hasNext());
+        assertFalse(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXlang_eq_javaX() {
-        final Iterator<Vertex> step = get_g_V_filterXlang_eq_javaX();
-        System.out.println("Testing: " + step);
+        final Iterator<Vertex> traversal = get_g_V_filterXlang_eq_javaX();
+        System.out.println("Testing: " + traversal);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<Vertex>();
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = step.next();
+            Vertex vertex = traversal.next();
             vertices.add(vertex);
             assertTrue(vertex.getValue("name").equals("ripple") ||
                     vertex.getValue("name").equals("lop"));
@@ -76,22 +75,22 @@ public abstract class FilterTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_filterXage_gt_30X() {
-        final Iterator<Vertex> step = get_g_v1_out_filterXage_gt_30X();
-        System.out.println("Testing: " + step);
-        assertEquals(Integer.valueOf(32), step.next().<Integer>getValue("age"));
-        assertFalse(step.hasNext());
+        final Iterator<Vertex> traversal = get_g_v1_out_filterXage_gt_30X();
+        System.out.println("Testing: " + traversal);
+        assertEquals(Integer.valueOf(32), traversal.next().<Integer>getValue("age"));
+        assertFalse(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
-        final Iterator<Vertex> step = get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
-        System.out.println("Testing: " + step);
+        final Iterator<Vertex> traversal = get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
+        System.out.println("Testing: " + traversal);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<Vertex>();
-        while (step.hasNext()) {
+        while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = step.next();
+            Vertex vertex = traversal.next();
             vertices.add(vertex);
             assertTrue(vertex.getValue("name").equals("marko") ||
                     vertex.getValue("name").equals("peter"));
@@ -101,23 +100,23 @@ public abstract class FilterTest extends AbstractGremlinTest {
     }
 
     public static class JavaFilterTest extends FilterTest {
-        public Iterator<Vertex> get_g_V_filterXfalseX() {
+        public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
             return g.V().filter(v -> false);
         }
 
-        public Iterator<Vertex> get_g_V_filterXtrueX() {
+        public Traversal<Vertex, Vertex> get_g_V_filterXtrueX() {
             return g.V().filter(v -> true);
         }
 
-        public Iterator<Vertex> get_g_V_filterXlang_eq_javaX() {
+        public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
             return g.V().filter(v -> v.get().<String>getProperty("lang").orElse("none").equals("java"));
         }
 
-        public Iterator<Vertex> get_g_v1_out_filterXage_gt_30X() {
+        public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X() {
             return g.v(1).out().filter(v -> v.get().<Integer>getProperty("age").orElse(0) > 30);
         }
 
-        public Iterator<Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
+        public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
             return g.V().filter(v -> {
                 final String name = v.get().getValue("name");
                 return name.startsWith("m") || name.startsWith("p");

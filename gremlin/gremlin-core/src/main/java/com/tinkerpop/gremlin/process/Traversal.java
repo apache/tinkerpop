@@ -534,4 +534,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
         }
     }
+
+    public default Traversal<S, E> with(final Object... variableValues) {
+        for (int i = 0; i < variableValues.length; i = i + 2) {
+            this.memory().set((String) variableValues[i], variableValues[i + 1]);
+        }
+        return this;
+    }
 }

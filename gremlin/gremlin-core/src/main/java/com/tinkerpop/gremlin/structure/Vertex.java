@@ -1,6 +1,11 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.steps.map.StartStep;
+import com.tinkerpop.gremlin.process.util.DefaultTraversal;
+
+import java.util.function.Consumer;
 
 /**
  * A {@link Vertex} maintains pointers to both a set of incoming and outgoing {@link Edge} objects. The outgoing edges
@@ -18,7 +23,19 @@ public interface Vertex extends Element {
 
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
-    public Traversal<Vertex, Vertex> as(final String as);
+    public Traversal<Vertex, Vertex> out(final int branchFactor, final String... labels);
+
+    public Traversal<Vertex, Vertex> in(final int branchFactor, final String... labels);
+
+    public Traversal<Vertex, Vertex> both(final int branchFactor, final String... labels);
+
+    public Traversal<Vertex, Edge> outE(final int branchFactor, final String... labels);
+
+    public Traversal<Vertex, Edge> inE(final int branchFactor, final String... labels);
+
+    public Traversal<Vertex, Edge> bothE(final int branchFactor, final String... labels);
+
+    ///////////////
 
     public default Traversal<Vertex, Vertex> out(final String... labels) {
         return this.out(Integer.MAX_VALUE, labels);
@@ -32,12 +49,6 @@ public interface Vertex extends Element {
         return this.both(Integer.MAX_VALUE, labels);
     }
 
-    public Traversal<Vertex, Vertex> out(final int branchFactor, final String... labels);
-
-    public Traversal<Vertex, Vertex> in(final int branchFactor, final String... labels);
-
-    public Traversal<Vertex, Vertex> both(final int branchFactor, final String... labels);
-
     public default Traversal<Vertex, Edge> outE(final String... labels) {
         return this.outE(Integer.MAX_VALUE, labels);
     }
@@ -50,11 +61,37 @@ public interface Vertex extends Element {
         return this.bothE(Integer.MAX_VALUE, labels);
     }
 
-    public Traversal<Vertex, Edge> outE(final int branchFactor, final String... labels);
+    ///////////////
 
-    public Traversal<Vertex, Edge> inE(final int branchFactor, final String... labels);
+    public default Traversal<Vertex, Vertex> as(final String as) {
+        final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStep(new StartStep<Vertex>(traversal, this));
+        return traversal.as(as);
+    }
 
-    public Traversal<Vertex, Edge> bothE(final int branchFactor, final String... labels);
+    public default <E2> Traversal<Vertex, Property<E2>> property(final String propertyKey) {
+        final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStep(new StartStep<>(traversal, this));
+        return traversal.property(propertyKey);
+    }
+
+    public default <E2> Traversal<Vertex, E2> value(final String propertyKey) {
+        final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStep(new StartStep<>(traversal, this));
+        return traversal.value(propertyKey);
+    }
+
+    public default Traversal<Vertex, Vertex> with(final Object... variableValues) {
+        final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStep(new StartStep<>(traversal, this));
+        return traversal.with(variableValues);
+    }
+
+    public default Traversal<Vertex, Vertex> sideEffect(final Consumer<Holder<Vertex>> consumer) {
+        final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
+        traversal.addStep(new StartStep<>(traversal, this));
+        return traversal.sideEffect(consumer);
+    }
 
     public static class Exceptions {
         public static UnsupportedOperationException userSuppliedIdsNotSupported() {

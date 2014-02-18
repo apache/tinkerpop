@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -28,7 +27,6 @@ public abstract class PathTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore("Need to make sure there are more steps off Vertex")
     public void g_v1_propertyXnameX_path() {
         final Iterator<Path> step = get_g_v1_propertyXnameX_path();
         System.out.println("Testing: " + step);
@@ -77,7 +75,7 @@ public abstract class PathTest extends AbstractGremlinTest {
 
     public static class JavaPathTest extends PathTest {
         public Iterator<Path> get_g_v1_propertyXnameX_path() {
-            return null; // g.v(1).value("name").path();
+            return g.v(1).value("name").path();
         }
 
         public Iterator<Path> get_g_v1_out_pathXage_nameX() {
