@@ -22,7 +22,7 @@ public class IdGraphStrategyTest extends AbstractGremlinTest {
     private static final String idKey = "myId";
 
     public IdGraphStrategyTest() {
-        super(Optional.of(new IdGraphStrategy(idKey)));
+        super(Optional.of(new IdGraphStrategy.Builder(idKey).build()));
     }
 
     @Test

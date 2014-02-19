@@ -10,7 +10,9 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
@@ -20,9 +22,16 @@ public class IdGraphStrategy implements GraphStrategy {
 
     private final String idKey;
 
-    public IdGraphStrategy(final String idKey) {
+    private final Optional<Supplier<Object>> edgeIdSupplier;
+    private final Optional<Supplier<Object>> vertexIdSupplier;
+
+    private IdGraphStrategy(final String idKey, final Supplier<Object> vertexIdSupplier,
+                            final Supplier<Object> edgeIdSupplier) {
         // assumes this is an indexed key.
         this.idKey = Property.Key.hidden(idKey);
+
+        this.edgeIdSupplier = Optional.ofNullable(edgeIdSupplier);
+        this.vertexIdSupplier = Optional.ofNullable(vertexIdSupplier);
     }
 
     @Override
@@ -46,5 +55,17 @@ public class IdGraphStrategy implements GraphStrategy {
     public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<Graph> ctx) {
         // don't apply f because the implementation needs to be highjacked by the Strategy
         return (f) -> (id) -> (Edge) ctx.getGraph().E().has(idKey, id).next();
+    }
+
+    public static final class Builder {
+        private final String idKey;
+
+        public Builder(final String idKey) {
+            this.idKey = idKey;
+        }
+
+        public IdGraphStrategy build() {
+            return new IdGraphStrategy(this.idKey, null, null);
+        }
     }
 }
