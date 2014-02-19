@@ -82,7 +82,7 @@ public interface Graph extends AutoCloseable {
         /**
          * Get the annotations for the {@link Graph} as a immutable {@link Map}.
          */
-        public default Map<String,Object> asMap() {
+        public default Map<String,Object> getAnnotations() {
             final Map<String,Object> map = getKeys().stream()
                     .map(key -> Pair.<String,Optional>with(key, get(key)))
                     .filter(kv -> kv.getValue1().isPresent())

@@ -76,7 +76,7 @@ public class AnnotationTest {
     }
 
     /**
-     * Ensure that the {@link com.tinkerpop.gremlin.structure.Graph.Annotations#asMap()} method returns some basics.
+     * Ensure that the {@link com.tinkerpop.gremlin.structure.Graph.Annotations#getAnnotations()} method returns some basics.
      * Other tests will enforce that all types are properly covered in {@link Graph.Annotations}.
      */
     public static class GraphAsMapTest extends AbstractGremlinTest {
@@ -84,12 +84,12 @@ public class AnnotationTest {
         @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_ANNOTATIONS)
         public void testNone() {
             final Graph.Annotations annotations = g.annotations();
-            final Map<String,Object> mapOfAnnotations = annotations.asMap();
+            final Map<String,Object> mapOfAnnotations = annotations.getAnnotations();
             assertNotNull(mapOfAnnotations);
             assertEquals(0, mapOfAnnotations.size());
             try {
                 mapOfAnnotations.put("something", "can't do this");
-                fail("Should not be able to mutate the Map returned from Graph.annotations.asMap()");
+                fail("Should not be able to mutate the Map returned from Graph.annotations.getAnnotations()");
             } catch (UnsupportedOperationException uoe) {
 
             }
@@ -104,7 +104,7 @@ public class AnnotationTest {
             annotations.set("test3", "3");
 
             tryCommit(g, graph -> {
-                final Map<String, Object> m = annotations.asMap();
+                final Map<String, Object> m = annotations.getAnnotations();
                 assertEquals("1", m.get("test1"));
                 assertEquals("2", m.get("test2"));
                 assertEquals("3", m.get("test3"));
@@ -120,7 +120,7 @@ public class AnnotationTest {
             annotations.set("test3", 3);
 
             tryCommit(g, graph -> {
-                final Map<String, Object> m = annotations.asMap();
+                final Map<String, Object> m = annotations.getAnnotations();
                 assertEquals(1, m.get("test1"));
                 assertEquals(2, m.get("test2"));
                 assertEquals(3, m.get("test3"));
@@ -136,7 +136,7 @@ public class AnnotationTest {
             annotations.set("test3", 3l);
 
             tryCommit(g, graph -> {
-                final Map<String, Object> m = annotations.asMap();
+                final Map<String, Object> m = annotations.getAnnotations();
                 assertEquals(1l, m.get("test1"));
                 assertEquals(2l, m.get("test2"));
                 assertEquals(3l, m.get("test3"));
@@ -154,7 +154,7 @@ public class AnnotationTest {
             annotations.set("test3", 3l);
 
             tryCommit(g, graph -> {
-                final Map<String, Object> m = annotations.asMap();
+                final Map<String, Object> m = annotations.getAnnotations();
                 assertEquals("1", m.get("test1"));
                 assertEquals(2, m.get("test2"));
                 assertEquals(3l, m.get("test3"));
