@@ -129,11 +129,15 @@ public class TinkerGraph implements Graph, Serializable {
     ////////////// BLUEPRINTS API METHODS //////////////////
 
     public Vertex v(final Object id) {
-        return this.vertices.get(id.toString());
+        return strategy().compose(
+                s -> s.getGraphvStrategy(graphContext),
+                (identifier) -> this.vertices.get(identifier.toString())).apply(id);
     }
 
     public Edge e(final Object id) {
-        return this.edges.get(id.toString());
+        return strategy().compose(
+                s -> s.getGrapheStrategy(graphContext),
+                (identifier) -> this.edges.get(identifier.toString())).apply(id);
     }
 
     public Traversal<Vertex, Vertex> V() {

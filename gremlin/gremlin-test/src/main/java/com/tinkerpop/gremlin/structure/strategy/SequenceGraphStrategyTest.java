@@ -190,4 +190,6 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("thing", v.getProperty("any").get());
         assertEquals("working2", v.getProperty("anonymous").get());
     }
+
+    // todo: needs some kind of test that hits all the strategies
 }

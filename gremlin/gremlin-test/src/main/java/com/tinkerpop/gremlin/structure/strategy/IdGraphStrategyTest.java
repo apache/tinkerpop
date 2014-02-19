@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.util.Optional;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
+import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -26,15 +27,29 @@ public class IdGraphStrategyTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldInjectAnIdAndReturnBySpecifiedId() {
         final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
 
-        assertNotNull(v);
-        assertEquals("test", v.getId());
-        assertEquals("test", v.getProperty(Property.Key.hidden(idKey)).get());
-        assertEquals("else", v.getProperty("something").get());
+        tryCommit(g, c -> {
+            assertNotNull(v);
 
-        final Vertex found = g.v("test");
-        assertEquals(v, found);
+            if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                assertEquals("test", v.getId());
+
+            assertEquals("test", v.getProperty(Property.Key.hidden(idKey)).get());
+            assertEquals("else", v.getProperty("something").get());
+
+            final Vertex found = g.v("test");
+            assertEquals(v, found);
+            if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                assertEquals("test", found.getId());
+
+            assertEquals("test", found.getProperty(Property.Key.hidden(idKey)).get());
+            assertEquals("else", found.getProperty("something").get());
+
+        });
     }
+
+    // todo: test g.e()
 }

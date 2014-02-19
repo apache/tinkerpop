@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.structure.Contains;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Strategy;
@@ -36,10 +36,15 @@ public class IdGraphStrategy implements GraphStrategy {
         };
     }
 
-    /*@Override
-    public UnaryOperator<Function<Object[], GraphQuery>> getGraphQueryIdsStrategy(final Strategy.Context<GraphQuery> ctx) {
+    @Override
+    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<Graph> ctx) {
         // don't apply f because the implementation needs to be highjacked by the Strategy
-        // TODO: is this bad?  didn't seem wrong with wrappers?
-        return (f) -> (ids) -> ctx.getCurrent().has(idKey, Contains.IN, Arrays.asList(ids));
-    }*/
+        return (f) -> (id) -> (Vertex) ctx.getGraph().V().has(idKey, id).next();
+    }
+
+    @Override
+    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<Graph> ctx) {
+        // don't apply f because the implementation needs to be highjacked by the Strategy
+        return (f) -> (id) -> (Edge) ctx.getGraph().E().has(idKey, id).next();
+    }
 }

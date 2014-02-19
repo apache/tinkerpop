@@ -36,17 +36,6 @@ public class SequenceGraphStrategy implements GraphStrategy {
         return this.composeStrategyUnaryOperator(s -> s.getAddEdgeStrategy(ctx));
     }
 
-    /*
-    @Override
-    public UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(Strategy.Context<GraphQuery> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getGraphQueryVerticesStrategy(ctx));
-    }
-
-    @Override
-    public UnaryOperator<Function<Object[], GraphQuery>> getGraphQueryIdsStrategy(Strategy.Context<GraphQuery> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getGraphQueryIdsStrategy(ctx));
-    }*/
-
     @Override
     public UnaryOperator<Supplier<Void>> getRemoveElementStrategy(Strategy.Context<? extends Element> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getRemoveElementStrategy(ctx));
@@ -70,6 +59,16 @@ public class SequenceGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<BiConsumer<String, Object>> getGraphAnnotationsSet(Strategy.Context<Graph.Annotations> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getGraphAnnotationsSet(ctx));
+    }
+
+    @Override
+    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(Strategy.Context<Graph> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getGraphvStrategy(ctx));
+    }
+
+    @Override
+    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(Strategy.Context<Graph> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getGrapheStrategy(ctx));
     }
 
     /**
