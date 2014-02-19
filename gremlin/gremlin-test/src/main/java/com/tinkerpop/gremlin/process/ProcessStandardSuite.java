@@ -77,8 +77,38 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             TreeTest.JavaTreeTest.class
     };
 
+    /**
+     * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
+     */
+    protected static final Class<?>[] testsToEnforce = new Class<?>[]{
+            DedupTest.class,
+            ExceptTest.class,
+            FilterTest.class,
+            HasTest.class,
+            IntervalTest.class,
+            RangeTest.class,
+            RetainTest.class,
+            AnnotatedValuesTest.class,
+            BackTest.class,
+            JumpTest.class,
+            OrderTest.class,
+            PathTest.class,
+            SelectTest.class,
+            TraversalTest.class,
+            ValuesTest.class,
+            AggregateTest.class,
+            GroupByTest.class,
+            GroupCountTest.class,
+            LinkTest.class,
+            SideEffectTest.class,
+            TreeTest.class
+    };
 
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute);
+        super(klass, builder, testsToExecute, testsToEnforce);
+    }
+
+    public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
+        super(klass, builder, testsToExecute, testsToEnforce);
     }
 }

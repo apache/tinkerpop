@@ -11,7 +11,10 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,7 +36,11 @@ public abstract class AbstractGremlinSuite extends Suite {
     }
 
     public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
-        super(builder, klass, testsToExecute);
+        this(klass, builder, testsToExecute, null);
+    }
+
+    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
+        super(builder, klass, enforce(testsToExecute, testsToEnforce));
 
         // figures out what the implementer assigned as the GraphProvider class and make it available to tests.
         final Class graphProviderClass = getGraphProviderClass(klass);
@@ -42,6 +49,21 @@ public abstract class AbstractGremlinSuite extends Suite {
         } catch (Exception ex) {
             throw new InitializationError(ex);
         }
+    }
+
+    private static Class<?>[] enforce(final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) {
+        if (null == testsToEnforce)
+            return testsToExecute;
+
+        // examine each test to enforce and ensure an instance of it is in the list of testsToExecute
+        final List<Class<?>> notSupplied = Stream.of(testsToEnforce)
+                .filter(t -> Stream.of(testsToExecute).noneMatch(t::isAssignableFrom))
+                .collect(Collectors.toList());
+
+        if (notSupplied.size() > 0)
+            System.err.println(String.format("Review the testsToExecute given to the test suite as the following are missing: %s", notSupplied));
+
+        return testsToExecute;
     }
 
     private static Class<? extends GraphProvider> getGraphProviderClass(Class<?> klass) throws InitializationError {

@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.steps.filter.GroovyDedupTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -10,7 +9,7 @@ import org.junit.runners.model.RunnerBuilder;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GroovyProcessStandardSuite extends AbstractGremlinSuite {
+public class GroovyProcessStandardSuite extends ProcessStandardSuite {
 
     /**
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
@@ -22,6 +21,6 @@ public class GroovyProcessStandardSuite extends AbstractGremlinSuite {
 
 
     public GroovyProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute);
+        super(klass, builder, testsToExecute, testsToEnforce);
     }
 }
