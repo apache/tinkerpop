@@ -21,6 +21,8 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -70,6 +72,93 @@ public class AnnotationTest {
             annotations.set("zo", "test3");
 
             tryCommit(g, graph -> assertEquals(StringFactory.annotationsString(annotations), annotations.toString()));
+        }
+    }
+
+    /**
+     * Ensure that the {@link com.tinkerpop.gremlin.structure.Graph.Annotations#asMap()} method returns some basics.
+     * Other tests will enforce that all types are properly covered in {@link Graph.Annotations}.
+     */
+    public static class GraphAsMapTest extends AbstractGremlinTest {
+        @Test
+        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_ANNOTATIONS)
+        public void testNone() {
+            final Graph.Annotations annotations = g.annotations();
+            final Map<String,Object> mapOfAnnotations = annotations.asMap();
+            assertNotNull(mapOfAnnotations);
+            assertEquals(0, mapOfAnnotations.size());
+            try {
+                mapOfAnnotations.put("something", "can't do this");
+                fail("Should not be able to mutate the Map returned from Graph.annotations.asMap()");
+            } catch (UnsupportedOperationException uoe) {
+
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_STRING_VALUES)
+        public void testAnnotationString() {
+            final Graph.Annotations annotations = g.annotations();
+            annotations.set("test1", "1");
+            annotations.set("test2", "2");
+            annotations.set("test3", "3");
+
+            tryCommit(g, graph -> {
+                final Map<String, Object> m = annotations.asMap();
+                assertEquals("1", m.get("test1"));
+                assertEquals("2", m.get("test2"));
+                assertEquals("3", m.get("test3"));
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_INTEGER_VALUES)
+        public void testAnnotationInteger() {
+            final Graph.Annotations annotations = g.annotations();
+            annotations.set("test1", 1);
+            annotations.set("test2", 2);
+            annotations.set("test3", 3);
+
+            tryCommit(g, graph -> {
+                final Map<String, Object> m = annotations.asMap();
+                assertEquals(1, m.get("test1"));
+                assertEquals(2, m.get("test2"));
+                assertEquals(3, m.get("test3"));
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_LONG_VALUES)
+        public void testAnnotationLong() {
+            final Graph.Annotations annotations = g.annotations();
+            annotations.set("test1", 1l);
+            annotations.set("test2", 2l);
+            annotations.set("test3", 3l);
+
+            tryCommit(g, graph -> {
+                final Map<String, Object> m = annotations.asMap();
+                assertEquals(1l, m.get("test1"));
+                assertEquals(2l, m.get("test2"));
+                assertEquals(3l, m.get("test3"));
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_LONG_VALUES)
+        public void testAnnotationMixed() {
+            final Graph.Annotations annotations = g.annotations();
+            annotations.set("test1", "1");
+            annotations.set("test2", 2);
+            annotations.set("test3", 3l);
+
+            tryCommit(g, graph -> {
+                final Map<String, Object> m = annotations.asMap();
+                assertEquals("1", m.get("test1"));
+                assertEquals(2, m.get("test2"));
+                assertEquals(3l, m.get("test3"));
+            });
         }
     }
 

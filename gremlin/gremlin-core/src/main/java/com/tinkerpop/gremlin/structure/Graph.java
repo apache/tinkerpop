@@ -5,10 +5,14 @@ import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
+import org.javatuples.Pair;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * An {@link Graph} is a container object for a collection of {@link Vertex}, {@link Edge}, and {@link Property}
@@ -74,6 +78,18 @@ public interface Graph extends AutoCloseable {
         public <T> Optional<T> get(final String key);
 
         public Set<String> getKeys();
+
+        /**
+         * Get the annotations for the {@link Graph} as a immutable {@link Map}.
+         */
+        public default Map<String,Object> asMap() {
+            final Map<String,Object> map = getKeys().stream()
+                    .map(key -> Pair.<String,Optional>with(key, get(key)))
+                    .filter(kv -> kv.getValue1().isPresent())
+                    .map(kv -> Pair.<String,Object>with(kv.getValue0(), kv.getValue1().get()))
+                    .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
+            return Collections.unmodifiableMap(map);
+        }
 
         public static class Exceptions {
 

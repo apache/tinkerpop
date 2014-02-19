@@ -1,11 +1,14 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
@@ -17,6 +20,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -135,6 +139,27 @@ public class IoTest extends AbstractGremlinTest {
 
         // need to manually close the "g2" instance
         graphProvider.clear(g2, configuration);
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    public void shouldReadWriteToKryo() throws Exception {
+        g.annotations().set("testString", "judas");
+        g.annotations().set("testLong", 100l);
+        g.annotations().set("testInt", 100);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final KryoWriter writer = new KryoWriter(g);
+        writer.outputGraph(os);
+        os.close();
+
+        final Graph g1 = graphProvider.openTestGraph(graphProvider.newGraphConfiguration("readGraph"));
+        final KryoReader reader = new KryoReader(g1);
+        reader.inputGraph(new ByteArrayInputStream(os.toByteArray()));
+
+        assertEquals("judas", g1.annotations().get("testString").get());
+        assertEquals(100l, g1.annotations().get("testLong").get());
+        assertEquals(100, g1.annotations().get("testInt").get());
     }
 
     private void validateXmlAgainstGraphMLXsd(final File file) throws Exception {
