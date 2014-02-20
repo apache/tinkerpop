@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Memory;
 import com.tinkerpop.gremlin.process.Optimizers;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.DedupOptimizer;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.IdentityOptimizer;
@@ -77,6 +78,10 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     public boolean equals(final Object object) {
         return object instanceof Iterator && TraversalHelper.areEqual(this, (Iterator) object);
+    }
+
+    public Iterator<E> submit(final TraversalEngine engine) {
+        return engine.execute(this);
     }
 
 }

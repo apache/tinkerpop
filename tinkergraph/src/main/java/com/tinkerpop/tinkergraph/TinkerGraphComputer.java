@@ -1,20 +1,24 @@
 package com.tinkerpop.tinkergraph;
 
 
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.VertexMemory;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
+import com.tinkerpop.gremlin.process.olap.traversal.TraversalResult;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
+import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphComputer implements GraphComputer {
+public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
     protected enum State {STANDARD, CENTRIC, ADJACENT}
 
@@ -28,6 +32,10 @@ public class TinkerGraphComputer implements GraphComputer {
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
         this.graphMemory = new TinkerGraphMemory(graph);
+    }
+
+    public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
+        return new TraversalResult<>(this.graph, () -> traversal);
     }
 
     public GraphComputer isolation(final Isolation isolation) {

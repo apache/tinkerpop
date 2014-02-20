@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process.olap;
 
+import com.tinkerpop.gremlin.process.TraversalEngine;
+
 import java.util.concurrent.Future;
 
 /**
@@ -12,7 +14,7 @@ import java.util.concurrent.Future;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface GraphComputer {
+public interface GraphComputer extends TraversalEngine {
 
     public enum Isolation {
         /**
