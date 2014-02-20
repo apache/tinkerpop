@@ -2,7 +2,9 @@ package com.tinkerpop.gremlin.process.steps.map;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -21,9 +23,9 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AnnotatedValuesTest extends AbstractGremlinTest {
 
-    public abstract Iterator<AnnotatedValue<String>> get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X();
+    public abstract Traversal<Vertex, AnnotatedValue<String>> get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X();
 
-    public abstract Iterator<String> get_g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value();
+    public abstract Traversal<Vertex, String> get_g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -49,11 +51,11 @@ public abstract class AnnotatedValuesTest extends AbstractGremlinTest {
 
     public static class JavaAnnotatedValuesTest extends AnnotatedValuesTest {
 
-        public Iterator<AnnotatedValue<String>> get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X() {
+        public Traversal<Vertex, AnnotatedValue<String>> get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X() {
             return g.v(1).annotatedValues("locations").interval("startTime", 2004, 2006);
         }
 
-        public Iterator<String> get_g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value() {
+        public Traversal<Vertex, String> get_g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value() {
             return g.V().annotatedValues("locations").has("startTime", 2005).value();
         }
     }
