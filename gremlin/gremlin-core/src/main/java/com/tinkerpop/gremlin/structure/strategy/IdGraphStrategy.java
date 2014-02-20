@@ -101,6 +101,11 @@ public class IdGraphStrategy implements GraphStrategy {
         private boolean supportsEdgeId;
         private boolean hiddenIdKey;
 
+        /**
+         * Create the {@link Builder} to create a {@link IdGraphStrategy}.
+         *
+         * @param idKey The key to use for the index to lookup graph elements.
+         */
         public Builder(final String idKey) {
             this.idKey = idKey;
             this.edgeIdSupplier = this::supplyStringId;
@@ -119,6 +124,10 @@ public class IdGraphStrategy implements GraphStrategy {
                     this.supportsVertexId, this.supportsEdgeId);
         }
 
+        /**
+         * Provide a function that will provide ids when none are provided explicitly when creating vertices. By default
+         * a UUID string will be used if this value is not set.
+         */
         public Builder vertexIdMaker(final Supplier<?> vertexIdSupplier) {
             if (null == vertexIdSupplier)
                 throw new IllegalArgumentException("vertexIdSupplier");
@@ -127,6 +136,10 @@ public class IdGraphStrategy implements GraphStrategy {
             return this;
         }
 
+        /**
+         * Provide a function that will provide ids when none are provided explicitly when creating edges.  By default
+         * a UUID string will be used if this value is not set.
+         */
         public Builder edgeIdMaker(final Supplier<?> edgeIdSupplier) {
             if (null == edgeIdSupplier)
                 throw new IllegalArgumentException("edgeIdSupplier");
@@ -135,16 +148,27 @@ public class IdGraphStrategy implements GraphStrategy {
             return this;
         }
 
+        /**
+         * Turn off support for this strategy for edges. Note that this value cannot be false if
+         * {@link #supportsVertexId(boolean)} is also false.
+         */
         public Builder supportsEdgeId(final boolean supports) {
             this.supportsEdgeId = supports;
             return this;
         }
 
+        /**
+         * Turn off support for this strategy for edges. Note that this value cannot be false if
+         * {@link #supportsEdgeId(boolean)} is also false.
+         */
         public Builder supportsVertexId(final boolean supports) {
             this.supportsVertexId = supports;
             return this;
         }
 
+        /**
+         * Converts the key supplied to the constructor of the builder to a hidden key.
+         */
         public Builder useHiddenIdKey(final boolean hidden) {
             this.hiddenIdKey = hidden;
             return this;
