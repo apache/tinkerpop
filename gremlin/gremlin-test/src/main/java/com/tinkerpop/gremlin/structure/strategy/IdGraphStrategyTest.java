@@ -71,7 +71,7 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-        public void shouldCreateAnIdAndReturnByCreatedId() {
+        public void shouldCreateAnIdAndReturnByCreatedIdForVertex() {
             final Vertex v = g.addVertex("something", "else");
 
             tryCommit(g, c -> {
@@ -79,12 +79,29 @@ public class IdGraphStrategyTest {
                 assertNotNull(UUID.fromString(v.getProperty(Property.Key.hidden(idKey)).get().toString()));
                 assertEquals("else", v.getProperty("something").get());
 
-                final Object suppliedId = v.getId();
-                final Vertex found = g.v(suppliedId);
+                final Vertex found = g.v(v.getId());
                 assertEquals(v, found);
                 assertNotNull(UUID.fromString(found.getProperty(Property.Key.hidden(idKey)).get().toString()));
                 assertEquals("else", found.getProperty("something").get());
 
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        public void shouldCreateAnIdAndReturnByCreatedIdForEdge() {
+            final Vertex v = g.addVertex("something", "else");
+            final Edge e = v.addEdge("self", v, "try", "this");
+            tryCommit(g, c -> {
+                assertNotNull(e);
+                assertNotNull(UUID.fromString(e.getProperty(Property.Key.hidden(idKey)).get().toString()));
+                assertEquals("this", e.getProperty("try").get());
+
+                final Edge found = g.e(e.getId());
+                assertEquals(e, found);
+                assertNotNull(UUID.fromString(found.getProperty(Property.Key.hidden(idKey)).get().toString()));
+                assertEquals("this", found.getProperty("try").get());
             });
         }
     }
