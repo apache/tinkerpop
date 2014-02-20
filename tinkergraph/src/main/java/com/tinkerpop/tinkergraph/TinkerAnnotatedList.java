@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.query.AnnotatedListQuery;
 import com.tinkerpop.gremlin.structure.query.util.DefaultAnnotatedListQuery;
-import com.tinkerpop.gremlin.structure.query.util.HasContainer;
+import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 

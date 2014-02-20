@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.VertexQuery;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
@@ -14,10 +13,6 @@ public class MicroVertex extends MicroElement implements Vertex {
 
     private MicroVertex(final Vertex vertex) {
         super(vertex);
-    }
-
-    public VertexQuery query() {
-        throw new UnsupportedOperationException("Micro vertices can not be queried (inflate): " + this.toString());
     }
 
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {

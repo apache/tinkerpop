@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.util.HasContainer;
+import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.tinkergraph.TinkerGraph;
 import com.tinkerpop.tinkergraph.TinkerHelper;
 

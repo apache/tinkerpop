@@ -51,7 +51,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.AnnotatedListQueryBuilder;
-import com.tinkerpop.gremlin.structure.query.util.HasContainer;
+import com.tinkerpop.gremlin.structure.util.HasContainer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

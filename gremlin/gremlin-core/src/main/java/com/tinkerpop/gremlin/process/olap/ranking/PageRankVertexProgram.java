@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.util.VertexQueryBuilder;
+import com.tinkerpop.gremlin.structure.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import java.util.HashMap;

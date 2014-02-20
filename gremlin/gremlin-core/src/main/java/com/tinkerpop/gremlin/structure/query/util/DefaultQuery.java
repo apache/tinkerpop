@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.query.util;
 
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.query.Query;
+import com.tinkerpop.gremlin.structure.util.HasContainer;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,65 +1,71 @@
-package com.tinkerpop.gremlin.structure.query.util;
+package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexQueryBuilder extends DefaultVertexQuery implements QueryBuilder {
+public class VertexQueryBuilder {
 
-    public VertexQueryBuilder adjacents(final Vertex... vertices) {
-        super.adjacents(vertices);
-        return this;
-    }
+    private static final String[] EMPTY_LABELS = new String[]{};
+    public Direction direction = Direction.BOTH;
+    public String[] labels = EMPTY_LABELS;
+    public int limit = Integer.MAX_VALUE;
+    public List<HasContainer> hasContainers = new ArrayList<>();
 
     public VertexQueryBuilder has(final String key) {
-        super.has(key);
+        this.hasContainers.add(new HasContainer(key, Contains.IN));
         return this;
     }
 
     public VertexQueryBuilder hasNot(final String key) {
-        super.hasNot(key);
+        this.hasContainers.add(new HasContainer(key, Contains.NOT_IN));
         return this;
     }
 
     public VertexQueryBuilder has(final String key, final Object value) {
-        super.has(key, value);
+        this.hasContainers.add(new HasContainer(key, Compare.EQUAL, value));
         return this;
     }
 
     public VertexQueryBuilder hasNot(final String key, final Object value) {
-        super.hasNot(key, value);
+        this.hasContainers.add(new HasContainer(key, Compare.NOT_EQUAL, value));
         return this;
     }
 
     public VertexQueryBuilder has(final String key, final BiPredicate compare, final Object value) {
-        super.has(key, compare, value);
+        this.hasContainers.add(new HasContainer(key, compare, value));
         return this;
     }
 
     public <T extends Comparable<?>> VertexQueryBuilder interval(final String key, final T startValue, final T endValue) {
-        super.interval(key, startValue, endValue);
+        this.hasContainers.add(new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue));
+        this.hasContainers.add(new HasContainer(key, Compare.LESS_THAN, endValue));
         return this;
     }
 
     public VertexQueryBuilder direction(final Direction direction) {
-        super.direction(direction);
+        this.direction = direction;
         return this;
     }
 
     public VertexQueryBuilder labels(final String... labels) {
-        super.labels(labels);
+        this.labels = labels;
         return this;
     }
 
     public VertexQueryBuilder limit(final int limit) {
-        super.limit(limit);
+        this.limit = limit;
         return this;
     }
 
@@ -91,18 +97,6 @@ public class VertexQueryBuilder extends DefaultVertexQuery implements QueryBuild
             query.has(hasContainer.key, hasContainer.predicate, hasContainer.value);
         }
         return query;
-    }
-
-    public Iterable<Edge> edges() {
-        throw new UnsupportedOperationException();
-    }
-
-    public Iterable<Vertex> vertices() {
-        throw new UnsupportedOperationException();
-    }
-
-    public long count() {
-        throw new UnsupportedOperationException();
     }
 
     public String toString() {

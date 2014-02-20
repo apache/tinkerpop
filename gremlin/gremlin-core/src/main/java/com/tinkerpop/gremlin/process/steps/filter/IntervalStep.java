@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.query.util.HasContainer;
+import com.tinkerpop.gremlin.structure.util.HasContainer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

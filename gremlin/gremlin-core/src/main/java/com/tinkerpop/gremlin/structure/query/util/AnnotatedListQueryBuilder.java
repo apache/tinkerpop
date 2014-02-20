@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure.query.util;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.query.AnnotatedListQuery;
+import com.tinkerpop.gremlin.structure.util.HasContainer;
 
 import java.util.function.BiPredicate;
 

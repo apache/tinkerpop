@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.olap;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.util.VertexQueryBuilder;
+import com.tinkerpop.gremlin.structure.util.VertexQueryBuilder;
 
 import java.util.Arrays;
 import java.util.function.BiFunction;

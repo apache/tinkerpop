@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.query.util;
+package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Contains;
