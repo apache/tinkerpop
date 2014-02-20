@@ -58,10 +58,7 @@ public class TraversalResult<T> implements Iterator<T> {
     }
 
     private void buildIterator() {
-        if (null != this.computeResult.getGraphMemory().getReductionMemory()) {
-            final GraphMemory.ReductionMemory reductionMemory = this.computeResult.getGraphMemory().getReductionMemory();
-            this.itty = StreamFactory.stream(reductionMemory.getKeys()).map(key -> Arrays.asList(key, reductionMemory.get(key).get())).iterator();
-        } else if (HolderOptimizer.trackPaths(this.gremlinSupplier.get())) {
+        if (HolderOptimizer.trackPaths(this.gremlinSupplier.get())) {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.graph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
                         .map(v -> this.computeResult.getVertexMemory().<TraversalPaths>getProperty(v, TraversalVertexProgram.GREMLIN_TRACKER).orElse(null))

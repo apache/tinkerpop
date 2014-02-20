@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Memory;
 import com.tinkerpop.gremlin.process.Optimizers;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -48,5 +49,9 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     public List<Step> getSteps() {
         return Collections.EMPTY_LIST;
+    }
+
+    public Iterator<E> submit(final TraversalEngine engine) {
+        return Collections.emptyIterator();
     }
 }

@@ -85,6 +85,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public List<Step> getSteps();
 
+    public Iterator<E> submit(final TraversalEngine engine);
+
     ///////////////////// TRANSFORM STEPS /////////////////////
 
     public default <E2> Traversal<S, E2> map(final Function<Holder<E>, E2> function) {
