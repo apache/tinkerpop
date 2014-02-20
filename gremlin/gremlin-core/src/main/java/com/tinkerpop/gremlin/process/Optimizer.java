@@ -5,9 +5,9 @@ package com.tinkerpop.gremlin.process;
  */
 public interface Optimizer {
 
-    public interface StepOptimizer extends Optimizer {
+    /*public interface StepOptimizer extends Optimizer {
         public boolean optimize(final Traversal traversal, final Step step);
-    }
+    }*/
 
     public interface FinalOptimizer extends Optimizer {
         public void optimize(final Traversal traversal);

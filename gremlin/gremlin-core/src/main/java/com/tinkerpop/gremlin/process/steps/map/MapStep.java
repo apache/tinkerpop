@@ -11,7 +11,7 @@ import java.util.function.Function;
  */
 public class MapStep<S, E> extends AbstractStep<S, E> {
 
-    private Function<Holder<S>, E> function;
+    public Function<Holder<S>, E> function;
 
     public MapStep(final Traversal traversal) {
         super(traversal);

@@ -32,4 +32,6 @@ public class JumpStep<S> extends MapStep<S, S> {
             }
         });
     }
+
+    // TODO: Be sure to Holder.resetLoops() when the object leaves the step. May have to implement processNextStart() and MapStep doesn't allow this.
 }

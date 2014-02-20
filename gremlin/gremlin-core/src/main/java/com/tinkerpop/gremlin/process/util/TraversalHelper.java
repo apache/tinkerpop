@@ -1,7 +1,8 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.steps.util.EmptyStep;
 
 import java.util.Iterator;
 import java.util.List;
@@ -76,12 +77,27 @@ public class TraversalHelper {
 
     public static void removeStep(final Step step, final Traversal traversal) {
         final List<Step> steps = traversal.getSteps();
-        final int index = steps.indexOf(step);
+        steps.remove(step);
+        if (steps.size() == 1) {
+            steps.get(0).setPreviousStep(EmptyStep.instance());
+            steps.get(0).setNextStep(EmptyStep.instance());
+        }
+        for (int i = 0; i < steps.size(); i++) {
+            if (i == 0)
+                steps.get(i).setPreviousStep(EmptyStep.instance());
+            if (i < steps.size() - 1)
+                steps.get(i).setNextStep(steps.get(i + 1));
+            if (i > 0)
+                steps.get(i).setPreviousStep(steps.get(i - 1));
+            if (i == steps.size() - 1)
+                steps.get(i).setNextStep(EmptyStep.instance());
+        }
+        /*final int index = steps.indexOf(step);
         if (index - 1 >= 0 && index + 1 < steps.size()) {
             steps.get(index - 1).setNextStep(steps.get(index + 1));
             steps.get(index + 1).setPreviousStep(steps.get(index - 1));
         }
-        steps.remove(step);
+        steps.remove(index);*/
     }
 
     public static void insertStep(final Step step, final int index, final Traversal traversal) {

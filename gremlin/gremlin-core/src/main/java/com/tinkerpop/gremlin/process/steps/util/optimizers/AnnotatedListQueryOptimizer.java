@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.steps.util.optimizers;
 
-import com.tinkerpop.gremlin.process.Optimizer;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.steps.filter.HasStep;
@@ -18,7 +17,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AnnotatedListQueryOptimizer implements Optimizer.StepOptimizer {
+public class AnnotatedListQueryOptimizer { // implements Optimizer.StepOptimizer {
 
     private static final List<Class> PIPES_TO_FOLD = new ArrayList<Class>(
             Arrays.asList(

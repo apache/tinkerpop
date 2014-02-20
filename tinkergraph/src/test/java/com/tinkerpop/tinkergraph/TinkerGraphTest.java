@@ -1,5 +1,8 @@
 package com.tinkerpop.tinkergraph;
 
+import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -56,7 +59,15 @@ public class TinkerGraphTest {
     @Test
     public void testPlay() {
         final TinkerGraph g = TinkerFactory.createClassic();
-        System.out.println(g.v(1).outE().as("here").inV().has("name","vadas").back("here").toList());
+        //System.out.println(g.v(1).outE().as("here").inV().has("name","vadas").back("here").toList());
+
+
+        System.out.println(g.V().out().getSteps());
+        Traversal t = g.V().out();
+        TraversalHelper.removeStep((Step)t.getSteps().get(1),t);
+        System.out.println(t);
+        System.out.println(((Step) t.getSteps().get(0)).getNextStep());
+        System.out.println(((Step) t.getSteps().get(0)).getPreviousStep());
     }
 
     @Test

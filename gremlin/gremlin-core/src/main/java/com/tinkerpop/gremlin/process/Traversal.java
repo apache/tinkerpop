@@ -283,7 +283,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default <E2> Traversal<S, E2> has(final String key, final Object value) {
-        return has(key, Compare.EQUAL, value);
+        return this.has(key, Compare.EQUAL, value);
     }
 
     public default <E2> Traversal<S, E2> has(final String key, final T t, final Object value) {

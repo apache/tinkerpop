@@ -19,7 +19,7 @@ public class DefaultOptimizers implements Optimizers {
     }
 
     public void register(final Optimizer optimizer) {
-        this.optimizers.add(optimizer);
+        this.optimizers.add(0, optimizer);   // TODO: eek around HolderOptimizer
     }
 
     public void doFinalOptimizers(final Traversal traversal) {

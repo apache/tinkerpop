@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.steps.map;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.steps.AbstractStep;
 
 import java.util.Iterator;
@@ -15,7 +15,7 @@ import java.util.function.Function;
  */
 public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
-    protected Function<Holder<S>, Iterator<E>> function;
+    public Function<Holder<S>, Iterator<E>> function;
     protected final Queue<Iterator<Holder<E>>> queue = new LinkedList<>();
 
     public FlatMapStep(final Traversal traversal, Function<Holder<S>, Iterator<E>> function) {
