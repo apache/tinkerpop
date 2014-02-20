@@ -67,9 +67,6 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                 if (this.vertexProgram.terminate(this.graphMemory)) break;
             }
 
-            if (null != this.graphMemory.getReductionMemory())
-                this.graphMemory.getReductionMemory().reduce();
-
             this.graphMemory.setRuntime(System.currentTimeMillis() - time);
 
             return new ComputeResult() {

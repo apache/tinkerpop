@@ -41,20 +41,6 @@ public interface GraphMemory {
 
     public Graph getGraph();
 
-    public <K, V, R> ReductionMemory<K, V, R> getReductionMemory();
-
-    public interface ReductionMemory<K, V, R> {
-
-        public void emit(final K key, V value);
-
-        public Optional<R> get(final K key);
-
-        public void reduce();
-
-        public Iterator<K> getKeys();
-
-    }
-
     /*public void min(String key, double value);
 
     public void max(String key, double value);

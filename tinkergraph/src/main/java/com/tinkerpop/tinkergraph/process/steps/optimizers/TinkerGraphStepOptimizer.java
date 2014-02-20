@@ -17,8 +17,8 @@ public class TinkerGraphStepOptimizer implements Optimizer.FinalOptimizer {
 
     public void optimize(final Traversal traversal) {
 
-        if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {
-            TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
+        if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {  // TODO: generalize for searching the whole traversal?
+            final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
             Step currentStep = tinkerGraphStep.getNextStep();
             while (true) {
                 if (currentStep == EmptyStep.instance() || TraversalHelper.isLabeled(currentStep)) break;
