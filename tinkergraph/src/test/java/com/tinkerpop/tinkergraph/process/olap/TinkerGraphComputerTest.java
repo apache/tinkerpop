@@ -18,6 +18,6 @@ public class TinkerGraphComputerTest {
         System.out.println("----------");
         //new TraversalResult<>(g, () -> g.V().out().value("name")).forEachRemaining(System.out::println);
 
-        g.V().out().value("name").submit((TinkerGraphComputer) g.compute()).forEachRemaining(System.out::println);
+        g.V().out().value("name").submit(g.compute()).forEachRemaining(System.out::println);
     }
 }
