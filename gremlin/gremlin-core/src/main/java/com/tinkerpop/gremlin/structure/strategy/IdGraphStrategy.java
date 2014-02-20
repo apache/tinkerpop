@@ -33,9 +33,7 @@ public class IdGraphStrategy implements GraphStrategy {
     private IdGraphStrategy(final String idKey, final Supplier<?> vertexIdSupplier,
                             final Supplier<?> edgeIdSupplier, final boolean supportsVertexId,
                             final boolean supportsEdgeId) {
-        // assumes this is an indexed key.
-        this.idKey = Property.Key.hidden(idKey);
-
+        this.idKey = idKey;
         this.edgeIdSupplier = edgeIdSupplier;
         this.vertexIdSupplier = vertexIdSupplier;
         this.supportsEdgeId = supportsEdgeId;
@@ -71,6 +69,14 @@ public class IdGraphStrategy implements GraphStrategy {
         return (f) -> () -> ctx.getCurrent().getProperty(idKey).orElse(f.get());
     }
 
+    /**
+     * Gets the property name of the key used to lookup graph elements.  This is a "hidden" key created by
+     * {@link Property.Key#hidden(String)}.  Use this value to create an index in the underlying graph instance.
+     */
+    public String getIdKey() {
+        return this.idKey;
+    }
+
     private List<Object> injectId(final boolean supports, final Object[] keyValues, final Supplier<?> idMaker) {
         final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
         if (supports) {
@@ -93,6 +99,7 @@ public class IdGraphStrategy implements GraphStrategy {
         private Supplier<?> edgeIdSupplier;
         private boolean supportsVertexId;
         private boolean supportsEdgeId;
+        private boolean hiddenIdKey;
 
         public Builder(final String idKey) {
             this.idKey = idKey;
@@ -100,13 +107,15 @@ public class IdGraphStrategy implements GraphStrategy {
             this.vertexIdSupplier = this::supplyStringId;
             this.supportsEdgeId = true;
             this.supportsVertexId = true;
+            this.hiddenIdKey = false;
         }
 
         public IdGraphStrategy build() {
             if (!this.supportsEdgeId && !this.supportsVertexId)
                 throw new IllegalStateException("Since supportsEdgeId and supportsVertexId are false, there is no need to use IdGraphStrategy");
 
-            return new IdGraphStrategy(this.idKey, this.vertexIdSupplier, this.edgeIdSupplier,
+            final String keyForId = this.hiddenIdKey ? Property.Key.hidden(this.idKey) : this.idKey;
+            return new IdGraphStrategy(keyForId, this.vertexIdSupplier, this.edgeIdSupplier,
                     this.supportsVertexId, this.supportsEdgeId);
         }
 
@@ -133,6 +142,11 @@ public class IdGraphStrategy implements GraphStrategy {
 
         public Builder supportsVertexId(final boolean supports) {
             this.supportsVertexId = supports;
+            return this;
+        }
+
+        public Builder useHiddenIdKey(final boolean hidden) {
+            this.hiddenIdKey = hidden;
             return this;
         }
 
