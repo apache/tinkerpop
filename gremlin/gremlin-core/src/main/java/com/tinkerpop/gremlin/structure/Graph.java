@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
@@ -23,6 +22,8 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Graph extends AutoCloseable {
+
+    public static final String HIDDEN_PREFIX = "%&%";
 
     /**
      * Creates a new {@link Graph} instance.  All graphs require that this method be overridden.  It is enforced by the
@@ -66,7 +67,7 @@ public interface Graph extends AutoCloseable {
             }
 
             public static String hidden(final String key) {
-                return StringFactory.HIDDEN_PREFIX.concat(key);
+                return HIDDEN_PREFIX.concat(key);
             }
         }
 

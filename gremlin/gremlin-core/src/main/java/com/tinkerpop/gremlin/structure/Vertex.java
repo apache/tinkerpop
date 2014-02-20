@@ -63,34 +63,33 @@ public interface Vertex extends Element {
 
     ///////////////
 
-    public default Traversal<Vertex, Vertex> as(final String as) {
+    public default Traversal<Vertex, Vertex> start() {
         final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
-        return traversal.as(as);
+        return traversal.addStep(new StartStep<>(traversal, this));
+    }
+
+    public default Traversal<Vertex, Vertex> as(final String as) {
+        return this.start().as(as);
+    }
+
+    public default <E2> Traversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
+        return this.start().annotatedValues(propertyKey);
     }
 
     public default <E2> Traversal<Vertex, Property<E2>> property(final String propertyKey) {
-        final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        traversal.addStep(new StartStep<>(traversal, this));
-        return traversal.property(propertyKey);
+        return this.start().property(propertyKey);
     }
 
     public default <E2> Traversal<Vertex, E2> value(final String propertyKey) {
-        final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        traversal.addStep(new StartStep<>(traversal, this));
-        return traversal.value(propertyKey);
+        return this.start().value(propertyKey);
     }
 
     public default Traversal<Vertex, Vertex> with(final Object... variableValues) {
-        final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        traversal.addStep(new StartStep<>(traversal, this));
-        return traversal.with(variableValues);
+        return this.start().with(variableValues);
     }
 
     public default Traversal<Vertex, Vertex> sideEffect(final Consumer<Holder<Vertex>> consumer) {
-        final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        traversal.addStep(new StartStep<>(traversal, this));
-        return traversal.sideEffect(consumer);
+        return this.start().sideEffect(consumer);
     }
 
     public static class Exceptions {

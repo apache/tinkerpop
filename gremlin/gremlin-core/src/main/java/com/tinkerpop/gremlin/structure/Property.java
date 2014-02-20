@@ -21,7 +21,7 @@ public abstract interface Property<V> {
         }
 
         public static String hidden(final String key) {
-            return StringFactory.HIDDEN_PREFIX.concat(key);
+            return Graph.HIDDEN_PREFIX.concat(key);
         }
     }
 

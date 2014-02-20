@@ -50,7 +50,7 @@ public abstract class AnnotatedValuesTest extends AbstractGremlinTest {
     public static class JavaAnnotatedValuesTest extends AnnotatedValuesTest {
 
         public Iterator<AnnotatedValue<String>> get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X() {
-            return null; //g.v(1).annotatedValues("locations").interval("startTime", 2004, 2006);
+            return g.v(1).annotatedValues("locations").interval("startTime", 2004, 2006);
         }
 
         public Iterator<String> get_g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value() {

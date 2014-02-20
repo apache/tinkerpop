@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -122,6 +123,6 @@ public class TinkerHelper {
     }
 
     public static <V> Iterator<TinkerAnnotatedValue<V>> getAnnotatedValues(final TinkerAnnotatedList<V> annotatedList) {
-        return (Iterator) annotatedList.annotatedValues.iterator();
+        return (Iterator) new ArrayList<>(annotatedList.annotatedValues).iterator();
     }
 }
