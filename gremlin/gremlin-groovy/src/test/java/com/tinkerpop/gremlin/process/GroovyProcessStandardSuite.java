@@ -16,7 +16,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            GroovyDedupTest.class
+           // GroovyDedupTest.class
     };
 
 

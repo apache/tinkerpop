@@ -23,6 +23,6 @@ public class TinkerGraphComputerTest {
 
         System.out.println("----------");
 
-        g.V().pageRank(g).order((a, b) -> a.get().getValue1().compareTo(b.get().getValue1())).forEachRemaining(System.out::println);
+        g.V().pageRank(g).order((a, b) -> b.get().getValue1().compareTo(a.get().getValue1())).range(0,2).forEachRemaining(System.out::println);
     }
 }
