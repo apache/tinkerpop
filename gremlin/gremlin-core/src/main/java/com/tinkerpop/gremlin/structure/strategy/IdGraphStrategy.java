@@ -65,7 +65,7 @@ public class IdGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends Element> ctx) {
-        // if the property is not present then it's likely an internal call from the graph in which case,
+        // if the property is not present then it's likely an internal call from the graph on addVertex in which case,
         // the base implementation should be called
         return (f) -> () -> ctx.getCurrent().getProperty(idKey).orElse(f);
     }
