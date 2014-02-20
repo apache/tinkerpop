@@ -11,5 +11,7 @@ public interface Optimizers {
 
     public void register(final Optimizer optimizer);
 
+    public void unregister(final Class<? extends Optimizer> optimizerClass);
+
     public void doFinalOptimizers(final Traversal traversal);
 }
