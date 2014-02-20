@@ -19,10 +19,10 @@ public class TinkerGraphComputerTest {
 
         //g.V().has("name", "marko").out().value("name").submit(g.compute()).forEachRemaining(System.out::println);
 
-        g.V().pageRank(g).map(pair -> pair.get().getValue0()).value("name").path().submit(g.compute()).forEachRemaining(System.out::println);
+        g.V().pageRank().map(pair -> pair.get().getValue0()).value("name").path().submit(g.compute()).forEachRemaining(System.out::println);
 
         System.out.println("----------");
 
-        g.V().pageRank(g).order((a, b) -> b.get().getValue1().compareTo(a.get().getValue1())).range(0,2).forEachRemaining(System.out::println);
+        g.V().pageRank().order((a, b) -> b.get().getValue1().compareTo(a.get().getValue1())).range(0,2).forEachRemaining(System.out::println);
     }
 }

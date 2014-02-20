@@ -8,6 +8,15 @@ import java.util.function.Supplier;
  */
 public interface Memory {
 
+    public static class Variable {
+
+        private static final String HIDDEN_PREFIX = "%&%";
+
+        public static String hidden(final String key) {
+            return HIDDEN_PREFIX.concat(key);
+        }
+    }
+
     public <T> void set(final String variable, final T value);
 
     public <T> T get(final String variable);

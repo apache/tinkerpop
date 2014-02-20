@@ -556,8 +556,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     /////////////////////////////////////
 
-    public default Traversal<S, Pair<Vertex, Double>> pageRank(final Graph graph) {
-        return this.addStep(new PageRankStep(this, graph));
+    public default Traversal<S, Pair<Vertex, Double>> pageRank() {
+        return this.addStep(new PageRankStep(this));
     }
 
 }

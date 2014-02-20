@@ -1,5 +1,6 @@
 package com.tinkerpop.tinkergraph;
 
+import com.tinkerpop.gremlin.process.Memory;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.steps.map.StartStep;
@@ -142,6 +143,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     public Traversal<Vertex, Vertex> V() {
         Traversal traversal = new DefaultTraversal<Object, Vertex>();
+        traversal.memory().set(Memory.Variable.hidden("g"),this);
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
         traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         return traversal;

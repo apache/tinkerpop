@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.olap.ranking;
 
 import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Memory;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.gremlin.process.steps.AbstractStep;
@@ -16,16 +17,22 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
     private final Graph graph;
     private boolean firstCall = true;
     private ComputeResult result;
+    public double alpha;
 
-    public PageRankStep(final Traversal traversal, final Graph graph) {
+    public PageRankStep(final Traversal traversal, final double alpha) {
         super(traversal);
-        this.graph = graph;
+        this.graph = traversal.memory().get(Memory.Variable.hidden("g"));
+        this.alpha = alpha;
+    }
+
+    public PageRankStep(final Traversal traversal) {
+        this(traversal, 0.85d);
     }
 
     public Holder<Pair<Vertex, Double>> processNextStart() {
         try {
             if (this.firstCall) {
-                this.result = this.graph.compute().program(PageRankVertexProgram.create().build()).submit().get();
+                this.result = this.graph.compute().program(PageRankVertexProgram.create().alpha(this.alpha).build()).submit().get();
                 this.firstCall = false;
             }
         } catch (Exception e) {
