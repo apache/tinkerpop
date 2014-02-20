@@ -116,6 +116,10 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
+    public default UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends Element> ctx) {
+        return UnaryOperator.identity();
+    }
+
     /**
      * Construct a {@link java.util.function.BiConsumer} that enhances the features of
      * {@link com.tinkerpop.gremlin.structure.Graph.Annotations#set(String, Object)}.

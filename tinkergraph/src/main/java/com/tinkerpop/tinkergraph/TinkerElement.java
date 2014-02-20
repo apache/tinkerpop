@@ -38,7 +38,9 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public String getId() {
-        return this.id;
+        return this.graph.strategy.compose(
+                s -> s.getElementGetId(elementStrategyContext),
+                () -> this.id).get().toString();
     }
 
     public String getLabel() {
