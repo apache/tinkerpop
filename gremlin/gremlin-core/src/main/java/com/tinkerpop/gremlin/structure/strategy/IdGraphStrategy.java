@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,21 +44,12 @@ public class IdGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<Graph> ctx) {
-        return (f) -> (keyValues) -> {
-            final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
-            if (supportsVertexId) {
-                final Object val = ElementHelper.getIdValue(keyValues).orElse(vertexIdSupplier.get());
-                final int pos = o.indexOf(Element.ID);
-                if (pos > -1) {
-                    o.remove(pos);
-                    o.remove(pos);
-                }
+        return (f) -> (keyValues) -> f.apply(this.injectId(supportsVertexId, keyValues, vertexIdSupplier).toArray());
+    }
 
-                o.addAll(Arrays.asList(this.idKey, val));
-            }
-
-            return f.apply(o.toArray());
-        };
+    @Override
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<Vertex> ctx) {
+        return (f) -> (label, v, keyValues) -> f.apply(label, v, this.injectId(supportsEdgeId, keyValues, edgeIdSupplier).toArray());
     }
 
     @Override
@@ -80,6 +72,22 @@ public class IdGraphStrategy implements GraphStrategy {
         // if the property is not present then it's likely an internal call from the graph on addVertex in which case,
         // the base implementation should be called
         return (f) -> () -> ctx.getCurrent().getProperty(idKey).orElse(f.get());
+    }
+
+    private List<Object> injectId(final boolean supports, final Object[] keyValues, final Supplier<?> idMaker) {
+        final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
+        if (supports) {
+            final Object val = ElementHelper.getIdValue(keyValues).orElse(idMaker.get());
+            final int pos = o.indexOf(Element.ID);
+            if (pos > -1) {
+                o.remove(pos);
+                o.remove(pos);
+            }
+
+            o.addAll(Arrays.asList(this.idKey, val));
+        }
+
+        return o;
     }
 
     public static final class Builder {
