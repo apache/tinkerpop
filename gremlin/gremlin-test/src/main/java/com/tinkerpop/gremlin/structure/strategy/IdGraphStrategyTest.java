@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -34,9 +35,8 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-        public void shouldInjectAnIdAndReturnBySpecifiedId() {
+        public void shouldInjectAnIdAndReturnBySpecifiedIdForVertex() {
             final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
-
             tryCommit(g, c -> {
                 assertNotNull(v);
                 assertEquals("test", v.getProperty(Property.Key.hidden(idKey)).get());
@@ -47,6 +47,24 @@ public class IdGraphStrategyTest {
                 assertEquals("test", found.getProperty(Property.Key.hidden(idKey)).get());
                 assertEquals("else", found.getProperty("something").get());
 
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        public void shouldInjectAnIdAndReturnBySpecifiedIdForEdge() {
+            final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
+            final Edge e = v.addEdge("self", v, Element.ID, "edge-id", "try", "this");
+            tryCommit(g, c -> {
+                assertNotNull(e);
+                assertEquals("edge-id", e.getProperty(Property.Key.hidden(idKey)).get());
+                assertEquals("this", e.getProperty("try").get());
+
+                final Edge found = g.e("edge-id");
+                assertEquals(e, found);
+                assertEquals("edge-id", found.getProperty(Property.Key.hidden(idKey)).get());
+                assertEquals("this", found.getProperty("try").get());
             });
         }
 
