@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.structure.util.AnnotatedValueHelper;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Optional;
 import java.util.Set;
@@ -17,10 +18,8 @@ public interface AnnotatedValue<V> {
         private Key() {
         }
 
-        private static final String HIDDEN_PREFIX = "%&%";
-
         public static String hidden(final String key) {
-            return HIDDEN_PREFIX.concat(key);
+            return StringFactory.HIDDEN_PREFIX.concat(key);
         }
     }
 

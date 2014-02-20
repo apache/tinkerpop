@@ -1,9 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.structure.query.AnnotatedListQuery;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
-
-import java.util.concurrent.atomic.AtomicReference;
+import com.tinkerpop.gremlin.process.Traversal;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -12,23 +9,27 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public interface AnnotatedList<V> {
 
-    public static final Object MAKE = new Object();
+    public static final MakeObject MAKE = new MakeObject();
 
     public AnnotatedValue<V> addValue(final V value, final Object... annotationKeyValues);
 
-    public AnnotatedListQuery<V> query();
+    public Traversal<AnnotatedList<V>, AnnotatedValue<V>> annotatedValues();
 
-    public default AnnotatedValue<V> get(final int index) {
-        final AtomicReference<AnnotatedValue<V>> value = new AtomicReference<>();
-        StreamFactory.stream(this.query().limit(index + 1).annotatedValues()).forEach(value::set);
-        return value.get();
-    }
-
-    public default AnnotatedValue<V> get(final V value) {
-        return StreamFactory.stream(this.query().annotatedValues()).filter(av -> av.getValue().equals(value)).findFirst().get();
+    public default Traversal<AnnotatedList<V>, V> values() {
+        return this.annotatedValues().value();
     }
 
     public static Object make() {
         return MAKE;
+    }
+
+    public static final class MakeObject {
+
+        private MakeObject() {
+        }
+
+        public boolean equals(final Object object) {
+            return object instanceof MakeObject;
+        }
     }
 }

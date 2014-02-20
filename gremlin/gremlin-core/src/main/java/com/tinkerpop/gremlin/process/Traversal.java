@@ -11,12 +11,11 @@ import com.tinkerpop.gremlin.process.steps.filter.IntervalStep;
 import com.tinkerpop.gremlin.process.steps.filter.RangeStep;
 import com.tinkerpop.gremlin.process.steps.filter.RetainStep;
 import com.tinkerpop.gremlin.process.steps.filter.SimplePathStep;
-import com.tinkerpop.gremlin.process.steps.map.AnnotatedListQueryStep;
-import com.tinkerpop.gremlin.process.steps.map.AnnotatedValueAnnotationValueStep;
-import com.tinkerpop.gremlin.process.steps.map.AnnotationsStep;
+import com.tinkerpop.gremlin.process.steps.map.AnnotatedValueStep;
+import com.tinkerpop.gremlin.process.steps.map.AnnotationValueStep;
+import com.tinkerpop.gremlin.process.steps.map.AnnotationValuesStep;
 import com.tinkerpop.gremlin.process.steps.map.BackStep;
 import com.tinkerpop.gremlin.process.steps.map.EdgeVertexStep;
-import com.tinkerpop.gremlin.process.steps.map.ElementPropertyValueStep;
 import com.tinkerpop.gremlin.process.steps.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.steps.map.IdentityStep;
 import com.tinkerpop.gremlin.process.steps.map.IntersectStep;
@@ -26,6 +25,7 @@ import com.tinkerpop.gremlin.process.steps.map.MatchStep;
 import com.tinkerpop.gremlin.process.steps.map.OrderStep;
 import com.tinkerpop.gremlin.process.steps.map.PathStep;
 import com.tinkerpop.gremlin.process.steps.map.PropertyStep;
+import com.tinkerpop.gremlin.process.steps.map.PropertyValueStep;
 import com.tinkerpop.gremlin.process.steps.map.PropertyValuesStep;
 import com.tinkerpop.gremlin.process.steps.map.SelectStep;
 import com.tinkerpop.gremlin.process.steps.map.ShuffleStep;
@@ -51,7 +51,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.util.AnnotatedListQueryBuilder;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import org.javatuples.Pair;
 
@@ -109,11 +108,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default <E2> Traversal<S, E2> annotation(final String annotationKey) {
-        return this.addStep(new AnnotatedValueAnnotationValueStep<>(this, annotationKey));
+        return this.addStep(new AnnotationValueStep<>(this, annotationKey));
     }
 
     public default Traversal<S, Map<String, Object>> annotations(final String... annotationKeys) {
-        return this.addStep(new AnnotationsStep(this, annotationKeys));
+        return this.addStep(new AnnotationValuesStep(this, annotationKeys));
     }
 
     public default Traversal<S, Vertex> out(final int branchFactor, final String... labels) {
@@ -197,19 +196,19 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     public default <E2> Traversal<S, E2> value(final String propertyKey) {
-        return this.addStep(new ElementPropertyValueStep<>(this, propertyKey));
+        return this.addStep(new PropertyValueStep<>(this, propertyKey));
     }
 
     public default <E2> Traversal<S, E2> value(final String propertyKey, final E2 defaultValue) {
-        return this.addStep(new ElementPropertyValueStep<>(this, propertyKey, defaultValue));
+        return this.addStep(new PropertyValueStep<>(this, propertyKey, defaultValue));
     }
 
     public default <E2> Traversal<S, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return this.addStep(new ElementPropertyValueStep<>(this, propertyKey, defaultSupplier));
+        return this.addStep(new PropertyValueStep<>(this, propertyKey, defaultSupplier));
     }
 
     public default <E2> Traversal<S, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-        return this.addStep(new AnnotatedListQueryStep<>(this, propertyKey, new AnnotatedListQueryBuilder()));
+        return this.addStep(new AnnotatedValueStep<>(this, propertyKey));
     }
 
     public default Traversal<S, Map<String, Object>> values(final String... propertyKeys) {

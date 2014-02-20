@@ -9,13 +9,13 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ElementPropertyValueStep<E> extends MapStep<Element, E> {
+public class PropertyValueStep<E> extends MapStep<Element, E> {
 
     public String key;
     public Optional<E> defaultValue;
     public Optional<Supplier<E>> defaultSupplier;
 
-    public ElementPropertyValueStep(final Traversal traversal, final String key) {
+    public PropertyValueStep(final Traversal traversal, final String key) {
         super(traversal);
         this.key = key;
         this.defaultValue = Optional.empty();
@@ -23,7 +23,7 @@ public class ElementPropertyValueStep<E> extends MapStep<Element, E> {
         this.setFunction(holder -> holder.get().<E>getProperty(key).orElse((E) NO_OBJECT));
     }
 
-    public ElementPropertyValueStep(final Traversal traversal, final String key, final E defaultValue) {
+    public PropertyValueStep(final Traversal traversal, final String key, final E defaultValue) {
         super(traversal);
         this.key = key;
         this.defaultValue = Optional.of(defaultValue);
@@ -31,7 +31,7 @@ public class ElementPropertyValueStep<E> extends MapStep<Element, E> {
         this.setFunction(holder -> holder.get().<E>getProperty(key).orElse(this.defaultValue.get()));
     }
 
-    public ElementPropertyValueStep(final Traversal traversal, final String key, final Supplier<E> defaultSupplier) {
+    public PropertyValueStep(final Traversal traversal, final String key, final Supplier<E> defaultSupplier) {
         super(traversal);
         this.key = key;
         this.defaultValue = Optional.empty();

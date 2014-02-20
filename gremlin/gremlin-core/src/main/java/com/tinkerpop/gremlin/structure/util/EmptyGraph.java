@@ -31,11 +31,6 @@ public class EmptyGraph implements Graph {
         return EmptyTraversal.instance();
     }
 
-    @Override
-    public <S, E> Traversal<S, E> traversal(final Object start) {
-        return EmptyTraversal.instance();
-    }
-
     public static Graph instance() {
         return INSTANCE;
     }

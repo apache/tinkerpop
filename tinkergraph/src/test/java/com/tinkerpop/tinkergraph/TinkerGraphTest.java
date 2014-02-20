@@ -4,8 +4,6 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
-import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -64,7 +62,7 @@ public class TinkerGraphTest {
 
         System.out.println(g.V().out().getSteps());
         Traversal t = g.V().out();
-        TraversalHelper.removeStep((Step)t.getSteps().get(1),t);
+        TraversalHelper.removeStep((Step) t.getSteps().get(1), t);
         System.out.println(t);
         System.out.println(((Step) t.getSteps().get(0)).getNextStep());
         System.out.println(((Step) t.getSteps().get(0)).getPreviousStep());
@@ -81,10 +79,10 @@ public class TinkerGraphTest {
         names.get().addValue("mrodriguez", "time", 7);
         System.out.println(names);
         System.out.println("-------");
-        names.get().query().has("time", 2).values().forEach(System.out::println);
+        names.get().annotatedValues().has("time", 1).value().forEach(System.out::println);
         System.out.println("-------");
-        names.get().query().has("time", 1).annotatedValues().forEach(a -> a.remove());
-        names.get().query().values().forEach(System.out::println);
+        //names.get().annotatedValues().has("time", 1).forEach(a -> a.remove());
+        //names.get().annotatedValues().values().forEach(System.out::println);
     }
 
     @Test

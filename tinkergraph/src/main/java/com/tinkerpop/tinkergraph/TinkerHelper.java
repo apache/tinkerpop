@@ -120,4 +120,8 @@ public class TinkerHelper {
             return vertices;
         }
     }
+
+    public static <V> Iterator<TinkerAnnotatedValue<V>> getAnnotatedValues(final TinkerAnnotatedList<V> annotatedList) {
+        return (Iterator) annotatedList.annotatedValues.iterator();
+    }
 }

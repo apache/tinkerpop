@@ -25,6 +25,9 @@ public interface Step<S, E> extends Iterator<Holder<E>>, Serializable {
 
     public static final class NoObject {
 
+        private NoObject() {
+        }
+
         public boolean equals(final Object object) {
             return object instanceof NoObject;
         }

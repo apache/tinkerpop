@@ -20,10 +20,8 @@ public abstract interface Property<V> {
         private Key() {
         }
 
-        private static final String HIDDEN_PREFIX = "%&%";
-
         public static String hidden(final String key) {
-            return HIDDEN_PREFIX.concat(key);
+            return StringFactory.HIDDEN_PREFIX.concat(key);
         }
     }
 

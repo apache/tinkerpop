@@ -32,6 +32,8 @@ public class StringFactory {
     private static final String DASH = "-";
     private static final String ARROW = "->";
     private static final String EMPTY_PROPERTY = "p[empty]";
+    public static final String HIDDEN_PREFIX = "%&%";
+
 
     /**
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Vertex}.
@@ -68,7 +70,7 @@ public class StringFactory {
      */
     public static String annotatedListString(final AnnotatedList<?> annotatedList) {
         final StringBuilder builder = new StringBuilder(L_BRACKET);
-        annotatedList.query().limit(2).values().forEach(v -> builder.append(v).append(COMMA_SPACE));
+        annotatedList.values().range(0,1).forEach(v -> builder.append(v).append(COMMA_SPACE));
         if (builder.length() > 1)
             builder.append(DOTS);
         builder.append(R_BRACKET);

@@ -1,7 +1,7 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.process.olap.GraphSystemMemory;
+import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
 import java.util.Set;
@@ -86,7 +86,7 @@ public class TinkerGraphMemory implements GraphSystemMemory {
 
     public void setIfAbsent(final String variable, final Object value) {
         if (this.memory.containsKey(variable))
-            throw new IllegalStateException("The memory already has the a value for key " + variable);
+            throw new IllegalStateException("The memory already has a value for key " + variable);
         this.memory.put(variable, value);
     }
 

@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
@@ -48,8 +49,6 @@ public interface Graph extends AutoCloseable {
 
     public Traversal<Edge, Edge> E();
 
-    public <S, E> Traversal<S, E> traversal(final Object start);
-
     public GraphComputer compute();
 
     public Transaction tx();
@@ -66,10 +65,8 @@ public interface Graph extends AutoCloseable {
 
             }
 
-            private static final String HIDDEN_PREFIX = "%&%";
-
             public static String hidden(final String key) {
-                return HIDDEN_PREFIX.concat(key);
+                return StringFactory.HIDDEN_PREFIX.concat(key);
             }
         }
 
@@ -82,11 +79,11 @@ public interface Graph extends AutoCloseable {
         /**
          * Get the annotations for the {@link Graph} as a immutable {@link Map}.
          */
-        public default Map<String,Object> getAnnotations() {
-            final Map<String,Object> map = getKeys().stream()
-                    .map(key -> Pair.<String,Optional>with(key, get(key)))
+        public default Map<String, Object> getAnnotations() {
+            final Map<String, Object> map = getKeys().stream()
+                    .map(key -> Pair.<String, Optional>with(key, get(key)))
                     .filter(kv -> kv.getValue1().isPresent())
-                    .map(kv -> Pair.<String,Object>with(kv.getValue0(), kv.getValue1().get()))
+                    .map(kv -> Pair.<String, Object>with(kv.getValue0(), kv.getValue1().get()))
                     .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
             return Collections.unmodifiableMap(map);
         }

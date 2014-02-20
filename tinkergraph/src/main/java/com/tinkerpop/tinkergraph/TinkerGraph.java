@@ -3,7 +3,6 @@ package com.tinkerpop.tinkergraph;
 import com.tinkerpop.gremlin.process.Memory;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.steps.map.StartStep;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -143,7 +142,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     public Traversal<Vertex, Vertex> V() {
         Traversal traversal = new DefaultTraversal<Object, Vertex>();
-        traversal.memory().set(Memory.Variable.hidden("g"),this);
+        traversal.memory().set(Memory.Variable.hidden("g"), this);    // TODO: is this good?
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
         traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         return traversal;
@@ -153,12 +152,6 @@ public class TinkerGraph implements Graph, Serializable {
         Traversal traversal = new DefaultTraversal<Object, Edge>();
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
         traversal.addStep(new TinkerGraphStep(traversal, Edge.class, this));
-        return traversal;
-    }
-
-    public <S, E> Traversal<S, E> traversal(final Object start) {
-        Traversal traversal = new DefaultTraversal<S, E>();
-        traversal.addStep(new StartStep(traversal, start));
         return traversal;
     }
 

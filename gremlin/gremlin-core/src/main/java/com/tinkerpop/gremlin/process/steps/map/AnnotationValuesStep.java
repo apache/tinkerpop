@@ -9,9 +9,9 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AnnotationsStep extends MapStep<AnnotatedValue, Map<String, Object>> {
+public class AnnotationValuesStep extends MapStep<AnnotatedValue, Map<String, Object>> {
 
-    public AnnotationsStep(final Traversal traversal, final String... annotationKeyValues) {
+    public AnnotationValuesStep(final Traversal traversal, final String... annotationKeyValues) {
         super(traversal, holder -> AnnotatedValueHelper.annotationMap(holder.get(), annotationKeyValues));
     }
 }

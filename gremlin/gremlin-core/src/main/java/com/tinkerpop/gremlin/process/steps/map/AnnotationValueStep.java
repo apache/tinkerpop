@@ -8,11 +8,11 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AnnotatedValueAnnotationValueStep<E> extends MapStep<AnnotatedValue, E> {
+public class AnnotationValueStep<E> extends MapStep<AnnotatedValue, E> {
 
     public String annotationKey;
 
-    public AnnotatedValueAnnotationValueStep(final Traversal traversal, final String annotationKey) {
+    public AnnotationValueStep(final Traversal traversal, final String annotationKey) {
         super(traversal);
         this.annotationKey = annotationKey;
         this.setFunction(holder -> {
