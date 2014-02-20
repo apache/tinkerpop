@@ -77,6 +77,14 @@ public class IdGraphStrategy implements GraphStrategy {
         return this.idKey;
     }
 
+    public boolean isSupportsVertexId() {
+        return supportsVertexId;
+    }
+
+    public boolean isSupportsEdgeId() {
+        return supportsEdgeId;
+    }
+
     private List<Object> injectId(final boolean supports, final Object[] keyValues, final Supplier<?> idMaker) {
         final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
         if (supports) {
