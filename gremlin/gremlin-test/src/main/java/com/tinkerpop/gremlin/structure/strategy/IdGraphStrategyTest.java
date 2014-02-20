@@ -16,6 +16,7 @@ import java.util.UUID;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -90,6 +91,39 @@ public class IdGraphStrategyTest {
                 final Vertex found = g.v("100");
                 assertEquals(v, found);
                 assertEquals("100", found.getProperty(Property.Key.hidden(idKey)).get());
+                assertEquals("else", found.getProperty("something").get());
+
+            });
+        }
+    }
+
+    public static class VertexIdNotSupportedIdGraphStrategyTest extends AbstractGremlinTest {
+        public VertexIdNotSupportedIdGraphStrategyTest() {
+            super(Optional.of(new IdGraphStrategy.Builder(idKey)
+                    .supportsVertexId(false).build()));
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        public void shouldInjectAnIdAndReturnBySpecifiedId() {
+            final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
+
+            tryCommit(g, c -> {
+                assertNotNull(v);
+
+                if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                    assertEquals("test", v.getId());
+
+                assertFalse(v.getProperty(Property.Key.hidden(idKey)).isPresent());
+                assertEquals("else", v.getProperty("something").get());
+
+                final Vertex found = g.v("test");
+                assertEquals(v, found);
+                if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                    assertEquals("test", v.getId());
+
+                assertFalse(v.getProperty(Property.Key.hidden(idKey)).isPresent());
                 assertEquals("else", found.getProperty("something").get());
 
             });

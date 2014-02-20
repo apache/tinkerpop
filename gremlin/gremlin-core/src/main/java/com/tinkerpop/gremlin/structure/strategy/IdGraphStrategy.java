@@ -26,27 +26,36 @@ public class IdGraphStrategy implements GraphStrategy {
     private final Supplier<?> edgeIdSupplier;
     private final Supplier<?> vertexIdSupplier;
 
+    private final boolean supportsVertexId;
+    private final boolean supportsEdgeId;
+
     private IdGraphStrategy(final String idKey, final Supplier<?> vertexIdSupplier,
-                            final Supplier<?> edgeIdSupplier) {
+                            final Supplier<?> edgeIdSupplier, final boolean supportsVertexId,
+                            final boolean supportsEdgeId) {
         // assumes this is an indexed key.
         this.idKey = Property.Key.hidden(idKey);
 
         this.edgeIdSupplier = edgeIdSupplier;
         this.vertexIdSupplier = vertexIdSupplier;
+        this.supportsEdgeId = supportsEdgeId;
+        this.supportsVertexId = supportsVertexId;
     }
 
     @Override
     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<Graph> ctx) {
         return (f) -> (keyValues) -> {
             final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
-            final Object val = ElementHelper.getIdValue(keyValues).orElse(vertexIdSupplier.get());
-            final int pos = o.indexOf(Element.ID);
-            if (pos > -1) {
-                o.remove(pos);
-                o.remove(pos);
+            if (supportsVertexId) {
+                final Object val = ElementHelper.getIdValue(keyValues).orElse(vertexIdSupplier.get());
+                final int pos = o.indexOf(Element.ID);
+                if (pos > -1) {
+                    o.remove(pos);
+                    o.remove(pos);
+                }
+
+                o.addAll(Arrays.asList(this.idKey, val));
             }
 
-            o.addAll(Arrays.asList(this.idKey, val));
             return f.apply(o.toArray());
         };
     }
@@ -54,7 +63,10 @@ public class IdGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<Graph> ctx) {
         // don't apply f because the implementation needs to be highjacked by the Strategy
-        return (f) -> (id) -> (Vertex) ctx.getGraph().V().has(idKey, id).next();
+        if (supportsVertexId)
+            return (f) -> (id) -> (Vertex) ctx.getGraph().V().has(idKey, id).next();
+        else
+            return UnaryOperator.identity();
     }
 
     @Override
@@ -67,22 +79,30 @@ public class IdGraphStrategy implements GraphStrategy {
     public UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends Element> ctx) {
         // if the property is not present then it's likely an internal call from the graph on addVertex in which case,
         // the base implementation should be called
-        return (f) -> () -> ctx.getCurrent().getProperty(idKey).orElse(f);
+        return (f) -> () -> ctx.getCurrent().getProperty(idKey).orElse(f.get());
     }
 
     public static final class Builder {
         private final String idKey;
         private Supplier<?> vertexIdSupplier;
         private Supplier<?> edgeIdSupplier;
+        private boolean supportsVertexId;
+        private boolean supportsEdgeId;
 
         public Builder(final String idKey) {
             this.idKey = idKey;
             this.edgeIdSupplier = this::supplyStringId;
             this.vertexIdSupplier = this::supplyStringId;
+            this.supportsEdgeId = true;
+            this.supportsVertexId = true;
         }
 
         public IdGraphStrategy build() {
-            return new IdGraphStrategy(this.idKey, this.vertexIdSupplier, this.edgeIdSupplier);
+            if (!this.supportsEdgeId && !this.supportsVertexId)
+                throw new IllegalStateException("Since supportsEdgeId and supportsVertexId are false, there is no need to use IdGraphStrategy");
+
+            return new IdGraphStrategy(this.idKey, this.vertexIdSupplier, this.edgeIdSupplier,
+                    this.supportsVertexId, this.supportsEdgeId);
         }
 
         public Builder vertexIdMaker(final Supplier<?> vertexIdSupplier) {
@@ -98,6 +118,16 @@ public class IdGraphStrategy implements GraphStrategy {
                 throw new IllegalArgumentException("edgeIdSupplier");
 
             this.edgeIdSupplier = edgeIdSupplier;
+            return this;
+        }
+
+        public Builder supportsEdgeId(final boolean supports) {
+            this.supportsEdgeId = supports;
+            return this;
+        }
+
+        public Builder supportsVertexId(final boolean supports) {
+            this.supportsVertexId = supports;
             return this;
         }
 
