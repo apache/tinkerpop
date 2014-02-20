@@ -92,12 +92,6 @@ public class TraversalHelper {
             if (i == steps.size() - 1)
                 steps.get(i).setNextStep(EmptyStep.instance());
         }
-        /*final int index = steps.indexOf(step);
-        if (index - 1 >= 0 && index + 1 < steps.size()) {
-            steps.get(index - 1).setNextStep(steps.get(index + 1));
-            steps.get(index + 1).setPreviousStep(steps.get(index - 1));
-        }
-        steps.remove(index);*/
     }
 
     public static void insertStep(final Step step, final int index, final Traversal traversal) {

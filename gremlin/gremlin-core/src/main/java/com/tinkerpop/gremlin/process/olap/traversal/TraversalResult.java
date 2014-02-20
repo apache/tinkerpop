@@ -3,15 +3,13 @@ package com.tinkerpop.gremlin.process.olap.traversal;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.olap.GraphMemory;
-import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.MicroPath;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;

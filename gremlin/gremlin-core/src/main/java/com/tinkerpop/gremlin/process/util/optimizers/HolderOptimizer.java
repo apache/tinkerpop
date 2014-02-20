@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.steps.util.optimizers;
+package com.tinkerpop.gremlin.process.util.optimizers;
 
 import com.tinkerpop.gremlin.process.Optimizer;
 import com.tinkerpop.gremlin.process.Traversal;

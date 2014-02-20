@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
 import com.tinkerpop.gremlin.process.steps.map.GraphStep;
-import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 

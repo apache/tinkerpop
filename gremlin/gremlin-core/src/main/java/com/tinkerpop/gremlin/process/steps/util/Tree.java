@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.steps.util.structures;
+package com.tinkerpop.gremlin.process.steps.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;

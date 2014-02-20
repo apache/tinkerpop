@@ -18,6 +18,8 @@ import java.util.NoSuchElementException;
 public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
+    private static final Memory MEMORY = new DefaultMemory();         // TODO: make "empty memory?"
+    private static final Optimizers OPTIMIZERS = new DefaultOptimizers();   // TODO: make "empty optimizers?"
 
     public static EmptyTraversal instance() {
         return INSTANCE;
@@ -32,11 +34,11 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     }
 
     public Memory memory() {
-        return null;
+        return MEMORY;
     }
 
     public Optimizers optimizers() {
-        return null;
+        return OPTIMIZERS;
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {

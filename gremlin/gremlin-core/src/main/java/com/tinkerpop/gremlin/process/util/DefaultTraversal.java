@@ -6,9 +6,9 @@ import com.tinkerpop.gremlin.process.Optimizers;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.steps.util.optimizers.DedupOptimizer;
-import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
-import com.tinkerpop.gremlin.process.steps.util.optimizers.IdentityOptimizer;
+import com.tinkerpop.gremlin.process.util.optimizers.DedupOptimizer;
+import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.util.optimizers.IdentityOptimizer;
 
 import java.util.ArrayList;
 import java.util.Iterator;

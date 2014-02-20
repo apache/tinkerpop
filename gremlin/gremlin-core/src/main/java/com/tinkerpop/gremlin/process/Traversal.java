@@ -39,8 +39,8 @@ import com.tinkerpop.gremlin.process.steps.sideEffect.LinkStep;
 import com.tinkerpop.gremlin.process.steps.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.steps.util.FunctionRing;
 import com.tinkerpop.gremlin.process.steps.util.MapHelper;
-import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
-import com.tinkerpop.gremlin.process.steps.util.structures.Tree;
+import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.steps.util.Tree;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
@@ -113,6 +113,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal<S, Map<String, Object>> annotations(final String... annotationKeys) {
         return this.addStep(new AnnotationValuesStep(this, annotationKeys));
+    }
+
+    public default <E2> Traversal<S, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
+        return this.addStep(new AnnotatedValueStep<>(this, propertyKey));
     }
 
     public default Traversal<S, Vertex> out(final int branchFactor, final String... labels) {
@@ -205,10 +209,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default <E2> Traversal<S, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
         return this.addStep(new PropertyValueStep<>(this, propertyKey, defaultSupplier));
-    }
-
-    public default <E2> Traversal<S, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-        return this.addStep(new AnnotatedValueStep<>(this, propertyKey));
     }
 
     public default Traversal<S, Map<String, Object>> values(final String... propertyKeys) {
