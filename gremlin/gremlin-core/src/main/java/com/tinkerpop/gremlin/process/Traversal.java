@@ -40,6 +40,7 @@ import com.tinkerpop.gremlin.process.steps.util.FunctionRing;
 import com.tinkerpop.gremlin.process.steps.util.MapHelper;
 import com.tinkerpop.gremlin.process.steps.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.steps.util.structures.Tree;
+import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -54,9 +55,6 @@ import com.tinkerpop.gremlin.structure.query.util.AnnotatedListQueryBuilder;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import org.javatuples.Pair;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,6 +87,12 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     public List<Step> getSteps();
 
     public Iterator<E> submit(final TraversalEngine engine);
+
+    public static <S, E> Traversal<S, E> of() {
+        Traversal<S,E> traversal =  new DefaultTraversal<>();
+        traversal.addStep(new IdentityStep(traversal));
+        return traversal;
+    }
 
     ///////////////////// TRANSFORM STEPS /////////////////////
 
@@ -548,18 +552,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             this.memory().set((String) variableValues[i], variableValues[i + 1]);
         }
         return this;
-    }
-
-    public default byte[] submit() {
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            final ObjectOutputStream out = new ObjectOutputStream(bos);
-            out.writeObject(this);
-            out.close();
-            return bos.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
     }
 
     /////////////////////////////////////

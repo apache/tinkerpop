@@ -14,11 +14,15 @@ public class TinkerGraphComputerTest {
         Graph g = TinkerFactory.createClassic();
         //ComputeResult result = g.compute().program(TraversalVertexProgram.create().gremlin(() -> g.V().outE()).build()).submit().get();
         //g.V().has("name", "marko").out().value("name").forEach(System.out::println);
-        System.out.println("----------" + g.V().has("name", "marko").out().value("name"));
+        System.out.println("----------");
         //new TraversalResult<>(g, () -> g.V().out().value("name")).forEachRemaining(System.out::println);
 
         //g.V().has("name", "marko").out().value("name").submit(g.compute()).forEachRemaining(System.out::println);
 
         g.V().pageRank(g).map(pair -> pair.get().getValue0()).value("name").path().submit(g.compute()).forEachRemaining(System.out::println);
+
+        System.out.println("----------");
+
+        g.V().pageRank(g).order((a, b) -> a.get().getValue1().compareTo(b.get().getValue1())).forEachRemaining(System.out::println);
     }
 }
