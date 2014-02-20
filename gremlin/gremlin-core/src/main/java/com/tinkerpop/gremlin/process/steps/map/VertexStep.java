@@ -15,12 +15,14 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> {
     public String[] labels;
     public Direction direction;
     public int branchFactor;
+    //public Class<E> returnClass;
 
     public VertexStep(final Traversal traversal, final Class<E> returnClass, final Direction direction, final int branchFactor, final String... labels) {
         super(traversal);
         this.direction = direction;
         this.labels = labels;
         this.branchFactor = branchFactor;
+        //this.returnClass = returnClass;
         if (Vertex.class.isAssignableFrom(returnClass)) {
             this.setFunction(holder -> {
                 if (this.direction.equals(Direction.OUT)) {
