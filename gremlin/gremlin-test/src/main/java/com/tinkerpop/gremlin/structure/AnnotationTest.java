@@ -267,7 +267,7 @@ public class AnnotationTest {
                 tryCommit(g, graph -> assertEquals(value, annotations.get("key").get()));
         }
 
-        /*@Test
+        @Test
         public void shouldSetValueOnVertex() throws Exception {
             assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(true));
             final Vertex v = g.addVertex();
@@ -278,13 +278,13 @@ public class AnnotationTest {
             final AnnotatedList al = v.getValue("key");
             if (value instanceof Map)
                 tryCommit(g, graph -> {
-                    final Map map = (Map) al.annotatedValues().range(0,0).getAnnotation("k").get();
+                    final Map map = (Map) al.annotatedValues().annotation("k").next();
                     assertEquals(((Map) value).size(), map.size());
                     ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
                 });
             else if (value instanceof List)
                 tryCommit(g, graph -> {
-                    final List l = (List) al.get(0).getAnnotation("k").get();
+                    final List l = (List) al.annotatedValues().annotation("k").next();
                     assertEquals(((List) value).size(), l.size());
                     for (int ix = 0; ix < ((List) value).size(); ix++) {
                         assertEquals(((List) value).get(ix), l.get(ix));
@@ -292,14 +292,14 @@ public class AnnotationTest {
                 });
             else if (value instanceof MockSerializable)
                 tryCommit(g, graph -> {
-                    final MockSerializable mock = (MockSerializable) al.get(0).getAnnotation("k").get();
+                    final MockSerializable mock = (MockSerializable) al.annotatedValues().annotation("k").next();
                     assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
                 });
             else {
-                final Object o = al.get(0).getAnnotation("k").get();
+                final Object o = al.annotatedValues().annotation("k").next();
                 tryCommit(g, graph->assertEquals(value, o));
             }
-        }*/
+        }
     }
 
     private static class MockSerializable implements Serializable {
