@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -52,6 +53,7 @@ public class IdGraphStrategyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldInjectAnIdAndReturnBySpecifiedIdForEdge() {
             final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
@@ -89,6 +91,7 @@ public class IdGraphStrategyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldCreateAnIdAndReturnByCreatedIdForEdge() {
             final Vertex v = g.addVertex("something", "else");
@@ -139,6 +142,7 @@ public class IdGraphStrategyTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldCreateAnIdAndReturnByCreatedId() {
             final Vertex v = g.addVertex("something", "else");
@@ -165,29 +169,52 @@ public class IdGraphStrategyTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
             final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
 
             tryCommit(g, c -> {
                 assertNotNull(v);
-
-                if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                    assertEquals("test", v.getId());
-
+                assertEquals("test", v.getId());
                 assertFalse(v.getProperty(Property.Key.hidden(idKey)).isPresent());
                 assertEquals("else", v.getProperty("something").get());
 
                 final Vertex found = g.v("test");
                 assertEquals(v, found);
-                if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                    assertEquals("test", v.getId());
-
-                assertFalse(v.getProperty(Property.Key.hidden(idKey)).isPresent());
+                assertEquals("test", found.getId());
+                assertFalse(found.getProperty(Property.Key.hidden(idKey)).isPresent());
                 assertEquals("else", found.getProperty("something").get());
 
             });
         }
     }
 
-    // todo: test edge creation still
+    public static class EdgeIdNotSupportedIdGraphStrategyTest extends AbstractGremlinTest {
+        public EdgeIdNotSupportedIdGraphStrategyTest() {
+            super(Optional.of(new IdGraphStrategy.Builder(idKey)
+                    .supportsEdgeId(false).build()));
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+        public void shouldInjectAnIdAndReturnBySpecifiedId() {
+            final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
+            final Edge e = v.addEdge("self", v, Element.ID, "edge-id", "try", "this");
+            tryCommit(g, c -> {
+                assertNotNull(e);
+                assertEquals("edge-id", e.getId());
+                assertFalse(e.getProperty(Property.Key.hidden(idKey)).isPresent());
+                assertEquals("this", e.getProperty("try").get());
+
+                final Edge found = g.e("edge-id");
+                assertEquals(e, found);
+                assertEquals("edge-id", found.getId());
+                assertFalse(found.getProperty(Property.Key.hidden(idKey)).isPresent());
+                assertEquals("this", found.getProperty("try").get());
+            });
+        }
+    }
 }

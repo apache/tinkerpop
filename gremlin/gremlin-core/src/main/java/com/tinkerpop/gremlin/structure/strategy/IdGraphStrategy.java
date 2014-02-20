@@ -54,17 +54,14 @@ public class IdGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<Graph> ctx) {
-        // don't apply f because the implementation needs to be highjacked by the Strategy
-        if (supportsVertexId)
-            return (f) -> (id) -> (Vertex) ctx.getGraph().V().has(idKey, id).next();
-        else
-            return UnaryOperator.identity();
+        // don't apply f if supportsVertexId is true, because the implementation needs to be highjacked by the Strategy
+        return supportsVertexId ? (f) -> (id) -> (Vertex) ctx.getGraph().V().has(idKey, id).next() : UnaryOperator.identity();
     }
 
     @Override
     public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<Graph> ctx) {
-        // don't apply f because the implementation needs to be highjacked by the Strategy
-        return (f) -> (id) -> (Edge) ctx.getGraph().E().has(idKey, id).next();
+        // don't apply f if supportsEdgeId is true, because the implementation needs to be highjacked by the Strategy
+        return supportsEdgeId ? (f) -> (id) -> (Edge) ctx.getGraph().E().has(idKey, id).next() :UnaryOperator.identity();
     }
 
     @Override
