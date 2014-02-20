@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.steps.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.steps.PathConsumer;
 import com.tinkerpop.gremlin.process.steps.map.MapStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -9,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LinkStep extends MapStep<Vertex, Vertex> {
+public class LinkStep extends MapStep<Vertex, Vertex> implements PathConsumer {
 
     public Direction direction;
     public String label;

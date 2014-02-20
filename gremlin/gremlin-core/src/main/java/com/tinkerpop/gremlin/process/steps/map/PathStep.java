@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.steps.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.steps.PathConsumer;
 import com.tinkerpop.gremlin.process.steps.util.FunctionRing;
 
 import java.util.function.Function;
@@ -9,7 +10,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PathStep<S> extends MapStep<S, Path> {
+public class PathStep<S> extends MapStep<S, Path> implements PathConsumer {
 
     public FunctionRing functionRing;
 

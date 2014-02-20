@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.process.steps.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.steps.filter.DedupTest;
 import com.tinkerpop.gremlin.process.steps.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.steps.filter.FilterTest;
@@ -8,6 +9,7 @@ import com.tinkerpop.gremlin.process.steps.filter.HasTest;
 import com.tinkerpop.gremlin.process.steps.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.steps.filter.RangeTest;
 import com.tinkerpop.gremlin.process.steps.filter.RetainTest;
+import com.tinkerpop.gremlin.process.steps.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.steps.map.AnnotatedValuesTest;
 import com.tinkerpop.gremlin.process.steps.map.BackTest;
 import com.tinkerpop.gremlin.process.steps.map.JumpTest;
@@ -36,16 +38,14 @@ import org.junit.runners.model.RunnerBuilder;
  * implements ProcessStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
  * <code>
  *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(ProcessStandardSuite.class)
- * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class)
- * public class MsAccessBlueprintsTest implements GraphProvider {
+ * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class) public class MsAccessBlueprintsTest implements GraphProvider {
  * }
  * </code>
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the StructureStandardSuite to
  * instantiate Graph instances from the implementation being tested to inject into tests in the suite.  The
  * ProcessStandardSuite will utilized Features defined in the suite to determine which tests will be executed.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessStandardSuite extends AbstractGremlinSuite {
 
@@ -54,6 +54,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+            CyclicPathTest.JavaCyclicPathTest.class,
             DedupTest.JavaDedupTest.class,
             ExceptTest.JavaExceptTest.class,
             FilterTest.JavaFilterTest.class,
@@ -61,6 +62,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             IntervalTest.JavaIntervalTest.class,
             RangeTest.JavaRangeTest.class,
             RetainTest.JavaRetainTest.class,
+            SimplePathTest.JavaSimplePathTest.class,
             AnnotatedValuesTest.JavaAnnotatedValuesTest.class,
             BackTest.JavaBackTest.class,
             JumpTest.JavaJumpTest.class,

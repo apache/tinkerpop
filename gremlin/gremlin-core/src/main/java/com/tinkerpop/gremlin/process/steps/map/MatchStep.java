@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.steps.AbstractStep;
+import com.tinkerpop.gremlin.process.steps.PathConsumer;
 import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MatchStep<S, E> extends AbstractStep<S, E> {
+public class MatchStep<S, E> extends AbstractStep<S, E> implements PathConsumer {
 
     private final Map<String, List<Traversal>> predicateTraversals = new HashMap<>();
     private final Map<String, List<Traversal>> internalTraversals = new HashMap<>();
@@ -64,7 +65,7 @@ public class MatchStep<S, E> extends AbstractStep<S, E> {
                 }
             } else {
                 final Holder temp = this.starts.next();
-                temp.getPath().renameLastStep(this.inAs); // TODO: is this cool?
+                temp.getPath().renameLastStep(this.inAs); // TODO: is this cool? this is the only place path is needed! (make this not a PathConsumer)
                 doMatch(this.inAs, temp);
             }
         }

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.process.olap.ranking.PageRankStep;
+import com.tinkerpop.gremlin.process.steps.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.steps.filter.DedupStep;
 import com.tinkerpop.gremlin.process.steps.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.steps.filter.FilterStep;
@@ -48,7 +49,6 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.AnnotatedListQueryBuilder;
@@ -89,7 +89,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     public Iterator<E> submit(final TraversalEngine engine);
 
     public static <S, E> Traversal<S, E> of() {
-        Traversal<S,E> traversal =  new DefaultTraversal<>();
+        Traversal<S, E> traversal = new DefaultTraversal<>();
         traversal.addStep(new IdentityStep(traversal));
         return traversal;
     }
@@ -345,6 +345,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal<S, E> simplePath() {
         return this.addStep(new SimplePathStep<>(this));
+    }
+
+    public default Traversal<S, E> cyclicPath() {
+        return this.addStep(new CyclicPathStep<E>(this));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
