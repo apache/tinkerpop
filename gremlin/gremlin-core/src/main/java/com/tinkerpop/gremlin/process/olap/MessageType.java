@@ -82,11 +82,11 @@ public abstract class MessageType {
         }
 
         public Iterable<Edge> edges(final Vertex vertex) {
-            return this.query.build(vertex).edges();
+            return () -> this.query.build(vertex);
         }
 
         public Iterable<Vertex> vertices(final Vertex vertex) {
-            return this.query.build(vertex).vertices();
+            return () -> this.query.build(vertex).inV();
         }
 
         public BiFunction<M1, Edge, M2> getEdgeFunction() {

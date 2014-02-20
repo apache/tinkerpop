@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.structure.query.util;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.query.VertexQuery;
 
 import java.util.Arrays;
 import java.util.function.BiPredicate;
@@ -69,13 +69,18 @@ public class VertexQueryBuilder extends DefaultVertexQuery implements QueryBuild
     }
 
 
-    public VertexQuery build(final Vertex vertex) {
-      //  final VertexQuery query = vertex.query();
-      //  for (final HasContainer hasContainer : this.hasContainers) {
-      //      query.has(hasContainer.key, hasContainer.predicate, hasContainer.value);
-      //  }
-      // return query.limit(this.limit).labels(this.labels).direction(this.direction);
-        return null;
+    public Traversal<Vertex, Edge> build(final Vertex vertex) {
+        Traversal traversal = vertex.as("a");
+        if (this.direction.equals(Direction.OUT))
+            traversal.outE(this.limit, this.labels);
+        else if (this.direction.equals(Direction.IN))
+            traversal.inE(this.limit, this.labels);
+        else if (this.direction.equals(Direction.BOTH))
+            traversal.bothE(this.limit, this.labels);
+        for (final HasContainer hasContainer : this.hasContainers) {
+            traversal.has(hasContainer.key, hasContainer.predicate, hasContainer.value);
+        }
+        return traversal;
     }
 
     public VertexQueryBuilder build() {

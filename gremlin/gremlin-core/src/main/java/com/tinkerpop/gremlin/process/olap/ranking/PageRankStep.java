@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.algorithm.olap;
+package com.tinkerpop.gremlin.process.olap.ranking;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
@@ -7,13 +7,14 @@ import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.gremlin.process.steps.AbstractStep;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.javatuples.Pair;
 
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PageRankStep extends AbstractStep<Vertex, Vertex> {
+public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
 
     private final Graph graph;
     private boolean firstCall = true;
@@ -25,18 +26,19 @@ public class PageRankStep extends AbstractStep<Vertex, Vertex> {
         this.graph = graph;
     }
 
-    public Holder<Vertex> processNextStart() {
+    public Holder<Pair<Vertex, Double>> processNextStart() {
         try {
             if (this.firstCall) {
-                //this.getPreviousStep().forEachRemaining(null);
                 this.result = this.graph.compute().program(PageRankVertexProgram.create().build()).submit().get();
                 this.firstCall = false;
-                this.itty = graph.V();
+                this.itty = graph.V().toList().iterator();
             }
-            return new SimpleHolder<>(this.itty.next());
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+        final Vertex vertex = this.itty.next();
+        return new SimpleHolder<>(new Pair<>(vertex, (Double) this.result.getVertexMemory().getProperty(vertex, PageRankVertexProgram.PAGE_RANK).get()));
+
 
     }
 }

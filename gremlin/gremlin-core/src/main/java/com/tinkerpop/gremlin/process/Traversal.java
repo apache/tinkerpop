@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.olap.ranking.PageRankStep;
 import com.tinkerpop.gremlin.process.steps.filter.DedupStep;
 import com.tinkerpop.gremlin.process.steps.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.steps.filter.FilterStep;
@@ -562,9 +563,9 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     /////////////////////////////////////
 
-    /*public default Traversal<S,E> pageRank(final Graph graph) {
+    public default Traversal<S, E> pageRank(final Graph graph) {
         this.addStep(new PageRankStep(this, graph));
         return this;
-    }*/
+    }
 
 }

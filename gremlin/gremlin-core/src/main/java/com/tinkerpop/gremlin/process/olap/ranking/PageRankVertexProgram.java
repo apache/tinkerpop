@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.algorithm.olap;
+package com.tinkerpop.gremlin.process.olap.ranking;
 
 import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.MessageType;
