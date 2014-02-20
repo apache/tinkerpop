@@ -1,6 +1,5 @@
 package com.tinkerpop.tinkergraph.process.olap;
 
-import com.tinkerpop.gremlin.process.olap.ranking.PageRankVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
@@ -20,6 +19,6 @@ public class TinkerGraphComputerTest {
 
         //g.V().has("name", "marko").out().value("name").submit(g.compute()).forEachRemaining(System.out::println);
 
-        g.V().pageRank(g).forEachRemaining(System.out::println);
+        g.V().pageRank(g).map(pair -> pair.get().getValue0()).value("name").path().submit(g.compute()).forEachRemaining(System.out::println);
     }
 }
