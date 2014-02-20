@@ -41,7 +41,6 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     private Iterator<Edge> edges() {
-        stringifyIds();
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         return (Iterator) ((null == indexedContainer) ?
                 TinkerHelper.getEdges(this.graph).parallelStream() :
@@ -50,7 +49,6 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     private Iterator<Vertex> vertices() {
-        stringifyIds();
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         return (Iterator) ((null == indexedContainer) ?
                 TinkerHelper.getVertices(this.graph).parallelStream() :
@@ -64,14 +62,6 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
                 .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
                 .findFirst()
                 .orElseGet(() -> null);
-    }
-
-    private void stringifyIds() {
-        this.hasContainers.stream().filter(h -> h.key.equals(Element.ID)).forEach(h -> {
-            final List<String> ids = new ArrayList<>();
-            ((List<Object>) h.value).forEach(v -> ids.add(v.toString()));
-            h.value = ids;
-        });
     }
 
     // TODO HasContainers with Element.ID (just get the vertices)

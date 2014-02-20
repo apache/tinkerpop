@@ -53,7 +53,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
         final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_TRAVERSAL).get();
-        gremlin.iterate();
+        gremlin.iterate();  // TODO: this needs to go away
         final GraphStep startStep = (GraphStep) gremlin.getSteps().get(0);
         final String future = (gremlin.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) gremlin.getSteps().get(1)).getAs();
 
@@ -81,7 +81,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory) {
         final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_TRAVERSAL).get();
-        gremlin.iterate();
+        gremlin.iterate(); // TODO: this needs to go away
         if (graphMemory.<Boolean>get(TRACK_PATHS)) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
             graphMemory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, gremlin));

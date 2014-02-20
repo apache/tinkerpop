@@ -24,6 +24,7 @@ public class TinkerGraphStepOptimizer implements Optimizer.StepOptimizer {
                     IntervalStep.class));
 
     public boolean optimize(final Traversal traversal, final Step step) {
+
         if (!PIPES_TO_FOLD.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
             return true;
 

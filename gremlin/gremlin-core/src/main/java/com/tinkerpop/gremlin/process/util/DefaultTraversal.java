@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Memory;
+import com.tinkerpop.gremlin.process.Optimizer;
 import com.tinkerpop.gremlin.process.Optimizers;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -47,11 +48,16 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public <S, E> Traversal<S, E> addStep(final Step<?, E> step) {
-        if (this.steps.size() > 0) {
-            step.setPreviousStep(this.steps.get(this.steps.size() - 1));
-            this.steps.get(this.steps.size() - 1).setNextStep(step);
+        if (this.optimizers.get().stream()
+                .filter(o -> o instanceof Optimizer.StepOptimizer)
+                .map(o -> ((Optimizer.StepOptimizer) o).optimize(this, step))
+                .reduce(true, (a, b) -> a && b)) {
+            if (this.steps.size() > 0) {
+                step.setPreviousStep(this.steps.get(this.steps.size() - 1));
+                this.steps.get(this.steps.size() - 1).setNextStep(step);
+            }
+            this.steps.add(step);
         }
-        this.steps.add(step);
 
         return (Traversal<S, E>) this;
     }

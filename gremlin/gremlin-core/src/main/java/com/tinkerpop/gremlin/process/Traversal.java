@@ -46,6 +46,7 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.query.util.AnnotatedListQueryBuilder;
@@ -558,4 +559,12 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
+
+    /////////////////////////////////////
+
+    /*public default Traversal<S,E> pageRank(final Graph graph) {
+        this.addStep(new PageRankStep(this, graph));
+        return this;
+    }*/
+
 }
