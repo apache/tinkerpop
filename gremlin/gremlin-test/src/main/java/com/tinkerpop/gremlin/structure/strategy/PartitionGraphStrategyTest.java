@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -26,7 +25,6 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldAppendPartitionToVertex() {
         final Vertex v = g.addVertex("any", "thing");
 
@@ -36,7 +34,6 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldAppendPartitionToEdge() {
         final Vertex v1 = g.addVertex("any", "thing");
         final Vertex v2 = g.addVertex("some", "thing");
@@ -57,10 +54,9 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Ignore
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldWriteVerticesToMultiplePartitions() {
         final Vertex vA = g.addVertex("any", "a");
-        final PartitionGraphStrategy strategy = (PartitionGraphStrategy) g.strategy().getGraphStrategy().get();
+        final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
         strategy.setWritePartition("B");
         final Vertex vB = g.addVertex("any", "b");
 

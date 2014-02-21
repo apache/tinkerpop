@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import com.tinkerpop.gremlin.structure.util.config.YamlConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -49,16 +50,24 @@ public class GraphFactory {
 
         final Graph g;
         try {
-            // will basically use Graph.open(Configuration c, Optional<GraphStrategy> s) to instantiate, but could
+            // will basically use Graph.open(Configuration c) to instantiate, but could
             // technically use any method on any class with the same signature.
-            g = (Graph) graphClass.getMethod("open", Optional.class, Optional.class).invoke(null, Optional.of(configuration), strategy);
+            g = (Graph) graphClass.getMethod("open", Optional.class).invoke(null, Optional.of(configuration));
         } catch (final NoSuchMethodException e1) {
             throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument - [%s] does not seem to have one", clazz));
         } catch (final Exception e2) {
             throw new RuntimeException(String.format("GraphFactory could not instantiate this Graph implementation [%s]", clazz), e2);
         }
 
-        return g;
+        final Graph returnedGraph;
+        if (strategy.isPresent()) {
+            final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+            swg.strategy().setGraphStrategy(strategy);
+            returnedGraph = swg;
+        } else
+            returnedGraph = g;
+
+        return returnedGraph;
     }
 
     public static Graph open(final Configuration configuration) {

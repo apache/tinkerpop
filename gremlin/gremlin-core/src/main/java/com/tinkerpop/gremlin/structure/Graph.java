@@ -27,12 +27,9 @@ public interface Graph extends AutoCloseable {
 
     /**
      * Creates a new {@link Graph} instance.  All graphs require that this method be overridden.  It is enforced by the
-     * Blueprints test suite.  Note that if the implementation does not implement the {@link Strategy} feature then
-     * it should call {@link Graph.Exceptions#graphStrategyNotSupported()} if the
-     * {@code strategy} argument is non-empty.  The exception thrown by this method is enforced by the Blueprints test
-     * suite.
+     * Blueprints test suite.
      */
-    public static <G extends Graph> G open(final Optional<Configuration> configuration, final Optional<GraphStrategy> strategy) {
+    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
         throw new UnsupportedOperationException("Implementations must override this method");
     }
 
@@ -53,8 +50,6 @@ public interface Graph extends AutoCloseable {
     public GraphComputer compute();
 
     public Transaction tx();
-
-    public Strategy strategy();
 
     public Annotations annotations();
 
@@ -139,7 +134,6 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_ANNOTATIONS = "Annotations";
             public static final String FEATURE_COMPUTER = "Computer";
             public static final String FEATURE_TRANSACTIONS = "Transactions";
-            public static final String FEATURE_STRATEGY = "Strategy";
             public static final String FEATURE_PERSISTENCE = "Persistence";
 
             @FeatureDescriptor(name = FEATURE_ANNOTATIONS)
@@ -154,11 +148,6 @@ public interface Graph extends AutoCloseable {
 
             @FeatureDescriptor(name = FEATURE_PERSISTENCE)
             public default boolean supportsPersistence() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_STRATEGY)
-            public default boolean supportsStrategy() {
                 return true;
             }
 

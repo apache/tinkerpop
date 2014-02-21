@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.structure.FeatureRequirement;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -14,7 +12,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -24,9 +21,9 @@ import static org.junit.Assert.assertNull;
  */
 public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldAppendPropertyValuesInOrderToVertex() {
-        g.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -60,7 +57,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                 }
         )));
 
-        final Vertex v = g.addVertex("any", "thing");
+        final Vertex v = swg.addVertex("any", "thing");
 
         assertNotNull(v);
         assertEquals("thing", v.getProperty("any").get());
@@ -69,9 +66,9 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     }
 
     @Test(expected = RuntimeException.class)
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldShortCircuitStrategyWithException() {
-        g.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -102,13 +99,13 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                 }
         )));
 
-        g.addVertex("any", "thing");
+        swg.addVertex("any", "thing");
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldShortCircuitStrategyWithNoOp() {
-        g.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -138,13 +135,13 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                 }
         )));
 
-        assertNull(g.addVertex("any", "thing"));
+        assertNull(swg.addVertex("any", "thing"));
     }
 
     @Test
-    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
     public void shouldDoSomethingBeforeAndAfter() {
-        g.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -184,7 +181,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                 }
         )));
 
-        final Vertex v = g.addVertex("any", "thing");
+        final Vertex v = swg.addVertex("any", "thing");
 
         assertNotNull(v);
         assertEquals("thing", v.getProperty("any").get());

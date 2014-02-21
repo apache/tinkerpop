@@ -49,70 +49,41 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public <V> void setProperty(final String key, final V value) {
-        // The first argument to compose() gets the GraphStrategy to use and provides it the Context of the setProperty
-        // call. The second argument to compose() is the TinkerGraph implementation of setProperty as a lambda where
-        // the argument refer to the arguments to setProperty. Note that arguments passes through the GraphStrategy
-        // implementations first so at this point the values within them may not be the same as they originally were.
-        // The composed function must then be applied with the arguments originally passed to setProperty.
-        this.graph.strategy.compose(s -> s.<V>getElementSetProperty(strategyContext), (k, v) -> {
-            ElementHelper.validateProperty(k, v);
-            if (TinkerGraphComputer.State.STANDARD == this.state) {
-                final Property oldProperty = super.getProperty(k);
-                if (v == AnnotatedList.make()) {
-                    if (!this.properties.containsKey(k) || !(this.properties.get(k) instanceof AnnotatedList))
-                        this.properties.put(k, new TinkerProperty<>(this, k, new TinkerAnnotatedList<>()));
-                } else
-                    this.properties.put(k, new TinkerProperty<>(this, k, v));
-                this.graph.vertexIndex.autoUpdate(k, v, oldProperty.isPresent() ? oldProperty.get() : null, this);
-            } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
-                if (this.vertexMemory.getComputeKeys().containsKey(key))
-                    this.vertexMemory.setProperty(this, k, v);
-                else
-                    throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(k);
-            } else {
-                throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeWritten();
-            }
-        }).accept(key, value);
+        ElementHelper.validateProperty(key, value);
+        if (TinkerGraphComputer.State.STANDARD == this.state) {
+            final Property oldProperty = super.getProperty(key);
+            if (value == AnnotatedList.make()) {
+                if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList))
+                    this.properties.put(key, new TinkerProperty<>(this, key, new TinkerAnnotatedList<>()));
+            } else
+                this.properties.put(key, new TinkerProperty<>(this, key, value));
+            this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
+        } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
+            if (this.vertexMemory.getComputeKeys().containsKey(key))
+                this.vertexMemory.setProperty(this, key, value);
+            else
+                throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
+        } else {
+            throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeWritten();
+        }
     }
-
-    /*public VertexQuery query() {
-        return new TinkerVertexQuery(this, this.vertexMemory);
-    }*/
 
     public String toString() {
         return StringFactory.vertexString(this);
     }
 
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
-        // The first argument to compose() gets the GraphStrategy to use and provides it the Context of the addEdge
-        // call. The second argument to compose() is the TinkerGraph implementation of addEdge as a lambda where
-        // the argument refer to the arguments to addEdge. Note that arguments passes through the GraphStrategy
-        // implementations first so at this point the values within them may not be the same as they originally were.
-        // The composed function must then be applied with the arguments originally passed to addEdge.
-        return this.graph.strategy().compose(
-                s -> s.getAddEdgeStrategy(strategyContext),
-                (l, v, kvs) -> TinkerHelper.addEdge(this.graph, this, (TinkerVertex) v, l, kvs))
-                .apply(label, vertex, keyValues);
+        return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
     }
 
     public void remove() {
-        // The first argument to compose() gets the GraphStrategy to use and provides it the Context of the remove
-        // call. The second argument to compose() is the TinkerGraph implementation of remove as a lambda where
-        // the argument refer to the arguments to remove. Note that arguments passes through the GraphStrategy
-        // implementations first so at this point the values within them may not be the same as they originally were.
-        // The composed function must then be applied with the arguments originally passed to remove.
-        this.graph.strategy().compose(
-                s -> s.getRemoveElementStrategy(strategyContext),
-                () -> {
-                    if (!graph.vertices.containsKey(this.id))
-                        throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
+        if (!graph.vertices.containsKey(this.id))
+            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
 
-                    this.bothE().forEach(Edge::remove);
-                    this.getProperties().clear();
-                    graph.vertexIndex.removeElement(this);
-                    graph.vertices.remove(this.id);
-                    return null;
-                }).get();
+        this.bothE().forEach(Edge::remove);
+        this.getProperties().clear();
+        graph.vertexIndex.removeElement(this);
+        graph.vertices.remove(this.id);
     }
 
     public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {

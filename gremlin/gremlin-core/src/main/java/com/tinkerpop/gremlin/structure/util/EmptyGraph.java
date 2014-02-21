@@ -51,11 +51,6 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public Strategy strategy() {
-        throw new IllegalStateException(MESSAGE);
-    }
-
-    @Override
     public Annotations annotations() {
         throw new IllegalStateException(MESSAGE);
     }

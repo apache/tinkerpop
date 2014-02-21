@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;

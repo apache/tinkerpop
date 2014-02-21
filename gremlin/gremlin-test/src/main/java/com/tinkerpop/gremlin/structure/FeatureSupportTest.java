@@ -9,20 +9,14 @@ import com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexAnnotationFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
-import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.PartitionGraphStrategy;
-import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.Optional;
-
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_ANNOTATIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.hamcrest.CoreMatchers.is;
@@ -90,46 +84,14 @@ public class FeatureSupportTest  {
          * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#graphAnnotationsNotSupported()}.
          */
         @Test
-        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_STRATEGY, supported = false)
+        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_ANNOTATIONS, supported = false)
         public void ifAGraphAcceptsAnnotationsThenItMustSupportAnnotations() throws Exception {
             try {
-                g.strategy();
+                g.annotations();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_ANNOTATIONS));
             } catch (UnsupportedOperationException e) {
                 assertEquals(Graph.Exceptions.graphAnnotationsNotSupported().getMessage(), e.getMessage());
             }
-        }
-
-        /**
-         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_STRATEGY} must call
-         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#graphStrategyNotSupported()}.
-         */
-        @Test
-        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_STRATEGY, supported = false)
-        public void ifAGraphAcceptsStrategyThenItMustSupportStrategy() throws Exception {
-            try {
-                g.strategy();
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_STRATEGY));
-            } catch (UnsupportedOperationException e) {
-                assertEquals(Graph.Exceptions.graphStrategyNotSupported().getMessage(), e.getMessage());
-            }
-        }
-
-        /**
-         * If given a non-empty {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} a graph that does not support
-         * {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_STRATEGY} should throw
-         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#graphStrategyNotSupported()}.
-         */
-        @Test
-        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_STRATEGY, supported = false)
-        public void shouldThrowUnsupportedIfStrategyIsNonEmptyAndStrategyFeatureDisabled() {
-            try {
-                GraphFactory.open(config, Optional.<GraphStrategy>of(new PartitionGraphStrategy("k", "v")));
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_STRATEGY));
-            } catch (UnsupportedOperationException ex) {
-                assertEquals(Graph.Exceptions.graphStrategyNotSupported().getMessage(), ex.getMessage());
-            }
-
         }
     }
 

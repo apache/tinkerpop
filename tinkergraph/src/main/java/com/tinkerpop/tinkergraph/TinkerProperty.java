@@ -75,20 +75,10 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
     }
 
     public void remove() {
-        // The first argument to compose() gets the GraphStrategy to use and provides it the Context of the remove
-        // call. The second argument to compose() is the TinkerGraph implementation of remove as a lambda where
-        // the argument refer to the arguments to remove. Note that arguments passes through the GraphStrategy
-        // implementations first so at this point the values within them may not be the same as they originally were.
-        // The composed function must then be applied with the arguments originally passed to remove.
-        this.graph.strategy().compose(
-                s -> s.getRemovePropertyStrategy(strategyContext),
-                () -> {
-                    ((TinkerElement) this.element).properties.remove(key);
-                    if (this.element instanceof Vertex)
-                        this.graph.vertexIndex.remove(key, value, (TinkerVertex) this.element);
-                    else
-                        this.graph.edgeIndex.remove(key, value, (TinkerEdge) this.element);
-                    return null;
-                }).get();
+        ((TinkerElement) this.element).properties.remove(key);
+        if (this.element instanceof Vertex)
+            this.graph.vertexIndex.remove(key, value, (TinkerVertex) this.element);
+        else
+            this.graph.edgeIndex.remove(key, value, (TinkerEdge) this.element);
     }
 }

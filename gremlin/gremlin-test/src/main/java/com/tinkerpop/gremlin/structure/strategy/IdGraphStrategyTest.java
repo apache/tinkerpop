@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -14,7 +13,6 @@ import org.junit.runner.RunWith;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_STRATEGY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
@@ -35,10 +33,9 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldInjectAnIdAndReturnBySpecifiedIdForVertex() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) g.strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -46,7 +43,6 @@ public class IdGraphStrategyTest {
                 assertEquals("else", v.getProperty("something").get());
 
                 final Vertex found = g.v("test");
-                assertEquals(v, found);
                 assertEquals("test", found.getProperty(strategy.getIdKey()).get());
                 assertEquals("else", found.getProperty("something").get());
 
@@ -54,11 +50,10 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldInjectAnIdAndReturnBySpecifiedIdForEdge() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) g.strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
             final Edge e = v.addEdge("self", v, Element.ID, "edge-id", "try", "this");
             tryCommit(g, c -> {
@@ -67,17 +62,15 @@ public class IdGraphStrategyTest {
                 assertEquals("this", e.getProperty("try").get());
 
                 final Edge found = g.e("edge-id");
-                assertEquals(e, found);
                 assertEquals("edge-id", found.getProperty(strategy.getIdKey()).get());
                 assertEquals("this", found.getProperty("try").get());
             });
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldCreateAnIdAndReturnByCreatedIdForVertex() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) g.strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -85,7 +78,6 @@ public class IdGraphStrategyTest {
                 assertEquals("else", v.getProperty("something").get());
 
                 final Vertex found = g.v(v.getId());
-                assertEquals(v, found);
                 assertNotNull(UUID.fromString(found.getProperty(strategy.getIdKey()).get().toString()));
                 assertEquals("else", found.getProperty("something").get());
 
@@ -93,11 +85,10 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldCreateAnIdAndReturnByCreatedIdForEdge() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) g.strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             final Edge e = v.addEdge("self", v, "try", "this");
             tryCommit(g, c -> {
@@ -106,7 +97,6 @@ public class IdGraphStrategyTest {
                 assertEquals("this", e.getProperty("try").get());
 
                 final Edge found = g.e(e.getId());
-                assertEquals(e, found);
                 assertNotNull(UUID.fromString(found.getProperty(strategy.getIdKey()).get().toString()));
                 assertEquals("this", found.getProperty("try").get());
             });
@@ -120,10 +110,9 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldCreateAnIdAndReturnByCreatedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) g.strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -131,7 +120,6 @@ public class IdGraphStrategyTest {
                 assertEquals("else", v.getProperty("something").get());
 
                 final Vertex found = g.v("100");
-                assertEquals(v, found);
                 assertEquals("100", found.getProperty(strategy.getIdKey()).get());
                 assertEquals("else", found.getProperty("something").get());
 
@@ -146,11 +134,10 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldCreateAnIdAndReturnByCreatedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) g.strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex("something", "else");
             final Edge e = v.addEdge("self", v, "try", "this");
             tryCommit(g, c -> {
@@ -159,7 +146,6 @@ public class IdGraphStrategyTest {
                 assertEquals("this", e.getProperty("try").get());
 
                 final Edge found = g.e("100");
-                assertEquals(e, found);
                 assertEquals("100", found.getProperty(strategy.getIdKey()).get());
                 assertEquals("this", found.getProperty("try").get());
             });
@@ -173,11 +159,10 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) g.strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
@@ -186,7 +171,6 @@ public class IdGraphStrategyTest {
                 assertEquals("else", v.getProperty("something").get());
 
                 final Vertex found = g.v("test");
-                assertEquals(v, found);
                 assertEquals("test", found.getId());
                 assertFalse(found.getProperty(strategy.getIdKey()).isPresent());
                 assertEquals("else", found.getProperty("something").get());
@@ -202,12 +186,11 @@ public class IdGraphStrategyTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_STRATEGY)
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void shouldInjectAnIdAndReturnBySpecifiedId() {
-            final IdGraphStrategy strategy = (IdGraphStrategy) g.strategy().getGraphStrategy().get();
+            final IdGraphStrategy strategy = (IdGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
             final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
             final Edge e = v.addEdge("self", v, Element.ID, "edge-id", "try", "this");
             tryCommit(g, c -> {
@@ -217,7 +200,6 @@ public class IdGraphStrategyTest {
                 assertEquals("this", e.getProperty("try").get());
 
                 final Edge found = g.e("edge-id");
-                assertEquals(e, found);
                 assertEquals("edge-id", found.getId());
                 assertFalse(found.getProperty(strategy.getIdKey()).isPresent());
                 assertEquals("this", found.getProperty("try").get());

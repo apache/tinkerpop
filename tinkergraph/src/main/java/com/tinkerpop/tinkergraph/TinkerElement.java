@@ -38,9 +38,7 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public String getId() {
-        return this.graph.strategy.compose(
-                s -> s.getElementGetId(elementStrategyContext),
-                () -> this.id).get().toString();
+        return this.id;
     }
 
     public String getLabel() {
@@ -52,20 +50,18 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public <V> Property<V> getProperty(final String key) {
-        return this.graph.strategy.compose(s -> s.<V>getElementGetProperty(elementStrategyContext), k -> {
-            if (TinkerGraphComputer.State.STANDARD == this.state) {
-                return this.properties.getOrDefault(k, Property.empty());
-            } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
-                if (this.vertexMemory.getComputeKeys().containsKey(k))
-                    return this.vertexMemory.getProperty(this, k);
-                else if (this.properties.containsKey(key))
-                    return ((TinkerProperty) this.properties.get(k)).createClone(TinkerGraphComputer.State.CENTRIC, vertexMemory);
-                else
-                    return Property.empty();
-            } else {
-                throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeRead();
-            }
-        }).apply(key);
+        if (TinkerGraphComputer.State.STANDARD == this.state) {
+            return this.properties.getOrDefault(key, Property.empty());
+        } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
+            if (this.vertexMemory.getComputeKeys().containsKey(key))
+                return this.vertexMemory.getProperty(this, key);
+            else if (this.properties.containsKey(key))
+                return ((TinkerProperty) this.properties.get(key)).createClone(TinkerGraphComputer.State.CENTRIC, vertexMemory);
+            else
+                return Property.empty();
+        } else {
+            throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeRead();
+        }
     }
 
     public boolean equals(final Object object) {
