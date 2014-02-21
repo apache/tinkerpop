@@ -26,6 +26,10 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
         return this.baseGraph;
     }
 
+    public Strategy strategy() {
+        return this.strategy;
+    }
+
     @Override
     public Vertex addVertex(final Object... keyValues) {
         final Optional<Vertex> v = Optional.ofNullable(strategy.compose(
@@ -66,10 +70,6 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
     @Override
     public Transaction tx() {
         return this.baseGraph.tx();
-    }
-
-    public Strategy strategy() {
-        return this.strategy;
     }
 
     @Override
