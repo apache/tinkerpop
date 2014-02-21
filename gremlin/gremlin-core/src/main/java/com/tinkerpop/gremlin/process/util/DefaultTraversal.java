@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.Optimizers;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.util.optimizers.DedupOptimizer;
 import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.optimizers.IdentityOptimizer;
@@ -80,7 +79,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         return engine.execute(this);
     }
 
-    private void doFinalOptimization() {
+    private final void doFinalOptimization() {
         if (this.firstNext) {
             this.optimizers().doFinalOptimizers(this);
             this.firstNext = false;

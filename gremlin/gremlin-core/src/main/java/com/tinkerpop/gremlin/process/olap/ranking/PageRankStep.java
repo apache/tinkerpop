@@ -15,7 +15,7 @@ import org.javatuples.Pair;
 public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
 
     private final Graph graph;
-    private boolean firstCall = true;
+    private boolean firstNext = true;
     private ComputeResult result;
     public double alpha;
 
@@ -31,9 +31,9 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
 
     public Holder<Pair<Vertex, Double>> processNextStart() {
         try {
-            if (this.firstCall) {
+            if (this.firstNext) {
                 this.result = this.graph.compute().program(PageRankVertexProgram.create().alpha(this.alpha).build()).submit().get();
-                this.firstCall = false;
+                this.firstNext = false;
             }
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);

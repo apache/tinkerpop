@@ -89,6 +89,10 @@ public interface GraphComputer extends TraversalEngine {
             return true;
         }
 
+        public default boolean supportsAdjacentVertexDeepReference() {
+            return true;
+        }
+
         public default boolean supportsIsolation(final Isolation isolation) {
             return true;
         }

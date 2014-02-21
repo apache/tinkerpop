@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.process.olap.traversal;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.MicroPath;
+import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.structure.util.StreamFactory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
@@ -25,7 +24,7 @@ public class TraversalResult<T> implements Iterator<T> {
     private final Graph graph;
     private final ComputeResult computeResult;
 
-    public <K, V, R> TraversalResult(final Graph graph, final Supplier<Traversal> gremlinSupplier, final BiFunction<K, Iterator<V>, R> reduction) {
+    public TraversalResult(final Graph graph, final Supplier<Traversal> gremlinSupplier) {
         this.gremlinSupplier = gremlinSupplier;
         this.graph = graph;
         final GraphComputer computer = graph.compute();
@@ -37,10 +36,6 @@ public class TraversalResult<T> implements Iterator<T> {
             throw new RuntimeException(e.getMessage(), e);
         }
         buildIterator();
-    }
-
-    public TraversalResult(final Graph graph, final Supplier<Traversal> gremlinSupplier) {
-        this(graph, gremlinSupplier, null);
     }
 
     public boolean hasNext() {
