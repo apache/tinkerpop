@@ -2,7 +2,7 @@ package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Strategy;
+import com.tinkerpop.gremlin.structure.strategy.Strategy;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 

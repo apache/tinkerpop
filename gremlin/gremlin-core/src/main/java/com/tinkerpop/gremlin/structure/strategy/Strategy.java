@@ -1,6 +1,6 @@
-package com.tinkerpop.gremlin.structure;
+package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
- * A holder of a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} object owned by a {@link Graph} instance.
+ * A holder of a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} object owned by a {@link com.tinkerpop.gremlin.structure.Graph} instance.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -23,7 +23,7 @@ public interface Strategy  {
     public void setGraphStrategy(final Optional<? extends GraphStrategy> strategy);
 
     /**
-     * Gets the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} for the {@link Graph}.
+     * Gets the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} for the {@link com.tinkerpop.gremlin.structure.Graph}.
      */
     public Optional<? extends GraphStrategy> getGraphStrategy();
 

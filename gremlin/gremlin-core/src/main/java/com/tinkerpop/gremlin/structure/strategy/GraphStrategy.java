@@ -1,11 +1,9 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
@@ -18,8 +16,8 @@ import java.util.function.UnaryOperator;
  * Defines a collection of functions that plug-in to Blueprints API methods to enhance or alter the functionality of
  * the implementation. The methods defined in {@link GraphStrategy} follow a common pattern where each method
  * represents some injection point for new logic in the Blueprints API.  A method always accepts a
- * {@link com.tinkerpop.gremlin.structure.Strategy.Context} which contains the context of the call being made and will have
- * a different {@link com.tinkerpop.gremlin.structure.Strategy.Context#getCurrent()} object depending on that context (e.g the
+ * {@link Strategy.Context} which contains the context of the call being made and will have
+ * a different {@link Strategy.Context#getCurrent()} object depending on that context (e.g the
  * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)} method will send the instance of
  * the {@link com.tinkerpop.gremlin.structure.Vertex} that was the object of that method call).
  * <p/>
@@ -91,7 +89,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#getProperty(String)}.
      * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
-     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link com.tinkerpop.gremlin.structure.Strategy.Context}.
+     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
@@ -105,7 +103,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.BiConsumer} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#setProperty(String, Object)}.
      * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
-     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link com.tinkerpop.gremlin.structure.Strategy.Context}.
+     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiConsumer} with
@@ -119,7 +117,7 @@ public interface GraphStrategy {
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#getId()}.
      * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
-     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link com.tinkerpop.gremlin.structure.Strategy.Context}.
+     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
