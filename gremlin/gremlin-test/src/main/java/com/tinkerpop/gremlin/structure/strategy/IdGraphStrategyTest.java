@@ -39,10 +39,12 @@ public class IdGraphStrategyTest {
             final Vertex v = g.addVertex(Element.ID, "test", "something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
+                assertEquals("test", v.getId());
                 assertEquals("test", v.getProperty(strategy.getIdKey()).get());
                 assertEquals("else", v.getProperty("something").get());
 
                 final Vertex found = g.v("test");
+                assertEquals("test", found.getId());
                 assertEquals("test", found.getProperty(strategy.getIdKey()).get());
                 assertEquals("else", found.getProperty("something").get());
 
@@ -58,10 +60,12 @@ public class IdGraphStrategyTest {
             final Edge e = v.addEdge("self", v, Element.ID, "edge-id", "try", "this");
             tryCommit(g, c -> {
                 assertNotNull(e);
+                assertEquals("edge-id", e.getId());
                 assertEquals("edge-id", e.getProperty(strategy.getIdKey()).get());
                 assertEquals("this", e.getProperty("try").get());
 
                 final Edge found = g.e("edge-id");
+                assertEquals("edge-id", found.getId());
                 assertEquals("edge-id", found.getProperty(strategy.getIdKey()).get());
                 assertEquals("this", found.getProperty("try").get());
             });
@@ -74,13 +78,14 @@ public class IdGraphStrategyTest {
             final Vertex v = g.addVertex("something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
+                assertNotNull(UUID.fromString(v.getId().toString()));
                 assertNotNull(UUID.fromString(v.getProperty(strategy.getIdKey()).get().toString()));
                 assertEquals("else", v.getProperty("something").get());
 
                 final Vertex found = g.v(v.getId());
+                assertNotNull(UUID.fromString(found.getId().toString()));
                 assertNotNull(UUID.fromString(found.getProperty(strategy.getIdKey()).get().toString()));
                 assertEquals("else", found.getProperty("something").get());
-
             });
         }
 
@@ -93,10 +98,12 @@ public class IdGraphStrategyTest {
             final Edge e = v.addEdge("self", v, "try", "this");
             tryCommit(g, c -> {
                 assertNotNull(e);
+                assertNotNull(UUID.fromString(e.getId().toString()));
                 assertNotNull(UUID.fromString(e.getProperty(strategy.getIdKey()).get().toString()));
                 assertEquals("this", e.getProperty("try").get());
 
                 final Edge found = g.e(e.getId());
+                assertNotNull(UUID.fromString(found.getId().toString()));
                 assertNotNull(UUID.fromString(found.getProperty(strategy.getIdKey()).get().toString()));
                 assertEquals("this", found.getProperty("try").get());
             });
@@ -116,10 +123,12 @@ public class IdGraphStrategyTest {
             final Vertex v = g.addVertex("something", "else");
             tryCommit(g, c -> {
                 assertNotNull(v);
+                assertEquals("100", v.getId());
                 assertEquals("100", v.getProperty(strategy.getIdKey()).get());
                 assertEquals("else", v.getProperty("something").get());
 
                 final Vertex found = g.v("100");
+                assertEquals("100", found.getId());
                 assertEquals("100", found.getProperty(strategy.getIdKey()).get());
                 assertEquals("else", found.getProperty("something").get());
 
@@ -142,10 +151,12 @@ public class IdGraphStrategyTest {
             final Edge e = v.addEdge("self", v, "try", "this");
             tryCommit(g, c -> {
                 assertNotNull(e);
+                assertEquals("100", e.getId());
                 assertEquals("100", e.getProperty(strategy.getIdKey()).get());
                 assertEquals("this", e.getProperty("try").get());
 
                 final Edge found = g.e("100");
+                assertEquals("100", found.getId());
                 assertEquals("100", found.getProperty(strategy.getIdKey()).get());
                 assertEquals("this", found.getProperty("try").get());
             });

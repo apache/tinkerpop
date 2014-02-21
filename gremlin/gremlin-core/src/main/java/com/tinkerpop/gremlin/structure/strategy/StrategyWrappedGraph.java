@@ -47,9 +47,9 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
 
     @Override
     public Edge e(final Object id) {
-        return strategy().compose(
+        return new StrategyWrappedEdge(strategy().compose(
                 s -> s.getGrapheStrategy(graphContext),
-                this.baseGraph::e).apply(id);
+                this.baseGraph::e).apply(id), this);
     }
 
     @Override
