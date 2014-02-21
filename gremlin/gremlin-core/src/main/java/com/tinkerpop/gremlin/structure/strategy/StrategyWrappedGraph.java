@@ -12,14 +12,14 @@ import java.util.Optional;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StrategyWrappedGraph implements Graph {
+public class StrategyWrappedGraph implements Graph, StrategyWrapped {
     private final Graph baseGraph;
     protected transient Strategy strategy = new Strategy.Simple();
-    private transient Strategy.Context<Graph> graphContext;
+    private transient Strategy.Context<StrategyWrappedGraph> graphContext;
 
     public StrategyWrappedGraph(final Graph baseGraph) {
         this.baseGraph = baseGraph;
-        this.graphContext = new Strategy.Context<>(this, baseGraph);
+        this.graphContext = new Strategy.Context<>(baseGraph, this);
     }
 
     public Graph getBaseGraph() {

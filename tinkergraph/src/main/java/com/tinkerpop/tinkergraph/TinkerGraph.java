@@ -141,16 +141,6 @@ public class TinkerGraph implements Graph, Serializable {
 
         private final Map<String, Object> annotations = new HashMap<>();
 
-        /**
-         * The context to be passed to the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} when triggered.  The context wraps the {@link Annotations}
-         * instance providing that reference to the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.
-         * <p/>
-         * <b>Reference Implementation Help:</b> It is best to declare this field once and re-use for the life of the
-         * {@link Annotations} rather than construct the new instances at the time they are needed.
-         */
-        private transient Strategy.Context<Graph.Annotations> graphContext
-                = new Strategy.Context<Graph.Annotations>(TinkerGraph.this, this);
-
         public <T> Optional<T> get(final String key) {
             return Optional.ofNullable((T) this.annotations.get(key));
         }

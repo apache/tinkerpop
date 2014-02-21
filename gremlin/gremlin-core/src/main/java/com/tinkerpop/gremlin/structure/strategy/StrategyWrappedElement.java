@@ -10,16 +10,16 @@ import java.util.Set;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class StrategyWrappedElement implements Element {
+public abstract class StrategyWrappedElement implements Element, StrategyWrapped {
     protected final StrategyWrappedGraph strategyWrappedGraph;
     private final Element baseElement;
-    private transient final Strategy.Context<Element> elementStrategyContext;
+    private transient final Strategy.Context<StrategyWrappedElement> elementStrategyContext;
 
 
     protected StrategyWrappedElement(final StrategyWrappedGraph strategyWrappedGraph, final Element baseElement) {
         this.strategyWrappedGraph = strategyWrappedGraph;
         this.baseElement = baseElement;
-        this.elementStrategyContext = new Strategy.Context<Element>(strategyWrappedGraph, this);
+        this.elementStrategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
     }
 
     @Override

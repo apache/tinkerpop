@@ -13,14 +13,13 @@ import java.util.function.Consumer;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StrategyWrappedVertex extends StrategyWrappedElement implements Vertex {
+public class StrategyWrappedVertex extends StrategyWrappedElement implements Vertex, StrategyWrapped {
     private final Vertex baseVertex;
-    private transient final Strategy.Context<Vertex> strategyContext;
-
+    private transient final Strategy.Context<StrategyWrappedVertex> strategyContext;
 
     public StrategyWrappedVertex(final Vertex baseVertex, final StrategyWrappedGraph strategyWrappedGraph) {
         super(strategyWrappedGraph, baseVertex);
-        this.strategyContext = new Strategy.Context<>(strategyWrappedGraph, baseVertex);
+        this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.baseVertex = baseVertex;
     }
 

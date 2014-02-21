@@ -40,29 +40,29 @@ public class IdGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<Graph> ctx) {
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return (f) -> (keyValues) -> f.apply(this.injectId(supportsVertexId, keyValues, vertexIdSupplier).toArray());
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<Vertex> ctx) {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return (f) -> (label, v, keyValues) -> f.apply(label, v, this.injectId(supportsEdgeId, keyValues, edgeIdSupplier).toArray());
     }
 
     @Override
-    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<Graph> ctx) {
+    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         // don't apply f if supportsVertexId is true, because the implementation needs to be highjacked by the Strategy
-        return supportsVertexId ? (f) -> (id) -> (Vertex) ctx.getGraph().V().has(idKey, id).next() : UnaryOperator.identity();
+        return supportsVertexId ? (f) -> (id) -> (Vertex) ctx.getBaseGraph().V().has(idKey, id).next() : UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<Graph> ctx) {
+    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         // don't apply f if supportsEdgeId is true, because the implementation needs to be highjacked by the Strategy
-        return supportsEdgeId ? (f) -> (id) -> (Edge) ctx.getGraph().E().has(idKey, id).next() :UnaryOperator.identity();
+        return supportsEdgeId ? (f) -> (id) -> (Edge) ctx.getBaseGraph().E().has(idKey, id).next() :UnaryOperator.identity();
     }
 
     @Override
-    public UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends Element> ctx) {
+    public UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         // if the property is not present then it's likely an internal call from the graph on addVertex in which case,
         // the base implementation should be called
         return (f) -> () -> ctx.getCurrent().getProperty(idKey).orElse(f.get());

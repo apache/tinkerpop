@@ -24,13 +24,10 @@ abstract class TinkerElement implements Element, Serializable {
     protected TinkerGraphComputer.State state = TinkerGraphComputer.State.STANDARD;
     protected TinkerVertexMemory vertexMemory;
 
-    private transient final Strategy.Context<Element> elementStrategyContext;
-
     protected TinkerElement(final String id, final String label, final TinkerGraph graph) {
         this.graph = graph;
         this.id = id;
         this.label = label;
-        this.elementStrategyContext = new Strategy.Context<Element>(this.graph, this);
     }
 
     public int hashCode() {

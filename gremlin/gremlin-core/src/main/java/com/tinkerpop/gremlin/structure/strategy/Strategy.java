@@ -46,7 +46,7 @@ public interface Strategy  {
      *
      * @param <T> represents the object that is calling the strategy (i.e. the vertex on which addEdge was called).
      */
-    public static class Context<T>  {
+    public static class Context<T extends StrategyWrapped>  {
         private final Graph g;
         private final Map<String,Object> environment;
         private final T current;
@@ -72,7 +72,7 @@ public interface Strategy  {
             return current;
         }
 
-        public Graph getGraph() {
+        public Graph getBaseGraph() {
             return g;
         }
 

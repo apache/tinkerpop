@@ -30,8 +30,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
 
-    private transient final Strategy.Context<Vertex> strategyContext = new Strategy.Context<Vertex>(this.graph, this);
-
     protected TinkerVertex(final String id, final String label, final TinkerGraph graph) {
         super(id, label, graph);
         this.state = TinkerGraphComputer.State.STANDARD;

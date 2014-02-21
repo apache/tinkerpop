@@ -21,15 +21,11 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
 
     protected TinkerGraphComputer.State state = TinkerGraphComputer.State.STANDARD;
 
-    private transient final Strategy.Context<Property<V>> strategyContext;
-
-
     public TinkerProperty(final Element element, final String key, final V value) {
         this.element = element;
         this.key = key;
         this.value = value;
         this.graph = ((TinkerElement) element).graph;
-        this.strategyContext = new Strategy.Context<Property<V>>(this.graph, this);
     }
 
     private TinkerProperty(final TinkerProperty<V> property, final TinkerGraphComputer.State state, final TinkerVertexMemory vertexMemory) {

@@ -7,14 +7,14 @@ import com.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge {
+public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge, StrategyWrapped {
     private final Edge baseEdge;
-    private transient final Strategy.Context<Edge> strategyContext;
+    private transient final Strategy.Context<StrategyWrappedEdge> strategyContext;
 
     public StrategyWrappedEdge(final Edge baseEdge, final StrategyWrappedGraph strategyWrappedGraph) {
         super(strategyWrappedGraph, baseEdge);
         this.baseEdge = baseEdge;
-        strategyContext = new Strategy.Context<>(this.strategyWrappedGraph, baseEdge);
+        strategyContext = new Strategy.Context<>(this.strategyWrappedGraph.getBaseGraph(), this);
     }
 
     public Edge getBaseEdge() {

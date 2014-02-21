@@ -53,7 +53,7 @@ public class PartitionGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<Graph> ctx) {
+    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return (f) -> (keyValues) -> {
             final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
             o.addAll(Arrays.asList(this.partitionKey, writePartition));
@@ -62,19 +62,11 @@ public class PartitionGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<Vertex> ctx) {
+    public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return (f) -> (label, v, keyValues) -> {
             final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
             o.addAll(Arrays.asList(this.partitionKey, writePartition));
             return f.apply(label, v, o.toArray());
         };
     }
-
-    /*@Override
-    public UnaryOperator<Supplier<Iterable<Vertex>>> getGraphQueryVerticesStrategy(final Strategy.Context<GraphQuery> ctx) {
-        return (f) -> () -> {
-            ctx.getCurrent().has(this.partitionKey, Contains.IN, this.readPartitions);
-            return f.get();
-        };
-    }*/
 }
