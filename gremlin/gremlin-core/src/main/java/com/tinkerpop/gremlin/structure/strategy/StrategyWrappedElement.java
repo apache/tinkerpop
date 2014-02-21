@@ -13,27 +13,26 @@ import java.util.Set;
 public abstract class StrategyWrappedElement implements Element, StrategyWrapped {
     protected final StrategyWrappedGraph strategyWrappedGraph;
     private final Element baseElement;
-    private transient final Strategy.Context<StrategyWrappedElement> elementStrategyContext;
+    private final Strategy.Context<StrategyWrappedElement> elementStrategyContext;
 
-
-    protected StrategyWrappedElement(final StrategyWrappedGraph strategyWrappedGraph, final Element baseElement) {
+    protected StrategyWrappedElement(final Element baseElement, final StrategyWrappedGraph strategyWrappedGraph) {
         this.strategyWrappedGraph = strategyWrappedGraph;
         this.baseElement = baseElement;
         this.elementStrategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
     }
 
     @Override
-    public <V> V getValue(String key) throws NoSuchElementException {
+    public <V> V getValue(final String key) throws NoSuchElementException {
         return this.baseElement.getValue(key);
     }
 
     @Override
-    public void setProperties(Object... keyValues) {
+    public void setProperties(final Object... keyValues) {
         this.baseElement.setProperties(keyValues);
     }
 
     @Override
-    public <V> Property<V> getProperty(String key) {
+    public <V> Property<V> getProperty(final String key) {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getElementGetProperty(elementStrategyContext),
                 this.baseElement::getProperty).apply(key);
@@ -62,7 +61,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     }
 
     @Override
-    public <V> void setProperty(String key, V value) {
+    public <V> void setProperty(final String key, final V value) {
         this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getElementSetProperty(elementStrategyContext),
                 this.baseElement::setProperty).accept(key, value);

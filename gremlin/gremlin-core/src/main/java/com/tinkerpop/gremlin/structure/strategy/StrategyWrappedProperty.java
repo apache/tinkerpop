@@ -12,7 +12,7 @@ import java.util.function.Supplier;
  */
 public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped {
     private final Property<V> baseProperty;
-    private final transient Strategy.Context<StrategyWrappedProperty<V>> strategyContext;
+    private final Strategy.Context<StrategyWrappedProperty<V>> strategyContext;
     private final StrategyWrappedGraph strategyWrappedGraph;
 
     public StrategyWrappedProperty(final Property<V> baseProperty, final StrategyWrappedGraph strategyWrappedGraph) {
@@ -42,22 +42,22 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
     }
 
     @Override
-    public <E extends Throwable> V orElseThrow(Supplier<? extends E> exceptionSupplier) throws E {
+    public <E extends Throwable> V orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
         return this.baseProperty.orElseThrow(exceptionSupplier);
     }
 
     @Override
-    public V orElseGet(Supplier<? extends V> edgeSupplier) {
+    public V orElseGet(final Supplier<? extends V> edgeSupplier) {
         return this.baseProperty.orElseGet(edgeSupplier);
     }
 
     @Override
-    public V orElse(V otherValue) {
+    public V orElse(final V otherValue) {
         return this.baseProperty.orElse(otherValue);
     }
 
     @Override
-    public void ifPresent(Consumer<? super V> consumer) {
+    public void ifPresent(final Consumer<? super V> consumer) {
         this.baseProperty.ifPresent(consumer);
     }
 

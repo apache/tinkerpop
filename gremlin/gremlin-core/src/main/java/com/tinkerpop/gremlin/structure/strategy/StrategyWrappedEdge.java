@@ -9,10 +9,10 @@ import com.tinkerpop.gremlin.structure.Vertex;
  */
 public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge, StrategyWrapped {
     private final Edge baseEdge;
-    private transient final Strategy.Context<StrategyWrappedEdge> strategyContext;
+    private final Strategy.Context<StrategyWrappedEdge> strategyContext;
 
     public StrategyWrappedEdge(final Edge baseEdge, final StrategyWrappedGraph strategyWrappedGraph) {
-        super(strategyWrappedGraph, baseEdge);
+        super(baseEdge, strategyWrappedGraph);
         this.baseEdge = baseEdge;
         strategyContext = new Strategy.Context<>(this.strategyWrappedGraph.getBaseGraph(), this);
     }

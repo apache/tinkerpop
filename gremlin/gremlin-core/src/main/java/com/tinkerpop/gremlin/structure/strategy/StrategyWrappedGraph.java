@@ -14,8 +14,8 @@ import java.util.Optional;
  */
 public class StrategyWrappedGraph implements Graph, StrategyWrapped {
     private final Graph baseGraph;
-    protected transient Strategy strategy = new Strategy.Simple();
-    private transient Strategy.Context<StrategyWrappedGraph> graphContext;
+    protected Strategy strategy = new Strategy.Simple();
+    private Strategy.Context<StrategyWrappedGraph> graphContext;
 
     public StrategyWrappedGraph(final Graph baseGraph) {
         this.baseGraph = baseGraph;
@@ -27,7 +27,7 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
     }
 
     @Override
-    public Vertex addVertex(Object... keyValues) {
+    public Vertex addVertex(final Object... keyValues) {
         final Optional<Vertex> v = Optional.ofNullable(strategy.compose(
                 s -> s.getAddVertexStrategy(graphContext),
                 this.baseGraph::addVertex).apply(keyValues));
@@ -35,14 +35,14 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
     }
 
     @Override
-    public Vertex v(Object id) {
+    public Vertex v(final Object id) {
         return new StrategyWrappedVertex(strategy().compose(
                 s -> s.getGraphvStrategy(graphContext),
                 this.baseGraph::v).apply(id), this);
     }
 
     @Override
-    public Edge e(Object id) {
+    public Edge e(final Object id) {
         return strategy().compose(
                 s -> s.getGrapheStrategy(graphContext),
                 this.baseGraph::e).apply(id);

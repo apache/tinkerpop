@@ -12,7 +12,7 @@ import java.util.Set;
 public class StrategyWrappedAnnotations implements Graph.Annotations, StrategyWrapped {
 
     private final Graph.Annotations baseAnnotations;
-    private final transient Strategy.Context<StrategyWrappedAnnotations> strategyContext;
+    private final Strategy.Context<StrategyWrappedAnnotations> strategyContext;
     private final StrategyWrappedGraph strategyWrappedGraph;
 
     public StrategyWrappedAnnotations(final Graph.Annotations baseAnnotations, final StrategyWrappedGraph strategyWrappedGraph) {
@@ -26,14 +26,14 @@ public class StrategyWrappedAnnotations implements Graph.Annotations, StrategyWr
     }
 
     @Override
-    public void set(String key, Object value) {
+    public void set(final String key, final Object value) {
         this.strategyWrappedGraph.strategy().compose(
                 s -> s.getGraphAnnotationsSet(strategyContext),
                 this.baseAnnotations::set).accept(key, value);
     }
 
     @Override
-    public <T> Optional<T> get(String key) {
+    public <T> Optional<T> get(final String key) {
         return this.baseAnnotations.get(key);
     }
 
