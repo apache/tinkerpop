@@ -57,14 +57,15 @@ public class IdGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         // don't apply f if supportsEdgeId is true, because the implementation needs to be highjacked by the Strategy
-        return supportsEdgeId ? (f) -> (id) -> (Edge) ctx.getBaseGraph().E().has(idKey, id).next() :UnaryOperator.identity();
+        return supportsEdgeId ? (f) -> (id) -> (Edge) ctx.getBaseGraph().E().has(idKey, id).next() : UnaryOperator.identity();
     }
 
     @Override
     public UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
-        // if the property is not present then it's likely an internal call from the graph on addVertex in which case,
-        // the base implementation should be called
-        return (f) -> () -> ctx.getCurrent().getProperty(idKey).orElse(f.get());
+        // don't apply f if ids are supported...need to return the id from the indexed key instead.
+        // todo: think through terminal strategies like this one...how else can this be done?
+        return ((ctx.getCurrent() instanceof Vertex) && supportsVertexId) || (ctx.getCurrent() instanceof Edge && supportsEdgeId) ?
+                (f) -> () -> ctx.getCurrent().getBaseElement().getProperty(idKey).get() : UnaryOperator.identity();
     }
 
     /**

@@ -21,6 +21,10 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
         this.elementStrategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
     }
 
+    public Element getBaseElement() {
+        return this.baseElement;
+    }
+
     @Override
     public <V> V getValue(final String key) throws NoSuchElementException {
         return this.baseElement.getValue(key);
