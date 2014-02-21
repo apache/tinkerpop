@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.steps.map;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traversal;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

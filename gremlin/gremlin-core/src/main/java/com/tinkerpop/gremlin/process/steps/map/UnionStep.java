@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.process.steps.map;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.steps.AbstractStep;
-import com.tinkerpop.gremlin.process.steps.util.TraversalRing;
 import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
+import com.tinkerpop.gremlin.process.steps.util.TraversalRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**

@@ -1,18 +1,18 @@
 package com.tinkerpop.gremlin.process.olap.traversal;
 
+import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.olap.MessageType;
+import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.steps.util.MapHelper;
 import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
+import com.tinkerpop.gremlin.process.util.MicroPath;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.process.olap.MessageType;
-import com.tinkerpop.gremlin.process.olap.Messenger;
-import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.util.MicroPath;
-import com.tinkerpop.gremlin.process.Path;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

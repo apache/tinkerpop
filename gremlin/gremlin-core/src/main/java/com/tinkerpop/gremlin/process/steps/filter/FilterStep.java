@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.steps.filter;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.steps.AbstractStep;
 
 import java.util.function.Predicate;

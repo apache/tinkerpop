@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.process.olap.traversal;
 
+import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.PathHolder;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.PathHolder;
 
 import java.io.Serializable;
 import java.util.Arrays;

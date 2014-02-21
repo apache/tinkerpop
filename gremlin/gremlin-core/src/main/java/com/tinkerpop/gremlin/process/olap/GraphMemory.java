@@ -2,8 +2,6 @@ package com.tinkerpop.gremlin.process.olap;
 
 import com.tinkerpop.gremlin.structure.Graph;
 
-import java.util.Iterator;
-import java.util.Optional;
 import java.util.Set;
 
 /**

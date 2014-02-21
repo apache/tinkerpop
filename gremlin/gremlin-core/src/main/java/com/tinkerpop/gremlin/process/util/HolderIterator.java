@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.PathHolder;
-import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.SimpleHolder;
+import com.tinkerpop.gremlin.process.Step;
 
 import java.util.Iterator;
 
