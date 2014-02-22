@@ -7,8 +7,11 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Utility class supporting common functions for {@link com.tinkerpop.gremlin.structure.Element}.
@@ -69,6 +72,20 @@ public class ElementHelper {
                 return Optional.of(keyValues[i + 1]);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Gets the list of keys from the key values.
+     *
+     * @param keyValues a list of key/values pairs
+     * @return
+     */
+    public static Set<String> getKeys(final Object... keyValues) {
+        final Set<String> keys = new HashSet<>();
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            keys.add(keyValues[i].toString());
+        }
+        return keys;
     }
 
     /**

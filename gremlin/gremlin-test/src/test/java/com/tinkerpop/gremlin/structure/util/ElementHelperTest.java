@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.Set;
+
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -377,4 +379,10 @@ public class ElementHelperTest {
         assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
     }
 
+    @Test
+    public void shouldExtractKeys() {
+        final Set<String> keys = ElementHelper.getKeys("test1", "something", "test2", "something else");
+        assertTrue(keys.contains("test1"));
+        assertTrue(keys.contains("test2"));
+    }
 }

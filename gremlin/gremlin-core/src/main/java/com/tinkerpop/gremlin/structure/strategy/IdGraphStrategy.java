@@ -10,7 +10,9 @@ import com.tinkerpop.gremlin.util.function.TriFunction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -40,12 +42,18 @@ public class IdGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> (keyValues) -> f.apply(this.injectId(supportsVertexId, keyValues, vertexIdSupplier).toArray());
+        return (f) -> (keyValues) ->  {
+            throwIfIdKeyIsSet(Vertex.class, ElementHelper.getKeys(keyValues));
+            return f.apply(this.injectId(supportsVertexId, keyValues, vertexIdSupplier).toArray());
+        };
     }
 
     @Override
     public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
-        return (f) -> (label, v, keyValues) -> f.apply(label, v, this.injectId(supportsEdgeId, keyValues, edgeIdSupplier).toArray());
+        return (f) -> (label, v, keyValues) -> {
+            throwIfIdKeyIsSet(Edge.class, ElementHelper.getKeys(keyValues));
+            return f.apply(label, v, this.injectId(supportsEdgeId, keyValues, edgeIdSupplier).toArray());
+        };
     }
 
     @Override
@@ -67,6 +75,26 @@ public class IdGraphStrategy implements GraphStrategy {
         // todo: think through terminal strategies like this one...how else can this be done?
         return (f) -> () -> ((ctx.getCurrent() instanceof Vertex) && supportsVertexId) || (ctx.getCurrent() instanceof Edge && supportsEdgeId) ?
                 ctx.getCurrent().getBaseElement().getProperty(idKey).get() : f.get();
+    }
+
+    @Override
+    public <V> UnaryOperator<BiConsumer<String, V>> getElementSetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return (f) -> (k, v) -> {
+            throwIfIdKeyIsSet(ctx.getCurrent().getClass(), k);
+            f.accept(k,v);
+        };
+    }
+
+    private void throwIfIdKeyIsSet(final Class<? extends Element> element, final String k) {
+        if (((Vertex.class.isAssignableFrom(element) && supportsVertexId) || (Edge.class.isAssignableFrom(element) && supportsEdgeId)) &&
+            this.idKey.equals(k))
+            throw new IllegalArgumentException(String.format("The key [%s] is protected by %s and cannot be set", idKey, IdGraphStrategy.class.getSimpleName()));
+    }
+
+    private void throwIfIdKeyIsSet(final Class<? extends Element> element, final Set<String> keys) {
+        if (((Vertex.class.isAssignableFrom(element) && supportsVertexId) || (Edge.class.isAssignableFrom(element) && supportsEdgeId)) &&
+                keys.contains(this.idKey))
+            throw new IllegalArgumentException(String.format("The key [%s] is protected by %s and cannot be set", idKey, IdGraphStrategy.class.getSimpleName()));
     }
 
     /**
