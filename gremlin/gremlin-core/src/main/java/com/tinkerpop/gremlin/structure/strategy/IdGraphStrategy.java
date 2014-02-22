@@ -38,6 +38,9 @@ public class IdGraphStrategy implements GraphStrategy {
     private final boolean supportsVertexId;
     private final boolean supportsEdgeId;
 
+    /**
+     * Creates a new instance.  Public instantiation should be handled through the {@link Builder}.
+     */
     private IdGraphStrategy(final String idKey, final Supplier<?> vertexIdSupplier,
                             final Supplier<?> edgeIdSupplier, final boolean supportsVertexId,
                             final boolean supportsEdgeId) {
