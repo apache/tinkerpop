@@ -82,7 +82,7 @@ public interface Graph extends AutoCloseable {
 
         public Graph getGraph();
 
-        public interface SystemMemory extends Memory {
+        public interface System extends Memory {
 
             public void incrIteration();
 

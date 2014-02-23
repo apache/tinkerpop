@@ -35,6 +35,7 @@ public class TinkerGraph implements Graph, Serializable {
     protected Map<String, Vertex> vertices = new HashMap<>();
     protected Map<String, Edge> edges = new HashMap<>();
     protected Annotations annotations = new TinkerGraph.Annotations();
+    protected Memory memory = new TinkerGraphMemory(this);
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
@@ -137,7 +138,7 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
     public Memory memory() {
-        return new TinkerGraphMemory(this);
+        return this.memory;
     }
 
     public class Annotations implements Graph.Annotations, Serializable {

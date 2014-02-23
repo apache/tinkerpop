@@ -2,6 +2,7 @@ package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.structure.Graph;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphMemory implements Graph.Memory.SystemMemory {
+public class TinkerGraphMemory implements Graph.Memory.System, Serializable {
 
     private final Graph graph;
     private final Map<String, Object> memory;

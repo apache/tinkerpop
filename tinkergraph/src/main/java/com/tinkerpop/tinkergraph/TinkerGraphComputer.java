@@ -21,12 +21,10 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     private Isolation isolation = Isolation.BSP;
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
-    private final TinkerGraphMemory graphMemory;
     private final TinkerMessenger messenger = new TinkerMessenger();
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
-        this.graphMemory = new TinkerGraphMemory(graph);
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
@@ -45,24 +43,24 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
     public Future<Graph> submit() {
         return CompletableFuture.<Graph>supplyAsync(() -> {
-            final long time = System.currentTimeMillis();
+            final long time = java.lang.System.currentTimeMillis();
             //this.vertexMemory.setComputeKeys(this.vertexProgram.getComputeKeys());
-            this.vertexProgram.setup(this.graphMemory);
+            this.vertexProgram.setup(this.graph.memory());
 
             while (true) {
                 StreamFactory.parallelStream(this.graph.V()).forEach(vertex ->
                         /*this.vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC,
                                 vertex.getId().toString(),
                                 this.vertexMemory), this.messenger, this.graphMemory));*/
-                        this.vertexProgram.execute(vertex, this.messenger, this.graphMemory));
+                        this.vertexProgram.execute(vertex, this.messenger, this.graph.memory()));
 
                 //this.vertexMemory.completeIteration();
-                this.graphMemory.incrIteration();
+                ((Graph.Memory.System) this.graph.memory()).incrIteration();
                 this.messenger.completeIteration();
-                if (this.vertexProgram.terminate(this.graphMemory)) break;
+                if (this.vertexProgram.terminate(this.graph.memory())) break;
             }
 
-            this.graphMemory.setRuntime(System.currentTimeMillis() - time);
+            ((Graph.Memory.System) this.graph.memory()).setRuntime(java.lang.System.currentTimeMillis() - time);
 
             return this.graph;
         });
