@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.structure.util.ObjectHelper;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
