@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -76,9 +77,8 @@ public class Path {
     public Path subset(final String... asLabels) {
         final Path path = new Path();
         this.forEach((as, object) -> {
-            if (ObjectHelper.contains(as, asLabels)) {
+            if (Stream.of(asLabels).anyMatch(as::equals))
                 path.add(as, object);
-            }
         });
         return path;
     }
