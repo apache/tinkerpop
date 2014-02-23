@@ -68,6 +68,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
         return this.composeStrategyUnaryOperator(s -> s.getGrapheStrategy(ctx));
     }
 
+    @Override
+    public UnaryOperator<Supplier<Object>> getElementGetId(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getElementGetId(ctx));
+    }
+
     /**
      * Compute a new strategy function from the sequence of supplied {@link GraphStrategy} objects.
      *

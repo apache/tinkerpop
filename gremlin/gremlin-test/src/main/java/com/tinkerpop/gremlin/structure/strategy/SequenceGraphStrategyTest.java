@@ -1,19 +1,28 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.TriFunction;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -193,5 +202,88 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("working2", v.getProperty("anonymous").get());
     }
 
-    // todo: needs some kind of test that hits all the strategies
+    @Test
+    public void shouldHaveAllMethodsImplemented() throws Exception {
+        final Method[] methods = GraphStrategy.class.getDeclaredMethods();
+        final SpyGraphStrategy spy = new SpyGraphStrategy();
+        final SequenceGraphStrategy strategy = new SequenceGraphStrategy(spy);
+
+        // invoke all the strategy methods
+        Stream.of(methods).forEach(method -> {
+            try {
+                method.invoke(strategy, new Strategy.Context(g, new StrategyWrapped() {}));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                fail("Should be able to invoke function");
+                throw new RuntimeException("fail");
+            }
+        });
+
+        // check the spy to see that all methods were executed
+        assertEquals(methods.length, spy.getCount());
+    }
+
+    public class SpyGraphStrategy implements GraphStrategy {
+
+        private int count = 0;
+
+        public int getCount() {
+            return count;
+        }
+
+        private UnaryOperator spy() {
+            count++;
+            return UnaryOperator.identity();
+        }
+
+        @Override
+        public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
+            return spy();
+        }
+
+        @Override
+        public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(Strategy.Context<StrategyWrappedVertex> ctx) {
+            return spy();
+        }
+
+        @Override
+        public UnaryOperator<Supplier<Void>> getRemoveElementStrategy(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
+        }
+
+        @Override
+        public <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(Strategy.Context<StrategyWrappedProperty<V>> ctx) {
+            return spy();
+        }
+
+        @Override
+        public <V> UnaryOperator<Function<String, Property<V>>> getElementGetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
+        }
+
+        @Override
+        public <V> UnaryOperator<BiConsumer<String, V>> getElementSetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
+        }
+
+        @Override
+        public UnaryOperator<Supplier<Object>> getElementGetId(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
+        }
+
+        @Override
+        public UnaryOperator<BiConsumer<String, Object>> getGraphAnnotationsSet(Strategy.Context<StrategyWrappedAnnotations> ctx) {
+            return spy();
+        }
+
+        @Override
+        public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
+            return spy();
+        }
+
+        @Override
+        public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
+            return spy();
+        }
+    }
 }
