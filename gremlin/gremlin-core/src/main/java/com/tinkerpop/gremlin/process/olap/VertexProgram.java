@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.olap;
 
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.Serializable;
@@ -28,7 +29,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      *
      * @param graphMemory The global GraphMemory of the GraphComputer
      */
-    public void setup(final GraphMemory graphMemory);
+    public void setup(final Graph.Memory graphMemory);
 
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
@@ -37,16 +38,16 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      * @param messenger   the messenger that moves data between vertices
      * @param graphMemory the shared state between all vertices in the computation
      */
-    public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphMemory graphMemory);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory graphMemory);
 
     /**
      * The method is called at the end of a round to determine if the computation is complete. The method is global
      * to the {@link GraphComputer} and as such, is not called for each {@link com.tinkerpop.gremlin.structure.Vertex}.
      *
-     * @param graphMemory The global {@link GraphMemory} of the {@link GraphComputer}
+     * @param graphMemory The global {@link Graph.Memory} of the {@link GraphComputer}
      * @return whether or not to halt the computation
      */
-    public boolean terminate(final GraphMemory graphMemory);
+    public boolean terminate(final Graph.Memory graphMemory);
 
     public Map<String, KeyType> getComputeKeys();
 

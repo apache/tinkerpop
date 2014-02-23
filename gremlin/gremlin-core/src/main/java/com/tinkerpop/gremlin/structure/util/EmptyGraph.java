@@ -55,6 +55,11 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
+    public Memory memory() {
+        throw new IllegalStateException(MESSAGE);
+    }
+
+    @Override
     public void close() throws Exception {
         throw new IllegalStateException(MESSAGE);
     }

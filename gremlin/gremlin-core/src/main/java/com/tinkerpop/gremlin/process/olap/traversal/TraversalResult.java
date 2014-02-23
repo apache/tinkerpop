@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.olap.traversal;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.util.MicroPath;
 import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
@@ -22,7 +21,7 @@ public class TraversalResult<T> implements Iterator<T> {
     private Iterator<T> itty;
     private final Supplier<Traversal> gremlinSupplier;
     private final Graph graph;
-    private final ComputeResult computeResult;
+    private final Graph result;
 
     public TraversalResult(final Graph graph, final Supplier<Traversal> gremlinSupplier) {
         this.gremlinSupplier = gremlinSupplier;
@@ -31,7 +30,7 @@ public class TraversalResult<T> implements Iterator<T> {
         computer.program(TraversalVertexProgram.create().gremlin((Supplier) gremlinSupplier).build());
 
         try {
-            this.computeResult = computer.submit().get();
+            this.result = computer.submit().get();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -54,7 +53,7 @@ public class TraversalResult<T> implements Iterator<T> {
         if (HolderOptimizer.trackPaths(this.gremlinSupplier.get())) {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.graph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
-                        .map(v -> this.computeResult.getVertexMemory().<TraversalPaths>getProperty(v, TraversalVertexProgram.GREMLIN_TRACKER).orElse(null))
+                        .map(v -> this.result.v(v.getId()).<TraversalPaths>getProperty(TraversalVertexProgram.GREMLIN_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
                         .flatMap(tracker -> {
                             final List list = new ArrayList();
@@ -76,7 +75,7 @@ public class TraversalResult<T> implements Iterator<T> {
         } else {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.graph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
-                        .map(v -> this.computeResult.getVertexMemory().<TraversalCounters>getProperty(v, TraversalVertexProgram.GREMLIN_TRACKER).orElse(null))
+                        .map(v -> this.result.v(v.getId()).<TraversalCounters>getProperty(TraversalVertexProgram.GREMLIN_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
                         .flatMap(tracker -> {
                             final List list = new ArrayList();

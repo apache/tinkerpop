@@ -52,6 +52,45 @@ public interface Graph extends AutoCloseable {
 
     public Annotations annotations();
 
+    public Memory memory();
+
+    public interface Memory {
+
+        public Set<String> getVariables();
+
+        public <R> R get(final String variable);
+
+        public void set(final String variable, Object value);
+
+        public void setIfAbsent(final String variable, final Object value);
+
+        public long incr(final String variable, final long delta);
+
+        public long decr(final String variable, final long delta);
+
+        public boolean and(final String variable, final boolean bool);
+
+        public boolean or(final String variable, final boolean bool);
+
+        public int getIteration();
+
+        public long getRuntime();
+
+        public default boolean isInitialIteration() {
+            return this.getIteration() == 0;
+        }
+
+        public Graph getGraph();
+
+        public interface SystemMemory extends Memory {
+
+            public void incrIteration();
+
+            public void setRuntime(final long runtime);
+        }
+
+    }
+
     public interface Annotations {
 
         public class Key {

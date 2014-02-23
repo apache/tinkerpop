@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.olap.ranking;
 
-import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.structure.util.VertexQueryBuilder;
@@ -37,11 +37,11 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         return computeKeys;
     }
 
-    public void setup(final GraphMemory graphMemory) {
+    public void setup(final Graph.Memory graphMemory) {
 
     }
 
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphMemory graphMemory) {
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final Graph.Memory graphMemory) {
         if (graphMemory.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(this.messageType.getQuery().build(vertex).count()).doubleValue();
@@ -63,7 +63,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         }
     }
 
-    public boolean terminate(final GraphMemory graphMemory) {
+    public boolean terminate(final Graph.Memory graphMemory) {
         return graphMemory.getIteration() >= this.totalIterations;
     }
 

@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Memory;
+import com.tinkerpop.gremlin.process.Traversal;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultMemory implements Memory {
+public class DefaultMemory implements Traversal.Memory {
 
     private final Map<String, Object> memory = new HashMap<>();
 

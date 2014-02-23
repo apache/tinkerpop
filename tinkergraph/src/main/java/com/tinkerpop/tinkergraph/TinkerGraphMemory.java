@@ -1,6 +1,5 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.gremlin.process.olap.GraphSystemMemory;
 import com.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
@@ -12,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphMemory implements GraphSystemMemory {
+public class TinkerGraphMemory implements Graph.Memory.SystemMemory {
 
     private final Graph graph;
     private final Map<String, Object> memory;
@@ -56,14 +55,14 @@ public class TinkerGraphMemory implements GraphSystemMemory {
         return (R) this.memory.get(variable);
     }
 
-    public long increment(final String variable, final long delta) {
+    public long incr(final String variable, final long delta) {
         final Object value = this.memory.get(variable);
         final long incremented = value == null ? delta : (Long) value + delta;
         this.memory.put(variable, incremented);
         return incremented;
     }
 
-    public long decrement(final String variable, final long delta) {
+    public long decr(final String variable, final long delta) {
         final Object value = this.memory.get(variable);
         final long decremented = value == null ? delta : (Long) value - delta;
         this.memory.put(variable, decremented);
@@ -87,6 +86,10 @@ public class TinkerGraphMemory implements GraphSystemMemory {
     public void setIfAbsent(final String variable, final Object value) {
         if (this.memory.containsKey(variable))
             throw new IllegalStateException("The memory already has a value for key " + variable);
+        this.memory.put(variable, value);
+    }
+
+    public void set(final String variable, final Object value) {
         this.memory.put(variable, value);
     }
 

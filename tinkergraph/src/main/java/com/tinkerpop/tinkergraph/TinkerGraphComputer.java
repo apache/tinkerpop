@@ -3,12 +3,10 @@ package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.olap.GraphMemory;
-import com.tinkerpop.gremlin.process.olap.VertexMemory;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
 import com.tinkerpop.gremlin.process.olap.traversal.TraversalResult;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
@@ -49,17 +47,18 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         return this;
     }
 
-    public Future<ComputeResult> submit() {
-        return CompletableFuture.<ComputeResult>supplyAsync(() -> {
+    public Future<Graph> submit() {
+        return CompletableFuture.<Graph>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             this.vertexMemory.setComputeKeys(this.vertexProgram.getComputeKeys());
             this.vertexProgram.setup(this.graphMemory);
 
             while (true) {
                 StreamFactory.parallelStream(this.graph.V()).forEach(vertex ->
-                        this.vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC,
+                        /*this.vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC,
                                 vertex.getId().toString(),
-                                this.vertexMemory), this.messenger, this.graphMemory));
+                                this.vertexMemory), this.messenger, this.graphMemory));*/
+                        this.vertexProgram.execute(vertex, this.messenger, this.graphMemory));
 
                 this.vertexMemory.completeIteration();
                 this.graphMemory.incrIteration();
@@ -69,17 +68,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
             this.graphMemory.setRuntime(System.currentTimeMillis() - time);
 
-            return new ComputeResult() {
-                @Override
-                public GraphMemory getGraphMemory() {
-                    return graphMemory;
-                }
-
-                @Override
-                public VertexMemory getVertexMemory() {
-                    return vertexMemory;
-                }
-            };
+            return this.graph;
         });
     }
 }

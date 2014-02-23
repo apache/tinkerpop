@@ -33,6 +33,6 @@ public class TinkerGraphComputerTest {
         System.out.println("---------------");
         g.V().value("pageRank").forEachRemaining(System.out::println);
         System.out.println("---------------");
-//        g.V().pageRank().sideEffect(p -> p.get().getValue0().setProperty("pageRank", p.get().getValue1())).submit(g.compute()).forEachRemaining(System.out::println);
+        g.V().pageRank().sideEffect(p -> p.get().getValue0().setProperty("pageRank", p.get().getValue1())).submit(g.compute()).forEachRemaining(System.out::println);
     }
 }

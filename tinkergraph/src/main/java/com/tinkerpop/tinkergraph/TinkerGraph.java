@@ -1,6 +1,5 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.gremlin.process.Memory;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
@@ -8,7 +7,6 @@ import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.strategy.Strategy;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -45,7 +43,8 @@ public class TinkerGraph implements Graph, Serializable {
      * An empty private constructor that initializes {@link TinkerGraph} with no {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily
      * used for purposes of serialization issues.
      */
-    private TinkerGraph() {}
+    private TinkerGraph() {
+    }
 
     /**
      * Open a new {@link TinkerGraph} instance.
@@ -92,7 +91,7 @@ public class TinkerGraph implements Graph, Serializable {
                 return super.submit(engine);
             }
         };
-        traversal.memory().set(Memory.Variable.hidden("g"), this);    // TODO: is this good?
+        traversal.memory().set(Traversal.Memory.Variable.hidden("g"), this);    // TODO: is this good?
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
         traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         return traversal;
@@ -135,6 +134,10 @@ public class TinkerGraph implements Graph, Serializable {
 
     public Annotations annotations() {
         return this.annotations;
+    }
+
+    public Memory memory() {
+        return new TinkerGraphMemory(this);
     }
 
     public class Annotations implements Graph.Annotations, Serializable {

@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.Memory;
 import com.tinkerpop.gremlin.process.Optimizers;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
