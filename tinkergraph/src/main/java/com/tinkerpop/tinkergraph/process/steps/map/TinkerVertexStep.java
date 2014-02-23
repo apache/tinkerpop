@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.steps.map.VertexStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.tinkergraph.TinkerHelper;
 import com.tinkerpop.tinkergraph.TinkerVertex;
 

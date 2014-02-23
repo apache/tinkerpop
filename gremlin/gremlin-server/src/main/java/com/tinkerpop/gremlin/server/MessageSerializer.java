@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer;
 import org.slf4j.Logger;

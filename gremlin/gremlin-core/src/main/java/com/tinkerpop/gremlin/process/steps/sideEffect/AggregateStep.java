@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.steps.sideEffect;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.steps.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.steps.util.FunctionRing;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;

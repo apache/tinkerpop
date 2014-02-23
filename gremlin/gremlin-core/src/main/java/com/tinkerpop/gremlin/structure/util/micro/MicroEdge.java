@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Iterator;

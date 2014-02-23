@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.steps.map;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.UnHolderIterator;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;

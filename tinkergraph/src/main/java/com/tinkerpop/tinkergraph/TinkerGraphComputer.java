@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.olap.GraphMemory;
 import com.tinkerpop.gremlin.process.olap.VertexMemory;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
 import com.tinkerpop.gremlin.process.olap.traversal.TraversalResult;
-import com.tinkerpop.gremlin.structure.util.StreamFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;

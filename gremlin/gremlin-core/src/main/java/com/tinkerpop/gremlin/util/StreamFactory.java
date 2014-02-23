@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util;
+package com.tinkerpop.gremlin.util;
 
 import java.util.Arrays;
 import java.util.Iterator;
