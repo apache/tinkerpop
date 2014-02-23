@@ -83,7 +83,7 @@ public class IdGraphStrategy implements GraphStrategy {
     public UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         // don't apply f if ids are supported...need to return the id from the indexed key instead.
         // todo: think through terminal strategies like this one...how else can this be done?
-        return (ctx.getCurrent() instanceof Vertex && supportsVertexId) || (ctx.getCurrent() instanceof Edge && supportsEdgeId) ?
+        return supportsAnId(ctx.getCurrent().getClass()) ?
                 (f) -> () -> ctx.getCurrent().getBaseElement().getProperty(idKey).get() : UnaryOperator.identity();
     }
 
@@ -96,15 +96,17 @@ public class IdGraphStrategy implements GraphStrategy {
     }
 
     private void throwIfIdKeyIsSet(final Class<? extends Element> element, final String k) {
-        if (((Vertex.class.isAssignableFrom(element) && supportsVertexId) || (Edge.class.isAssignableFrom(element) && supportsEdgeId)) &&
-            this.idKey.equals(k))
+        if (supportsAnId(element) && this.idKey.equals(k))
             throw new IllegalArgumentException(String.format("The key [%s] is protected by %s and cannot be set", idKey, IdGraphStrategy.class.getSimpleName()));
     }
 
     private void throwIfIdKeyIsSet(final Class<? extends Element> element, final Set<String> keys) {
-        if (((Vertex.class.isAssignableFrom(element) && supportsVertexId) || (Edge.class.isAssignableFrom(element) && supportsEdgeId)) &&
-                keys.contains(this.idKey))
+        if (supportsAnId(element) && keys.contains(this.idKey))
             throw new IllegalArgumentException(String.format("The key [%s] is protected by %s and cannot be set", idKey, IdGraphStrategy.class.getSimpleName()));
+    }
+
+    private boolean supportsAnId(final Class<? extends Element> element) {
+        return ((Vertex.class.isAssignableFrom(element) && supportsVertexId) || (Edge.class.isAssignableFrom(element) && supportsEdgeId));
     }
 
     /**
