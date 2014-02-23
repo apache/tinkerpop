@@ -24,6 +24,11 @@ import java.util.function.UnaryOperator;
  * For those graphs which support vertex indices but not edge indices (or vice versa), the strategy can be configured
  * to use custom IDs only for vertices or only for edges.  ID generation is also configurable via ID {@link Supplier}
  * functions.
+ * <p/>
+ * If the {@link IdGraphStrategy} is used in combination with a sequence of other strategies and when ID assignment
+ * is enabled for an element, calls to strategies following this one are not made.  It is important to consider that
+ * aspect of its operation when doing strategy composition.  Typically, the {@link IdGraphStrategy} should be
+ * executed last in a sequence.
  *
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
