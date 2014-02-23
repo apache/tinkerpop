@@ -72,6 +72,10 @@ public interface Vertex extends Element {
         return this.start().as(as);
     }
 
+    public default Traversal<Vertex, Vertex> identity() {
+        return this.start().identity();
+    }
+
     public default <E2> Traversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
         return this.start().annotatedValues(propertyKey);
     }

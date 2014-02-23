@@ -64,19 +64,13 @@ public class VertexQueryBuilder {
         return this;
     }
 
-    public VertexQueryBuilder limit(final int limit) {
-        this.limit = limit;
-        return this;
-    }
-
     public VertexQueryBuilder reverse() {
         this.direction = this.direction.opposite();
         return this;
     }
 
-
     public Traversal<Vertex, Edge> build(final Vertex vertex) {
-        Traversal traversal = vertex.as("a");
+        Traversal traversal = vertex.identity();
         if (this.direction.equals(Direction.OUT))
             traversal.outE(this.limit, this.labels);
         else if (this.direction.equals(Direction.IN))
