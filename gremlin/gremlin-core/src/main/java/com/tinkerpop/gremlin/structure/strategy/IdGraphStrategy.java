@@ -70,22 +70,21 @@ public class IdGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         // don't apply f if supportsVertexId is true, because the implementation needs to be highjacked by the Strategy
-        // todo: should the supportsVertexId check be outside the UnaryOperator???
-        return (f) -> (id) -> supportsVertexId ? (Vertex) ctx.getBaseGraph().V().has(idKey, id).next() : f.apply(id);
+        return supportsVertexId ? (f) -> (id) -> (Vertex) ctx.getBaseGraph().V().has(idKey, id).next() : UnaryOperator.identity();
     }
 
     @Override
     public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         // don't apply f if supportsEdgeId is true, because the implementation needs to be highjacked by the Strategy
-        return (f) -> (id) -> supportsEdgeId ? (Edge) ctx.getBaseGraph().E().has(idKey, id).next() : f.apply(id);
+        return supportsEdgeId ?  (f) -> (id) -> (Edge) ctx.getBaseGraph().E().has(idKey, id).next() : UnaryOperator.identity();
     }
 
     @Override
     public UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         // don't apply f if ids are supported...need to return the id from the indexed key instead.
         // todo: think through terminal strategies like this one...how else can this be done?
-        return (f) -> () -> ((ctx.getCurrent() instanceof Vertex) && supportsVertexId) || (ctx.getCurrent() instanceof Edge && supportsEdgeId) ?
-                ctx.getCurrent().getBaseElement().getProperty(idKey).get() : f.get();
+        return (ctx.getCurrent() instanceof Vertex && supportsVertexId) || (ctx.getCurrent() instanceof Edge && supportsEdgeId) ?
+                (f) -> () -> ctx.getCurrent().getBaseElement().getProperty(idKey).get() : UnaryOperator.identity();
     }
 
     @Override
