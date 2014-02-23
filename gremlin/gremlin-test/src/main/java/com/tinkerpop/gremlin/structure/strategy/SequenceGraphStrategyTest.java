@@ -47,6 +47,12 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
+                        return UnaryOperator.identity();
+                    }
+                },
+                new GraphStrategy() {
+                    @Override
+                    public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
                         return (f) -> (args) -> {
                             final List<Object> o = new ArrayList<>(Arrays.asList(args));
                             o.addAll(Arrays.asList("anonymous", "working3"));
