@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -26,30 +25,11 @@ class TinkerEdge extends TinkerElement implements Edge {
         this.graph.edgeIndex.autoUpdate(Element.LABEL, this.label, null, this);
     }
 
-    private TinkerEdge(final TinkerEdge edge, final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {
-        super(edge.id, edge.label, edge.graph);
-        this.state = state;
-        this.inVertex = edge.inVertex;
-        this.outVertex = edge.outVertex;
-        this.properties = edge.properties;
-        this.vertexMemory = vertexMemory;
-        this.centricId = centricId;
-    }
-
     public <V> void setProperty(final String key, final V value) {
         ElementHelper.validateProperty(key, value);
-        if (TinkerGraphComputer.State.STANDARD == this.state) {
-            final Property oldProperty = super.getProperty(key);
-            this.properties.put(key, new TinkerProperty<>(this, key, value));
-            this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
-        } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
-            if (this.vertexMemory.getComputeKeys().containsKey(key))
-                this.vertexMemory.setProperty(this, key, value);
-            else
-                throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-        } else {
-            throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeWritten();
-        }
+        final Property oldProperty = super.getProperty(key);
+        this.properties.put(key, new TinkerProperty<>(this, key, value));
+        this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
     }
 
     public Vertex getVertex(final Direction direction) throws IllegalArgumentException {
@@ -81,10 +61,6 @@ class TinkerEdge extends TinkerElement implements Edge {
         this.graph.edgeIndex.removeElement(this);
         this.graph.edges.remove(this.getId());
         this.properties.clear();
-    }
-
-    public TinkerEdge createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {
-        return new TinkerEdge(this, state, centricId, vertexMemory);
     }
 
     public String toString() {

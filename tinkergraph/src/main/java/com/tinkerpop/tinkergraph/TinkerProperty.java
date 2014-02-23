@@ -2,7 +2,6 @@ package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.strategy.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -19,18 +18,11 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
     private final TinkerGraph graph;
     private V value;
 
-    protected TinkerGraphComputer.State state = TinkerGraphComputer.State.STANDARD;
-
     public TinkerProperty(final Element element, final String key, final V value) {
         this.element = element;
         this.key = key;
         this.value = value;
         this.graph = ((TinkerElement) element).graph;
-    }
-
-    private TinkerProperty(final TinkerProperty<V> property, final TinkerGraphComputer.State state, final TinkerVertexMemory vertexMemory) {
-        this(property.getElement(), property.getKey(), property.get());
-        this.state = state;
     }
 
     public <E extends Element> E getElement() {
@@ -47,15 +39,6 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
 
     public boolean isPresent() {
         return null != this.value;
-    }
-
-    public TinkerProperty<V> createClone(final TinkerGraphComputer.State state, final TinkerVertexMemory vertexMemory) {
-        return new TinkerProperty<V>(this, state, vertexMemory) {
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException("Property removal is not supported");
-            }
-        };
     }
 
     public String toString() {

@@ -3,7 +3,6 @@ package com.tinkerpop.tinkergraph;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.steps.map.StartStep;
 import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
@@ -12,7 +11,6 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.strategy.Strategy;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -32,38 +30,17 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     protected TinkerVertex(final String id, final String label, final TinkerGraph graph) {
         super(id, label, graph);
-        this.state = TinkerGraphComputer.State.STANDARD;
-        this.centricId = id;
-    }
-
-    private TinkerVertex(final TinkerVertex vertex, final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory annotationMemory) {
-        super(vertex.id, vertex.label, vertex.graph);
-        this.state = state;
-        this.outEdges = vertex.outEdges;
-        this.inEdges = vertex.inEdges;
-        this.properties = vertex.properties;
-        this.vertexMemory = annotationMemory;
-        this.centricId = centricId;
     }
 
     public <V> void setProperty(final String key, final V value) {
         ElementHelper.validateProperty(key, value);
-        if (TinkerGraphComputer.State.STANDARD == this.state) {
-            final Property oldProperty = super.getProperty(key);
-            if (value == AnnotatedList.make()) {
-                if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList))
-                    this.properties.put(key, new TinkerProperty<>(this, key, new TinkerAnnotatedList<>()));
-            } else
-                this.properties.put(key, new TinkerProperty<>(this, key, value));
-            this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
-        } else if (TinkerGraphComputer.State.CENTRIC == this.state) {
-            if (this.vertexMemory.getComputeKeys().containsKey(key))
-                this.vertexMemory.setProperty(this, key, value);
-            else
-                throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
-        } else {
-            throw GraphComputer.Exceptions.adjacentElementPropertiesCanNotBeWritten();
-        }
+        final Property oldProperty = super.getProperty(key);
+        if (value == AnnotatedList.make()) {
+            if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList))
+                this.properties.put(key, new TinkerProperty<>(this, key, new TinkerAnnotatedList<>()));
+        } else
+            this.properties.put(key, new TinkerProperty<>(this, key, value));
+        this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
     }
 
     public String toString() {
@@ -82,10 +59,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         this.getProperties().clear();
         graph.vertexIndex.removeElement(this);
         graph.vertices.remove(this.id);
-    }
-
-    public TinkerVertex createClone(final TinkerGraphComputer.State state, final String centricId, final TinkerVertexMemory vertexMemory) {
-        return new TinkerVertex(this, state, centricId, vertexMemory);
     }
 
     //////////////////////

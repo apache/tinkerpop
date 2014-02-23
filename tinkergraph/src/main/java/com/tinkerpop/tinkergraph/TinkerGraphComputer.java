@@ -18,14 +18,11 @@ import java.util.concurrent.Future;
  */
 public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
-    protected enum State {STANDARD, CENTRIC, ADJACENT}
-
     private Isolation isolation = Isolation.BSP;
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
     private final TinkerGraphMemory graphMemory;
     private final TinkerMessenger messenger = new TinkerMessenger();
-    private TinkerVertexMemory vertexMemory = new TinkerVertexMemory(this.isolation);
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -38,7 +35,6 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
     public GraphComputer isolation(final Isolation isolation) {
         this.isolation = isolation;
-        this.vertexMemory = new TinkerVertexMemory(isolation);
         return this;
     }
 
@@ -50,7 +46,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     public Future<Graph> submit() {
         return CompletableFuture.<Graph>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
-            this.vertexMemory.setComputeKeys(this.vertexProgram.getComputeKeys());
+            //this.vertexMemory.setComputeKeys(this.vertexProgram.getComputeKeys());
             this.vertexProgram.setup(this.graphMemory);
 
             while (true) {
@@ -60,7 +56,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                                 this.vertexMemory), this.messenger, this.graphMemory));*/
                         this.vertexProgram.execute(vertex, this.messenger, this.graphMemory));
 
-                this.vertexMemory.completeIteration();
+                //this.vertexMemory.completeIteration();
                 this.graphMemory.incrIteration();
                 this.messenger.completeIteration();
                 if (this.vertexProgram.terminate(this.graphMemory)) break;
