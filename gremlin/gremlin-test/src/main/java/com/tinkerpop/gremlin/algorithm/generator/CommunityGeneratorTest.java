@@ -57,9 +57,8 @@ public class CommunityGeneratorTest {
             final CommunityGenerator generator1 = new CommunityGenerator("knows");
             communityGeneratorTest(g1, generator1);
 
-            assertNotEquals(g.E().count(), g1.E().count());
-
-            // ensure that not every vertex has the same number of edges between graphs
+            // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
+            // same number of edges between graphs.  that should make it harder for the test to fail.
             assertFalse(g.V().toList().stream()
                     .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
                     .allMatch(p -> {
