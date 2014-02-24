@@ -35,7 +35,7 @@ public class TinkerGraph implements Graph, Serializable {
     protected Map<String, Vertex> vertices = new HashMap<>();
     protected Map<String, Edge> edges = new HashMap<>();
     protected Annotations annotations = new TinkerGraph.Annotations();
-    protected Memory memory = new TinkerGraphMemory(this);
+    protected Map<String, Memory> memories = new HashMap<>();
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
@@ -45,6 +45,7 @@ public class TinkerGraph implements Graph, Serializable {
      * used for purposes of serialization issues.
      */
     private TinkerGraph() {
+        this.memories.put(Memory.Key.GLOBAL, new TinkerGraphMemory(this));
     }
 
     /**
@@ -85,7 +86,7 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
     public Traversal<Vertex, Vertex> V() {
-        Traversal traversal = new DefaultTraversal<Object, Vertex>() {
+        final Traversal traversal = new DefaultTraversal<Object, Vertex>() {
             public Iterator<Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer)
                     this.optimizers().unregister(TinkerGraphStepOptimizer.class);
@@ -99,7 +100,7 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
     public Traversal<Edge, Edge> E() {
-        Traversal traversal = new DefaultTraversal<Object, Edge>() {
+        final Traversal traversal = new DefaultTraversal<Object, Edge>() {
             public Iterator<Edge> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer)
                     this.optimizers().unregister(TinkerGraphStepOptimizer.class);
@@ -137,8 +138,8 @@ public class TinkerGraph implements Graph, Serializable {
         return this.annotations;
     }
 
-    public Memory memory() {
-        return this.memory;
+    public Memory memory(final String jobId) {
+        return this.memories.get(jobId);
     }
 
     public class Annotations implements Graph.Annotations, Serializable {

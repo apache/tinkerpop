@@ -78,8 +78,8 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
     }
 
     @Override
-    public Memory memory() {
-        return this.baseGraph.memory();
+    public Memory memory(final String jobId) {
+        return this.baseGraph.memory(jobId);
     }
 
     @Override
