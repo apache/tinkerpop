@@ -52,9 +52,22 @@ public interface Graph extends AutoCloseable {
 
     public Annotations annotations();
 
-    public Memory memory();
+    public Memory memory(final String jobId);
 
     public interface Memory {
+
+        public class Key {
+
+            public static final String GLOBAL = "global";
+
+            private Key() {
+
+            }
+
+            public static String hidden(final String key) {
+                return HIDDEN_PREFIX.concat(key);
+            }
+        }
 
         public Set<String> getVariables();
 
