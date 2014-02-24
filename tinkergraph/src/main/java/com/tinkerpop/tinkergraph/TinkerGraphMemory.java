@@ -97,4 +97,8 @@ public class TinkerGraphMemory implements Graph.Memory.System, Serializable {
     public Graph getGraph() {
         return this.graph;
     }
+
+    protected void addAll(final TinkerGraphMemory otherMemory) {
+        otherMemory.memory.forEach(this.memory::put);
+    }
 }

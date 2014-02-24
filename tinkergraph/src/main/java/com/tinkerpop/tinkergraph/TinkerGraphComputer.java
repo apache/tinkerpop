@@ -20,7 +20,6 @@ import java.util.concurrent.Future;
 public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
     private Isolation isolation = Isolation.BSP;
-    private String jobId = UUID.randomUUID().toString();
     private VertexProgram vertexProgram;
     private final TinkerGraph graph;
     private final TinkerMessenger messenger = new TinkerMessenger();
@@ -43,34 +42,37 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         return this;
     }
 
-    public GraphComputer jobId(final String jobId) {
-        this.jobId = jobId;
-        return this;
-    }
-
     public Future<Graph> submit() {
         return CompletableFuture.<Graph>supplyAsync(() -> {
-            final long time = java.lang.System.currentTimeMillis();
-            //this.vertexMemory.setComputeKeys(this.vertexProgram.getComputeKeys());
-            this.graph.memories.put(this.jobId, new TinkerGraphMemory(this.graph));
-            this.vertexProgram.setup(this.graph.memory(this.jobId));
+            final long time = System.currentTimeMillis();
+            final TinkerGraph g = this.graph; //.cloneTinkerGraph();
+            g.state = TinkerGraph.State.COMPUTER;
+            g.isolation = this.isolation;
+            g.computeKeys = this.vertexProgram.getComputeKeys();
+            //g.memory = new TinkerGraphMemory(g);
+            //g.memory.addAll(this.graph.memory);
+            this.vertexProgram.setup(g.memory());
 
             while (true) {
-                StreamFactory.parallelStream(this.graph.V()).forEach(vertex ->
+                StreamFactory.parallelStream(g.V()).forEach(vertex ->
                         /*this.vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC,
                                 vertex.getId().toString(),
                                 this.vertexMemory), this.messenger, this.graphMemory));*/
-                        this.vertexProgram.execute(vertex, this.messenger, this.graph.memory(this.jobId)));
+                        this.vertexProgram.execute(vertex, this.messenger, g.memory()));
 
-                //this.vertexMemory.completeIteration();
-                ((Graph.Memory.System) this.graph.memory(this.jobId)).incrIteration();
-                this.messenger.completeIteration();
-                if (this.vertexProgram.terminate(this.graph.memory(this.jobId))) break;
+                this.completeIteration(g);
+                if (this.vertexProgram.terminate(g.memory())) break;
             }
 
-            ((Graph.Memory.System) this.graph.memory(this.jobId)).setRuntime(java.lang.System.currentTimeMillis() - time);
+            ((Graph.Memory.System) g.memory()).setRuntime(System.currentTimeMillis() - time);
 
-            return this.graph;
+            return g;
         });
+    }
+
+    private void completeIteration(final Graph graph) {
+        //this.vertexMemory.completeIteration();
+        ((Graph.Memory.System) graph.memory()).incrIteration();
+        this.messenger.completeIteration();
     }
 }

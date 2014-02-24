@@ -55,7 +55,7 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public Memory memory(final String jobId) {
+    public Memory memory() {
         throw new IllegalStateException(MESSAGE);
     }
 

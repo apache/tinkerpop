@@ -52,13 +52,11 @@ public interface Graph extends AutoCloseable {
 
     public Annotations annotations();
 
-    public Memory memory(final String jobId);
+    public Memory memory();
 
     public interface Memory {
 
         public class Key {
-
-            public static final String GLOBAL = "global";
 
             private Key() {
 

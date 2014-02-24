@@ -3,6 +3,7 @@ package com.tinkerpop.tinkergraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.process.olap.VertexProgram;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -31,21 +32,38 @@ import java.util.Set;
  */
 public class TinkerGraph implements Graph, Serializable {
 
+    protected enum State {STANDARD, COMPUTER}
+
     protected Long currentId = -1l;
     protected Map<String, Vertex> vertices = new HashMap<>();
     protected Map<String, Edge> edges = new HashMap<>();
     protected Annotations annotations = new TinkerGraph.Annotations();
-    protected Map<String, Memory> memories = new HashMap<>();
+    protected TinkerGraphMemory memory = new TinkerGraphMemory(this);
+
+    protected State state = State.STANDARD;
+    protected GraphComputer.Isolation isolation = GraphComputer.Isolation.DIRTY_BSP;
+    protected Map<String, VertexProgram.KeyType> computeKeys;
+
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
+
+    protected TinkerGraph cloneTinkerGraph() {
+        TinkerGraph g = new TinkerGraph();
+        g.currentId = this.currentId;
+        g.vertices = this.vertices;
+        g.edges = this.edges;
+        g.annotations = this.annotations;
+        g.memory = this.memory;
+        g.state = this.state;
+        return g;
+    }
 
     /**
      * An empty private constructor that initializes {@link TinkerGraph} with no {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily
      * used for purposes of serialization issues.
      */
     private TinkerGraph() {
-        this.memories.put(Memory.Key.GLOBAL, new TinkerGraphMemory(this));
     }
 
     /**
@@ -138,8 +156,8 @@ public class TinkerGraph implements Graph, Serializable {
         return this.annotations;
     }
 
-    public Memory memory(final String jobId) {
-        return this.memories.get(jobId);
+    public Memory memory() {
+        return this.memory;
     }
 
     public class Annotations implements Graph.Annotations, Serializable {
