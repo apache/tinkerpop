@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -46,21 +45,19 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         return CompletableFuture.<Graph>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             final TinkerGraph g = this.graph; //.cloneTinkerGraph();
-            g.state = TinkerGraph.State.COMPUTER;
             g.isolation = this.isolation;
-            g.computeKeys = this.vertexProgram.getComputeKeys();
+            g.elementMemory = new TinkerElementMemory(this.isolation, this.vertexProgram.getComputeKeys());
             //g.memory = new TinkerGraphMemory(g);
             //g.memory.addAll(this.graph.memory);
             this.vertexProgram.setup(g.memory());
 
             while (true) {
                 StreamFactory.parallelStream(g.V()).forEach(vertex ->
-                        /*this.vertexProgram.execute(((TinkerVertex) vertex).createClone(State.CENTRIC,
-                                vertex.getId().toString(),
-                                this.vertexMemory), this.messenger, this.graphMemory));*/
                         this.vertexProgram.execute(vertex, this.messenger, g.memory()));
 
-                this.completeIteration(g);
+                g.elementMemory.completeIteration();
+                ((Graph.Memory.System) g.memory()).incrIteration();
+                this.messenger.completeIteration();
                 if (this.vertexProgram.terminate(g.memory())) break;
             }
 
@@ -70,9 +67,4 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         });
     }
 
-    private void completeIteration(final Graph graph) {
-        //this.vertexMemory.completeIteration();
-        ((Graph.Memory.System) graph.memory()).incrIteration();
-        this.messenger.completeIteration();
-    }
 }

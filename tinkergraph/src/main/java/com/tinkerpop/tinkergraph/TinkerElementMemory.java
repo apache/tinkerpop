@@ -1,9 +1,9 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,17 +11,18 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerVertexMemory {
+public class TinkerElementMemory {
 
-    protected Map<String, VertexProgram.KeyType> computeKeys;
+    private final Map<String, VertexProgram.KeyType> computeKeys;
     protected final GraphComputer.Isolation isolation;
     private Map<Object, Map<String, Object>> getMap;
     private Map<Object, Map<String, Object>> setMap;
     private Map<Object, Map<String, Object>> constantMap;
 
-    public TinkerVertexMemory(final GraphComputer.Isolation isolation) {
+    public TinkerElementMemory(final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
         this.isolation = isolation;
         this.constantMap = new HashMap<>();
+        this.computeKeys = computeKeys;
         if (this.isolation.equals(GraphComputer.Isolation.BSP)) {
             this.getMap = new HashMap<>();
             this.setMap = new HashMap<>();
@@ -30,38 +31,43 @@ public class TinkerVertexMemory {
         }
     }
 
-    public void setComputeKeys(final Map<String, VertexProgram.KeyType> computeKeys) {
-        this.computeKeys = computeKeys;
-    }
-
-    public Map<String, VertexProgram.KeyType> getComputeKeys() {
-        return this.computeKeys;
-    }
-
     public void completeIteration() {
-        this.getMap = this.setMap;
-        this.setMap = new HashMap<>();
+        if (this.isolation.equals(GraphComputer.Isolation.BSP)) {
+            this.getMap = this.setMap;
+            this.setMap = new HashMap<>();
+        }
     }
 
-    public <V> void setProperty(final Element element, final String key, final V value) {
-        //VertexMemoryHelper.validateComputeKeyValue(this, key, value);
-        final TinkerProperty<V> property = new TinkerProperty<V>(element, key, value) {
-            public void remove() {
-                removeProperty(element, key);
-            }
-        };
-        this.setValue(element.getId().toString(), key, property);
+    public <V> void setProperty(final TinkerElement element, final String key, final V value) {
+        ElementHelper.validateProperty(key, value);
+        if (isComputeKey(key)) {
+            final TinkerProperty<V> property = new TinkerProperty<V>(element, key, value) {
+                public void remove() {
+                    removeProperty(element, key);
+                }
+            };
+            this.setValue(element.getId(), key, property);
+        } else {
+            element.properties.put(key, new TinkerProperty<>(element, key, value));
+        }
     }
 
 
-    public <V> Property<V> getProperty(final Element element, final String key) {
-        return this.getProperty(element.getId().toString(), key);
+    public <V> Property<V> getProperty(final TinkerElement element, final String key) {
+        return isComputeKey(key) ?
+                this.getValue(element.getId(), key) :
+                element.properties.getOrDefault(key, Property.empty());
     }
 
 
-    private void removeProperty(final Element element, final String key) {
-        this.removeValue(element.getId().toString(), key);
+    public void removeProperty(final TinkerElement element, final String key) {
+        if (isComputeKey(key))
+            this.removeValue(element.getId(), key);
+        else
+            element.properties.remove(key);
     }
+
+    //////////////////////
 
     private void setValue(final String id, final String key, final Object value) {
         final Map<Object, Map<String, Object>> map = isConstantKey(key) ? this.constantMap : this.setMap;
@@ -78,7 +84,7 @@ public class TinkerVertexMemory {
             map.remove(key);
     }
 
-    private <V> Property<V> getProperty(final String id, final String key) {
+    private <V> Property<V> getValue(final String id, final String key) {
         final Map<String, Object> map = this.isConstantKey(key) ? this.constantMap.get(id) : this.getMap.get(id);
         if (null == map)
             return Property.empty();
@@ -89,15 +95,15 @@ public class TinkerVertexMemory {
     }
 
     public boolean isComputeKey(final String key) {
-        return this.getComputeKeys().containsKey(key);
+        return this.computeKeys.containsKey(key);
     }
 
     public boolean isConstantKey(final String key) {
-        return VertexProgram.KeyType.CONSTANT.equals(this.getComputeKeys().get(key));
+        return VertexProgram.KeyType.CONSTANT.equals(this.computeKeys.get(key));
     }
 
-    public boolean isVariableKey(final String key) {
-        return VertexProgram.KeyType.VARIABLE.equals(this.getComputeKeys().get(key));
-    }
+    /*public boolean isVariableKey(final String key) {
+        return VertexProgram.KeyType.VARIABLE.equals(this.computeKeys.get(key));
+    }*/
 
 }

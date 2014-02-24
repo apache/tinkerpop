@@ -1,5 +1,6 @@
 package com.tinkerpop.tinkergraph;
 
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -26,10 +27,14 @@ class TinkerEdge extends TinkerElement implements Edge {
     }
 
     public <V> void setProperty(final String key, final V value) {
-        ElementHelper.validateProperty(key, value);
-        final Property oldProperty = super.getProperty(key);
-        this.properties.put(key, new TinkerProperty<>(this, key, value));
-        this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
+        if (this.graph.isolation.equals(GraphComputer.Isolation.DIRTY_BSP)) {
+            ElementHelper.validateProperty(key, value);
+            final Property oldProperty = super.getProperty(key);
+            this.properties.put(key, new TinkerProperty<>(this, key, value));
+            this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
+        } else {
+            this.graph.elementMemory.setProperty(this, key, value);
+        }
     }
 
     public Vertex getVertex(final Direction direction) throws IllegalArgumentException {

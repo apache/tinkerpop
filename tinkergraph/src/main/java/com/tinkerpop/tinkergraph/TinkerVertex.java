@@ -3,6 +3,7 @@ package com.tinkerpop.tinkergraph;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.steps.map.StartStep;
 import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
@@ -33,14 +34,18 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public <V> void setProperty(final String key, final V value) {
-        ElementHelper.validateProperty(key, value);
-        final Property oldProperty = super.getProperty(key);
-        if (value == AnnotatedList.make()) {
-            if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList))
-                this.properties.put(key, new TinkerProperty<>(this, key, new TinkerAnnotatedList<>()));
-        } else
-            this.properties.put(key, new TinkerProperty<>(this, key, value));
-        this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
+        if (this.graph.isolation.equals(GraphComputer.Isolation.DIRTY_BSP)) {
+            ElementHelper.validateProperty(key, value);
+            final Property oldProperty = super.getProperty(key);
+            if (value == AnnotatedList.make()) {
+                if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList))
+                    this.properties.put(key, new TinkerProperty<>(this, key, new TinkerAnnotatedList<>()));
+            } else
+                this.properties.put(key, new TinkerProperty<>(this, key, value));
+            this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
+        } else {
+            this.graph.elementMemory.setProperty(this, key, value);
+        }
     }
 
     public String toString() {
