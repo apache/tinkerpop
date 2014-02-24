@@ -56,9 +56,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     public void shouldReadGraphML() throws IOException {
         readGraphMLIntoGraph(g);
-
-        assertEquals(6, g.V().count());
-        assertEquals(6, g.E().count());
+        assertClassicGraph(g);
     }
 
     @Test
@@ -68,9 +66,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphML() throws Exception {
-        readGraphMLIntoGraph(g);
-
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         final GraphMLWriter w = new GraphMLWriter.Builder(g).setNormalize(true).build();
         w.outputGraph(bos);
@@ -86,9 +83,8 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphMLWithEdgeLabel() throws Exception {
-        readGraphMLIntoGraph(g);
-
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         final GraphMLWriter w = new GraphMLWriter.Builder(g)
                 .setNormalize(true)
@@ -159,6 +155,43 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals("judas", g1.annotations().get("testString").get());
         assertEquals(100l, g1.annotations().get("testLong").get());
         assertEquals(100, g1.annotations().get("testInt").get());
+
+        assertClassicGraph(g1);
+    }
+
+    private void assertClassicGraph(final Graph g1) {
+        assertEquals(6, g1.V().count());
+        //assertEquals(6, g1.E().count());
+
+        final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
+        assertEquals(29, v1.<Integer>getValue("age").intValue());
+        if (g.getFeatures().vertex().supportsUserSuppliedIds())
+            assertEquals("1", v1.getId());
+
+        final Vertex v2 = (Vertex) g1.V().has("name", "vadas").next();
+        assertEquals(27, v2.<Integer>getValue("age").intValue());
+        if (g.getFeatures().vertex().supportsUserSuppliedIds())
+            assertEquals("2", v2.getId());
+
+        final Vertex v3 = (Vertex) g1.V().has("name", "lop").next();
+        assertEquals("java", v3.<String>getValue("lang"));
+        if (g.getFeatures().vertex().supportsUserSuppliedIds())
+            assertEquals("3", v3.getId());
+
+        final Vertex v4 = (Vertex) g1.V().has("name", "josh").next();
+        assertEquals(32, v4.<Integer>getValue("age").intValue());
+        if (g.getFeatures().vertex().supportsUserSuppliedIds())
+            assertEquals("4", v4.getId());
+
+        final Vertex v5 = (Vertex) g1.V().has("name", "ripple").next();
+        assertEquals("java", v5.<String>getValue("lang"));
+        if (g.getFeatures().vertex().supportsUserSuppliedIds())
+            assertEquals("5", v5.getId());
+
+        final Vertex v6 = (Vertex) g1.V().has("name", "peter").next();
+        assertEquals(35, v6.<Integer>getValue("age").intValue());
+        if (g.getFeatures().vertex().supportsUserSuppliedIds())
+            assertEquals("6", v6.getId());
     }
 
     private void validateXmlAgainstGraphMLXsd(final File file) throws Exception {
