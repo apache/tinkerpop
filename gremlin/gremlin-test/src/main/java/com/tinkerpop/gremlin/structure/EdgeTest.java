@@ -14,6 +14,7 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FE
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_LONG_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -139,5 +140,13 @@ public class EdgeTest extends AbstractGremlinTest {
         }
 
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 0));
+    }
+
+    @Test
+    public void shouldReturnEmptyMapIfNoProperties() {
+        final Vertex v = g.addVertex();
+        final Map<String,Property> m = v.getProperties();
+        assertNotNull(m);
+        assertEquals(0, m.size());
     }
 }

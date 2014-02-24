@@ -223,4 +223,12 @@ public class VertexTest extends AbstractGremlinTest {
 
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
     }
+
+    @Test
+    public void shouldReturnEmptyMapIfNoProperties() {
+        final Vertex v = g.addVertex();
+        final Map<String,Property> m = v.getProperties();
+        assertNotNull(m);
+        assertEquals(0, m.size());
+    }
 }
