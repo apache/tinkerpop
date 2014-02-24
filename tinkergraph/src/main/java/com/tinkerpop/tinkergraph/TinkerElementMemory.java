@@ -54,9 +54,11 @@ public class TinkerElementMemory {
 
 
     public <V> Property<V> getProperty(final TinkerElement element, final String key) {
-        return isComputeKey(key) ?
-                this.getValue(element.getId(), key) :
-                element.properties.getOrDefault(key, Property.empty());
+        if (isComputeKey(key)) {
+            return this.getValue(element.getId(), key);
+        } else {
+            return element.properties.getOrDefault(key, Property.empty());
+        }
     }
 
 
