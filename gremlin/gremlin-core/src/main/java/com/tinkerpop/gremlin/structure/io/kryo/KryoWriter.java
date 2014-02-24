@@ -59,19 +59,18 @@ public class KryoWriter implements GraphWriter {
         writeProperties(output, e);
 
         if (isVertex) {
-            // todo: unidrectional edges?  write out bothE instead of just outE?
             final Vertex v = (Vertex) e;
-            final Iterator<Edge> vertexEdges = v.outE();
-            output.writeBoolean(false); // todo: temporarily don't write edges
-
+            final Iterator<Edge> vertexEdgesOut = v.outE();
+            output.writeBoolean(false);
             /*
-            output.writeBoolean(vertexEdges.hasNext());
-            while (vertexEdges.hasNext()) {
-                final Edge edgeToWrite = vertexEdges.next();
+            output.writeBoolean(vertexEdgesOut.hasNext());
+            while (vertexEdgesOut.hasNext()) {
+                final Edge edgeToWrite = vertexEdgesOut.next();
                 kryo.writeClassAndObject(output, edgeToWrite.getVertex(Direction.IN).getId());
                 writeElement(output, edgeToWrite, false);
             }
             */
+
             kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
         }
     }
@@ -82,26 +81,29 @@ public class KryoWriter implements GraphWriter {
         output.writeInt(propertyCount);
         properties.forEach((key,val) -> {
             output.writeString(key);
-
-            if (!(val instanceof AnnotatedList))
-                kryo.writeClassAndObject(output, val.get());
-            else {
-                final AnnotatedList alist = (AnnotatedList) val;
-                final List<AnnotatedValue> avalues = alist.annotatedValues().toList();
-                output.writeInt(avalues.size());
-                avalues.forEach(av -> {
-                    output.writeString(key);
-                    kryo.writeClassAndObject(output, av.getValue());
-
-                    final Set<String> annotationKeys = av.getAnnotationKeys();
-                    output.write(annotationKeys.size());
-
-                    annotationKeys.forEach(ak -> {
-                        output.writeString(ak);
-                        kryo.writeClassAndObject(output, av.getAnnotation(ak));
-                    });
-                });
-            }
+            writePropertyValue(output, key, val);
         });
+    }
+
+    private void writePropertyValue(final Output output, final String key, final Property val) {
+        if (!(val instanceof AnnotatedList))
+            kryo.writeClassAndObject(output, val.get());
+        else {
+            final AnnotatedList alist = (AnnotatedList) val;
+            final List<AnnotatedValue> avalues = alist.annotatedValues().toList();
+            output.writeInt(avalues.size());
+            avalues.forEach(av -> {
+                output.writeString(key);
+                kryo.writeClassAndObject(output, av.getValue());
+
+                final Set<String> annotationKeys = av.getAnnotationKeys();
+                output.write(annotationKeys.size());
+
+                annotationKeys.forEach(ak -> {
+                    output.writeString(ak);
+                    kryo.writeClassAndObject(output, av.getAnnotation(ak));
+                });
+            });
+        }
     }
 }

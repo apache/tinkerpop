@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.io.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -39,25 +40,22 @@ public class KryoReader implements GraphReader {
             while (!input.eof()) {
                 final Object current = kryo.readClassAndObject(input);
                 final Vertex v;
-                final String label = input.readString();
+                final String vertexLabel = input.readString();
                 if (graph.getFeatures().vertex().supportsUserSuppliedIds())
-                    v = graph.addVertex(Element.ID, current, Element.LABEL, label);
+                    v = graph.addVertex(Element.ID, current, Element.LABEL, vertexLabel);
                 else
-                    v = graph.addVertex(Element.LABEL, label);
+                    v = graph.addVertex(Element.LABEL, vertexLabel);
 
                 final int numberOfProperties = input.readInt();
                 IntStream.range(0, numberOfProperties).forEach(i-> {
-                    // todo: do we just let this fail or do we check features
+                    // todo: do we just let this fail or do we check features for supported property types
                     final String k = input.readString();
                     v.setProperty(k, kryo.readClassAndObject(input));
                 });
 
                 final boolean hasEdges = input.readBoolean();
                 if (hasEdges) {
-                    Object edgeId = kryo.readClassAndObject(input);
-                    while (edgeId.equals(VertexTerminator.INSTANCE)) {
-                        edgeId = kryo.readClassAndObject(input);
-                    }
+
                 }
 
                 kryo.readClassAndObject(input);
