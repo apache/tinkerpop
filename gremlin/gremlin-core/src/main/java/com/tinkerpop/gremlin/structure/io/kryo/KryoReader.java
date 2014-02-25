@@ -27,10 +27,11 @@ public class KryoReader implements GraphReader {
     private final Graph graph;
 
     private final File tempFile = new File("/tmp" + File.separator + UUID.randomUUID() + ".tmp");
-    private final Map<Object, Object> idMap = new HashMap<>();
+    private final Map<Object, Object> idMap;
 
-    public KryoReader(final Graph g) {
+    private KryoReader(final Graph g, final Map<Object, Object> idMap) {
         this.graph = g;
+        this.idMap = idMap;
     }
     @Override
     public void inputGraph(final InputStream inputStream) throws IOException {
@@ -142,6 +143,29 @@ public class KryoReader implements GraphReader {
 
                 inId = kryo.readClassAndObject(input);
             }
+        }
+    }
+
+    public static class Builder {
+        private Graph g;
+        private Map<Object, Object> idMap;
+
+        public Builder(final Graph g) {
+            this.g = g;
+            this.idMap = new HashMap<>();
+        }
+
+        /**
+         * A {@link Map} implementation that will handle vertex id translation in the event that the graph does
+         * not support identifier assignment.
+         */
+        public Builder setIdMap(final Map<Object, Object> idMap) {
+            this.idMap = idMap;
+            return this;
+        }
+
+        public KryoReader build() {
+            return new KryoReader(g, idMap);
         }
     }
 }
