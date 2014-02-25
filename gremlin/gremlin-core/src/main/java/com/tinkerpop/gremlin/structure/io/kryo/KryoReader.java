@@ -127,23 +127,23 @@ public class KryoReader implements GraphReader {
             final Object outId = kryo.readClassAndObject(input);
             Object inId = kryo.readClassAndObject(input);
             while (!inId.equals(VertexTerminator.INSTANCE)) {
+                final List<Object> edgeArgs = new ArrayList<>();
                 final Vertex vOut = graph.v(outId);
                 final Object edgeId = kryo.readClassAndObject(input);
-                final String edgeLabel = input.readString();
-                final Vertex inV = graph.v(idMap.get(inId));
-
-                final Edge e;
                 if (graph.getFeatures().edge().supportsUserSuppliedIds())
-                    e = vOut.addEdge(edgeLabel, inV, Element.ID, edgeId);
-                else
-                    e = vOut.addEdge(edgeLabel, inV);
+                    edgeArgs.addAll(Arrays.asList(Element.ID, edgeId));
+
+                final String edgeLabel = input.readString();
+
+                final Vertex inV = graph.v(idMap.get(inId));
 
                 final int props = input.readInt();
                 IntStream.range(0, props).forEach(i-> {
-                    final String k = input.readString();
-                    // todo: annotatedlist
-                    e.setProperty(k, kryo.readClassAndObject(input));
+                    edgeArgs.add(input.readString());
+                    edgeArgs.add(kryo.readClassAndObject(input));
                 });
+
+                vOut.addEdge(edgeLabel, inV, edgeArgs.toArray());
 
                 inId = kryo.readClassAndObject(input);
             }
