@@ -1,10 +1,8 @@
 package com.tinkerpop.gremlin.structure.io.kryo;
 
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
-import com.tinkerpop.gremlin.structure.util.AnnotatedValueHelper;
 import org.javatuples.Pair;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
