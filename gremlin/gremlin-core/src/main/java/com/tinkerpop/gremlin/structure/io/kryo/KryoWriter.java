@@ -76,29 +76,14 @@ public class KryoWriter implements GraphWriter {
         output.writeInt(propertyCount);
         properties.forEach((key,val) -> {
             output.writeString(key);
-            writePropertyValue(output, key, val);
+            writePropertyValue(output, val);
         });
     }
 
-    private void writePropertyValue(final Output output, final String key, final Property val) {
-        if (!(val instanceof AnnotatedList))
+    private void writePropertyValue(final Output output, final Property val) {
+        if (val.get() instanceof AnnotatedList)
+            kryo.writeClassAndObject(output, KryoAnnotatedList.from((AnnotatedList) val.get()));
+        else
             kryo.writeClassAndObject(output, val.get());
-        else {
-            final AnnotatedList alist = (AnnotatedList) val;
-            final List<AnnotatedValue> avalues = alist.annotatedValues().toList();
-            output.writeInt(avalues.size());
-            avalues.forEach(av -> {
-                output.writeString(key);
-                kryo.writeClassAndObject(output, av.getValue());
-
-                final Set<String> annotationKeys = av.getAnnotationKeys();
-                output.write(annotationKeys.size());
-
-                annotationKeys.forEach(ak -> {
-                    output.writeString(ak);
-                    kryo.writeClassAndObject(output, av.getAnnotation(ak));
-                });
-            });
-        }
     }
 }

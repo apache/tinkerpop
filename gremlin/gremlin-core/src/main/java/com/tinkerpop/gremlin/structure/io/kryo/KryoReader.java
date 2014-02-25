@@ -3,10 +3,12 @@ package com.tinkerpop.gremlin.structure.io.kryo;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
+import org.javatuples.Pair;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -139,7 +141,14 @@ public class KryoReader implements GraphReader {
 
                 final String edgeLabel = input.readString();
                 final Vertex inV = graph.v(idMap.get(inId));
-                readElementProperties(input, edgeArgs);
+                final List<Pair<String, KryoAnnotatedList>> annotatedLists = readElementProperties(input, edgeArgs);
+                annotatedLists.forEach(kal -> {
+                    final AnnotatedList al = inV.getValue(kal.getValue0());
+                    final List<KryoAnnotatedValue> valuesForAnnotation = kal.getValue1().getAnnotatedValueList();
+                    for (KryoAnnotatedValue kav : valuesForAnnotation) {
+                        al.addValue(kav.getValue(), kav.getAnnotationsArray());
+                    }
+                });
 
                 vOut.addEdge(edgeLabel, inV, edgeArgs.toArray());
 
@@ -151,13 +160,22 @@ public class KryoReader implements GraphReader {
     /**
      * Read element properties from input stream and put them into an argument list.
      */
-    private void readElementProperties(final Input input, final List<Object> elementArgs) {
+    private List<Pair<String, KryoAnnotatedList>> readElementProperties(final Input input, final List<Object> elementArgs) {
+        // todo: do we just let this fail or do we check features for supported property types
+        final List<Pair<String, KryoAnnotatedList>> list = new ArrayList<>();
         final int numberOfProperties = input.readInt();
         IntStream.range(0, numberOfProperties).forEach(i -> {
-            // todo: do we just let this fail or do we check features for supported property types
-            elementArgs.add(input.readString());
-            elementArgs.add(kryo.readClassAndObject(input));
+            final String key = input.readString();
+            elementArgs.add(key);
+            final Object val = kryo.readClassAndObject(input);
+            if (val instanceof KryoAnnotatedList) {
+                elementArgs.add(AnnotatedList.make());
+                list.add(Pair.with(key, (KryoAnnotatedList) val));
+            } else
+                elementArgs.add(val);
         });
+
+        return list;
     }
 
     private void deleteTempFileSilently() {

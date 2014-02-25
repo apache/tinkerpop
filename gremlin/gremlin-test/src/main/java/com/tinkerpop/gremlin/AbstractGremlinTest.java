@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.commons.configuration.Configuration;
@@ -12,6 +11,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -127,7 +127,7 @@ public abstract class AbstractGremlinTest {
     }
 
     private static void readIntoGraph(final Graph g, final String path) throws IOException {
-        final GraphReader reader = new KryoReader.Builder(g).build();
+        final GraphReader reader = new KryoReader.Builder(g).setWorkingDirectory(File.separator + "tmp").build();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
             reader.inputGraph(stream);
         }
