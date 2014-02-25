@@ -26,12 +26,13 @@ public class KryoReader implements GraphReader {
     private final Kryo kryo = new Kryo();
     private final Graph graph;
 
-    private final File tempFile = new File("/tmp" + File.separator + UUID.randomUUID() + ".tmp");
+    private final File tempFile;
     private final Map<Object, Object> idMap;
 
-    private KryoReader(final Graph g, final Map<Object, Object> idMap) {
+    private KryoReader(final Graph g, final Map<Object, Object> idMap, final File tempFile) {
         this.graph = g;
         this.idMap = idMap;
+        this.tempFile = tempFile;
     }
     @Override
     public void inputGraph(final InputStream inputStream) throws IOException {
@@ -149,10 +150,12 @@ public class KryoReader implements GraphReader {
     public static class Builder {
         private Graph g;
         private Map<Object, Object> idMap;
+        private File tempFile;
 
         public Builder(final Graph g) {
             this.g = g;
             this.idMap = new HashMap<>();
+            this.tempFile = new File(UUID.randomUUID() + ".tmp");
         }
 
         /**
@@ -164,8 +167,17 @@ public class KryoReader implements GraphReader {
             return this;
         }
 
+        public Builder setWorkingDirectory(final String workingDirectory) {
+            final File f = new File(workingDirectory);
+            if (!f.exists() || !f.isDirectory())
+                throw new IllegalArgumentException("The workingDirectory is not a directory or does not exist");
+
+            tempFile = new File(workingDirectory + File.separator + UUID.randomUUID() + ".tmp");
+            return this;
+        }
+
         public KryoReader build() {
-            return new KryoReader(g, idMap);
+            return new KryoReader(g, idMap, tempFile);
         }
     }
 }

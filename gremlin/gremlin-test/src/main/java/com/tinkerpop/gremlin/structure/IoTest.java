@@ -153,7 +153,8 @@ public class IoTest extends AbstractGremlinTest {
         os.close();
 
         final Graph g1 = graphProvider.openTestGraph(graphProvider.newGraphConfiguration("readGraph"));
-        final KryoReader reader = new KryoReader.Builder(g1).build();
+        final KryoReader reader = new KryoReader.Builder(g1)
+                .setWorkingDirectory(File.separator + "tmp").build();
         reader.inputGraph(new ByteArrayInputStream(os.toByteArray()));
 
         assertEquals("judas", g1.annotations().get("testString").get());
