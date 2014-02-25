@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -68,7 +68,7 @@ public abstract class AbstractGremlinTest {
         final Optional<LoadGraphWith> loadGraphWith = loadGraphWiths.length == 0 ? Optional.empty() : Optional.of(loadGraphWiths[0]);
         loadGraphWith.ifPresent(lgw -> {
             try {
-                readGraphMLIntoGraph(g, lgw.value().location());
+                readIntoGraph(g, lgw.value().location());
             } catch (IOException ioe) {
                 throw new RuntimeException("Graph could not be loaded with data for test.");
             }
@@ -126,8 +126,8 @@ public abstract class AbstractGremlinTest {
         return methodName;
     }
 
-    private static void readGraphMLIntoGraph(final Graph g, final String path) throws IOException {
-        final GraphReader reader = new GraphMLReader.Builder(g).build();
+    private static void readIntoGraph(final Graph g, final String path) throws IOException {
+        final GraphReader reader = new KryoReader.Builder(g).build();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
             reader.inputGraph(stream);
         }

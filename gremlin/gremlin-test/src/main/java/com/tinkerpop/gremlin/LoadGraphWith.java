@@ -26,16 +26,18 @@ public @interface LoadGraphWith {
         public String location() {
             switch (this) {
                 case CLASSIC:
-                    return RESOURCE_PATH_PREFIX + "graph-example-1.xml";
+                    return RESOURCE_PATH_PREFIX + "graph-example-1.gio";
                 case GRATEFUL:
-                    return RESOURCE_PATH_PREFIX + "graph-example-2.xml";
+                    return RESOURCE_PATH_PREFIX + "graph-example-2.gio";
+                case MODERN:
+                    return RESOURCE_PATH_PREFIX + "graph-example-5.gio";
             }
 
             throw new RuntimeException("No file for this GraphData type");
         }
     }
 
-    public static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/util/io/graphml/";
+    public static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/util/io/kryo/";
 
     /**
      * The name of the resource to load with full path.

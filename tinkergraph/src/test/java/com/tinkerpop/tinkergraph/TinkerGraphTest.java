@@ -1,13 +1,18 @@
 package com.tinkerpop.tinkergraph;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.io.GraphReader;
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -16,8 +21,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -67,6 +74,43 @@ public class TinkerGraphTest {
         System.out.println(t);
         System.out.println(((Step) t.getSteps().get(0)).getNextStep());
         System.out.println(((Step) t.getSteps().get(0)).getPreviousStep());
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteClassicGraph() throws IOException {
+        final OutputStream os = new FileOutputStream("/tmp/graph-example-1.gio");
+        new KryoWriter(TinkerFactory.createClassic()).outputGraph(os);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteGratefulGraph() throws IOException {
+        final Graph g = TinkerGraph.open();
+        final GraphReader reader = new GraphMLReader.Builder(g).build();
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/graphml/graph-example-2.xml")) {
+            reader.inputGraph(stream);
+        }
+
+        final OutputStream os = new FileOutputStream("/tmp/graph-example-2.gio");
+        new KryoWriter(g).outputGraph(os);
+        os.close();
+    }
+
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteModernGraph() throws IOException {
+        final OutputStream os = new FileOutputStream("/tmp/graph-example-5.gio");
+        new KryoWriter(TinkerFactory.createModern()).outputGraph(os);
+        os.close();
     }
 
     @Test
