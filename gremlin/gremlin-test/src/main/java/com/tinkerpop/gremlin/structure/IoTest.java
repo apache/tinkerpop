@@ -31,11 +31,15 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Iterator;
+import java.util.List;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -161,37 +165,163 @@ public class IoTest extends AbstractGremlinTest {
 
     private void assertClassicGraph(final Graph g1) {
         assertEquals(6, g1.V().count());
-        //assertEquals(6, g1.E().count());
+        assertEquals(6, g1.E().count());
 
         final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
         assertEquals(29, v1.<Integer>getValue("age").intValue());
+        assertEquals(2, v1.getPropertyKeys().size());
         if (g.getFeatures().vertex().supportsUserSuppliedIds())
             assertEquals("1", v1.getId());
 
+        final List<Edge> v1Edges = v1.bothE().toList();
+        assertEquals(3, v1Edges.size());
+        v1Edges.forEach(e -> {
+            if (e.getVertex(Direction.IN).getValue("name").equals("vadas")) {
+                assertEquals("knows", e.getLabel());
+                assertEquals(0.5f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("7", e.getId());
+            } else if (e.getVertex(Direction.IN).getValue("name").equals("josh")) {
+                assertEquals("knows", e.getLabel());
+                assertEquals(1.0f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("8", e.getId());
+            } else if (e.getVertex(Direction.IN).getValue("name").equals("lop")) {
+                assertEquals("created", e.getLabel());
+                assertEquals(0.4f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("9", e.getId());
+            } else {
+                fail("Edge not expected");
+            }
+        });
+
         final Vertex v2 = (Vertex) g1.V().has("name", "vadas").next();
         assertEquals(27, v2.<Integer>getValue("age").intValue());
+        assertEquals(2, v2.getPropertyKeys().size());
         if (g.getFeatures().vertex().supportsUserSuppliedIds())
             assertEquals("2", v2.getId());
 
+        final List<Edge> v2Edges = v2.bothE().toList();
+        assertEquals(1, v2Edges.size());
+        v2Edges.forEach(e -> {
+            if (e.getVertex(Direction.OUT).getValue("name").equals("marko")) {
+                assertEquals("knows", e.getLabel());
+                assertEquals(0.5f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("7", e.getId());
+            } else {
+                fail("Edge not expected");
+            }
+        });
+
         final Vertex v3 = (Vertex) g1.V().has("name", "lop").next();
         assertEquals("java", v3.<String>getValue("lang"));
+        assertEquals(2, v2.getPropertyKeys().size());
         if (g.getFeatures().vertex().supportsUserSuppliedIds())
             assertEquals("3", v3.getId());
 
+        final List<Edge> v3Edges = v3.bothE().toList();
+        assertEquals(3, v3Edges.size());
+        v3Edges.forEach(e -> {
+            if (e.getVertex(Direction.OUT).getValue("name").equals("peter")) {
+                assertEquals("created", e.getLabel());
+                assertEquals(0.2f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("12", e.getId());
+            } else if (e.getVertex(Direction.OUT).getValue("name").equals("josh")) {
+                assertEquals("created", e.getLabel());
+                assertEquals(0.4f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("11", e.getId());
+            } else if (e.getVertex(Direction.OUT).getValue("name").equals("marko")) {
+                assertEquals("created", e.getLabel());
+                assertEquals(0.4f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("9", e.getId());
+            } else {
+                fail("Edge not expected");
+            }
+        });
+
         final Vertex v4 = (Vertex) g1.V().has("name", "josh").next();
         assertEquals(32, v4.<Integer>getValue("age").intValue());
+        assertEquals(2, v4.getPropertyKeys().size());
         if (g.getFeatures().vertex().supportsUserSuppliedIds())
             assertEquals("4", v4.getId());
 
+        final List<Edge> v4Edges = v4.bothE().toList();
+        assertEquals(3, v4Edges.size());
+        v4Edges.forEach(e -> {
+            if (e.getVertex(Direction.IN).getValue("name").equals("ripple")) {
+                assertEquals("created", e.getLabel());
+                assertEquals(1.0f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("10", e.getId());
+            } else if (e.getVertex(Direction.IN).getValue("name").equals("lop")) {
+                assertEquals("created", e.getLabel());
+                assertEquals(0.4f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("11", e.getId());
+            } else if (e.getVertex(Direction.OUT).getValue("name").equals("marko")) {
+                assertEquals("knows", e.getLabel());
+                assertEquals(1.0f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("8", e.getId());
+            } else {
+                fail("Edge not expected");
+            }
+        });
+
         final Vertex v5 = (Vertex) g1.V().has("name", "ripple").next();
         assertEquals("java", v5.<String>getValue("lang"));
+        assertEquals(2, v5.getPropertyKeys().size());
         if (g.getFeatures().vertex().supportsUserSuppliedIds())
             assertEquals("5", v5.getId());
 
+        final List<Edge> v5Edges = v5.bothE().toList();
+        assertEquals(1, v5Edges.size());
+        v5Edges.forEach(e -> {
+            if (e.getVertex(Direction.OUT).getValue("name").equals("josh")) {
+                assertEquals("created", e.getLabel());
+                assertEquals(1.0f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("10", e.getId());
+            } else {
+                fail("Edge not expected");
+            }
+        });
+
         final Vertex v6 = (Vertex) g1.V().has("name", "peter").next();
         assertEquals(35, v6.<Integer>getValue("age").intValue());
+        assertEquals(2, v6.getPropertyKeys().size());
         if (g.getFeatures().vertex().supportsUserSuppliedIds())
             assertEquals("6", v6.getId());
+
+        final List<Edge> v6Edges = v6.bothE().toList();
+        assertEquals(1, v6Edges.size());
+        v6Edges.forEach(e -> {
+            if (e.getVertex(Direction.IN).getValue("name").equals("lop")) {
+                assertEquals("created", e.getLabel());
+                assertEquals(0.2f, e.getValue("weight"), 0.0001f);
+                assertEquals(1, e.getPropertyKeys().size());
+                if (g.getFeatures().edge().supportsUserSuppliedIds())
+                    assertEquals("12", e.getId());
+            } else {
+                fail("Edge not expected");
+            }
+        });
     }
 
     private void validateXmlAgainstGraphMLXsd(final File file) throws Exception {

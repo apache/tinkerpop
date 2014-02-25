@@ -61,15 +61,12 @@ public class KryoWriter implements GraphWriter {
         if (isVertex) {
             final Vertex v = (Vertex) e;
             final Iterator<Edge> vertexEdgesOut = v.outE();
-            output.writeBoolean(false);
-            /*
             output.writeBoolean(vertexEdgesOut.hasNext());
             while (vertexEdgesOut.hasNext()) {
                 final Edge edgeToWrite = vertexEdgesOut.next();
                 kryo.writeClassAndObject(output, edgeToWrite.getVertex(Direction.IN).getId());
                 writeElement(output, edgeToWrite, false);
             }
-            */
 
             kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
         }
