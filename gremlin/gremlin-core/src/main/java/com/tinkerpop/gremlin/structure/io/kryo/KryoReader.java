@@ -93,6 +93,9 @@ public class KryoReader implements GraphReader {
         input.close();
     }
 
+    /**
+     * Reads through the all the edges for a vertex and writes the edges to a temp file which will be read later.
+     */
     private void readToEndOfEdgesAndWriteToTemp(final Input input, final Output output) throws IOException {
         Object inId = kryo.readClassAndObject(input);
         while (!inId.equals(VertexTerminator.INSTANCE)) {
@@ -120,6 +123,9 @@ public class KryoReader implements GraphReader {
         kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
     }
 
+    /**
+     * Read the edges from the temp file and load them to the graph.
+     */
     private void readFromTempEdges(final Input input) {
         while (!input.eof()) {
             // in this case the outId is the id assigned by the graph
