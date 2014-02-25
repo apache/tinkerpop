@@ -168,6 +168,32 @@ public class IoTest extends AbstractGremlinTest {
     private void assertModernGraph(final Graph g1) {
         assertEquals(6, g1.V().count());
         assertEquals(8, g1.E().count());
+
+        final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
+        assertEquals("person", v1.getLabel());
+        assertEquals(2, v1.getPropertyKeys().size());
+        if (g.getFeatures().vertex().supportsUserSuppliedIds())
+            assertEquals("1", v1.getId());
+        final AnnotatedList<String> v1location = v1.getValue("locations");
+        assertEquals(4, v1location.annotatedValues().toList().size());
+        v1location.annotatedValues().toList().forEach(av -> {
+            if (av.getValue().equals("san diego")) {
+                assertEquals(1997, av.getAnnotation("startTime").get());
+                assertEquals(2001, av.getAnnotation("endTime").get());
+            } else if (av.getValue().equals("santa cruz")) {
+                assertEquals(2001, av.getAnnotation("startTime").get());
+                assertEquals(2004, av.getAnnotation("endTime").get());
+            } else if (av.getValue().equals("brussels")) {
+                assertEquals(2004, av.getAnnotation("startTime").get());
+                assertEquals(2005, av.getAnnotation("endTime").get());
+            } else if (av.getValue().equals("santa fe")) {
+                assertEquals(2005, av.getAnnotation("startTime").get());
+                assertEquals(2014, av.getAnnotation("endTime").get());
+            }
+
+            assertEquals(2, av.getAnnotationKeys().size());
+        });
+
     }
 
     private void assertClassicGraph(final Graph g1) {
