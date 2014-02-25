@@ -58,13 +58,7 @@ public class KryoReader implements GraphReader {
                         vertexArgs.addAll(Arrays.asList(Element.ID, current));
 
                     vertexArgs.addAll(Arrays.asList(Element.LABEL, input.readString()));
-
-                    final int numberOfProperties = input.readInt();
-                    IntStream.range(0, numberOfProperties).forEach(i-> {
-                        // todo: do we just let this fail or do we check features for supported property types
-                        vertexArgs.add(input.readString());
-                        vertexArgs.add(kryo.readClassAndObject(input));
-                    });
+                    readElementProperties(input, vertexArgs);
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
                     idMap.put(current, v.getId());
@@ -139,14 +133,8 @@ public class KryoReader implements GraphReader {
                     edgeArgs.addAll(Arrays.asList(Element.ID, edgeId));
 
                 final String edgeLabel = input.readString();
-
                 final Vertex inV = graph.v(idMap.get(inId));
-
-                final int props = input.readInt();
-                IntStream.range(0, props).forEach(i-> {
-                    edgeArgs.add(input.readString());
-                    edgeArgs.add(kryo.readClassAndObject(input));
-                });
+                readElementProperties(input, edgeArgs);
 
                 vOut.addEdge(edgeLabel, inV, edgeArgs.toArray());
 
@@ -191,5 +179,17 @@ public class KryoReader implements GraphReader {
         public KryoReader build() {
             return new KryoReader(g, idMap, tempFile);
         }
+    }
+
+    /**
+     * Read element properties from input stream and put them into an argument list.
+     */
+    private void readElementProperties(final Input input, final List<Object> elementArgs) {
+        final int numberOfProperties = input.readInt();
+        IntStream.range(0, numberOfProperties).forEach(i-> {
+            // todo: do we just let this fail or do we check features for supported property types
+            elementArgs.add(input.readString());
+            elementArgs.add(kryo.readClassAndObject(input));
+        });
     }
 }
