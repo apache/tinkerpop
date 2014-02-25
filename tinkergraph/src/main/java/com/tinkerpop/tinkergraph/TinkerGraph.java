@@ -140,8 +140,8 @@ public class TinkerGraph implements Graph, Serializable {
         return this.annotations;
     }
 
-    public Memory memory() {
-        return this.graphMemory;
+    public <M extends Memory> M memory() {
+        return (M) this.graphMemory;
     }
 
     public class Annotations implements Graph.Annotations, Serializable {

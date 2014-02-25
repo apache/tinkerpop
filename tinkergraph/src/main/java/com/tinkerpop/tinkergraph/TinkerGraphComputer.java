@@ -56,14 +56,14 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             this.vertexProgram.setup(g.memory());
             while (true) {
                 StreamFactory.parallelStream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, this.messenger, g.memory()));
-                ((Graph.Memory.System) g.memory()).incrIteration();
+                g.<Graph.Memory.Computer.System>memory().incrIteration();
                 g.elementMemory.completeIteration();
                 this.messenger.completeIteration();
                 if (this.vertexProgram.terminate(g.memory())) break;
             }
 
             // update runtime and return the newly computed graph
-            ((Graph.Memory.System) g.memory()).setRuntime(System.currentTimeMillis() - time);
+            g.<Graph.Memory.Computer.System>memory().setRuntime(System.currentTimeMillis() - time);
             return g;
         });
     }

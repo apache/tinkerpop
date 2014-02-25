@@ -37,11 +37,11 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         return computeKeys;
     }
 
-    public void setup(final Graph.Memory graphMemory) {
+    public void setup(final Graph.Memory.Computer graphMemory) {
 
     }
 
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final Graph.Memory graphMemory) {
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final Graph.Memory.Computer graphMemory) {
         if (graphMemory.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(this.messageType.getQuery().build(vertex).count()).doubleValue();
@@ -63,7 +63,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         }
     }
 
-    public boolean terminate(final Graph.Memory graphMemory) {
+    public boolean terminate(final Graph.Memory.Computer graphMemory) {
         return graphMemory.getIteration() >= this.totalIterations;
     }
 
