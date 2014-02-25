@@ -60,9 +60,19 @@ public class KryoReader implements GraphReader {
                         vertexArgs.addAll(Arrays.asList(Element.ID, current));
 
                     vertexArgs.addAll(Arrays.asList(Element.LABEL, input.readString()));
-                    readElementProperties(input, vertexArgs);
+                    final List<Pair<String, KryoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
+
+                    // annotated list properties are set after the fact
+                    annotatedLists.forEach(kal -> {
+                        final AnnotatedList al = v.getValue(kal.getValue0());
+                        final List<KryoAnnotatedValue> valuesForAnnotation = kal.getValue1().getAnnotatedValueList();
+                        for (KryoAnnotatedValue kav : valuesForAnnotation) {
+                            al.addValue(kav.getValue(), kav.getAnnotationsArray());
+                        }
+                    });
+
                     idMap.put(current, v.getId());
 
                     // if there are edges then read them to end and write to temp otherwise, read what should be
@@ -141,14 +151,7 @@ public class KryoReader implements GraphReader {
 
                 final String edgeLabel = input.readString();
                 final Vertex inV = graph.v(idMap.get(inId));
-                final List<Pair<String, KryoAnnotatedList>> annotatedLists = readElementProperties(input, edgeArgs);
-                annotatedLists.forEach(kal -> {
-                    final AnnotatedList al = inV.getValue(kal.getValue0());
-                    final List<KryoAnnotatedValue> valuesForAnnotation = kal.getValue1().getAnnotatedValueList();
-                    for (KryoAnnotatedValue kav : valuesForAnnotation) {
-                        al.addValue(kav.getValue(), kav.getAnnotationsArray());
-                    }
-                });
+                readElementProperties(input, edgeArgs);
 
                 vOut.addEdge(edgeLabel, inV, edgeArgs.toArray());
 
@@ -158,7 +161,11 @@ public class KryoReader implements GraphReader {
     }
 
     /**
-     * Read element properties from input stream and put them into an argument list.
+     * Read element properties from input stream and put them into an argument list.  Properties that have an
+     * {@link AnnotatedList} as a value have their data returned to be added once it is added to the graph.
+     *
+     * @return a list of keys that are {@link AnnotatedList} values which must be set after the property is added
+     * to the vertex
      */
     private List<Pair<String, KryoAnnotatedList>> readElementProperties(final Input input, final List<Object> elementArgs) {
         // todo: do we just let this fail or do we check features for supported property types
