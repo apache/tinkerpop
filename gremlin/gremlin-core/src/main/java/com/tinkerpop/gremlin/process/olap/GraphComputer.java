@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.olap;
 
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.commons.configuration.Configuration;
 
 import java.util.concurrent.Future;
 
@@ -32,6 +33,8 @@ public interface GraphComputer extends TraversalEngine {
     public GraphComputer isolation(final Isolation isolation);
 
     public GraphComputer program(final VertexProgram program);
+
+    public GraphComputer configuration(final Configuration configuration);
 
     public Future<Graph> submit();
 

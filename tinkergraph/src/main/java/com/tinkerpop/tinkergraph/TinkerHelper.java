@@ -69,16 +69,6 @@ public class TinkerHelper {
         edges.add(edge);
     }
 
-    protected static TinkerGraph cloneTinkerGraph(final TinkerGraph graph) {
-        TinkerGraph g = TinkerGraph.open();
-        g.currentId = Long.valueOf(graph.currentId);
-        g.vertices = new HashMap<>(graph.vertices);
-        g.edges = new HashMap<>(graph.edges);
-        g.annotations = graph.annotations;
-        g.graphMemory = graph.graphMemory;
-        return g;
-    }
-
     public static Collection<Vertex> getVertices(final TinkerGraph graph) {
         return graph.vertices.values();
     }

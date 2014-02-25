@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -12,6 +14,7 @@ public class TinkerGraphComputerTest {
     @Test
     public void testStuff() throws Exception {
         Graph g = TinkerFactory.createClassic();
+
         //ComputeResult result = g.compute().program(TraversalVertexProgram.create().gremlin(() -> g.V().outE()).build()).submit().get();
         g.V().has("name", "marko").out().value("name").forEach(System.out::println);
         System.out.println("----------");
@@ -29,8 +32,18 @@ public class TinkerGraphComputerTest {
     @Test
     public void testOLAPWriteBack() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        g.V().pageRank().sideEffect(p -> p.get().getValue0().setProperty("pageRank", p.get().getValue1())).forEachRemaining(System.out::println);
-        System.out.println("---------------");
-        g.V().value("pageRank").forEachRemaining(System.out::println);
+
+        //Graph g = TinkerGraph.open();
+        //new KryoReader.Builder(g).build().readGraph(new FileInputStream("gremlin/data/graph-example-2.gio"));
+        //g.V().value("name").forEach(System.out::println);
+
+        //g.V().pageRank().sideEffect(p -> p.get().getValue0().setProperty("pageRank", p.get().getValue1())).forEachRemaining(System.out::println);
+        //System.out.println("---------------");
+        g.V().has("name")
+                .pageRank()
+                .order((a, b) -> a.get().getValue1().compareTo(b.get().getValue1()))
+                .map(p -> Arrays.asList(p.get().getValue0().<String>getValue("name"), p.get().getValue1()))
+                .forEachRemaining(System.out::println);
+
     }
 }
