@@ -14,7 +14,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.IntStream;
@@ -50,21 +53,21 @@ public class KryoReader implements GraphReader {
             final boolean hasSomeVertices = input.readBoolean();
             if (hasSomeVertices) {
                 while (!input.eof()) {
+                    final List<Object> vertexArgs = new ArrayList<>();
                     final Object current = kryo.readClassAndObject(input);
-                    final Vertex v;
-                    final String vertexLabel = input.readString();
                     if (graph.getFeatures().vertex().supportsUserSuppliedIds())
-                        v = graph.addVertex(Element.ID, current, Element.LABEL, vertexLabel);
-                    else
-                        v = graph.addVertex(Element.LABEL, vertexLabel);
+                        vertexArgs.addAll(Arrays.asList(Element.ID, current));
+
+                    vertexArgs.addAll(Arrays.asList(Element.LABEL, input.readString()));
 
                     final int numberOfProperties = input.readInt();
                     IntStream.range(0, numberOfProperties).forEach(i-> {
                         // todo: do we just let this fail or do we check features for supported property types
-                        final String k = input.readString();
-                        v.setProperty(k, kryo.readClassAndObject(input));
+                        vertexArgs.add(input.readString());
+                        vertexArgs.add(kryo.readClassAndObject(input));
                     });
 
+                    final Vertex v = graph.addVertex(vertexArgs.toArray());
                     idMap.put(current, v.getId());
 
                     // if there are edges then read them to end and write to temp otherwise, read what should be
