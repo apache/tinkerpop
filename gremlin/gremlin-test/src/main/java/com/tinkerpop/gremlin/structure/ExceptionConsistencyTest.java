@@ -617,16 +617,16 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final Graph.Memory graphMemory) {
+        public void setup(final Graph.Memory.Computer graphMemory) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final Graph.Memory graphMemory) {
+        public void execute(final Vertex vertex, final Messenger messenger, final Graph.Memory.Computer graphMemory) {
             vertex.setProperty(this.key, this.val);
         }
 
         @Override
-        public boolean terminate(Graph.Memory graphMemory) {
+        public boolean terminate(Graph.Memory.Computer graphMemory) {
             return true;
         }
 
@@ -650,16 +650,16 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final Graph.Memory graphMemory) {
+        public void setup(final Graph.Memory.Computer graphMemory) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final Graph.Memory graphMemory) {
+        public void execute(final Vertex vertex, final Messenger messenger, final Graph.Memory.Computer graphMemory) {
             vertex.bothE().forEach(e -> e.setProperty(this.key, this.val));
         }
 
         @Override
-        public boolean terminate(Graph.Memory graphMemory) {
+        public boolean terminate(Graph.Memory.Computer graphMemory) {
             return true;
         }
 

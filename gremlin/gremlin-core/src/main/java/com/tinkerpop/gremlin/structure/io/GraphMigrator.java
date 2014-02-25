@@ -47,7 +47,7 @@ public final class GraphMigrator {
 
         new Thread(() -> {
             try {
-                writer.outputGraph(outPipe);
+                writer.writeGraph(outPipe);
                 outPipe.flush();
                 outPipe.close();
             } catch (IOException e) {
@@ -55,6 +55,6 @@ public final class GraphMigrator {
             }
         }).start();
 
-        reader.inputGraph(inPipe);
+        reader.readGraph(inPipe);
     }
 }

@@ -7,5 +7,13 @@ import java.io.InputStream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphReader {
-    public void inputGraph(final InputStream graphInputStream) throws IOException;
+
+    public void readGraph(final InputStream inputStream) throws IOException;
+
+    // public Vertex readVertex(final InputStream inputStream, final Direction direction) throws IOException;
+
+    // public Vertex readVertex(final InputStream inputStream) throws IOException;  // only reads the vertex/properties, no edges
+
+    // public Edge readEdge(final InputStream inputStream) throws IOException;
+
 }

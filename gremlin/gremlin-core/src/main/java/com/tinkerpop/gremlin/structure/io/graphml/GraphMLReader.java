@@ -45,7 +45,7 @@ public class GraphMLReader implements GraphReader {
     }
 
     @Override
-    public void inputGraph(final InputStream graphInputStream) throws IOException {
+    public void readGraph(final InputStream graphInputStream) throws IOException {
         try {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
 

@@ -52,7 +52,7 @@ public interface Graph extends AutoCloseable {
 
     public Annotations annotations();
 
-    public Memory memory();
+    public <M extends Memory> M memory();
 
     public interface Memory {
 
@@ -83,21 +83,24 @@ public interface Graph extends AutoCloseable {
 
         public boolean or(final String variable, final boolean bool);
 
-        public int getIteration();
-
-        public long getRuntime();
-
-        public default boolean isInitialIteration() {
-            return this.getIteration() == 0;
-        }
-
         public Graph getGraph();
 
-        public interface System extends Memory {
+        public interface Computer extends Memory {
 
-            public void incrIteration();
+            public int getIteration();
 
-            public void setRuntime(final long runtime);
+            public long getRuntime();
+
+            public default boolean isInitialIteration() {
+                return this.getIteration() == 0;
+            }
+
+            public interface System extends Computer {
+
+                public void incrIteration();
+
+                public void setRuntime(final long runtime);
+            }
         }
 
     }

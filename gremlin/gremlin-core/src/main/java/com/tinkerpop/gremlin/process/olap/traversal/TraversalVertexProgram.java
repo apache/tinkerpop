@@ -37,13 +37,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         this.gremlinSupplier = gremlinSupplier;
     }
 
-    public void setup(final Graph.Memory graphMemory) {
+    public void setup(final Graph.Memory.Computer graphMemory) {
         graphMemory.setIfAbsent(GREMLIN_TRAVERSAL, this.gremlinSupplier);
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
         graphMemory.setIfAbsent(TRACK_PATHS, HolderOptimizer.trackPaths(this.gremlinSupplier.get()));
     }
 
-    public void execute(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory graphMemory) {
+    public void execute(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
         if (graphMemory.isInitialIteration()) {
             executeFirstIteration(vertex, messenger, graphMemory);
         } else {
@@ -51,7 +51,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
     }
 
-    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory graphMemory) {
+    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
         final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_TRAVERSAL).get();
         gremlin.iterate();  // TODO: this needs to go away
         final GraphStep startStep = (GraphStep) gremlin.getSteps().get(0);
@@ -95,7 +95,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     ////////// GRAPH COMPUTER METHODS
 
-    public boolean terminate(final Graph.Memory graphMemory) {
+    public boolean terminate(final Graph.Memory.Computer graphMemory) {
         final boolean voteToHalt = graphMemory.get(VOTE_TO_HALT);
         if (voteToHalt) {
             return true;

@@ -131,7 +131,12 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    public void shouldReadWriteClassicKryo() throws Exception {
+    public void shouldReadWriteToKryo() throws Exception {
+        // todo: this is just temporary until we get the modern graph in and annotations can be tested cleanly
+        g.annotations().set("testString", "judas");
+        g.annotations().set("testLong", 100l);
+        g.annotations().set("testInt", 100);
+
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         final KryoWriter writer = new KryoWriter(g);
         writer.outputGraph(os);
@@ -141,30 +146,12 @@ public class IoTest extends AbstractGremlinTest {
         final KryoReader reader = new KryoReader.Builder(g1)
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.inputGraph(new ByteArrayInputStream(os.toByteArray()));
+
+        assertEquals("judas", g1.annotations().get("testString").get());
+        assertEquals(100l, g1.annotations().get("testLong").get());
+        assertEquals(100, g1.annotations().get("testInt").get());
+
         assertClassicGraph(g1);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldReadWriteModernKryo() throws Exception {
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
-        writer.outputGraph(os);
-        os.close();
-
-        final Graph g1 = graphProvider.openTestGraph(graphProvider.newGraphConfiguration("readGraph"));
-        final KryoReader reader = new KryoReader.Builder(g1)
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.inputGraph(new ByteArrayInputStream(os.toByteArray()));
-        assertModernGraph(g1);
-    }
-
-    private void assertModernGraph(final Graph g1) {
-        assertEquals(6, g1.V().count());
-        assertEquals(8, g1.E().count());
     }
 
     private void assertClassicGraph(final Graph g1) {
