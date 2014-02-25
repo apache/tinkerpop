@@ -143,6 +143,18 @@ public class KryoReader implements GraphReader {
         }
     }
 
+    /**
+     * Read element properties from input stream and put them into an argument list.
+     */
+    private void readElementProperties(final Input input, final List<Object> elementArgs) {
+        final int numberOfProperties = input.readInt();
+        IntStream.range(0, numberOfProperties).forEach(i-> {
+            // todo: do we just let this fail or do we check features for supported property types
+            elementArgs.add(input.readString());
+            elementArgs.add(kryo.readClassAndObject(input));
+        });
+    }
+
     public static class Builder {
         private Graph g;
         private Map<Object, Object> idMap;
@@ -179,17 +191,5 @@ public class KryoReader implements GraphReader {
         public KryoReader build() {
             return new KryoReader(g, idMap, tempFile);
         }
-    }
-
-    /**
-     * Read element properties from input stream and put them into an argument list.
-     */
-    private void readElementProperties(final Input input, final List<Object> elementArgs) {
-        final int numberOfProperties = input.readInt();
-        IntStream.range(0, numberOfProperties).forEach(i-> {
-            // todo: do we just let this fail or do we check features for supported property types
-            elementArgs.add(input.readString());
-            elementArgs.add(kryo.readClassAndObject(input));
-        });
     }
 }
