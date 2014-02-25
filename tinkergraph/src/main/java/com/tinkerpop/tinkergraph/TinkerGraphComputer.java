@@ -64,9 +64,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
             // clone the graph or operate directly on the existing graph
             final TinkerGraph g;
-            if (!this.configuration.getBoolean(CLONE_GRAPH, false)) {
-                g = this.graph;
-            } else {
+            if (this.configuration.getBoolean(CLONE_GRAPH, false)) {
                 try {
                     g = TinkerGraph.open();
                     final ByteBufferOutputStream output = new ByteBufferOutputStream();
@@ -76,20 +74,27 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                 } catch (IOException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
+            } else {
+                g = this.graph;
             }
 
             g.isolation = this.isolation;
             g.elementMemory = new TinkerElementMemory(this.isolation, this.vertexProgram.getComputeKeys());
+            final boolean parallel;
+            if (this.configuration.getString(EXECUTION_TYPE, PARALLEL).equals(PARALLEL))
+                parallel = true;
+            else if (this.configuration.getString(EXECUTION_TYPE, SERIAL).equals(SERIAL))
+                parallel = false;
+            else
+                throw new IllegalArgumentException("The provided execution type is not supported: " + this.configuration.getString(EXECUTION_TYPE));
 
             // execute the vertex program
             this.vertexProgram.setup(g.memory());
             while (true) {
-                if (this.configuration.getString(EXECUTION_TYPE, PARALLEL).equals(PARALLEL))
+                if (parallel)
                     StreamFactory.parallelStream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, this.messenger, g.memory()));
-                else if (this.configuration.getString(EXECUTION_TYPE, SERIAL).equals(SERIAL))
-                    StreamFactory.stream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, this.messenger, g.memory()));
                 else
-                    throw new IllegalArgumentException("The provided execution type is not supported: " + this.configuration.getString(EXECUTION_TYPE));
+                    StreamFactory.stream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, this.messenger, g.memory()));
 
                 g.<Graph.Memory.Computer.System>memory().incrIteration();
                 g.elementMemory.completeIteration();
