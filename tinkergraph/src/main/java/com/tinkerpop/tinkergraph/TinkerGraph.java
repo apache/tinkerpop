@@ -43,17 +43,6 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
 
-    /*protected TinkerGraph cloneTinkerGraph() {
-        TinkerGraph g = new TinkerGraph();
-        g.currentId = this.currentId;
-        g.vertices = this.vertices;
-        g.edges = this.edges;
-        g.annotations = this.annotations;
-        g.memory = this.memory;
-        g.state = this.state;
-        return g;
-    }*/
-
     /**
      * An empty private constructor that initializes {@link TinkerGraph} with no {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy}.  Primarily
      * used for purposes of serialization issues.

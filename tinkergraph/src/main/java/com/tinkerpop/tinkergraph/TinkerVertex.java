@@ -57,13 +57,13 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public void remove() {
-        if (!graph.vertices.containsKey(this.id))
+        if (!this.graph.vertices.containsKey(this.id))
             throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
 
         this.bothE().forEach(Edge::remove);
         this.getProperties().clear();
-        graph.vertexIndex.removeElement(this);
-        graph.vertices.remove(this.id);
+        this.graph.vertexIndex.removeElement(this);
+        this.graph.vertices.remove(this.id);
     }
 
     //////////////////////

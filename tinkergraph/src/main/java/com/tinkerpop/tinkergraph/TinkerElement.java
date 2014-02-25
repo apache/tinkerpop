@@ -38,6 +38,7 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public Map<String, Property> getProperties() {
+        // TODO: Make this work with GraphComputer
         return new HashMap<>(this.properties);
     }
 
