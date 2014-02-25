@@ -37,7 +37,7 @@ public class KryoReader implements GraphReader {
         this.tempFile = tempFile;
     }
     @Override
-    public void inputGraph(final InputStream inputStream) throws IOException {
+    public void readGraph(final InputStream inputStream) throws IOException {
         final Input input = new Input(inputStream);
         final Output output = new Output(new FileOutputStream(tempFile));
 

@@ -82,7 +82,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicGraph() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.gio");
-        new KryoWriter(TinkerFactory.createClassic()).outputGraph(os);
+        new KryoWriter(TinkerFactory.createClassic()).writeGraph(os);
         os.close();
     }
 
@@ -94,11 +94,11 @@ public class TinkerGraphTest {
         final Graph g = TinkerGraph.open();
         final GraphReader reader = new GraphMLReader.Builder(g).build();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/graphml/graph-example-2.xml")) {
-            reader.inputGraph(stream);
+            reader.readGraph(stream);
         }
 
         final OutputStream os = new FileOutputStream("/tmp/graph-example-2.gio");
-        new KryoWriter(g).outputGraph(os);
+        new KryoWriter(g).writeGraph(os);
         os.close();
     }
 
@@ -109,7 +109,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernGraph() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-5.gio");
-        new KryoWriter(TinkerFactory.createModern()).outputGraph(os);
+        new KryoWriter(TinkerFactory.createModern()).writeGraph(os);
         os.close();
     }
 

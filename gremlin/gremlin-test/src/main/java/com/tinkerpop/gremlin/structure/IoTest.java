@@ -67,7 +67,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldWriteNormalizedGraphML() throws Exception {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         final GraphMLWriter w = new GraphMLWriter.Builder(g).setNormalize(true).build();
-        w.outputGraph(bos);
+        w.writeGraph(bos);
 
         final String expected = streamToString(IoTest.class.getResourceAsStream(RESOURCE_PATH_PREFIX + "graph-example-1-normalized.xml"));
         assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
@@ -83,7 +83,7 @@ public class IoTest extends AbstractGremlinTest {
         final GraphMLWriter w = new GraphMLWriter.Builder(g)
                 .setNormalize(true)
                 .setEdgeLabelKey("label").build();
-        w.outputGraph(bos);
+        w.writeGraph(bos);
 
         String expected = streamToString(IoTest.class.getResourceAsStream(RESOURCE_PATH_PREFIX + "graph-example-1-schema-valid.xml"));
         assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
@@ -105,7 +105,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final File f = File.createTempFile("test", "txt");
         try (final OutputStream out = new FileOutputStream(f)) {
-            w.outputGraph(out);
+            w.writeGraph(out);
         }
 
         validateXmlAgainstGraphMLXsd(f);
@@ -116,7 +116,7 @@ public class IoTest extends AbstractGremlinTest {
         final GraphMLReader r = new GraphMLReader.Builder(g2).build();
 
         try (final InputStream in = new FileInputStream(f)) {
-            r.inputGraph(in);
+            r.readGraph(in);
         }
 
         final Vertex v2 = g2.v("1");
@@ -139,13 +139,13 @@ public class IoTest extends AbstractGremlinTest {
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         final KryoWriter writer = new KryoWriter(g);
-        writer.outputGraph(os);
+        writer.writeGraph(os);
         os.close();
 
         final Graph g1 = graphProvider.openTestGraph(graphProvider.newGraphConfiguration("readGraph"));
         final KryoReader reader = new KryoReader.Builder(g1)
                 .setWorkingDirectory(File.separator + "tmp").build();
-        reader.inputGraph(new ByteArrayInputStream(os.toByteArray()));
+        reader.readGraph(new ByteArrayInputStream(os.toByteArray()));
 
         assertEquals("judas", g1.annotations().get("testString").get());
         assertEquals(100l, g1.annotations().get("testLong").get());
@@ -327,7 +327,7 @@ public class IoTest extends AbstractGremlinTest {
     private static void readGraphMLIntoGraph(final Graph g) throws IOException {
         final GraphReader reader = new GraphMLReader.Builder(g).build();
         try (final InputStream stream = IoTest.class.getResourceAsStream(RESOURCE_PATH_PREFIX + "graph-example-1.xml")) {
-            reader.inputGraph(stream);
+            reader.readGraph(stream);
         }
     }
 

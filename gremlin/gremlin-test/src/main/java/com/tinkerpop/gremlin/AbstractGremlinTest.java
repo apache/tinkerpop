@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import org.apache.commons.configuration.Configuration;
@@ -129,7 +128,7 @@ public abstract class AbstractGremlinTest {
     private static void readIntoGraph(final Graph g, final String path) throws IOException {
         final GraphReader reader = new KryoReader.Builder(g).build();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
-            reader.inputGraph(stream);
+            reader.readGraph(stream);
         }
     }
 }

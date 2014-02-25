@@ -31,7 +31,7 @@ public class KryoWriter implements GraphWriter {
     }
 
     @Override
-    public void outputGraph(final OutputStream outputStream) throws IOException {
+    public void writeGraph(final OutputStream outputStream) throws IOException {
         final Output output = new Output(outputStream);
 
         final boolean supportsAnnotations = graph.getFeatures().graph().supportsAnnotations();

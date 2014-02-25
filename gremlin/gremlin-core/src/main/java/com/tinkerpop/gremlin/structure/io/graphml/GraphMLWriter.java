@@ -58,7 +58,7 @@ public class GraphMLWriter implements GraphWriter {
      * @throws java.io.IOException thrown if there is an error generating the GraphML data
      */
     @Override
-    public void outputGraph(final OutputStream outputStream) throws IOException {
+    public void writeGraph(final OutputStream outputStream) throws IOException {
         final Map<String, String> identifiedVertexKeyTypes = this.vertexKeyTypes.orElseGet(this::determineVertexTypes);
         final Map<String, String> identifiedEdgeKeyTypes = this.edgeKeyTypes.orElseGet(this::determineEdgeTypes);
 
