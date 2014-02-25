@@ -14,7 +14,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
 
     private final Graph graph;
     private boolean firstNext = true;
-    private Graph result;
+    private Graph resultantGraph;
     public double alpha;
 
     public PageRankStep(final Traversal traversal, final double alpha) {
@@ -30,7 +30,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
     public Holder<Pair<Vertex, Double>> processNextStart() {
         try {
             if (this.firstNext) {
-                this.result = this.graph.compute().program(PageRankVertexProgram.create().alpha(this.alpha).build()).submit().get();
+                this.resultantGraph = this.graph.compute().program(PageRankVertexProgram.create().alpha(this.alpha).build()).submit().get();
                 this.firstNext = false;
             }
         } catch (Exception e) {
@@ -38,6 +38,6 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
         }
         final Holder<Vertex> holder = this.starts.next();
         final Vertex vertex = holder.get();
-        return holder.makeChild(this.getAs(), new Pair<>(vertex, (Double) this.result.v(vertex.getId()).getValue(PageRankVertexProgram.PAGE_RANK)));
+        return holder.makeChild(this.getAs(), new Pair<>(vertex, (Double) this.resultantGraph.v(vertex.getId()).getValue(PageRankVertexProgram.PAGE_RANK)));
     }
 }

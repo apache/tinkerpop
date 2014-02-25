@@ -44,25 +44,26 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     public Future<Graph> submit() {
         return CompletableFuture.<Graph>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
-            final TinkerGraph g = this.graph; //.cloneTinkerGraph();
+
+            // clone the graph
+            final TinkerGraph g = TinkerHelper.cloneTinkerGraph(this.graph);
             g.isolation = this.isolation;
             g.elementMemory = new TinkerElementMemory(this.isolation, this.vertexProgram.getComputeKeys());
-            //g.memory = new TinkerGraphMemory(g);
-            //g.memory.addAll(this.graph.memory);
+            g.graphMemory = new TinkerGraphMemory(g);
+            g.graphMemory.addAll(this.graph.graphMemory);
+
+            // execute the vertex program
             this.vertexProgram.setup(g.memory());
-
             while (true) {
-                StreamFactory.parallelStream(g.V()).forEach(vertex ->
-                        this.vertexProgram.execute(vertex, this.messenger, g.memory()));
-
-                g.elementMemory.completeIteration();
+                StreamFactory.parallelStream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, this.messenger, g.memory()));
                 ((Graph.Memory.System) g.memory()).incrIteration();
+                g.elementMemory.completeIteration();
                 this.messenger.completeIteration();
                 if (this.vertexProgram.terminate(g.memory())) break;
             }
 
+            // update runtime and return the newly computed graph
             ((Graph.Memory.System) g.memory()).setRuntime(System.currentTimeMillis() - time);
-
             return g;
         });
     }

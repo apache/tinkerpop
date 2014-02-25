@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -66,6 +67,16 @@ public class TinkerHelper {
             vertex.inEdges.put(label, edges);
         }
         edges.add(edge);
+    }
+
+    protected static TinkerGraph cloneTinkerGraph(final TinkerGraph graph) {
+        TinkerGraph g = TinkerGraph.open();
+        g.currentId = Long.valueOf(graph.currentId);
+        g.vertices = new HashMap<>(graph.vertices);
+        g.edges = new HashMap<>(graph.edges);
+        g.annotations = graph.annotations;
+        g.graphMemory = graph.graphMemory;
+        return g;
     }
 
     public static Collection<Vertex> getVertices(final TinkerGraph graph) {
