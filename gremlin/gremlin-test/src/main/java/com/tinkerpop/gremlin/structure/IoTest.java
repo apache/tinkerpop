@@ -31,14 +31,13 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Iterator;
 import java.util.List;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -106,11 +105,7 @@ public class IoTest extends AbstractGremlinTest {
      */
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldProperlyEncodeWithGraphML() throws Exception {
         final Vertex v = g.addVertex(Element.ID, "1");
         v.setProperty("text", "\u00E9");
@@ -141,8 +136,12 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteToKryo() throws Exception {
+        // todo: this is just temporary until we get the modern graph in and annotations can be tested cleanly
         g.annotations().set("testString", "judas");
         g.annotations().set("testLong", 100l);
         g.annotations().set("testInt", 100);
