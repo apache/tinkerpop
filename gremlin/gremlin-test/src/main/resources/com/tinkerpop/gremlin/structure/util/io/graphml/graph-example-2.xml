@@ -6,7 +6,6 @@
     <key id="type" for="node" attr.name="type" attr.type="string"/>
     <key id="weight" for="edge" attr.name="weight" attr.type="int"/>
     <graph id="G" edgedefault="directed">
-        <node id="0"/>
         <node id="1">
             <data key="name">HEY BO DIDDLEY</data>
             <data key="song_type">cover</data>
