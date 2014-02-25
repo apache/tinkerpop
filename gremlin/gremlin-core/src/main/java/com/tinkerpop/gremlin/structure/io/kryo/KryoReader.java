@@ -38,49 +38,53 @@ public class KryoReader implements GraphReader {
         final Input input = new Input(inputStream);
         final Output output = new Output(new FileOutputStream(tempFile));
 
-        final boolean supportedAnnotations = input.readBoolean();
-        if (supportedAnnotations && graph.getFeatures().graph().supportsAnnotations()) {
-            final Graph.Annotations annotations = graph.annotations();
-            final Map<String,Object> annotationMap = (Map<String,Object>) kryo.readObject(input, HashMap.class);
-            annotationMap.forEach(annotations::set);
-        }
-
-        final boolean hasSomeVertices = input.readBoolean();
-        if (hasSomeVertices) {
-            while (!input.eof()) {
-                final Object current = kryo.readClassAndObject(input);
-                final Vertex v;
-                final String vertexLabel = input.readString();
-                if (graph.getFeatures().vertex().supportsUserSuppliedIds())
-                    v = graph.addVertex(Element.ID, current, Element.LABEL, vertexLabel);
-                else
-                    v = graph.addVertex(Element.LABEL, vertexLabel);
-
-                final int numberOfProperties = input.readInt();
-                IntStream.range(0, numberOfProperties).forEach(i-> {
-                    // todo: do we just let this fail or do we check features for supported property types
-                    final String k = input.readString();
-                    v.setProperty(k, kryo.readClassAndObject(input));
-                });
-
-                idMap.put(current, MicroVertex.deflate(v));
-
-                // if there are edges then read them to end and write to temp otherwise, read what should be
-                // the terminator
-                if (!input.readBoolean())
-                    kryo.readClassAndObject(input);
-                else {
-                    // writes the real new id of the outV to the temp.  only need to write vertices to temp that
-                    // have edges.  no need to reprocess those that don't again.
-                    kryo.writeClassAndObject(output, v.getId());
-                    readToEndOfEdgesAndWriteToTemp(input, output);
-                }
-
+        try {
+            final boolean supportedAnnotations = input.readBoolean();
+            if (supportedAnnotations && graph.getFeatures().graph().supportsAnnotations()) {
+                final Graph.Annotations annotations = graph.annotations();
+                final Map<String,Object> annotationMap = (Map<String,Object>) kryo.readObject(input, HashMap.class);
+                annotationMap.forEach(annotations::set);
             }
+
+            final boolean hasSomeVertices = input.readBoolean();
+            if (hasSomeVertices) {
+                while (!input.eof()) {
+                    final Object current = kryo.readClassAndObject(input);
+                    final Vertex v;
+                    final String vertexLabel = input.readString();
+                    if (graph.getFeatures().vertex().supportsUserSuppliedIds())
+                        v = graph.addVertex(Element.ID, current, Element.LABEL, vertexLabel);
+                    else
+                        v = graph.addVertex(Element.LABEL, vertexLabel);
+
+                    final int numberOfProperties = input.readInt();
+                    IntStream.range(0, numberOfProperties).forEach(i-> {
+                        // todo: do we just let this fail or do we check features for supported property types
+                        final String k = input.readString();
+                        v.setProperty(k, kryo.readClassAndObject(input));
+                    });
+
+                    idMap.put(current, MicroVertex.deflate(v));
+
+                    // if there are edges then read them to end and write to temp otherwise, read what should be
+                    // the terminator
+                    if (!input.readBoolean())
+                        kryo.readClassAndObject(input);
+                    else {
+                        // writes the real new id of the outV to the temp.  only need to write vertices to temp that
+                        // have edges.  no need to reprocess those that don't again.
+                        kryo.writeClassAndObject(output, v.getId());
+                        readToEndOfEdgesAndWriteToTemp(input, output);
+                    }
+
+                }
+            }
+        } finally {
+            // done writing to temp
+            output.close();
         }
 
-        // done writing to temp - start reading in the edges now
-        output.close();
+        // start reading in the edges now from the temp file
         final Input edgeInput = new Input(new FileInputStream(tempFile));
         readFromTempEdges(edgeInput);
         input.close();
