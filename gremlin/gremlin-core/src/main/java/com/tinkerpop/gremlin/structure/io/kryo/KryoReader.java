@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.util.micro.MicroVertex;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +27,7 @@ public class KryoReader implements GraphReader {
     private final Graph graph;
 
     private final File tempFile = new File("/tmp" + File.separator + UUID.randomUUID() + ".tmp");
-    private final Map<Object, MicroVertex> idMap = new HashMap<>();
+    private final Map<Object, Object> idMap = new HashMap<>();
 
     public KryoReader(final Graph g) {
         this.graph = g;
@@ -64,7 +63,7 @@ public class KryoReader implements GraphReader {
                         v.setProperty(k, kryo.readClassAndObject(input));
                     });
 
-                    idMap.put(current, MicroVertex.deflate(v));
+                    idMap.put(current, v.getId());
 
                     // if there are edges then read them to end and write to temp otherwise, read what should be
                     // the terminator
@@ -126,7 +125,7 @@ public class KryoReader implements GraphReader {
                 final Vertex vOut = graph.v(outId);
                 final Object edgeId = kryo.readClassAndObject(input);
                 final String edgeLabel = input.readString();
-                final Vertex inV = idMap.get(inId).inflate(graph);
+                final Vertex inV = graph.v(idMap.get(inId));
 
                 final Edge e;
                 if (graph.getFeatures().edge().supportsUserSuppliedIds())
