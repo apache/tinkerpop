@@ -160,13 +160,17 @@ public class KryoReader implements GraphReader {
 
         /**
          * A {@link Map} implementation that will handle vertex id translation in the event that the graph does
-         * not support identifier assignment.
+         * not support identifier assignment. If this value is not set, it uses a standard HashMap.
          */
         public Builder setIdMap(final Map<Object, Object> idMap) {
             this.idMap = idMap;
             return this;
         }
 
+        /**
+         * The reader requires a working directory to write temp files to.  If this value is not set, it will write
+         * the temp file to the local directory.
+         */
         public Builder setWorkingDirectory(final String workingDirectory) {
             final File f = new File(workingDirectory);
             if (!f.exists() || !f.isDirectory())
