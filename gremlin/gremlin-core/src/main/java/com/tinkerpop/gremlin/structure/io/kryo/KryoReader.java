@@ -83,8 +83,12 @@ public class KryoReader implements GraphReader {
 
         // start reading in the edges now from the temp file
         final Input edgeInput = new Input(new FileInputStream(tempFile));
-        readFromTempEdges(edgeInput);
-        input.close();
+        try {
+            readFromTempEdges(edgeInput);
+        } finally {
+            edgeInput.close();
+            deleteTempFileSilently();
+        }
     }
 
     /**
@@ -128,6 +132,7 @@ public class KryoReader implements GraphReader {
             while (!inId.equals(VertexTerminator.INSTANCE)) {
                 final List<Object> edgeArgs = new ArrayList<>();
                 final Vertex vOut = graph.v(outId);
+
                 final Object edgeId = kryo.readClassAndObject(input);
                 if (graph.getFeatures().edge().supportsUserSuppliedIds())
                     edgeArgs.addAll(Arrays.asList(Element.ID, edgeId));
@@ -148,11 +153,17 @@ public class KryoReader implements GraphReader {
      */
     private void readElementProperties(final Input input, final List<Object> elementArgs) {
         final int numberOfProperties = input.readInt();
-        IntStream.range(0, numberOfProperties).forEach(i-> {
+        IntStream.range(0, numberOfProperties).forEach(i -> {
             // todo: do we just let this fail or do we check features for supported property types
             elementArgs.add(input.readString());
             elementArgs.add(kryo.readClassAndObject(input));
         });
+    }
+
+    private void deleteTempFileSilently() {
+        try {
+            tempFile.delete();
+        } catch (Exception ex) { }
     }
 
     public static class Builder {
