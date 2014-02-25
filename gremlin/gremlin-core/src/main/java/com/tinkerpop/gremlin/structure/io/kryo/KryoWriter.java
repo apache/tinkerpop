@@ -51,8 +51,6 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writeElement(final Output output, final Element e, final boolean isVertex) {
-
-        // todo: portability of ids???
         kryo.writeClassAndObject(output, e.getId());
         output.writeString(e.getLabel());
 
