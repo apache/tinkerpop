@@ -78,7 +78,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                 g = this.graph;
             }
 
-            g.isolation = this.isolation;
+            g.usesElementMemory = true;
             g.elementMemory = new TinkerElementMemory(this.isolation, this.vertexProgram.getComputeKeys());
             final boolean parallel;
             if (this.configuration.getString(EXECUTION_TYPE, PARALLEL).equals(PARALLEL))

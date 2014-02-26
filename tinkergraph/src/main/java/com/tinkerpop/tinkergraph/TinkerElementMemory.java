@@ -32,6 +32,7 @@ public class TinkerElementMemory {
     }
 
     public void completeIteration() {
+        //  todo: is this if statement needed?
         if (this.isolation.equals(GraphComputer.Isolation.BSP)) {
             this.getMap = this.setMap;
             this.setMap = new HashMap<>();
@@ -48,7 +49,8 @@ public class TinkerElementMemory {
             };
             this.setValue(element.getId(), key, property);
         } else {
-            element.properties.put(key, new TinkerProperty<>(element, key, value));
+            throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
+            //element.properties.put(key, new TinkerProperty<>(element, key, value));
         }
     }
 
@@ -63,10 +65,12 @@ public class TinkerElementMemory {
 
 
     public void removeProperty(final TinkerElement element, final String key) {
-        if (isComputeKey(key))
+        if (isComputeKey(key)) {
             this.removeValue(element.getId(), key);
-        else
-            element.properties.remove(key);
+        } else {
+            throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
+            //element.properties.remove(key);
+        }
     }
 
     //////////////////////
