@@ -1,6 +1,5 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -43,10 +42,10 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public <V> Property<V> getProperty(final String key) {
-        if (this.graph.isolation.equals(GraphComputer.Isolation.DIRTY_BSP)) {
-            return this.properties.getOrDefault(key, Property.empty());
-        } else {
+        if (this.graph.usesElementMemory) {
             return this.graph.elementMemory.getProperty(this, key);
+        } else {
+            return this.properties.getOrDefault(key, Property.empty());
         }
     }
 

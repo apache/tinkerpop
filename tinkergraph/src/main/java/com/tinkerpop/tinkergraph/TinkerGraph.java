@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -38,7 +39,7 @@ public class TinkerGraph implements Graph, Serializable {
     protected TinkerGraphMemory graphMemory = new TinkerGraphMemory(this);
     protected TinkerElementMemory elementMemory;
 
-    protected GraphComputer.Isolation isolation = GraphComputer.Isolation.DIRTY_BSP;
+    protected boolean usesElementMemory = false;
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
@@ -80,11 +81,19 @@ public class TinkerGraph implements Graph, Serializable {
     ////////////// BLUEPRINTS API METHODS //////////////////
 
     public Vertex v(final Object id) {
-        return this.vertices.get(id.toString());
+        final Vertex vertex = this.vertices.get(id.toString());
+        if (null == vertex)
+            throw new NoSuchElementException();
+        else
+            return vertex;
     }
 
     public Edge e(final Object id) {
-        return this.edges.get(id.toString());
+        final Edge edge = this.edges.get(id.toString());
+        if (null == edge)
+            throw new NoSuchElementException();
+        else
+            return edge;
     }
 
     public Traversal<Vertex, Vertex> V() {
