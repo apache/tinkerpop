@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.io.graphml;
 
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -42,6 +43,21 @@ public class GraphMLReader implements GraphReader {
         this.edgeIdKey = Optional.ofNullable(edgeIdKey);
         this.edgeLabelKey = Optional.ofNullable(edgeLabelKey);
         this.batchSize = batchSize;
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final Direction direction) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
+
+    @Override
+    public Edge readEdge(final InputStream inputStream) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
     @Override

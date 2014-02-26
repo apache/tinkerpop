@@ -64,6 +64,8 @@ public class KryoWriter implements GraphWriter {
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
+        kryo.writeClassAndObject(output, e.getVertex(Direction.OUT).getId());
+        kryo.writeClassAndObject(output, e.getVertex(Direction.IN).getId());
         writeEdgeToOutput(output, e);
         output.flush();
     }

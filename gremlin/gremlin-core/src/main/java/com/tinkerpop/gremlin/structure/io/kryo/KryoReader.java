@@ -5,6 +5,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -38,6 +39,21 @@ public class KryoReader implements GraphReader {
         this.graph = g;
         this.idMap = idMap;
         this.tempFile = tempFile;
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final Direction direction) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Edge readEdge(final InputStream inputStream) throws IOException {
+        throw new UnsupportedOperationException();
     }
 
     @Override
