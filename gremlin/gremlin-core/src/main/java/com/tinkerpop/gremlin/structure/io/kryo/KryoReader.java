@@ -58,8 +58,9 @@ public class KryoReader implements GraphReader {
         }
 
         final List<Pair<String, KryoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
-
         final Vertex v = vertexMaker.apply(vertexId, vertexArgs.toArray());
+        setAnnotatedListValues(annotatedLists, v);
+
         if (Optional.ofNullable(direction).isPresent()) {
             // todo: read edges
         }
@@ -147,7 +148,7 @@ public class KryoReader implements GraphReader {
         }
     }
 
-    private void setAnnotatedListValues(List<Pair<String, KryoAnnotatedList>> annotatedLists, Vertex v) {
+    private void setAnnotatedListValues(final List<Pair<String, KryoAnnotatedList>> annotatedLists, final Vertex v) {
         annotatedLists.forEach(kal -> {
             final AnnotatedList al = v.getValue(kal.getValue0());
             final List<KryoAnnotatedValue> valuesForAnnotation = kal.getValue1().getAnnotatedValueList();

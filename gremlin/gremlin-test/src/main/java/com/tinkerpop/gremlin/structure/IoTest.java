@@ -41,8 +41,10 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FE
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -201,12 +203,17 @@ public class IoTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldReadWriteVertexNoEdgesToKryo() throws Exception {
-        final Vertex v = g.addVertex("name", "marko");
+        final Vertex v = g.addVertex("name", "marko", "locations", AnnotatedList.make());
+        final AnnotatedList<String> locations = v.getValue("locations");
+        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
+        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         final KryoWriter writer = new KryoWriter(g);
         writer.writeVertex(os, v);
         os.close();
+
+        final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
         final KryoReader reader = new KryoReader.Builder(g)
                 .setWorkingDirectory(File.separator + "tmp").build();
@@ -223,11 +230,19 @@ public class IoTest extends AbstractGremlinTest {
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
-                    assertEquals(1, m.size());
+                    assertEquals(2, m.size());
                     assertEquals(v.getValue("name"), m.get("name").toString());
+                    assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                    return null;
+                    // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
+                    // set after the fact.
+                    final Vertex v1 = mock(Vertex.class);
+                    when(v1.getValue("locations")).thenReturn(locationAnnotatedList);
+                    return v1;
                 });
+
+        verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
+        verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
     }
 
     private void assertModernGraph(final Graph g1) {
