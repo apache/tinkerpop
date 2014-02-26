@@ -10,6 +10,8 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
+import com.tinkerpop.gremlin.util.function.QuadFunction;
+import com.tinkerpop.gremlin.util.function.QuintFunction;
 import org.javatuples.Pair;
 
 import java.io.File;
@@ -22,7 +24,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 /**
@@ -43,17 +47,35 @@ public class KryoReader implements GraphReader {
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final Direction direction) throws IOException {
+        final Input input = new Input(inputStream);
+        final Object vertexId = kryo.readClassAndObject(input);
+        final String label = input.readString();
+        final List<Object> vertexArgs = new ArrayList<>();
+        final List<Pair<String, KryoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
+
+        if (Optional.ofNullable(direction).isPresent()) {
+
+        }
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Vertex readVertex(final InputStream inputStream) throws IOException {
-        throw new UnsupportedOperationException();
+        return readVertex(inputStream, null);
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream) throws IOException {
-        throw new UnsupportedOperationException();
+    public Edge readEdge(final InputStream inputStream, final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+        final Input input = new Input(inputStream);
+        final Object outId = kryo.readClassAndObject(input);
+        final Object inId = kryo.readClassAndObject(input);
+        final Object edgeId = kryo.readClassAndObject(input);
+        final String label = input.readString();
+        final List<Object> edgeArgs = new ArrayList<>();
+        readElementProperties(input, edgeArgs);
+
+        return edgeMaker.apply(edgeId, outId, inId, label, edgeArgs.toArray());
     }
 
     @Override
@@ -83,13 +105,7 @@ public class KryoReader implements GraphReader {
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
 
                     // annotated list properties are set after the fact
-                    annotatedLists.forEach(kal -> {
-                        final AnnotatedList al = v.getValue(kal.getValue0());
-                        final List<KryoAnnotatedValue> valuesForAnnotation = kal.getValue1().getAnnotatedValueList();
-                        for (KryoAnnotatedValue kav : valuesForAnnotation) {
-                            al.addValue(kav.getValue(), kav.getAnnotationsArray());
-                        }
-                    });
+                    setAnnotatedListValues(annotatedLists, v);
 
                     idMap.put(current, v.getId());
 
@@ -122,6 +138,16 @@ public class KryoReader implements GraphReader {
             edgeInput.close();
             deleteTempFileSilently();
         }
+    }
+
+    private void setAnnotatedListValues(List<Pair<String, KryoAnnotatedList>> annotatedLists, Vertex v) {
+        annotatedLists.forEach(kal -> {
+            final AnnotatedList al = v.getValue(kal.getValue0());
+            final List<KryoAnnotatedValue> valuesForAnnotation = kal.getValue1().getAnnotatedValueList();
+            for (KryoAnnotatedValue kav : valuesForAnnotation) {
+                al.addValue(kav.getValue(), kav.getAnnotationsArray());
+            }
+        });
     }
 
     /**

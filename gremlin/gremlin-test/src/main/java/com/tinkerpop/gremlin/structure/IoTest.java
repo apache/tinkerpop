@@ -145,7 +145,6 @@ public class IoTest extends AbstractGremlinTest {
         assertClassicGraph(g1);
     }
 
-
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
@@ -163,6 +162,36 @@ public class IoTest extends AbstractGremlinTest {
         reader.readGraph(new ByteArrayInputStream(os.toByteArray()));
 
         assertModernGraph(g1);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    public void shouldReadWriteEdgeToKryo() throws Exception {
+        final Vertex v1 = g.addVertex();
+        final Vertex v2 = g.addVertex();
+        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final KryoWriter writer = new KryoWriter(g);
+        writer.writeEdge(os, e);
+        os.close();
+
+        final KryoReader reader = new KryoReader.Builder(g)
+                .setWorkingDirectory(File.separator + "tmp").build();
+        final Edge e1 = reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
+                (edgeId, outId, inId, label, properties) -> {
+                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                        assertEquals(e.getId(), edgeId);
+
+                    assertEquals(v1.getId(), outId);
+                    assertEquals(v2.getId(), inId);
+                    assertEquals(e.getLabel(), label);
+                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                    assertEquals("weight", properties[0]);
+                    assertEquals(0.5f, properties[1]);
+
+                    return null;
+                });
     }
 
     private void assertModernGraph(final Graph g1) {
