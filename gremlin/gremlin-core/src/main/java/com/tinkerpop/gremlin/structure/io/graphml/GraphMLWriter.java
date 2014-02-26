@@ -51,6 +51,21 @@ public class GraphMLWriter implements GraphWriter {
         this.edgeLabelKey = Optional.ofNullable(edgeLabelKey);
     }
 
+    @Override
+    public void writeVertex(final OutputStream outputStream, final Vertex v, Direction direction) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
+
+    @Override
+    public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
+
+    @Override
+    public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
+
     /**
      * Write the data in a Graph to a GraphML OutputStream.
      *

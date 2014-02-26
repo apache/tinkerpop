@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -27,7 +28,7 @@ import java.util.stream.IntStream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoReader implements GraphReader {
-    private final Kryo kryo = new Kryo();
+    private final Kryo kryo = makeKryo();
     private final Graph graph;
 
     private final File tempFile;
@@ -38,6 +39,7 @@ public class KryoReader implements GraphReader {
         this.idMap = idMap;
         this.tempFile = tempFile;
     }
+
     @Override
     public void readGraph(final InputStream inputStream) throws IOException {
         final Input input = new Input(inputStream);
@@ -81,7 +83,10 @@ public class KryoReader implements GraphReader {
                         kryo.readClassAndObject(input);
                     else {
                         // writes the real new id of the outV to the temp.  only need to write vertices to temp that
-                        // have edges.  no need to reprocess those that don't again.
+                        // have edges.  no need to reprocess those that don't again. first read the direction...
+                        // it has no applicability in the case of reading the entire graph.  Entire graph serialization
+                        // uses OUT edges only, so reading the Direction jut moves the reader forward.
+                        kryo.readObject(input, Direction.class);
                         kryo.writeClassAndObject(output, v.getId());
                         readToEndOfEdgesAndWriteToTemp(input, output);
                     }
@@ -227,5 +232,9 @@ public class KryoReader implements GraphReader {
         public KryoReader build() {
             return new KryoReader(g, idMap, tempFile);
         }
+    }
+
+    private static Kryo makeKryo() {
+        return new Kryo();
     }
 }

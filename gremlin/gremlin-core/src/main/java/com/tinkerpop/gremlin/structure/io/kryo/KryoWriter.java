@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.structure.io.kryo;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
-import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -15,9 +14,8 @@ import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -44,26 +42,81 @@ public class KryoWriter implements GraphWriter {
         output.writeBoolean(hasSomeVertices);
         while (vertices.hasNext()) {
             final Vertex v = vertices.next();
-            writeElement(output, v, true);
+            writeVertexToOutput(output, v, Direction.OUT);
         }
 
         output.flush();
     }
 
-    private void writeElement(final Output output, final Element e, final boolean isVertex) {
+    @Override
+    public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
+        final Output output = new Output(outputStream);
+        writeVertex(output, v, direction);
+    }
+
+    @Override
+    public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
+        final Output output = new Output(outputStream);
+        writeVertexWithNoEdgesToOutput(output, v);
+        output.flush();
+    }
+
+    @Override
+    public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
+        final Output output = new Output(outputStream);
+        writeEdgeToOutput(output, e);
+        output.flush();
+    }
+
+    private void writeEdgeToOutput(final Output output, final Edge e) {
+        this.writeElement(output, e, Optional.empty());
+    }
+
+    private void writeVertexWithNoEdgesToOutput(final Output output, final Vertex v) {
+        writeElement(output, v, Optional.empty());
+    }
+
+    private void writeVertexToOutput(final Output output, final Vertex v, final Direction direction) {
+        this.writeElement(output, v, Optional.of(direction));
+    }
+
+    private void writeElement(final Output output, final Element e, final Optional<Direction> direction) {
         kryo.writeClassAndObject(output, e.getId());
         output.writeString(e.getLabel());
 
         writeProperties(output, e);
 
-        if (isVertex) {
+        if (e instanceof Vertex && direction.isPresent()) {
             final Vertex v = (Vertex) e;
-            final Iterator<Edge> vertexEdgesOut = v.outE();
-            output.writeBoolean(vertexEdgesOut.hasNext());
-            while (vertexEdgesOut.hasNext()) {
-                final Edge edgeToWrite = vertexEdgesOut.next();
-                kryo.writeClassAndObject(output, edgeToWrite.getVertex(Direction.IN).getId());
-                writeElement(output, edgeToWrite, false);
+            final Direction d = direction.get();
+
+            if (d == Direction.BOTH || d == Direction.OUT) {
+                final Iterator<Edge> vertexEdgesOut = v.outE();
+                final boolean hasEdges = vertexEdgesOut.hasNext();
+                output.writeBoolean(hasEdges);
+                if (hasEdges)
+                    kryo.writeObject(output, d);
+
+                while (vertexEdgesOut.hasNext()) {
+                    final Edge edgeToWrite = vertexEdgesOut.next();
+                    kryo.writeClassAndObject(output, edgeToWrite.getVertex(Direction.IN).getId());
+                    writeEdgeToOutput(output, edgeToWrite);
+                }
+            }
+
+            if (d == Direction.BOTH || d == Direction.IN) {
+                kryo.writeObject(output, d);
+                final Iterator<Edge> vertexEdgesOut = v.inE();
+                final boolean hasEdges = vertexEdgesOut.hasNext();
+                output.writeBoolean(hasEdges);
+                if (hasEdges)
+                    kryo.writeObject(output, d);
+
+                while (vertexEdgesOut.hasNext()) {
+                    final Edge edgeToWrite = vertexEdgesOut.next();
+                    kryo.writeClassAndObject(output, edgeToWrite.getVertex(Direction.OUT).getId());
+                    writeEdgeToOutput(output, edgeToWrite);
+                }
             }
 
             kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
