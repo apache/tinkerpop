@@ -1,10 +1,7 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.steps.map.StartStep;
-import com.tinkerpop.gremlin.process.steps.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -92,7 +89,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
         traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.OUT, branchFactor, labels));
-        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return traversal;
     }
 
@@ -100,7 +96,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
         traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.IN, branchFactor, labels));
-        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return traversal;
     }
 
@@ -108,7 +103,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         final DefaultTraversal<Vertex, Edge> traversal = new DefaultTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
         traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.BOTH, branchFactor, labels));
-        traversal.addStarts(new SingleIterator<Holder<Vertex>>(new SimpleHolder<Vertex>(this)));
         return traversal;
     }
 }
