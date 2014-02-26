@@ -28,6 +28,12 @@ public class VertexTest extends AbstractGremlinTest {
     }
 
     @Test
+    public void shouldUseDefaultLabelIfNotSpecified() {
+        final Vertex v = g.addVertex("name", "marko");
+        assertEquals(Element.DEFAULT_LABEL, v.getLabel());
+    }
+
+    @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     public void shouldSupportBasicVertexManipulation() {
