@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.commons.configuration.Configuration;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.xml.XMLConstants;
@@ -200,6 +201,7 @@ public class IoTest extends AbstractGremlinTest {
                 });
     }
 
+    @Ignore
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldReadWriteVertexNoEdgesToKryo() throws Exception {
