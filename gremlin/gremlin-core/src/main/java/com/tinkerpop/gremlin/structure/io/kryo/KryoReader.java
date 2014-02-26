@@ -51,11 +51,8 @@ public class KryoReader implements GraphReader {
         final List<Object> vertexArgs = new ArrayList<>();
 
         final Object vertexId = kryo.readClassAndObject(input);
-        final String label = input.readString();
-        if (null != label) {
-            vertexArgs.add(Element.LABEL);
-            vertexArgs.add(label);
-        }
+        vertexArgs.add(Element.LABEL);
+        vertexArgs.add(input.readString());
 
         final List<Pair<String, KryoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
         final Vertex v = vertexMaker.apply(vertexId, vertexArgs.toArray());
