@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.util.function.QuadFunction;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 
 import javax.xml.stream.XMLInputFactory;
@@ -18,7 +17,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * GraphMLReader writes the data from a GraphML stream to a graph.
@@ -49,12 +48,12 @@ public class GraphMLReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Direction direction, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 

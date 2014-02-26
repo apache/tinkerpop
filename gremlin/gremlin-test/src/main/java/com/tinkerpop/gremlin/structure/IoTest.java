@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
@@ -31,13 +32,16 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_FLOAT_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_INTEGER_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 /**
@@ -178,7 +182,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final KryoReader reader = new KryoReader.Builder(g)
                 .setWorkingDirectory(File.separator + "tmp").build();
-        final Edge e1 = reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
+        reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
                 (edgeId, outId, inId, label, properties) -> {
                     if (g.getFeatures().vertex().supportsUserSuppliedIds())
                         assertEquals(e.getId(), edgeId);
@@ -189,6 +193,38 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(e.getPropertyKeys().size(), properties.length / 2);
                     assertEquals("weight", properties[0]);
                     assertEquals(0.5f, properties[1]);
+
+                    return null;
+                });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    public void shouldReadWriteVertexNoEdgesToKryo() throws Exception {
+        final Vertex v = g.addVertex("name", "marko");
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final KryoWriter writer = new KryoWriter(g);
+        writer.writeVertex(os, v);
+        os.close();
+
+        final KryoReader reader = new KryoReader.Builder(g)
+                .setWorkingDirectory(File.separator + "tmp").build();
+        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
+                (vertexId, properties) -> {
+                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                        assertEquals(v.getId(), vertexId);
+
+                    assertEquals(v.getLabel(), ElementHelper.getLabelValue(properties).get());
+
+                    final Map<String, Object> m = new HashMap<>();
+                    for (int i = 0; i < properties.length; i = i + 2) {
+                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                            m.put((String) properties[i], properties[i + 1]);
+                    }
+
+                    assertEquals(1, m.size());
+                    assertEquals(v.getValue("name"), m.get("name").toString());
 
                     return null;
                 });

@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.util.function.QuadFunction;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import org.javatuples.Pair;
 
@@ -26,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 
 /**
@@ -46,23 +45,31 @@ public class KryoReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Direction direction, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
         final Input input = new Input(inputStream);
+
+        final List<Object> vertexArgs = new ArrayList<>();
+
         final Object vertexId = kryo.readClassAndObject(input);
         final String label = input.readString();
-        final List<Object> vertexArgs = new ArrayList<>();
-        final List<Pair<String, KryoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
-
-        if (Optional.ofNullable(direction).isPresent()) {
-
+        if (null != label) {
+            vertexArgs.add(Element.LABEL);
+            vertexArgs.add(label);
         }
 
-        throw new UnsupportedOperationException();
+        final List<Pair<String, KryoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
+
+        final Vertex v = vertexMaker.apply(vertexId, vertexArgs.toArray());
+        if (Optional.ofNullable(direction).isPresent()) {
+            // todo: read edges
+        }
+
+        return v;
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream) throws IOException {
-        return readVertex(inputStream, null);
+    public Vertex readVertex(final InputStream inputStream, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
+        return readVertex(inputStream, null, vertexMaker);
     }
 
     @Override
