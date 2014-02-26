@@ -68,10 +68,6 @@ public interface GraphComputer extends TraversalEngine {
             return true;
         }
 
-        public default boolean supportsVertexPropertyUpdates() {
-            return true;
-        }
-
         public default boolean supportsEdgeAddition() {
             return true;
         }
@@ -85,10 +81,6 @@ public interface GraphComputer extends TraversalEngine {
         }
 
         public default boolean supportsEdgePropertyRemoval() {
-            return true;
-        }
-
-        public default boolean supportsEdgePropertyUpdates() {
             return true;
         }
 
