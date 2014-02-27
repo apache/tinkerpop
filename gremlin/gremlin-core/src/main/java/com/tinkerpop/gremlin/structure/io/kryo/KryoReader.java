@@ -60,8 +60,26 @@ public class KryoReader implements GraphReader {
 
         final boolean streamContainsEdges = input.readBoolean();
         if (!streamContainsEdges && Optional.ofNullable(direction).isPresent())
-            throw new IllegalStateException(String.format("The direction %s was requested but there are no edges in this stream to deserialize", direction));
+            throw new IllegalStateException(String.format("The direction %s was requested but no attempt was made to serialize edges into this stream", direction));
 
+        // if there are edges in the stream and the direction is not present then the rest of the stream is
+        // simply ignored
+        if (Optional.ofNullable(direction).isPresent()) {
+            final Direction firstDirectionInStream = kryo.readObject(input, Direction.class);
+            if (firstDirectionInStream == Direction.BOTH)
+                throw new IllegalStateException(String.format("Invalid format as the marker for edges streams cannot be %s", Direction.BOTH));
+
+            if (firstDirectionInStream == Direction.IN && (direction == Direction.BOTH || direction == Direction.OUT))
+                throw new IllegalStateException(String.format("The direction %s was requested but there are no %s edges in this stream to deserialize", direction, Direction.IN));
+
+            if (firstDirectionInStream == Direction.OUT && (direction == Direction.BOTH || direction == Direction.OUT)) {
+                // read
+            } else {
+                // skip
+            }
+
+
+        }
 
         return v;
     }
@@ -164,7 +182,7 @@ public class KryoReader implements GraphReader {
      */
     private void readToEndOfEdgesAndWriteToTemp(final Input input, final Output output) throws IOException {
         Object inId = kryo.readClassAndObject(input);
-        while (!inId.equals(VertexTerminator.INSTANCE)) {
+        while (!inId.equals(EdgeTerminator.INSTANCE)) {
             kryo.writeClassAndObject(output, inId);
 
             // edge id
@@ -186,6 +204,10 @@ public class KryoReader implements GraphReader {
             inId = kryo.readClassAndObject(input);
         }
 
+        // this should be the vertex terminator
+        kryo.readClassAndObject(input);
+
+        kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
         kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
     }
 
@@ -197,7 +219,7 @@ public class KryoReader implements GraphReader {
             // in this case the outId is the id assigned by the graph
             final Object outId = kryo.readClassAndObject(input);
             Object inId = kryo.readClassAndObject(input);
-            while (!inId.equals(VertexTerminator.INSTANCE)) {
+            while (!inId.equals(EdgeTerminator.INSTANCE)) {
                 final List<Object> edgeArgs = new ArrayList<>();
                 final Vertex vOut = graph.v(outId);
 
@@ -213,6 +235,9 @@ public class KryoReader implements GraphReader {
 
                 inId = kryo.readClassAndObject(input);
             }
+
+            // vertex terminator
+            kryo.readClassAndObject(input);
         }
     }
 

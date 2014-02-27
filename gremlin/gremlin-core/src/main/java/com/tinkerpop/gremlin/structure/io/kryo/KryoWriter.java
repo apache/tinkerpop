@@ -117,6 +117,9 @@ public class KryoWriter implements GraphWriter {
             kryo.writeClassAndObject(output, edgeToWrite.getVertex(d.opposite()).getId());
             writeEdgeToOutput(output, edgeToWrite);
         }
+
+        if (hasEdges)
+            kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
     }
 
     private void writeProperties(final Output output, final Element e) {
