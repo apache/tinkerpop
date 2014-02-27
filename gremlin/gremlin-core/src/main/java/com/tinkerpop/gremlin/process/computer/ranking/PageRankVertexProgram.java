@@ -1,8 +1,8 @@
-package com.tinkerpop.gremlin.process.olap.ranking;
+package com.tinkerpop.gremlin.process.computer.ranking;
 
-import com.tinkerpop.gremlin.process.olap.MessageType;
-import com.tinkerpop.gremlin.process.olap.Messenger;
-import com.tinkerpop.gremlin.process.olap.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.MessageType;
+import com.tinkerpop.gremlin.process.computer.Messenger;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;

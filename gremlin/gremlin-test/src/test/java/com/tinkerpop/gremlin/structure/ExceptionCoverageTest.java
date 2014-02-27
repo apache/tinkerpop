@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.olap.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -46,10 +46,10 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#argumentCanNotBeNull");
 
             // todo: need to write consistency tests for the following items still...........
-            add("com.tinkerpop.gremlin.process.olap.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
-            add("com.tinkerpop.gremlin.process.olap.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
-            add("com.tinkerpop.gremlin.process.olap.GraphComputer$Exceptions#constantComputeKeyHasAlreadyBeenSet");
-            add("com.tinkerpop.gremlin.process.olap.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
+            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
+            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
+            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#constantComputeKeyHasAlreadyBeenSet");
+            add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
             add("com.tinkerpop.gremlin.structure.Transaction$Exceptions#transactionMustBeOpenToReadWrite");
             add("com.tinkerpop.gremlin.structure.Transaction$Exceptions#openTransactionsOnClose");
         }};

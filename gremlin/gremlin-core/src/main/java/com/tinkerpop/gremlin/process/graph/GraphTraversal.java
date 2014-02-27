@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.olap.ranking.PageRankStep;
+import com.tinkerpop.gremlin.process.computer.ranking.PageRankStep;
 import com.tinkerpop.gremlin.process.graph.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.filter.ExceptStep;

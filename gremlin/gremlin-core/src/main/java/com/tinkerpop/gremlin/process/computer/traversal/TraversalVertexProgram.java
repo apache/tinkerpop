@@ -1,14 +1,13 @@
-package com.tinkerpop.gremlin.process.olap.traversal;
+package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.PathHolder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.olap.MessageType;
-import com.tinkerpop.gremlin.process.olap.Messenger;
-import com.tinkerpop.gremlin.process.olap.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.MessageType;
+import com.tinkerpop.gremlin.process.computer.Messenger;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
 import com.tinkerpop.gremlin.process.graph.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -24,24 +23,24 @@ import java.util.function.Supplier;
  */
 public class TraversalVertexProgram<M extends TraversalMessage> implements VertexProgram<M> {
 
-    private MessageType.Global global = MessageType.Global.of(GREMLIN_MESSAGE);
+    private MessageType.Global global = MessageType.Global.of(TRAVERSAL_MESSAGE);
 
-    protected static final String GREMLIN_MESSAGE = "gremlinMessage";
-    private static final String GREMLIN_TRAVERSAL = "gremlinTraversal";
+    protected static final String TRAVERSAL_MESSAGE = "traversalMessage";
+    private static final String TRAVERSAL = "traversal";
     private static final String VOTE_TO_HALT = "voteToHalt";
     public static final String TRACK_PATHS = "trackPaths";
     // TODO: public static final String MESSAGES_SENT = "messagesSent";
-    public static final String GREMLIN_TRACKER = "gremlinTracker";
-    private final Supplier<GraphTraversal> gremlinSupplier;
+    public static final String TRAVERSAL_TRACKER = "traversalTracker";
+    private final Supplier<Traversal> traversalSupplier;
 
-    private TraversalVertexProgram(final Supplier<GraphTraversal> gremlinSupplier) {
-        this.gremlinSupplier = gremlinSupplier;
+    private TraversalVertexProgram(final Supplier<Traversal> traversalSupplier) {
+        this.traversalSupplier = traversalSupplier;
     }
 
     public void setup(final Graph.Memory.Computer graphMemory) {
-        graphMemory.setIfAbsent(GREMLIN_TRAVERSAL, this.gremlinSupplier);
+        graphMemory.setIfAbsent(TRAVERSAL, this.traversalSupplier);
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
-        graphMemory.setIfAbsent(TRACK_PATHS, HolderOptimizer.trackPaths(this.gremlinSupplier.get()));
+        graphMemory.setIfAbsent(TRACK_PATHS, HolderOptimizer.trackPaths(this.traversalSupplier.get()));
     }
 
     public void execute(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
@@ -53,19 +52,20 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
-        final GraphTraversal gremlin = graphMemory.<Supplier<GraphTraversal>>get(GREMLIN_TRAVERSAL).get();
-        gremlin.iterate();  // TODO: this needs to go away
-        final GraphStep startStep = (GraphStep) gremlin.getSteps().get(0);
-        final String future = (gremlin.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) gremlin.getSteps().get(1)).getAs();
+        final Traversal traversal = graphMemory.<Supplier<Traversal>>get(TRAVERSAL).get();
+        traversal.iterate();  // TODO: this needs to go away
+        final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
+        final String future = (traversal.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
 
         // TODO: Was doing some HasContainer.testAll() stuff prior to the big change (necessary?)
+        // TODO: Make this an optimizer.
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         if (Vertex.class.isAssignableFrom(startStep.returnClass)) {
             final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
                     new PathHolder<>(startStep.getAs(), vertex) :
                     new SimpleHolder<>(vertex);
             holder.setFuture(future);
-            messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), TraversalMessage.of(holder));
+            messenger.sendMessage(vertex, MessageType.Global.of(TRAVERSAL_MESSAGE, vertex), TraversalMessage.of(holder));
             voteToHalt.set(false);
         } else if (Edge.class.isAssignableFrom(startStep.returnClass)) {
             vertex.outE().forEach(e -> {
@@ -73,7 +73,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                         new PathHolder<>(startStep.getAs(), e) :
                         new SimpleHolder<>(e);
                 holder.setFuture(future);
-                messenger.sendMessage(vertex, MessageType.Global.of(GREMLIN_MESSAGE, vertex), TraversalMessage.of(holder));
+                messenger.sendMessage(vertex, MessageType.Global.of(TRAVERSAL_MESSAGE, vertex), TraversalMessage.of(holder));
                 voteToHalt.set(false);
             });
         }
@@ -81,16 +81,16 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory graphMemory) {
-        final GraphTraversal gremlin = graphMemory.<Supplier<GraphTraversal>>get(GREMLIN_TRAVERSAL).get();
-        gremlin.iterate(); // TODO: this needs to go away
+        final Traversal traversal = graphMemory.<Supplier<Traversal>>get(TRAVERSAL).get();
+        traversal.iterate(); // TODO: this needs to go away
         if (graphMemory.<Boolean>get(TRACK_PATHS)) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
-            graphMemory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, gremlin));
-            vertex.setProperty(GREMLIN_TRACKER, tracker);
+            graphMemory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
+            vertex.setProperty(TRAVERSAL_TRACKER, tracker);
         } else {
             final TraversalCounters tracker = new TraversalCounters(vertex);
-            graphMemory.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, gremlin));
-            vertex.setProperty(GREMLIN_TRACKER, tracker);
+            graphMemory.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
+            vertex.setProperty(TRAVERSAL_TRACKER, tracker);
         }
     }
 
@@ -107,7 +107,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     public Map<String, KeyType> getComputeKeys() {
-        return VertexProgram.ofComputeKeys(GREMLIN_TRACKER, KeyType.VARIABLE);
+        return VertexProgram.ofComputeKeys(TRAVERSAL_TRACKER, KeyType.VARIABLE);
     }
 
     public static Builder create() {
@@ -115,15 +115,15 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     public static class Builder {
-        private Supplier<Traversal> gremlin;
+        private Supplier<Traversal> traversalSupplier;
 
-        public Builder gremlin(final Supplier<Traversal> gremlin) {
-            this.gremlin = gremlin;
+        public Builder traversal(final Supplier<Traversal> traversalSupplier) {
+            this.traversalSupplier = traversalSupplier;
             return this;
         }
 
         public TraversalVertexProgram build() {
-            return new TraversalVertexProgram(this.gremlin);
+            return new TraversalVertexProgram(this.traversalSupplier);
         }
     }
 }

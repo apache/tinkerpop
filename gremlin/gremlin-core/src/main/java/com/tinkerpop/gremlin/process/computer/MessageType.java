@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.olap;
+package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;

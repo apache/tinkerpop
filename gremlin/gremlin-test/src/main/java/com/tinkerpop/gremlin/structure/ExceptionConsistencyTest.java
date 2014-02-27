@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.olap.Messenger;
-import com.tinkerpop.gremlin.process.olap.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.Messenger;
+import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -555,7 +555,7 @@ public class ExceptionConsistencyTest {
 
     /**
      * Tests specific to setting {@link com.tinkerpop.gremlin.structure.Element} properties with
-     * {@link com.tinkerpop.gremlin.process.olap.GraphComputer}.
+     * {@link com.tinkerpop.gremlin.process.computer.GraphComputer}.
      */
     @ExceptionCoverage(exceptionClass = GraphComputer.Exceptions.class, methods = {
             "providedKeyIsNotAComputeKey"
@@ -604,7 +604,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Mock {@link com.tinkerpop.gremlin.process.olap.VertexProgram} that just dummies up a way to set a property on a {@link com.tinkerpop.gremlin.structure.Vertex}.
+     * Mock {@link com.tinkerpop.gremlin.process.computer.VertexProgram} that just dummies up a way to set a property on a {@link com.tinkerpop.gremlin.structure.Vertex}.
      */
     private static class MockVertexProgramForVertex implements VertexProgram {
         private final String key;
@@ -637,7 +637,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Mock {@link com.tinkerpop.gremlin.process.olap.VertexProgram} that just dummies up a way to set a property on an {@link com.tinkerpop.gremlin.structure.Edge}.
+     * Mock {@link com.tinkerpop.gremlin.process.computer.VertexProgram} that just dummies up a way to set a property on an {@link com.tinkerpop.gremlin.structure.Edge}.
      */
     private static class MockVertexProgramForEdge implements VertexProgram {
         private final String key;
