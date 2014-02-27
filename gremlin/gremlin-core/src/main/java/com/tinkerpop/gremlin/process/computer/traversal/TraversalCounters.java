@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.olap.traversal;
+package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.structure.Property;
@@ -21,7 +21,7 @@ public class TraversalCounters implements Serializable {
     protected final Map<Holder, Long> doneObjectTracks = new HashMap<>();
 
     public TraversalCounters(final Vertex vertex) {
-        final Property<TraversalCounters> tracker = vertex.getProperty(TraversalVertexProgram.GREMLIN_TRACKER);
+        final Property<TraversalCounters> tracker = vertex.getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER);
         this.previousObjectTracks = tracker.isPresent() ? tracker.get().objectTracks : new HashMap<>();
     }
 

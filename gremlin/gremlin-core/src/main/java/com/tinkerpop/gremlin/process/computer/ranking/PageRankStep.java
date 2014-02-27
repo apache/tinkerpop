@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.olap.ranking;
+package com.tinkerpop.gremlin.process.computer.ranking;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;

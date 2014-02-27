@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.filter;
 
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.PathConsumer;
+import com.tinkerpop.gremlin.process.util.PathConsumer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

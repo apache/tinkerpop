@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.HolderSource;
+import com.tinkerpop.gremlin.process.util.HolderSource;
 import com.tinkerpop.gremlin.structure.Element;
 
 /**

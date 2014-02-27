@@ -1,10 +1,10 @@
-package com.tinkerpop.gremlin.process.olap.traversal;
+package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.olap.MessageType;
-import com.tinkerpop.gremlin.process.olap.Messenger;
+import com.tinkerpop.gremlin.process.computer.MessageType;
+import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -71,7 +71,7 @@ public class TraversalCounterMessage extends TraversalMessage {
                 message.setCounter(count);
                 messenger.sendMessage(
                         vertex,
-                        MessageType.Global.of(TraversalVertexProgram.GREMLIN_MESSAGE, TraversalMessage.getHostingVertices(end)),
+                        MessageType.Global.of(TraversalVertexProgram.TRAVERSAL_MESSAGE, TraversalMessage.getHostingVertices(end)),
                         message);
             } else {
                 MapHelper.incr(tracker.getObjectTracks(), holder, count);

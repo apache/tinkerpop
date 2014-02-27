@@ -2,8 +2,8 @@ package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.process.olap.MessageType;
-import com.tinkerpop.gremlin.process.olap.Messenger;
+import com.tinkerpop.gremlin.process.computer.MessageType;
+import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.Serializable;

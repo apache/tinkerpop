@@ -1,11 +1,11 @@
-package com.tinkerpop.gremlin.process.olap.traversal;
+package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.olap.MessageType;
-import com.tinkerpop.gremlin.process.olap.Messenger;
+import com.tinkerpop.gremlin.process.computer.MessageType;
+import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.MicroPath;
@@ -85,7 +85,7 @@ public class TraversalPathMessage extends TraversalMessage {
             if (end instanceof Element || end instanceof Property) {
                 messenger.sendMessage(
                         vertex,
-                        MessageType.Global.of(TraversalVertexProgram.GREMLIN_MESSAGE, getHostingVertices(end)),
+                        MessageType.Global.of(TraversalVertexProgram.TRAVERSAL_MESSAGE, getHostingVertices(end)),
                         TraversalPathMessage.of(holder));
             } else {
                 if (end instanceof Path) {
