@@ -108,9 +108,8 @@ public class KryoWriter implements GraphWriter {
 
     private void writeDirectionalEdges(final Output output, final Direction d, final Iterator<Edge> vertexEdges) {
         final boolean hasEdges = vertexEdges.hasNext();
+        kryo.writeObject(output, d);
         output.writeBoolean(hasEdges);
-        if (hasEdges)
-            kryo.writeObject(output, d);
 
         while (vertexEdges.hasNext()) {
             final Edge edgeToWrite = vertexEdges.next();

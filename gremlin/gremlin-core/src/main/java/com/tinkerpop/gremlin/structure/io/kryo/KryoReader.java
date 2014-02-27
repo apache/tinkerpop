@@ -58,8 +58,8 @@ public class KryoReader implements GraphReader {
         final Vertex v = vertexMaker.apply(vertexId, vertexArgs.toArray());
         setAnnotatedListValues(annotatedLists, v);
 
-        final boolean streamContainsEdges = input.readBoolean();
-        if (!streamContainsEdges && Optional.ofNullable(direction).isPresent())
+        final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
+        if (!streamContainsEdgesInSomeDirection && Optional.ofNullable(direction).isPresent())
             throw new IllegalStateException(String.format("The direction %s was requested but no attempt was made to serialize edges into this stream", direction));
 
         // if there are edges in the stream and the direction is not present then the rest of the stream is
@@ -134,18 +134,21 @@ public class KryoReader implements GraphReader {
                     idMap.put(current, v.getId());
 
                     // the gio file should have been written with a direction specified
-                    input.readBoolean();
+                    final boolean hasDirectionSpecified = input.readBoolean();
+                    final Direction directionInStream = kryo.readObject(input, Direction.class);
 
-                    // if there are edges then read them to end and write to temp otherwise, read what should be
-                    // the terminator
+                    // graph serialization requires that a direction be specified in the stream and that the
+                    // direction of the edges be OUT
+                    if (!hasDirectionSpecified || directionInStream != Direction.OUT)
+                        throw new IllegalStateException(String.format("Stream must specify edge direction and that direction must be %s", Direction.OUT));
+
+                    // if there are edges then read them to end and write to temp, otherwise read what should be
+                    // the vertex terminator
                     if (!input.readBoolean())
                         kryo.readClassAndObject(input);
                     else {
                         // writes the real new id of the outV to the temp.  only need to write vertices to temp that
-                        // have edges.  no need to reprocess those that don't again. first read the direction...
-                        // it has no applicability in the case of reading the entire graph.  Entire graph serialization
-                        // uses OUT edges only, so reading the Direction jut moves the reader forward.
-                        kryo.readObject(input, Direction.class);
+                        // have edges.  no need to reprocess those that don't again.
                         kryo.writeClassAndObject(output, v.getId());
                         readToEndOfEdgesAndWriteToTemp(input, output);
                     }
