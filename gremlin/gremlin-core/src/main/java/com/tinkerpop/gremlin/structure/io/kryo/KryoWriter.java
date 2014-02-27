@@ -95,11 +95,13 @@ public class KryoWriter implements GraphWriter {
                 final Vertex v = (Vertex) e;
                 final Direction d = direction.get();
 
+                kryo.writeObject(output, d);
+
                 if (d == Direction.BOTH || d == Direction.OUT)
-                    writeDirectionalEdges(output, d, v.outE());
+                    writeDirectionalEdges(output, Direction.OUT, v.outE());
 
                 if (d == Direction.BOTH || d == Direction.IN)
-                    writeDirectionalEdges(output, d, v.inE());
+                    writeDirectionalEdges(output, Direction.IN, v.inE());
             }
 
             kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);

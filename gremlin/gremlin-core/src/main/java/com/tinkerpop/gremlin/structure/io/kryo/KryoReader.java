@@ -45,7 +45,7 @@ public class KryoReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Direction directionRequested, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
         final Input input = new Input(inputStream);
 
         final List<Object> vertexArgs = new ArrayList<>();
@@ -59,26 +59,67 @@ public class KryoReader implements GraphReader {
         setAnnotatedListValues(annotatedLists, v);
 
         final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
-        if (!streamContainsEdgesInSomeDirection && Optional.ofNullable(direction).isPresent())
-            throw new IllegalStateException(String.format("The direction %s was requested but no attempt was made to serialize edges into this stream", direction));
+        if (!streamContainsEdgesInSomeDirection && Optional.ofNullable(directionRequested).isPresent())
+            throw new IllegalStateException(String.format("The direction %s was requested but no attempt was made to serialize edges into this stream", directionRequested));
 
         // if there are edges in the stream and the direction is not present then the rest of the stream is
         // simply ignored
-        if (Optional.ofNullable(direction).isPresent()) {
-            final Direction firstDirectionInStream = kryo.readObject(input, Direction.class);
-            if (firstDirectionInStream == Direction.BOTH)
-                throw new IllegalStateException(String.format("Invalid format as the marker for edges streams cannot be %s", Direction.BOTH));
+        if (Optional.ofNullable(directionRequested).isPresent()) {
+            final Direction directionsInStream = kryo.readObject(input, Direction.class);
+            if (directionsInStream != Direction.BOTH && directionsInStream != directionRequested)
+                throw new IllegalStateException(String.format("Stream contains %s edges, but requesting %s", directionsInStream, directionRequested));
 
-            if (firstDirectionInStream == Direction.IN && (direction == Direction.BOTH || direction == Direction.OUT))
-                throw new IllegalStateException(String.format("The direction %s was requested but there are no %s edges in this stream to deserialize", direction, Direction.IN));
+            final Direction firstDirection = kryo.readObject(input, Direction.class);
+            if (firstDirection == Direction.OUT && (directionRequested == Direction.BOTH || directionRequested == Direction.OUT)) {
+                if (input.readBoolean()) {
+                    Object inId = kryo.readClassAndObject(input);
+                    while (!inId.equals(EdgeTerminator.INSTANCE)) {
+                        final List<Object> edgeArgs = new ArrayList<>();
+                        final Object edgeId = kryo.readClassAndObject(input);
+                        final String edgeLabel = input.readString();
+                        readElementProperties(input, edgeArgs);
 
-            if (firstDirectionInStream == Direction.OUT && (direction == Direction.BOTH || direction == Direction.OUT)) {
-                // read
+                        // todo: how to create the edge goes here
+
+                        inId = kryo.readClassAndObject(input);
+                    }
+                }
             } else {
-                // skip
+                // requested direction in, but BOTH must be serialized so skip this.  the illegalstateexception
+                // prior to this IF should  have caught a problem where IN is not supported at all
+                if (directionRequested == Direction.IN) {
+                    if (input.readBoolean()) {
+                        Object inId = kryo.readClassAndObject(input);
+                        while (!inId.equals(EdgeTerminator.INSTANCE)) {
+                            kryo.readClassAndObject(input);
+                            input.readString();
+                            readElementProperties(input, new ArrayList<>());    // todo: better skip properties
+                            inId = kryo.readClassAndObject(input);
+                        }
+                    }
+                }
             }
 
+            if (directionRequested == Direction.BOTH || directionRequested == Direction.IN) {
+                // if the first direction was OUT then it was either read or skipped.  in that case, the marker
+                // of the stream is currently ready to read the IN direction. otherwise it's in the perfect place
+                // to start reading edges
+                if (firstDirection == Direction.OUT) kryo.readObject(input, Direction.class);
 
+                if (input.readBoolean()) {
+                    Object inId = kryo.readClassAndObject(input);
+                    while (!inId.equals(EdgeTerminator.INSTANCE)) {
+                        final List<Object> edgeArgs = new ArrayList<>();
+                        final Object edgeId = kryo.readClassAndObject(input);
+                        final String edgeLabel = input.readString();
+                        readElementProperties(input, edgeArgs);
+
+                        // todo: how to create the edge goes here
+
+                        inId = kryo.readClassAndObject(input);
+                    }
+                }
+            }
         }
 
         return v;
@@ -136,10 +177,11 @@ public class KryoReader implements GraphReader {
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
                     final Direction directionInStream = kryo.readObject(input, Direction.class);
+                    final Direction directionOfEdgeBatch = kryo.readObject(input, Direction.class);
 
                     // graph serialization requires that a direction be specified in the stream and that the
                     // direction of the edges be OUT
-                    if (!hasDirectionSpecified || directionInStream != Direction.OUT)
+                    if (!hasDirectionSpecified || directionInStream != Direction.OUT || directionOfEdgeBatch != Direction.OUT)
                         throw new IllegalStateException(String.format("Stream must specify edge direction and that direction must be %s", Direction.OUT));
 
                     // if there are edges then read them to end and write to temp, otherwise read what should be
