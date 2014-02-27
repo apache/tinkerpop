@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
@@ -42,9 +43,17 @@ public interface Graph extends AutoCloseable {
         return (Edge) this.E().has(Element.ID, id).next();
     }
 
-    public Traversal<Vertex, Vertex> V();
+    public GraphTraversal<Vertex, Vertex> V();
 
-    public Traversal<Edge, Edge> E();
+    public GraphTraversal<Edge, Edge> E();
+
+    public default <T extends Traversal> T traversal(final Class<T> traversalClass) {
+        try {
+            return (T) traversalClass.getMethod("make").invoke(null);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
 
     public GraphComputer compute();
 

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
@@ -42,97 +42,97 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
-    public Traversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
         return this.baseVertex.out(branchFactor, labels);
     }
 
     @Override
-    public Traversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
         return this.baseVertex.in(branchFactor, labels);
     }
 
     @Override
-    public Traversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
         return this.baseVertex.both(branchFactor, labels);
     }
 
     @Override
-    public Traversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
         return this.baseVertex.outE(branchFactor, labels);
     }
 
     @Override
-    public Traversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
         return this.baseVertex.inE(branchFactor, labels);
     }
 
     @Override
-    public Traversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
         return this.baseVertex.bothE(branchFactor, labels);
     }
 
     @Override
-    public Traversal<Vertex, Vertex> out(final String... labels) {
+    public GraphTraversal<Vertex, Vertex> out(final String... labels) {
         return this.baseVertex.out(labels);
     }
 
     @Override
-    public Traversal<Vertex, Vertex> in(final String... labels) {
+    public GraphTraversal<Vertex, Vertex> in(final String... labels) {
         return this.baseVertex.in(labels);
     }
 
     @Override
-    public Traversal<Vertex, Vertex> both(final String... labels) {
+    public GraphTraversal<Vertex, Vertex> both(final String... labels) {
         return this.baseVertex.both(labels);
     }
 
     @Override
-    public Traversal<Vertex, Edge> outE(final String... labels) {
+    public GraphTraversal<Vertex, Edge> outE(final String... labels) {
         return this.baseVertex.outE(labels);
     }
 
     @Override
-    public Traversal<Vertex, Edge> inE(final String... labels) {
+    public GraphTraversal<Vertex, Edge> inE(final String... labels) {
         return this.baseVertex.inE(labels);
     }
 
     @Override
-    public Traversal<Vertex, Edge> bothE(final String... labels) {
+    public GraphTraversal<Vertex, Edge> bothE(final String... labels) {
         return this.baseVertex.bothE(labels);
     }
 
     @Override
-    public Traversal<Vertex, Vertex> start() {
+    public GraphTraversal<Vertex, Vertex> start() {
         return this.baseVertex.start();
     }
 
     @Override
-    public Traversal<Vertex, Vertex> as(final String as) {
+    public GraphTraversal<Vertex, Vertex> as(final String as) {
         return this.baseVertex.as(as);
     }
 
     @Override
-    public <E2> Traversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
+    public <E2> GraphTraversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
         return this.baseVertex.annotatedValues(propertyKey);
     }
 
     @Override
-    public <E2> Traversal<Vertex, Property<E2>> property(final String propertyKey) {
+    public <E2> GraphTraversal<Vertex, Property<E2>> property(final String propertyKey) {
         return this.baseVertex.property(propertyKey);
     }
 
     @Override
-    public <E2> Traversal<Vertex, E2> value(final String propertyKey) {
+    public <E2> GraphTraversal<Vertex, E2> value(final String propertyKey) {
         return this.baseVertex.value(propertyKey);
     }
 
     @Override
-    public Traversal<Vertex, Vertex> with(final Object... variableValues) {
+    public GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
         return this.baseVertex.with(variableValues);
     }
 
     @Override
-    public Traversal<Vertex, Vertex> sideEffect(final Consumer<Holder<Vertex>> consumer) {
+    public GraphTraversal<Vertex, Vertex> sideEffect(final Consumer<Holder<Vertex>> consumer) {
         return this.baseVertex.sideEffect(consumer);
     }
 }

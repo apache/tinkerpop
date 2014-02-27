@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.olap.traversal;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.util.MicroPath;
-import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.graph.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;

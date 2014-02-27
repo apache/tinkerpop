@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.olap.ranking;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.steps.AbstractStep;
+import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;

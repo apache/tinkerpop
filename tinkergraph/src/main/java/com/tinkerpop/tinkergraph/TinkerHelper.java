@@ -1,6 +1,6 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.gremlin.process.steps.util.MultiIterator;
+import com.tinkerpop.gremlin.process.util.MultiIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;

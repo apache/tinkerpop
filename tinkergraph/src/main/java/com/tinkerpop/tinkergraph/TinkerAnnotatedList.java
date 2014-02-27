@@ -1,12 +1,12 @@
 package com.tinkerpop.tinkergraph;
 
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.steps.map.StartStep;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.tinkergraph.process.steps.map.TinkerAnnotatedListStep;
+import com.tinkerpop.tinkergraph.process.graph.map.TinkerAnnotatedListStep;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -29,8 +29,8 @@ public class TinkerAnnotatedList<V> implements AnnotatedList<V>, Serializable {
         return annotatedValue;
     }
 
-    public Traversal<AnnotatedList<V>, AnnotatedValue<V>> annotatedValues() {
-        final DefaultTraversal<AnnotatedList<V>, AnnotatedValue<V>> traversal = new DefaultTraversal<>();
+    public GraphTraversal<AnnotatedList<V>, AnnotatedValue<V>> annotatedValues() {
+        final GraphTraversal<AnnotatedList<V>, AnnotatedValue<V>> traversal = new DefaultGraphTraversal<>();
         traversal.addStep(new StartStep<AnnotatedList>(traversal, this));
         traversal.addStep(new TinkerAnnotatedListStep<V>(traversal));
         return traversal;

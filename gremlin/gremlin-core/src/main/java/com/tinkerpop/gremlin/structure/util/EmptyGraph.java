@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
 import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -21,13 +22,18 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public Traversal<Vertex, Vertex> V() {
-        return EmptyTraversal.instance();
+    public GraphTraversal<Vertex, Vertex> V() {
+        return (GraphTraversal) EmptyTraversal.instance();
     }
 
     @Override
-    public Traversal<Edge, Edge> E() {
-        return EmptyTraversal.instance();
+    public GraphTraversal<Edge, Edge> E() {
+        return (GraphTraversal) EmptyTraversal.instance();
+    }
+
+    @Override
+    public <T extends Traversal> T traversal(final Class<T> traversal) {
+        return (T) EmptyTraversal.instance();
     }
 
     public static Graph instance() {
@@ -55,7 +61,7 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public Memory memory() {
+    public <M extends Memory> M memory() {
         throw new IllegalStateException(MESSAGE);
     }
 

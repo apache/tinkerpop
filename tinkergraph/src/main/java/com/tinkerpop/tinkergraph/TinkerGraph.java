@@ -2,8 +2,9 @@ package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.olap.GraphComputer;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -12,8 +13,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.GraphHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.tinkergraph.process.steps.map.TinkerGraphStep;
-import com.tinkerpop.tinkergraph.process.steps.optimizers.TinkerGraphStepOptimizer;
+import com.tinkerpop.tinkergraph.process.graph.map.TinkerGraphStep;
+import com.tinkerpop.tinkergraph.process.graph.util.optimizers.TinkerGraphStepOptimizer;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
@@ -96,8 +97,8 @@ public class TinkerGraph implements Graph, Serializable {
             return edge;
     }
 
-    public Traversal<Vertex, Vertex> V() {
-        final Traversal traversal = new DefaultTraversal<Object, Vertex>() {
+    public GraphTraversal<Vertex, Vertex> V() {
+        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>() {
             public Iterator<Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer)
                     this.optimizers().unregister(TinkerGraphStepOptimizer.class);
@@ -110,8 +111,8 @@ public class TinkerGraph implements Graph, Serializable {
         return traversal;
     }
 
-    public Traversal<Edge, Edge> E() {
-        final Traversal traversal = new DefaultTraversal<Object, Edge>() {
+    public GraphTraversal<Edge, Edge> E() {
+        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>() {
             public Iterator<Edge> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer)
                     this.optimizers().unregister(TinkerGraphStepOptimizer.class);
@@ -174,7 +175,6 @@ public class TinkerGraph implements Graph, Serializable {
             return this.annotations.toString();
         }
     }
-
 
     public String toString() {
         return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());

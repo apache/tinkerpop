@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.steps.util.EmptyStep;
 
 import java.util.Iterator;
 import java.util.LinkedList;

@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.util;
 
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -69,8 +69,8 @@ public class VertexQueryBuilder {
         return this;
     }
 
-    public Traversal<Vertex, Edge> build(final Vertex vertex) {
-        Traversal traversal = vertex.identity();
+    public GraphTraversal<Vertex, Edge> build(final Vertex vertex) {
+        GraphTraversal traversal = vertex.identity();
         if (this.direction.equals(Direction.OUT))
             traversal.outE(this.limit, this.labels);
         else if (this.direction.equals(Direction.IN))

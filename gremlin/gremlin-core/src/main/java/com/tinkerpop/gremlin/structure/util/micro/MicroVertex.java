@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.micro;
 
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -37,31 +37,31 @@ public class MicroVertex extends MicroElement implements Vertex {
         return new MicroVertex(vertex);
     }
 
-    public Traversal<Vertex, Vertex> as(final String as) {
+    public GraphTraversal<Vertex, Vertex> as(final String as) {
         throw new IllegalStateException();
     }
 
-    public Traversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 
-    public Traversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 
-    public Traversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 
-    public Traversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 
-    public Traversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 
-    public Traversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 }

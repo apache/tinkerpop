@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -13,9 +13,9 @@ public interface AnnotatedList<V> {
 
     public AnnotatedValue<V> addValue(final V value, final Object... annotationKeyValues);
 
-    public Traversal<AnnotatedList<V>, AnnotatedValue<V>> annotatedValues();
+    public GraphTraversal<AnnotatedList<V>, AnnotatedValue<V>> annotatedValues();
 
-    public default Traversal<AnnotatedList<V>, V> values() {
+    public default GraphTraversal<AnnotatedList<V>, V> values() {
         return this.annotatedValues().value();
     }
 

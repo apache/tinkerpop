@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.olap.traversal;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.PathHolder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
@@ -8,8 +9,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.process.olap.Messenger;
 import com.tinkerpop.gremlin.process.olap.VertexProgram;
-import com.tinkerpop.gremlin.process.steps.map.GraphStep;
-import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.graph.map.GraphStep;
+import com.tinkerpop.gremlin.process.graph.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -31,9 +32,9 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     public static final String TRACK_PATHS = "trackPaths";
     // TODO: public static final String MESSAGES_SENT = "messagesSent";
     public static final String GREMLIN_TRACKER = "gremlinTracker";
-    private final Supplier<Traversal> gremlinSupplier;
+    private final Supplier<GraphTraversal> gremlinSupplier;
 
-    private TraversalVertexProgram(final Supplier<Traversal> gremlinSupplier) {
+    private TraversalVertexProgram(final Supplier<GraphTraversal> gremlinSupplier) {
         this.gremlinSupplier = gremlinSupplier;
     }
 
@@ -52,7 +53,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
-        final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_TRAVERSAL).get();
+        final GraphTraversal gremlin = graphMemory.<Supplier<GraphTraversal>>get(GREMLIN_TRAVERSAL).get();
         gremlin.iterate();  // TODO: this needs to go away
         final GraphStep startStep = (GraphStep) gremlin.getSteps().get(0);
         final String future = (gremlin.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) gremlin.getSteps().get(1)).getAs();
@@ -80,7 +81,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory graphMemory) {
-        final Traversal gremlin = graphMemory.<Supplier<Traversal>>get(GREMLIN_TRAVERSAL).get();
+        final GraphTraversal gremlin = graphMemory.<Supplier<GraphTraversal>>get(GREMLIN_TRAVERSAL).get();
         gremlin.iterate(); // TODO: this needs to go away
         if (graphMemory.<Boolean>get(TRACK_PATHS)) {
             final TraversalPaths tracker = new TraversalPaths(vertex);

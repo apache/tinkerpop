@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.steps.map.StartStep;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
+import com.tinkerpop.gremlin.process.graph.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 
 import java.util.function.Consumer;
 
@@ -23,77 +23,77 @@ public interface Vertex extends Element {
 
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
-    public Traversal<Vertex, Vertex> out(final int branchFactor, final String... labels);
+    public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels);
 
-    public Traversal<Vertex, Vertex> in(final int branchFactor, final String... labels);
+    public GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels);
 
-    public Traversal<Vertex, Vertex> both(final int branchFactor, final String... labels);
+    public GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels);
 
-    public Traversal<Vertex, Edge> outE(final int branchFactor, final String... labels);
+    public GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels);
 
-    public Traversal<Vertex, Edge> inE(final int branchFactor, final String... labels);
+    public GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels);
 
-    public Traversal<Vertex, Edge> bothE(final int branchFactor, final String... labels);
+    public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels);
 
     ///////////////
 
-    public default Traversal<Vertex, Vertex> out(final String... labels) {
+    public default GraphTraversal<Vertex, Vertex> out(final String... labels) {
         return this.out(Integer.MAX_VALUE, labels);
     }
 
-    public default Traversal<Vertex, Vertex> in(final String... labels) {
+    public default GraphTraversal<Vertex, Vertex> in(final String... labels) {
         return this.in(Integer.MAX_VALUE, labels);
     }
 
-    public default Traversal<Vertex, Vertex> both(final String... labels) {
+    public default GraphTraversal<Vertex, Vertex> both(final String... labels) {
         return this.both(Integer.MAX_VALUE, labels);
     }
 
-    public default Traversal<Vertex, Edge> outE(final String... labels) {
+    public default GraphTraversal<Vertex, Edge> outE(final String... labels) {
         return this.outE(Integer.MAX_VALUE, labels);
     }
 
-    public default Traversal<Vertex, Edge> inE(final String... labels) {
+    public default GraphTraversal<Vertex, Edge> inE(final String... labels) {
         return this.inE(Integer.MAX_VALUE, labels);
     }
 
-    public default Traversal<Vertex, Edge> bothE(final String... labels) {
+    public default GraphTraversal<Vertex, Edge> bothE(final String... labels) {
         return this.bothE(Integer.MAX_VALUE, labels);
     }
 
     ///////////////
 
-    public default Traversal<Vertex, Vertex> start() {
-        final Traversal<Vertex, Vertex> traversal = new DefaultTraversal<>();
-        return traversal.addStep(new StartStep<>(traversal, this));
+    public default GraphTraversal<Vertex, Vertex> start() {
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
+        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
-    public default Traversal<Vertex, Vertex> as(final String as) {
-        return this.start().as(as);
+    public default GraphTraversal<Vertex, Vertex> as(final String as) {
+        return (GraphTraversal) this.start().as(as);
     }
 
-    public default Traversal<Vertex, Vertex> identity() {
-        return this.start().identity();
+    public default GraphTraversal<Vertex, Vertex> identity() {
+        return (GraphTraversal) this.start().identity();
     }
 
-    public default <E2> Traversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-        return this.start().annotatedValues(propertyKey);
+    public default <E2> GraphTraversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
+        return (GraphTraversal) this.start().annotatedValues(propertyKey);
     }
 
-    public default <E2> Traversal<Vertex, Property<E2>> property(final String propertyKey) {
-        return this.start().property(propertyKey);
+    public default <E2> GraphTraversal<Vertex, Property<E2>> property(final String propertyKey) {
+        return (GraphTraversal) this.start().property(propertyKey);
     }
 
-    public default <E2> Traversal<Vertex, E2> value(final String propertyKey) {
-        return this.start().value(propertyKey);
+    public default <E2> GraphTraversal<Vertex, E2> value(final String propertyKey) {
+        return (GraphTraversal) this.start().value(propertyKey);
     }
 
-    public default Traversal<Vertex, Vertex> with(final Object... variableValues) {
-        return this.start().with(variableValues);
+    public default GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
+        return (GraphTraversal) this.start().with(variableValues);
     }
 
-    public default Traversal<Vertex, Vertex> sideEffect(final Consumer<Holder<Vertex>> consumer) {
-        return this.start().sideEffect(consumer);
+    public default GraphTraversal<Vertex, Vertex> sideEffect(final Consumer<Holder<Vertex>> consumer) {
+        return (GraphTraversal) this.start().sideEffect(consumer);
     }
 
     public static class Exceptions {

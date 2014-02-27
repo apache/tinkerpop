@@ -5,9 +5,9 @@ import com.tinkerpop.gremlin.process.Optimizers;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.util.optimizers.DedupOptimizer;
-import com.tinkerpop.gremlin.process.util.optimizers.HolderOptimizer;
-import com.tinkerpop.gremlin.process.util.optimizers.IdentityOptimizer;
+import com.tinkerpop.gremlin.process.graph.util.optimizers.DedupOptimizer;
+import com.tinkerpop.gremlin.process.graph.util.optimizers.HolderOptimizer;
+import com.tinkerpop.gremlin.process.graph.util.optimizers.IdentityOptimizer;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -45,14 +45,14 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         ((Step<S, ?>) this.steps.get(0)).addStarts(starts);
     }
 
-    public <S, E> Traversal<S, E> addStep(final Step<?, E> step) {
+    public <S, E, T extends Traversal<S, E>> T addStep(final Step<?, E> step) {
         if (this.steps.size() > 0) {
             step.setPreviousStep(this.steps.get(this.steps.size() - 1));
             this.steps.get(this.steps.size() - 1).setNextStep(step);
         }
         this.steps.add(step);
 
-        return (Traversal<S, E>) this;
+        return (T) this;
     }
 
     public boolean hasNext() {

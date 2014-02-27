@@ -1,7 +1,12 @@
 package com.tinkerpop.tinkergraph;
 
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.graph.map.StartStep;
+import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 /**
@@ -68,7 +73,26 @@ public class TinkerFactory {
         daniel.addEdge("uses", gremlin, "skill", 1.0f);
         gremlin.addEdge("dependsOn", blueprints);
 
-
         return g;
+    }
+
+    public interface SocialTraversal<S, E> extends Traversal<S, E> {
+
+        public default SocialTraversal<S, E> people(final Graph g) {
+            return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, g.V().has("age")));
+        }
+
+        public default SocialTraversal<S, E> knows() {
+            return (SocialTraversal) this.addStep(new FlatMapStep<Vertex, Vertex>(this, v -> v.get().out("knows")));
+        }
+
+        public static SocialTraversal make() {
+            return new DefaultSocialTraversal();
+        }
+
+
+        public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {
+
+        }
     }
 }

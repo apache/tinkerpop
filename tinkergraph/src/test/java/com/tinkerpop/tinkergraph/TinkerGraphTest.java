@@ -38,6 +38,12 @@ import static org.junit.Assert.assertTrue;
 public class TinkerGraphTest {
 
     @Test
+    public void testTraversalDSL() {
+        final Graph g = TinkerFactory.createClassic();
+        g.traversal(TinkerFactory.SocialTraversal.class).people(g).knows().forEach(System.out::println);
+    }
+
+    @Test
     public void shouldPerformBasicTinkerGraphIntegrationTest() {
         final TinkerGraph g = TinkerGraph.open();
         g.createIndex("name", Vertex.class);
