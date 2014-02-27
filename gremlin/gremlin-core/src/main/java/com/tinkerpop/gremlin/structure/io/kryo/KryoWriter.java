@@ -89,15 +89,17 @@ public class KryoWriter implements GraphWriter {
 
         writeProperties(output, e);
 
-        if (e instanceof Vertex && direction.isPresent()) {
-            final Vertex v = (Vertex) e;
-            final Direction d = direction.get();
+        if (e instanceof Vertex) {
+            if (direction.isPresent()) {
+                final Vertex v = (Vertex) e;
+                final Direction d = direction.get();
 
-            if (d == Direction.BOTH || d == Direction.OUT)
-                writeDirectionalEdges(output, d, v.outE());
+                if (d == Direction.BOTH || d == Direction.OUT)
+                    writeDirectionalEdges(output, d, v.outE());
 
-            if (d == Direction.BOTH || d == Direction.IN)
-                writeDirectionalEdges(output, d, v.inE());
+                if (d == Direction.BOTH || d == Direction.IN)
+                    writeDirectionalEdges(output, d, v.inE());
+            }
 
             kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
         }
