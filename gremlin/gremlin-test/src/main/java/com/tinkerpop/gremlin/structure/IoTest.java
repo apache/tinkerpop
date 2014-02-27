@@ -605,6 +605,27 @@ public class IoTest extends AbstractGremlinTest {
                 (edgeId, outId, inId, label, properties) -> null);
     }
 
+    @Test(expected = IllegalStateException.class)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldReadWriteVertexWithINBOTHEdgesToKryo() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v2 = g.addVertex();
+        v2.addEdge("friends", v1, "weight", 0.5f);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final KryoWriter writer = new KryoWriter(g);
+        writer.writeVertex(os, v1, Direction.IN);
+        os.close();
+
+        final KryoReader reader = new KryoReader.Builder(g)
+                .setWorkingDirectory(File.separator + "tmp").build();
+        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
+                Direction.BOTH,
+                (vertexId, properties) -> null,
+                (edgeId, outId, inId, label, properties) -> null);
+    }
+
     private void assertModernGraph(final Graph g1) {
         assertEquals(6, g1.V().count());
         assertEquals(8, g1.E().count());
