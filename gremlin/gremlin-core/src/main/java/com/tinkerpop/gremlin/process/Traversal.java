@@ -18,6 +18,8 @@ import java.util.function.Supplier;
  */
 public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
+    public static final String OF = "of";
+
     public Memory memory();
 
     public Optimizers optimizers();
@@ -30,14 +32,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public Iterator<E> submit(final TraversalEngine engine);
 
-    public static <S, E> Traversal<S, E> of() {
-        Traversal<S, E> traversal = new DefaultTraversal<>();
+    public static Traversal of() {
+        Traversal traversal = new DefaultTraversal<>();
         traversal.addStep(new IdentityStep(traversal));
         return traversal;
-    }
-
-    public static <T extends Traversal> T make() {
-        return (T) new DefaultTraversal();
     }
 
     public interface Memory {

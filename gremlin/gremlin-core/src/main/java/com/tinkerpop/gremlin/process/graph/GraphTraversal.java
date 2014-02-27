@@ -42,11 +42,11 @@ import com.tinkerpop.gremlin.process.graph.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.LinkStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.SideEffectStep;
+import com.tinkerpop.gremlin.process.graph.util.Tree;
+import com.tinkerpop.gremlin.process.graph.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MapHelper;
-import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.graph.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -76,6 +76,12 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
+
+    public static GraphTraversal of() {
+        final GraphTraversal traversal = new DefaultGraphTraversal<>();
+        traversal.addStep(new IdentityStep(traversal));
+        return traversal;
+    }
 
     ///////////////////// TRANSFORM STEPS /////////////////////
 

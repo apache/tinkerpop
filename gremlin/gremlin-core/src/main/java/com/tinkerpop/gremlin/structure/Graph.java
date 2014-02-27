@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -49,7 +49,7 @@ public interface Graph extends AutoCloseable {
 
     public default <T extends Traversal> T traversal(final Class<T> traversalClass) {
         try {
-            return (T) traversalClass.getMethod("make").invoke(null);
+            return (T) traversalClass.getMethod(Traversal.OF).invoke(null);
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
