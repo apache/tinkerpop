@@ -315,6 +315,69 @@ public class IoTest extends AbstractGremlinTest {
         verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
     }
 
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldReadWriteVertexWithINEdgesToKryo() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
+        final AnnotatedList<String> locations = v1.getValue("locations");
+        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
+        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+
+        final Vertex v2 = g.addVertex();
+        final Edge e = v2.addEdge("friends", v1, "weight", 0.5f);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final KryoWriter writer = new KryoWriter(g);
+        writer.writeVertex(os, v1, Direction.IN);
+        os.close();
+
+        final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+
+        final KryoReader reader = new KryoReader.Builder(g)
+                .setWorkingDirectory(File.separator + "tmp").build();
+        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
+                Direction.IN,
+                (vertexId, properties) -> {
+                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                        assertEquals(v1.getId(), vertexId);
+
+                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+
+                    final Map<String, Object> m = new HashMap<>();
+                    for (int i = 0; i < properties.length; i = i + 2) {
+                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                            m.put((String) properties[i], properties[i + 1]);
+                    }
+
+                    assertEquals(2, m.size());
+                    assertEquals(v1.getValue("name"), m.get("name").toString());
+                    assertEquals(AnnotatedList.make(), m.get("locations"));
+
+                    // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
+                    // set after the fact.
+                    final Vertex vsub1 = mock(Vertex.class);
+                    when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
+                    when(vsub1.getId()).thenReturn(v1.getId());
+                    return vsub1;
+                },
+                (edgeId, outId, inId, label, properties) -> {
+                    assertEquals(e.getId(), edgeId);
+                    assertEquals(v2.getId(), outId);
+                    assertEquals(v1.getId(), inId);
+                    assertEquals(e.getLabel(), label);
+                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                    assertEquals("weight", properties[0]);
+                    assertEquals(0.5f, properties[1]);
+
+                    return null;
+                });
+
+        verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
+        verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+    }
+
     private void assertModernGraph(final Graph g1) {
         assertEquals(6, g1.V().count());
         assertEquals(8, g1.E().count());

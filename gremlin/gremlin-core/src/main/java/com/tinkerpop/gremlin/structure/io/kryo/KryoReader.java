@@ -92,7 +92,7 @@ public class KryoReader implements GraphReader {
             } else {
                 // requested direction in, but BOTH must be serialized so skip this.  the illegalstateexception
                 // prior to this IF should  have caught a problem where IN is not supported at all
-                if (directionRequested == Direction.IN) {
+                if (firstDirection == Direction.OUT && directionRequested == Direction.IN) {
                     if (input.readBoolean()) {
                         Object inId = kryo.readClassAndObject(input);
                         while (!inId.equals(EdgeTerminator.INSTANCE)) {
@@ -109,7 +109,8 @@ public class KryoReader implements GraphReader {
                 // if the first direction was OUT then it was either read or skipped.  in that case, the marker
                 // of the stream is currently ready to read the IN direction. otherwise it's in the perfect place
                 // to start reading edges
-                if (firstDirection == Direction.OUT) kryo.readObject(input, Direction.class);
+                if (firstDirection == Direction.OUT)
+                    kryo.readObject(input, Direction.class);
 
                 if (input.readBoolean()) {
                     Object outId = kryo.readClassAndObject(input);
