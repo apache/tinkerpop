@@ -51,7 +51,7 @@ public class KryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
         final Output output = new Output(outputStream);
-        writeVertex(output, v, direction);
+        writeVertexToOutput(output, v, direction);
         output.flush();
     }
 
@@ -59,6 +59,7 @@ public class KryoWriter implements GraphWriter {
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
         final Output output = new Output(outputStream);
         writeVertexWithNoEdgesToOutput(output, v);
+        output.flush();
     }
 
     @Override

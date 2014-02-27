@@ -201,7 +201,6 @@ public class IoTest extends AbstractGremlinTest {
                 });
     }
 
-    @Ignore
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldReadWriteVertexNoEdgesToKryo() throws Exception {
