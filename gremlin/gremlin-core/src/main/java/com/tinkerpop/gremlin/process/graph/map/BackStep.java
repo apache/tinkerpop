@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.PathConsumer;
+import com.tinkerpop.gremlin.process.util.PathConsumer;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 /**

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.PathConsumer;
+import com.tinkerpop.gremlin.process.util.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.map.MapStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Direction;

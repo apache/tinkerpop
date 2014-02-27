@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.process.graph.util.optimizers;
 
 import com.tinkerpop.gremlin.process.Optimizer;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.HolderSource;
-import com.tinkerpop.gremlin.process.PathConsumer;
+import com.tinkerpop.gremlin.process.util.HolderSource;
+import com.tinkerpop.gremlin.process.util.PathConsumer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
