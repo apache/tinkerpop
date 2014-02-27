@@ -45,7 +45,12 @@ public class KryoReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction directionRequested, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Direction directionRequested,
+                             final BiFunction<Object, Object[], Vertex> vertexMaker,
+                             final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeAdder) throws IOException {
+        if (null != directionRequested && null == edgeAdder)
+            throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
+
         final Input input = new Input(inputStream);
 
         final List<Object> vertexArgs = new ArrayList<>();
@@ -79,7 +84,7 @@ public class KryoReader implements GraphReader {
                         final String edgeLabel = input.readString();
                         readElementProperties(input, edgeArgs);
 
-                        // todo: how to create the edge goes here
+                        edgeAdder.apply(edgeId, v.getId(), inId, edgeLabel, edgeArgs.toArray());
 
                         inId = kryo.readClassAndObject(input);
                     }
@@ -107,16 +112,16 @@ public class KryoReader implements GraphReader {
                 if (firstDirection == Direction.OUT) kryo.readObject(input, Direction.class);
 
                 if (input.readBoolean()) {
-                    Object inId = kryo.readClassAndObject(input);
-                    while (!inId.equals(EdgeTerminator.INSTANCE)) {
+                    Object outId = kryo.readClassAndObject(input);
+                    while (!outId.equals(EdgeTerminator.INSTANCE)) {
                         final List<Object> edgeArgs = new ArrayList<>();
                         final Object edgeId = kryo.readClassAndObject(input);
                         final String edgeLabel = input.readString();
                         readElementProperties(input, edgeArgs);
 
-                        // todo: how to create the edge goes here
+                        edgeAdder.apply(edgeId, outId, v.getId(), edgeLabel, edgeArgs.toArray());
 
-                        inId = kryo.readClassAndObject(input);
+                        outId = kryo.readClassAndObject(input);
                     }
                 }
             }
@@ -127,7 +132,7 @@ public class KryoReader implements GraphReader {
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
-        return readVertex(inputStream, null, vertexMaker);
+        return readVertex(inputStream, null, vertexMaker, null);
     }
 
     @Override

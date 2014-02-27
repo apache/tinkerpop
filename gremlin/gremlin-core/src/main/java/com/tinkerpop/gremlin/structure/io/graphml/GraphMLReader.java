@@ -48,7 +48,9 @@ public class GraphMLReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Direction direction,
+                             final BiFunction<Object, Object[], Vertex> vertexMaker,
+                             final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeAdder) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 

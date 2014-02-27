@@ -16,7 +16,9 @@ public interface GraphReader {
 
     public void readGraph(final InputStream inputStream) throws IOException;
 
-    public Vertex readVertex(final InputStream inputStream, final Direction direction, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException;
+    public Vertex readVertex(final InputStream inputStream, final Direction direction,
+                             final BiFunction<Object, Object[], Vertex> vertexMaker,
+                             final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeAdder) throws IOException;
 
     public Vertex readVertex(final InputStream inputStream, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException;  // only reads the vertex/properties, no edges
 
