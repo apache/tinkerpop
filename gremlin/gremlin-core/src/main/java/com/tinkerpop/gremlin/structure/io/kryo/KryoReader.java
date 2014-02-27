@@ -58,9 +58,10 @@ public class KryoReader implements GraphReader {
         final Vertex v = vertexMaker.apply(vertexId, vertexArgs.toArray());
         setAnnotatedListValues(annotatedLists, v);
 
-        if (Optional.ofNullable(direction).isPresent()) {
-            // todo: read edges
-        }
+        final boolean streamContainsEdges = input.readBoolean();
+        if (!streamContainsEdges && Optional.ofNullable(direction).isPresent())
+            throw new IllegalStateException(String.format("The direction %s was requested but there are no edges in this stream to deserialize", direction));
+
 
         return v;
     }
@@ -113,6 +114,9 @@ public class KryoReader implements GraphReader {
                     setAnnotatedListValues(annotatedLists, v);
 
                     idMap.put(current, v.getId());
+
+                    // the gio file should have been written with a direction specified
+                    input.readBoolean();
 
                     // if there are edges then read them to end and write to temp otherwise, read what should be
                     // the terminator

@@ -90,6 +90,7 @@ public class KryoWriter implements GraphWriter {
         writeProperties(output, e);
 
         if (e instanceof Vertex) {
+            output.writeBoolean(direction.isPresent());
             if (direction.isPresent()) {
                 final Vertex v = (Vertex) e;
                 final Direction d = direction.get();
