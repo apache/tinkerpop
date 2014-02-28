@@ -34,7 +34,7 @@ public class StructurePerformanceSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            GraphGeneratePerformanceTest.class,
+            GraphWritePerformanceTest.class,
             GraphReadPerformanceTest.class
     };
 

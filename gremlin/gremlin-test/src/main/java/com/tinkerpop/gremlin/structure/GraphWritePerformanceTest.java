@@ -20,11 +20,11 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
-public class GraphGeneratePerformanceTest {
+public class GraphWritePerformanceTest {
 
     @AxisRange(min = 0, max = 1)
-    @BenchmarkMethodChart(filePrefix = "blueprints-write")
-    @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-blueprints-write")
+    @BenchmarkMethodChart(filePrefix = "structure-write")
+    @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-structure-write")
     public static class WriteToGraph extends AbstractGremlinTest {
 
         @Rule
