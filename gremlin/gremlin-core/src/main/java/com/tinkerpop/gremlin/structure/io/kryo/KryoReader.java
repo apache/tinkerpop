@@ -51,8 +51,8 @@ public class KryoReader implements GraphReader {
     @Override
     public Vertex readVertex(final InputStream inputStream, final Direction directionRequested,
                              final BiFunction<Object, Object[], Vertex> vertexMaker,
-                             final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeAdder) throws IOException {
-        if (null != directionRequested && null == edgeAdder)
+                             final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+        if (null != directionRequested && null == edgeMaker)
             throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
 
         final Input input = new Input(inputStream);
@@ -88,7 +88,7 @@ public class KryoReader implements GraphReader {
                         final String edgeLabel = input.readString();
                         readElementProperties(input, edgeArgs);
 
-                        edgeAdder.apply(edgeId, v.getId(), inId, edgeLabel, edgeArgs.toArray());
+                        edgeMaker.apply(edgeId, v.getId(), inId, edgeLabel, edgeArgs.toArray());
 
                         inId = kryo.readClassAndObject(input);
                     }
@@ -115,7 +115,7 @@ public class KryoReader implements GraphReader {
                         final String edgeLabel = input.readString();
                         readElementProperties(input, edgeArgs);
 
-                        edgeAdder.apply(edgeId, outId, v.getId(), edgeLabel, edgeArgs.toArray());
+                        edgeMaker.apply(edgeId, outId, v.getId(), edgeLabel, edgeArgs.toArray());
 
                         outId = kryo.readClassAndObject(input);
                     }

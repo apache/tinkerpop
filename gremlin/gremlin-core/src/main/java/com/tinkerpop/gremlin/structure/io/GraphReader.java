@@ -42,13 +42,13 @@ public interface GraphReader {
      * @param vertexMaker a function to create a vertex where the first argument is the vertex identifer and the
      *                    second argument is the list of properties for it which may include an
      *                    {@link com.tinkerpop.gremlin.structure.Element#LABEL}
-     * @param edgeAdder   a function that creates an edge from the stream where the first argument is the edge
+     * @param edgeMaker   a function that creates an edge from the stream where the first argument is the edge
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
                              final BiFunction<Object, Object[], Vertex> vertexMaker,
-                             final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeAdder) throws IOException;
+                             final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException;
 
     /**
      * Reads a single edge from an {@link InputStream}.
