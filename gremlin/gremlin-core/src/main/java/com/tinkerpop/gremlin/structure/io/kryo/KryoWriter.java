@@ -18,6 +18,10 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
+ * The {@link GraphWriter} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
+ * non-lossy in terms of Gremlin Structure to Gremlin Structure migrations (assuming both structure implementations
+ * support the same graph features).
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoWriter implements GraphWriter {

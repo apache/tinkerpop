@@ -23,7 +23,9 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * GraphMLWriter writes a Graph to a GraphML OutputStream.
+ * GraphMLWriter writes a Graph to a GraphML OutputStream. Note that this format is lossy, in the sense that data
+ * types and features of Gremlin Structure not supported by GraphML are not serialized.  This format is meant for
+ * external export of a graph to tools outside of Gremlin Structure graphs.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Joshua Shinavier (http://fortytwo.net)

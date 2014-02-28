@@ -29,6 +29,10 @@ import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 
 /**
+ * The {@link GraphReader} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
+ * non-lossy in terms of Gremlin Structure to Gremlin Structure migrations (assuming both structure implementations
+ * support the same graph features).
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoReader implements GraphReader {
@@ -151,6 +155,8 @@ public class KryoReader implements GraphReader {
 
     @Override
     public void readGraph(final InputStream inputStream) throws IOException {
+        // todo: get BatchGraph in here when TinkerPop3 has it
+
         final Input input = new Input(inputStream);
         final Output output = new Output(new FileOutputStream(tempFile));
 
