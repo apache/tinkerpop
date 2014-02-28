@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.util.function.BiFunction;
 
 /**
+ * Functions for reading a graph and its graph elements from a different format.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphReader {

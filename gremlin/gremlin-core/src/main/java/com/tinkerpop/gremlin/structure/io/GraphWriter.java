@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
+ * Functions for writing a graph and its elements to a different format.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphWriter {
