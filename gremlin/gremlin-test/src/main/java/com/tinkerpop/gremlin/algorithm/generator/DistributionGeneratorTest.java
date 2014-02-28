@@ -2,7 +2,9 @@ package com.tinkerpop.gremlin.algorithm.generator;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
+import org.javatuples.Triplet;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -53,7 +55,15 @@ public class DistributionGeneratorTest {
             final DistributionGenerator generator1 = new DistributionGenerator("knows");
             distributionGeneratorTest(g1, generator1);
 
-            // todo: test graph structure
+            // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
+            // same number of edges between graphs.  that should make it harder for the test to fail.
+            assertFalse(g.V().toList().stream()
+                    .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
+                    .allMatch(p -> {
+                        final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
+                        return p.getValue1() == v.inE().count()
+                                && p.getValue2() == v.outE().count();
+                    }));
 
             graphProvider.clear(g1, configuration);
         }
@@ -69,7 +79,14 @@ public class DistributionGeneratorTest {
             final DistributionGenerator generator1 = new DistributionGenerator("knows", null, () -> 123456789l);
             distributionGeneratorTest(g1, generator1);
 
-            assertEquals(g.E().count(), g1.E().count());
+            // ensure that every vertex has the same number of edges between graphs.
+            assertTrue(g.V().toList().stream()
+                    .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
+                    .allMatch(p -> {
+                        final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
+                        return p.getValue1() == v.inE().count()
+                                && p.getValue2() == v.outE().count();
+                    }));
 
             graphProvider.clear(g1, configuration);
         }
