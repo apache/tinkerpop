@@ -217,12 +217,23 @@ public class KryoReader implements GraphReader {
 
     private void skipEdges(final Input input) {
         if (input.readBoolean()) {
-            Object inId = kryo.readClassAndObject(input);
-            while (!inId.equals(EdgeTerminator.INSTANCE)) {
+            Object inOrOutId = kryo.readClassAndObject(input);
+            while (!inOrOutId.equals(EdgeTerminator.INSTANCE)) {
+                // skip edgeid
                 kryo.readClassAndObject(input);
+
+                // skip label
                 input.readString();
-                readElementProperties(input, new ArrayList<>());    // todo: better skip properties
-                inId = kryo.readClassAndObject(input);
+
+                // read property count so we know how many properties to skip
+                final int numberOfProperties = input.readInt();
+                IntStream.range(0, numberOfProperties).forEach(i -> {
+                    input.readString();
+                    kryo.readClassAndObject(input);
+                });
+
+                // next in/out id to skip
+                inOrOutId = kryo.readClassAndObject(input);
             }
         }
     }
