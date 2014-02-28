@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.util.function.QuadConsumer;
-import com.tinkerpop.gremlin.util.function.QuintConsumer;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import org.javatuples.Pair;
 
@@ -28,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
