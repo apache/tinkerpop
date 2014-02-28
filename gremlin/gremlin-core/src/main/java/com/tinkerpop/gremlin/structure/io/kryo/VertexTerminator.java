@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.structure.io.kryo;
 
 /**
+ * Represents the end of a vertex in a serialization stream.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class VertexTerminator {
