@@ -24,6 +24,7 @@
     <modules>
         <module>gremlin</module>
         <module>tinkergraph</module>
+        <module>giraph-gremlin</module>
     </modules>
 
     <properties>

@@ -15,15 +15,22 @@ import java.util.concurrent.Future;
  */
 public class GiraphGraphComputer implements GraphComputer {
 
+    private VertexProgram vertexProgram;
+    private Configuration configuration;
+
     public GraphComputer isolation(final Isolation isolation) {
+        if (isolation.equals(Isolation.DIRTY_BSP))
+            throw GraphComputer.Exceptions.isolationNotSupported(isolation);
         return this;
     }
 
     public GraphComputer program(final VertexProgram program) {
+        this.vertexProgram = program;
         return this;
     }
 
     public GraphComputer configuration(final Configuration configuration) {
+        this.configuration = configuration;
         return this;
     }
 

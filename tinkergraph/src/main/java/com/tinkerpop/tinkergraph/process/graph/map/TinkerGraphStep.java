@@ -64,6 +64,4 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
                 .orElseGet(() -> null);
     }
 
-    // TODO HasContainers with Element.ID (just get the vertices)
-
 }

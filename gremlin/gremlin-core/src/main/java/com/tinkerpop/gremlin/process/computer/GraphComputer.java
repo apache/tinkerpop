@@ -114,6 +114,10 @@ public interface GraphComputer extends TraversalEngine {
         public static IllegalStateException adjacentVerticesCanNotBeQueried() {
             return new IllegalStateException("It is not possible to query an adjacent vertex in a vertex program");
         }
+
+        public static IllegalArgumentException isolationNotSupported(final Isolation isolation) {
+            return new IllegalArgumentException("The provided isolation is not supported by this graph computer: " + isolation);
+        }
     }
 
 }

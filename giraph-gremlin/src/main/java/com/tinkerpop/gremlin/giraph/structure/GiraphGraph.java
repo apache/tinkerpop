@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
 import com.tinkerpop.gremlin.giraph.process.olap.GiraphGraphComputer;
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
@@ -20,11 +20,11 @@ public class GiraphGraph implements Graph {
         return null;
     }
 
-    public Traversal<Vertex, Vertex> V() {
+    public GraphTraversal<Vertex, Vertex> V() {
         return null;
     }
 
-    public Traversal<Edge, Edge> E() {
+    public GraphTraversal<Edge, Edge> E() {
         return null;
     }
 
