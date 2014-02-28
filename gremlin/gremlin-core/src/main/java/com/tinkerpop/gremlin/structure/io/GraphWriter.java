@@ -14,12 +14,31 @@ import java.io.OutputStream;
  */
 public interface GraphWriter {
 
+    /**
+     * Write the entire graph to a stream.
+     */
     public void writeGraph(final OutputStream outputStream) throws IOException;
 
+    /**
+     * Write a vertex to a stream with its associated edges.  Only write edges as defined by the requested direction.
+     *
+     * @param outputStream The stream to write to.
+     * @param v The vertex to write.
+     * @param direction If direction is null then no edges are written.
+     */
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException;
 
-    public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException; // only writes the vertex/properties, no edges
+    /**
+     * Write a vertex to a stream without writing its edges.
+     *
+     * @param outputStream The stream to write to.
+     * @param v The vertex to write.
+     */
+    public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException;
 
+    /**
+     * Write an edge to a stream.
+     */
     public void writeEdge(final OutputStream outputStream, final Edge E) throws IOException;
 
 }
