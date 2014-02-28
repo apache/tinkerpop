@@ -10,6 +10,8 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
+import com.tinkerpop.gremlin.util.function.QuadConsumer;
+import com.tinkerpop.gremlin.util.function.QuintConsumer;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import org.javatuples.Pair;
 
@@ -26,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
@@ -79,21 +82,9 @@ public class KryoReader implements GraphReader {
                 throw new IllegalStateException(String.format("Stream contains %s edges, but requesting %s", directionsInStream, directionRequested));
 
             final Direction firstDirection = kryo.readObject(input, Direction.class);
-            if (firstDirection == Direction.OUT && (directionRequested == Direction.BOTH || directionRequested == Direction.OUT)) {
-                if (input.readBoolean()) {
-                    Object inId = kryo.readClassAndObject(input);
-                    while (!inId.equals(EdgeTerminator.INSTANCE)) {
-                        final List<Object> edgeArgs = new ArrayList<>();
-                        final Object edgeId = kryo.readClassAndObject(input);
-                        final String edgeLabel = input.readString();
-                        readElementProperties(input, edgeArgs);
-
-                        edgeMaker.apply(edgeId, v.getId(), inId, edgeLabel, edgeArgs.toArray());
-
-                        inId = kryo.readClassAndObject(input);
-                    }
-                }
-            } else {
+            if (firstDirection == Direction.OUT && (directionRequested == Direction.BOTH || directionRequested == Direction.OUT))
+                readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, v.getId(), vId, l, properties));
+            else {
                 // requested direction in, but BOTH must be serialized so skip this.  the illegalstateexception
                 // prior to this IF should  have caught a problem where IN is not supported at all
                 if (firstDirection == Direction.OUT && directionRequested == Direction.IN)
@@ -107,19 +98,7 @@ public class KryoReader implements GraphReader {
                 if (firstDirection == Direction.OUT)
                     kryo.readObject(input, Direction.class);
 
-                if (input.readBoolean()) {
-                    Object outId = kryo.readClassAndObject(input);
-                    while (!outId.equals(EdgeTerminator.INSTANCE)) {
-                        final List<Object> edgeArgs = new ArrayList<>();
-                        final Object edgeId = kryo.readClassAndObject(input);
-                        final String edgeLabel = input.readString();
-                        readElementProperties(input, edgeArgs);
-
-                        edgeMaker.apply(edgeId, outId, v.getId(), edgeLabel, edgeArgs.toArray());
-
-                        outId = kryo.readClassAndObject(input);
-                    }
-                }
+                readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, vId, v.getId(), l, properties));
             }
         }
 
@@ -212,6 +191,22 @@ public class KryoReader implements GraphReader {
         } finally {
             edgeInput.close();
             deleteTempFileSilently();
+        }
+    }
+
+    private void readEdges(final Input input, final QuadConsumer<Object, Object, String, Object[]> edgeMaker) {
+        if (input.readBoolean()) {
+            Object inOrOutVId = kryo.readClassAndObject(input);
+            while (!inOrOutVId.equals(EdgeTerminator.INSTANCE)) {
+                final List<Object> edgeArgs = new ArrayList<>();
+                final Object edgeId = kryo.readClassAndObject(input);
+                final String edgeLabel = input.readString();
+                readElementProperties(input, edgeArgs);
+
+                edgeMaker.accept(edgeId, inOrOutVId, edgeLabel, edgeArgs.toArray());
+
+                inOrOutVId = kryo.readClassAndObject(input);
+            }
         }
     }
 
