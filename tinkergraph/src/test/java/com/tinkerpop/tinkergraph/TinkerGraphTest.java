@@ -88,7 +88,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicGraph() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.gio");
-        new KryoWriter(TinkerFactory.createClassic()).writeGraph(os);
+        new KryoWriter.Builder(TinkerFactory.createClassic()).build().writeGraph(os);
         os.close();
     }
 
@@ -104,7 +104,7 @@ public class TinkerGraphTest {
         }
 
         final OutputStream os = new FileOutputStream("/tmp/graph-example-2.gio");
-        new KryoWriter(g).writeGraph(os);
+        new KryoWriter.Builder(g).build().writeGraph(os);
         os.close();
     }
 
@@ -115,7 +115,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernGraph() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-5.gio");
-        new KryoWriter(TinkerFactory.createModern()).writeGraph(os);
+        new KryoWriter.Builder(TinkerFactory.createModern()).build().writeGraph(os);
         os.close();
     }
 

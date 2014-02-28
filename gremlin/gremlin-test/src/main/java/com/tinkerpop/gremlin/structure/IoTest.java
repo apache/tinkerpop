@@ -138,7 +138,7 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteClassicToKryo() throws Exception {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeGraph(os);
         os.close();
 
@@ -158,7 +158,7 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldReadWriteModernToKryo() throws Exception {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeGraph(os);
         os.close();
 
@@ -178,7 +178,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeEdge(os, e);
         os.close();
 
@@ -214,7 +214,7 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeVertex(os, v1);
         os.close();
 
@@ -264,7 +264,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friends", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeVertex(os, v1, Direction.OUT);
         os.close();
 
@@ -327,7 +327,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v2.addEdge("friends", v1, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 
@@ -391,7 +391,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeVertex(os, v1, Direction.BOTH);
         os.close();
 
@@ -465,7 +465,7 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 1.0f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeVertex(os, v1, Direction.BOTH);
         os.close();
 
@@ -532,7 +532,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeVertex(os, v1, Direction.BOTH);
         os.close();
 
@@ -593,7 +593,7 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeVertex(os, v1, Direction.OUT);
         os.close();
 
@@ -614,7 +614,7 @@ public class IoTest extends AbstractGremlinTest {
         v2.addEdge("friends", v1, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 
@@ -635,7 +635,7 @@ public class IoTest extends AbstractGremlinTest {
         v2.addEdge("friends", v1, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 
@@ -656,7 +656,7 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter(g);
+        final KryoWriter writer = new KryoWriter.Builder(g).build();
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 

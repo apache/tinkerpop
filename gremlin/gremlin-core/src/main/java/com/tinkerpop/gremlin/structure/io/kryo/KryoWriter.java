@@ -28,7 +28,7 @@ public class KryoWriter implements GraphWriter {
     private final Kryo kryo = new Kryo();
     private final Graph graph;
 
-    public KryoWriter(final Graph g) {
+    private KryoWriter(final Graph g) {
         this.graph = g;
     }
 
@@ -142,5 +142,17 @@ public class KryoWriter implements GraphWriter {
             kryo.writeClassAndObject(output, KryoAnnotatedList.from((AnnotatedList) val.get()));
         else
             kryo.writeClassAndObject(output, val.get());
+    }
+
+    public static class Builder {
+        private final Graph graph;
+
+        public Builder(final Graph g) {
+            this.graph = g;
+        }
+
+        public KryoWriter build() {
+            return new KryoWriter(this.graph);
+        }
     }
 }
