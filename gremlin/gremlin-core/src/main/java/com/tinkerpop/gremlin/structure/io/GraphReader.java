@@ -31,7 +31,7 @@ public interface GraphReader {
      *                    second argument is the list of properties as key/value pairs which may include an
      *                    {@link com.tinkerpop.gremlin.structure.Element#LABEL}
      */
-    public Vertex readVertex(final InputStream inputStream, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException;  // only reads the vertex/properties, no edges
+    public Vertex readVertex(final InputStream inputStream, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException;
 
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties as well as edges
