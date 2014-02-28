@@ -57,6 +57,7 @@ public class KryoReader implements GraphReader {
             throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
 
         final Input input = new Input(inputStream);
+        readHeader(input);
 
         final List<Object> vertexArgs = new ArrayList<>();
 
@@ -111,6 +112,7 @@ public class KryoReader implements GraphReader {
     @Override
     public Edge readEdge(final InputStream inputStream, final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
+        readHeader(input);
         final Object outId = kryo.readClassAndObject(input);
         final Object inId = kryo.readClassAndObject(input);
         final Object edgeId = kryo.readClassAndObject(input);
@@ -126,6 +128,7 @@ public class KryoReader implements GraphReader {
         // todo: get BatchGraph in here when TinkerPop3 has it
 
         final Input input = new Input(inputStream);
+        readHeader(input);
         final Output output = new Output(new FileOutputStream(tempFile));
 
         try {
@@ -190,6 +193,23 @@ public class KryoReader implements GraphReader {
             edgeInput.close();
             deleteTempFileSilently();
         }
+    }
+
+    private void readHeader(final Input input) throws IOException {
+        if (!Arrays.equals(KryoWriter.GIO, input.readBytes(3)))
+            throw new IOException("Invalid format - first three bytes of header do not match expected value");
+
+        // skip the next 26 bytes in v1
+        input.readBytes(26);
+
+        // final three bytes of header are the version which should be 1.0.0
+        byte[] version = input.readBytes(3);
+
+        // direct match on version for now
+        if (version[0] != 1 || version[1] != 0 || version[2] != 0)
+            throw new IOException(String.format(
+                    "The version [%s.%s.%s] in the stream cannot be understood by this reader",
+                    version[0], version[1], version[2]));
     }
 
     private void readEdges(final Input input, final QuadConsumer<Object, Object, String, Object[]> edgeMaker) {

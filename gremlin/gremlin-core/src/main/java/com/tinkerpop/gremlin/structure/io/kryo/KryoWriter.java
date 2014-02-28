@@ -28,6 +28,8 @@ public class KryoWriter implements GraphWriter {
     private final Kryo kryo = new Kryo();
     private final Graph graph;
 
+    static final byte[] GIO = "gio".getBytes();
+
     private KryoWriter(final Graph g) {
         this.graph = g;
     }
@@ -35,6 +37,7 @@ public class KryoWriter implements GraphWriter {
     @Override
     public void writeGraph(final OutputStream outputStream) throws IOException {
         final Output output = new Output(outputStream);
+        writeHeader(output);
 
         final boolean supportsAnnotations = graph.getFeatures().graph().supportsAnnotations();
         output.writeBoolean(supportsAnnotations);
@@ -55,6 +58,7 @@ public class KryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
         final Output output = new Output(outputStream);
+        writeHeader(output);
         writeVertexToOutput(output, v, direction);
         output.flush();
     }
@@ -62,6 +66,7 @@ public class KryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
         final Output output = new Output(outputStream);
+        writeHeader(output);
         writeVertexWithNoEdgesToOutput(output, v);
         output.flush();
     }
@@ -69,10 +74,24 @@ public class KryoWriter implements GraphWriter {
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
+        writeHeader(output);
         kryo.writeClassAndObject(output, e.getVertex(Direction.OUT).getId());
         kryo.writeClassAndObject(output, e.getVertex(Direction.IN).getId());
         writeEdgeToOutput(output, e);
         output.flush();
+    }
+
+    private void writeHeader(final Output output) {
+        // 32 byte header total
+        output.writeBytes(GIO);
+
+        // some space for later
+        output.writeBytes(new byte[26]);
+
+        // version x.y.z
+        output.writeByte(1);
+        output.writeByte(0);
+        output.writeByte(0);
     }
 
     private void writeEdgeToOutput(final Output output, final Edge e) {
