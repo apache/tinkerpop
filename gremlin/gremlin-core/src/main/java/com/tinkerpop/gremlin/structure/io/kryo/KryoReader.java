@@ -96,17 +96,8 @@ public class KryoReader implements GraphReader {
             } else {
                 // requested direction in, but BOTH must be serialized so skip this.  the illegalstateexception
                 // prior to this IF should  have caught a problem where IN is not supported at all
-                if (firstDirection == Direction.OUT && directionRequested == Direction.IN) {
-                    if (input.readBoolean()) {
-                        Object inId = kryo.readClassAndObject(input);
-                        while (!inId.equals(EdgeTerminator.INSTANCE)) {
-                            kryo.readClassAndObject(input);
-                            input.readString();
-                            readElementProperties(input, new ArrayList<>());    // todo: better skip properties
-                            inId = kryo.readClassAndObject(input);
-                        }
-                    }
-                }
+                if (firstDirection == Direction.OUT && directionRequested == Direction.IN)
+                    skipEdges(input);
             }
 
             if (directionRequested == Direction.BOTH || directionRequested == Direction.IN) {
@@ -221,6 +212,18 @@ public class KryoReader implements GraphReader {
         } finally {
             edgeInput.close();
             deleteTempFileSilently();
+        }
+    }
+
+    private void skipEdges(final Input input) {
+        if (input.readBoolean()) {
+            Object inId = kryo.readClassAndObject(input);
+            while (!inId.equals(EdgeTerminator.INSTANCE)) {
+                kryo.readClassAndObject(input);
+                input.readString();
+                readElementProperties(input, new ArrayList<>());    // todo: better skip properties
+                inId = kryo.readClassAndObject(input);
+            }
         }
     }
 
