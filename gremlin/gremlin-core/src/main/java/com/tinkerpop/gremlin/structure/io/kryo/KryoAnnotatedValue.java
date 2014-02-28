@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * Kryo serializable form of an {@link AnnotatedValue}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class KryoAnnotatedValue<V> {
@@ -33,6 +35,12 @@ class KryoAnnotatedValue<V> {
         this.annotations = annotations;
     }
 
+    /**
+     * Converts a set of annotations in a {@link Map} to an array of key-value objects.  This is the format expected
+     * when doing a {@link com.tinkerpop.gremlin.structure.Graph#addVertex(Object...)},
+     * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)}
+     * {@link com.tinkerpop.gremlin.structure.Element#setProperties(Object...)}.
+     */
     public Object[] getAnnotationsArray() {
         return this.annotations.entrySet().stream()
                 .flatMap(kv -> Stream.of(kv.getKey(), kv.getValue()))

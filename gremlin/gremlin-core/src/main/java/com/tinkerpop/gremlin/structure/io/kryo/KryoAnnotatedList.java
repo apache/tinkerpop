@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * Kryo serializable form of an {@link AnnotatedList}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class KryoAnnotatedList<V> {
