@@ -32,6 +32,11 @@ public class KryoWriter implements GraphWriter {
 
     private KryoWriter(final Graph g) {
         this.graph = g;
+
+        kryo.register(VertexTerminator.class);
+        kryo.register(EdgeTerminator.class);
+        kryo.register(KryoAnnotatedList.class);
+        kryo.register(KryoAnnotatedValue.class);
     }
 
     @Override

@@ -47,6 +47,11 @@ public class KryoReader implements GraphReader {
         this.graph = g;
         this.idMap = idMap;
         this.tempFile = tempFile;
+
+        kryo.register(VertexTerminator.class);
+        kryo.register(EdgeTerminator.class);
+        kryo.register(KryoAnnotatedList.class);
+        kryo.register(KryoAnnotatedValue.class);
     }
 
     @Override
