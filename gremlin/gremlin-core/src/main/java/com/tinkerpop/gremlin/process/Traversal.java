@@ -30,7 +30,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public List<Step> getSteps();
 
-    public Iterator<E> submit(final TraversalEngine engine);
+    public Traversal<S, E> submit(final TraversalEngine engine);
 
     public static Traversal of() {
         Traversal traversal = new DefaultTraversal<>();

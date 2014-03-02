@@ -13,18 +13,19 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupByStep<S, K, V, R> extends MapStep<S, S> {
+public class GroupByStep<S, K, V, R> extends MapStep<S, S> implements SideEffectCapable {
 
-    public final Map<K, Collection<V>> groupMap;
+    public Map<K, Collection<V>> groupMap;
     public final Map<K, R> reduceMap;
     public final Function<S, K> keyFunction;
     public final Function<S, V> valueFunction;
     public final Function<Collection<V>, R> reduceFunction;
 
-    public GroupByStep(final Traversal traversal, final String variable, final Function<S, K> keyFunction, final Function<S, V> valueFunction, final Function<Collection<V>, R> reduceFunction) {
+    public GroupByStep(final Traversal traversal, final Map<K, Collection<V>> groupMap, final Function<S, K> keyFunction, final Function<S, V> valueFunction, final Function<Collection<V>, R> reduceFunction) {
         super(traversal);
-        this.groupMap = this.traversal.memory().getOrCreate(variable, HashMap<K, Collection<V>>::new);
+        this.groupMap = groupMap;
         this.reduceMap = new HashMap<>();
+        this.traversal.memory().set(CAP_VARIABLE, this.groupMap);
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction == null ? s -> (V) s : valueFunction;
         this.reduceFunction = reduceFunction;
@@ -32,22 +33,17 @@ public class GroupByStep<S, K, V, R> extends MapStep<S, S> {
             doGroup(holder.get(), this.groupMap, this.keyFunction, this.valueFunction);
             if (null != reduceFunction && !this.getPreviousStep().hasNext()) {
                 doReduce(this.groupMap, this.reduceMap, this.reduceFunction);
-                this.traversal.memory().set(variable, this.reduceMap);
+                this.traversal.memory().set(CAP_VARIABLE, this.reduceMap);
             }
             return holder.get();
         });
     }
 
-    public GroupByStep(final Traversal traversal, final String variable, final Function<S, K> keyFunction, final Function<S, V> valueFunction) {
-        this(traversal, variable, keyFunction, valueFunction, null);
+    public GroupByStep(final Traversal traversal, final String variable, final Function<S, K> keyFunction, final Function<S, V> valueFunction, final Function<Collection<V>, R> reduceFunction) {
+        this(traversal, traversal.memory().getOrCreate(variable, HashMap<K, Collection<V>>::new), keyFunction, valueFunction, reduceFunction);
     }
 
-
-    public GroupByStep(final Traversal traversal, final String variable, final Function<S, K> keyFunction) {
-        this(traversal, variable, keyFunction, null, null);
-    }
-
-    public static <S, K, V> void doGroup(final S s, final Map<K, Collection<V>> groupMap, final Function<S, K> keyFunction, final Function<S, V> valueFunction) {
+    private static <S, K, V> void doGroup(final S s, final Map<K, Collection<V>> groupMap, final Function<S, K> keyFunction, final Function<S, V> valueFunction) {
         final K key = keyFunction.apply(s);
         final V value = valueFunction.apply(s);
         Collection<V> values = groupMap.get(key);
@@ -58,7 +54,7 @@ public class GroupByStep<S, K, V, R> extends MapStep<S, S> {
         GroupByStep.addValue(value, values);
     }
 
-    public static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final Function<Collection<V>, R> reduceFunction) {
+    private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final Function<Collection<V>, R> reduceFunction) {
         groupMap.forEach((k, vv) -> {
             reduceMap.put(k, (R) reduceFunction.apply(vv));
         });

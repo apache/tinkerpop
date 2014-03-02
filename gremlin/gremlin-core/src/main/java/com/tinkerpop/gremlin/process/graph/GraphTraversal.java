@@ -43,9 +43,8 @@ import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.LinkStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
-import com.tinkerpop.gremlin.process.graph.util.optimizers.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
-import com.tinkerpop.gremlin.process.util.MapHelper;
+import com.tinkerpop.gremlin.process.util.HolderOptimizer;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -355,15 +354,31 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> groupBy(final String variable, final Function<E, ?> keyFunction, final Function<E, ?> valueFunction) {
-        return (GraphTraversal) this.addStep(new GroupByStep(this, variable, keyFunction, valueFunction));
+        return (GraphTraversal) this.groupBy(variable, keyFunction, valueFunction, null);
     }
 
     public default GraphTraversal<S, E> groupBy(final String variable, final Function<E, ?> keyFunction) {
-        return (GraphTraversal) this.addStep(new GroupByStep(this, variable, keyFunction));
+        return (GraphTraversal) this.groupBy(variable, keyFunction, null, null);
+    }
+
+    public default GraphTraversal<S, E> groupBy(final Function<E, ?> keyFunction) {
+        return (GraphTraversal) this.groupBy(keyFunction, null, null);
+    }
+
+    public default GraphTraversal<S, E> groupBy(final Function<E, ?> keyFunction, final Function<E, ?> valueFunction) {
+        return (GraphTraversal) this.groupBy(keyFunction, valueFunction, null);
+    }
+
+    public default GraphTraversal<S, E> groupBy(final Function<E, ?> keyFunction, final Function<E, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
+        return (GraphTraversal) this.addStep(new GroupByStep(this, new HashMap<Object, Collection<Object>>(), keyFunction, (Function) valueFunction, (Function) reduceFunction));
     }
 
     public default GraphTraversal<S, E> groupCount(final String variable, final Function<E, ?>... preGroupFunctions) {
         return (GraphTraversal) this.addStep(new GroupCountStep<>(this, variable, preGroupFunctions));
+    }
+
+    public default GraphTraversal<S, E> groupCount(final Function<E, ?>... preGroupFunctions) {
+        return (GraphTraversal) this.addStep(new GroupCountStep<>(this, new HashMap<Object, Long>(), preGroupFunctions));
     }
 
     public default GraphTraversal<S, Vertex> linkIn(final String label, final String as) {
@@ -403,7 +418,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     }
 
-    public default <K> Map<K, Long> groupCount(final Function<E, ?>... preGroupFunctions) {
+    /*public default <K> Map<K, Long> groupCount(final Function<E, ?>... preGroupFunctions) {
         final Map<Object, Long> map = new HashMap<>();
         final FunctionRing functionRing = new FunctionRing(preGroupFunctions);
         try {
@@ -413,9 +428,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         } catch (final NoSuchElementException e) {
         }
         return (Map<K, Long>) map;
-    }
+    }*/
 
-    public default <K, V> Map<K, V> groupBy(final Function<E, ?> keyFunction) {
+    /*public default <K, V> Map<K, V> groupBy(final Function<E, ?> keyFunction) {
         return (Map<K, V>) groupBy(keyFunction, s -> s, null);
     }
 
@@ -438,7 +453,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         } else {
             return (Map<K, V>) groupMap;
         }
-    }
+    }*/
 
     public default <T> Tree<T> tree(final Function... branchFunctions) {
         final Tree<Object> tree = new Tree<>();

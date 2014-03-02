@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.filter;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -121,6 +122,32 @@ public abstract class FilterTest extends AbstractGremlinTest {
                 final String name = v.get().getValue("name");
                 return name.startsWith("m") || name.startsWith("p");
             });
+        }
+    }
+
+    public static class JavaGraphComputerTest extends FilterTest {
+        public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
+            return g.V().filter(v -> false).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_filterXtrueX() {
+            return g.V().filter(v -> true).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
+            return g.V().filter(v -> v.get().<String>getProperty("lang").orElse("none").equals("java")).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X() {
+            // TODO: FIX return g.v(1).out().filter(v -> v.get().<Integer>getProperty("age").orElse(0) > 30).submit(g.compute());
+            return g.V().has(Element.ID, "1").out().filter(v -> v.get().<Integer>getProperty("age").orElse(0) > 30).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
+            return g.V().filter(v -> {
+                final String name = v.get().getValue("name");
+                return name.startsWith("m") || name.startsWith("p");
+            }).submit(g.compute());
         }
     }
 }

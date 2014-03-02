@@ -5,9 +5,7 @@ import com.tinkerpop.gremlin.process.Optimizers;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.graph.util.optimizers.DedupOptimizer;
-import com.tinkerpop.gremlin.process.graph.util.optimizers.HolderOptimizer;
-import com.tinkerpop.gremlin.process.graph.util.optimizers.IdentityOptimizer;
+import com.tinkerpop.gremlin.process.graph.map.StartStep;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,15 +16,13 @@ import java.util.List;
  */
 public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
-    private final List<Step> steps = new ArrayList<>();
-    private final Optimizers optimizers = new DefaultOptimizers();
-    private final Memory memory = new DefaultMemory();
-    private boolean firstNext = true;
+    protected final List<Step> steps = new ArrayList<>();
+    protected final Optimizers optimizers = new DefaultOptimizers();
+    protected final Memory memory = new DefaultMemory();
+    protected boolean firstNext = true;
 
     public DefaultTraversal() {
         this.optimizers.register(new HolderOptimizer());
-        this.optimizers.register(new DedupOptimizer());
-        this.optimizers.register(new IdentityOptimizer());
     }
 
     public List<Step> getSteps() {
@@ -74,8 +70,10 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         return object instanceof Iterator && TraversalHelper.areEqual(this, (Iterator) object);
     }
 
-    public Iterator<E> submit(final TraversalEngine engine) {
-        return engine.execute(this);
+    public Traversal<S, E> submit(final TraversalEngine engine) {
+        final Traversal<S, E> traversal = new DefaultTraversal<>();
+        traversal.addStep(new StartStep<>(traversal, engine.execute(this)));
+        return traversal;
     }
 
     private final void doFinalOptimization() {

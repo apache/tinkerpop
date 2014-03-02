@@ -76,7 +76,9 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             GroupCountTest.JavaGroupCountTest.class,
             LinkTest.JavaLinkTest.class,
             SideEffectTest.JavaSideEffectTest.class,
-            TreeTest.JavaTreeTest.class
+            TreeTest.JavaTreeTest.class,
+            ///
+            FilterTest.JavaGraphComputerTest.class
     };
 
     /**

@@ -44,7 +44,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     }
 
-    public <S, E, T extends Traversal<S,E>> T addStep(final Step<?, E> step) {
+    public <S, E, T extends Traversal<S, E>> T addStep(final Step<?, E> step) {
         return (T) this;
     }
 
@@ -52,7 +52,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
         return Collections.EMPTY_LIST;
     }
 
-    public Iterator<E> submit(final TraversalEngine engine) {
-        return Collections.emptyIterator();
+    public Traversal<S, E> submit(final TraversalEngine engine) {
+        return new EmptyTraversal<>();
     }
 }
