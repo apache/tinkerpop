@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -29,7 +28,6 @@ public abstract class AnnotatedValuesTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @Ignore("Need annoatatedValues for vertex as well as loader for modern graph")
     public void g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X() {
         final Iterator<AnnotatedValue<String>> step = get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X();
         System.out.println("Testing: " + step);
@@ -40,7 +38,6 @@ public abstract class AnnotatedValuesTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @Ignore("Need annoatatedValues for vertex as well as loader for modern graph")
     public void g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value() {
         final Iterator<String> step = get_g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value();
         System.out.println("Testing: " + step);
