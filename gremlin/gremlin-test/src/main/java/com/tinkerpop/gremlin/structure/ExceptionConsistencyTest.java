@@ -563,9 +563,6 @@ public class ExceptionConsistencyTest {
     public static class PropertyValidationOnSetGraphComputerTest extends AbstractGremlinTest {
 
         @Test
-        public void testTrue() {}
-
-        @Ignore // TODO: Cause of new GraphComputer stuff -- look into later.
         public void testGraphVertexSetPropertyNoComputeKey() {
             final String key = "key-not-a-compute-key";
             try {
@@ -583,7 +580,7 @@ public class ExceptionConsistencyTest {
             }
         }
 
-        @Ignore // TODO Why mother, why?!
+        @Test
         public void testGraphEdgeSetPropertyNoComputeKey() {
             final String key = "key-not-a-compute-key";
             try {
