@@ -482,7 +482,7 @@ public class ExceptionConsistencyTest {
 
             Object id = e.getId();
             e.remove();
-            // TODO: assertFalse(g.query().ids(id).edges().iterator().hasNext());
+            assertFalse(g.V().has(Element.ID, id).hasNext());
 
             // try second remove with no commit
             try {
@@ -520,7 +520,7 @@ public class ExceptionConsistencyTest {
 
             Object id = v.getId();
             v.remove();
-            //TODO: assertFalse(g.query().ids(id).vertices().iterator().hasNext());
+            assertFalse(g.V().has(Element.ID, id).hasNext());
 
             // try second remove with no commit
             try {
