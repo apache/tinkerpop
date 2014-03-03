@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.IoTest;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
@@ -376,10 +377,7 @@ public class TinkerGraphTest {
 
         try {
             final TinkerGraph g1 = (TinkerGraph) input.readObject();
-
-            // todo: should test this more and consider strategy carefully
-            assertEquals(g.V().count(), g1.V().count());
-            assertEquals(g.E().count(), g1.E().count());
+            IoTest.assertClassicGraph(g1);
         } catch (ClassNotFoundException cnfe) {
             throw new RuntimeException(cnfe);
         } finally {
