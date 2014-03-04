@@ -54,11 +54,6 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<BiConsumer<String, Object>> getGraphAnnotationsSet(Strategy.Context<StrategyWrappedAnnotations> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getGraphAnnotationsSet(ctx));
-    }
-
-    @Override
     public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getGraphvStrategy(ctx));
     }

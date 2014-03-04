@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.GraphManager;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.GraphAnnotationFeatures;
+import com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexAnnotationFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
@@ -15,7 +15,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_ANNOTATIONS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_MEMORY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
@@ -42,10 +42,9 @@ public class FeatureSupportTest  {
      * as not supported.
      */
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
-            "graphAnnotationsNotSupported",
+            "memoryNotSupported",
             "graphComputerNotSupported",
-            "transactionsNotSupported",
-            "graphStrategyNotSupported"
+            "transactionsNotSupported"
     })
     public static class GraphFunctionalityTest extends AbstractGremlinTest {
 
@@ -80,17 +79,17 @@ public class FeatureSupportTest  {
         }
 
         /**
-         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_ANNOTATIONS} must call
-         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#graphAnnotationsNotSupported()}.
+         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_MEMORY} must call
+         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#memoryNotSupported()}.
          */
         @Test
-        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_ANNOTATIONS, supported = false)
-        public void ifAGraphAcceptsAnnotationsThenItMustSupportAnnotations() throws Exception {
+        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_MEMORY, supported = false)
+        public void ifAGraphAcceptsMemoryThenItMustSupportMemory() throws Exception {
             try {
-                g.annotations();
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_ANNOTATIONS));
+                g.memory();
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_MEMORY));
             } catch (UnsupportedOperationException e) {
-                assertEquals(Graph.Exceptions.graphAnnotationsNotSupported().getMessage(), e.getMessage());
+                assertEquals(Graph.Exceptions.memoryNotSupported().getMessage(), e.getMessage());
             }
         }
     }
@@ -164,12 +163,12 @@ public class FeatureSupportTest  {
     }
 
     /**
-     * Feature checks that test {@link com.tinkerpop.gremlin.structure.Graph} {@link com.tinkerpop.gremlin.structure.Graph.Annotations} and {@link com.tinkerpop.gremlin.structure.Vertex} {@link com.tinkerpop.gremlin.structure.AnnotatedList}
+     * Feature checks that tests if {@link com.tinkerpop.gremlin.structure.AnnotatedList}
      * functionality to determine if a feature should be on when it is marked as not supported.
      */
     @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Graph.Annotations.Exceptions.class, methods = {
-            "dataTypeOfGraphAnnotationValueNotSupported"
+    @ExceptionCoverage(exceptionClass = AnnotatedValue.Exceptions.class, methods = {
+            "dataTypeOfAnnotatedValueNotSupported"
     })
     public static class AnnotationFunctionalityTest extends AbstractGremlinTest {
         private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
@@ -186,18 +185,6 @@ public class FeatureSupportTest  {
         public Object value;
 
         @Test
-        public void shouldEnableFeatureOnGraphIfNotEnabled() throws Exception {
-            assumeThat(g.getFeatures().supports(GraphAnnotationFeatures.class, featureName), is(false));
-            try {
-               final Graph.Annotations annotations = g.annotations();
-                annotations.set("key", value);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphAnnotationFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
-                assertEquals(Graph.Annotations.Exceptions.dataTypeOfGraphAnnotationValueNotSupported(value).getMessage(), e.getMessage());
-            }
-        }
-
-        @Test
         @FeatureRequirement(featureClass = VertexAnnotationFeatures.class, feature = VertexAnnotationFeatures.FEATURE_STRING_VALUES)
         public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
             assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
@@ -207,7 +194,42 @@ public class FeatureSupportTest  {
                 al.get().addValue("v", "t", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
-                assertEquals(Graph.Annotations.Exceptions.dataTypeOfGraphAnnotationValueNotSupported(value).getMessage(), e.getMessage());
+                assertEquals(AnnotatedValue.Exceptions.dataTypeOfAnnotatedValueNotSupported(value).getMessage(), e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Feature checks that tests if {@link com.tinkerpop.gremlin.structure.Graph.Memory}
+     * functionality to determine if a feature should be on when it is marked as not supported.
+     */
+    @RunWith(Parameterized.class)
+    @ExceptionCoverage(exceptionClass = Graph.Memory.Exceptions.class, methods = {
+            "dataTypeOfMemoryValueNotSupported"
+    })
+    public static class MemoryFunctionalityTest extends AbstractGremlinTest {
+        private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
+
+        @Parameterized.Parameters(name = "{index}: supports{0}({1})")
+        public static Iterable<Object[]> data() {
+            return MemoryTest.MemoryFeatureSupportTest.data();
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public String featureName;
+
+        @Parameterized.Parameter(value = 1)
+        public Object value;
+
+        @Test
+        public void shouldEnableFeatureOnGraphIfNotEnabled() throws Exception {
+            assumeThat(g.getFeatures().supports(Graph.Features.MemoryFeatures.class, featureName), is(false));
+            try {
+                final Graph.Memory memory = g.memory();
+                memory.set("key", value);
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, MemoryFeatures.class.getSimpleName(), featureName));
+            } catch (UnsupportedOperationException e) {
+                assertEquals(Graph.Memory.Exceptions.dataTypeOfMemoryValueNotSupported(value).getMessage(), e.getMessage());
             }
         }
     }
@@ -221,7 +243,7 @@ public class FeatureSupportTest  {
         private EdgeFeatures edgeFeatures;
         private EdgePropertyFeatures edgePropertyFeatures;
         private GraphFeatures graphFeatures;
-        private GraphAnnotationFeatures graphAnnotationFeatures;
+        private MemoryFeatures memoryFeatures;
         private VertexFeatures vertexFeatures;
         private VertexAnnotationFeatures vertexAnnotationFeatures;
         private VertexPropertyFeatures vertexPropertyFeatures;
@@ -232,7 +254,7 @@ public class FeatureSupportTest  {
             edgeFeatures = f.edge();
             edgePropertyFeatures = edgeFeatures.properties();
             graphFeatures = f.graph();
-            graphAnnotationFeatures = graphFeatures.annotations();
+            memoryFeatures = graphFeatures.memory();
             vertexFeatures = f.vertex();
             vertexAnnotationFeatures = vertexFeatures.annotations();
             vertexPropertyFeatures = vertexFeatures.properties();
@@ -240,14 +262,14 @@ public class FeatureSupportTest  {
 
         @Test
         public void ifGraphHasAnnotationsEnabledThenItMustSupportADataType() {
-            assertTrue(graphAnnotationFeatures.supportsAnnotations()
-                    && (graphAnnotationFeatures.supportsBooleanValues() || graphAnnotationFeatures.supportsDoubleValues()
-                    || graphAnnotationFeatures.supportsFloatValues() || graphAnnotationFeatures.supportsIntegerValues()
-                    || graphAnnotationFeatures.supportsLongValues() || graphAnnotationFeatures.supportsMapValues()
-                    || graphAnnotationFeatures.supportsMetaProperties() || graphAnnotationFeatures.supportsMixedListValues()
-                    || graphAnnotationFeatures.supportsPrimitiveArrayValues() || graphAnnotationFeatures.supportsPrimitiveArrayValues()
-                    || graphAnnotationFeatures.supportsSerializableValues() || graphAnnotationFeatures.supportsStringValues()
-                    || graphAnnotationFeatures.supportsUniformListValues()));
+            assertTrue(memoryFeatures.supportsAnnotations()
+                    && (memoryFeatures.supportsBooleanValues() || memoryFeatures.supportsDoubleValues()
+                    || memoryFeatures.supportsFloatValues() || memoryFeatures.supportsIntegerValues()
+                    || memoryFeatures.supportsLongValues() || memoryFeatures.supportsMapValues()
+                    || memoryFeatures.supportsMetaProperties() || memoryFeatures.supportsMixedListValues()
+                    || memoryFeatures.supportsPrimitiveArrayValues() || memoryFeatures.supportsPrimitiveArrayValues()
+                    || memoryFeatures.supportsSerializableValues() || memoryFeatures.supportsStringValues()
+                    || memoryFeatures.supportsUniformListValues()));
         }
 
         @Test

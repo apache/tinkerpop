@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.GraphHelper;
+import com.tinkerpop.gremlin.structure.util.MemoryHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.tinkergraph.process.graph.map.TinkerGraphStep;
 import com.tinkerpop.tinkergraph.process.graph.util.optimizers.TinkerGraphStepOptimizer;
@@ -35,7 +35,6 @@ public class TinkerGraph implements Graph, Serializable {
     protected Long currentId = -1l;
     protected Map<String, Vertex> vertices = new HashMap<>();
     protected Map<String, Edge> edges = new HashMap<>();
-    protected Annotations annotations = new TinkerGraph.Annotations();
     protected TinkerGraphMemory graphMemory = new TinkerGraphMemory(this);
     protected TinkerElementMemory elementMemory;
 
@@ -145,34 +144,8 @@ public class TinkerGraph implements Graph, Serializable {
         return new TinkerGraphComputer(this);
     }
 
-    public Annotations annotations() {
-        return this.annotations;
-    }
-
     public <M extends Memory> M memory() {
         return (M) this.graphMemory;
-    }
-
-    public class Annotations implements Graph.Annotations, Serializable {
-
-        private final Map<String, Object> annotations = new HashMap<>();
-
-        public <T> Optional<T> get(final String key) {
-            return Optional.ofNullable((T) this.annotations.get(key));
-        }
-
-        public void set(final String key, final Object value) {
-            GraphHelper.validateAnnotation(key, value);
-            this.annotations.put(key, value);
-        }
-
-        public Set<String> getKeys() {
-            return this.annotations.keySet();
-        }
-
-        public String toString() {
-            return this.annotations.toString();
-        }
     }
 
     public String toString() {
@@ -183,7 +156,6 @@ public class TinkerGraph implements Graph, Serializable {
         this.vertices.clear();
         this.edges.clear();
         this.graphMemory = new TinkerGraphMemory(this);
-        this.annotations = new TinkerGraph.Annotations();
         this.currentId = 0l;
         this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
         this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);

@@ -1,6 +1,7 @@
 package com.tinkerpop.tinkergraph;
 
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.util.MemoryHelper;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -91,6 +92,7 @@ public class TinkerGraphMemory implements Graph.Memory.Computer.System, Serializ
     }
 
     public void set(final String variable, final Object value) {
+        MemoryHelper.validateMemory(variable, value);
         this.memory.put(variable, value);
     }
 

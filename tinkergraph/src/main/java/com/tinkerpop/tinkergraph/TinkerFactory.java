@@ -33,7 +33,7 @@ public class TinkerFactory {
     }
 
     public static TinkerGraph createModern() {
-        // todo: need to add graph annotations and hidden properties to make sure IO works well for these items
+        // todo: need to add graph memory and hidden properties to make sure IO works well for these items
         final TinkerGraph g = TinkerGraph.open();
 
         final Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person", "name", "marko", "locations", AnnotatedList.make());

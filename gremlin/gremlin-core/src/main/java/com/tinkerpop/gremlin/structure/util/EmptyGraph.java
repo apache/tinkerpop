@@ -56,11 +56,6 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public Annotations annotations() {
-        throw new IllegalStateException(MESSAGE);
-    }
-
-    @Override
     public <M extends Memory> M memory() {
         throw new IllegalStateException(MESSAGE);
     }

@@ -96,11 +96,6 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         assertException(p::remove);
     }
 
-    @Test
-    public void shouldNotAllowGraphAnnotationSet() {
-        assertException(() -> g.annotations().set("test", "fail"));
-    }
-
     private void assertException(final SupplierThatThrows stt) {
         try {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);

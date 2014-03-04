@@ -115,6 +115,8 @@ public class CommunityGeneratorTest {
                 } catch (IllegalArgumentException iae) {
                     generated = false;
                     localCrossPcent = localCrossPcent - 0.05d;
+
+                    // todo: sometimes throws concurrent modification exception here.........
                     g.V().remove();
                     prepareGraph(graph);
                     System.out.println(String.format("Ran CommunityGeneratorTest with different CrossCommunityPercentage, expected %s but used %s", crossPcent, localCrossPcent));

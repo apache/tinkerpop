@@ -86,9 +86,10 @@ public class StringFactory {
     }
 
     /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Graph.Annotations}.
+     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Graph.Memory}.
      */
-    public static String annotationsString(final Graph.Annotations annotations) {
-        return annotations.toString();
+    public static String memoryString(final Graph.Memory memory) {
+        // todo: should this be owned by the implementation...it won't be consistent
+        return memory.toString();
     }
 }

@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphAnnotationFeatures.FEATURE_ANNOTATIONS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures.FEATURE_ANNOTATIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
@@ -247,19 +247,18 @@ public class ExceptionConsistencyTest {
      * Test exceptions around {@link com.tinkerpop.gremlin.structure.Graph.Annotations}.
      */
     @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Graph.Annotations.Exceptions.class, methods = {
-            "graphAnnotationValueCanNotBeNull",
-            "graphAnnotationKeyCanNotBeNull",
-            "annotationKeyValueIsReserved",
-            "graphAnnotationKeyCanNotBeEmpty"
+    @ExceptionCoverage(exceptionClass = Graph.Memory.Exceptions.class, methods = {
+            "memoryValueCanNotBeNull",
+            "memoryKeyCanNotBeNull",
+            "memoryKeyCanNotBeEmpty"
     })
-    public static class GraphAnnotationsTest extends AbstractGremlinTest {
+    public static class MemoryTest extends AbstractGremlinTest {
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {"k", null, Graph.Annotations.Exceptions.graphAnnotationValueCanNotBeNull()},
-                    {null, "v", Graph.Annotations.Exceptions.graphAnnotationKeyCanNotBeNull()},
-                    {"", "v", Graph.Annotations.Exceptions.graphAnnotationKeyCanNotBeEmpty()}});
+                    {"k", null, Graph.Memory.Exceptions.memoryValueCanNotBeNull()},
+                    {null, "v", Graph.Memory.Exceptions.memoryKeyCanNotBeNull()},
+                    {"", "v", Graph.Memory.Exceptions.memoryKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)
@@ -272,10 +271,10 @@ public class ExceptionConsistencyTest {
         public Exception expectedException;
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.GraphAnnotationFeatures.class, feature = FEATURE_ANNOTATIONS)
+        @FeatureRequirement(featureClass = Graph.Features.MemoryFeatures.class, feature = FEATURE_ANNOTATIONS)
         public void testGraphAnnotationsSet() throws Exception {
             try {
-                g.annotations().set(key, val);
+                g.memory().set(key, val);
                 fail(String.format("Setting an annotation with these arguments [key: %s value: %s] should throw an exception", key, val));
             } catch (Exception ex) {
                 assertEquals(expectedException.getClass(), ex.getClass());

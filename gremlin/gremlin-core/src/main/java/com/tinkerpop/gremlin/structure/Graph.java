@@ -59,8 +59,6 @@ public interface Graph extends AutoCloseable {
 
     public Transaction tx();
 
-    public Annotations annotations();
-
     public <M extends Memory> M memory();
 
     public interface Memory {
@@ -94,6 +92,13 @@ public interface Graph extends AutoCloseable {
 
         public Graph getGraph();
 
+        public default Map<String, Object> asMap() {
+            final Map<String, Object> map = getVariables().stream()
+                    .map(key -> Pair.<String, Object>with(key, get(key)))
+                    .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
+            return Collections.unmodifiableMap(map);
+        }
+
         public interface Computer extends Memory {
 
             public int getIteration();
@@ -112,58 +117,21 @@ public interface Graph extends AutoCloseable {
             }
         }
 
-    }
-
-    public interface Annotations {
-
-        public class Key {
-
-            private Key() {
-
-            }
-
-            public static String hidden(final String key) {
-                return HIDDEN_PREFIX.concat(key);
-            }
-        }
-
-        public void set(final String key, final Object value);
-
-        public <T> Optional<T> get(final String key);
-
-        public Set<String> getKeys();
-
-        /**
-         * Get the annotations for the {@link Graph} as a immutable {@link Map}.
-         */
-        public default Map<String, Object> getAnnotations() {
-            final Map<String, Object> map = getKeys().stream()
-                    .map(key -> Pair.<String, Optional>with(key, get(key)))
-                    .filter(kv -> kv.getValue1().isPresent())
-                    .map(kv -> Pair.<String, Object>with(kv.getValue0(), kv.getValue1().get()))
-                    .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
-            return Collections.unmodifiableMap(map);
-        }
-
         public static class Exceptions {
 
-            public static IllegalArgumentException graphAnnotationKeyIsReserved(final String key) {
-                return new IllegalArgumentException("Graph annotation key is reserved: " + key);
-            }
-
-            public static IllegalArgumentException graphAnnotationKeyCanNotBeEmpty() {
+            public static IllegalArgumentException memoryKeyCanNotBeEmpty() {
                 return new IllegalArgumentException("Graph annotation key can not be the empty string");
             }
 
-            public static IllegalArgumentException graphAnnotationKeyCanNotBeNull() {
+            public static IllegalArgumentException memoryKeyCanNotBeNull() {
                 return new IllegalArgumentException("Graph annotation key can not be null");
             }
 
-            public static IllegalArgumentException graphAnnotationValueCanNotBeNull() {
+            public static IllegalArgumentException memoryValueCanNotBeNull() {
                 return new IllegalArgumentException("Graph annotation value can not be null");
             }
 
-            public static UnsupportedOperationException dataTypeOfGraphAnnotationValueNotSupported(final Object val) {
+            public static UnsupportedOperationException dataTypeOfMemoryValueNotSupported(final Object val) {
                 return new UnsupportedOperationException(String.format("Graph annotation value [%s] is of type %s is not supported", val, val.getClass()));
             }
         }
@@ -192,13 +160,13 @@ public interface Graph extends AutoCloseable {
         }
 
         public interface GraphFeatures extends FeatureSet {
-            public static final String FEATURE_ANNOTATIONS = "Annotations";
+            public static final String FEATURE_MEMORY = "Memory";
             public static final String FEATURE_COMPUTER = "Computer";
             public static final String FEATURE_TRANSACTIONS = "Transactions";
             public static final String FEATURE_PERSISTENCE = "Persistence";
 
-            @FeatureDescriptor(name = FEATURE_ANNOTATIONS)
-            public default boolean supportsAnnotations() {
+            @FeatureDescriptor(name = FEATURE_MEMORY)
+            public default boolean supportsMemory() {
                 return true;
             }
 
@@ -217,8 +185,8 @@ public interface Graph extends AutoCloseable {
                 return true;
             }
 
-            public default GraphAnnotationFeatures annotations() {
-                return new GraphAnnotationFeatures() {
+            public default MemoryFeatures memory() {
+                return new MemoryFeatures() {
                 };
             }
         }
@@ -353,7 +321,8 @@ public interface Graph extends AutoCloseable {
         public interface VertexAnnotationFeatures extends AnnotationFeatures {
         }
 
-        public interface GraphAnnotationFeatures extends AnnotationFeatures {
+        public interface MemoryFeatures extends AnnotationFeatures {
+            // todo: probably needs its own set of data type features ....... grrrrrrrrrrrr
         }
 
         public interface AnnotationFeatures extends FeatureSet {
@@ -459,8 +428,8 @@ public interface Graph extends AutoCloseable {
             final Object instance;
             if (featureClass.equals(GraphFeatures.class))
                 instance = this.graph();
-            else if (featureClass.equals(GraphAnnotationFeatures.class))
-                instance = this.graph().annotations();
+            else if (featureClass.equals(MemoryFeatures.class))
+                instance = this.graph().memory();
             else if (featureClass.equals(VertexFeatures.class))
                 instance = this.vertex();
             else if (featureClass.equals(VertexPropertyFeatures.class))
@@ -478,7 +447,7 @@ public interface Graph extends AutoCloseable {
             else if (featureClass.equals(AnnotationFeatures.class))
                 throw new IllegalArgumentException(String.format(
                         "Do not reference AnnotationFeatures directly in tests, utilize a specific instance: %s, %s",
-                        VertexAnnotationFeatures.class, GraphAnnotationFeatures.class));
+                        VertexAnnotationFeatures.class, MemoryFeatures.class));
             else
                 throw new IllegalArgumentException(String.format(
                         "Expecting featureClass to be a valid Feature instance and not %s", featureClass));
@@ -489,8 +458,8 @@ public interface Graph extends AutoCloseable {
 
     public static class Exceptions {
 
-        public static UnsupportedOperationException graphAnnotationsNotSupported() {
-            return new UnsupportedOperationException("Graph does not support graph annotations");
+        public static UnsupportedOperationException memoryNotSupported() {
+            return new UnsupportedOperationException("Graph does not support graph memory");
         }
 
         public static UnsupportedOperationException transactionsNotSupported() {
@@ -499,10 +468,6 @@ public interface Graph extends AutoCloseable {
 
         public static UnsupportedOperationException graphComputerNotSupported() {
             return new UnsupportedOperationException("Graph does not support graph computer");
-        }
-
-        public static UnsupportedOperationException graphStrategyNotSupported() {
-            return new UnsupportedOperationException("Graph does not support graph strategy");
         }
 
         public static IllegalArgumentException vertexWithIdAlreadyExists(final Object id) {

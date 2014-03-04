@@ -138,10 +138,10 @@ public class KryoReader implements GraphReader {
 
         try {
             final boolean supportedAnnotations = input.readBoolean();
-            if (supportedAnnotations && graph.getFeatures().graph().supportsAnnotations()) {
-                final Graph.Annotations annotations = graph.annotations();
-                final Map<String,Object> annotationMap = (Map<String,Object>) kryo.readObject(input, HashMap.class);
-                annotationMap.forEach(annotations::set);
+            if (supportedAnnotations && graph.getFeatures().graph().supportsMemory()) {
+                final Graph.Memory memory = graph.memory();
+                final Map<String,Object> memMap = (Map<String,Object>) kryo.readObject(input, HashMap.class);
+                memMap.forEach(memory::set);
             }
 
             final boolean hasSomeVertices = input.readBoolean();

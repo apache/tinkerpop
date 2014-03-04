@@ -127,19 +127,6 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.BiConsumer} that enhances the features of
-     * {@link com.tinkerpop.gremlin.structure.Graph.Annotations#set(String, Object)}.
-     *
-     * @param ctx the context within which this strategy function is called
-     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiConsumer} with
-     *         {@link com.tinkerpop.gremlin.structure.Graph.Annotations#set(String, Object)} signature
-     *         and returns an enhanced strategy {@link java.util.function.BiConsumer} with the same signature
-     */
-    public default UnaryOperator<BiConsumer<String,Object>> getGraphAnnotationsSet(final Strategy.Context<StrategyWrappedAnnotations> ctx) {
-        return UnaryOperator.identity();
-    }
-
-    /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#v(Object)}.
      *
      * @param ctx the context within which this strategy function is called

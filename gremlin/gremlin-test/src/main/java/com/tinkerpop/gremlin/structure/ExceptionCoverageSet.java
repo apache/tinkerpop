@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A group of {@link ExceptionCoverage} annotations.
+ * A group of {@link ExceptionCoverage} memory.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

@@ -44,10 +44,10 @@ public class KryoWriter implements GraphWriter {
         final Output output = new Output(outputStream);
         writeHeader(output);
 
-        final boolean supportsAnnotations = graph.getFeatures().graph().supportsAnnotations();
+        final boolean supportsAnnotations = graph.getFeatures().graph().supportsMemory();
         output.writeBoolean(supportsAnnotations);
         if (supportsAnnotations)
-            kryo.writeObject(output, graph.annotations().getAnnotations());
+            kryo.writeObject(output, graph.memory().asMap());
 
         final Iterator<Vertex> vertices = graph.V();
         final boolean hasSomeVertices = vertices.hasNext();

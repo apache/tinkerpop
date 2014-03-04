@@ -79,11 +79,6 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
     }
 
     @Override
-    public Annotations annotations() {
-        return this.baseGraph.annotations();
-    }
-
-    @Override
     public Memory memory() {
         return this.baseGraph.memory();
     }

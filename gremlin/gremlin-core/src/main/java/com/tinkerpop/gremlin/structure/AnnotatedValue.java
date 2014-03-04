@@ -72,5 +72,9 @@ public interface AnnotatedValue<V> {
         public static IllegalArgumentException annotationValueCanNotBeNull() {
             return new IllegalArgumentException("Annotation value can not be null");
         }
+
+        public static UnsupportedOperationException dataTypeOfAnnotatedValueNotSupported(final Object val) {
+            return new UnsupportedOperationException(String.format("Annotated value [%s] is of type %s is not supported", val, val.getClass()));
+        }
     }
 }

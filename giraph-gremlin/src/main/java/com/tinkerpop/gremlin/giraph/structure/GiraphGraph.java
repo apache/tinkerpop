@@ -32,10 +32,6 @@ public class GiraphGraph implements Graph {
         throw Graph.Exceptions.transactionsNotSupported();
     }
 
-    public Annotations annotations() {
-        return null;
-    }
-
     public <M extends Memory> M memory() {
         return null;
     }

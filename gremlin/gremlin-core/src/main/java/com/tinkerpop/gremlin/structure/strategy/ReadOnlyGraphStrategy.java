@@ -27,11 +27,6 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<BiConsumer<String, Object>> getGraphAnnotationsSet(Strategy.Context<StrategyWrappedAnnotations> ctx) {
-        return readOnlyBiConsumer();
-    }
-
-    @Override
     public <V> UnaryOperator<BiConsumer<String, V>> getElementSetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return readOnlyBiConsumer();
     }

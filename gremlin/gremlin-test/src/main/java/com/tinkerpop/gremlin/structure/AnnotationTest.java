@@ -2,8 +2,6 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
-import com.tinkerpop.gremlin.structure.Graph.Features.GraphAnnotationFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexAnnotationFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
@@ -21,12 +19,10 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Blueprints Test Suite for {@link com.tinkerpop.gremlin.structure.Graph.Annotations} and {@link com.tinkerpop.gremlin.structure.AnnotatedList} operations.
+ * Blueprints Test Suite for {@link com.tinkerpop.gremlin.structure.AnnotatedList} operations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -34,8 +30,8 @@ import static org.junit.Assume.assumeThat;
 public class AnnotationTest {
 
     /**
-     * Basic tests to ensure that {@link com.tinkerpop.gremlin.structure.Graph.Annotations}, {@link com.tinkerpop.gremlin.structure.AnnotatedList}, and {@link com.tinkerpop.gremlin.structure.AnnotatedValue} have
-     * appropriate {@link String} representations.
+     * Basic tests to ensure that {@link com.tinkerpop.gremlin.structure.AnnotatedList}, and
+     * {@link com.tinkerpop.gremlin.structure.AnnotatedValue} have appropriate {@link String} representations.
      */
     public static class StringRepresentationTest extends AbstractGremlinTest {
         @Test
@@ -62,108 +58,10 @@ public class AnnotationTest {
 
             tryCommit(g, graph->assertEquals(StringFactory.annotatedValueString(av), av.toString()));
         }
-
-        @Test
-        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_STRING_VALUES)
-        public void testAnnotations() {
-            final Graph.Annotations annotations = g.annotations();
-            annotations.set("xo", "test1");
-            annotations.set("yo", "test2");
-            annotations.set("zo", "test3");
-
-            tryCommit(g, graph -> assertEquals(StringFactory.annotationsString(annotations), annotations.toString()));
-        }
     }
 
     /**
-     * Ensure that the {@link com.tinkerpop.gremlin.structure.Graph.Annotations#getAnnotations()} method returns some basics.
-     * Other tests will enforce that all types are properly covered in {@link Graph.Annotations}.
-     */
-    public static class GraphAsMapTest extends AbstractGremlinTest {
-        @Test
-        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_ANNOTATIONS)
-        public void testNone() {
-            final Graph.Annotations annotations = g.annotations();
-            final Map<String,Object> mapOfAnnotations = annotations.getAnnotations();
-            assertNotNull(mapOfAnnotations);
-            assertEquals(0, mapOfAnnotations.size());
-            try {
-                mapOfAnnotations.put("something", "can't do this");
-                fail("Should not be able to mutate the Map returned from Graph.annotations.getAnnotations()");
-            } catch (UnsupportedOperationException uoe) {
-
-            }
-        }
-
-        @Test
-        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_STRING_VALUES)
-        public void testAnnotationString() {
-            final Graph.Annotations annotations = g.annotations();
-            annotations.set("test1", "1");
-            annotations.set("test2", "2");
-            annotations.set("test3", "3");
-
-            tryCommit(g, graph -> {
-                final Map<String, Object> m = annotations.getAnnotations();
-                assertEquals("1", m.get("test1"));
-                assertEquals("2", m.get("test2"));
-                assertEquals("3", m.get("test3"));
-            });
-        }
-
-        @Test
-        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_INTEGER_VALUES)
-        public void testAnnotationInteger() {
-            final Graph.Annotations annotations = g.annotations();
-            annotations.set("test1", 1);
-            annotations.set("test2", 2);
-            annotations.set("test3", 3);
-
-            tryCommit(g, graph -> {
-                final Map<String, Object> m = annotations.getAnnotations();
-                assertEquals(1, m.get("test1"));
-                assertEquals(2, m.get("test2"));
-                assertEquals(3, m.get("test3"));
-            });
-        }
-
-        @Test
-        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_LONG_VALUES)
-        public void testAnnotationLong() {
-            final Graph.Annotations annotations = g.annotations();
-            annotations.set("test1", 1l);
-            annotations.set("test2", 2l);
-            annotations.set("test3", 3l);
-
-            tryCommit(g, graph -> {
-                final Map<String, Object> m = annotations.getAnnotations();
-                assertEquals(1l, m.get("test1"));
-                assertEquals(2l, m.get("test2"));
-                assertEquals(3l, m.get("test3"));
-            });
-        }
-
-        @Test
-        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_STRING_VALUES)
-        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_INTEGER_VALUES)
-        @FeatureRequirement(featureClass = GraphAnnotationFeatures.class, feature = GraphAnnotationFeatures.FEATURE_LONG_VALUES)
-        public void testAnnotationMixed() {
-            final Graph.Annotations annotations = g.annotations();
-            annotations.set("test1", "1");
-            annotations.set("test2", 2);
-            annotations.set("test3", 3l);
-
-            tryCommit(g, graph -> {
-                final Map<String, Object> m = annotations.getAnnotations();
-                assertEquals("1", m.get("test1"));
-                assertEquals(2, m.get("test2"));
-                assertEquals(3l, m.get("test3"));
-            });
-        }
-    }
-
-    /**
-     * Tests for feature support on {@link com.tinkerpop.gremlin.structure.Graph.Annotations} and {@link com.tinkerpop.gremlin.structure.AnnotatedList}.  The tests validate if
+     * Tests for feature support on {@link com.tinkerpop.gremlin.structure.AnnotatedList}.  The tests validate if
      * {@link com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures} should be turned on or off and if the
      * enabled features are properly supported by the implementation.  Note that these tests are run in a separate
      * test class as they are "parameterized" tests.
@@ -237,35 +135,6 @@ public class AnnotationTest {
 
         @Parameterized.Parameter(value = 1)
         public Object value;
-
-        @Test
-        public void shouldSetValueOnGraph() throws Exception {
-            assumeThat(g.getFeatures().supports(EdgePropertyFeatures.class, featureName), is(true));
-            final Graph.Annotations annotations = g.annotations();
-            annotations.set("key", value);
-
-            if (value instanceof Map)
-                tryCommit(g, graph -> {
-                    final Map map = annotations.<Map>get("key").get();
-                    assertEquals(((Map) value).size(), map.size());
-                    ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
-                });
-            else if (value instanceof List)
-                tryCommit(g, graph -> {
-                    final List l = annotations.<List>get("key").get();
-                    assertEquals(((List) value).size(), l.size());
-                    for (int ix = 0; ix < ((List) value).size(); ix++) {
-                        assertEquals(((List) value).get(ix), l.get(ix));
-                    }
-                });
-            else if (value instanceof MockSerializable)
-                tryCommit(g, graph -> {
-                    final MockSerializable mock = annotations.<MockSerializable>get("key").get();
-                    assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
-                });
-            else
-                tryCommit(g, graph -> assertEquals(value, annotations.get("key").get()));
-        }
 
         @Test
         public void shouldSetValueOnVertex() throws Exception {
