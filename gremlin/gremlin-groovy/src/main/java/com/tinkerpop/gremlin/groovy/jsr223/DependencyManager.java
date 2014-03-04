@@ -13,9 +13,9 @@ import java.util.Set;
 public interface DependencyManager {
     /**
      * Take maven coordinates and load the classes into the classloader used by the ScriptEngine.  Those ScriptEngines
-     * that can should support script engine plugins by checking if there are any new ScriptEnginePlugin
+     * that can should support script engine plugins by checking if there are any new GremlinPlugin
      * implementations in the classloader.  The GremlinGroovyScriptEngine implementation uses ServiceLoader to figure
-     * out if there are such classes and then calls the plugInTo() method on that ScriptEnginePlugin interface.
+     * out if there are such classes and then calls the plugInTo() method on that GremlinPlugin interface.
      */
     void use(final String group, final String artifact, final String version);
 

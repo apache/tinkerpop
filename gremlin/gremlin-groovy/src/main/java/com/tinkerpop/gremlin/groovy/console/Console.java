@@ -38,10 +38,10 @@ public class Console {
         /*for (String imps : Imports.getImports()) {
             GROOVYSH.execute("import " + imps);
         }*/
-        //GROOVYSH.execute("import com.tinkerpop.gremlin.process.Tokens.T");
         GROOVYSH.execute("import com.tinkerpop.gremlin.groovy.*");
-        GROOVYSH.execute("import com.tinkerpop.gremlin.pipes.*");
-        GROOVYSH.execute("import com.tinkerpop.blueprints.tinkergraph.*");
+        GROOVYSH.execute("import com.tinkerpop.gremlin.structure.*");
+        GROOVYSH.execute("import com.tinkerpop.gremlin.process.*");
+        GROOVYSH.execute("import com.tinkerpop.tinkergraph.*");
         GROOVYSH.execute("import groovy.grape.Grape");
 
         try {

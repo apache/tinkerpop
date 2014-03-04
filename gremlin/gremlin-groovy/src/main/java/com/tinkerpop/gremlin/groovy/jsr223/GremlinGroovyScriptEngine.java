@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import groovy.grape.Grape;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
@@ -104,9 +105,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         // note that the service loader utilized the classloader from the groovy shell as shell class are available
         // from within there given loading through Grape.
-        ServiceLoader.load(ScriptEnginePlugin.class, loader).forEach(it -> {
+        ServiceLoader.load(GremlinPlugin.class, loader).forEach(it -> {
             if (!loadedPlugins.contains(it.getName())) {
-                it.pluginTo(new ScriptEnginePlugin.ScriptEngineController(this));
+                it.pluginTo(new ScriptEnginePluginAcceptor(this));
                 loadedPlugins.add(it.getName());
             }
         });
