@@ -261,8 +261,8 @@ public class FeatureSupportTest  {
         }
 
         @Test
-        public void ifGraphHasAnnotationsEnabledThenItMustSupportADataType() {
-            assertTrue(memoryFeatures.supportsAnnotations()
+        public void ifGraphHasMemoryEnabledThenItMustSupportADataType() {
+            assertTrue(memoryFeatures.supportsMemory()
                     && (memoryFeatures.supportsBooleanValues() || memoryFeatures.supportsDoubleValues()
                     || memoryFeatures.supportsFloatValues() || memoryFeatures.supportsIntegerValues()
                     || memoryFeatures.supportsLongValues() || memoryFeatures.supportsMapValues()

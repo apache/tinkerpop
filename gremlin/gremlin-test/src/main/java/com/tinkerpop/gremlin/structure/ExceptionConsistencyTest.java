@@ -14,7 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures.FEATURE_ANNOTATIONS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures.FEATURE_ANNOTATIONS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures.FEATURE_MEMORY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
@@ -244,7 +245,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Test exceptions around {@link com.tinkerpop.gremlin.structure.Graph.Annotations}.
+     * Test exceptions around {@link com.tinkerpop.gremlin.structure.Graph.Memory}.
      */
     @RunWith(Parameterized.class)
     @ExceptionCoverage(exceptionClass = Graph.Memory.Exceptions.class, methods = {
@@ -271,7 +272,7 @@ public class ExceptionConsistencyTest {
         public Exception expectedException;
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.MemoryFeatures.class, feature = FEATURE_ANNOTATIONS)
+        @FeatureRequirement(featureClass = Graph.Features.MemoryFeatures.class, feature = FEATURE_MEMORY)
         public void testGraphAnnotationsSet() throws Exception {
             try {
                 g.memory().set(key, val);

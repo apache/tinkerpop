@@ -160,6 +160,7 @@ public interface Graph extends AutoCloseable {
         }
 
         public interface GraphFeatures extends FeatureSet {
+            // todo: do we need this memory feature and the Graph.Memory feature???
             public static final String FEATURE_MEMORY = "Memory";
             public static final String FEATURE_COMPUTER = "Computer";
             public static final String FEATURE_TRANSACTIONS = "Transactions";
@@ -230,80 +231,8 @@ public interface Graph extends AutoCloseable {
         public interface EdgePropertyFeatures extends PropertyFeatures {
         }
 
-        public interface PropertyFeatures extends FeatureSet {
-            public static final String FEATURE_BOOLEAN_VALUES = "BooleanValues";
-            public static final String FEATURE_DOUBLE_VALUES = "DoubleValues";
-            public static final String FEATURE_FLOAT_VALUES = "FloatValues";
-            public static final String FEATURE_INTEGER_VALUES = "IntegerValues";
-            public static final String FEATURE_LONG_VALUES = "LongValues";
-            public static final String FEATURE_MAP_VALUES = "MapValues";
-            public static final String FEATURE_META_PROPERTIES = "MetaProperties";
-            public static final String FEATURE_MIXED_LIST_VALUES = "MixedListValues";
-            public static final String FEATURE_PRIMITIVE_ARRAY_VALUES = "PrimitiveArrayValues";
-            public static final String FEATURE_SERIALIZABLE_VALUES = "SerializableValues";
-            public static final String FEATURE_STRING_VALUES = "StringValues";
-            public static final String FEATURE_UNIFORM_LIST_VALUES = "UniformListValues";
+        public interface PropertyFeatures extends DataTypeFeatures {
             public static final String FEATURE_PROPERTIES = "Properties";
-
-            @FeatureDescriptor(name = FEATURE_BOOLEAN_VALUES)
-            public default boolean supportsBooleanValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_DOUBLE_VALUES)
-            public default boolean supportsDoubleValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_FLOAT_VALUES)
-            public default boolean supportsFloatValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_INTEGER_VALUES)
-            public default boolean supportsIntegerValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_LONG_VALUES)
-            public default boolean supportsLongValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_MAP_VALUES)
-            public default boolean supportsMapValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_META_PROPERTIES)
-            public default boolean supportsMetaProperties() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_MIXED_LIST_VALUES)
-            public default boolean supportsMixedListValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_PRIMITIVE_ARRAY_VALUES)
-            public default boolean supportsPrimitiveArrayValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_SERIALIZABLE_VALUES)
-            public default boolean supportsSerializableValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_STRING_VALUES)
-            public default boolean supportsStringValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_UNIFORM_LIST_VALUES)
-            public default boolean supportsUniformListValues() {
-                return true;
-            }
 
             /**
              * If any of the features on PropertyFeatures is true then this value must be true.
@@ -318,14 +247,43 @@ public interface Graph extends AutoCloseable {
             }
         }
 
+        public interface MemoryFeatures extends DataTypeFeatures {
+            public static final String FEATURE_MEMORY = "Memory";
+
+            /**
+             * If any of the features on {@link MemoryFeatures} is true then this value must be true.
+             */
+            @FeatureDescriptor(name = FEATURE_MEMORY)
+            public default boolean supportsMemory() {
+                return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
+                        || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
+                        || supportsMetaProperties() || supportsMixedListValues() || supportsPrimitiveArrayValues()
+                        || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
+                        || supportsUniformListValues();
+            }
+        }
+
         public interface VertexAnnotationFeatures extends AnnotationFeatures {
         }
 
-        public interface MemoryFeatures extends AnnotationFeatures {
-            // todo: probably needs its own set of data type features ....... grrrrrrrrrrrr
+        public interface AnnotationFeatures extends DataTypeFeatures {
+            public static final String FEATURE_ANNOTATIONS = "Annotations";
+
+            /**
+             * If any of the features on {@link AnnotationFeatures} is true then this value must be true.
+             */
+            @FeatureDescriptor(name = FEATURE_ANNOTATIONS)
+            public default boolean supportsAnnotations() {
+                return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
+                        || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
+                        || supportsMetaProperties() || supportsMixedListValues() || supportsPrimitiveArrayValues()
+                        || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
+                        || supportsUniformListValues();
+            }
         }
 
-        public interface AnnotationFeatures extends FeatureSet {
+
+        public interface DataTypeFeatures extends FeatureSet {
             public static final String FEATURE_BOOLEAN_VALUES = "BooleanValues";
             public static final String FEATURE_DOUBLE_VALUES = "DoubleValues";
             public static final String FEATURE_FLOAT_VALUES = "FloatValues";
@@ -338,7 +296,6 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_SERIALIZABLE_VALUES = "SerializableValues";
             public static final String FEATURE_STRING_VALUES = "StringValues";
             public static final String FEATURE_UNIFORM_LIST_VALUES = "UniformListValues";
-            public static final String FEATURE_ANNOTATIONS = "Annotations";
 
             @FeatureDescriptor(name = FEATURE_BOOLEAN_VALUES)
             public default boolean supportsBooleanValues() {
@@ -398,18 +355,6 @@ public interface Graph extends AutoCloseable {
             @FeatureDescriptor(name = FEATURE_UNIFORM_LIST_VALUES)
             public default boolean supportsUniformListValues() {
                 return true;
-            }
-
-            /**
-             * If any of the features on {@link AnnotationFeatures} is true then this value must be true.
-             */
-            @FeatureDescriptor(name = FEATURE_ANNOTATIONS)
-            public default boolean supportsAnnotations() {
-                return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
-                        || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
-                        || supportsMetaProperties() || supportsMixedListValues() || supportsPrimitiveArrayValues()
-                        || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
-                        || supportsUniformListValues();
             }
         }
 
