@@ -669,6 +669,14 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     public static void assertModernGraph(final Graph g1) {
+        if (g1.getFeatures().graph().supportsMemory()) {
+            final Map<String,Object> m = g1.memory().asMap();
+            if (g1.getFeatures().graph().memory().supportsStringValues())
+                assertEquals("modern", m.get("name"));
+            if (g1.getFeatures().graph().memory().supportsIntegerValues())
+                assertEquals(2014, m.get("year"));
+        }
+
         assertEquals(6, g1.V().count());
         assertEquals(8, g1.E().count());
 

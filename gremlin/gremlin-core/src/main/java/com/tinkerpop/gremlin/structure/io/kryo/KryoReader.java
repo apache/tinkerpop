@@ -137,8 +137,9 @@ public class KryoReader implements GraphReader {
         final Output output = new Output(new FileOutputStream(tempFile));
 
         try {
-            final boolean supportedAnnotations = input.readBoolean();
-            if (supportedAnnotations && graph.getFeatures().graph().supportsMemory()) {
+            final boolean supportedMemory = input.readBoolean();
+            if (supportedMemory && graph.getFeatures().graph().supportsMemory()) {
+                // todo: do we just let this fail or do we check features for supported memory types
                 final Graph.Memory memory = graph.memory();
                 final Map<String,Object> memMap = (Map<String,Object>) kryo.readObject(input, HashMap.class);
                 memMap.forEach(memory::set);
