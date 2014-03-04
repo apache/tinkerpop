@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class RangeStep<S> extends FilterStep<S> {
 
-    // TODO: May need to make AtomicInteger
+    // TODO: May need to make AtomicInteger for the sake of adjustments in setPredicate
     public int low;
     public int high;
 

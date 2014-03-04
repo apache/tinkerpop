@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.map.MapStep;
+import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +13,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupByStep<S, K, V, R> extends MapStep<S, S> implements SideEffectCapable {
+public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable {
 
     public Map<K, Collection<V>> groupMap;
     public final Map<K, R> reduceMap;
@@ -29,13 +29,13 @@ public class GroupByStep<S, K, V, R> extends MapStep<S, S> implements SideEffect
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction == null ? s -> (V) s : valueFunction;
         this.reduceFunction = reduceFunction;
-        this.setFunction(holder -> {
+        this.setPredicate(holder -> {
             doGroup(holder.get(), this.groupMap, this.keyFunction, this.valueFunction);
             if (null != reduceFunction && !this.getPreviousStep().hasNext()) {
                 doReduce(this.groupMap, this.reduceMap, this.reduceFunction);
                 this.traversal.memory().set(CAP_VARIABLE, this.reduceMap);
             }
-            return holder.get();
+            return true;
         });
     }
 
