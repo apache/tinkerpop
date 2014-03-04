@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.groovy.plugin;
 /**
  * Those wanting to extend Gremlin can implement this interface to provide custom imports and extension
  * methods to the language itself.  Gremlin uses ServiceLoader to install plugins.  It is necessary for
- * projects to include a com.tinkerpop.gremlin.groovy.plugin.ConsolePlugin file in META-INF/services of their
+ * projects to include a com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin file in META-INF/services of their
  * packaged project which includes the full class names of the implementations of this interface to install.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
