@@ -35,6 +35,7 @@ public class Console {
         STANDARD_IO.out.println("-----oOOo-(_)-oOOo-----");
 
         GROOVYSH.setResultHook(new NullResultHookClosure(GROOVYSH));
+        // todo: hookup "use" command for plugins.
         /*for (String imps : Imports.getImports()) {
             GROOVYSH.execute("import " + imps);
         }*/
