@@ -27,7 +27,7 @@ public class TinkerHelper {
     }
 
     protected static Edge addEdge(final TinkerGraph graph, final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
-        if (label == null)
+        if (null == label)
             throw Edge.Exceptions.edgeLabelCanNotBeNull();
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 

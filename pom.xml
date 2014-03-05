@@ -25,6 +25,7 @@
         <module>gremlin</module>
         <module>tinkergraph</module>
         <module>giraph-gremlin</module>
+        <module>neo4j-gremlin</module>
     </modules>
 
     <properties>
