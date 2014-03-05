@@ -48,7 +48,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     private Iterator<Edge> edges() {
-        this.graph.autoStartTransaction(false);
+        this.graph.tx().readWrite();
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         return (Iterator) ((null == indexedContainer) ?
                 StreamFactory.parallelStream(GlobalGraphOperations.at(this.graph.getRawGraph()).getAllRelationships()) :
@@ -57,7 +57,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     private Iterator<Vertex> vertices() {
-        this.graph.autoStartTransaction(false);
+        this.graph.tx().readWrite();
 
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         return (Iterator) ((null == indexedContainer) ?
@@ -67,7 +67,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     private Stream<Neo4jVertex> getVerticesUsingIndex(final HasContainer indexedContainer) {
-        this.graph.autoStartTransaction(false);
+        this.graph.tx().readWrite();
         final AutoIndexer indexer = this.graph.getRawGraph().index().getNodeAutoIndexer();
         if (indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(indexedContainer.key))
             return StreamFactory.stream(this.graph.getRawGraph().index().getNodeAutoIndexer().getAutoIndex().get(indexedContainer.key, indexedContainer.value).iterator())
@@ -77,7 +77,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     private Stream<Neo4jEdge> getEdgesUsingIndex(final HasContainer indexedContainer) {
-        this.graph.autoStartTransaction(false);
+        this.graph.tx().readWrite();
         final AutoIndexer indexer = this.graph.getRawGraph().index().getNodeAutoIndexer();
         if (indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(indexedContainer.key))
             return StreamFactory.stream(this.graph.getRawGraph().index().getRelationshipAutoIndexer().getAutoIndex().get(indexedContainer.key, indexedContainer.value).iterator())
@@ -87,8 +87,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     }
 
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
-        this.graph.autoStartTransaction(false);
-
+        this.graph.tx().readWrite();
         // todo: review this stuff in comparison to tinkergraph
         final Set<String> indexedKeys;
         if (indexedClass.isAssignableFrom(Vertex.class))
