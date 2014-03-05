@@ -138,7 +138,7 @@ public class AnnotationTest {
 
         @Test
         public void shouldSetValueOnVertex() throws Exception {
-            assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(true));
+            assumeThat(g.getFeatures().supports(VertexAnnotationFeatures.class, featureName), is(true));
             final Vertex v = g.addVertex();
             v.setProperty("key", AnnotatedList.make());
             final Property<AnnotatedList<String>> keys = v.getProperty("key");
