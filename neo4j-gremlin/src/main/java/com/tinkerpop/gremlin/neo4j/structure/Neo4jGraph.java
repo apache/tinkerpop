@@ -1,6 +1,10 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
+import com.tinkerpop.gremlin.neo4j.process.map.Neo4jGraphStep;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -104,12 +108,16 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
+        traversal.addStep(new Neo4jGraphStep(traversal, Vertex.class, this));
+        return traversal;
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>();
+        traversal.addStep(new Neo4jGraphStep(traversal, Edge.class, this));
+        return traversal;
     }
 
     @Override
@@ -186,13 +194,15 @@ public class Neo4jGraph implements Graph {
         this.checkElementsInTransaction.set(checkElementsInTransaction);
     }
 
-    // The forWrite flag is true when the autoStartTransaction method is
-    // called before any operation which will modify the graph in any way. It
-    // is not used in this simple implementation but is required in subclasses
-    // which enforce transaction rules. Now that Neo4j reads also require a
-    // transaction to be open it is otherwise impossible to tell the difference
-    // between the beginning of a write operation and the beginning of a read
-    // operation.
+    /**
+     * The forWrite flag is true when the autoStartTransaction method is
+     * called before any operation which will modify the graph in any way. It
+     * is not used in this simple implementation but is required in subclasses
+     * which enforce transaction rules. Now that Neo4j reads also require a
+     * transaction to be open it is otherwise impossible to tell the difference
+     * between the beginning of a write operation and the beginning of a read
+     * operation.
+     */
     public void autoStartTransaction(boolean forWrite) {
         if (tx.get() == null)
             tx.set(this.rawGraph.beginTx());
@@ -201,6 +211,8 @@ public class Neo4jGraph implements Graph {
     public GraphDatabaseService getRawGraph() {
         return this.rawGraph;
     }
+
+
 
     protected boolean checkElementsInTransaction() {
         if (this.tx.get() == null) {
