@@ -27,14 +27,14 @@ public interface Transaction extends Closeable {
     public boolean isOpen();
 
     public default void readWrite() {
-        if (!this.isOpen()) this.open();
+        if (!this.isOpen()) this.open();    // todo: drop the default implementation...kinda has to be implemented no matter what
     }
 
     public default void close() {
         if (this.isOpen()) this.commit();
     }
 
-    public Transaction onReadWrite(final Consumer<Transaction> consumer);
+    public Transaction onReadWrite(final Consumer<Transaction> consumer); // todo: consider standard lambda references
 
     public Transaction onClose(final Consumer<Transaction> consumer);
 

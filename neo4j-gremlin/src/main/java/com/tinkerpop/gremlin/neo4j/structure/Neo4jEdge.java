@@ -18,7 +18,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge {
 
     @Override
     public Vertex getVertex(final Direction direction) throws IllegalArgumentException {
-        this.graph.autoStartTransaction(false);
+        this.graph.tx().readWrite();
         if (direction.equals(Direction.OUT))
             return new Neo4jVertex(((Relationship) this.rawElement).getStartNode(), this.graph);
         else if (direction.equals(Direction.IN))
@@ -30,7 +30,7 @@ public class Neo4jEdge extends Neo4jElement implements Edge {
     @Override
     public void remove() {
         // todo: how to throw this: throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.getId());
-        this.graph.autoStartTransaction(true);
+        this.graph.tx().readWrite();
         ((Relationship) rawElement).delete();
     }
 

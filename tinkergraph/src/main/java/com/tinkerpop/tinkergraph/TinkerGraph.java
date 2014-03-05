@@ -125,7 +125,7 @@ public class TinkerGraph implements Graph, Serializable {
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
-        final String label = ElementHelper.getLabelValue(keyValues).orElse(null);
+        final String label = ElementHelper.getLabelValue(keyValues).orElse(Element.DEFAULT_LABEL);
 
         if (null != idString) {
             if (this.vertices.containsKey(idString.toString()))
@@ -134,7 +134,7 @@ public class TinkerGraph implements Graph, Serializable {
             idString = TinkerHelper.getNextId(this);
         }
 
-        final Vertex vertex = new TinkerVertex(idString.toString(), null == label ? Element.DEFAULT_LABEL.toString() : label, this);
+        final Vertex vertex = new TinkerVertex(idString.toString(), label, this);
         this.vertices.put(vertex.getId().toString(), vertex);
         ElementHelper.attachProperties(vertex, keyValues);
         return vertex;

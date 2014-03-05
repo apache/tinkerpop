@@ -26,7 +26,7 @@ abstract class Neo4jElement implements Element {
 
     @Override
     public Object getId() {
-        this.graph.autoStartTransaction(false);
+        this.graph.tx().readWrite();
         if (this.rawElement instanceof Node)
             return ((Node) this.rawElement).getId();
         else
@@ -44,7 +44,7 @@ abstract class Neo4jElement implements Element {
 
     @Override
     public Map<String, Property> getProperties() {
-        this.graph.autoStartTransaction(false);
+        this.graph.tx().readWrite();
         return getPropertyKeys().stream()
                 .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.rawElement.getProperty(key))))
                 .collect(Collectors.toMap(kv -> kv.getValue0(), kv -> kv.getValue1()));
@@ -52,7 +52,7 @@ abstract class Neo4jElement implements Element {
 
     @Override
     public Set<String> getPropertyKeys() {
-        this.graph.autoStartTransaction(false);
+        this.graph.tx().readWrite();
         final Set<String> keys = new HashSet<>();
         for (final String key : this.rawElement.getPropertyKeys()) {
             keys.add(key);
@@ -62,7 +62,7 @@ abstract class Neo4jElement implements Element {
 
     @Override
     public <V> Property<V> getProperty(final String key) {
-        this.graph.autoStartTransaction(false);
+        this.graph.tx().readWrite();
 
         // todo: do we stil convert collection down to array?? - return (T) tryConvertCollectionToArrayList(this.rawElement.getProperty(key));
         if (this.rawElement.hasProperty(key))
@@ -74,7 +74,7 @@ abstract class Neo4jElement implements Element {
     @Override
     public <V> void setProperty(final String key, final V value) {
         ElementHelper.validateProperty(key, value);
-        this.graph.autoStartTransaction(true);
+        this.graph.tx().readWrite();
 
         // todo: deal with annotatedlist/value
         // todo: do we worry about - this.rawElement.setProperty(key, tryConvertCollectionToArray(value));

@@ -57,7 +57,7 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
         // todo: exception needed if property does not exist?  guess not, but maybe
         final PropertyContainer rawElement = ((Neo4jElement) element).getRawElement();
         if (rawElement.hasProperty(key)) {
-            this.graph.autoStartTransaction(true);
+            this.graph.tx().readWrite();
             rawElement.removeProperty(key);
         }
     }

@@ -21,7 +21,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex {
 
     @Override
     public void remove() {
-        this.graph.autoStartTransaction(true);
+        this.graph.tx().readWrite();
 
         try {
             final Node node = (Node) this.rawElement;
@@ -41,7 +41,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex {
         if (label == null)
             throw Edge.Exceptions.edgeLabelCanNotBeNull();
 
-        this.graph.autoStartTransaction(true);
+        this.graph.tx().readWrite();
         final Node node = (Node) this.rawElement;
         final Neo4jEdge edge = new Neo4jEdge(node.createRelationshipTo(((Neo4jVertex) inVertex).getRawVertex(),
                 DynamicRelationshipType.withName(label)), this.graph);

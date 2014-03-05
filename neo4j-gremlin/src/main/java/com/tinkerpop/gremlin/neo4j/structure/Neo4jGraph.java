@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.neo4j.process.map.Neo4jGraphStep;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -19,7 +18,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.management.TransactionManager;
+import javax.transaction.TransactionManager;
 
 import java.util.Optional;
 
@@ -30,7 +29,7 @@ public class Neo4jGraph implements Graph {
     private GraphDatabaseService rawGraph;
     private static final String INDEXED_KEYS_POSTFIX = ":indexed_keys";
 
-    protected final ThreadLocal<org.neo4j.graphdb.Transaction> tx = new ThreadLocal<org.neo4j.graphdb.Transaction>() {
+    protected final ThreadLocal<org.neo4j.graphdb.Transaction> threadLocalTx = new ThreadLocal<org.neo4j.graphdb.Transaction>() {
         protected org.neo4j.graphdb.Transaction initialValue() {
             return null;
         }
@@ -42,7 +41,13 @@ public class Neo4jGraph implements Graph {
         }
     };
 
-    private final TransactionManager transactionManager;
+    private ThreadLocal<Neo4jTransaction> neo4jTransaction = new ThreadLocal<Neo4jTransaction>() {
+        protected Neo4jTransaction initialValue() {
+            return new Neo4jTransaction(Neo4jGraph.this);
+        }
+    };
+
+    protected final TransactionManager transactionManager;
     private final ExecutionEngine cypher;
 
     public Neo4jGraph(final GraphDatabaseService rawGraph) {
@@ -56,7 +61,7 @@ public class Neo4jGraph implements Graph {
 
     private Neo4jGraph(final Configuration configuration) {
         try {
-            final String directory = configuration.getString("directory");
+            final String directory = configuration.getString("gremlin.neo4j.directory");
             final GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(directory);
 
             /* todo: convert to map to pass to config ... ConfigurationConverter
@@ -100,10 +105,12 @@ public class Neo4jGraph implements Graph {
         // todo: throw since id is not assignable...check features
         Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
 
-        final String label = ElementHelper.getLabelValue(keyValues).orElse(null);
+        final String label = ElementHelper.getLabelValue(keyValues).orElse(Element.DEFAULT_LABEL);
 
-        this.autoStartTransaction(true);
-        return new Neo4jVertex(this.rawGraph.createNode(DynamicLabel.label(label)), this);
+        this.tx().readWrite();
+        final Neo4jVertex vertex = new Neo4jVertex(this.rawGraph.createNode(DynamicLabel.label(label)), this);
+        ElementHelper.attachProperties(vertex, keyValues);
+        return vertex;
     }
 
     @Override
@@ -127,7 +134,7 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public Transaction tx() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return neo4jTransaction.get();
     }
 
     @Override
@@ -174,51 +181,83 @@ public class Neo4jGraph implements Graph {
                 }
             };
         }
-    }
 
-    /**
-     * Neo4j's transactions are not consistent between the graph and the graph
-     * indices. Moreover, global graph operations are not consistent. For
-     * example, if a vertex is removed and then an index is queried in the same
-     * transaction, the removed vertex can be returned. This method allows the
-     * developer to turn on/off a Neo4j2Graph 'hack' that ensures transactional
-     * consistency. The default behavior for Neo4j2Graph is to use Neo4j's native
-     * behavior which ensures speed at the expensive of consistency. Note that
-     * this boolean switch is local to the current thread (i.e. a ThreadLocal
-     * variable).
-     *
-     * @param checkElementsInTransaction check whether an element is in the transaction between
-     *                                   returning it
-     */
-    public void setCheckElementsInTransaction(final boolean checkElementsInTransaction) {
-        this.checkElementsInTransaction.set(checkElementsInTransaction);
-    }
+        @Override
+        public VertexFeatures vertex() {
+            return new Neo4jVertexFeatures();
+        }
 
-    /**
-     * The forWrite flag is true when the autoStartTransaction method is
-     * called before any operation which will modify the graph in any way. It
-     * is not used in this simple implementation but is required in subclasses
-     * which enforce transaction rules. Now that Neo4j reads also require a
-     * transaction to be open it is otherwise impossible to tell the difference
-     * between the beginning of a write operation and the beginning of a read
-     * operation.
-     */
-    public void autoStartTransaction(boolean forWrite) {
-        if (tx.get() == null)
-            tx.set(this.rawGraph.beginTx());
+        public static class Neo4jVertexFeatures implements VertexFeatures {
+            @Override
+            public VertexAnnotationFeatures annotations() {
+                return new Neo4jVertexAnnotationFeatures();
+            }
+        }
+
+        public static class Neo4jVertexAnnotationFeatures implements VertexAnnotationFeatures {
+            @Override
+            public boolean supportsBooleanValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsDoubleValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsFloatValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsIntegerValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsLongValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsMapValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsMetaProperties() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsMixedListValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsPrimitiveArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsSerializableValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsStringValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsUniformListValues() {
+                return false;
+            }
+        }
     }
 
     public GraphDatabaseService getRawGraph() {
         return this.rawGraph;
-    }
-
-
-
-    protected boolean checkElementsInTransaction() {
-        if (this.tx.get() == null) {
-            return false;
-        } else {
-            return this.checkElementsInTransaction.get();
-        }
     }
 }

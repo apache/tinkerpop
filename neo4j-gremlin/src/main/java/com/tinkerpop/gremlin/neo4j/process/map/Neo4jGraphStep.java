@@ -51,7 +51,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         this.graph.tx().readWrite();
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         return (Iterator) ((null == indexedContainer) ?
-                StreamFactory.parallelStream(GlobalGraphOperations.at(this.graph.getRawGraph()).getAllRelationships()) :
+                getEdges().parallel() :
                 getEdgesUsingIndex(indexedContainer).parallel())
                 .filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).collect(Collectors.toList()).iterator();
     }
@@ -61,9 +61,19 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         return (Iterator) ((null == indexedContainer) ?
-                StreamFactory.parallelStream(GlobalGraphOperations.at(this.graph.getRawGraph()).getAllNodes()) :
+                getVertices().parallel() :
                 getVerticesUsingIndex(indexedContainer).parallel())
                 .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).collect(Collectors.toList()).iterator();
+    }
+
+    private Stream<Neo4jVertex> getVertices() {
+        return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getRawGraph()).getAllNodes())
+                .map(n -> new Neo4jVertex(n, this.graph));
+    }
+
+    private Stream<Neo4jEdge> getEdges() {
+        return StreamFactory.stream(GlobalGraphOperations.at(this.graph.getRawGraph()).getAllRelationships())
+                .map(e -> new Neo4jEdge(e, this.graph));
     }
 
     private Stream<Neo4jVertex> getVerticesUsingIndex(final HasContainer indexedContainer) {
