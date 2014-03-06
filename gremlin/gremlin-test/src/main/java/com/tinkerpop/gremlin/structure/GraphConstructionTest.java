@@ -15,13 +15,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests that support the creation of {@link com.tinkerpop.gremlin.structure.Graph} instances which occurs via {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
+ * Tests that support the creation of {@link com.tinkerpop.gremlin.structure.Graph} instances which occurs via
+ * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphConstructionTest extends AbstractGremlinTest {
     /**
-     * All Blueprints implementations should be constructable through {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
+     * All Gremlin Structure implementations should be constructable through
+     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
      */
     @Test
     public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() throws Exception {
@@ -36,8 +38,10 @@ public class GraphConstructionTest extends AbstractGremlinTest {
     }
 
     /**
-     * Blueprints implementations should have private constructor as all graphs.  They should be only instantiated
-     * through the GraphFactory or the static open() method on the Graph implementation itself.
+     * Gremlin Structure  implementations should have private constructor as all graphs.  They should be only
+     * instantiated through the {@link com.tinkerpop.gremlin.structure.util.GraphFactory} or the static
+     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory#open(org.apache.commons.configuration.Configuration)}
+     * method on the Graph implementation itself.
      */
     @Test
     public void shouldHavePrivateConstructor() {
