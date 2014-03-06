@@ -50,7 +50,7 @@ public class Neo4jGraph implements Graph {
     protected final TransactionManager transactionManager;
     private final ExecutionEngine cypher;
 
-    public Neo4jGraph(final GraphDatabaseService rawGraph) {
+    private Neo4jGraph(final GraphDatabaseService rawGraph) {
         this.rawGraph = rawGraph;
         transactionManager = ((GraphDatabaseAPI) rawGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
         cypher = new ExecutionEngine(rawGraph);
@@ -97,6 +97,9 @@ public class Neo4jGraph implements Graph {
         return (G) new Neo4jGraph(configuration.get());
     }
 
+    public static <G extends Graph> G open(final GraphDatabaseService rawGraph) {
+        return (G) new Neo4jGraph(rawGraph);
+    }
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
