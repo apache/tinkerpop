@@ -420,12 +420,12 @@ public class GraphTest extends AbstractGremlinTest {
         AbstractGremlinSuite.assertVertexEdgeCounts(2, 1).accept(reopenedGraph);
 
         if (graph.getFeatures().vertex().properties().supportsStringValues()) {
-            for (Vertex vertex : graph.V().toList()) {
+            for (Vertex vertex : reopenedGraph.V().toList()) {
                 assertTrue(vertex.getProperty("name").get().equals("marko") || vertex.getProperty("name").get().equals("pavel"));
             }
         }
 
-        for (Edge edge : graph.E().toList()) {
+        for (Edge edge : reopenedGraph.E().toList()) {
             assertEquals(graphProvider.convertId("collaborator"), edge.getLabel());
             if (graph.getFeatures().edge().properties().supportsStringValues())
                 assertEquals("internet", edge.getProperty("location").get());
