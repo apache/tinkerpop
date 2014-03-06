@@ -10,3 +10,4 @@ build_output.txt
 .classpath
 .project
 .settings
+_bsp/

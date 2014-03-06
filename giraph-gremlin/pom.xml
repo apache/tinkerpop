@@ -23,6 +23,11 @@
             <version>1.0.0</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.giraph</groupId>
+            <artifactId>giraph-examples</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
             <version>1.2.1</version>
@@ -98,6 +103,27 @@
                             <summaryFiles>
                                 <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                             </summaryFiles>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>build-detached-assemblies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <attach>false</attach>
+                            <descriptors>
+                                <descriptor>src/assembly/hadoop-job.xml</descriptor>
+                                <descriptor>src/assembly/standalone.xml</descriptor>
+                            </descriptors>
+                            <finalName>${project.artifactId}-${project.version}</finalName>
                         </configuration>
                     </execution>
                 </executions>
