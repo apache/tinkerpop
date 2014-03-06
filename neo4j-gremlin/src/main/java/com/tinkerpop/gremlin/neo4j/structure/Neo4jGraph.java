@@ -210,12 +210,66 @@ public class Neo4jGraph implements Graph {
             public boolean supportsUserSuppliedIds() {
                 return false;
             }
+
+            @Override
+            public VertexPropertyFeatures properties() {
+                return new Neo4jVertexPropertyFeatures();
+            }
         }
 
         public static class Neo4jEdgeFeatures implements EdgeFeatures {
             @Override
             public boolean supportsUserSuppliedIds() {
                 return false;
+            }
+
+            @Override
+            public EdgePropertyFeatures properties() {
+                return new Neo4jEdgePropertyFeatures();
+            }
+        }
+        
+        public static class Neo4jVertexPropertyFeatures implements VertexPropertyFeatures {
+            @Override
+            public boolean supportsMapValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsMixedListValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsSerializableValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsUniformListValues() {
+                return false;  
+            }
+        }
+
+        public static class Neo4jEdgePropertyFeatures implements EdgePropertyFeatures {
+            @Override
+            public boolean supportsMapValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsMixedListValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsSerializableValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsUniformListValues() {
+                return false;  
             }
         }
 
