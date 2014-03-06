@@ -4,7 +4,13 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.examples.SimpleShortestPathsVertex;
+import org.apache.giraph.io.formats.IdWithValueTextOutputFormat;
+import org.apache.giraph.io.formats.JsonLongDoubleFloatDoubleVertexInputFormat;
+import org.apache.hadoop.util.ToolRunner;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -15,8 +21,8 @@ import java.util.concurrent.Future;
  */
 public class GiraphGraphComputer implements GraphComputer {
 
+    private GiraphConfiguration giraphConfiguration = new GiraphConfiguration(new org.apache.hadoop.conf.Configuration(true));
     private VertexProgram vertexProgram;
-    private Configuration configuration;
 
     public GraphComputer isolation(final Isolation isolation) {
         if (isolation.equals(Isolation.DIRTY_BSP))
@@ -30,11 +36,17 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public GraphComputer configuration(final Configuration configuration) {
-        this.configuration = configuration;
+        this.giraphConfiguration = new GiraphConfiguration();
+        configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getString(key)));
         return this;
     }
 
     public Future<Graph> submit() {
+        try {
+            ToolRunner.run(new GiraphGraphRunner(this.giraphConfiguration), new String[]{});
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
         return null;
     }
 
