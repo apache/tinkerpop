@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import java.lang.reflect.Modifier;
@@ -23,12 +24,15 @@ public class GraphConstructionTest extends AbstractGremlinTest {
      * All Blueprints implementations should be constructable through {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
      */
     @Test
-    public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() {
+    public void shouldOpenGraphThroughGraphFactoryViaApacheConfig() throws Exception {
         final Graph expectedGraph = g;
-        final Graph createdGraph = GraphFactory.open(config, Optional.<GraphStrategy>empty());
+        final Configuration c  = graphProvider.newGraphConfiguration("temp");
+        final Graph createdGraph = GraphFactory.open(c, Optional.<GraphStrategy>empty());
 
         assertNotNull(createdGraph);
         assertEquals(expectedGraph.getClass(), createdGraph.getClass());
+
+        graphProvider.clear(g, c);
     }
 
     /**
