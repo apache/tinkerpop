@@ -175,12 +175,17 @@ public class Neo4jGraph implements Graph {
             return new GraphFeatures() {
                 @Override
                 public boolean supportsMemory() {
-                    return false;    // todo: temporary...doesn't neo4j support graph properties
+                    return false;    // todo: temporary...doesn't neo4j support graph properties?
                 }
 
                 @Override
                 public boolean supportsComputer() {
                     return false;  // todo: temporary...
+                }
+
+                @Override
+                public MemoryFeatures memory() {
+                    return new Neo4jMemoryFeatures();  // todo: temporary
                 }
             };
         }
@@ -190,10 +195,89 @@ public class Neo4jGraph implements Graph {
             return new Neo4jVertexFeatures();
         }
 
+        @Override
+        public EdgeFeatures edge() {
+            return new Neo4jEdgeFeatures();
+        }
+
         public static class Neo4jVertexFeatures implements VertexFeatures {
             @Override
             public VertexAnnotationFeatures annotations() {
                 return new Neo4jVertexAnnotationFeatures();
+            }
+
+            @Override
+            public boolean supportsUserSuppliedIds() {
+                return false;
+            }
+        }
+
+        public static class Neo4jEdgeFeatures implements EdgeFeatures {
+            @Override
+            public boolean supportsUserSuppliedIds() {
+                return false;
+            }
+        }
+
+        public static class Neo4jMemoryFeatures implements MemoryFeatures {
+            @Override
+            public boolean supportsBooleanValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsDoubleValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsFloatValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsIntegerValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsLongValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsMapValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsMetaProperties() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsMixedListValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsPrimitiveArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsSerializableValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsStringValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsUniformListValues() {
+                return false;
             }
         }
 
