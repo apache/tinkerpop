@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
@@ -44,6 +45,9 @@ public class Neo4jVertex extends Neo4jElement implements Vertex {
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         if (label == null)
             throw Edge.Exceptions.edgeLabelCanNotBeNull();
+
+        if (ElementHelper.getIdValue(keyValues).isPresent())
+            throw Edge.Exceptions.userSuppliedIdsNotSupported();
 
         this.graph.tx().readWrite();
         final Node node = (Node) this.rawElement;
