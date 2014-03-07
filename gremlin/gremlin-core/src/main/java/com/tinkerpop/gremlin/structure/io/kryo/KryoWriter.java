@@ -36,6 +36,8 @@ public class KryoWriter implements GraphWriter {
     private KryoWriter(final Graph g) {
         this.graph = g;
 
+        // todo: centralize kryo instance creation
+        // todo: need way to register custom types.
         kryo.setRegistrationRequired(true);
         kryo.register(ArrayList.class);
         kryo.register(HashMap.class);

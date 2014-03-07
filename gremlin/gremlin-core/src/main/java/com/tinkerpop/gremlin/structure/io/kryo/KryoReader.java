@@ -48,6 +48,8 @@ public class KryoReader implements GraphReader {
         this.idMap = idMap;
         this.tempFile = tempFile;
 
+        // todo: centralize kryo instance creation
+        // todo: need way to register custom types.
         kryo.setRegistrationRequired(true);
         kryo.register(ArrayList.class);
         kryo.register(HashMap.class);
