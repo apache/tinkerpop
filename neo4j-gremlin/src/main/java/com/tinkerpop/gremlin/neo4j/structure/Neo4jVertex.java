@@ -45,7 +45,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex {
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         if (label == null)
             throw Edge.Exceptions.edgeLabelCanNotBeNull();
-
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
         if (ElementHelper.getIdValue(keyValues).isPresent())
             throw Edge.Exceptions.userSuppliedIdsNotSupported();
 
