@@ -148,14 +148,7 @@ public class Neo4jGraph implements Graph {
     @Override
     public void close() throws Exception {
         // todo: how should transactions be treated on close here.  in tp2, we did this prior to shutdown...
-        /*
-        try {
-            this.commit();
-        } catch (TransactionFailureException e) {
-            logger.warning("Failure on shutdown "+e.getMessage());
-            // TODO: inspect why certain transactions fail
-        }
-         */
+        this.tx().commit();
 
         if (this.rawGraph != null)
             this.rawGraph.shutdown();
