@@ -104,9 +104,8 @@ public class Neo4jGraph implements Graph {
     @Override
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
-
-        // todo: throw since id is not assignable...check features
-        Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
+        if (ElementHelper.getIdValue(keyValues).isPresent())
+            throw Vertex.Exceptions.userSuppliedIdsNotSupported();
 
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Element.DEFAULT_LABEL);
 
