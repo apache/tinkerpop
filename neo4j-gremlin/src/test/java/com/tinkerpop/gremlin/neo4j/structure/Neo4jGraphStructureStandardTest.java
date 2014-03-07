@@ -25,7 +25,7 @@ public class Neo4jGraphStructureStandardTest extends AbstractGraphProvider {
         return new HashMap<String, Object>() {{
             put("gremlin.graph", Neo4jGraph.class.getName());
             put("gremlin.neo4j.directory", "/tmp/" + graphName);  // todo: better job with directory setup?  see tp2
-            put("gremlin.neo4j.conf.cache_type", "none");     // todo: maybe bring back default once neo4j looks into the OOME with hpc
+            put("gremlin.neo4j.conf.cache_type", "none");     // todo: maybe bring back default once neo4j looks into the OOME with hpc https://github.com/neo4j/neo4j/issues/2101
         }};
     }
 
