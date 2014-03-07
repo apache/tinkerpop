@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
