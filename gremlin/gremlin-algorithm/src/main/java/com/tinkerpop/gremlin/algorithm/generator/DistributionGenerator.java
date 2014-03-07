@@ -116,6 +116,7 @@ public class DistributionGenerator extends AbstractGenerator {
      * @return The number of generated edges. Not that this number may not be equal to the expected number of edges
      */
     public int generate(final Iterable<Vertex> out, final Iterable<Vertex> in, final int expectedNumEdges) {
+        // todo: consider transactions...batchgraph??
         if (outDistribution == null)
             throw new IllegalStateException("Must set out-distribution before generating edges");
 

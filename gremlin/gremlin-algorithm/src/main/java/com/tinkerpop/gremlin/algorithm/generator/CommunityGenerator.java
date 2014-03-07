@@ -110,6 +110,7 @@ public class CommunityGenerator extends AbstractGenerator {
      * @return The actual number of edges generated. May be different from the expected number.
      */
     public int generate(final Iterable<Vertex> vertices, final int expectedNumCommunities, final int expectedNumEdges) {
+        // todo: consider transactions...batchgraph??
         if (communitySize == null) throw new IllegalStateException("Need to initialize community size distribution");
         if (edgeDegree == null) throw new IllegalStateException("Need to initialize degree distribution");
         int numVertices = SizableIterable.sizeOf(vertices);
