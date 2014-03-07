@@ -16,6 +16,7 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+//@RunWith(StructureStandardSuite.class)
 @StructureStandardSuite.GraphProviderClass(Neo4jGraphStructureStandardTest.class)
 public class Neo4jGraphStructureStandardTest extends AbstractGraphProvider {
 
@@ -30,8 +31,11 @@ public class Neo4jGraphStructureStandardTest extends AbstractGraphProvider {
 
     @Override
     public void clear(final Graph g, final Configuration configuration) throws Exception {
-        if (null != g)
+        if (null != g) {
+            if (g.getFeatures().graph().supportsTransactions())
+                g.tx().rollback();
             g.close();
+        }
 
         if (configuration.containsKey("gremlin.neo4j.directory")) {
             // this is a non-in-memory configuration so blow away the directory

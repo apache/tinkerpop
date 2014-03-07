@@ -184,11 +184,18 @@ public class FeatureSupportTest  {
         @Parameterized.Parameter(value = 1)
         public Object value;
 
+        /**
+         * In this case, the feature requirement for vertex annotations is checked, because it means that at least
+         * one aspect of annotations is supported so we need to test other features to make sure they work properly.
+         * For example, without the FeatureRequirement, Neo4j would thrown an IllegalArgumentException because it
+         * can't accept the value of AnnotatedList as a value.
+         */
         @Test
-        @FeatureRequirement(featureClass = VertexAnnotationFeatures.class, feature = VertexAnnotationFeatures.FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexAnnotationFeatures.class, feature = VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
         public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
-            assumeThat(g.getFeatures().supports(VertexPropertyFeatures.class, featureName), is(false));
+            assumeThat(g.getFeatures().supports(VertexAnnotationFeatures.class, featureName), is(false));
             try {
+                // todo: using a FeatureRequirement check on the test itself to avoid an exception on addVertex when the graph doesn't support AnnotatedList...rethink
                 final Vertex v = g.addVertex("key", AnnotatedList.make());
                 final Property<AnnotatedList<String>> al = v.getProperty("key");
                 al.get().addValue("v", "t", value);
@@ -221,7 +228,12 @@ public class FeatureSupportTest  {
         @Parameterized.Parameter(value = 1)
         public Object value;
 
+        /**
+         * In this case, the feature requirement for memory is checked, because it means that at least one aspect of
+         * memory is supported so we need to test other features to make sure they work properly.
+         */
         @Test
+        @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_MEMORY)
         public void shouldEnableFeatureOnGraphIfNotEnabled() throws Exception {
             assumeThat(g.getFeatures().supports(Graph.Features.MemoryFeatures.class, featureName), is(false));
             try {
@@ -262,8 +274,7 @@ public class FeatureSupportTest  {
 
         @Test
         public void ifGraphHasMemoryEnabledThenItMustSupportADataType() {
-            assertTrue(memoryFeatures.supportsMemory()
-                    && (memoryFeatures.supportsBooleanValues() || memoryFeatures.supportsDoubleValues()
+            assertEquals(memoryFeatures.supportsMemory(), (memoryFeatures.supportsBooleanValues() || memoryFeatures.supportsDoubleValues()
                     || memoryFeatures.supportsFloatValues() || memoryFeatures.supportsIntegerValues()
                     || memoryFeatures.supportsLongValues() || memoryFeatures.supportsMapValues()
                     || memoryFeatures.supportsMetaProperties() || memoryFeatures.supportsMixedListValues()
@@ -274,8 +285,7 @@ public class FeatureSupportTest  {
 
         @Test
         public void ifVertexHasAnnotationsEnabledThenItMustSupportADataType() {
-            assertTrue(vertexAnnotationFeatures.supportsAnnotations()
-                    && (vertexAnnotationFeatures.supportsBooleanValues() || vertexAnnotationFeatures.supportsDoubleValues()
+            assertEquals(vertexAnnotationFeatures.supportsAnnotations(), (vertexAnnotationFeatures.supportsBooleanValues() || vertexAnnotationFeatures.supportsDoubleValues()
                     || vertexAnnotationFeatures.supportsFloatValues() || vertexAnnotationFeatures.supportsIntegerValues()
                     || vertexAnnotationFeatures.supportsLongValues() || vertexAnnotationFeatures.supportsMapValues()
                     || vertexAnnotationFeatures.supportsMetaProperties() || vertexAnnotationFeatures.supportsMixedListValues()
@@ -286,8 +296,7 @@ public class FeatureSupportTest  {
 
         @Test
         public void ifEdgeHasPropertyEnabledThenItMustSupportADataType() {
-            assertTrue(edgePropertyFeatures.supportsProperties()
-                    && (edgePropertyFeatures.supportsBooleanValues() || edgePropertyFeatures.supportsDoubleValues()
+            assertEquals(edgePropertyFeatures.supportsProperties(), (edgePropertyFeatures.supportsBooleanValues() || edgePropertyFeatures.supportsDoubleValues()
                     || edgePropertyFeatures.supportsFloatValues() || edgePropertyFeatures.supportsIntegerValues()
                     || edgePropertyFeatures.supportsLongValues() || edgePropertyFeatures.supportsMapValues()
                     || edgePropertyFeatures.supportsMetaProperties() || edgePropertyFeatures.supportsMixedListValues()
@@ -298,8 +307,7 @@ public class FeatureSupportTest  {
 
         @Test
         public void ifVertexHasPropertyEnabledThenItMustSupportADataType() {
-            assertTrue(vertexPropertyFeatures.supportsProperties()
-            && (vertexPropertyFeatures.supportsBooleanValues() || vertexPropertyFeatures.supportsDoubleValues()
+            assertEquals(vertexPropertyFeatures.supportsProperties(), (vertexPropertyFeatures.supportsBooleanValues() || vertexPropertyFeatures.supportsDoubleValues()
                     || vertexPropertyFeatures.supportsFloatValues() || vertexPropertyFeatures.supportsIntegerValues()
                     || vertexPropertyFeatures.supportsLongValues() || vertexPropertyFeatures.supportsMapValues()
                     || vertexPropertyFeatures.supportsMetaProperties() || vertexPropertyFeatures.supportsMixedListValues()
