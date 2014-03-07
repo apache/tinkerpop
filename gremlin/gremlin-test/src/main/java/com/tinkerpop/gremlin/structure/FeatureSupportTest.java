@@ -113,6 +113,25 @@ public class FeatureSupportTest  {
     }
 
     /**
+     * Feature checks that test {@link com.tinkerpop.gremlin.structure.Edge} functionality to determine if a feature
+     * should be on when it is marked as not supported.
+     */
+    public static class EdgeFunctionalityTest extends AbstractGremlinTest {
+
+        @Test
+        @FeatureRequirement(featureClass = EdgeFeatures.class, feature = EdgeFeatures.FEATURE_USER_SUPPLIED_IDS, supported = false)
+        public void ifAnIdCanBeAssignedToEdgeThenItMustSupportUserSuppliedIds() throws Exception {
+            try {
+                final Vertex v = g.addVertex();
+                v.addEdge("friend", v, Element.ID, GraphManager.get().convertId(99999943835l));
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_USER_SUPPLIED_IDS));
+            } catch (Exception ex) {
+                assertEquals(Edge.Exceptions.userSuppliedIdsNotSupported().getMessage(), ex.getMessage());
+            }
+        }
+    }
+
+    /**
      * Feature checks that test {@link com.tinkerpop.gremlin.structure.Element} {@link com.tinkerpop.gremlin.structure.Property} functionality to determine if a feature should be on
      * when it is marked as not supported.
      */
