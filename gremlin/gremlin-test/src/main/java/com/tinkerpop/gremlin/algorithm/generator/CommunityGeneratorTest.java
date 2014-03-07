@@ -59,6 +59,11 @@ public class CommunityGeneratorTest {
                 final CommunityGenerator generator1 = new CommunityGenerator("knows");
                 communityGeneratorTest(g1, generator1);
 
+                assertTrue(g.E().count() > 0);
+                assertTrue(g.V().count() > 0);
+                assertTrue(g1.E().count() > 0);
+                assertTrue(g1.V().count() > 0);
+
                 // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
                 // same number of edges between graphs.  that should make it harder for the test to fail.
                 assertFalse(g.V().toList().stream()
@@ -88,6 +93,10 @@ public class CommunityGeneratorTest {
                 final CommunityGenerator generator1 = new CommunityGenerator("knows", null, null, () -> 123456789l);
                 communityGeneratorTest(g1, generator1);
 
+                assertTrue(g.E().count() > 0);
+                assertTrue(g.V().count() > 0);
+                assertTrue(g1.E().count() > 0);
+                assertTrue(g1.V().count() > 0);
                 assertEquals(g.E().count(), g1.E().count());
 
                 // ensure that every vertex has the same number of edges between graphs.
@@ -106,9 +115,10 @@ public class CommunityGeneratorTest {
         }
 
         @Override
-        protected void prepareGraph(final Graph g) throws Exception {
+        protected void prepareGraph(final Graph graph) throws Exception {
             final int numNodes = numberOfVertices;
-            for (int i = 0; i < numNodes; i++) g.addVertex("oid", i);
+            for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
+            tryCommit(graph);
         }
 
         private void communityGeneratorTest(final Graph graph, final CommunityGenerator generator) throws Exception {
@@ -120,14 +130,18 @@ public class CommunityGeneratorTest {
                     generator.setDegreeDistribution(degreeDistribution);
                     generator.setCrossCommunityPercentage(localCrossPcent);
                     final int numEdges = generator.generate(graph, numberOfVertices / 10, numberOfVertices * 10);
-                    assertEquals(numEdges, graph.E().count());
+                    assertTrue(numEdges > 0);
+                    tryCommit(graph, g -> assertEquals(numEdges, g.E().count()));
                     generated = true;
                 } catch (IllegalArgumentException iae) {
                     generated = false;
                     localCrossPcent = localCrossPcent - 0.05d;
 
-                    // todo: sometimes throws concurrent modification exception here.........
-                    g.V().remove();
+                    if (localCrossPcent < 0d)
+                        fail("Cross community percentage should not be less than zero");
+
+                    graph.V().remove();
+                    tryCommit(graph);
                     prepareGraph(graph);
                     System.out.println(String.format("Ran CommunityGeneratorTest with different CrossCommunityPercentage, expected %s but used %s", crossPcent, localCrossPcent));
                 }
@@ -135,8 +149,10 @@ public class CommunityGeneratorTest {
         }
     }
 
-
+    // todo: rename "Annotator"...confusing with AnnotatedList/Value
     public static class AnnotatorTest extends AbstractGremlinTest {
+        private static final int numberOfVertices = 100;
+
         @Test
         public void shouldAnnotateEdges() {
             final CommunityGenerator generator = new CommunityGenerator("knows", e -> e.setProperty("data", "test"));
@@ -144,8 +160,13 @@ public class CommunityGeneratorTest {
             generator.setCommunityDistribution(dist);
             generator.setDegreeDistribution(dist);
             generator.setCrossCommunityPercentage(0.0);
-            generator.generate(g, 100, 1000);
-            tryCommit(g, g -> assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test"))));
+            final int edgesGenerated = generator.generate(g, 2, 1000);
+            assertTrue(edgesGenerated > 0);
+            tryCommit(g, g -> {
+                assertEquals(edgesGenerated, g.E().count());
+                assertTrue(g.V().count() > 0);
+                assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test")));
+            });
         }
 
         @Test
@@ -155,8 +176,13 @@ public class CommunityGeneratorTest {
             generator.setCommunityDistribution(dist);
             generator.setDegreeDistribution(dist);
             generator.setCrossCommunityPercentage(0.0);
-            generator.generate(g, 100, 1000);
-            tryCommit(g, g -> assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test"))));
+            final int edgesGenerated = generator.generate(g, 2, 1000);
+            assertTrue(edgesGenerated > 0);
+            tryCommit(g, g -> {
+                assertEquals(edgesGenerated, g.E().count());
+                assertTrue(g.V().count() > 0);
+                assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test")));
+            });
         }
 
         @Test
@@ -169,13 +195,23 @@ public class CommunityGeneratorTest {
             generator.setCommunityDistribution(dist);
             generator.setDegreeDistribution(dist);
             generator.setCrossCommunityPercentage(0.0);
-            generator.generate(g, 100, 1000);
+            final int edgesGenerated = generator.generate(g, 2, 1000);
+            assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {
+                assertEquals(edgesGenerated, g.E().count());
+                assertTrue(g.V().count() > 0);
                 assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test")));
                 assertTrue(g.V().toList().stream().allMatch(
                         v -> v.getValue("test").equals("data") && v.getProperty("communityIndex").isPresent()
                 ));
             });
+        }
+
+        @Override
+        protected void prepareGraph(final Graph graph) throws Exception {
+            final int numNodes = numberOfVertices;
+            for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
+            tryCommit(graph);
         }
     }
 }
