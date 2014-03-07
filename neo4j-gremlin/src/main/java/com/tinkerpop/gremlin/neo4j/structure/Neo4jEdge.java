@@ -2,8 +2,10 @@ package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
 /**
@@ -29,9 +31,16 @@ public class Neo4jEdge extends Neo4jElement implements Edge {
 
     @Override
     public void remove() {
-        // todo: how to throw this: throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.getId());
         this.graph.tx().readWrite();
-        ((Relationship) rawElement).delete();
+        try {
+            ((Relationship) rawElement).delete();
+        } catch (NotFoundException nfe) {
+            // this one happens if the edge is committed
+            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.getId());
+        } catch (IllegalStateException ise) {
+            // this one happens if the edge is still chilling in the tx
+            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.getId());
+        }
     }
 
     public String toString() {

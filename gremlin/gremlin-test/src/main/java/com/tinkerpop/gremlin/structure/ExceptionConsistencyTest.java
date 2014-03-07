@@ -482,7 +482,7 @@ public class ExceptionConsistencyTest {
 
             Object id = e.getId();
             e.remove();
-            assertFalse(g.V().has(Element.ID, id).hasNext());
+            assertFalse(g.E().has(Element.ID, id).hasNext());
 
             // try second remove with no commit
             try {
