@@ -11,7 +11,8 @@ import org.apache.hadoop.io.WritableComparable;
 public class GiraphVertex<I extends WritableComparable, M extends Writable> extends Vertex<I, MapWritable, GiraphEdge, M> {
 
     public void compute(final Iterable<M> messages) {
-        this.getEdges();
+        System.out.println("hello");
+        this.voteToHalt();
     }
 
 }

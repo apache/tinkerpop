@@ -22,11 +22,11 @@
             <artifactId>giraph-core</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.apache.giraph</groupId>
             <artifactId>giraph-examples</artifactId>
             <version>1.0.0</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
