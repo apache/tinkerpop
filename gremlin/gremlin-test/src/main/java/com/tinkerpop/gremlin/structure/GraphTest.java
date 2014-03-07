@@ -190,10 +190,21 @@ public class GraphTest extends AbstractGremlinTest {
         final GraphProvider graphProvider = GraphManager.get();
         final Graph graph = this.g;
 
-        final Vertex a = graph.addVertex(Element.ID, graphProvider.convertId("1"));
-        final Vertex b = graph.addVertex(Element.ID, graphProvider.convertId("2"));
-        final Vertex c = graph.addVertex(Element.ID, graphProvider.convertId("3"));
-        final Vertex d = graph.addVertex(Element.ID, graphProvider.convertId("4"));
+        final Vertex a;
+        final Vertex b;
+        final Vertex c;
+        final Vertex d;
+        if (graph.getFeatures().vertex().supportsUserSuppliedIds()) {
+            a = graph.addVertex(Element.ID, graphProvider.convertId("1"));
+            b = graph.addVertex(Element.ID, graphProvider.convertId("2"));
+            c = graph.addVertex(Element.ID, graphProvider.convertId("3"));
+            d = graph.addVertex(Element.ID, graphProvider.convertId("4"));
+        } else {
+            a = graph.addVertex();
+            b = graph.addVertex();
+            c = graph.addVertex();
+            d = graph.addVertex();
+        }
 
         tryCommit(graph, AbstractGremlinSuite.assertVertexEdgeCounts(4, 0));
 
