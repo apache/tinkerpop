@@ -48,51 +48,61 @@ public class CommunityGeneratorTest {
 
         @Test
         public void shouldGenerateRandomGraph() throws Exception {
-            final CommunityGenerator generator = new CommunityGenerator("knows");
-            communityGeneratorTest(g, generator);
-
             final Configuration configuration = graphProvider.newGraphConfiguration("g1");
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            prepareGraph(g1);
-            final CommunityGenerator generator1 = new CommunityGenerator("knows");
-            communityGeneratorTest(g1, generator1);
 
-            // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
-            // same number of edges between graphs.  that should make it harder for the test to fail.
-            assertFalse(g.V().toList().stream()
-                    .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
-                    .allMatch(p -> {
-                        final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
-                        return p.getValue1() == v.inE().count()
-                                && p.getValue2() == v.outE().count();
-                    }));
+            try {
+                final CommunityGenerator generator = new CommunityGenerator("knows");
+                communityGeneratorTest(g, generator);
 
-            graphProvider.clear(g1, configuration);
+                prepareGraph(g1);
+                final CommunityGenerator generator1 = new CommunityGenerator("knows");
+                communityGeneratorTest(g1, generator1);
+
+                // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
+                // same number of edges between graphs.  that should make it harder for the test to fail.
+                assertFalse(g.V().toList().stream()
+                        .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
+                        .allMatch(p -> {
+                            final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
+                            return p.getValue1() == v.inE().count()
+                                    && p.getValue2() == v.outE().count();
+                        }));
+            } catch (Exception ex) {
+                throw ex;
+            } finally {
+                graphProvider.clear(g1, configuration);
+            }
         }
 
         @Test
         public void shouldGenerateSameGraph() throws Exception {
-            final CommunityGenerator generator = new CommunityGenerator("knows", null, null, () -> 123456789l);
-            communityGeneratorTest(g, generator);
-
             final Configuration configuration = graphProvider.newGraphConfiguration("g1");
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            prepareGraph(g1);
-            final CommunityGenerator generator1 = new CommunityGenerator("knows", null, null, () -> 123456789l);
-            communityGeneratorTest(g1, generator1);
 
-            assertEquals(g.E().count(), g1.E().count());
+            try {
+                final CommunityGenerator generator = new CommunityGenerator("knows", null, null, () -> 123456789l);
+                communityGeneratorTest(g, generator);
 
-            // ensure that every vertex has the same number of edges between graphs.
-            assertTrue(g.V().toList().stream()
-                    .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
-                    .allMatch(p -> {
-                        final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
-                        return p.getValue1() == v.inE().count()
-                                && p.getValue2() == v.outE().count();
-                    }));
+                prepareGraph(g1);
+                final CommunityGenerator generator1 = new CommunityGenerator("knows", null, null, () -> 123456789l);
+                communityGeneratorTest(g1, generator1);
 
-            graphProvider.clear(g1, configuration);
+                assertEquals(g.E().count(), g1.E().count());
+
+                // ensure that every vertex has the same number of edges between graphs.
+                assertTrue(g.V().toList().stream()
+                        .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
+                        .allMatch(p -> {
+                            final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
+                            return p.getValue1() == v.inE().count()
+                                    && p.getValue2() == v.outE().count();
+                        }));
+            } catch (Exception ex) {
+                throw ex;
+            } finally {
+                graphProvider.clear(g1, configuration);
+            }
         }
 
         @Override
