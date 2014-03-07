@@ -51,8 +51,8 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         this.graph.tx().readWrite();
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         return (Iterator) ((null == indexedContainer) ?
-                getEdges().parallel() :
-                getEdgesUsingIndex(indexedContainer).parallel())
+                getEdges() :
+                getEdgesUsingIndex(indexedContainer))
                 .filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).collect(Collectors.toList()).iterator();
     }
 
@@ -61,8 +61,8 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         return (Iterator) ((null == indexedContainer) ?
-                getVertices().parallel() :
-                getVerticesUsingIndex(indexedContainer).parallel())
+                getVertices() :
+                getVerticesUsingIndex(indexedContainer))
                 .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).collect(Collectors.toList()).iterator();
     }
 
