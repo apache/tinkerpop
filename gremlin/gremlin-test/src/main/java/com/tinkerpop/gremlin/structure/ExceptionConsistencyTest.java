@@ -562,6 +562,7 @@ public class ExceptionConsistencyTest {
     public static class PropertyValidationOnSetGraphComputerTest extends AbstractGremlinTest {
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
         public void testGraphVertexSetPropertyNoComputeKey() {
             final String key = "key-not-a-compute-key";
             try {
@@ -580,6 +581,7 @@ public class ExceptionConsistencyTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
         public void testGraphEdgeSetPropertyNoComputeKey() {
             final String key = "key-not-a-compute-key";
             try {
