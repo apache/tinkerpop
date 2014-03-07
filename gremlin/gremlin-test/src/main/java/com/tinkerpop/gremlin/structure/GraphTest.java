@@ -122,7 +122,7 @@ public class GraphTest extends AbstractGremlinTest {
         final List<Edge> edges = new ArrayList<>();
         final Random random = new Random();
 
-        IntStream.range(0, vertexCount).forEach(i -> vertices.add(g.addVertex(Element.ID, i)));
+        IntStream.range(0, vertexCount).forEach(i -> vertices.add(g.addVertex()));
         tryCommit(g, AbstractGremlinSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         IntStream.range(0, edgeCount).forEach(i -> {
@@ -158,7 +158,7 @@ public class GraphTest extends AbstractGremlinTest {
         final List<Vertex> vertices = new ArrayList<>();
         final List<Edge> edges = new ArrayList<>();
 
-        IntStream.range(0, vertexCount).forEach(i -> vertices.add(g.addVertex(Element.ID, i)));
+        IntStream.range(0, vertexCount).forEach(i -> vertices.add(g.addVertex()));
         tryCommit(g, AbstractGremlinSuite.assertVertexEdgeCounts(vertexCount, 0));
 
         for (int i = 0; i < vertexCount; i = i + 2) {
