@@ -234,6 +234,54 @@ public class MemoryTest {
                     final MockSerializable mock = memory.<MockSerializable>get("key");
                     assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
                 });
+            else if (value instanceof boolean[])
+                tryCommit(g, graph -> {
+                    final boolean[] l = memory.<boolean[]>get("key");
+                    assertEquals(((boolean[]) value).length, l.length);
+                    for (int ix = 0; ix < ((boolean[]) value).length; ix++) {
+                        assertEquals(((boolean[]) value)[ix], l[ix]);
+                    }
+                });
+            else if (value instanceof double[])
+                tryCommit(g, graph -> {
+                    final double[] l = memory.<double[]>get("key");
+                    assertEquals(((double[]) value).length, l.length);
+                    for (int ix = 0; ix < ((double[]) value).length; ix++) {
+                        assertEquals(((double[]) value)[ix], l[ix], 0.0d);
+                    }
+                });
+            else if (value instanceof float[])
+                tryCommit(g, graph -> {
+                    final float[] l = memory.<float[]>get("key");
+                    assertEquals(((float[]) value).length, l.length);
+                    for (int ix = 0; ix < ((float[]) value).length; ix++) {
+                        assertEquals(((float[]) value)[ix], l[ix], 0.0f);
+                    }
+                });
+            else if (value instanceof int[])
+                tryCommit(g, graph -> {
+                    final int[] l = memory.<int[]>get("key");
+                    assertEquals(((int[]) value).length, l.length);
+                    for (int ix = 0; ix < ((int[]) value).length; ix++) {
+                        assertEquals(((int[]) value)[ix], l[ix]);
+                    }
+                });
+            else if (value instanceof long[])
+                tryCommit(g, graph -> {
+                    final long[] l = memory.<long[]>get("key");
+                    assertEquals(((long[]) value).length, l.length);
+                    for (int ix = 0; ix < ((long[]) value).length; ix++) {
+                        assertEquals(((long[]) value)[ix], l[ix]);
+                    }
+                });
+            else if (value instanceof String[])
+                tryCommit(g, graph -> {
+                    final String[] l = memory.<String[]>get("key");
+                    assertEquals(((String[]) value).length, l.length);
+                    for (int ix = 0; ix < ((String[]) value).length; ix++) {
+                        assertEquals(((String[]) value)[ix], l[ix]);
+                    }
+                });
             else
                 tryCommit(g, graph -> assertEquals(value, memory.get("key")));
         }
