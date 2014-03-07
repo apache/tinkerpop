@@ -146,9 +146,9 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public void close() throws Exception {
-        // todo: how should transactions be treated on close here.  in tp2, we did this prior to shutdown...
-        this.tx().commit();
-
+        // need to close any dangling transactions
+        // todo: does this need to be done across threads to keep shutdown fast???
+        this.tx().close();
         if (this.rawGraph != null)
             this.rawGraph.shutdown();
     }
