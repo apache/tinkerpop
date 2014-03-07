@@ -473,14 +473,14 @@ public class ExceptionConsistencyTest {
     })
     public static class DuplicateRemovalTest extends AbstractGremlinTest {
         @Test
-        public void shouldCauseExceptionIfEdgeRemovedMoreThanOnce() {
-            Vertex v1 = g.addVertex();
-            Vertex v2 = g.addVertex();
-            Edge e = v1.addEdge("knows", v2);
+        public void shouldCauseExceptionIfEdgeRemovedMoreThanOnceNoTxCommit() {
+            final Vertex v1 = g.addVertex();
+            final Vertex v2 = g.addVertex();
+            final Edge e = v1.addEdge("knows", v2);
 
             assertNotNull(e);
 
-            Object id = e.getId();
+            final Object id = e.getId();
             e.remove();
             assertFalse(g.E().has(Element.ID, id).hasNext());
 
@@ -495,14 +495,16 @@ public class ExceptionConsistencyTest {
             } finally {
                 tryRollback(g);
             }
+        }
 
-            // have to redo this for neo4j.  it's as though the failure above forces the tx to go bad
-            v1 = g.addVertex();
-            v2 = g.addVertex();
-            e = v1.addEdge("knows", v2);
+        @Test
+        public void shouldCauseExceptionIfEdgeRemovedMoreThanOnceTxCommit() {
+            final Vertex v1 = g.addVertex();
+            final Vertex v2 = g.addVertex();
+            final Edge e = v1.addEdge("knows", v2);
             assertNotNull(e);
 
-            id = e.getId();
+            final Object id = e.getId();
             e.remove();
 
             // try second remove with a commit and then a second remove.  both should return the same exception
@@ -515,15 +517,17 @@ public class ExceptionConsistencyTest {
                 final Exception expectedException = Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, id);
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
+            } finally {
+                tryRollback(g);
             }
         }
 
         @Test
-        public void shouldCauseExceptionIfVertexRemovedMoreThanOnce() {
-            Vertex v = g.addVertex();
+        public void shouldCauseExceptionIfVertexRemovedMoreThanOnceNoTxCommit() {
+            final Vertex v = g.addVertex();
             assertNotNull(v);
 
-            Object id = v.getId();
+            final Object id = v.getId();
             v.remove();
             assertFalse(g.V().has(Element.ID, id).hasNext());
 
@@ -538,14 +542,16 @@ public class ExceptionConsistencyTest {
             } finally {
                 tryRollback(g);
             }
+        }
 
-            v = g.addVertex();
+        @Test
+        public void shouldCauseExceptionIfVertexRemovedMoreThanOnceTxCommit() {
+            final Vertex v = g.addVertex();
             assertNotNull(v);
 
-            id = v.getId();
+            final Object id = v.getId();
             v.remove();
 
-            // try second remove with a commit and then a second remove.  both should return the same exception
             tryCommit(g);
 
             try {
@@ -555,6 +561,8 @@ public class ExceptionConsistencyTest {
                 final Exception expectedException = Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, id);
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
+            } finally {
+                tryRollback(g);
             }
         }
     }
