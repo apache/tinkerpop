@@ -40,8 +40,7 @@ public class Neo4jTransaction implements Transaction {
             return;
 
         try {
-            // todo: why: https://groups.google.com/forum/#!msg/neo4j/w1L_21z0z04/Q-RcqeEmp14J
-            //graph.threadLocalTx.get().success();
+            graph.threadLocalTx.get().success();
         } finally {
             graph.threadLocalTx.get().close();
             graph.threadLocalTx.remove();
