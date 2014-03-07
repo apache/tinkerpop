@@ -36,7 +36,7 @@ public class MemoryTest {
     public static class StringRepresentationTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_STRING_VALUES)
-        public void testAnnotations() {
+        public void testMemory() {
             final Graph.Memory memory = g.memory();
             memory.set("xo", "test1");
             memory.set("yo", "test2");
@@ -68,7 +68,7 @@ public class MemoryTest {
 
         @Test
         @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_STRING_VALUES)
-        public void testAnnotationString() {
+        public void testMemoryString() {
             final Graph.Memory memory = g.memory();
             memory.set("test1", "1");
             memory.set("test2", "2");
@@ -84,7 +84,7 @@ public class MemoryTest {
 
         @Test
         @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_INTEGER_VALUES)
-        public void testAnnotationInteger() {
+        public void testMemoryInteger() {
             final Graph.Memory memory = g.memory();
             memory.set("test1", 1);
             memory.set("test2", 2);
@@ -100,7 +100,7 @@ public class MemoryTest {
 
         @Test
         @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_LONG_VALUES)
-        public void testAnnotationLong() {
+        public void testMemoryLong() {
             final Graph.Memory memory = g.memory();
             memory.set("test1", 1l);
             memory.set("test2", 2l);
@@ -118,7 +118,7 @@ public class MemoryTest {
         @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_INTEGER_VALUES)
         @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_LONG_VALUES)
-        public void testAnnotationMixed() {
+        public void testMemoryMixed() {
             final Graph.Memory memory = g.memory();
             memory.set("test1", "1");
             memory.set("test2", 2);
