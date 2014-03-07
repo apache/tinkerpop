@@ -474,8 +474,8 @@ public class ExceptionConsistencyTest {
     public static class DuplicateRemovalTest extends AbstractGremlinTest {
         @Test
         public void shouldCauseExceptionIfEdgeRemovedMoreThanOnce() {
-            final Vertex v1 = g.addVertex();
-            final Vertex v2 = g.addVertex();
+            Vertex v1 = g.addVertex();
+            Vertex v2 = g.addVertex();
             Edge e = v1.addEdge("knows", v2);
 
             assertNotNull(e);
@@ -492,8 +492,13 @@ public class ExceptionConsistencyTest {
                 final Exception expectedException = Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, id);
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
+            } finally {
+                tryRollback(g);
             }
 
+            // have to redo this for neo4j.  it's as though the failure above forces the tx to go bad
+            v1 = g.addVertex();
+            v2 = g.addVertex();
             e = v1.addEdge("knows", v2);
             assertNotNull(e);
 
@@ -530,6 +535,8 @@ public class ExceptionConsistencyTest {
                 final Exception expectedException = Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, id);
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
+            } finally {
+                tryRollback(g);
             }
 
             v = g.addVertex();

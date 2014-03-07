@@ -68,6 +68,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphML() throws Exception {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -82,6 +83,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphMLWithEdgeLabel() throws Exception {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -135,6 +137,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteClassicToKryo() throws Exception {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();

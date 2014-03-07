@@ -56,7 +56,8 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             PropertyTest.class,
             ReadOnlyGraphStrategyTest.class,
             SequenceGraphStrategyTest.class,
-            VertexTest.class};
+            VertexTest.class
+    };
 
 
     public StructureStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

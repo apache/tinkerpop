@@ -13,6 +13,9 @@ import com.tinkerpop.gremlin.structure.io.GraphWriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +36,10 @@ public class KryoWriter implements GraphWriter {
     private KryoWriter(final Graph g) {
         this.graph = g;
 
+        kryo.setRegistrationRequired(true);
+        kryo.register(ArrayList.class);
+        kryo.register(HashMap.class);
+        kryo.register(Direction.class);
         kryo.register(VertexTerminator.class);
         kryo.register(EdgeTerminator.class);
         kryo.register(KryoAnnotatedList.class);
@@ -47,7 +54,7 @@ public class KryoWriter implements GraphWriter {
         final boolean supportsAnnotations = graph.getFeatures().graph().supportsMemory();
         output.writeBoolean(supportsAnnotations);
         if (supportsAnnotations)
-            kryo.writeObject(output, graph.memory().asMap());
+            kryo.writeObject(output, new HashMap(graph.memory().asMap()));
 
         final Iterator<Vertex> vertices = graph.V();
         final boolean hasSomeVertices = vertices.hasNext();

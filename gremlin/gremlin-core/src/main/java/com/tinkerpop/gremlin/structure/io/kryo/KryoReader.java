@@ -48,6 +48,10 @@ public class KryoReader implements GraphReader {
         this.idMap = idMap;
         this.tempFile = tempFile;
 
+        kryo.setRegistrationRequired(true);
+        kryo.register(ArrayList.class);
+        kryo.register(HashMap.class);
+        kryo.register(Direction.class);
         kryo.register(VertexTerminator.class);
         kryo.register(EdgeTerminator.class);
         kryo.register(KryoAnnotatedList.class);

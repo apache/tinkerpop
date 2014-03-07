@@ -53,7 +53,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex {
         final Node node = (Node) this.rawElement;
         final Neo4jEdge edge = new Neo4jEdge(node.createRelationshipTo(((Neo4jVertex) inVertex).getRawVertex(),
                 DynamicRelationshipType.withName(label)), this.graph);
-        edge.setProperties(keyValues);
+        ElementHelper.attachProperties(edge, keyValues);
         return edge;
     }
 

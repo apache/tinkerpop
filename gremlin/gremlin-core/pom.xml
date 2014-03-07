@@ -48,6 +48,11 @@
             <artifactId>kryo</artifactId>
             <version>2.23.0</version>
         </dependency>
+        <dependency>
+            <groupId>colt</groupId>
+            <artifactId>colt</artifactId>
+            <version>1.2.0</version>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>

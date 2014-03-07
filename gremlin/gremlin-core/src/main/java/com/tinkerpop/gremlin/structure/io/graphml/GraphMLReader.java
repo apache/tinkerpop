@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
+import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 
 import javax.xml.stream.XMLInputFactory;
@@ -33,7 +34,7 @@ public class GraphMLReader implements GraphReader {
     public static final int DEFAULT_BATCH_SIZE = 1000;
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
-    private final Graph graph;
+    private final Graph inputGraph;
 
     private final Optional<String> vertexIdKey;
     private final Optional<String> edgeIdKey;
@@ -42,7 +43,7 @@ public class GraphMLReader implements GraphReader {
 
     private GraphMLReader(final Graph graph, final String vertexIdKey, final String edgeIdKey,
                           final String edgeLabelKey, final int batchSize) {
-        this.graph = graph;
+        this.inputGraph = graph;
         this.vertexIdKey = Optional.ofNullable(vertexIdKey);
         this.edgeIdKey = Optional.ofNullable(edgeIdKey);
         this.edgeLabelKey = Optional.ofNullable(edgeLabelKey);
@@ -72,7 +73,7 @@ public class GraphMLReader implements GraphReader {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
 
             // todo: get BatchGraph in here when TinkerPop3 has it
-            //final BatchGraph graph = BatchGraph.wrap(inputGraph, batchSize);
+            final BatchGraph graph = new BatchGraph(inputGraph, batchSize);
 
             final Map<String, String> keyIdMap = new HashMap<>();
             final Map<String, String> keyTypesMaps = new HashMap<>();
@@ -123,10 +124,10 @@ public class GraphMLReader implements GraphReader {
                             final String vertexIdIn = reader.getAttributeValue(null, GraphMLTokens.TARGET);
 
                             if (!vertexIdKey.isPresent())
-                                edgeOutVertex = graph.V().<Vertex>has(Element.ID, vertexIdOut).toList().stream().findFirst()
+                                edgeOutVertex = Optional.ofNullable(graph.v(vertexIdOut))
                                         .orElseGet(() -> graph.addVertex(Element.ID, vertexIdOut));
                             else
-                                edgeOutVertex = graph.V().<Vertex>has(Element.ID, vertexMappedIdMap.get(vertexIdOut)).toList().stream().findFirst()
+                                edgeOutVertex = Optional.ofNullable(graph.v(vertexMappedIdMap.get(vertexIdOut)))
                                         .orElseGet(() -> graph.addVertex(Element.ID, vertexIdOut));
 
                             // Default to standard ID system (in case no mapped ID is found later)
@@ -134,10 +135,10 @@ public class GraphMLReader implements GraphReader {
                                 vertexMappedIdMap.put(vertexIdOut, vertexIdOut);
 
                             if (!vertexIdKey.isPresent())
-                                edgeInVertex = graph.V().<Vertex>has(Element.ID, vertexIdIn).toList().stream().findFirst()
+                                edgeInVertex = Optional.ofNullable(graph.v(vertexIdIn))
                                         .orElseGet(() -> graph.addVertex(Element.ID, vertexIdIn));
                             else
-                                edgeInVertex = graph.V().<Vertex>has(Element.ID, vertexMappedIdMap.get(vertexIdIn)).toList().stream().findFirst()
+                                edgeInVertex = Optional.ofNullable(graph.v(vertexMappedIdMap.get(vertexIdIn)))
                                         .orElseGet(() -> graph.addVertex(Element.ID, vertexIdIn));
 
                             // Default to standard ID system (in case no mapped ID is found later)
@@ -180,7 +181,7 @@ public class GraphMLReader implements GraphReader {
 
                     if (elementName.equals(GraphMLTokens.NODE)) {
                         final String currentVertexId = vertexId;
-                        final Vertex currentVertex = graph.V().<Vertex>has(Element.ID, vertexId).toList().stream().findFirst()
+                        final Vertex currentVertex = Optional.ofNullable(graph.v(vertexId))
                                 .orElseGet(() -> graph.addVertex(Element.ID, currentVertexId));
                         for (Map.Entry<String, Object> prop : vertexProps.entrySet()) {
                             currentVertex.setProperty(prop.getKey(), prop.getValue());
@@ -206,8 +207,7 @@ public class GraphMLReader implements GraphReader {
                 }
             }
 
-            // todo: deal with transactions when the time is right
-            // graph.commit();
+            graph.tx().commit();
         } catch (XMLStreamException xse) {
             throw new IOException(xse);
         }

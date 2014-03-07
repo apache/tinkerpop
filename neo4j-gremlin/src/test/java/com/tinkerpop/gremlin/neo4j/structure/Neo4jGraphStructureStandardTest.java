@@ -16,7 +16,7 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-//@RunWith(StructureStandardSuite.class)
+@RunWith(StructureStandardSuite.class)
 @StructureStandardSuite.GraphProviderClass(Neo4jGraphStructureStandardTest.class)
 public class Neo4jGraphStructureStandardTest extends AbstractGraphProvider {
 
