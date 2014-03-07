@@ -28,14 +28,10 @@ public class Neo4jTransaction implements Transaction {
 
     @Override
     public void open() {
-        if (!isOpen())
-            graph.threadLocalTx.set(this.graph.getRawGraph().beginTx());
-
-        // todo: throw if already open
-        /*
-        else
+        if (isOpen())
             throw Transaction.Exceptions.transactionAlreadyOpen();
-        */
+        else
+            graph.threadLocalTx.set(this.graph.getRawGraph().beginTx());
     }
 
     @Override
