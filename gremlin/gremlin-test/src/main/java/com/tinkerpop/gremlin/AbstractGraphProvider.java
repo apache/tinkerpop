@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -36,5 +37,25 @@ public abstract class AbstractGraphProvider implements GraphProvider {
                 .filter(c -> !c.getKey().equals("gremlin.graph"))
                 .forEach(e -> conf.setProperty(e.getKey(), e.getValue()));
         return conf;
+    }
+
+    protected static void deleteDirectory(final File directory) {
+        if (directory.exists()) {
+            for (File file : directory.listFiles()) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+            directory.delete();
+        }
+
+        // overkill code, simply allowing us to detect when data dir is in use.  useful though because without it
+        // tests may fail if a database is re-used in between tests somehow.  this directory really needs to be
+        // cleared between tests runs and this exception will make it clear if it is not.
+        if (directory.exists()) {
+            throw new RuntimeException("unable to delete directory " + directory.getAbsolutePath());
+        }
     }
 }

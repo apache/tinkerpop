@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -46,74 +47,98 @@ public class DistributionGeneratorTest {
 
         @Test
         public void shouldGenerateRandomGraph() throws Exception {
-            final DistributionGenerator generator = new DistributionGenerator("knows");
-            distributionGeneratorTest(g, generator);
-
             final Configuration configuration = graphProvider.newGraphConfiguration("g1");
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            prepareGraph(g1);
-            final DistributionGenerator generator1 = new DistributionGenerator("knows");
-            distributionGeneratorTest(g1, generator1);
+            try {
+                final DistributionGenerator generator = new DistributionGenerator("knows");
+                distributionGeneratorTest(g, generator);
 
-            // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
-            // same number of edges between graphs.  that should make it harder for the test to fail.
-            assertFalse(g.V().toList().stream()
-                    .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
-                    .allMatch(p -> {
-                        final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
-                        return p.getValue1() == v.inE().count()
-                                && p.getValue2() == v.outE().count();
-                    }));
+                prepareGraph(g1);
+                final DistributionGenerator generator1 = new DistributionGenerator("knows");
+                distributionGeneratorTest(g1, generator1);
 
-            graphProvider.clear(g1, configuration);
+                // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
+                // same number of edges between graphs.  that should make it harder for the test to fail.
+                assertFalse(g.V().toList().stream()
+                        .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
+                        .allMatch(p -> {
+                            final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
+                            return p.getValue1() == v.inE().count()
+                                    && p.getValue2() == v.outE().count();
+                        }));
+            } catch(Exception ex) {
+                throw ex;
+            } finally {
+                graphProvider.clear(g1, configuration);
+            }
         }
 
         @Test
         public void shouldGenerateSameGraph() throws Exception {
-            final DistributionGenerator generator = new DistributionGenerator("knows", null, () -> 123456789l);
-            distributionGeneratorTest(g, generator);
-
             final Configuration configuration = graphProvider.newGraphConfiguration("g1");
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            prepareGraph(g1);
-            final DistributionGenerator generator1 = new DistributionGenerator("knows", null, () -> 123456789l);
-            distributionGeneratorTest(g1, generator1);
+            try {
+                final DistributionGenerator generator = new DistributionGenerator("knows", null, () -> 123456789l);
+                distributionGeneratorTest(g, generator);
 
-            // ensure that every vertex has the same number of edges between graphs.
-            assertTrue(g.V().toList().stream()
-                    .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
-                    .allMatch(p -> {
-                        final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
-                        return p.getValue1() == v.inE().count()
-                                && p.getValue2() == v.outE().count();
-                    }));
+                prepareGraph(g1);
+                final DistributionGenerator generator1 = new DistributionGenerator("knows", null, () -> 123456789l);
+                distributionGeneratorTest(g1, generator1);
 
-            graphProvider.clear(g1, configuration);
+                // ensure that every vertex has the same number of edges between graphs.
+                assertTrue(g.V().toList().stream()
+                        .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
+                        .allMatch(p -> {
+                            final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
+                            return p.getValue1() == v.inE().count()
+                                    && p.getValue2() == v.outE().count();
+                        }));
+            } catch(Exception ex) {
+                throw ex;
+            } finally {
+                graphProvider.clear(g1, configuration);
+            }
         }
 
         @Override
-        protected void prepareGraph(final Graph g) throws Exception {
+        protected void prepareGraph(final Graph graph) throws Exception {
             final int numNodes = numberOfVertices;
-            for (int i = 0; i < numNodes; i++) g.addVertex("oid", i);
+            for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
+            tryCommit(graph);
         }
 
         private void distributionGeneratorTest(final Graph graph, final DistributionGenerator generator) {
             generator.setOutDistribution(inDistribution);
             Optional.ofNullable(outDistribution).ifPresent(generator::setOutDistribution);
             final int numEdges = generator.generate(graph, numberOfVertices * 10);
+            assertTrue(numEdges > 0);
             tryCommit(graph, g -> assertEquals(numEdges, g.E().count()));
         }
     }
 
     public static class AnnotatorTest extends AbstractGremlinTest {
+        private static final int numberOfVertices = 100;
+
         @Test
         public void shouldAnnotateEdges() {
             final DistributionGenerator generator = new DistributionGenerator("knows", e -> e.setProperty("data", "test"));
             final Distribution dist = new NormalDistribution(2);
             generator.setOutDistribution(dist);
             generator.setInDistribution(dist);
-            generator.generate(g, 100);
-            tryCommit(g, g -> assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test"))));
+            final int edgesGenerated = generator.generate(g, 100);
+            assertTrue(edgesGenerated > 0);
+            tryCommit(g, g -> {
+                assertEquals(edgesGenerated, g.E().count());
+                assertTrue(g.V().count() > 0);
+                assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test")));
+            });
+        }
+
+        @Override
+        protected void prepareGraph(final Graph graph) throws Exception {
+            final int numNodes = numberOfVertices;
+            for (int i = 0; i < numNodes; i++) graph.addVertex("oid", i);
+            tryCommit(graph);
         }
     }
 }

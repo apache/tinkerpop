@@ -79,7 +79,11 @@ abstract class Neo4jElement implements Element {
         // todo: deal with annotatedlist/value
         // todo: do we worry about - this.rawElement.setProperty(key, tryConvertCollectionToArray(value));
 
-        this.rawElement.setProperty(key, value);
+        try {
+            this.rawElement.setProperty(key, value);
+        } catch (IllegalArgumentException iae) {
+            throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
+        }
     }
 
     public boolean equals(final Object object) {

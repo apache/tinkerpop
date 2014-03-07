@@ -49,6 +49,11 @@ public abstract class AbstractGremlinTest {
     public void setup() throws Exception {
         graphProvider = GraphManager.get();
         config = graphProvider.standardGraphConfiguration();
+
+        // this should clear state from a previously unfinished test. since the graph does not yet exist,
+        // persisted graphs will likely just have their directories removed
+        graphProvider.clear(null, config);
+
         g = graphProvider.openTestGraph(config, strategyToTest);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
@@ -84,6 +89,10 @@ public abstract class AbstractGremlinTest {
     @After
     public void tearDown() throws Exception {
         graphProvider.clear(g, config);
+        g = null;
+        config = null;
+        strategyToTest = null;
+        graphProvider = null;
     }
 
     /**

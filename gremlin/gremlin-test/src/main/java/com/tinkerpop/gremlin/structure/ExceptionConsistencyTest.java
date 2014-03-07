@@ -482,7 +482,7 @@ public class ExceptionConsistencyTest {
 
             Object id = e.getId();
             e.remove();
-            assertFalse(g.V().has(Element.ID, id).hasNext());
+            assertFalse(g.E().has(Element.ID, id).hasNext());
 
             // try second remove with no commit
             try {
@@ -562,6 +562,7 @@ public class ExceptionConsistencyTest {
     public static class PropertyValidationOnSetGraphComputerTest extends AbstractGremlinTest {
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
         public void testGraphVertexSetPropertyNoComputeKey() {
             final String key = "key-not-a-compute-key";
             try {
@@ -580,6 +581,7 @@ public class ExceptionConsistencyTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_COMPUTER)
         public void testGraphEdgeSetPropertyNoComputeKey() {
             final String key = "key-not-a-compute-key";
             try {

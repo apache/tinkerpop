@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -20,6 +21,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import javax.transaction.TransactionManager;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -50,7 +52,7 @@ public class Neo4jGraph implements Graph {
     protected final TransactionManager transactionManager;
     private final ExecutionEngine cypher;
 
-    public Neo4jGraph(final GraphDatabaseService rawGraph) {
+    private Neo4jGraph(final GraphDatabaseService rawGraph) {
         this.rawGraph = rawGraph;
         transactionManager = ((GraphDatabaseAPI) rawGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
         cypher = new ExecutionEngine(rawGraph);
@@ -64,13 +66,8 @@ public class Neo4jGraph implements Graph {
             final String directory = configuration.getString("gremlin.neo4j.directory");
             final GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(directory);
 
-            /* todo: convert to map to pass to config ... ConfigurationConverter
-            if (null != configuration)
-                this.rawGraph = builder.setConfig(configuration).newGraphDatabase();
-            else
-            */
-
-            this.rawGraph = builder.newGraphDatabase();
+            final Map neo4jSpecificConfig = ConfigurationConverter.getMap(configuration.subset("gremlin.neo4j.conf"));
+            this.rawGraph = builder.setConfig(neo4jSpecificConfig).newGraphDatabase();
 
             transactionManager = ((GraphDatabaseAPI) rawGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
             cypher = new ExecutionEngine(rawGraph);
@@ -97,13 +94,15 @@ public class Neo4jGraph implements Graph {
         return (G) new Neo4jGraph(configuration.get());
     }
 
+    public static <G extends Graph> G open(final GraphDatabaseService rawGraph) {
+        return (G) new Neo4jGraph(rawGraph);
+    }
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
-
-        // todo: throw since id is not assignable...check features
-        Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
+        if (ElementHelper.getIdValue(keyValues).isPresent())
+            throw Vertex.Exceptions.userSuppliedIdsNotSupported();
 
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Element.DEFAULT_LABEL);
 
@@ -144,16 +143,9 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public void close() throws Exception {
-        // todo: how should transactions be treated on close here.  in tp2, we did this prior to shutdown...
-        /*
-        try {
-            this.commit();
-        } catch (TransactionFailureException e) {
-            logger.warning("Failure on shutdown "+e.getMessage());
-            // TODO: inspect why certain transactions fail
-        }
-         */
-
+        // need to close any dangling transactions
+        // todo: does this need to be done across threads to keep shutdown fast???
+        this.tx().close();
         if (this.rawGraph != null)
             this.rawGraph.shutdown();
     }
@@ -172,12 +164,17 @@ public class Neo4jGraph implements Graph {
             return new GraphFeatures() {
                 @Override
                 public boolean supportsMemory() {
-                    return false;    // todo: temporary...doesn't neo4j support graph properties
+                    return false;    // todo: temporary...doesn't neo4j support graph properties?
                 }
 
                 @Override
                 public boolean supportsComputer() {
                     return false;  // todo: temporary...
+                }
+
+                @Override
+                public MemoryFeatures memory() {
+                    return new Neo4jMemoryFeatures();  // todo: temporary
                 }
             };
         }
@@ -187,10 +184,143 @@ public class Neo4jGraph implements Graph {
             return new Neo4jVertexFeatures();
         }
 
+        @Override
+        public EdgeFeatures edge() {
+            return new Neo4jEdgeFeatures();
+        }
+
         public static class Neo4jVertexFeatures implements VertexFeatures {
             @Override
             public VertexAnnotationFeatures annotations() {
                 return new Neo4jVertexAnnotationFeatures();
+            }
+
+            @Override
+            public boolean supportsUserSuppliedIds() {
+                return false;
+            }
+
+            @Override
+            public VertexPropertyFeatures properties() {
+                return new Neo4jVertexPropertyFeatures();
+            }
+        }
+
+        public static class Neo4jEdgeFeatures implements EdgeFeatures {
+            @Override
+            public boolean supportsUserSuppliedIds() {
+                return false;
+            }
+
+            @Override
+            public EdgePropertyFeatures properties() {
+                return new Neo4jEdgePropertyFeatures();
+            }
+        }
+        
+        public static class Neo4jVertexPropertyFeatures implements VertexPropertyFeatures {
+            @Override
+            public boolean supportsMapValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsMixedListValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsSerializableValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsUniformListValues() {
+                return false;  
+            }
+        }
+
+        public static class Neo4jEdgePropertyFeatures implements EdgePropertyFeatures {
+            @Override
+            public boolean supportsMapValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsMixedListValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsSerializableValues() {
+                return false;  
+            }
+
+            @Override
+            public boolean supportsUniformListValues() {
+                return false;  
+            }
+        }
+
+        public static class Neo4jMemoryFeatures implements MemoryFeatures {
+            @Override
+            public boolean supportsBooleanValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsDoubleValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsFloatValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsIntegerValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsLongValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsMapValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsMetaProperties() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsMixedListValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsPrimitiveArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsSerializableValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsStringValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsUniformListValues() {
+                return false;
             }
         }
 
