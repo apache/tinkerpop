@@ -55,7 +55,7 @@ public interface GraphProvider {
      * For a brute force approach, implementers can simply delete data directories provided in the configuration.
      * Implementers may choose a more elegant approach if it exists.
      */
-    public void clear(final Graph g, final Configuration configuration) throws Exception;
+    public void clear(final Graph g, final Configuration configuration) throws Exception;  // todo: should Graph be Optional<Graph>
 
     /**
      * Converts an identifier from a test to an identifier accepted by the Graph instance.  Test that try to
