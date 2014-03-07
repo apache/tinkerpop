@@ -24,12 +24,14 @@ public class Neo4jGraphStructureStandardTest extends AbstractGraphProvider {
         return new HashMap<String, Object>() {{
             put("gremlin.graph", Neo4jGraph.class.getName());
             put("gremlin.neo4j.directory", "/tmp/" + graphName);  // todo: better job with directory setup?  see tp2
+            put("gremlin.neo4j.conf.cache_type", "none");     // todo: maybe bring back default once neo4j looks into the OOME with hpc
         }};
     }
 
     @Override
     public void clear(final Graph g, final Configuration configuration) throws Exception {
-        g.close();
+        if (null != g)
+            g.close();
 
         if (configuration.containsKey("gremlin.neo4j.directory")) {
             // this is a non-in-memory configuration so blow away the directory

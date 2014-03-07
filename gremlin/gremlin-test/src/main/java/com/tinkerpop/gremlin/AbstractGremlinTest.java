@@ -89,6 +89,10 @@ public abstract class AbstractGremlinTest {
     @After
     public void tearDown() throws Exception {
         graphProvider.clear(g, config);
+        g = null;
+        config = null;
+        strategyToTest = null;
+        graphProvider = null;
     }
 
     /**
