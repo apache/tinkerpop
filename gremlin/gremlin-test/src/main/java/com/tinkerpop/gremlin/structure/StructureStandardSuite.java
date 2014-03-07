@@ -40,11 +40,11 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            //AnnotationTest.class,
-            //CommunityGeneratorTest.class,
-           // DistributionGeneratorTest.class,
-            //EdgeTest.class,
-            //ExceptionConsistencyTest.class,
+            AnnotationTest.class,
+            CommunityGeneratorTest.class,
+            DistributionGeneratorTest.class,
+            EdgeTest.class,
+            ExceptionConsistencyTest.class,
             FeatureSupportTest.class,
             GraphTest.class,
             GraphComputerTest.class,
