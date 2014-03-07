@@ -30,7 +30,8 @@ public class TinkerGraphStructurePerformanceTest extends AbstractGraphProvider {
 
     @Override
     public void clear(final Graph g, final Configuration configuration) throws Exception {
-        g.close();
+        if (g != null)
+            g.close();
 
         if (configuration.containsKey("gremlin.tg.directory")) {
             // this is a non-in-memory configuration so blow away the directory
