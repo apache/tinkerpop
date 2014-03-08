@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
@@ -411,5 +412,12 @@ public class ElementHelperTest {
         assertEquals(6l, map.get("2"));
         assertEquals("other", map.get("3"));
         assertEquals(1, map.get("4"));
+    }
+
+    @Test
+    public void shouldRemoveAKey() {
+        final Object[] kvs = ElementHelper.remove("2", "1", "this", "2", 6l, "3", "other", "4", 1);
+        assertEquals(6, kvs.length);
+        assertTrue(Stream.of(kvs).noneMatch(kv -> kv.equals("2") || kv.equals(6l)));
     }
 }

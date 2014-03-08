@@ -81,6 +81,20 @@ public class ElementHelper {
     }
 
     /**
+     * Remove a key from the set of key value pairs. Assumes that validations have already taken place to
+     * assure that key positions contain strings and that there are an even number of elements.
+     */
+    public static Object[] remove(final String keyToRemove, final Object... keyValues) {
+        final List list = Arrays.asList(keyValues);
+        return IntStream.range(0, list.size())
+                .filter(i -> i % 2 == 0)
+                .filter(i -> !keyToRemove.equals(list.get(i)))
+                .flatMap(i -> IntStream.of(i, i + 1))
+                .mapToObj(list::get)
+                .collect(Collectors.toList()).toArray();
+    }
+
+    /**
      * Converts a set of key values to a Map.  Assumes that validations have already taken place to
      * assure that key positions contain strings and that there are an even number of elements.
      */
