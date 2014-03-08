@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -416,8 +417,14 @@ public class ElementHelperTest {
 
     @Test
     public void shouldRemoveAKey() {
-        final Object[] kvs = ElementHelper.remove("2", "1", "this", "2", 6l, "3", "other", "4", 1);
-        assertEquals(6, kvs.length);
-        assertTrue(Stream.of(kvs).noneMatch(kv -> kv.equals("2") || kv.equals(6l)));
+        final Optional<Object[]> kvs = ElementHelper.remove("2", "1", "this", "2", 6l, "3", "other", "4", 1);
+        assertEquals(6, kvs.get().length);
+        assertTrue(Stream.of(kvs.get()).noneMatch(kv -> kv.equals("2") || kv.equals(6l)));
+    }
+
+    @Test
+    public void shouldRemoveAKeyAndReturnEmpty() {
+        final Optional<Object[]> kvs = ElementHelper.remove("1", "1", "this");
+        assertEquals(Optional.empty(), kvs);
     }
 }

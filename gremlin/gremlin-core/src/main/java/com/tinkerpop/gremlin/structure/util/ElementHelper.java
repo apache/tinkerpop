@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Utility class supporting common functions for {@link com.tinkerpop.gremlin.structure.Element}.
@@ -82,16 +81,18 @@ public class ElementHelper {
 
     /**
      * Remove a key from the set of key value pairs. Assumes that validations have already taken place to
-     * assure that key positions contain strings and that there are an even number of elements.
+     * assure that key positions contain strings and that there are an even number of elements. If after removal
+     * there are no values left, the key value list is returned as empty.
      */
-    public static Object[] remove(final String keyToRemove, final Object... keyValues) {
+    public static Optional<Object[]> remove(final String keyToRemove, final Object... keyValues) {
         final List list = Arrays.asList(keyValues);
-        return IntStream.range(0, list.size())
-                .filter(i -> i % 2 == 0)
-                .filter(i -> !keyToRemove.equals(list.get(i)))
-                .flatMap(i -> IntStream.of(i, i + 1))
-                .mapToObj(list::get)
-                .collect(Collectors.toList()).toArray();
+        final List revised = IntStream.range(0, list.size())
+                                      .filter(i -> i % 2 == 0)
+                                      .filter(i -> !keyToRemove.equals(list.get(i)))
+                                      .flatMap(i -> IntStream.of(i, i + 1))
+                                      .mapToObj(list::get)
+                                      .collect(Collectors.toList());
+        return revised.size() > 0 ? Optional.of(revised.toArray()) : Optional.empty();
     }
 
     /**

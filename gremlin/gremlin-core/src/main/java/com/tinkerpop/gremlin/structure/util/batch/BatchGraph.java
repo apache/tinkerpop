@@ -129,21 +129,14 @@ public class BatchGraph<T extends Graph> implements Graph {
         if (retrieveFromCache(id) != null) throw new IllegalArgumentException("Vertex id already exists");
         nextElement();
 
-        // todo: make this more efficient
-        Vertex v;
-        if (baseGraph.getFeatures().vertex().supportsUserSuppliedIds())
-            v = baseGraph.addVertex(keyValues);
-        else
-            v = baseGraph.addVertex();
+        final Optional<Object[]> kvs = baseGraph.getFeatures().vertex().supportsUserSuppliedIds() ?
+                Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
+        final Vertex v = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
 
         vertexIdKey.ifPresent(k -> v.setProperty(k, id));
-
         cache.set(v, id);
-        final BatchVertex newVertex = new BatchVertex(id);
 
-        v.setProperties(keyValues);
-
-        return newVertex;
+        return new BatchVertex(id);
     }
 
     /**
@@ -306,20 +299,19 @@ public class BatchGraph<T extends Graph> implements Graph {
                 throw new IllegalArgumentException("Given element was not created in this baseGraph");
             nextElement();
 
-            // todo: make this all more efficient. remove id from key/values
             final Vertex ov = getCachedVertex(externalID);
             final Vertex iv = getCachedVertex(inVertex.getId());
 
             previousOutVertexId = externalID;  //keep track of the previous out vertex id
 
             final Optional<Object> id = ElementHelper.getIdValue(keyValues);
-            final Object[] kvs = baseGraph.getFeatures().edge().supportsUserSuppliedIds() ?
-                    keyValues : ElementHelper.remove(Element.ID, keyValues);
+            final Optional<Object[]> kvs = baseGraph.getFeatures().edge().supportsUserSuppliedIds() ?
+                    Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
 
-            currentEdgeCached = ov.addEdge(label, iv, kvs);
+            currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
 
             if (edgeIdKey.isPresent() && id.isPresent())
-                currentEdgeCached.setProperty(edgeIdKey.get(), id);
+                currentEdgeCached.setProperty(edgeIdKey.get(), id.get());
 
             currentEdge = new BatchEdge();
 
