@@ -144,7 +144,7 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     /**
      * {@inheritDoc}
-     * <p/>
+     * <br/>
      * If the input data are sorted, then out vertex will be repeated for several edges in a row.
      * In this case, bypass cache and instead immediately return a new vertex using the known id.
      * This gives a modest performance boost, especially when the cache is large or there are

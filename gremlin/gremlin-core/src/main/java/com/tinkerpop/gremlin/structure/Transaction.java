@@ -26,15 +26,11 @@ public interface Transaction extends Closeable {
 
     public boolean isOpen();
 
-    public default void readWrite() {
-        if (!this.isOpen()) this.open();    // todo: drop the default implementation...kinda has to be implemented no matter what
-    }
+    public void readWrite();
 
-    public default void close() {
-        if (this.isOpen()) this.commit();
-    }
+    public void close();
 
-    public Transaction onReadWrite(final Consumer<Transaction> consumer); // todo: consider standard lambda references
+    public Transaction onReadWrite(final Consumer<Transaction> consumer);
 
     public Transaction onClose(final Consumer<Transaction> consumer);
 
@@ -49,6 +45,60 @@ public interface Transaction extends Closeable {
 
         public static IllegalStateException openTransactionsOnClose() {
             return new IllegalStateException("Commit or rollback all outstanding transactions before closing the transaction");
+        }
+    }
+
+    /**
+     * Behaviors to supply to the {@link #onClose(java.util.function.Consumer)}.
+     */
+    public static enum CLOSE_BEHAVIOR implements Consumer<Transaction> {
+        /**
+         * Any open transaction will commit on close.
+         */
+        COMMIT {
+            @Override
+            public void accept(final Transaction transaction) {
+                if (transaction.isOpen()) transaction.commit();
+            }
+        },
+
+        /**
+         * Any open transaction will rollback on close.
+         */
+        ROLLBACK {
+            @Override
+            public void accept(final Transaction transaction) {
+                if (transaction.isOpen()) transaction.rollback();
+            }
+        },
+
+        /**
+         * Open transactions on close will throw an exception
+         */
+        MANUAL {
+            @Override
+            public void accept(final Transaction transaction) {
+                if(transaction.isOpen()) throw Exceptions.openTransactionsOnClose();
+            }
+        }
+    }
+
+    /**
+     * Behaviors to supply to the {@link #onReadWrite(java.util.function.Consumer)}.
+     */
+    public static enum READ_WRITE_BEHAVIOR implements Consumer<Transaction> {
+        AUTO {
+            @Override
+            public void accept(final Transaction transaction) {
+                if (!transaction.isOpen()) transaction.open();
+            }
+        },
+
+        MANUAL {
+            @Override
+            public void accept(final Transaction transaction) {
+                if (!transaction.isOpen()) throw Exceptions.transactionMustBeOpenToReadWrite();
+            }
         }
     }
 

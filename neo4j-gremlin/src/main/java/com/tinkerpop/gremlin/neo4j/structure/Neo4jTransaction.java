@@ -20,10 +20,10 @@ public class Neo4jTransaction implements Transaction {
         this.graph = graph;
 
         // auto transaction behavior
-        this.readWriteConsumer = tx -> { if (!tx.isOpen()) tx.open(); };
+        this.readWriteConsumer = READ_WRITE_BEHAVIOR.AUTO;
 
         // commit on close
-        this.closeConsumer = tx -> { if (tx.isOpen()) tx.commit(); };
+        this.closeConsumer = CLOSE_BEHAVIOR.COMMIT;
     }
 
     @Override
@@ -79,8 +79,7 @@ public class Neo4jTransaction implements Transaction {
 
     @Override
     public boolean isOpen() {
-        boolean xc = (null != graph.threadLocalTx.get());
-        return xc;
+        return (null != graph.threadLocalTx.get());
     }
 
     @Override
