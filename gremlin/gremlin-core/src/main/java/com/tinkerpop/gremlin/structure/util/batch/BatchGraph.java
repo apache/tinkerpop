@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Transaction;
@@ -311,15 +312,13 @@ public class BatchGraph<T extends Graph> implements Graph {
 
             previousOutVertexId = externalID;  //keep track of the previous out vertex id
 
-            final Object id = ElementHelper.getIdValue(keyValues).orElse(null);
-            if (baseGraph.getFeatures().edge().supportsUserSuppliedIds())
-                currentEdgeCached = ov.addEdge(label, iv, keyValues);
-            else {
-                currentEdgeCached = ov.addEdge(label, iv);
-                currentEdgeCached.setProperties(keyValues);
-            }
+            final Optional<Object> id = ElementHelper.getIdValue(keyValues);
+            final Object[] kvs = baseGraph.getFeatures().edge().supportsUserSuppliedIds() ?
+                    keyValues : ElementHelper.remove(Element.ID, keyValues);
 
-            if (edgeIdKey.isPresent() && id != null)
+            currentEdgeCached = ov.addEdge(label, iv, kvs);
+
+            if (edgeIdKey.isPresent() && id.isPresent())
                 currentEdgeCached.setProperty(edgeIdKey.get(), id);
 
             currentEdge = new BatchEdge();
