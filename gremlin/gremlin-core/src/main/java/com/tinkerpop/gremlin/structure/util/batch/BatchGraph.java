@@ -17,6 +17,7 @@ import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -38,12 +39,12 @@ import java.util.function.Function;
  * exceptions. This is done to avoid caching of edges which would require a great amount of memory.
  * <br />
  * BatchGraph can also automatically set the provided element ids as properties on the respective element. Use
- * {@link #setVertexIdKey(String)} and {@link #setEdgeIdKey(String)} to set the keys for the vertex and edge properties
- * respectively. This allows to make the loaded baseGraph compatible for later operation with
- * {@link com.tinkerpop.gremlin.structure.strategy.IdGraphStrategy}.
+ * {@link Builder#vertexIdKey(java.util.Optional)} and {@link Builder#edgeIdKey(java.util.Optional)} to set the keys
+ * for the vertex and edge properties respectively. This allows to make the loaded baseGraph compatible for later
+ * operation with {@link com.tinkerpop.gremlin.structure.strategy.IdGraphStrategy}.
  *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Matthias Broecheler (http://www.matthiasb.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class BatchGraph<T extends Graph> implements Graph {
     /**
@@ -51,16 +52,15 @@ public class BatchGraph<T extends Graph> implements Graph {
      */
     public static final long DEFAULT_BUFFER_SIZE = 100000;
 
-
     private final T baseGraph;
 
-    private String vertexIdKey = null;
-    private String edgeIdKey = null;
-    private boolean loadingFromScratch = true;
+    private final Optional<String> vertexIdKey;
+    private final Optional<String> edgeIdKey;
+    private final boolean loadingFromScratch;
 
     private final VertexCache cache;
 
-    private long bufferSize = DEFAULT_BUFFER_SIZE;
+    private final long bufferSize;
     private long remainingBufferSize;
 
     private BatchEdge currentEdge = null;
@@ -69,127 +69,27 @@ public class BatchGraph<T extends Graph> implements Graph {
     private Object previousOutVertexId = null;
 
     /**
-     * Constructs a BatchGraph wrapping the provided baseGraph, using the specified buffer size and expecting vertex ids of
-     * the specified IdType. Supplying vertex ids which do not match this type will throw exceptions.
+     * Constructs a BatchGraph wrapping the provided baseGraph, using the specified buffer size and expecting vertex
+     * ids of the specified IdType. Supplying vertex ids which do not match this type will throw exceptions.
      *
      * @param graph      Graph to be wrapped
-     * @param type       Type of vertex id expected. This information is used to optimize the vertex cache memory footprint.
-     * @param bufferSize Defines the number of vertices and edges loaded before starting a new transaction. The larger this value, the more memory is required but the faster the loading process.
+     * @param type       Type of vertex id expected. This information is used to optimize the vertex cache
+     *                   memory footprint.
+     * @param bufferSize Defines the number of vertices and edges loaded before starting a new transaction. The
+     *                   larger this value, the more memory is required but the faster the loading process.
      */
-    public BatchGraph(final T graph, final VertexIDType type, final long bufferSize) {
-        if (graph == null) throw new IllegalArgumentException("Graph may not be null");
-        if (type == null) throw new IllegalArgumentException("Type may not be null");
-        if (bufferSize <= 0) throw new IllegalArgumentException("BufferSize must be positive");
+    private BatchGraph(final T graph, final VertexIdType type, final long bufferSize, final Optional<String> vertexIdKey,
+                       final Optional<String> edgeIdKey, final  boolean loadingFromScratch) {
         this.baseGraph = graph;
         this.bufferSize = bufferSize;
-
-        vertexIdKey = null;
-        edgeIdKey = null;
-
-        cache = type.getVertexCache();
-
-        remainingBufferSize = this.bufferSize;
-    }
-
-    /**
-     * Constructs a BatchGraph wrapping the provided baseGraph.
-     *
-     * @param graph Graph to be wrapped
-     * @param bufferSize Defines the number of vertices and edges loaded before starting a new transaction. The larger this value, the more memory is required but the faster the loading process.
-     */
-    public BatchGraph(final T graph, final long bufferSize) {
-        this(graph, VertexIDType.OBJECT, bufferSize);
-    }
-
-    /**
-     * Constructs a BatchGraph wrapping the provided baseGraph.
-     *
-     * @param graph Graph to be wrapped
-     */
-    public BatchGraph(final T graph) {
-        this(graph, VertexIDType.OBJECT, DEFAULT_BUFFER_SIZE);
+        this.cache = type.getVertexCache();
+        this.remainingBufferSize = this.bufferSize;
+        this.vertexIdKey = vertexIdKey;
+        this.edgeIdKey = edgeIdKey;
+        this.loadingFromScratch = loadingFromScratch;
     }
 
     // todo: need static constructors with writethroughgraph in tp2???
-
-    /**
-     * Sets the key to be used when setting the vertex id as a property on the respective vertex.
-     * If the key is null, then no property will be set.
-     *
-     * @param key Key to be used.
-     */
-    public void setVertexIdKey(final String key) {
-        if (!loadingFromScratch && key == null && !baseGraph.getFeatures().vertex().supportsUserSuppliedIds())
-            throw new IllegalStateException("Cannot set vertex id key to null when not loading from scratch while ids are ignored.");
-        this.vertexIdKey = key;
-    }
-
-    /**
-     * Returns the key used to set the id on the vertices or null if such has not been set
-     * via {@link #setVertexIdKey(String)}
-     *
-     * @return The key used to set the id on the vertices or null if such has not been set
-     *         via {@link #setVertexIdKey(String)}
-     */
-    public String getVertexIdKey() {
-        return vertexIdKey;
-    }
-
-    /**
-     * Sets the key to be used when setting the edge id as a property on the respective edge.
-     * If the key is null, then no property will be set.
-     *
-     * @param key Key to be used.
-     */
-    public void setEdgeIdKey(final String key) {
-        this.edgeIdKey = key;
-    }
-
-    /**
-     * Returns the key used to set the id on the edges or null if such has not been set
-     * via {@link #setEdgeIdKey(String)}
-     *
-     * @return The key used to set the id on the edges or null if such has not been set
-     *         via {@link #setEdgeIdKey(String)}
-     */
-    public String getEdgeIdKey() {
-        return edgeIdKey;
-    }
-
-    /**
-     * Sets whether the graph loaded through this instance of {@link BatchGraph} is loaded from scratch
-     * (i.e. the wrapped graph is initially empty) or whether graph is loaded incrementally into an
-     * existing graph.
-     * <p/>
-     * In the former case, BatchGraph does not need to check for the existence of vertices with the wrapped
-     * graph but only needs to consult its own cache which can be significantly faster. In the latter case,
-     * the cache is checked first but an additional check against the wrapped graph may be necessary if
-     * the vertex does not exist.
-     * <p/>
-     * By default, BatchGraph assumes that the data is loaded from scratch.
-     * <p/>
-     * When setting loading from scratch to false, a vertex id key must be specified first using
-     * {@link #setVertexIdKey(String)} - otherwise an exception is thrown.
-     *
-     * @param fromScratch
-     */
-    public void setLoadingFromScratch(boolean fromScratch) {
-        if (fromScratch == false && vertexIdKey == null && !baseGraph.getFeatures().vertex().supportsUserSuppliedIds())
-            throw new IllegalStateException("Vertex id key is required to query existing vertices in wrapped graph.");
-        loadingFromScratch = fromScratch;
-    }
-
-    /**
-     * Whether this BatchGraph is loading data from scratch or incrementally into an existing graph.
-     * <p/>
-     * By default, this returns true.
-     *
-     * @return Whether this BatchGraph is loading data from scratch or incrementally into an existing graph.
-     * @see #setLoadingFromScratch(boolean)
-     */
-    public boolean isLoadingFromScratch() {
-        return loadingFromScratch;
-    }
 
     private void nextElement() {
         currentEdge = null;
@@ -235,8 +135,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         else
             v = baseGraph.addVertex();
 
-        if (vertexIdKey != null)
-            v.setProperty(vertexIdKey, id);
+        vertexIdKey.ifPresent(k -> v.setProperty(k, id));
 
         cache.set(v, id);
         final BatchVertex newVertex = new BatchVertex(id);
@@ -260,13 +159,14 @@ public class BatchGraph<T extends Graph> implements Graph {
             return new BatchVertex(previousOutVertexId);
         } else {
 
+            // todo: nicer way to do the below???
             Vertex v = retrieveFromCache(id);
             if (null == v) {
                 if (loadingFromScratch) return null;
                 else {
                     if (!baseGraph.getFeatures().vertex().supportsUserSuppliedIds()) {
-                        assert vertexIdKey != null;
-                        final Iterator<Vertex> iter = baseGraph.V().has(vertexIdKey, id);
+                        assert vertexIdKey.isPresent();
+                        final Iterator<Vertex> iter = baseGraph.V().has(vertexIdKey.get(), id);
                         if (!iter.hasNext()) return null;
                         v = iter.next();
                         if (iter.hasNext())
@@ -419,9 +319,8 @@ public class BatchGraph<T extends Graph> implements Graph {
                 currentEdgeCached.setProperties(keyValues);
             }
 
-            if (edgeIdKey != null && id != null) {
-                currentEdgeCached.setProperty(edgeIdKey, id);
-            }
+            if (edgeIdKey.isPresent() && id != null)
+                currentEdgeCached.setProperty(edgeIdKey.get(), id);
 
             currentEdge = new BatchEdge();
 
@@ -474,87 +373,87 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public <E2> GraphTraversal<Vertex, AnnotatedValue<E2>> annotatedValues(String propertyKey) {
+        public <E2> GraphTraversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public <E2> GraphTraversal<Vertex, Property<E2>> property(String propertyKey) {
+        public <E2> GraphTraversal<Vertex, Property<E2>> property(final String propertyKey) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public <E2> GraphTraversal<Vertex, E2> value(String propertyKey) {
+        public <E2> GraphTraversal<Vertex, E2> value(final String propertyKey) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> with(Object... variableValues) {
+        public GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> sideEffect(Consumer<Holder<Vertex>> consumer) {
+        public GraphTraversal<Vertex, Vertex> sideEffect(final Consumer<Holder<Vertex>> consumer) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> out(int branchFactor, String... labels) {
+        public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> in(int branchFactor, String... labels) {
+        public GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> both(int branchFactor, String... labels) {
+        public GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Edge> outE(int branchFactor, String... labels) {
+        public GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Edge> inE(int branchFactor, String... labels) {
+        public GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Edge> bothE(int branchFactor, String... labels) {
+        public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> out(String... labels) {
+        public GraphTraversal<Vertex, Vertex> out(final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> in(String... labels) {
+        public GraphTraversal<Vertex, Vertex> in(final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> both(String... labels) {
+        public GraphTraversal<Vertex, Vertex> both(final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Edge> outE(String... labels) {
+        public GraphTraversal<Vertex, Edge> outE(final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Edge> inE(String... labels) {
+        public GraphTraversal<Vertex, Edge> inE(final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Edge> bothE(String... labels) {
+        public GraphTraversal<Vertex, Edge> bothE(final String... labels) {
             throw retrievalNotSupported();
         }
 
@@ -564,7 +463,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> as(String as) {
+        public GraphTraversal<Vertex, Vertex> as(final String as) {
             throw retrievalNotSupported();
         }
 
@@ -640,5 +539,83 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     private static UnsupportedOperationException removalNotSupported() {
         return new UnsupportedOperationException("Removal operations are not supported during batch loading");
+    }
+
+    public static class Builder<T extends Graph> {
+        private final T graphToLoad;
+        private boolean loadingFromScratch = true;
+        private Optional<String> vertexIdKey = Optional.empty();
+        private Optional<String> edgeIdKey = Optional.empty();
+        private long bufferSize = DEFAULT_BUFFER_SIZE;
+        private VertexIdType vertexIdType = VertexIdType.OBJECT;
+
+        public Builder(final T g) {
+            if (null == g) throw new IllegalArgumentException("Graph may not be null");
+            this.graphToLoad = g;
+        }
+
+        /**
+         * Sets the key to be used when setting the vertex id as a property on the respective vertex.
+         * If the key is null, then no property will be set.
+         *
+         * @param key Key to be used.
+         */
+        public Builder vertexIdKey(final Optional<String> key) {
+            if (null == key) throw new IllegalArgumentException("Optional value for key cannot be null");
+            if (!loadingFromScratch && !key.isPresent() && !graphToLoad.getFeatures().vertex().supportsUserSuppliedIds())
+                throw new IllegalStateException("Cannot set vertex id key to null when not loading from scratch while ids are ignored.");
+            this.vertexIdKey = key;
+            return this;
+        }
+
+        /**
+         * Sets the key to be used when setting the edge id as a property on the respective edge.
+         * If the key is null, then no property will be set.
+         *
+         * @param key Key to be used.
+         */
+        public Builder edgeIdKey(final Optional<String> key) {
+            if (null == key) throw new IllegalArgumentException("Optional value for key cannot be null");
+            this.edgeIdKey = key;
+            return this;
+        }
+
+        public Builder bufferSize(long bufferSize) {
+            if (bufferSize <= 0) throw new IllegalArgumentException("BufferSize must be positive");
+            this.bufferSize = bufferSize;
+            return this;
+        }
+
+        public Builder vertexIdType(final VertexIdType type) {
+            if (null == type) throw new IllegalArgumentException("Type may not be null");
+            this.vertexIdType = type;
+            return this;
+        }
+
+        /**
+         * Sets whether the graph loaded through this instance of {@link BatchGraph} is loaded from scratch
+         * (i.e. the wrapped graph is initially empty) or whether graph is loaded incrementally into an
+         * existing graph.
+         * <p/>
+         * In the former case, BatchGraph does not need to check for the existence of vertices with the wrapped
+         * graph but only needs to consult its own cache which can be significantly faster. In the latter case,
+         * the cache is checked first but an additional check against the wrapped graph may be necessary if
+         * the vertex does not exist.
+         * <p/>
+         * By default, BatchGraph assumes that the data is loaded from scratch.
+         * <p/>
+         * When setting loading from scratch to false, a vertex id key must be specified first using
+         * {@link Builder#vertexIdKey} - otherwise an exception is thrown.
+         */
+        public Builder loadFromScratch(final boolean fromScratch) {
+            if (fromScratch == false && !vertexIdKey.isPresent() && !graphToLoad.getFeatures().vertex().supportsUserSuppliedIds())
+                throw new IllegalStateException("Vertex id key is required to query existing vertices in wrapped graph.");
+            loadingFromScratch = fromScratch;
+            return this;
+        }
+
+        public BatchGraph<T> build() {
+            return new BatchGraph<>(graphToLoad, vertexIdType, bufferSize, vertexIdKey, edgeIdKey, loadingFromScratch);
+        }
     }
 }

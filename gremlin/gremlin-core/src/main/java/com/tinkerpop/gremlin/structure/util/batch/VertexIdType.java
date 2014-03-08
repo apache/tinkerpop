@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.structure.util.batch.cache.VertexCache;
  *
  * @author Matthias Broecheler (http://www.matthiasb.com)
  */
-public enum VertexIDType {
+public enum VertexIdType {
 
     OBJECT {
         @Override

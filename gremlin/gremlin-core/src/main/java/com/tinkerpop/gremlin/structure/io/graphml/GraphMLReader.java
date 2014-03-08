@@ -73,7 +73,8 @@ public class GraphMLReader implements GraphReader {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
 
             // todo: get BatchGraph in here when TinkerPop3 has it
-            final BatchGraph graph = new BatchGraph(inputGraph, batchSize);
+            final BatchGraph graph = new BatchGraph.Builder<>(inputGraph)
+                    .bufferSize(batchSize).build();
 
             final Map<String, String> keyIdMap = new HashMap<>();
             final Map<String, String> keyTypesMaps = new HashMap<>();
