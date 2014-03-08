@@ -58,6 +58,8 @@ public class BatchGraph<T extends Graph> implements Graph {
     private final Optional<String> vertexIdKey;
     private final Optional<String> edgeIdKey;
     private final boolean loadingFromScratch;
+    private final boolean baseSupportsSuppliedVertexId;
+    private final boolean baseSupportsSuppliedEdgeId;
 
     private final VertexCache cache;
 
@@ -68,6 +70,7 @@ public class BatchGraph<T extends Graph> implements Graph {
     private Edge currentEdgeCached = null;
 
     private Object previousOutVertexId = null;
+
 
     /**
      * Constructs a BatchGraph wrapping the provided baseGraph, using the specified buffer size and expecting vertex
@@ -88,6 +91,8 @@ public class BatchGraph<T extends Graph> implements Graph {
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
         this.loadingFromScratch = loadingFromScratch;
+        this.baseSupportsSuppliedEdgeId = this.baseGraph.getFeatures().edge().supportsUserSuppliedIds();
+        this.baseSupportsSuppliedVertexId = this.baseGraph.getFeatures().vertex().supportsUserSuppliedIds();
     }
 
     // todo: need static constructors with writethroughgraph in tp2???
@@ -127,7 +132,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         if (retrieveFromCache(id) != null) throw new IllegalArgumentException("Vertex id already exists");
         nextElement();
 
-        final Optional<Object[]> kvs = baseGraph.getFeatures().vertex().supportsUserSuppliedIds() ?
+        final Optional<Object[]> kvs = this.baseSupportsSuppliedVertexId ?
                 Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
         final Vertex v = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
 
@@ -147,16 +152,14 @@ public class BatchGraph<T extends Graph> implements Graph {
      */
     @Override
     public Vertex v(final Object id) {
-        if ((previousOutVertexId != null) && (previousOutVertexId.equals(id))) {
+        if ((previousOutVertexId != null) && (previousOutVertexId.equals(id)))
             return new BatchVertex(previousOutVertexId);
-        } else {
-
-            // todo: nicer way to do the below???
+        else {
             Vertex v = retrieveFromCache(id);
             if (null == v) {
                 if (loadingFromScratch) return null;
                 else {
-                    if (!baseGraph.getFeatures().vertex().supportsUserSuppliedIds()) {
+                    if (!this.baseSupportsSuppliedVertexId) {
                         assert vertexIdKey.isPresent();
                         final Iterator<Vertex> iter = baseGraph.V().has(vertexIdKey.get(), id);
                         if (!iter.hasNext()) return null;
@@ -303,7 +306,7 @@ public class BatchGraph<T extends Graph> implements Graph {
             previousOutVertexId = externalID;  //keep track of the previous out vertex id
 
             final Optional<Object> id = ElementHelper.getIdValue(keyValues);
-            final Optional<Object[]> kvs = baseGraph.getFeatures().edge().supportsUserSuppliedIds() ?
+            final Optional<Object[]> kvs = baseSupportsSuppliedEdgeId ?
                     Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
 
             currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
