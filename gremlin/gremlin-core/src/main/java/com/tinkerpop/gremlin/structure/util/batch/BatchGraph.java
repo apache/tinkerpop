@@ -120,8 +120,6 @@ public class BatchGraph<T extends Graph> implements Graph {
         return v;
     }
 
-    // todo: worth having a addVertex(id) overload for batching?
-
     @Override
     public Vertex addVertex(final Object... keyValues) {
         final Object id = ElementHelper.getIdValue(keyValues).orElse(null);
