@@ -81,6 +81,14 @@ public class ElementHelper {
     }
 
     /**
+     * Converts a set of key values to a Map.  Assumes that validations have already taken place to
+     * assure that key positions contain strings and that there are an even number of elements.
+     */
+    public static Map<String, Object> asMap(final Object... keyValues) {
+        return asPairs(keyValues).stream().collect(Collectors.toMap(p->p.getValue0(), p->p.getValue1()));
+    }
+
+    /**
      * Convert a set of key values to a list of Pair objects.  Assumes that validations have already taken place to
      * assure that key positions contain strings and that there are an even number of elements.
      */

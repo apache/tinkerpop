@@ -9,6 +9,7 @@ import org.javatuples.Pair;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static junit.framework.Assert.fail;
@@ -400,5 +401,15 @@ public class ElementHelperTest {
         assertEquals("other", pairs.get(2).getValue1());
         assertEquals("4", pairs.get(3).getValue0());
         assertEquals(1, pairs.get(3).getValue1());
+    }
+
+    @Test
+    public void shouldGetMap() {
+        final Map<String,Object> map = ElementHelper.asMap("1", "this", "2", 6l, "3", "other", "4", 1);
+        assertEquals(4, map.size());
+        assertEquals("this", map.get("1"));
+        assertEquals(6l, map.get("2"));
+        assertEquals("other", map.get("3"));
+        assertEquals(1, map.get("4"));
     }
 }
