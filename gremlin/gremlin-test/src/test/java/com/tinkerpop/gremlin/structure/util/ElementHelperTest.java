@@ -5,8 +5,10 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.javatuples.Pair;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static junit.framework.Assert.fail;
@@ -384,5 +386,19 @@ public class ElementHelperTest {
         final Set<String> keys = ElementHelper.getKeys("test1", "something", "test2", "something else");
         assertTrue(keys.contains("test1"));
         assertTrue(keys.contains("test2"));
+    }
+
+    @Test
+    public void shouldGetPairs() {
+        final List<Pair<String,Object>> pairs = ElementHelper.asPairs("1", "this", "2", 6l, "3", "other", "4", 1);
+        assertEquals(4, pairs.size());
+        assertEquals("1", pairs.get(0).getValue0());
+        assertEquals("this", pairs.get(0).getValue1());
+        assertEquals("2", pairs.get(1).getValue0());
+        assertEquals(6l, pairs.get(1).getValue1());
+        assertEquals("3", pairs.get(2).getValue0());
+        assertEquals("other", pairs.get(2).getValue1());
+        assertEquals("4", pairs.get(3).getValue0());
+        assertEquals(1, pairs.get(3).getValue1());
     }
 }

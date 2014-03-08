@@ -5,12 +5,18 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.javatuples.Pair;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -72,6 +78,18 @@ public class ElementHelper {
                 return Optional.of(keyValues[i + 1]);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Convert a set of key values to a list of Pair objects.  Assumes that validations have already taken place to
+     * assure that key positions contain strings and that there are an even number of elements.
+     */
+    public static List<Pair<String,Object>> asPairs(final Object... keyValues) {
+        final List list = Arrays.asList(keyValues);
+        return IntStream.range(1, list.size())
+                        .filter(i -> i % 2 != 0)
+                        .mapToObj(i -> Pair.<String, Object>with(list.get(i - 1).toString(), list.get(i)))
+                        .collect(Collectors.toList());
     }
 
     /**
