@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.neo4j.process.map.Neo4jGraphStep;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -16,6 +17,7 @@ import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
@@ -124,6 +126,34 @@ public class Neo4jGraph implements Graph {
     }
 
     @Override
+    public Vertex v(final Object id) {
+        if (null == id)
+            throw FastNoSuchElementException.instance(); // todo: make consistent
+
+        try {
+            return new Neo4jVertex(this.rawGraph.getNodeById(evaluateToLong(id)), this);
+        } catch (NotFoundException e) {
+            throw FastNoSuchElementException.instance(); // todo: make consistent
+        } catch (NumberFormatException e) {
+            throw FastNoSuchElementException.instance(); // todo: make consistent
+        }
+    }
+
+    @Override
+    public Edge e(final Object id) {
+        if (null == id)
+            throw FastNoSuchElementException.instance(); // todo: make consistent
+
+        try {
+            return new Neo4jEdge(this.rawGraph.getRelationshipById(evaluateToLong(id)), this);
+        } catch (NotFoundException e) {
+            throw FastNoSuchElementException.instance(); // todo: make consistent
+        } catch (NumberFormatException e) {
+            throw FastNoSuchElementException.instance(); // todo: make consistent
+        }
+    }
+
+    @Override
     public GraphComputer compute() {
         throw Graph.Exceptions.graphComputerNotSupported(); // todo: fix later
     }
@@ -162,6 +192,17 @@ public class Neo4jGraph implements Graph {
 
     public Iterator<Map<String,Object>> query(final String query, final Map<String,Object> params) {
         return cypher.execute(query,null == params ? Collections.<String,Object>emptyMap() : params).iterator();
+    }
+
+    private static Long evaluateToLong(final Object id) throws NumberFormatException {
+        Long longId;
+        if (id instanceof Long)
+            longId = (Long) id;
+        else if (id instanceof Number)
+            longId = ((Number) id).longValue();
+        else
+            longId = Double.valueOf(id.toString()).longValue();
+        return longId;
     }
 
     class Neo4jTransaction implements Transaction {
