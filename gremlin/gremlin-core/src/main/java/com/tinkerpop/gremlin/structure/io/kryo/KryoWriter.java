@@ -53,9 +53,9 @@ public class KryoWriter implements GraphWriter {
         final Output output = new Output(outputStream);
         writeHeader(output);
 
-        final boolean supportsAnnotations = graph.getFeatures().graph().supportsMemory();
-        output.writeBoolean(supportsAnnotations);
-        if (supportsAnnotations)
+        final boolean supportsGraphMemory = graph.getFeatures().graph().supportsMemory();
+        output.writeBoolean(supportsGraphMemory);
+        if (supportsGraphMemory)
             kryo.writeObject(output, new HashMap(graph.memory().asMap()));
 
         final Iterator<Vertex> vertices = graph.V();
