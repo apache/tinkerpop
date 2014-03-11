@@ -21,6 +21,8 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import javax.transaction.TransactionManager;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
@@ -389,5 +391,9 @@ public class Neo4jGraph implements Graph {
 
     public GraphDatabaseService getRawGraph() {
         return this.rawGraph;
+    }
+
+    public Iterator<Map<String,Object>> query(final String query, final Map<String,Object> params) {
+        return cypher.execute(query,null == params ? Collections.<String,Object>emptyMap() : params).iterator();
     }
 }
