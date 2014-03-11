@@ -19,12 +19,17 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
+
+import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -33,23 +38,13 @@ public class Neo4jGraph implements Graph {
     private GraphDatabaseService rawGraph;
     private static final String INDEXED_KEYS_POSTFIX = ":indexed_keys";
 
-    protected final ThreadLocal<org.neo4j.graphdb.Transaction> threadLocalTx = new ThreadLocal<org.neo4j.graphdb.Transaction>() {
-        protected org.neo4j.graphdb.Transaction initialValue() {
-            return null;
-        }
-    };
-
     protected final ThreadLocal<Boolean> checkElementsInTransaction = new ThreadLocal<Boolean>() {
         protected Boolean initialValue() {
             return false;
         }
     };
 
-    private ThreadLocal<Neo4jTransaction> neo4jTransaction = new ThreadLocal<Neo4jTransaction>() {
-        protected Neo4jTransaction initialValue() {
-            return new Neo4jTransaction(Neo4jGraph.this);
-        }
-    };
+    private final Neo4jTransaction neo4jTransaction = new Neo4jTransaction();
 
     protected final TransactionManager transactionManager;
     private final ExecutionEngine cypher;
@@ -135,7 +130,7 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public Transaction tx() {
-        return neo4jTransaction.get();
+        return neo4jTransaction;
     }
 
     @Override
@@ -148,6 +143,7 @@ public class Neo4jGraph implements Graph {
         // need to close any dangling transactions
         // todo: does this need to be done across threads to keep shutdown fast???
         this.tx().close();
+
         if (this.rawGraph != null)
             this.rawGraph.shutdown();
     }
@@ -158,6 +154,117 @@ public class Neo4jGraph implements Graph {
 
     public Features getFeatures() {
         return new Neo4jGraphFeatures();
+    }
+
+    public GraphDatabaseService getRawGraph() {
+        return this.rawGraph;
+    }
+
+    public Iterator<Map<String,Object>> query(final String query, final Map<String,Object> params) {
+        return cypher.execute(query,null == params ? Collections.<String,Object>emptyMap() : params).iterator();
+    }
+
+    class Neo4jTransaction implements Transaction {
+        private Consumer<Transaction> readWriteConsumer;
+        private Consumer<Transaction> closeConsumer;
+
+        protected final ThreadLocal<org.neo4j.graphdb.Transaction> threadLocalTx = new ThreadLocal<org.neo4j.graphdb.Transaction>() {
+            protected org.neo4j.graphdb.Transaction initialValue() {
+                return null;
+            }
+        };
+
+        public Neo4jTransaction() {
+            // auto transaction behavior
+            readWriteConsumer = READ_WRITE_BEHAVIOR.AUTO;
+
+            // commit on close
+            closeConsumer = CLOSE_BEHAVIOR.COMMIT;
+        }
+
+        @Override
+        public void open() {
+            if (isOpen())
+                throw Transaction.Exceptions.transactionAlreadyOpen();
+            else
+                threadLocalTx.set(getRawGraph().beginTx());
+        }
+
+        @Override
+        public void commit() {
+            if (!isOpen())
+                return;
+
+            try {
+                threadLocalTx.get().success();
+            } finally {
+                threadLocalTx.get().close();
+                threadLocalTx.remove();
+            }
+        }
+
+        @Override
+        public void rollback() {
+            if (!isOpen())
+                return;
+
+            try {
+                javax.transaction.Transaction t = transactionManager.getTransaction();
+                if (null == t || t.getStatus() == Status.STATUS_ROLLEDBACK)
+                    return;
+
+                threadLocalTx.get().failure();
+            } catch (SystemException e) {
+                throw new RuntimeException(e); // todo: generalize and make consistent
+            } finally {
+                threadLocalTx.get().close();
+                threadLocalTx.remove();
+            }
+        }
+
+        @Override
+        public <G extends Graph, R> Workload<G, R> submit(final Function<G, R> work) {
+            return new Workload<>((G) Neo4jGraph.this, work);
+        }
+
+        @Override
+        public <G extends Graph> G create() {
+            // todo: need a feature for threaded transactions
+            return null;
+        }
+
+        @Override
+        public boolean isOpen() {
+            return (threadLocalTx.get() != null);
+        }
+
+        @Override
+        public void readWrite() {
+            this.readWriteConsumer.accept(this);
+        }
+
+        @Override
+        public void close() {
+            this.closeConsumer.accept(this);
+        }
+
+        @Override
+        public Transaction onReadWrite(final Consumer<Transaction> consumer) {
+            if (null == consumer)
+                throw new IllegalArgumentException("consumer"); // todo: exception consistency
+
+            this.readWriteConsumer = consumer;
+            return this;
+        }
+
+        @Override
+        public Transaction onClose(final Consumer<Transaction> consumer) {
+            if (null == consumer)
+                throw new IllegalArgumentException("consumer");   // todo: exception consistency
+
+            this.closeConsumer = consumer;
+            return this;
+        }
     }
 
     public static class Neo4jGraphFeatures implements Features {
@@ -387,13 +494,5 @@ public class Neo4jGraph implements Graph {
                 return false;
             }
         }
-    }
-
-    public GraphDatabaseService getRawGraph() {
-        return this.rawGraph;
-    }
-
-    public Iterator<Map<String,Object>> query(final String query, final Map<String,Object> params) {
-        return cypher.execute(query,null == params ? Collections.<String,Object>emptyMap() : params).iterator();
     }
 }
