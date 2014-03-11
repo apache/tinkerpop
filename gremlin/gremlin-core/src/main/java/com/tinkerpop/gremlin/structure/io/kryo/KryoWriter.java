@@ -38,14 +38,15 @@ public class KryoWriter implements GraphWriter {
 
         // todo: centralize kryo instance creation
         // todo: need way to register custom types.
+        // todo: hardcode types
         kryo.setRegistrationRequired(true);
-        kryo.register(ArrayList.class);
+        kryo.register(ArrayList.class);        // 10
         kryo.register(HashMap.class);
         kryo.register(Direction.class);
         kryo.register(VertexTerminator.class);
         kryo.register(EdgeTerminator.class);
         kryo.register(KryoAnnotatedList.class);
-        kryo.register(KryoAnnotatedValue.class);
+        kryo.register(KryoAnnotatedValue.class);    // 16
     }
 
     @Override

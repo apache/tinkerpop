@@ -50,6 +50,7 @@ public class KryoReader implements GraphReader {
 
         // todo: centralize kryo instance creation
         // todo: need way to register custom types.
+        // todo: hardcode types
         kryo.setRegistrationRequired(true);
         kryo.register(ArrayList.class);
         kryo.register(HashMap.class);
@@ -144,11 +145,17 @@ public class KryoReader implements GraphReader {
 
         try {
             final boolean supportedMemory = input.readBoolean();
-            if (supportedMemory && graph.getFeatures().graph().supportsMemory()) {
+            if (supportedMemory) {
                 // todo: do we just let this fail or do we check features for supported memory types
-                final Graph.Memory memory = graph.memory();
+
+                // if the graph that serialized the data supported memory then the memory needs to be read
+                // to advance the reader forward.  if the graph being read into doesn't support the memory
+                // then we just setting the data to memory.
                 final Map<String,Object> memMap = (Map<String,Object>) kryo.readObject(input, HashMap.class);
-                memMap.forEach(memory::set);
+                if (graph.getFeatures().graph().supportsMemory()) {
+                    final Graph.Memory memory = graph.memory();
+                    memMap.forEach(memory::set);
+                }
             }
 
             final boolean hasSomeVertices = input.readBoolean();
