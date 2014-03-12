@@ -1,12 +1,12 @@
 package com.tinkerpop.gremlin.giraph.process.olap;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphInputFormat;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.io.formats.IdWithValueTextOutputFormat;
-import org.apache.giraph.io.formats.JsonLongDoubleFloatDoubleVertexInputFormat;
 import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.util.Tool;
@@ -39,7 +39,8 @@ public class GiraphGraphRunner extends Configured implements Tool {
     public static void main(final String[] args) {
         Configuration configuration = new BaseConfiguration();
         configuration.setProperty("giraph.vertexClass", GiraphVertex.class.getName());
-        configuration.setProperty("giraph.vertexInputFormatClass", JsonLongDoubleFloatDoubleVertexInputFormat.class.getName());
+        //configuration.setProperty("giraph.vertexInputFormatClass", JsonLongDoubleFloatDoubleVertexInputFormat.class.getName());
+        configuration.setProperty("giraph.vertexInputFormatClass", TinkerGraphInputFormat.class.getName());
         configuration.setProperty("giraph.vertexOutputFormatClass", IdWithValueTextOutputFormat.class.getName());
         configuration.setProperty("giraph.maxWorkers", "1");
         //configuration.setProperty("giraph.zkList", "127.0.0.1:2181");
