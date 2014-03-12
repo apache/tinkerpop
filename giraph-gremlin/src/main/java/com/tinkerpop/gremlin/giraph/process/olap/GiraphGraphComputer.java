@@ -17,7 +17,7 @@ import java.util.concurrent.Future;
  */
 public class GiraphGraphComputer implements GraphComputer {
 
-    private GiraphConfiguration giraphConfiguration = new GiraphConfiguration(new org.apache.hadoop.conf.Configuration(true));
+    private org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
     private VertexProgram vertexProgram;
 
     public GraphComputer isolation(final Isolation isolation) {
@@ -32,14 +32,14 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public GraphComputer configuration(final Configuration configuration) {
-        this.giraphConfiguration = new GiraphConfiguration();
-        configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getString(key)));
+        this.hadoopConfiguration = new GiraphConfiguration();
+        configuration.getKeys().forEachRemaining(key -> this.hadoopConfiguration.set(key, configuration.getString(key)));
         return this;
     }
 
     public Future<Graph> submit() {
         try {
-            ToolRunner.run(new GiraphGraphRunner(this.giraphConfiguration), new String[]{});
+            ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration), new String[]{});
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
