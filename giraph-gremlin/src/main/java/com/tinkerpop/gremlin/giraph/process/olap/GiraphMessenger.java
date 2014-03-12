@@ -1,21 +1,31 @@
 package com.tinkerpop.gremlin.giraph.process.olap;
 
+import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.structure.Vertex;
-
-import java.io.Serializable;
+import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphMessenger<M extends Serializable> implements Messenger<M> {
+public class GiraphMessenger implements Messenger<Double> {
 
-    public Iterable<M> receiveMessages(final Vertex vertex, final MessageType messageType) {
-        return null;
+    private final GiraphVertex giraphVertex;
+    private final Iterable<DoubleWritable> messages;
+
+    public GiraphMessenger(final GiraphVertex giraphVertex, final Iterable<DoubleWritable> messages) {
+        this.giraphVertex = giraphVertex;
+        this.messages = messages;
     }
 
-    public void sendMessage(final Vertex vertex, final MessageType messageType, final M message) {
-        // ((GiraphVertex) vertex).sendMessage(vertex.getId(), message);
+    public Iterable<Double> receiveMessages(final Vertex vertex, final MessageType messageType) {
+        return StreamFactory.iterable(StreamFactory.stream(this.messages).map(d -> d.get()));
+    }
+
+    public void sendMessage(final Vertex vertex, final MessageType messageType, final Double message) {
+        this.giraphVertex.sendMessage(new LongWritable(new Long(vertex.getId().toString())), new DoubleWritable(message));
     }
 }

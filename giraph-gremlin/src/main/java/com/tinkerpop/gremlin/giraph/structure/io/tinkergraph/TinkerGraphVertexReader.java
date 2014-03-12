@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure.io.tinkergraph;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.apache.giraph.graph.Vertex;
@@ -30,7 +31,7 @@ public class TinkerGraphVertexReader extends VertexReader {
     }
 
     public Vertex getCurrentVertex() throws IOException, InterruptedException {
-        return new GiraphVertex(this.vertices.next(), null);
+        return new GiraphVertex(this.vertices.next(), new PageRankVertexProgram.Builder().build());
     }
 
     public void close() throws IOException {
