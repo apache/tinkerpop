@@ -218,11 +218,14 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     @Override
     public void close() throws Exception {
-        // todo: necessary to commit() or is that handled by tx close properly?
-        baseGraph.tx().commit();
-        baseGraph.tx().close();
+        reset();
+        baseGraph.close();
+    }
+
+    private void reset() {
         currentEdge = null;
         currentEdgeCached = null;
+        remainingBufferSize = 0;
     }
 
     private class BatchTransaction implements Transaction {
@@ -270,10 +273,7 @@ public class BatchGraph<T extends Graph> implements Graph {
 
         @Override
         public void commit() {
-            currentEdge = null;
-            currentEdgeCached = null;
-            remainingBufferSize = 0;
-
+            reset();
             if (supportsTx) baseGraph.tx().commit();
         }
 
