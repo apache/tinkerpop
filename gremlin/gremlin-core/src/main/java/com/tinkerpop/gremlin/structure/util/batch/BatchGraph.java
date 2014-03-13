@@ -543,6 +543,7 @@ public class BatchGraph<T extends Graph> implements Graph {
 
         public Builder(final T g) {
             if (null == g) throw new IllegalArgumentException("Graph may not be null");
+            if (g instanceof BatchGraph) throw new IllegalArgumentException("BatchGraph cannot wrap another BatchGraph instance");
             this.graphToLoad = g;
         }
 
