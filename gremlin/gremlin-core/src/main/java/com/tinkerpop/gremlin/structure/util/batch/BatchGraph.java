@@ -71,6 +71,7 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     private Object previousOutVertexId = null;
 
+    private final Transaction batchTransaction = new BatchTransaction();
 
     /**
      * Constructs a BatchGraph wrapping the provided baseGraph, using the specified buffer size and expecting vertex
@@ -204,8 +205,7 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     @Override
     public Transaction tx() {
-        // todo: can we have just one of these
-        return new BatchTransaction();
+        return this.batchTransaction;
     }
 
     @Override
