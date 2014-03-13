@@ -22,7 +22,7 @@ public class GiraphMessenger implements Messenger<Double> {
     }
 
     public Iterable<Double> receiveMessages(final Vertex vertex, final MessageType messageType) {
-        return StreamFactory.iterable(StreamFactory.stream(this.messages).map(d -> d.get()));
+        return StreamFactory.iterable(StreamFactory.stream(this.messages).map(DoubleWritable::get));
     }
 
     public void sendMessage(final Vertex vertex, final MessageType messageType, final Double message) {
@@ -31,7 +31,10 @@ public class GiraphMessenger implements Messenger<Double> {
             localMessageType.vertices(vertex).forEach(v ->
                     this.giraphVertex.sendMessage(new LongWritable(new Long(v.getId().toString())), new DoubleWritable(message)));
         } else {
-            System.out.println("Make work for Global Messages as well.");
+            final MessageType.Global globalMessageType = (MessageType.Global) messageType;
+            globalMessageType.vertices().forEach(v ->
+                    this.giraphVertex.sendMessage(new LongWritable(new Long(v.getId().toString())), new DoubleWritable(message)));
+
         }
 
     }

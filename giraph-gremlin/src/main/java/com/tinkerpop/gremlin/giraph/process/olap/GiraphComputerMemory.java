@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.EmptyGraph;
-import org.apache.giraph.master.DefaultMasterCompute;
+import org.apache.giraph.master.MasterCompute;
 import org.apache.hadoop.io.Writable;
 import org.apache.log4j.Logger;
 
@@ -18,7 +18,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphComputerMemory extends DefaultMasterCompute implements Graph.Memory.Computer {
+public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.Computer {
+
+    // TODO: vertex program needs to have ComputeKeys but for master as well.
 
     private final Logger logger = Logger.getLogger(GiraphComputerMemory.class);
     private VertexProgram vertexProgram;
