@@ -3,7 +3,9 @@ package com.tinkerpop.gremlin.process.computer;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.VertexQueryBuilder;
+import com.tinkerpop.gremlin.util.function.SBiFunction;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 
@@ -15,7 +17,7 @@ import java.util.function.BiFunction;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public abstract class MessageType {
+public abstract class MessageType implements Serializable {
 
     private final String label;
 
@@ -59,7 +61,7 @@ public abstract class MessageType {
 
     public static class Local<M1, M2> extends MessageType {
         public final VertexQueryBuilder query;
-        public final BiFunction<M1, Edge, M2> edgeFunction;
+        public final SBiFunction<M1, Edge, M2> edgeFunction;
 
         private Local(final String label, final VertexQueryBuilder query) {
             super(label);
@@ -67,7 +69,7 @@ public abstract class MessageType {
             this.edgeFunction = (final M1 m, final Edge e) -> (M2) m;
         }
 
-        private Local(final String label, final VertexQueryBuilder query, final BiFunction<M1, Edge, M2> edgeFunction) {
+        private Local(final String label, final VertexQueryBuilder query, final SBiFunction<M1, Edge, M2> edgeFunction) {
             super(label);
             this.query = query;
             this.edgeFunction = edgeFunction;
@@ -77,7 +79,7 @@ public abstract class MessageType {
             return new Local(label, query);
         }
 
-        public static <M1, M2> Local of(final String label, final VertexQueryBuilder query, final BiFunction<M1, Edge, M2> edgeFunction) {
+        public static <M1, M2> Local of(final String label, final VertexQueryBuilder query, final SBiFunction<M1, Edge, M2> edgeFunction) {
             return new Local<>(label, query, edgeFunction);
         }
 

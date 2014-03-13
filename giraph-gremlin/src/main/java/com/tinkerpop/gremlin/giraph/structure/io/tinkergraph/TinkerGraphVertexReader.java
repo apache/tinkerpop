@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.tinkergraph;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
-import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.TinkerFactory;
 import org.apache.giraph.graph.Vertex;
@@ -18,11 +17,11 @@ import java.util.Iterator;
  */
 public class TinkerGraphVertexReader extends VertexReader {
 
-    Iterator<com.tinkerpop.gremlin.structure.Vertex> vertices = Collections.emptyIterator();
+    protected Iterator<com.tinkerpop.gremlin.structure.Vertex> vertices = Collections.emptyIterator();
 
     public void initialize(final InputSplit inputSplit, final TaskAttemptContext context) throws IOException, InterruptedException {
         final Graph g = TinkerFactory.createClassic();
-        vertices = g.V();
+        this.vertices = g.V();
     }
 
 
@@ -31,7 +30,7 @@ public class TinkerGraphVertexReader extends VertexReader {
     }
 
     public Vertex getCurrentVertex() throws IOException, InterruptedException {
-        return new GiraphVertex(this.vertices.next(), new PageRankVertexProgram.Builder().build());
+        return new GiraphVertex(this.vertices.next());
     }
 
     public void close() throws IOException {

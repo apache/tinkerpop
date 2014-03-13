@@ -26,6 +26,13 @@ public class GiraphMessenger implements Messenger<Double> {
     }
 
     public void sendMessage(final Vertex vertex, final MessageType messageType, final Double message) {
-        this.giraphVertex.sendMessage(new LongWritable(new Long(vertex.getId().toString())), new DoubleWritable(message));
+        if (messageType instanceof MessageType.Local) {
+            final MessageType.Local<Object, Double> localMessageType = (MessageType.Local) messageType;
+            localMessageType.vertices(vertex).forEach(v ->
+                    this.giraphVertex.sendMessage(new LongWritable(new Long(v.getId().toString())), new DoubleWritable(message)));
+        } else {
+            System.out.println("Make work for Global Messages as well.");
+        }
+
     }
 }

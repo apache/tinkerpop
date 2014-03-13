@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.giraph.process.olap;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphInputFormat;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConfiguration;
@@ -20,14 +21,15 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         this.giraphConfiguration = new GiraphConfiguration(hadoopConfiguration);
+        this.giraphConfiguration.setMasterComputeClass(GiraphComputerMemory.class);
+        this.giraphConfiguration.setWorkerConfiguration(1, 1, 100.0f);
     }
 
     public int run(final String[] args) {
         try {
             final GiraphJob job = new GiraphJob(this.giraphConfiguration, "GiraphGraph Play");
-            job.getConfiguration().setWorkerConfiguration(1, 1, 100.0f);
-            job.getConfiguration().setZooKeeperJar("/usr/local/zookeeper-3.3.6/zookeeper-3.3.6.jar");
             job.getInternalJob().setJarByClass(GiraphJob.class);
+            //job.getConfiguration().setZooKeeperJar("/usr/local/zookeeper-3.3.6/zookeeper-3.3.6.jar");
             //job.getConfiguration().set("mapred.jar", "target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar");
             job.run(true);
         } catch (Exception e) {
@@ -39,7 +41,6 @@ public class GiraphGraphRunner extends Configured implements Tool {
     public static void main(final String[] args) {
         Configuration configuration = new BaseConfiguration();
         configuration.setProperty("giraph.vertexClass", GiraphVertex.class.getName());
-        //configuration.setProperty("giraph.vertexInputFormatClass", JsonLongDoubleFloatDoubleVertexInputFormat.class.getName());
         configuration.setProperty("giraph.vertexInputFormatClass", TinkerGraphInputFormat.class.getName());
         configuration.setProperty("giraph.vertexOutputFormatClass", IdWithValueTextOutputFormat.class.getName());
         configuration.setProperty("giraph.maxWorkers", "1");
@@ -49,8 +50,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
         configuration.setProperty("giraph.vertex.input.dir", "tiny_graph.txt");
         configuration.setProperty("mapred.output.dir", "output");
 
-
         GraphComputer g = new GiraphGraphComputer();
-        g.configuration(configuration).submit();
+        g.program(new PageRankVertexProgram.Builder().build()).configuration(configuration).submit();
     }
 }
