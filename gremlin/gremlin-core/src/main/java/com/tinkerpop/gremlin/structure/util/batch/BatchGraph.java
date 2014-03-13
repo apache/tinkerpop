@@ -232,12 +232,12 @@ public class BatchGraph<T extends Graph> implements Graph {
 
         @Override
         public Transaction onClose(final Consumer<Transaction> consumer) {
-            throw new UnsupportedOperationException("Transaction behavior cannot be altered in batch mode");
+            throw new UnsupportedOperationException("Transaction behavior cannot be altered in batch mode - set the behavior on the base graph");
         }
 
         @Override
         public Transaction onReadWrite(final Consumer<Transaction> consumer) {
-            throw new UnsupportedOperationException("Transaction behavior cannot be altered in batch mode");
+            throw new UnsupportedOperationException("Transaction behavior cannot be altered in batch mode - set the behavior on the base graph");
         }
 
         @Override
