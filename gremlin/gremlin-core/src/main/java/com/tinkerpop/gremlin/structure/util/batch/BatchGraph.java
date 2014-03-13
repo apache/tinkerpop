@@ -218,8 +218,10 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     @Override
     public void close() throws Exception {
-        reset();
         baseGraph.close();
+
+        // call reset after the close in case the close behavior fails
+        reset();
     }
 
     private void reset() {
@@ -244,6 +246,9 @@ public class BatchGraph<T extends Graph> implements Graph {
         @Override
         public void close() {
             if (supportsTx) baseGraph.tx().close();
+
+            // call reset after the close in case the close behavior fails
+            reset();
         }
 
         @Override
@@ -273,8 +278,10 @@ public class BatchGraph<T extends Graph> implements Graph {
 
         @Override
         public void commit() {
-            reset();
             if (supportsTx) baseGraph.tx().commit();
+
+            // call reset after the close in case the close behavior fails
+            reset();
         }
 
         @Override
