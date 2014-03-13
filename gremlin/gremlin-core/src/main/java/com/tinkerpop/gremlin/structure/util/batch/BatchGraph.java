@@ -96,8 +96,6 @@ public class BatchGraph<T extends Graph> implements Graph {
         this.baseSupportsSuppliedVertexId = this.baseGraph.getFeatures().vertex().supportsUserSuppliedIds();
     }
 
-    // todo: need static constructors with writethroughgraph in tp2???
-
     private void nextElement() {
         currentEdge = null;
         currentEdgeCached = null;
