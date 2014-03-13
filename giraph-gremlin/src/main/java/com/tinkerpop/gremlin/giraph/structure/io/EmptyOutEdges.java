@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.giraph.structure.util;
+package com.tinkerpop.gremlin.giraph.structure.io;
 
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.OutEdges;

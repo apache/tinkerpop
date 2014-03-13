@@ -26,6 +26,8 @@ public class GiraphGraphComputer implements GraphComputer {
     private org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
     private VertexProgram vertexProgram;
 
+    public static final String VERTEX_PROGRAM = "vertexProgram";
+
     public GraphComputer isolation(final Isolation isolation) {
         if (isolation.equals(Isolation.DIRTY_BSP))
             throw GraphComputer.Exceptions.isolationNotSupported(isolation);
@@ -46,12 +48,12 @@ public class GiraphGraphComputer implements GraphComputer {
     public Future<Graph> submit() {
         try {
             final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
-            final Path vertexProgramPath = new Path("tmp/extract", UUID.randomUUID().toString());
+            final Path vertexProgramPath = new Path("tmp/gremlin", UUID.randomUUID().toString());
             final ObjectOutputStream os = new ObjectOutputStream(fs.create(vertexProgramPath));
             os.writeObject(this.vertexProgram);
             os.close();
             fs.deleteOnExit(vertexProgramPath);
-            DistributedCache.addCacheFile(new URI(vertexProgramPath + "#targets"), this.hadoopConfiguration);
+            DistributedCache.addCacheFile(new URI(vertexProgramPath + "#" + VERTEX_PROGRAM), this.hadoopConfiguration);
             DistributedCache.createSymlink(this.hadoopConfiguration);
             ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration), new String[]{});
         } catch (Exception e) {

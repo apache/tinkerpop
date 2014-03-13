@@ -38,7 +38,7 @@ public class GiraphComputerMemory extends DefaultMasterCompute implements Graph.
 
     public void initialize() {
         try {
-            this.vertexProgram = (VertexProgram) new ObjectInputStream(new FileInputStream("targets")).readObject();
+            this.vertexProgram = (VertexProgram) new ObjectInputStream(new FileInputStream(GiraphGraphComputer.VERTEX_PROGRAM)).readObject();
             //this.registerAggregator("or", BooleanOrAggregator.class);
         } catch (Exception e) {
             java.lang.System.out.println(e.getMessage());

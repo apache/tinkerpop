@@ -1,8 +1,9 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
 import com.tinkerpop.gremlin.giraph.process.olap.GiraphComputerMemory;
+import com.tinkerpop.gremlin.giraph.process.olap.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.olap.GiraphMessenger;
-import com.tinkerpop.gremlin.giraph.structure.util.EmptyOutEdges;
+import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
 import org.apache.giraph.graph.Vertex;
@@ -26,7 +27,7 @@ public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritabl
 
     public GiraphVertex(final com.tinkerpop.gremlin.structure.Vertex gremlinVertex) {
         try {
-            this.vertexProgram = (VertexProgram) new ObjectInputStream(new FileInputStream("targets")).readObject();
+            this.vertexProgram = (VertexProgram) new ObjectInputStream(new FileInputStream(GiraphGraphComputer.VERTEX_PROGRAM)).readObject();
         } catch (Exception e) {
             java.lang.System.out.println(e.getMessage());
         }

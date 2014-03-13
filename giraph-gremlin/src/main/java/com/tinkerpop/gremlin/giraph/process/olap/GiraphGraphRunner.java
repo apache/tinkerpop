@@ -29,8 +29,6 @@ public class GiraphGraphRunner extends Configured implements Tool {
         try {
             final GiraphJob job = new GiraphJob(this.giraphConfiguration, "GiraphGraph Play");
             job.getInternalJob().setJarByClass(GiraphJob.class);
-            //job.getConfiguration().setZooKeeperJar("/usr/local/zookeeper-3.3.6/zookeeper-3.3.6.jar");
-            //job.getConfiguration().set("mapred.jar", "target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar");
             job.run(true);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
