@@ -181,6 +181,7 @@ public interface Graph extends AutoCloseable {
                 return true;
             }
 
+            // todo: threaded tx feature?
             @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
             public default boolean supportsTransactions() {
                 return true;

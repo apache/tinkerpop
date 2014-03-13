@@ -71,6 +71,8 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     private Object previousOutVertexId = null;
 
+    private final BatchFeatures batchFeatures;
+
     private final Transaction batchTransaction = new BatchTransaction();
 
     /**
@@ -86,6 +88,7 @@ public class BatchGraph<T extends Graph> implements Graph {
     private BatchGraph(final T graph, final VertexIdType type, final long bufferSize, final Optional<String> vertexIdKey,
                        final Optional<String> edgeIdKey, final  boolean loadingFromScratch) {
         this.baseGraph = graph;
+        this.batchFeatures = new BatchFeatures(graph.getFeatures());
         this.bufferSize = bufferSize;
         this.cache = type.getVertexCache();
         this.remainingBufferSize = this.bufferSize;
@@ -213,7 +216,7 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     @Override
     public Features getFeatures() {
-        return null;  // todo: what are the features of batchgraph
+        return this.batchFeatures;
     }
 
     @Override
