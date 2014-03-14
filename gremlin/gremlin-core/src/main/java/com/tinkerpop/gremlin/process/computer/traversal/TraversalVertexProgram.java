@@ -98,14 +98,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     ////////// GRAPH COMPUTER METHODS
 
     public boolean terminate(final Graph.Memory.Computer graphMemory) {
-        return graphMemory.getIteration() > 3;
-        /*final boolean voteToHalt = graphMemory.get(VOTE_TO_HALT);
+        final boolean voteToHalt = graphMemory.get(VOTE_TO_HALT);
         if (voteToHalt) {
             return true;
         } else {
             graphMemory.or(VOTE_TO_HALT, true);
             return false;
-        }*/
+        }
     }
 
     public Map<String, KeyType> getComputeKeys() {

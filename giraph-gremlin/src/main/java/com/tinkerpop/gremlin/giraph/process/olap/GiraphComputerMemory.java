@@ -28,6 +28,7 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     private final Logger logger = Logger.getLogger(GiraphComputerMemory.class);
     private VertexProgram vertexProgram;
     private GiraphVertex giraphVertex;
+    private int counter = 0;
 
     public GiraphComputerMemory() {
         this.giraphVertex = null;
@@ -81,7 +82,9 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
         //return (R) this.getAggregatedValue(variable);
         if (variable.equals(TraversalVertexProgram.TRACK_PATHS))
             return (R) new Boolean(false);
-        else {
+        else if (variable.equals("voteToHalt")) {
+            return (R) new Boolean(this.counter++ > 3);
+        } else {
             SSupplier supplier = () -> TinkerGraph.open().V().out().value("name");
             return (R) supplier;
         }
