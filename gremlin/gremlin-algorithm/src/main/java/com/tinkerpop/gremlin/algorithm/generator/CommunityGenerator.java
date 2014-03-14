@@ -147,6 +147,7 @@ public class CommunityGenerator extends AbstractGenerator {
         private int expectedNumEdges;
 
         public Builder(final Graph g) {
+            super(Builder.class);
             this.g = g;
             final List<Vertex> allVertices = g.V().toList();
             this.vertices = allVertices;

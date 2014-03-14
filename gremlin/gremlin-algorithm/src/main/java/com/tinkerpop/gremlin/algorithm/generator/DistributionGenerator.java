@@ -92,6 +92,7 @@ public class DistributionGenerator extends AbstractGenerator {
         private boolean allowLoops = true;
 
         public Builder(final Graph g) {
+            super(Builder.class);
             this.g = g;
             final List<Vertex> allVertices = g.V().toList();
             this.out = allVertices;

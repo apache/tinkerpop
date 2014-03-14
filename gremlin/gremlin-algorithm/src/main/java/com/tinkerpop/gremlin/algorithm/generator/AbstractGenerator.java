@@ -19,8 +19,8 @@ import java.util.function.Supplier;
 public abstract class AbstractGenerator implements Generator {
     protected final Graph g;
     private final String label;
-    private final Optional<Consumer<Edge>> edgeAnnotator;
-    private final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexAnnotator;
+    private final Optional<Consumer<Edge>> edgeProcessor;
+    private final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexProcessor;
     protected final Supplier<Long> seedSupplier;
 
     /**
@@ -28,51 +28,28 @@ public abstract class AbstractGenerator implements Generator {
      * not supplied then the system clock is used to generate a seed.
      *
      * @param label           Label for the generated edges
-     * @param edgeAnnotator   {@link java.util.function.Consumer} to use for annotating newly generated edges.
-     * @param vertexAnnotator {@link java.util.function.Consumer} to use for annotating process vertices.
+     * @param edgeProcessor   {@link java.util.function.Consumer} to use for annotating newly generated edges.
+     * @param vertexProcessor {@link java.util.function.Consumer} to use for annotating process vertices.
      * @param seedGenerator A {@link java.util.function.Supplier} function to provide seeds to {@link java.util.Random}
      */
-    AbstractGenerator(final Graph g, final String label, final Optional<Consumer<Edge>> edgeAnnotator,
-                      final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexAnnotator,
+    AbstractGenerator(final Graph g, final String label, final Optional<Consumer<Edge>> edgeProcessor,
+                      final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexProcessor,
                       final Supplier<Long> seedGenerator) {
         this.g = g;
         this.label = label;
-        this.edgeAnnotator = edgeAnnotator;
-        this.vertexAnnotator = vertexAnnotator;
+        this.edgeProcessor = edgeProcessor;
+        this.vertexProcessor = vertexProcessor;
         this.seedSupplier = seedGenerator;
-    }
-
-    /**
-     * Returns the label for this generator.
-     */
-    public final String getLabel() {
-        return label;
-    }
-
-    /**
-     * Returns the {@link java.util.function.Consumer} for this generator
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public final Optional<Consumer<Edge>> getEdgeAnnotator() {
-        return edgeAnnotator;
-    }
-
-    /**
-     * Returns the {@link java.util.function.BiConsumer} for this generator
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public final Optional<BiConsumer<Vertex,Map<String,Object>>> getVertexAnnotator() {
-        return vertexAnnotator;
     }
 
     protected final Edge addEdge(final Vertex out, final Vertex in) {
         final Edge e = out.addEdge(label, in);
-        edgeAnnotator.ifPresent(c->c.accept(e));
+        edgeProcessor.ifPresent(c -> c.accept(e));
         return e;
     }
 
     protected final Vertex processVertex(final Vertex vertex, final Map<String, Object> context) {
-        vertexAnnotator.ifPresent(c->c.accept(vertex, context));
+        vertexProcessor.ifPresent(c -> c.accept(vertex, context));
         return vertex;
     }
 
@@ -81,16 +58,21 @@ public abstract class AbstractGenerator implements Generator {
         protected Optional<Consumer<Edge>> edgeProcessor = Optional.empty();
         protected Optional<BiConsumer<Vertex,Map<String,Object>>> vertexProcessor = Optional.empty();
         protected Supplier<Long> seedSupplier = System::currentTimeMillis;
+        private final Class<T> extendingClass;
+
+        AbstractGeneratorBuilder(final Class<T> extendingClass) {
+            this.extendingClass = extendingClass;
+        }
 
         public T label(final String label) {
             if (null == label || label.isEmpty()) throw new IllegalArgumentException("Label cannot be empty");
             this.label = label;
-            return (T) this;
+            return extendingClass.cast(this);
         }
 
         public T edgeProcessor(final Consumer<Edge> edgeProcessor) {
             this.edgeProcessor = Optional.ofNullable(edgeProcessor);
-            return (T) this;
+            return extendingClass.cast(this);
         }
 
         /**
@@ -98,12 +80,12 @@ public abstract class AbstractGenerator implements Generator {
          */
         public T vertexProcessor(final BiConsumer<Vertex,Map<String,Object>> vertexProcessor) {
             this.vertexProcessor = Optional.ofNullable(vertexProcessor);
-            return (T) this;
+            return extendingClass.cast(this);
         }
 
         public T seedGenerator(final Supplier<Long> seedGenerator) {
             this.seedSupplier = Optional.ofNullable(seedGenerator).orElse(System::currentTimeMillis);
-            return (T) this;
+            return extendingClass.cast(this);
         }
     }
 }
