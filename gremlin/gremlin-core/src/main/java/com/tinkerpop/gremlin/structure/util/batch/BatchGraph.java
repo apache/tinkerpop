@@ -541,6 +541,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         return new UnsupportedOperationException("Removal operations are not supported during batch loading");
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public static class Builder<T extends Graph> {
         private final T graphToLoad;
         private boolean loadingFromScratch = true;
@@ -564,7 +565,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         public Builder vertexIdKey(final Optional<String> key) {
             if (null == key) throw new IllegalArgumentException("Optional value for key cannot be null");
             if (!loadingFromScratch && !key.isPresent() && !graphToLoad.getFeatures().vertex().supportsUserSuppliedIds())
-                throw new IllegalStateException("Cannot set vertex id key to null when not loading from scratch while ids are ignored.");
+                throw new IllegalStateException("Cannot set vertex id key to null when not loading from scratch while ids are ignored");
             this.vertexIdKey = key;
             return this;
         }
@@ -609,7 +610,7 @@ public class BatchGraph<T extends Graph> implements Graph {
          * {@link Builder#vertexIdKey} - otherwise an exception is thrown.
          */
         public Builder loadFromScratch(final boolean fromScratch) {
-            if (fromScratch == false && !vertexIdKey.isPresent() && !graphToLoad.getFeatures().vertex().supportsUserSuppliedIds())
+            if (!fromScratch && !vertexIdKey.isPresent() && !graphToLoad.getFeatures().vertex().supportsUserSuppliedIds())
                 throw new IllegalStateException("Vertex id key is required to query existing vertices in wrapped graph.");
             loadingFromScratch = fromScratch;
             return this;
