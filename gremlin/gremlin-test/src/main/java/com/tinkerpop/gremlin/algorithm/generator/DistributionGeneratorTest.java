@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 public class DistributionGeneratorTest {
 
     @RunWith(Parameterized.class)
-    public static class DifferentDistributionsTest extends AbstractGremlinTest {
+    public static class DifferentDistributionsTest extends AbstractGeneratorTest {
 
         @Parameterized.Parameters(name = "{index}: test({0},{1})")
         public static Iterable<Object[]> data() {
@@ -59,13 +59,7 @@ public class DistributionGeneratorTest {
 
                 // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
                 // same number of edges between graphs.  that should make it harder for the test to fail.
-                assertFalse(g.V().toList().stream()
-                        .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
-                        .allMatch(p -> {
-                            final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
-                            return p.getValue1() == v.inE().count()
-                                    && p.getValue2() == v.outE().count();
-                        }));
+                assertFalse(same(g, g1));
             } catch(Exception ex) {
                 throw ex;
             } finally {
@@ -86,13 +80,7 @@ public class DistributionGeneratorTest {
                 distributionGeneratorTest(g1, generator1);
 
                 // ensure that every vertex has the same number of edges between graphs.
-                assertTrue(g.V().toList().stream()
-                        .map(v -> Triplet.with(v.getValue("oid"), v.inE().count(), v.outE().count()))
-                        .allMatch(p -> {
-                            final Vertex v = (Vertex) g1.V().has("oid", p.getValue0()).next();
-                            return p.getValue1() == v.inE().count()
-                                    && p.getValue2() == v.outE().count();
-                        }));
+                assertTrue(same(g, g1));
             } catch(Exception ex) {
                 throw ex;
             } finally {
