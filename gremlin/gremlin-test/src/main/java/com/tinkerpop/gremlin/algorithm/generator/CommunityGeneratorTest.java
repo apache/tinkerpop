@@ -137,12 +137,11 @@ public class CommunityGeneratorTest {
         }
     }
 
-    // todo: rename "Annotator"...confusing with AnnotatedList/Value
-    public static class AnnotatorTest extends AbstractGremlinTest {
+    public static class ProcessorTest extends AbstractGremlinTest {
         private static final int numberOfVertices = 100;
 
         @Test
-        public void shouldAnnotateEdges() {
+        public void shouldProcessEdges() {
             final CommunityGenerator generator = new CommunityGenerator("knows", e -> e.setProperty("data", "test"));
             final Distribution dist = new NormalDistribution(2);
             generator.setCommunityDistribution(dist);
@@ -158,7 +157,7 @@ public class CommunityGeneratorTest {
         }
 
         @Test
-        public void shouldAnnotateVertices() {
+        public void shouldProcessVertices() {
             final CommunityGenerator generator = new CommunityGenerator("knows", e -> e.setProperty("data", "test"));
             final Distribution dist = new NormalDistribution(2);
             generator.setCommunityDistribution(dist);
@@ -174,7 +173,7 @@ public class CommunityGeneratorTest {
         }
 
         @Test
-        public void shouldAnnotateVerticesEdges() {
+        public void shouldProcessVerticesEdges() {
             final CommunityGenerator generator = new CommunityGenerator("knows", e -> e.setProperty("data", "test"), (v, m) -> {
                 m.forEach(v::setProperty);
                 v.setProperty("test", "data");

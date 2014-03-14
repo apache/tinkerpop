@@ -104,11 +104,11 @@ public class DistributionGeneratorTest {
         }
     }
 
-    public static class AnnotatorTest extends AbstractGremlinTest {
+    public static class ProcessorTest extends AbstractGremlinTest {
         private static final int numberOfVertices = 100;
 
         @Test
-        public void shouldAnnotateEdges() {
+        public void shouldProcessEdges() {
             final DistributionGenerator generator = new DistributionGenerator("knows", e -> e.setProperty("data", "test"));
             final Distribution dist = new NormalDistribution(2);
             generator.setOutDistribution(dist);

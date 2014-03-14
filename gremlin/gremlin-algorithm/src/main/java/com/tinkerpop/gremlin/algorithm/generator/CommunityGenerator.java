@@ -40,21 +40,21 @@ public class CommunityGenerator extends AbstractGenerator {
         this(label, null);
     }
 
-    public CommunityGenerator(final String label, final Consumer<Edge> annotator) {
-        this(label, annotator, null);
+    public CommunityGenerator(final String label, final Consumer<Edge> edgeProcessor) {
+        this(label, edgeProcessor, null);
     }
 
-    public CommunityGenerator(final String label, final Consumer<Edge> edgeAnnotator, final BiConsumer<Vertex,Map<String,Object>> vertexAnnotator) {
-        this(label, edgeAnnotator, vertexAnnotator, null);
+    public CommunityGenerator(final String label, final Consumer<Edge> edgeProcessor, final BiConsumer<Vertex,Map<String,Object>> vertexProcessor) {
+        this(label, edgeProcessor, vertexProcessor, null);
     }
 
     /**
      * @see AbstractGenerator#AbstractGenerator(String, java.util.Optional, java.util.Optional, java.util.Optional)
      */
-    public CommunityGenerator(final String label, final Consumer<Edge> edgeAnnotator,
-                              final BiConsumer<Vertex,Map<String,Object>> vertexAnnotator,
+    public CommunityGenerator(final String label, final Consumer<Edge> edgeProcessor,
+                              final BiConsumer<Vertex,Map<String,Object>> vertexProcessor,
                               final Supplier<Long> seedGenerator) {
-        super(label, Optional.ofNullable(edgeAnnotator), Optional.ofNullable(vertexAnnotator), Optional.ofNullable(seedGenerator));
+        super(label, Optional.ofNullable(edgeProcessor), Optional.ofNullable(vertexProcessor), Optional.ofNullable(seedGenerator));
         random = new Random(this.seedSupplier.get());
     }
 
@@ -110,9 +110,8 @@ public class CommunityGenerator extends AbstractGenerator {
      * @return The actual number of edges generated. May be different from the expected number.
      */
     public int generate(final Iterable<Vertex> vertices, final int expectedNumCommunities, final int expectedNumEdges) {
-        // todo: consider transactions...batchgraph??
-        if (communitySize == null) throw new IllegalStateException("Need to initialize community size distribution");
-        if (edgeDegree == null) throw new IllegalStateException("Need to initialize degree distribution");
+        if (null == communitySize) throw new IllegalStateException("Need to initialize community size distribution");
+        if (null == edgeDegree) throw new IllegalStateException("Need to initialize degree distribution");
         int numVertices = SizableIterable.sizeOf(vertices);
         final Iterator<Vertex> iter = vertices.iterator();
         final ArrayList<ArrayList<Vertex>> communities = new ArrayList<>(expectedNumCommunities);
@@ -151,10 +150,10 @@ public class CommunityGenerator extends AbstractGenerator {
 
                         // this limit on the number of tries prevents infinite loop where the selected vertex to
                         // link to doesn't exist given the nature and structure of the graph.
-                        while (selected == null && tries < 100) {
+                        while (null == selected && tries < 100) {
                             // choose another community to connect to and make sure it's not in the current
                             // community of the current vertex
-                            while (othercomm == null) {
+                            while (null == othercomm) {
                                 othercomm = communities.get(random.nextInt(communities.size()));
                                 if (othercomm.equals(community)) othercomm = null;
                             }

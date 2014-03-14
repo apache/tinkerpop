@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
@@ -33,15 +32,15 @@ public class DistributionGenerator extends AbstractGenerator {
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public DistributionGenerator(final String label, final Consumer<Edge> annotator) {
-        this(label, annotator, null);
+    public DistributionGenerator(final String label, final Consumer<Edge> edgeAnnotator) {
+        this(label, edgeAnnotator, null);
     }
 
     /**
      * @see AbstractGenerator#AbstractGenerator(String, java.util.Optional, java.util.Optional, java.util.Optional)
      */
-    public DistributionGenerator(final String label, final Consumer<Edge> annotator, final Supplier<Long> seedGenerator) {
-        super(label, Optional.ofNullable(annotator), Optional.empty(), Optional.ofNullable(seedGenerator));
+    public DistributionGenerator(final String label, final Consumer<Edge> edgeAnnotator, final Supplier<Long> seedGenerator) {
+        super(label, Optional.ofNullable(edgeAnnotator), Optional.empty(), Optional.ofNullable(seedGenerator));
     }
 
     /**
@@ -116,13 +115,12 @@ public class DistributionGenerator extends AbstractGenerator {
      * @return The number of generated edges. Not that this number may not be equal to the expected number of edges
      */
     public int generate(final Iterable<Vertex> out, final Iterable<Vertex> in, final int expectedNumEdges) {
-        // todo: consider transactions...batchgraph??
-        if (outDistribution == null)
+        if (null == outDistribution)
             throw new IllegalStateException("Must set out-distribution before generating edges");
 
         final Distribution outDist = outDistribution.initialize(SizableIterable.sizeOf(out), expectedNumEdges);
         Distribution inDist;
-        if (inDistribution == null) {
+        if (null == inDistribution) {
             if (out != in) throw new IllegalArgumentException("Need to specify in-distribution");
             inDist = new CopyDistribution();
         } else {
@@ -148,7 +146,7 @@ public class DistributionGenerator extends AbstractGenerator {
             final int degree = inDist.nextConditionalValue(inRandom, outDist.nextValue(outRandom));
             for (int i = 0; i < degree; i++) {
                 Vertex other = null;
-                while (other == null) {
+                while (null == other) {
                     if (position >= outStubs.size()) return addedEdges; //No more edges to connect
                     other = outStubs.get(position);
                     position++;
