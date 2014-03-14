@@ -32,6 +32,10 @@ public class TraversalCounterMessage extends TraversalMessage {
         return new TraversalCounterMessage(holder);
     }
 
+    public Long getCounter() {
+        return this.counter;
+    }
+
     public void setCounter(final Long counter) {
         this.counter = counter;
     }
