@@ -165,6 +165,7 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_COMPUTER = "Computer";
             public static final String FEATURE_TRANSACTIONS = "Transactions";
             public static final String FEATURE_PERSISTENCE = "Persistence";
+            public static final String FEATURE_THREADED_TRANSACTIONS = "ThreadedTransactions";
 
             @FeatureDescriptor(name = FEATURE_MEMORY)
             public default boolean supportsMemory() {
@@ -181,9 +182,13 @@ public interface Graph extends AutoCloseable {
                 return true;
             }
 
-            // todo: threaded tx feature?
             @FeatureDescriptor(name = FEATURE_TRANSACTIONS)
             public default boolean supportsTransactions() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_THREADED_TRANSACTIONS)
+            public default boolean supportsThreadedTransactions() {
                 return true;
             }
 

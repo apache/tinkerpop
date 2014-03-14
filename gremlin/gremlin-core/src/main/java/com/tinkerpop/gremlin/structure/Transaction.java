@@ -46,6 +46,10 @@ public interface Transaction extends Closeable {
         public static IllegalStateException openTransactionsOnClose() {
             return new IllegalStateException("Commit or rollback all outstanding transactions before closing the transaction");
         }
+
+        public static UnsupportedOperationException threadedTransactionsNotSupported() {
+            return new UnsupportedOperationException("Graph does not support threaded transactions");
+        }
     }
 
     /**

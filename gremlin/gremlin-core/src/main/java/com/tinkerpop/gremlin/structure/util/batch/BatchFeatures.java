@@ -109,6 +109,11 @@ class BatchFeatures implements Graph.Features {
         }
 
         @Override
+        public boolean supportsThreadedTransactions() {
+            return false;
+        }
+
+        @Override
         public MemoryFeatures memory() {
             return new BatchMemoryFeatures();
         }

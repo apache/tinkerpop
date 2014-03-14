@@ -188,6 +188,11 @@ public class TinkerGraph implements Graph, Serializable {
                     // todo: temporary.........
                     return false;
                 }
+
+                @Override
+                public boolean supportsThreadedTransactions() {
+                    return false;
+                }
             };
         }
     }

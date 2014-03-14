@@ -270,8 +270,7 @@ public class Neo4jGraph implements Graph {
 
         @Override
         public <G extends Graph> G create() {
-            // todo: need a feature for threaded transactions
-            return null;
+            throw Transaction.Exceptions.threadedTransactionsNotSupported();
         }
 
         @Override
@@ -325,6 +324,11 @@ public class Neo4jGraph implements Graph {
                 @Override
                 public MemoryFeatures memory() {
                     return new Neo4jMemoryFeatures();  // todo: temporary
+                }
+
+                @Override
+                public boolean supportsThreadedTransactions() {
+                    return false;
                 }
             };
         }

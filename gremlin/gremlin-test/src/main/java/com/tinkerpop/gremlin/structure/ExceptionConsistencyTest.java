@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures.FEATURE_ANNOTATIONS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures.FEATURE_MEMORY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
@@ -363,7 +364,8 @@ public class ExceptionConsistencyTest {
      * Tests around exceptions when working with {@link com.tinkerpop.gremlin.structure.Transaction}.
      */
     @ExceptionCoverage(exceptionClass = Transaction.Exceptions.class, methods = {
-            "transactionAlreadyOpen"
+            "transactionAlreadyOpen",
+            "threadedTransactionsNotSupported"
     })
     public static class TransactionTest extends AbstractGremlinTest {
 
@@ -382,7 +384,6 @@ public class ExceptionConsistencyTest {
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
         }
-
     }
 
     /**

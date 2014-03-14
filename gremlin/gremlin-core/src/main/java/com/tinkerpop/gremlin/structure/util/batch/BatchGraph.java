@@ -73,7 +73,7 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     private final BatchFeatures batchFeatures;
 
-    private final Transaction batchTransaction = new BatchTransaction();
+    private final Transaction batchTransaction;
 
     /**
      * Constructs a BatchGraph wrapping the provided baseGraph, using the specified buffer size and expecting vertex
@@ -88,6 +88,7 @@ public class BatchGraph<T extends Graph> implements Graph {
     private BatchGraph(final T graph, final VertexIdType type, final long bufferSize, final Optional<String> vertexIdKey,
                        final Optional<String> edgeIdKey, final  boolean loadingFromScratch) {
         this.baseGraph = graph;
+        this.batchTransaction = new BatchTransaction();
         this.batchFeatures = new BatchFeatures(graph.getFeatures());
         this.bufferSize = bufferSize;
         this.cache = type.getVertexCache();
@@ -234,7 +235,11 @@ public class BatchGraph<T extends Graph> implements Graph {
     }
 
     private class BatchTransaction implements Transaction {
-        private final boolean supportsTx = baseGraph.getFeatures().graph().supportsTransactions();
+        private final boolean supportsTx;
+
+        public BatchTransaction() {
+            supportsTx = baseGraph.getFeatures().graph().supportsTransactions();
+        }
 
         @Override
         public Transaction onClose(final Consumer<Transaction> consumer) {

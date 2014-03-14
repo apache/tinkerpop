@@ -17,12 +17,11 @@ import org.junit.runners.Parameterized;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_MEMORY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
+import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -90,6 +89,20 @@ public class FeatureSupportTest  {
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_MEMORY));
             } catch (UnsupportedOperationException e) {
                 assertEquals(Graph.Exceptions.memoryNotSupported().getMessage(), e.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS, supported = false)
+        public void testThreadedTransactionNotSupported() {
+            try {
+                g.tx().create();
+                fail("An exception should be thrown since the threaded transaction feature is not supported");
+            } catch (Exception ex) {
+                final Exception expectedException = Transaction.Exceptions.threadedTransactionsNotSupported();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
             }
         }
     }
@@ -337,6 +350,10 @@ public class FeatureSupportTest  {
                     || vertexPropertyFeatures.supportsUniformListValues()));
         }
 
-
+        @Test
+        public void ifThreadedTransactionsAreEnabledThenItMustSupportRegularTransactions() {
+            if (graphFeatures.supportsThreadedTransactions())
+                assertTrue(graphFeatures.supportsThreadedTransactions());
+        }
     }
 }
