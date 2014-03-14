@@ -80,17 +80,19 @@ public class TinkerGraph implements Graph, Serializable {
     ////////////// BLUEPRINTS API METHODS //////////////////
 
     public Vertex v(final Object id) {
+        if (null == id) throw Graph.Exceptions.elementNotFound();
         final Vertex vertex = this.vertices.get(id.toString());
         if (null == vertex)
-            throw new NoSuchElementException();
+            throw Graph.Exceptions.elementNotFound();
         else
             return vertex;
     }
 
     public Edge e(final Object id) {
+        if (null == id) throw Graph.Exceptions.elementNotFound();
         final Edge edge = this.edges.get(id.toString());
         if (null == edge)
-            throw new NoSuchElementException();
+            throw Graph.Exceptions.elementNotFound();
         else
             return edge;
     }

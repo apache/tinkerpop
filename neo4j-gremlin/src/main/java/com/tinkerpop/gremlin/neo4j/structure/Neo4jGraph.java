@@ -18,6 +18,7 @@ import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.NotFoundException;
+import org.neo4j.graphdb.NotInTransactionException;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
@@ -127,29 +128,31 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public Vertex v(final Object id) {
-        if (null == id)
-            throw FastNoSuchElementException.instance(); // todo: make consistent
+        if (null == id) throw Graph.Exceptions.elementNotFound();
 
         try {
             return new Neo4jVertex(this.rawGraph.getNodeById(evaluateToLong(id)), this);
         } catch (NotFoundException e) {
-            throw FastNoSuchElementException.instance(); // todo: make consistent
+            throw Graph.Exceptions.elementNotFound();
         } catch (NumberFormatException e) {
-            throw FastNoSuchElementException.instance(); // todo: make consistent
+            throw Graph.Exceptions.elementNotFound();
+        } catch (NotInTransactionException e) {     // todo: is this right?
+            throw Graph.Exceptions.elementNotFound();
         }
     }
 
     @Override
     public Edge e(final Object id) {
-        if (null == id)
-            throw FastNoSuchElementException.instance(); // todo: make consistent
+        if (null == id) throw Graph.Exceptions.elementNotFound();
 
         try {
             return new Neo4jEdge(this.rawGraph.getRelationshipById(evaluateToLong(id)), this);
         } catch (NotFoundException e) {
-            throw FastNoSuchElementException.instance(); // todo: make consistent
+            throw Graph.Exceptions.elementNotFound();
         } catch (NumberFormatException e) {
-            throw FastNoSuchElementException.instance(); // todo: make consistent
+            throw Graph.Exceptions.elementNotFound();
+        } catch (NotInTransactionException e) {     // todo: is this right?
+            throw Graph.Exceptions.elementNotFound();
         }
     }
 

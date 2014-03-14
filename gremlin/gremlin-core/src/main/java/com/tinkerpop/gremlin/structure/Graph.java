@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
@@ -10,6 +11,7 @@ import org.javatuples.Pair;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,10 +38,12 @@ public interface Graph extends AutoCloseable {
     public Vertex addVertex(final Object... keyValues);
 
     public default Vertex v(final Object id) {
+        if (null == id) throw Graph.Exceptions.elementNotFound();
         return (Vertex) this.V().has(Element.ID, id).next();
     }
 
     public default Edge e(final Object id) {
+        if (null == id) throw Graph.Exceptions.elementNotFound();
         return (Edge) this.E().has(Element.ID, id).next();
     }
 
@@ -431,6 +435,10 @@ public interface Graph extends AutoCloseable {
 
         public static IllegalArgumentException argumentCanNotBeNull(final String argument) {
             return new IllegalArgumentException(String.format("The provided argument can not be null: %s", argument));
+        }
+
+        public static NoSuchElementException elementNotFound() {
+            return FastNoSuchElementException.instance();
         }
     }
 }
