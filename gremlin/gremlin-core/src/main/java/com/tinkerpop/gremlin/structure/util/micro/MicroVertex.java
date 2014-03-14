@@ -11,6 +11,10 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
  */
 public class MicroVertex extends MicroElement implements Vertex {
 
+    public MicroVertex() {
+
+    }
+
     private MicroVertex(final Vertex vertex) {
         super(vertex);
     }

@@ -6,8 +6,8 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -18,10 +18,14 @@ import java.util.Optional;
  */
 public class MicroProperty<V> implements Property, Serializable {
 
-    private final String key;
-    private final V value;
-    private final MicroElement element;
-    private final int hashCode;
+    private String key;
+    private V value;
+    private MicroElement element;
+    private int hashCode;
+
+    public MicroProperty() {
+
+    }
 
     private MicroProperty(final Property property) {
         if (null == property)

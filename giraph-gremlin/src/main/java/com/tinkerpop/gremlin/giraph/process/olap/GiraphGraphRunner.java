@@ -3,7 +3,8 @@ package com.tinkerpop.gremlin.giraph.process.olap;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphInputFormat;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.structure.util.EmptyGraph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConfiguration;
@@ -23,6 +24,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
         this.giraphConfiguration = new GiraphConfiguration(hadoopConfiguration);
         this.giraphConfiguration.setMasterComputeClass(GiraphComputerMemory.class);
         this.giraphConfiguration.setWorkerConfiguration(1, 1, 100.0f);
+        this.giraphConfiguration.setClass("gremlin.messageClass", Double.class, Double.class);
     }
 
     public int run(final String[] args) {
@@ -47,8 +49,10 @@ public class GiraphGraphRunner extends Configured implements Tool {
         configuration.setProperty("mapred.job.tracker", "localhost:9001");
         configuration.setProperty("giraph.vertex.input.dir", "tiny_graph.txt");
         configuration.setProperty("mapred.output.dir", "output");
+        //configuration.setProperty("gremlin.messageClass", Double.class);
 
         GraphComputer g = new GiraphGraphComputer();
-        g.program(new PageRankVertexProgram.Builder().build()).configuration(configuration).submit();
+        //g.program(new PageRankVertexProgram.Builder().build()).configuration(configuration).submit();
+        g.program(new TraversalVertexProgram.Builder().traversal(() -> EmptyGraph.instance().V().out().value("name")).build()).configuration(configuration).submit();
     }
 }

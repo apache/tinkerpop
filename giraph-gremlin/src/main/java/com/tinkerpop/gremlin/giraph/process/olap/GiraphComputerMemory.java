@@ -2,8 +2,11 @@ package com.tinkerpop.gremlin.giraph.process.olap;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.EmptyGraph;
+import com.tinkerpop.gremlin.util.function.SSupplier;
+import com.tinkerpop.tinkergraph.TinkerGraph;
 import org.apache.giraph.master.MasterCompute;
 import org.apache.hadoop.io.Writable;
 import org.apache.log4j.Logger;
@@ -75,7 +78,13 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public <R> R get(final String variable) {
-        return (R) this.getAggregatedValue(variable);
+        //return (R) this.getAggregatedValue(variable);
+        if (variable.equals(TraversalVertexProgram.TRACK_PATHS))
+            return (R) new Boolean(false);
+        else {
+            SSupplier supplier = () -> TinkerGraph.open().V().out().value("name");
+            return (R) supplier;
+        }
     }
 
     public void set(final String variable, Object value) {
