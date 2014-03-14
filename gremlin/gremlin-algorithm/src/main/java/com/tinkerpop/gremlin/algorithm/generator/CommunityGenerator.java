@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -25,83 +26,33 @@ import java.util.function.Supplier;
  */
 public class CommunityGenerator extends AbstractGenerator {
 
-    /**
-     * Default value used if {@link #setCrossCommunityPercentage(double)} is not called.
-     */
     public static final double DEFAULT_CROSS_COMMUNITY_PERCENTAGE = 0.1;
+    public static final int DEFAULT_NUMBER_OF_COMMUNITIES = 2;
 
-    private Distribution communitySize = null;
-    private Distribution edgeDegree = null;
-    private double crossCommunityPercentage = DEFAULT_CROSS_COMMUNITY_PERCENTAGE;
+    private final Distribution communitySize;
+    private final Distribution edgeDegree;
+    private final double crossCommunityPercentage;
+    private final Iterable<Vertex> vertices;
+    private final int expectedNumCommunities;
+    private final int expectedNumEdges;
 
     private final Random random;
 
-    public CommunityGenerator(final String label) {
-        this(label, null);
-    }
-
-    public CommunityGenerator(final String label, final Consumer<Edge> edgeProcessor) {
-        this(label, edgeProcessor, null);
-    }
-
-    public CommunityGenerator(final String label, final Consumer<Edge> edgeProcessor, final BiConsumer<Vertex,Map<String,Object>> vertexProcessor) {
-        this(label, edgeProcessor, vertexProcessor, null);
-    }
-
-    /**
-     * @see AbstractGenerator#AbstractGenerator(String, java.util.Optional, java.util.Optional, java.util.Optional)
-     */
-    public CommunityGenerator(final String label, final Consumer<Edge> edgeProcessor,
-                              final BiConsumer<Vertex,Map<String,Object>> vertexProcessor,
-                              final Supplier<Long> seedGenerator) {
-        super(label, Optional.ofNullable(edgeProcessor), Optional.ofNullable(vertexProcessor), Optional.ofNullable(seedGenerator));
+    private CommunityGenerator(final Graph g, final String label, final Optional<Consumer<Edge>> edgeProcessor,
+                               final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexProcessor,
+                               final Supplier<Long> seedGenerator, final Distribution communitySize,
+                               final Distribution edgeDegree, final double crossCommunityPercentage,
+                               final Iterable<Vertex> vertices, final int expectedNumCommunities,
+                               final int expectedNumEdges) {
+        super(g, label, edgeProcessor, vertexProcessor, seedGenerator);
         random = new Random(this.seedSupplier.get());
+        this.communitySize = communitySize;
+        this.edgeDegree = edgeDegree;
+        this.crossCommunityPercentage = crossCommunityPercentage;
+        this.vertices = vertices;
+        this.expectedNumCommunities = expectedNumCommunities;
+        this.expectedNumEdges = expectedNumEdges;
     }
-
-    /**
-     * Sets the distribution to be used to generate the sizes of communities.
-     */
-    public void setCommunityDistribution(final Distribution community) {
-        this.communitySize = community;
-    }
-
-    /**
-     * Sets the distribution to be used to generate the out-degrees of vertices.
-     */
-    public void setDegreeDistribution(final Distribution degree) {
-        this.edgeDegree = degree;
-    }
-
-    /**
-     * Sets the percentage of edges that cross a community, i.e. connect a vertex to a vertex in
-     * another community. The lower this value, the higher the modularity of the generated communities.
-     *
-     * @param percentage Percentage of community crossing edges. Must be in [0,1]
-     */
-    public void setCrossCommunityPercentage(final double percentage) {
-        if (percentage < 0.0 || percentage > 1.0)
-            throw new IllegalArgumentException("Percentage must be between 0 and 1");
-        this.crossCommunityPercentage = percentage;
-    }
-
-    /**
-     * Returns the configured cross community percentage.
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public double getCrossCommunityPercentage() {
-        return crossCommunityPercentage;
-    }
-
-    /**
-     * Generates a synthetic network for all vertices in the given graph such that the provided expected number
-     * of communities are generated with the specified expected number of edges.
-     *
-     * @return The actual number of edges generated. May be different from the expected number.
-     */
-    public int generate(final Graph graph, final int expectedNumCommunities, final int expectedNumEdges) {
-        return generate(graph.V().toList(), expectedNumCommunities, expectedNumEdges);
-    }
-
 
     /**
      * Generates a synthetic network for provided vertices in the given graph such that the provided expected number
@@ -109,9 +60,7 @@ public class CommunityGenerator extends AbstractGenerator {
      *
      * @return The actual number of edges generated. May be different from the expected number.
      */
-    public int generate(final Iterable<Vertex> vertices, final int expectedNumCommunities, final int expectedNumEdges) {
-        if (null == communitySize) throw new IllegalStateException("Need to initialize community size distribution");
-        if (null == edgeDegree) throw new IllegalStateException("Need to initialize degree distribution");
+    public int generate() {
         int numVertices = SizableIterable.sizeOf(vertices);
         final Iterator<Vertex> iter = vertices.iterator();
         final ArrayList<ArrayList<Vertex>> communities = new ArrayList<>(expectedNumCommunities);
@@ -188,4 +137,72 @@ public class CommunityGenerator extends AbstractGenerator {
         return addedEdges;
     }
 
+    public static class Builder extends AbstractGeneratorBuilder<Builder> {
+        private final Graph g;
+        private Distribution communitySize = null;
+        private Distribution edgeDegree = null;
+        private double crossCommunityPercentage = DEFAULT_CROSS_COMMUNITY_PERCENTAGE;
+        private Iterable<Vertex> vertices;
+        private int expectedNumCommunities = DEFAULT_NUMBER_OF_COMMUNITIES;
+        private int expectedNumEdges;
+
+        public Builder(final Graph g) {
+            this.g = g;
+            final List<Vertex> allVertices = g.V().toList();
+            this.vertices = allVertices;
+            this.expectedNumEdges = allVertices.size() * 2;
+        }
+
+        public Builder verticesToGenerateEdgesFor(final Iterable<Vertex> vertices) {
+            this.vertices = vertices;
+            return this;
+        }
+
+        public Builder expectedNumCommunities(final int expectedNumCommunities) {
+            this.expectedNumCommunities = expectedNumCommunities;
+            return this;
+        }
+
+        public Builder expectedNumEdges(final int expectedNumEdges) {
+            this.expectedNumEdges = expectedNumEdges;
+            return this;
+        }
+
+        /**
+         * Sets the distribution to be used to generate the sizes of communities.
+         */
+        public Builder communityDistribution(final Distribution community) {
+            this.communitySize = community;
+            return this;
+        }
+
+        /**
+         * Sets the distribution to be used to generate the out-degrees of vertices.
+         */
+        public Builder degreeDistribution(final Distribution degree) {
+            this.edgeDegree = degree;
+            return this;
+        }
+
+        /**
+         * Sets the percentage of edges that cross a community, i.e. connect a vertex to a vertex in
+         * another community. The lower this value, the higher the modularity of the generated communities.
+         *
+         * @param percentage Percentage of community crossing edges. Must be in [0,1]
+         */
+        public Builder crossCommunityPercentage(final double percentage) {
+            if (percentage < 0.0 || percentage > 1.0)
+                throw new IllegalArgumentException("Percentage must be between 0 and 1");
+            this.crossCommunityPercentage = percentage;
+            return this;
+        }
+
+        public CommunityGenerator build() {
+            if (null == communitySize) throw new IllegalStateException("Need to initialize community size distribution");
+            if (null == edgeDegree) throw new IllegalStateException("Need to initialize degree distribution");
+            return new CommunityGenerator(this.g, this.label, this.edgeProcessor, this.vertexProcessor, this.seedSupplier,
+                    this.communitySize, this.edgeDegree, crossCommunityPercentage, vertices,
+                    expectedNumCommunities, expectedNumEdges);
+        }
+    }
 }

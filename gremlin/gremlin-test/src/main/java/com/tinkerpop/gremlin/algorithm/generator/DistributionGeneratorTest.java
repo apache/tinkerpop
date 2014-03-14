@@ -50,11 +50,11 @@ public class DistributionGeneratorTest {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1");
             final Graph g1 = graphProvider.openTestGraph(configuration);
             try {
-                final DistributionGenerator generator = new DistributionGenerator("knows");
+                final DistributionGenerator generator = makeGenerator(g).build();
                 distributionGeneratorTest(g, generator);
 
                 prepareGraph(g1);
-                final DistributionGenerator generator1 = new DistributionGenerator("knows");
+                final DistributionGenerator generator1 = makeGenerator(g1).build();
                 distributionGeneratorTest(g1, generator1);
 
                 // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
@@ -67,16 +67,24 @@ public class DistributionGeneratorTest {
             }
         }
 
+        private DistributionGenerator.Builder makeGenerator(final Graph g) {
+            return new DistributionGenerator.Builder(g)
+                                .label("knows")
+                                .outDistribution(inDistribution)
+                                .inDistribution(inDistribution)
+                                .expectedNumEdges(numberOfVertices * 10);
+        }
+
         @Test
         public void shouldGenerateSameGraph() throws Exception {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1");
             final Graph g1 = graphProvider.openTestGraph(configuration);
             try {
-                final DistributionGenerator generator = new DistributionGenerator("knows", null, () -> 123456789l);
+                final DistributionGenerator generator = makeGenerator(g).seedGenerator(() -> 123456789l).build();
                 distributionGeneratorTest(g, generator);
 
                 prepareGraph(g1);
-                final DistributionGenerator generator1 = new DistributionGenerator("knows", null, () -> 123456789l);
+                final DistributionGenerator generator1 = makeGenerator(g1).seedGenerator(() -> 123456789l).build();
                 distributionGeneratorTest(g1, generator1);
 
                 // ensure that every vertex has the same number of edges between graphs.
@@ -96,9 +104,7 @@ public class DistributionGeneratorTest {
         }
 
         private void distributionGeneratorTest(final Graph graph, final DistributionGenerator generator) {
-            generator.setOutDistribution(inDistribution);
-            Optional.ofNullable(outDistribution).ifPresent(generator::setOutDistribution);
-            final int numEdges = generator.generate(graph, numberOfVertices * 10);
+            final int numEdges = generator.generate();
             assertTrue(numEdges > 0);
             tryCommit(graph, g -> assertEquals(numEdges, g.E().count()));
         }
@@ -109,11 +115,14 @@ public class DistributionGeneratorTest {
 
         @Test
         public void shouldProcessEdges() {
-            final DistributionGenerator generator = new DistributionGenerator("knows", e -> e.setProperty("data", "test"));
             final Distribution dist = new NormalDistribution(2);
-            generator.setOutDistribution(dist);
-            generator.setInDistribution(dist);
-            final int edgesGenerated = generator.generate(g, 100);
+            final DistributionGenerator generator = new DistributionGenerator.Builder(g)
+                    .label("knows")
+                    .edgeProcessor(e -> e.setProperty("data", "test"))
+                    .outDistribution(dist)
+                    .inDistribution(dist)
+                    .expectedNumEdges(100).build();
+            final int edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {
                 assertEquals(edgesGenerated, g.E().count());

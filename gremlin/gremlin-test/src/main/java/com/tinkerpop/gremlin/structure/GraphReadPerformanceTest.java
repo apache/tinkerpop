@@ -41,7 +41,7 @@ public class GraphReadPerformanceTest {
         private Set<Object> ids = new HashSet<>();
 
         @Override
-        protected void prepareGraph(Graph g) throws Exception {
+        protected void prepareGraph(final Graph g) throws Exception {
             ids.clear();
             final int numVertices = 10000;
             final Random r = new Random(854939487556l);
@@ -52,10 +52,13 @@ public class GraphReadPerformanceTest {
 
             final Distribution inDist = new PowerLawDistribution(2.3);
             final Distribution outDist = new PowerLawDistribution(2.8);
-            final DistributionGenerator generator = new DistributionGenerator("knows", null, r::nextLong);
-            generator.setOutDistribution(inDist);
-            generator.setOutDistribution(outDist);
-            generator.generate(g, numVertices * 3);
+            final DistributionGenerator generator = new DistributionGenerator.Builder(g)
+                    .label("knows")
+                    .seedGenerator(r::nextLong)
+                    .outDistribution(outDist)
+                    .inDistribution(inDist)
+                    .expectedNumEdges(numVertices * 3).build();
+            generator.generate();
         }
 
         @Test

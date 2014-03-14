@@ -6,132 +6,53 @@ import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
  * Generates a synthetic network for a given out- and (optionally) in-degree distribution.
- * <p/>
- * After construction, at least the out-degree distribution must be set via {@link #setOutDistribution}
  *
  * @author Matthias Broecheler (me@matthiasb.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DistributionGenerator extends AbstractGenerator {
 
-    private Distribution outDistribution;
-    private Distribution inDistribution;
+    private final Distribution outDistribution;
+    private final Distribution inDistribution;
+    private final Iterable<Vertex> out;
+    private final Iterable<Vertex> in;
+    private final int expectedNumEdges;
+    private final boolean allowLoops;
 
-    private boolean allowLoops = true;
-
-    public DistributionGenerator(final String label) {
-        super(label);
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public DistributionGenerator(final String label, final Consumer<Edge> edgeAnnotator) {
-        this(label, edgeAnnotator, null);
-    }
-
-    /**
-     * @see AbstractGenerator#AbstractGenerator(String, java.util.Optional, java.util.Optional, java.util.Optional)
-     */
-    public DistributionGenerator(final String label, final Consumer<Edge> edgeAnnotator, final Supplier<Long> seedGenerator) {
-        super(label, Optional.ofNullable(edgeAnnotator), Optional.empty(), Optional.ofNullable(seedGenerator));
-    }
-
-    /**
-     * Sets the out-degree distribution to be used by this generator.
-     * <p/>
-     * This method must be called prior to generating the network.
-     */
-    public void setOutDistribution(final Distribution distribution) {
-        if (distribution == null) throw new NullPointerException();
-        this.outDistribution = distribution;
-    }
-
-    /**
-     * Sets the in-degree distribution to be used by this generator.
-     * <p/>
-     * If the in-degree distribution is not specified, {@link CopyDistribution} is used by default.
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public void setInDistribution(final Distribution distribution) {
-        if (distribution == null) throw new NullPointerException();
-        this.inDistribution = distribution;
-    }
-
-    /**
-     * Clears the in-degree distribution
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public void clearInDistribution() {
-        this.inDistribution = null;
-    }
-
-    /**
-     * Whether edge loops are allowed
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public boolean hasAllowLoops() {
-        return allowLoops;
-    }
-
-    /**
-     * Sets whether loops, i.e. edges with the same start and end vertex, are allowed to be generated.
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public void setAllowLoops(final boolean allowLoops) {
+    private DistributionGenerator(final Graph g, final String label, final Optional<Consumer<Edge>> edgeProcessor,
+                                  final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexProcessor,
+                                  final Supplier<Long> seedGenerator, final Iterable<Vertex> out,
+                                  final Iterable<Vertex> in, final int expectedNumEdges,
+                                  final Distribution outDistribution, final Distribution inDistribution,
+                                  final boolean allowLoops) {
+        super(g, label, edgeProcessor, vertexProcessor, seedGenerator);
+        this.out = out;
+        this.in = in;
+        this.outDistribution = outDistribution;
+        this.inDistribution = inDistribution;
+        this.expectedNumEdges = expectedNumEdges;
         this.allowLoops = allowLoops;
     }
 
-    /**
-     * Generates a synthetic network connecting all vertices in the provided graph with the expected number
-     * of edges.
-     *
-     * @return The number of generated edges. Not that this number may not be equal to the expected number of edges
-     */
-    public int generate(final Graph graph, final int expectedNumEdges) {
-        return generate(graph.V().toList(), expectedNumEdges);
-    }
-
-    /**
-     * Generates a synthetic network connecting the given vertices by the expected number of directed edges
-     * in the provided graph.
-     *
-     * @return The number of generated edges. Not that this number may not be equal to the expected number of edges
-     */
-    public int generate(final Iterable<Vertex> vertices, final int expectedNumEdges) {
-        return generate(vertices, vertices, expectedNumEdges);
-    }
-
-    /**
-     * Generates a synthetic network connecting the vertices in <i>out</i> by directed edges
-     * with those in <i>in</i> with the given number of expected edges in the provided graph.
-     *
-     * @return The number of generated edges. Not that this number may not be equal to the expected number of edges
-     */
-    public int generate(final Iterable<Vertex> out, final Iterable<Vertex> in, final int expectedNumEdges) {
-        if (null == outDistribution)
-            throw new IllegalStateException("Must set out-distribution before generating edges");
-
-        final Distribution outDist = outDistribution.initialize(SizableIterable.sizeOf(out), expectedNumEdges);
-        Distribution inDist;
-        if (null == inDistribution) {
-            if (out != in) throw new IllegalArgumentException("Need to specify in-distribution");
-            inDist = new CopyDistribution();
-        } else {
-            inDist = inDistribution.initialize(SizableIterable.sizeOf(in), expectedNumEdges);
-        }
-
+    public int generate() {
         final long seed = this.seedSupplier.get();
         Random outRandom = new Random(seed);
         final ArrayList<Vertex> outStubs = new ArrayList<>(expectedNumEdges);
+
         for (Vertex v : out) {
-            final int degree = outDist.nextValue(outRandom);
+            processVertex(v, Collections.EMPTY_MAP);
+            final int degree = this.outDistribution.nextValue(outRandom);
             IntStream.range(0, degree).forEach(i->outStubs.add(v));
         }
 
@@ -143,7 +64,8 @@ public class DistributionGenerator extends AbstractGenerator {
         int addedEdges = 0;
         int position = 0;
         for (Vertex v : in) {
-            final int degree = inDist.nextConditionalValue(inRandom, outDist.nextValue(outRandom));
+            processVertex(v, Collections.EMPTY_MAP);
+            final int degree = this.inDistribution.nextConditionalValue(inRandom, this.outDistribution.nextValue(outRandom));
             for (int i = 0; i < degree; i++) {
                 Vertex other = null;
                 while (null == other) {
@@ -160,5 +82,74 @@ public class DistributionGenerator extends AbstractGenerator {
         return addedEdges;
     }
 
+    public static class Builder extends AbstractGeneratorBuilder<Builder> {
+        private final Graph g;
+        private Distribution outDistribution;
+        private Distribution inDistribution;
+        private Iterable<Vertex> out;
+        private Iterable<Vertex> in;
+        private int expectedNumEdges;
+        private boolean allowLoops = true;
 
+        public Builder(final Graph g) {
+            this.g = g;
+            final List<Vertex> allVertices = g.V().toList();
+            this.out = allVertices;
+            this.in = allVertices;
+            this.expectedNumEdges = allVertices.size() * 2;
+        }
+
+        public Builder inVertices(final Iterable<Vertex> vertices) {
+            this.in = vertices;
+            return this;
+        }
+
+        public Builder outVertices(final Iterable<Vertex> vertices) {
+            this.out = vertices;
+            return this;
+        }
+
+        public Builder expectedNumEdges(final int expectedNumEdges) {
+            this.expectedNumEdges = expectedNumEdges;
+            return this;
+        }
+
+        /**
+         * Sets whether loops, i.e. edges with the same start and end vertex, are allowed to be generated.
+         */
+        public void allowLoops(final boolean allowLoops) {
+            this.allowLoops = allowLoops;
+        }
+
+        /**
+         * Sets the distribution to be used to generate the sizes of communities.
+         */
+        public Builder outDistribution(final Distribution distribution) {
+            this.outDistribution = distribution;
+            return this;
+        }
+
+        /**
+         * Sets the distribution to be used to generate the out-degrees of vertices.
+         */
+        public Builder inDistribution(final Distribution distribution) {
+            this.inDistribution = distribution;
+            return this;
+        }
+
+        public DistributionGenerator build() {
+            if (null == outDistribution) throw new IllegalStateException("Must set out-distribution before generating edges");
+            final Distribution outDist = outDistribution.initialize(SizableIterable.sizeOf(out), expectedNumEdges);
+            Distribution inDist;
+            if (null == inDistribution) {
+                if (out != in) throw new IllegalArgumentException("Need to specify in-distribution");
+                inDist = new CopyDistribution();
+            } else {
+                inDist = inDistribution.initialize(SizableIterable.sizeOf(in), expectedNumEdges);
+            }
+
+            return new DistributionGenerator(this.g, this.label, this.edgeProcessor, this.vertexProcessor, this.seedSupplier,
+                    this.out, this.in, this.expectedNumEdges, outDist, inDist, allowLoops);
+        }
+    }
 }

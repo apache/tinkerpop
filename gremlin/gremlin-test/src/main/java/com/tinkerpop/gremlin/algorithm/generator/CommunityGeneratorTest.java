@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
 
@@ -52,12 +53,10 @@ public class CommunityGeneratorTest {
             final Graph g1 = graphProvider.openTestGraph(configuration);
 
             try {
-                final CommunityGenerator generator = new CommunityGenerator("knows");
-                communityGeneratorTest(g, generator);
+                communityGeneratorTest(g, null);
 
                 prepareGraph(g1);
-                final CommunityGenerator generator1 = new CommunityGenerator("knows");
-                communityGeneratorTest(g1, generator1);
+                communityGeneratorTest(g1, null);
 
                 assertTrue(g.E().count() > 0);
                 assertTrue(g.V().count() > 0);
@@ -80,12 +79,10 @@ public class CommunityGeneratorTest {
             final Graph g1 = graphProvider.openTestGraph(configuration);
 
             try {
-                final CommunityGenerator generator = new CommunityGenerator("knows", null, null, () -> 123456789l);
-                communityGeneratorTest(g, generator);
+                communityGeneratorTest(g, () -> 123456789l);
 
                 prepareGraph(g1);
-                final CommunityGenerator generator1 = new CommunityGenerator("knows", null, null, () -> 123456789l);
-                communityGeneratorTest(g1, generator1);
+                communityGeneratorTest(g1, () -> 123456789l);
 
                 assertTrue(g.E().count() > 0);
                 assertTrue(g.V().count() > 0);
@@ -109,15 +106,20 @@ public class CommunityGeneratorTest {
             tryCommit(graph);
         }
 
-        private void communityGeneratorTest(final Graph graph, final CommunityGenerator generator) throws Exception {
+        private void communityGeneratorTest(final Graph graph, final Supplier<Long> seedGenerator) throws Exception {
             boolean generated = false;
             double localCrossPcent = crossPcent;
             while (!generated) {
                 try {
-                    generator.setCommunityDistribution(communityDistribution);
-                    generator.setDegreeDistribution(degreeDistribution);
-                    generator.setCrossCommunityPercentage(localCrossPcent);
-                    final int numEdges = generator.generate(graph, numberOfVertices / 10, numberOfVertices * 10);
+                    final CommunityGenerator generator = new CommunityGenerator.Builder(graph)
+                            .label("knows")
+                            .communityDistribution(communityDistribution)
+                            .degreeDistribution(degreeDistribution)
+                            .crossCommunityPercentage(localCrossPcent)
+                            .expectedNumCommunities(numberOfVertices / 10)
+                            .expectedNumEdges(numberOfVertices * 10)
+                            .seedGenerator(seedGenerator).build();
+                    final int numEdges = generator.generate();
                     assertTrue(numEdges > 0);
                     tryCommit(graph, g -> assertEquals(numEdges, g.E().count()));
                     generated = true;
@@ -141,48 +143,21 @@ public class CommunityGeneratorTest {
         private static final int numberOfVertices = 100;
 
         @Test
-        public void shouldProcessEdges() {
-            final CommunityGenerator generator = new CommunityGenerator("knows", e -> e.setProperty("data", "test"));
-            final Distribution dist = new NormalDistribution(2);
-            generator.setCommunityDistribution(dist);
-            generator.setDegreeDistribution(dist);
-            generator.setCrossCommunityPercentage(0.0);
-            final int edgesGenerated = generator.generate(g, 2, 1000);
-            assertTrue(edgesGenerated > 0);
-            tryCommit(g, g -> {
-                assertEquals(edgesGenerated, g.E().count());
-                assertTrue(g.V().count() > 0);
-                assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test")));
-            });
-        }
-
-        @Test
-        public void shouldProcessVertices() {
-            final CommunityGenerator generator = new CommunityGenerator("knows", e -> e.setProperty("data", "test"));
-            final Distribution dist = new NormalDistribution(2);
-            generator.setCommunityDistribution(dist);
-            generator.setDegreeDistribution(dist);
-            generator.setCrossCommunityPercentage(0.0);
-            final int edgesGenerated = generator.generate(g, 2, 1000);
-            assertTrue(edgesGenerated > 0);
-            tryCommit(g, g -> {
-                assertEquals(edgesGenerated, g.E().count());
-                assertTrue(g.V().count() > 0);
-                assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test")));
-            });
-        }
-
-        @Test
         public void shouldProcessVerticesEdges() {
-            final CommunityGenerator generator = new CommunityGenerator("knows", e -> e.setProperty("data", "test"), (v, m) -> {
-                m.forEach(v::setProperty);
-                v.setProperty("test", "data");
-            });
             final Distribution dist = new NormalDistribution(2);
-            generator.setCommunityDistribution(dist);
-            generator.setDegreeDistribution(dist);
-            generator.setCrossCommunityPercentage(0.0);
-            final int edgesGenerated = generator.generate(g, 2, 1000);
+            final CommunityGenerator generator = new CommunityGenerator.Builder(g)
+                    .label("knows")
+                    .edgeProcessor(e -> e.setProperty("data", "test"))
+                    .vertexProcessor((v, m) -> {
+                        m.forEach(v::setProperty);
+                        v.setProperty("test", "data");
+                    })
+                    .communityDistribution(dist)
+                    .degreeDistribution(dist)
+                    .crossCommunityPercentage(0.0d)
+                    .expectedNumCommunities(2)
+                    .expectedNumEdges(1000).build();
+            final int edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {
                 assertEquals(edgesGenerated, g.E().count());
