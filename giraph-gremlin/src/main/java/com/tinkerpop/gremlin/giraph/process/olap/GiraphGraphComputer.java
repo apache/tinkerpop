@@ -52,7 +52,7 @@ public class GiraphGraphComputer implements GraphComputer {
             final ObjectOutputStream os = new ObjectOutputStream(fs.create(vertexProgramPath));
             os.writeObject(this.vertexProgram);
             os.close();
-            fs.deleteOnExit(vertexProgramPath);
+            //fs.deleteOnExit(vertexProgramPath);
             DistributedCache.addCacheFile(new URI(vertexProgramPath + "#" + VERTEX_PROGRAM), this.hadoopConfiguration);
             DistributedCache.createSymlink(this.hadoopConfiguration);
             ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration), new String[]{});

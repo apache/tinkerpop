@@ -23,6 +23,10 @@ public abstract class TraversalMessage implements Serializable {
         this.holder.deflate();
     }
 
+    public Holder getHolder() {
+        return this.holder;
+    }
+
     public static <T extends TraversalMessage> T of(final Holder holder) {
         if (holder instanceof PathHolder)
             return (T) TraversalPathMessage.of(holder);
