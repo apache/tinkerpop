@@ -137,7 +137,8 @@ public class DistributionGenerator extends AbstractGenerator {
             IntStream.range(0, degree).forEach(i->outStubs.add(v));
         }
 
-        Collections.shuffle(outStubs);
+        outRandom = new Random(seed);
+        Collections.shuffle(outStubs, outRandom);
 
         outRandom = new Random(seed);
         final Random inRandom = new Random(this.seedSupplier.get());
