@@ -125,7 +125,7 @@ public class CommunityGeneratorTest {
                     generated = true;
                 } catch (IllegalArgumentException iae) {
                     generated = false;
-                    localCrossPcent = localCrossPcent - 0.05d;
+                    localCrossPcent = localCrossPcent - 0.005d;
 
                     if (localCrossPcent < 0d)
                         fail("Cross community percentage should not be less than zero");
