@@ -13,8 +13,12 @@ import java.util.Map;
  */
 public abstract class MicroElement implements Element, Serializable {
 
-    final Object id;
-    final String label;
+    Object id;
+    String label;
+
+    public MicroElement() {
+
+    }
 
     protected MicroElement(final Element element) {
         if (null == element)

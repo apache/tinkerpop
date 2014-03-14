@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.Iterator;
 
@@ -14,8 +14,12 @@ import java.util.Iterator;
  */
 public class MicroEdge extends MicroElement implements Edge {
 
-    final MicroVertex outVertex;
-    final MicroVertex inVertex;
+    MicroVertex outVertex;
+    MicroVertex inVertex;
+
+    public MicroEdge() {
+
+    }
 
     private MicroEdge(final Edge edge) {
         super(edge);

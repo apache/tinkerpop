@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.util.MicroPath;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.function.SSupplier;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,7 +24,7 @@ public class TraversalResult<T> implements Iterator<T> {
     private final Graph graph;
     private final Graph result;
 
-    public TraversalResult(final Graph graph, final Supplier<Traversal> traversalSupplier) {
+    public TraversalResult(final Graph graph, final SSupplier<Traversal> traversalSupplier) {
         this.gremlinSupplier = traversalSupplier;
         this.graph = graph;
         final GraphComputer computer = graph.compute();

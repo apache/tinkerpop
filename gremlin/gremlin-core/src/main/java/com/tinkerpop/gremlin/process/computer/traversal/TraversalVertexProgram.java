@@ -13,10 +13,11 @@ import com.tinkerpop.gremlin.process.util.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.SSupplier;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
+
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,9 +32,9 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     public static final String TRACK_PATHS = "trackPaths";
     // TODO: public static final String MESSAGES_SENT = "messagesSent";
     public static final String TRAVERSAL_TRACKER = "traversalTracker";
-    private final Supplier<Traversal> traversalSupplier;
+    private final SSupplier<Traversal> traversalSupplier;
 
-    private TraversalVertexProgram(final Supplier<Traversal> traversalSupplier) {
+    private TraversalVertexProgram(final SSupplier<Traversal> traversalSupplier) {
         this.traversalSupplier = traversalSupplier;
     }
 
@@ -52,7 +53,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
-        final Traversal traversal = graphMemory.<Supplier<Traversal>>get(TRAVERSAL).get();
+        final Traversal traversal = graphMemory.<SSupplier<Traversal>>get(TRAVERSAL).get();
         traversal.iterate();  // TODO: this needs to go away
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         final String future = (traversal.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
@@ -81,7 +82,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory graphMemory) {
-        final Traversal traversal = graphMemory.<Supplier<Traversal>>get(TRAVERSAL).get();
+        final Traversal traversal = graphMemory.<SSupplier<Traversal>>get(TRAVERSAL).get();
         traversal.iterate(); // TODO: this needs to go away
         if (graphMemory.<Boolean>get(TRACK_PATHS)) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
@@ -115,9 +116,9 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     public static class Builder {
-        private Supplier<Traversal> traversalSupplier;
+        private SSupplier<Traversal> traversalSupplier;
 
-        public Builder traversal(final Supplier<Traversal> traversalSupplier) {
+        public Builder traversal(final SSupplier<Traversal> traversalSupplier) {
             this.traversalSupplier = traversalSupplier;
             return this;
         }

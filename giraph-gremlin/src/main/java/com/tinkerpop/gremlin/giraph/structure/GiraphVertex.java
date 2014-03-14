@@ -3,11 +3,13 @@ package com.tinkerpop.gremlin.giraph.structure;
 import com.tinkerpop.gremlin.giraph.process.olap.GiraphComputerMemory;
 import com.tinkerpop.gremlin.giraph.process.olap.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.olap.GiraphMessenger;
+import com.tinkerpop.gremlin.giraph.process.olap.KryoWritable;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounterMessage;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounters;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.giraph.graph.Vertex;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.log4j.Logger;
@@ -18,7 +20,7 @@ import java.io.ObjectInputStream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritable, DoubleWritable> {
+public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritable, KryoWritable> {
 
     Logger logger = Logger.getLogger(GiraphVertex.class);
     private VertexProgram vertexProgram;
@@ -31,13 +33,15 @@ public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritabl
         } catch (Exception e) {
             java.lang.System.out.println(e.getMessage());
         }
+        System.out.println(this.vertexProgram.getComputeKeys());
         this.gremlinVertex = gremlinVertex;
         this.computerMemory = new GiraphComputerMemory(this);
         this.initialize(new LongWritable(Long.valueOf(gremlinVertex.getId().toString())), NullWritable.get(), EmptyOutEdges.instance());
+        KryoWritable.tClass = TraversalCounterMessage.class;
     }
 
-    public void compute(final Iterable<DoubleWritable> messages) {
-        System.out.println(this.gremlinVertex + ": " + this.gremlinVertex.getProperty(PageRankVertexProgram.PAGE_RANK));
+    public void compute(final Iterable<KryoWritable> messages) {
+        System.out.println(this.gremlinVertex + ": " + this.gremlinVertex.<TraversalCounters>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(new TraversalCounters(this.gremlinVertex)).getObjectTracks());
         this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.computerMemory);
     }
 

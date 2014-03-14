@@ -18,6 +18,10 @@ public abstract class TraversalMessage implements Serializable {
 
     protected Holder holder;
 
+    public TraversalMessage() {
+
+    }
+
     protected TraversalMessage(final Holder holder) {
         this.holder = holder;
         this.holder.deflate();

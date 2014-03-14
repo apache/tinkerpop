@@ -23,6 +23,10 @@ public class TraversalCounterMessage extends TraversalMessage {
 
     private Long counter;
 
+    public TraversalCounterMessage() {
+
+    }
+
     private TraversalCounterMessage(final Holder holder) {
         super(holder);
         this.counter = 1l;
