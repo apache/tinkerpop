@@ -17,7 +17,7 @@ public class MicroEdge extends MicroElement implements Edge {
     MicroVertex outVertex;
     MicroVertex inVertex;
 
-    public MicroEdge() {
+    private MicroEdge() {
 
     }
 

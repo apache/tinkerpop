@@ -23,7 +23,7 @@ public class MicroProperty<V> implements Property, Serializable {
     private MicroElement element;
     private int hashCode;
 
-    public MicroProperty() {
+    private MicroProperty() {
 
     }
 
