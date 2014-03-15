@@ -35,25 +35,11 @@ public abstract class GroupByTest extends AbstractGremlinTest {
         assertEquals(6, map.size());
         map.forEach((key, values) -> {
             assertEquals(1, values.size());
-            if (key.equals("marko")) {
-                assertEquals("1", values.get(0).getId());
-            } else if (key.equals("vadas")) {
-                assertEquals("2", values.get(0).getId());
-            } else if (key.equals("lop")) {
-                assertEquals("3", values.get(0).getId());
-            } else if (key.equals("josh")) {
-                assertEquals("4", values.get(0).getId());
-            } else if (key.equals("ripple")) {
-                assertEquals("5", values.get(0).getId());
-            } else if (key.equals("peter")) {
-                assertEquals("6", values.get(0).getId());
-            } else {
-                throw new IllegalStateException("This is not a possible return value");
-            }
+            assertEquals(convertToId(key), values.get(0).getId());
         });
     }
 
-    @Ignore // TODO:
+    @Ignore // TODO: ???
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX() {
         final Map<String, List<String>> map = get_g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX();

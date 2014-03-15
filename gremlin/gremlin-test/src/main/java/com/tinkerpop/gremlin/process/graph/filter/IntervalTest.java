@@ -18,12 +18,12 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class IntervalTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV();
+    public abstract Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outE_intervalXweight_0_06X_inV() {
-        final Iterator<Vertex> traversal = get_g_v1_outE_intervalXweight_0_06X_inV();
+        final Iterator<Vertex> traversal = get_g_v1_outE_intervalXweight_0_06X_inV(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         while (traversal.hasNext()) {
             Vertex vertex = traversal.next();
@@ -34,8 +34,8 @@ public abstract class IntervalTest extends AbstractGremlinTest {
 
     public static class JavaIntervalTest extends IntervalTest {
 
-        public Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV() {
-            return g.v(1).outE().interval("weight", 0.0f, 0.6f).inV();
+        public Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
+            return g.v(v1Id).outE().interval("weight", 0.0f, 0.6f).inV();
         }
     }
 }

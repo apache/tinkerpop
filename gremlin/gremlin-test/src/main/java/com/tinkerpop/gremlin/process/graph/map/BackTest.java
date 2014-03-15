@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
@@ -20,20 +21,20 @@ import static org.junit.Assert.*;
  */
 public abstract class BackTest extends AbstractGremlinTest {
 
-    public abstract Iterator<Vertex> get_g_v1_asXhereX_out_backXhereX();
+    public abstract Iterator<Vertex> get_g_v1_asXhereX_out_backXhereX(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX();
+    public abstract Iterator<Vertex> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(final Object v4Id);
 
-    public abstract Iterator<String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX();
+    public abstract Iterator<String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(final Object v4Id);
 
-    public abstract Iterator<Edge> get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX();
+    public abstract Iterator<Edge> get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(final Object v1Id);
 
-    public abstract Iterator<Edge> get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX();
+    public abstract Iterator<Edge> get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXhereX_out_backXhereX() {
-        final Iterator<Vertex> step = get_g_v1_asXhereX_out_backXhereX();
+        final Iterator<Vertex> step = get_g_v1_asXhereX_out_backXhereX(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -47,7 +48,7 @@ public abstract class BackTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX() {
-        final Iterator<Vertex> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX();
+        final Iterator<Vertex> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(convertToId("josh"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -62,11 +63,12 @@ public abstract class BackTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX() {
-        final Iterator<Edge> step = get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX();
+        final Iterator<Edge> step = get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(convertToId("marko"));
         System.out.println("Testing: " + step);
         final Edge edge = step.next();
         assertEquals("knows", edge.getLabel());
-        assertEquals("7", edge.getId());
+        assertEquals(convertToId("vadas"), edge.getVertex(Direction.IN).getId());
+        assertEquals(convertToId("marko"), edge.getVertex(Direction.OUT).getId());
         assertEquals(0.5f, edge.<Float>getValue("weight"), 0.0001f);
         assertFalse(step.hasNext());
     }
@@ -74,7 +76,7 @@ public abstract class BackTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX() {
-        final Iterator<String> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX();
+        final Iterator<String> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(convertToId("josh"));
         System.out.println("Testing: " + step);
         int counter = 0;
         final Set<String> names = new HashSet<>();
@@ -92,7 +94,7 @@ public abstract class BackTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     @Ignore("This has to do with as labeling a filter now that its not rolled into VertexQueryStep")
     public void g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX() {
-        final Iterator<Edge> step = get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX();
+        final Iterator<Edge> step = get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(convertToId("marko"));
         System.out.println("Testing: " + step);
         assertTrue(step.hasNext());
         assertTrue(step.hasNext());
@@ -105,24 +107,24 @@ public abstract class BackTest extends AbstractGremlinTest {
     }
 
     public static class JavaBackTest extends BackTest {
-        public Iterator<Vertex> get_g_v1_asXhereX_out_backXhereX() {
-            return g.v(1).as("here").out().back("here");
+        public Iterator<Vertex> get_g_v1_asXhereX_out_backXhereX(final Object v1Id) {
+            return g.v(v1Id).as("here").out().back("here");
         }
 
-        public Iterator<Vertex> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX() {
-            return g.v(4).out().as("here").has("lang", "java").back("here");
+        public Iterator<Vertex> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(final Object v4Id) {
+            return g.v(v4Id).out().as("here").has("lang", "java").back("here");
         }
 
-        public Iterator<String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX() {
-            return g.v(4).out().as("here").has("lang", "java").back("here").value("name");
+        public Iterator<String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(final Object v4Id) {
+            return g.v(v4Id).out().as("here").has("lang", "java").back("here").value("name");
         }
 
-        public Iterator<Edge> get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX() {
-            return g.v(1).outE().as("here").inV().has("name", "vadas").back("here");
+        public Iterator<Edge> get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(final Object v1Id) {
+            return g.v(v1Id).outE().as("here").inV().has("name", "vadas").back("here");
         }
 
-        public Iterator<Edge> get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX() {
-            return g.v(1).outE("knows").has("weight", 1.0f).as("here").inV().has("name", "josh").back("here");
+        public Iterator<Edge> get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
+            return g.v(v1Id).outE("knows").has("weight", 1.0f).as("here").inV().has("name", "josh").back("here");
         }
     }
 }

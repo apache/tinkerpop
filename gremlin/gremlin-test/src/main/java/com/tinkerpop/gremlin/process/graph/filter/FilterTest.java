@@ -26,7 +26,7 @@ public abstract class FilterTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
 
@@ -76,7 +76,7 @@ public abstract class FilterTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_filterXage_gt_30X() {
-        final Iterator<Vertex> traversal = get_g_v1_out_filterXage_gt_30X();
+        final Iterator<Vertex> traversal = get_g_v1_out_filterXage_gt_30X(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         assertEquals(Integer.valueOf(32), traversal.next().<Integer>getValue("age"));
         assertFalse(traversal.hasNext());
@@ -113,8 +113,8 @@ public abstract class FilterTest extends AbstractGremlinTest {
             return g.V().filter(v -> v.get().<String>getProperty("lang").orElse("none").equals("java"));
         }
 
-        public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X() {
-            return g.v(1).out().filter(v -> v.get().<Integer>getProperty("age").orElse(0) > 30);
+        public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id) {
+            return g.v(v1Id).out().filter(v -> v.get().<Integer>getProperty("age").orElse(0) > 30);
         }
 
         public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
@@ -138,9 +138,9 @@ public abstract class FilterTest extends AbstractGremlinTest {
             return g.V().filter(v -> v.get().<String>getProperty("lang").orElse("none").equals("java")).submit(g.compute());
         }
 
-        public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X() {
+        public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id) {
             // TODO: FIX return g.v(1).out().filter(v -> v.get().<Integer>getProperty("age").orElse(0) > 30).submit(g.compute());
-            return g.V().has(Element.ID, "1").out().filter(v -> v.get().<Integer>getProperty("age").orElse(0) > 30).submit(g.compute());
+            return g.V().has(Element.ID, v1Id).out().filter(v -> v.get().<Integer>getProperty("age").orElse(0) > 30).submit(g.compute());
         }
 
         public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {

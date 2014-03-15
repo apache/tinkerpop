@@ -18,14 +18,14 @@ import static org.junit.Assert.assertFalse;
  */
 public abstract class RetainTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_out_retainXg_v2X();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_retainXg_v2X(final Object v1Id, final Object v2Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_retainXxX();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_retainXxX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_retainXg_v2X() {
-        final Iterator<Vertex> traversal = get_g_v1_out_retainXg_v2X();
+        final Iterator<Vertex> traversal = get_g_v1_out_retainXg_v2X(convertToId("marko"), convertToId("vadas"));
         System.out.println("Testing: " + traversal);
         assertEquals("vadas", traversal.next().<String>getValue("name"));
         assertFalse(traversal.hasNext());
@@ -34,7 +34,7 @@ public abstract class RetainTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_aggregateXxX_out_retainXxX() {
-        final Iterator<Vertex> traversal = get_g_v1_out_aggregateXxX_out_retainXxX();
+        final Iterator<Vertex> traversal = get_g_v1_out_aggregateXxX_out_retainXxX(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         assertEquals("lop", traversal.next().<String>getValue("name"));
         assertFalse(traversal.hasNext());
@@ -42,12 +42,12 @@ public abstract class RetainTest extends AbstractGremlinTest {
 
     public static class JavaRetainTest extends RetainTest {
 
-        public Traversal<Vertex, Vertex> get_g_v1_out_retainXg_v2X() {
-            return g.v(1).out().retain(g.v(2));
+        public Traversal<Vertex, Vertex> get_g_v1_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
+            return g.v(v1Id).out().retain(g.v(v2Id));
         }
 
-        public Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_retainXxX() {
-            return g.v(1).out().aggregate("x").out().retain("x");
+        public Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_retainXxX(final Object v1Id) {
+            return g.v(v1Id).out().aggregate("x").out().retain("x");
         }
     }
 }

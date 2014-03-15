@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
+import com.tinkerpop.gremlin.structure.FeatureRequirement;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
@@ -22,14 +24,15 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AnnotatedValuesTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, AnnotatedValue<String>> get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X();
+    public abstract Traversal<Vertex, AnnotatedValue<String>> get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X(final Object v1Id);
 
     public abstract Traversal<Vertex, String> get_g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value();
 
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_STRING_VALUES)
     public void g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X() {
-        final Iterator<AnnotatedValue<String>> step = get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X();
+        final Iterator<AnnotatedValue<String>> step = get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X(convertToId("marko"));
         System.out.println("Testing: " + step);
         final List<AnnotatedValue<String>> locations = StreamFactory.stream(step).collect(Collectors.toList());
         assertEquals(2, locations.size());
@@ -38,6 +41,7 @@ public abstract class AnnotatedValuesTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_STRING_VALUES)
     public void g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value() {
         final Iterator<String> step = get_g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value();
         System.out.println("Testing: " + step);
@@ -48,8 +52,8 @@ public abstract class AnnotatedValuesTest extends AbstractGremlinTest {
 
     public static class JavaAnnotatedValuesTest extends AnnotatedValuesTest {
 
-        public Traversal<Vertex, AnnotatedValue<String>> get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X() {
-            return g.v(1).annotatedValues("locations").interval("startTime", 2004, 2006);
+        public Traversal<Vertex, AnnotatedValue<String>> get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X(final Object v1Id) {
+            return g.v(v1Id).annotatedValues("locations").interval("startTime", 2004, 2006);
         }
 
         public Traversal<Vertex, String> get_g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value() {

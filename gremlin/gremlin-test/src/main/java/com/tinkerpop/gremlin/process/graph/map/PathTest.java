@@ -19,21 +19,21 @@ import static org.junit.Assert.*;
  */
 public abstract class PathTest extends AbstractGremlinTest {
 
-    public abstract Iterator<Path> get_g_v1_propertyXnameX_path();
+    public abstract Iterator<Path> get_g_v1_propertyXnameX_path(final Object v1Id);
 
-    public abstract Iterator<Path> get_g_v1_out_pathXage_nameX();
+    public abstract Iterator<Path> get_g_v1_out_pathXage_nameX(final Object v1Id);
 
     public abstract Iterator<Path> get_g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX();
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_propertyXnameX_path() {
-        final Iterator<Path> step = get_g_v1_propertyXnameX_path();
+        final Iterator<Path> step = get_g_v1_propertyXnameX_path(convertToId("marko"));
         System.out.println("Testing: " + step);
         final Path path = step.next();
         assertFalse(step.hasNext());
         assertEquals(2, path.size());
-        assertEquals("1", ((Vertex) path.get(0)).<String>getId());
+        assertEquals(convertToId("marko"), ((Vertex) path.get(0)).<String>getId());
         assertEquals("marko", ((Vertex) path.get(0)).<String>getValue("name"));
         assertEquals("marko", path.<String>get(1));
     }
@@ -41,7 +41,7 @@ public abstract class PathTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_pathXage_nameX() {
-        final Iterator<Path> step = get_g_v1_out_pathXage_nameX();
+        final Iterator<Path> step = get_g_v1_out_pathXage_nameX(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         final Set<String> names = new HashSet<>();
@@ -74,12 +74,12 @@ public abstract class PathTest extends AbstractGremlinTest {
     }
 
     public static class JavaPathTest extends PathTest {
-        public Iterator<Path> get_g_v1_propertyXnameX_path() {
-            return g.v(1).value("name").path();
+        public Iterator<Path> get_g_v1_propertyXnameX_path(final Object v1Id) {
+            return g.v(v1Id).value("name").path();
         }
 
-        public Iterator<Path> get_g_v1_out_pathXage_nameX() {
-            return g.v(1).out().path(v -> ((Vertex) v).getValue("age"), v -> ((Vertex) v).getValue("name"));
+        public Iterator<Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
+            return g.v(v1Id).out().path(v -> ((Vertex) v).getValue("age"), v -> ((Vertex) v).getValue("name"));
         }
 
         public Iterator<Path> get_g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX() {

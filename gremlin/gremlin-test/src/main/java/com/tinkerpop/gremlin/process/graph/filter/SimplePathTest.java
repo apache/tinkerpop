@@ -14,12 +14,12 @@ import static org.junit.Assert.*;
  */
 public abstract class SimplePathTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_simplePath() {
-        final Traversal<Vertex, Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_simplePath();
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_simplePath(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -33,8 +33,8 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
 
     public static class JavaSimplePathTest extends SimplePathTest {
 
-        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath() {
-            return g.v(1).out("created").in("created").simplePath();
+        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
+            return g.v(v1Id).out("created").in("created").simplePath();
         }
     }
 }

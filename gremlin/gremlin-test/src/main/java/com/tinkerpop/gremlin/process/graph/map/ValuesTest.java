@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.structure.Element;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -25,7 +27,7 @@ public abstract class ValuesTest extends AbstractGremlinTest {
 
     public abstract Iterator<Map<String, Object>> get_g_E_valuesXid_label_weightX();
 
-    public abstract Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values();
+    public abstract Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -93,6 +95,7 @@ public abstract class ValuesTest extends AbstractGremlinTest {
     }
 
     @Test
+    @Ignore("can't easily check edge ids as they are different from one graph implementation to the next...some other method to test this traversal?")
     @LoadGraphWith(CLASSIC)
     public void g_E_valuesXid_label_weightX() {
         final Iterator<Map<String, Object>> step = get_g_E_valuesXid_label_weightX();
@@ -101,7 +104,7 @@ public abstract class ValuesTest extends AbstractGremlinTest {
         while (step.hasNext()) {
             counter++;
             final Map<String, Object> values = step.next();
-            final Integer id = Integer.valueOf(values.get("id").toString());
+            final Integer id = Integer.valueOf(values.get(Element.ID).toString());
             if (id == 7) {
                 assertEquals("knows", values.get("label"));
                 assertEquals(0.5f, values.get("weight"));
@@ -136,7 +139,7 @@ public abstract class ValuesTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_values() {
-        final Iterator<Map<String, Object>> step = get_g_v1_outXcreatedX_values();
+        final Iterator<Map<String, Object>> step = get_g_v1_outXcreatedX_values(convertToId("marko"));
         System.out.println("Testing: " + step);
         assertTrue(step.hasNext());
         final Map<String, Object> values = step.next();
@@ -160,8 +163,8 @@ public abstract class ValuesTest extends AbstractGremlinTest {
             return g.E().values("id", "label", "weight");
         }
 
-        public Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values() {
-            return g.v(1).out("created").values();
+        public Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
+            return g.v(v1Id).out("created").values();
         }
     }
 }
