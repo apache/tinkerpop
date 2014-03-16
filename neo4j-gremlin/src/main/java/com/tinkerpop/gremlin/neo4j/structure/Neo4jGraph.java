@@ -19,9 +19,11 @@ import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.NotInTransactionException;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.kernel.impl.core.NodeManager;
 
 import javax.transaction.Status;
 import javax.transaction.SystemException;
@@ -195,6 +197,10 @@ public class Neo4jGraph implements Graph {
 
     public Iterator<Map<String,Object>> query(final String query, final Map<String,Object> params) {
         return cypher.execute(query,null == params ? Collections.<String,Object>emptyMap() : params).iterator();
+    }
+
+    private PropertyContainer getGraphProperties() {
+        return ((GraphDatabaseAPI) this.rawGraph).getDependencyResolver().resolveDependency(NodeManager.class).getGraphProperties();
     }
 
     private static Long evaluateToLong(final Object id) throws NumberFormatException {
