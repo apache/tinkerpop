@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.filter;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -21,9 +21,7 @@ import static org.junit.Assume.assumeTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class FilterTest extends AbstractGremlinTest {
-
-    protected boolean requiresGraphComputer;
+public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_filterXfalseX();
 
@@ -34,10 +32,6 @@ public abstract class FilterTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
-
-    protected boolean graphMeetsTestRequirements() {
-        return !requiresGraphComputer || g.getFeatures().graph().supportsComputer();
-    }
 
     @Test
     @LoadGraphWith(CLASSIC)
