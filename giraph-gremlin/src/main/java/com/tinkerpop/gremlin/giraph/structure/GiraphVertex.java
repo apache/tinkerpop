@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounterMessage;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounters;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalPaths;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.LongWritable;
@@ -41,7 +42,9 @@ public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritabl
     }
 
     public void compute(final Iterable<KryoWritable> messages) {
-        System.out.println(this.gremlinVertex + ": " + this.gremlinVertex.<TraversalCounters>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(new TraversalCounters(this.gremlinVertex)).getObjectTracks());
+        //System.out.println(this.gremlinVertex + ": " + this.gremlinVertex.<TraversalPaths>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(new TraversalPaths(this.gremlinVertex)).getDoneObjectTracks());
+        System.out.println(this.gremlinVertex + ": " + this.gremlinVertex.<TraversalCounters>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(new TraversalCounters(this.gremlinVertex)).getDoneObjectTracks());
+
         this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.computerMemory);
     }
 

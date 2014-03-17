@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.giraph.process.olap;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.tinkerpop.gremlin.process.PathHolder;
+import com.tinkerpop.gremlin.process.SimpleHolder;
 import org.apache.hadoop.io.Writable;
 
 import java.io.ByteArrayInputStream;
@@ -21,7 +23,8 @@ public class KryoWritable<T> implements Writable {
     T t;
 
     public KryoWritable() {
-
+        KRYO.register(SimpleHolder.class);
+        KRYO.register(PathHolder.class);
     }
 
     public KryoWritable(final T t) {

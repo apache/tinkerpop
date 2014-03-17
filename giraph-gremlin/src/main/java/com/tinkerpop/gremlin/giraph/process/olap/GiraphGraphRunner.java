@@ -30,7 +30,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
     public int run(final String[] args) {
         try {
             final GiraphJob job = new GiraphJob(this.giraphConfiguration, "GiraphGraph Play");
-            job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
+            job.getInternalJob().setJarByClass(GiraphJob.class);
             job.run(true);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -53,6 +53,6 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
         GraphComputer g = new GiraphGraphComputer();
         //g.program(new PageRankVertexProgram.Builder().build()).configuration(configuration).submit();
-        g.program(new TraversalVertexProgram.Builder().traversal(() -> EmptyGraph.instance().V().out().value("name")).build()).configuration(configuration).submit();
+        g.program(new TraversalVertexProgram.Builder().traversal(() -> EmptyGraph.instance().V()).build()).configuration(configuration).submit();
     }
 }

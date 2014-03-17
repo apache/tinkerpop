@@ -78,7 +78,7 @@ public class TraversalCounterMessage extends TraversalMessage {
                 message.setCounter(count);
                 messenger.sendMessage(
                         vertex,
-                        MessageType.Global.of(TraversalVertexProgram.TRAVERSAL_MESSAGE, TraversalMessage.getHostingVertices(end)),
+                        MessageType.Global.of(TraversalMessage.getHostingVertices(end)),
                         message);
             } else {
                 MapHelper.incr(tracker.getObjectTracks(), holder, count);

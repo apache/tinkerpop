@@ -19,39 +19,19 @@ import java.util.function.BiFunction;
  */
 public abstract class MessageType implements Serializable {
 
-    private final String label;
-
-    public MessageType(final String label) {
-        this.label = label;
-    }
-
-    public String getLabel() {
-        return this.label;
-    }
-
     public static class Global extends MessageType {
         private final Iterable<Vertex> vertices;
 
-        private Global(final String label) {
-            super(label);
-            this.vertices = null;
-        }
-
-        private Global(final String label, final Iterable<Vertex> vertices) {
-            super(label);
+        private Global(final Iterable<Vertex> vertices) {
             this.vertices = vertices;
         }
 
-        public static Global of(final String label, final Iterable<Vertex> vertices) {
-            return new Global(label, vertices);
+        public static Global of(final Iterable<Vertex> vertices) {
+            return new Global(vertices);
         }
 
-        public static Global of(final String label, final Vertex... vertices) {
-            return new Global(label, Arrays.asList(vertices));
-        }
-
-        public static Global of(final String label) {
-            return new Global(label);
+        public static Global of(final Vertex... vertices) {
+            return new Global(Arrays.asList(vertices));
         }
 
         public Iterable<Vertex> vertices() {
@@ -63,24 +43,22 @@ public abstract class MessageType implements Serializable {
         public final VertexQueryBuilder query;
         public final SBiFunction<M1, Edge, M2> edgeFunction;
 
-        private Local(final String label, final VertexQueryBuilder query) {
-            super(label);
+        private Local(final VertexQueryBuilder query) {
             this.query = query;
             this.edgeFunction = (final M1 m, final Edge e) -> (M2) m;
         }
 
-        private Local(final String label, final VertexQueryBuilder query, final SBiFunction<M1, Edge, M2> edgeFunction) {
-            super(label);
+        private Local(final VertexQueryBuilder query, final SBiFunction<M1, Edge, M2> edgeFunction) {
             this.query = query;
             this.edgeFunction = edgeFunction;
         }
 
-        public static Local of(final String label, final VertexQueryBuilder query) {
-            return new Local(label, query);
+        public static Local of(final VertexQueryBuilder query) {
+            return new Local(query);
         }
 
-        public static <M1, M2> Local of(final String label, final VertexQueryBuilder query, final SBiFunction<M1, Edge, M2> edgeFunction) {
-            return new Local<>(label, query, edgeFunction);
+        public static <M1, M2> Local of(final VertexQueryBuilder query, final SBiFunction<M1, Edge, M2> edgeFunction) {
+            return new Local<>(query, edgeFunction);
         }
 
         public Iterable<Edge> edges(final Vertex vertex) {

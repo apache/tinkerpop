@@ -29,6 +29,7 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     private VertexProgram vertexProgram;
     private GiraphVertex giraphVertex;
     private int counter = 0;
+    private long runtime = java.lang.System.currentTimeMillis();
 
     public GiraphComputerMemory() {
         this.giraphVertex = null;
@@ -71,7 +72,7 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public long getRuntime() {
-        return 1;
+        return java.lang.System.currentTimeMillis() - this.runtime;
     }
 
     public Set<String> getVariables() {
@@ -83,9 +84,9 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
         if (variable.equals(TraversalVertexProgram.TRACK_PATHS))
             return (R) new Boolean(false);
         else if (variable.equals("voteToHalt")) {
-            return (R) new Boolean(this.counter++ > 3);
+            return (R) new Boolean(this.counter++ > 5);
         } else {
-            SSupplier supplier = () -> TinkerGraph.open().V().out().value("name");
+            SSupplier supplier = () -> TinkerGraph.open().V().out().<String>value("name").map(s -> s.get().length());
             return (R) supplier;
         }
     }

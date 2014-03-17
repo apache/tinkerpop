@@ -24,9 +24,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class TraversalVertexProgram<M extends TraversalMessage> implements VertexProgram<M> {
 
-    private MessageType.Global global = MessageType.Global.of(TRAVERSAL_MESSAGE);
+    private MessageType.Global global = MessageType.Global.of();
 
-    protected static final String TRAVERSAL_MESSAGE = "traversalMessage";
     private static final String TRAVERSAL = "traversal";
     private static final String VOTE_TO_HALT = "voteToHalt";
     public static final String TRACK_PATHS = "trackPaths";
@@ -66,7 +65,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                     new PathHolder<>(startStep.getAs(), vertex) :
                     new SimpleHolder<>(vertex);
             holder.setFuture(future);
-            messenger.sendMessage(vertex, MessageType.Global.of(TRAVERSAL_MESSAGE, vertex), TraversalMessage.of(holder));
+            messenger.sendMessage(vertex, MessageType.Global.of(vertex), TraversalMessage.of(holder));
             voteToHalt.set(false);
         } else if (Edge.class.isAssignableFrom(startStep.returnClass)) {
             vertex.outE().forEach(e -> {
@@ -74,7 +73,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                         new PathHolder<>(startStep.getAs(), e) :
                         new SimpleHolder<>(e);
                 holder.setFuture(future);
-                messenger.sendMessage(vertex, MessageType.Global.of(TRAVERSAL_MESSAGE, vertex), TraversalMessage.of(holder));
+                messenger.sendMessage(vertex, MessageType.Global.of(vertex), TraversalMessage.of(holder));
                 voteToHalt.set(false);
             });
         }
