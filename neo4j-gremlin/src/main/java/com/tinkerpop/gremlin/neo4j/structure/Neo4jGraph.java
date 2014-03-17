@@ -114,6 +114,7 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
+        this.tx().readWrite();
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
         traversal.addStep(new Neo4jGraphStep(traversal, Vertex.class, this));
         return traversal;
@@ -121,6 +122,7 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
+        this.tx().readWrite();
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>();
         traversal.addStep(new Neo4jGraphStep(traversal, Edge.class, this));
         return traversal;
@@ -128,6 +130,7 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public Vertex v(final Object id) {
+        this.tx().readWrite();
         if (null == id) throw Graph.Exceptions.elementNotFound();
 
         try {
@@ -143,6 +146,7 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public Edge e(final Object id) {
+        this.tx().readWrite();
         if (null == id) throw Graph.Exceptions.elementNotFound();
 
         try {

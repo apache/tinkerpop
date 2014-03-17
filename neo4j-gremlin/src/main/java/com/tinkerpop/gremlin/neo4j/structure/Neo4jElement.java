@@ -35,6 +35,7 @@ abstract class Neo4jElement implements Element {
 
     @Override
     public String getLabel() {
+        this.graph.tx().readWrite();
         // todo: what to do when there are multiple labels on a vertex!!! harden the approach below
         if (this.rawElement instanceof Node)
             return ((Node) this.rawElement).getLabels().iterator().next().name();
