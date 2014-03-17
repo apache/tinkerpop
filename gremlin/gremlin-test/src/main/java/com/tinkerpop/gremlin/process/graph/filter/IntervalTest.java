@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.filter;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -16,7 +16,7 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class IntervalTest extends AbstractGremlinTest {
+public abstract class IntervalTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id);
 
@@ -33,9 +33,22 @@ public abstract class IntervalTest extends AbstractGremlinTest {
     }
 
     public static class JavaIntervalTest extends IntervalTest {
+        public JavaIntervalTest() {
+            requiresGraphComputer = false;
+        }
 
         public Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
             return g.v(v1Id).outE().interval("weight", 0.0f, 0.6f).inV();
+        }
+    }
+
+    public static class JavaComputerIntervalTest extends IntervalTest {
+        public JavaComputerIntervalTest() {
+            requiresGraphComputer = true;
+        }
+
+        public Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
+            return g.v(v1Id).outE().interval("weight", 0.0f, 0.6f).inV().submit(g.compute());
         }
     }
 }
