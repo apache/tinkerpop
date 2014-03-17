@@ -60,6 +60,7 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             HasTest.JavaComputerHasTest.class,
             IntervalTest.JavaComputerIntervalTest.class,
             RangeTest.JavaComputerRangeTest.class,
+            BackTest.JavaComputerBackTest.class,
             TreeTest.JavaProcessTreeTest.class
     };
 
@@ -71,6 +72,7 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             HasTest.class,
             IntervalTest.class,
             RangeTest.class,
+            BackTest.class,
             TreeTest.class
     };
 
