@@ -12,13 +12,18 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class FilterTest extends AbstractGremlinTest {
+
+    protected boolean requiresGraphComputer;
 
     public abstract Traversal<Vertex, Vertex> get_g_V_filterXfalseX();
 
@@ -30,9 +35,14 @@ public abstract class FilterTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
 
+    protected boolean graphMeetsTestRequirements() {
+        return !requiresGraphComputer || g.getFeatures().graph().supportsComputer();
+    }
+
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXfalseX() {
+        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_filterXfalseX();
         System.out.println("Testing: " + traversal);
         assertFalse(traversal.hasNext());
@@ -42,10 +52,11 @@ public abstract class FilterTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXtrueX() {
+        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_filterXtrueX();
         System.out.println("Testing: " + traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<Vertex>();
+        Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
             vertices.add(traversal.next());
@@ -58,10 +69,11 @@ public abstract class FilterTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXlang_eq_javaX() {
+        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_filterXlang_eq_javaX();
         System.out.println("Testing: " + traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<Vertex>();
+        Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
             Vertex vertex = traversal.next();
@@ -76,6 +88,7 @@ public abstract class FilterTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_filterXage_gt_30X() {
+        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_v1_out_filterXage_gt_30X(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         assertEquals(Integer.valueOf(32), traversal.next().<Integer>getValue("age"));
@@ -85,10 +98,11 @@ public abstract class FilterTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
+        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
         System.out.println("Testing: " + traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<Vertex>();
+        Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
             Vertex vertex = traversal.next();
@@ -101,6 +115,10 @@ public abstract class FilterTest extends AbstractGremlinTest {
     }
 
     public static class JavaFilterTest extends FilterTest {
+        public JavaFilterTest() {
+            this.requiresGraphComputer = false;
+        }
+
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
             return g.V().filter(v -> false);
         }
@@ -125,7 +143,12 @@ public abstract class FilterTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaGraphComputerTest extends FilterTest {
+    public static class JavaComputerFilterTest extends FilterTest {
+
+        public JavaComputerFilterTest() {
+            this.requiresGraphComputer = true;
+        }
+
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
             return g.V().filter(v -> false).submit(g.compute());
         }

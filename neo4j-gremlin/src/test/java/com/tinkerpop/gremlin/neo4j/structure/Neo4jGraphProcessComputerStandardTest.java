@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
-import com.tinkerpop.gremlin.process.ProcessStandardSuite;
+import com.tinkerpop.gremlin.process.ProcessComputerStandardSuite;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runner.RunWith;
@@ -16,9 +16,9 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(ProcessStandardSuite.class)
-@ProcessStandardSuite.GraphProviderClass(Neo4jGraphProcessStandardTest.class)
-public class Neo4jGraphProcessStandardTest extends AbstractGraphProvider {
+@RunWith(ProcessComputerStandardSuite.class)
+@ProcessComputerStandardSuite.GraphProviderClass(Neo4jGraphProcessComputerStandardTest.class)
+public class Neo4jGraphProcessComputerStandardTest extends AbstractGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName) {
