@@ -7,8 +7,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.util.MapHelper;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.MicroPath;
+import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
@@ -20,6 +20,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TraversalPathMessage extends TraversalMessage {
+
+    private TraversalPathMessage() {
+    }
 
     private TraversalPathMessage(final Holder holder) {
         super(holder);
@@ -85,7 +88,7 @@ public class TraversalPathMessage extends TraversalMessage {
             if (end instanceof Element || end instanceof Property) {
                 messenger.sendMessage(
                         vertex,
-                        MessageType.Global.of(TraversalVertexProgram.TRAVERSAL_MESSAGE, getHostingVertices(end)),
+                        MessageType.Global.of(getHostingVertices(end)),
                         TraversalPathMessage.of(holder));
             } else {
                 if (end instanceof Path) {

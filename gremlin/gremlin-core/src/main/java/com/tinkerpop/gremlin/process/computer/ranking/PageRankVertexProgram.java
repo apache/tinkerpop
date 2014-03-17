@@ -18,7 +18,7 @@ import java.util.Map;
 public class PageRankVertexProgram implements VertexProgram<Double> {
 
     protected final Map<String, KeyType> computeKeys = new HashMap<>();
-    private MessageType.Local messageType = MessageType.Local.of("pageRank", new VertexQueryBuilder().direction(Direction.OUT));
+    private MessageType.Local messageType = MessageType.Local.of(new VertexQueryBuilder().direction(Direction.OUT));
 
     public static final String PAGE_RANK = PageRankVertexProgram.class.getName() + ".pageRank";
     public static final String EDGE_COUNT = PageRankVertexProgram.class.getName() + ".edgeCount";
