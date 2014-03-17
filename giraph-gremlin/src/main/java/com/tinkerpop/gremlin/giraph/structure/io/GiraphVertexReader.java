@@ -15,9 +15,7 @@ public class GiraphVertexReader extends VertexReader {
     int counter = 0;
 
     public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException, InterruptedException {
-
     }
-
 
     public boolean nextVertex() throws IOException, InterruptedException {
         return counter++ < 100;

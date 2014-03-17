@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounterMessage;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounters;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalPaths;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.LongWritable;
@@ -39,6 +38,10 @@ public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritabl
         this.computerMemory = new GiraphComputerMemory(this);
         this.initialize(new LongWritable(Long.valueOf(gremlinVertex.getId().toString())), NullWritable.get(), EmptyOutEdges.instance());
         KryoWritable.tClass = TraversalCounterMessage.class;
+    }
+
+    public com.tinkerpop.gremlin.structure.Vertex getGremlinVertex() {
+        return this.gremlinVertex;
     }
 
     public void compute(final Iterable<KryoWritable> messages) {
