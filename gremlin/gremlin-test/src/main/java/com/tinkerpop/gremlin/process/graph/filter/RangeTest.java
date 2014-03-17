@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.filter;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -16,7 +17,7 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class RangeTest extends AbstractGremlinTest {
+public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_1X(final Object v1Id);
 
@@ -113,6 +114,10 @@ public abstract class RangeTest extends AbstractGremlinTest {
     }
 
     public static class JavaRangeTest extends RangeTest {
+        public JavaRangeTest() {
+            requiresGraphComputer = false;
+        }
+
         public Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_1X(final Object v1Id) {
             return g.v(v1Id).out().range(0, 1);
         }
@@ -135,6 +140,36 @@ public abstract class RangeTest extends AbstractGremlinTest {
 
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Object v1Id) {
             return g.v(v1Id).out("created").inE("created").range(1, 2).outV();
+        }
+    }
+
+    public static class JavaComputerRangeTest extends RangeTest {
+        public JavaComputerRangeTest() {
+            requiresGraphComputer = true;
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_1X(final Object v1Id) {
+            return g.v(v1Id).out().range(0, 1).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_outX1X_rangeX0_2X() {
+            return g.V().out(1).range(0, 2).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(final Object v1Id) {
+            return g.v(v1Id).out("knows").outE("created").range(0, 0).inV().submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(final Object v1Id) {
+            return g.v(v1Id).out("knows").out("created").range(0, 0).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(final Object v1Id) {
+            return g.v(v1Id).out("created").in("created").range(1, 2).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Object v1Id) {
+            return g.v(v1Id).out("created").inE("created").range(1, 2).outV().submit(g.compute());
         }
     }
 }
