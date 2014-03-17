@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.sideEffect;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class TreeTest extends AbstractGremlinTest {
+public abstract class TreeTest extends AbstractGremlinProcessTest {
     public abstract Map get_g_v1_out_out_treeXnameX(final Object v1Id);
 
     @Test
@@ -31,7 +32,22 @@ public abstract class TreeTest extends AbstractGremlinTest {
     }
 
     public static class JavaTreeTest extends TreeTest {
+        public JavaTreeTest() {
+            requiresGraphComputer = false;
+        }
+
         public Map get_g_v1_out_out_treeXnameX(final Object v1Id) {
+            return g.v(v1Id).out().out().tree(v -> ((Vertex) v).getValue("name"));
+        }
+    }
+
+    public static class JavaProcessTreeTest extends TreeTest {
+        public JavaProcessTreeTest() {
+            requiresGraphComputer = true;
+        }
+
+        public Map get_g_v1_out_out_treeXnameX(final Object v1Id) {
+            // todo: convert to graph computer
             return g.v(v1Id).out().out().tree(v -> ((Vertex) v).getValue("name"));
         }
     }

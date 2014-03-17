@@ -49,7 +49,7 @@ import org.junit.runners.model.RunnerBuilder;
  */
 public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
 
-    // todo: commented out tests are not currently passing.
+    // todo: all tests are not currently passing. see specific todos in each test
 
     /**
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
@@ -57,9 +57,10 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
             FilterTest.JavaComputerFilterTest.class,
-            //HasTest.JavaComputerHasTest.class
-            //IntervalTest.JavaComputerIntervalTest.class
-            //RangeTest.JavaComputerRangeTest.class
+            HasTest.JavaComputerHasTest.class,
+            IntervalTest.JavaComputerIntervalTest.class,
+            RangeTest.JavaComputerRangeTest.class,
+            TreeTest.JavaProcessTreeTest.class
     };
 
     /**
@@ -67,9 +68,10 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
      */
     protected static final Class<?>[] testsToEnforce = new Class<?>[]{
             FilterTest.class,
-            // HasTest.class,
-            //IntervalTest.class
-            //RangeTest.class
+            HasTest.class,
+            IntervalTest.class,
+            RangeTest.class,
+            TreeTest.class
     };
 
     public ProcessComputerStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

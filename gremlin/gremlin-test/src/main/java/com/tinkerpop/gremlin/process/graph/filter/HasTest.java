@@ -172,7 +172,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
-            return g.v(v1Id).out().<Vertex>has(Element.ID, v2Id).submit(g.compute());
+            // todo: convert to graph computer
+            return g.v(v1Id).out().<Vertex>has(Element.ID, v2Id); //.submit(g.compute());
         }
 
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {
