@@ -24,13 +24,13 @@ public class GiraphGraphRunner extends Configured implements Tool {
         this.giraphConfiguration = new GiraphConfiguration(hadoopConfiguration);
         this.giraphConfiguration.setMasterComputeClass(GiraphComputerMemory.class);
         this.giraphConfiguration.setWorkerConfiguration(1, 1, 100.0f);
-        this.giraphConfiguration.setClass("gremlin.messageClass", Double.class, Double.class);
+        // this.giraphConfiguration.setClass("gremlin.messageClass", Double.class, Double.class);
     }
 
     public int run(final String[] args) {
         try {
             final GiraphJob job = new GiraphJob(this.giraphConfiguration, "GiraphGraph Play");
-            job.getInternalJob().setJarByClass(GiraphJob.class);
+            job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
             job.run(true);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -42,12 +42,12 @@ public class GiraphGraphRunner extends Configured implements Tool {
         Configuration configuration = new BaseConfiguration();
         configuration.setProperty("giraph.vertexClass", GiraphVertex.class.getName());
         configuration.setProperty("giraph.vertexInputFormatClass", TinkerGraphInputFormat.class.getName());
-        configuration.setProperty("giraph.vertexOutputFormatClass", IdWithValueTextOutputFormat.class.getName());
-        configuration.setProperty("giraph.maxWorkers", "1");
+        configuration.setProperty("giraph.vertexOutputFormatClass", IdWithValueTextOutputFormat.class.getName()); // TODO:
+        // configuration.setProperty("giraph.maxWorkers", "1");
         //configuration.setProperty("giraph.zkList", "127.0.0.1:2181");
         configuration.setProperty("giraph.SplitMasterWorker", "false");
         configuration.setProperty("mapred.job.tracker", "localhost:9001");
-        configuration.setProperty("giraph.vertex.input.dir", "tiny_graph.txt");
+        // configuration.setProperty("giraph.vertex.input.dir", "tiny_graph.txt");
         configuration.setProperty("mapred.output.dir", "output");
         //configuration.setProperty("gremlin.messageClass", Double.class);
 

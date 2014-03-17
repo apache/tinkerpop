@@ -13,6 +13,7 @@ import org.apache.hadoop.util.ToolRunner;
 
 import java.io.ObjectOutputStream;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.UUID;
@@ -48,13 +49,29 @@ public class GiraphGraphComputer implements GraphComputer {
     public Future<Graph> submit() {
         try {
             final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
+            fs.delete(new Path("output"), true);
+            final FileSystem local = FileSystem.getLocal(this.hadoopConfiguration);
             final Path vertexProgramPath = new Path("tmp/gremlin", UUID.randomUUID().toString());
             final ObjectOutputStream os = new ObjectOutputStream(fs.create(vertexProgramPath));
             os.writeObject(this.vertexProgram);
             os.close();
-            //fs.deleteOnExit(vertexProgramPath);
+            fs.deleteOnExit(vertexProgramPath);
+
             DistributedCache.addCacheFile(new URI(vertexProgramPath + "#" + VERTEX_PROGRAM), this.hadoopConfiguration);
             DistributedCache.createSymlink(this.hadoopConfiguration);
+
+            Arrays.asList("/usr/local/giraph-1.0.0/giraph-core/target/giraph-1.0.0-for-hadoop-1.2.1-jar-with-dependencies.jar",
+                    "/Users/marko/software/tinkerpop/tinkerpop3/giraph-gremlin/target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar",
+                    "/Users/marko/software/tinkerpop/tinkerpop3/gremlin/gremlin-core/target/gremlin-core-3.0.0-SNAPSHOT.jar",
+                    "/Users/marko/software/tinkerpop/tinkerpop3/tinkergraph/target/tinkergraph-3.0.0-SNAPSHOT.jar")
+                    .forEach(s -> {
+                        try {
+                            DistributedCache.addArchiveToClassPath(new Path(s), this.hadoopConfiguration, local);
+                        } catch (Exception e) {
+                            java.lang.System.out.println(e.getMessage());
+                        }
+                    });
+
             ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration), new String[]{});
         } catch (Exception e) {
             java.lang.System.out.println(e.getMessage());
