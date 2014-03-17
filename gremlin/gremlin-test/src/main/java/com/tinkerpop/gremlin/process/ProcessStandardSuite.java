@@ -76,9 +76,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             GroupCountTest.JavaGroupCountTest.class,
             LinkTest.JavaLinkTest.class,
             SideEffectTest.JavaSideEffectTest.class,
-            TreeTest.JavaTreeTest.class,
-            // todo: add the graph computer tests in some other manner so that they can be respected by @FeatureRequirement
-            // FilterTest.JavaGraphComputerTest.class
+            TreeTest.JavaTreeTest.class
     };
 
     /**
