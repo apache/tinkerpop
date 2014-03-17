@@ -19,7 +19,7 @@ public class SimpleHolder<T> implements Holder<T> {
     protected String future = NO_FUTURE;
     protected int loops = 0;
 
-    public SimpleHolder() {
+    private SimpleHolder() {
 
     }
 

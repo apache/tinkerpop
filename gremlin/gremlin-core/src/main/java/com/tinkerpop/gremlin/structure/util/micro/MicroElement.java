@@ -16,7 +16,7 @@ public abstract class MicroElement implements Element, Serializable {
     Object id;
     String label;
 
-    public MicroElement() {
+    protected MicroElement() {
 
     }
 

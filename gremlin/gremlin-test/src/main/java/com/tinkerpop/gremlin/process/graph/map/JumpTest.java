@@ -17,12 +17,12 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class JumpTest extends AbstractGremlinTest {
-    public abstract Iterator<String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX();
+    public abstract Iterator<String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
-        final Iterator<String> step = get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX();
+        final Iterator<String> step = get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(convertToId("marko"));
         System.out.println("Testing: " + step);
         List<String> names = new ArrayList<>();
         while (step.hasNext()) {
@@ -35,8 +35,8 @@ public abstract class JumpTest extends AbstractGremlinTest {
 
     public static class JavaJumpTest extends JumpTest {
 
-        public Iterator<String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
-            return g.v(1).as("x").out().jump("x", h -> h.getLoops() < 2).value("name");
+        public Iterator<String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
+            return g.v(v1Id).as("x").out().jump("x", h -> h.getLoops() < 2).value("name");
         }
     }
 }

@@ -18,22 +18,22 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class RangeTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_1X();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_1X(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_outX1X_rangeX0_2X();
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_rangeX0_1X() {
-        final Iterator<Vertex> step = get_g_v1_out_rangeX0_1X();
+        final Iterator<Vertex> step = get_g_v1_out_rangeX0_1X(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -59,7 +59,7 @@ public abstract class RangeTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV() {
-        final Iterator<Vertex> traversal = get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV();
+        final Iterator<Vertex> traversal = get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -73,7 +73,7 @@ public abstract class RangeTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXknowsX_outXcreatedX_rangeX0_0X() {
-        final Iterator<Vertex> traversal = get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X();
+        final Iterator<Vertex> traversal = get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -87,7 +87,7 @@ public abstract class RangeTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_rangeX1_2X() {
-        final Iterator<Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X();
+        final Iterator<Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -101,7 +101,7 @@ public abstract class RangeTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV() {
-        final Iterator<Vertex> traversal = get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV();
+        final Iterator<Vertex> traversal = get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -113,28 +113,28 @@ public abstract class RangeTest extends AbstractGremlinTest {
     }
 
     public static class JavaRangeTest extends RangeTest {
-        public Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_1X() {
-            return g.v(1).out().range(0, 1);
+        public Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_1X(final Object v1Id) {
+            return g.v(v1Id).out().range(0, 1);
         }
 
         public Traversal<Vertex, Vertex> get_g_V_outX1X_rangeX0_2X() {
             return g.V().out(1).range(0, 2);
         }
 
-        public Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV() {
-            return g.v(1).out("knows").outE("created").range(0, 0).inV();
+        public Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(final Object v1Id) {
+            return g.v(v1Id).out("knows").outE("created").range(0, 0).inV();
         }
 
-        public Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X() {
-            return g.v(1).out("knows").out("created").range(0, 0);
+        public Traversal<Vertex, Vertex> get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(final Object v1Id) {
+            return g.v(v1Id).out("knows").out("created").range(0, 0);
         }
 
-        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X() {
-            return g.v(1).out("created").in("created").range(1, 2);
+        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(final Object v1Id) {
+            return g.v(v1Id).out("created").in("created").range(1, 2);
         }
 
-        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV() {
-            return g.v(1).out("created").inE("created").range(1, 2).outV();
+        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(final Object v1Id) {
+            return g.v(v1Id).out("created").inE("created").range(1, 2).outV();
         }
     }
 }

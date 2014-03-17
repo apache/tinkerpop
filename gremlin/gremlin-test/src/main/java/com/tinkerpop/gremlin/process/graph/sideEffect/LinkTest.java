@@ -18,12 +18,12 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class LinkTest extends AbstractGremlinTest {
-    public abstract Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX();
+    public abstract Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX() {
-        final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX();
+        final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(convertToId("marko"));
         System.out.println("Testing: " + step);
         final List<Vertex> cocreators = new ArrayList<>();
         final List<Object> ids = new ArrayList<>();
@@ -33,12 +33,12 @@ public abstract class LinkTest extends AbstractGremlinTest {
             ids.add(vertex.getId());
         }
         assertEquals(cocreators.size(), 3);
-        assertTrue(ids.contains("1"));
-        assertTrue(ids.contains("6"));
-        assertTrue(ids.contains("4"));
+        assertTrue(ids.contains(convertToId("marko")));
+        assertTrue(ids.contains(convertToId("peter")));
+        assertTrue(ids.contains(convertToId("josh")));
 
         for (Vertex vertex : cocreators) {
-            if (vertex.getId().equals("1")) {
+            if (vertex.getId().equals(convertToId("marko"))) {
                 assertEquals(vertex.outE("cocreator").count(), 4);
                 assertEquals(vertex.inE("cocreator").count(), 4);
             } else {
@@ -50,8 +50,8 @@ public abstract class LinkTest extends AbstractGremlinTest {
 
     public static class JavaLinkTest extends LinkTest {
 
-        public Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX() {
-            return g.v(1).as("a").out("created").in("created").linkBoth("cocreator", "a");
+        public Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(final Object v1Id) {
+            return g.v(v1Id).as("a").out("created").in("created").linkBoth("cocreator", "a");
         }
     }
 }

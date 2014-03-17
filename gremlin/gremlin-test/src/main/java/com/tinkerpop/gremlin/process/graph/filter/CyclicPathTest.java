@@ -15,12 +15,12 @@ import static org.junit.Assert.assertFalse;
  */
 public abstract class CyclicPathTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1);
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_simplePath() {
-        final Traversal<Vertex, Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_cyclicPath();
+        final Traversal<Vertex, Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -34,8 +34,8 @@ public abstract class CyclicPathTest extends AbstractGremlinTest {
 
     public static class JavaCyclicPathTest extends CyclicPathTest {
 
-        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath() {
-            return g.v(1).out("created").in("created").cyclicPath();
+        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
+            return g.v(v1Id).out("created").in("created").cyclicPath();
         }
     }
 }

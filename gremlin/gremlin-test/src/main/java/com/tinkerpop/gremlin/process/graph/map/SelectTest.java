@@ -19,26 +19,26 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class SelectTest extends AbstractGremlinTest {
 
-    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select();
+    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id);
 
-    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX();
+    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id);
 
-    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX();
+    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id);
 
-    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX();
+    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_select() {
-        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_select();
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_select(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
             counter++;
             Path path = step.next();
             assertEquals(2, path.size());
-            assertEquals("1", ((Vertex) path.get(0)).getId().toString());
-            assertTrue(((Vertex) path.get(1)).getId().toString().equals("2") || ((Vertex) path.get(1)).getId().toString().equals("4"));
+            assertEquals(convertToId("marko"), ((Vertex) path.get(0)).getId());
+            assertTrue(((Vertex) path.get(1)).getId().equals(convertToId("vadas")) || ((Vertex) path.get(1)).getId().equals(convertToId("josh")));
         }
         assertEquals(2, counter);
     }
@@ -46,7 +46,7 @@ public abstract class SelectTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXnameX() {
-        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX();
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -54,8 +54,8 @@ public abstract class SelectTest extends AbstractGremlinTest {
             Path path = step.next();
             assertEquals(2, path.size());
             assertEquals("marko", path.get(0).toString());
-            assertTrue(path.get(1).toString().equals("josh") || path.get(1).toString().equals("vadas"));
-            assertTrue(path.get("b").toString().equals("josh") || path.get("b").toString().equals("vadas"));
+            assertTrue(path.get(1).equals("josh") || path.get(1).equals("vadas"));
+            assertTrue(path.get("b").equals("josh") || path.get("b").equals("vadas"));
         }
         assertEquals(2, counter);
     }
@@ -63,15 +63,15 @@ public abstract class SelectTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXaX() {
-        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXaX();
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
             counter++;
             Path path = step.next();
             assertEquals(1, path.size());
-            assertEquals("1", ((Vertex) path.get(0)).getId().toString());
-            assertEquals("1", ((Vertex) path.get("a")).getId().toString());
+            assertEquals(convertToId("marko"), ((Vertex) path.get(0)).getId());
+            assertEquals(convertToId("marko"), ((Vertex) path.get("a")).getId());
         }
         assertEquals(2, counter);
     }
@@ -79,7 +79,7 @@ public abstract class SelectTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX() {
-        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX();
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -94,20 +94,20 @@ public abstract class SelectTest extends AbstractGremlinTest {
 
     public static class JavaSelectTest extends SelectTest {
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select() {
-            return g.v(1).as("a").out("knows").as("b").select();
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
+            return g.v(v1Id).as("a").out("knows").as("b").select();
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX() {
-            return g.v(1).as("a").out("knows").as("b").select(v -> ((Vertex) v).getValue("name"));
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
+            return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).getValue("name"));
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX() {
-            return g.v(1).as("a").out("knows").as("b").select(As.of("a"));
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
+            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"));
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX() {
-            return g.v(1).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
+            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));
         }
     }
 }

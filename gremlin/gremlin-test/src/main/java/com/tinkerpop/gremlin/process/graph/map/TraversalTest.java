@@ -28,51 +28,51 @@ public abstract class TraversalTest extends AbstractGremlinTest {
 
     public abstract Iterator<Vertex> get_g_V();
 
-    public abstract Iterator<Vertex> get_g_v1_out();
+    public abstract Iterator<Vertex> get_g_v1_out(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v2_in();
+    public abstract Iterator<Vertex> get_g_v2_in(final Object v2Id);
 
-    public abstract Iterator<Vertex> get_g_v4_both();
+    public abstract Iterator<Vertex> get_g_v4_both(final Object v4Id);
 
-    public abstract Iterator<String> get_g_v1_outX1_knowsX_name();
+    public abstract Iterator<String> get_g_v1_outX1_knowsX_name(final Object v1Id);
 
     public abstract Iterator<String> get_g_V_bothX1_createdX_name();
 
     public abstract Iterator<Edge> get_g_E();
 
-    public abstract Iterator<Edge> get_g_v1_outE();
+    public abstract Iterator<Edge> get_g_v1_outE(final Object v1Id);
 
-    public abstract Iterator<Edge> get_g_v2_inE();
+    public abstract Iterator<Edge> get_g_v2_inE(final Object v2Id);
 
-    public abstract Iterator<Edge> get_g_v4_bothE();
+    public abstract Iterator<Edge> get_g_v4_bothE(final Object v4Id);
 
-    public abstract Iterator<Edge> get_g_v4_bothEX1_createdX();
+    public abstract Iterator<Edge> get_g_v4_bothEX1_createdX(final Object v4Id);
 
     public abstract Iterator<String> get_g_V_inEX2_knowsX_outV_name();
 
-    public abstract Iterator<Vertex> get_g_v1_outE_inV();
+    public abstract Iterator<Vertex> get_g_v1_outE_inV(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v2_inE_outV();
+    public abstract Iterator<Vertex> get_g_v2_inE_outV(final Object v2Id);
 
     public abstract Iterator<Vertex> get_g_V_outE_hasXweight_1X_outV();
 
     public abstract Iterator<String> get_g_V_out_outE_inV_inE_inV_both_name();
 
-    public abstract Iterator<String> get_g_v1_outEXknowsX_bothV_name();
+    public abstract Iterator<String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v1_outXknowsX();
+    public abstract Iterator<Vertex> get_g_v1_outXknowsX(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v1_outXknows_createdX();
+    public abstract Iterator<Vertex> get_g_v1_outXknows_createdX(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v1_outEXknowsX_inV();
+    public abstract Iterator<Vertex> get_g_v1_outEXknowsX_inV(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v1_outEXknows_createdX_inV();
+    public abstract Iterator<Vertex> get_g_v1_outEXknows_createdX_inV(final Object v1Id);
 
     public abstract Iterator<Vertex> get_g_V_out_out();
 
-    public abstract Iterator<Vertex> get_g_v1_out_out_out();
+    public abstract Iterator<Vertex> get_g_v1_out_out_out(final Object v1Id);
 
-    public abstract Iterator<String> get_g_v1_out_propertyXnameX();
+    public abstract Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id);
 
     // VERTEX ADJACENCY
 
@@ -94,7 +94,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out() {
-        final Iterator<Vertex> step = get_g_v1_out();
+        final Iterator<Vertex> step = get_g_v1_out(convertToId("marko"));
         assert_g_v1_out(step);
     }
 
@@ -117,7 +117,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v2_in() {
-        final Iterator<Vertex> step = get_g_v2_in();
+        final Iterator<Vertex> step = get_g_v2_in(convertToId("vadas"));
         assert_g_v2_in(step);
     }
 
@@ -134,7 +134,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v4_both() {
-        final Iterator<Vertex> step = get_g_v4_both();
+        final Iterator<Vertex> step = get_g_v4_both(convertToId("josh"));
         System.out.println("Testing: " + step);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
@@ -153,7 +153,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outX1_knowsX_name() {
-        final Iterator<String> step = get_g_v1_outX1_knowsX_name();
+        final Iterator<String> step = get_g_v1_outX1_knowsX_name(convertToId("marko"));
         System.out.println("Testing: " + step);
         final String name = step.next();
         assertTrue(name.equals("vadas") || name.equals("josh"));
@@ -194,7 +194,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outE() {
-        final Iterator<Edge> step = get_g_v1_outE();
+        final Iterator<Edge> step = get_g_v1_outE(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         Set<Edge> edges = new HashSet<>();
@@ -211,7 +211,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v2_inE() {
-        final Iterator<Edge> step = get_g_v2_inE();
+        final Iterator<Edge> step = get_g_v2_inE(convertToId("vadas"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -224,7 +224,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v4_bothE() {
-        final Iterator<Edge> step = get_g_v4_bothE();
+        final Iterator<Edge> step = get_g_v4_bothE(convertToId("josh"));
         System.out.println("Testing: " + step);
         int counter = 0;
         Set<Edge> edges = new HashSet<>();
@@ -241,7 +241,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v4_bothEX1_createdX() {
-        final Iterator<Edge> step = get_g_v4_bothEX1_createdX();
+        final Iterator<Edge> step = get_g_v4_bothEX1_createdX(convertToId("josh"));
         System.out.println("Testing: " + step);
         final Edge edge = step.next();
         assertEquals("created", edge.getLabel());
@@ -268,14 +268,14 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outE_inV() {
-        final Iterator<Vertex> step = get_g_v1_outE_inV();
+        final Iterator<Vertex> step = get_g_v1_outE_inV(convertToId("marko"));
         this.assert_g_v1_out(step);
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v2_inE_outV() {
-        final Iterator<Vertex> step = get_g_v2_inE_outV();
+        final Iterator<Vertex> step = get_g_v2_inE_outV(convertToId("vadas"));
         this.assert_g_v2_in(step);
     }
 
@@ -293,8 +293,8 @@ public abstract class TraversalTest extends AbstractGremlinTest {
             counter++;
         }
         assertEquals(2, counts.size());
-        assertEquals(1, counts.get("1").intValue());
-        assertEquals(1, counts.get("4").intValue());
+        assertEquals(1, counts.get(convertToId("marko")).intValue());
+        assertEquals(1, counts.get(convertToId("josh")).intValue());
 
         assertEquals(2, counter);
         assertFalse(step.hasNext());
@@ -325,7 +325,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outEXknowsX_bothV_name() {
-        final Iterator<String> step = get_g_v1_outEXknowsX_bothV_name();
+        final Iterator<String> step = get_g_v1_outEXknowsX_bothV_name(convertToId("marko"));
         System.out.println("Testing: " + step);
         List<String> names = StreamFactory.stream(step).collect(Collectors.toList());
         assertEquals(4, names.size());
@@ -347,7 +347,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXknowsX() {
-        final Iterator<Vertex> step = get_g_v1_outXknowsX();
+        final Iterator<Vertex> step = get_g_v1_outXknowsX(convertToId("marko"));
         assert_g_v1_outXknowsX(step);
     }
 
@@ -369,21 +369,21 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXknows_createdX() {
-        final Iterator<Vertex> step = get_g_v1_outXknows_createdX();
+        final Iterator<Vertex> step = get_g_v1_outXknows_createdX(convertToId("marko"));
         this.assert_g_v1_out(step);
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outEXknowsX_inV() {
-        final Iterator<Vertex> step = get_g_v1_outEXknowsX_inV();
+        final Iterator<Vertex> step = get_g_v1_outEXknowsX_inV(convertToId("marko"));
         this.assert_g_v1_outXknowsX(step);
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outEXknows_createdX_inV() {
-        final Iterator<Vertex> step = get_g_v1_outEXknows_createdX_inV();
+        final Iterator<Vertex> step = get_g_v1_outEXknows_createdX_inV(convertToId("marko"));
         this.assert_g_v1_out(step);
     }
 
@@ -408,7 +408,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_out_out() {
-        final Iterator<Vertex> step = get_g_v1_out_out_out();
+        final Iterator<Vertex> step = get_g_v1_out_out_out(convertToId("marko"));
         assertFalse(step.hasNext());
     }
 
@@ -417,7 +417,7 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_propertyXnameX() {
-        final Iterator<String> step = get_g_v1_out_propertyXnameX();
+        final Iterator<String> step = get_g_v1_out_propertyXnameX(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         Set<String> names = new HashSet<>();
@@ -438,20 +438,20 @@ public abstract class TraversalTest extends AbstractGremlinTest {
             return g.V();
         }
 
-        public Iterator<Vertex> get_g_v1_out() {
-            return g.v(1).out();
+        public Iterator<Vertex> get_g_v1_out(final Object v1Id) {
+            return g.v(v1Id).out();
         }
 
-        public Iterator<Vertex> get_g_v2_in() {
-            return g.v(2).in();
+        public Iterator<Vertex> get_g_v2_in(final Object v2Id) {
+            return g.v(v2Id).in();
         }
 
-        public Iterator<Vertex> get_g_v4_both() {
-            return g.v(4).both();
+        public Iterator<Vertex> get_g_v4_both(final Object v4Id) {
+            return g.v(v4Id).both();
         }
 
-        public Iterator<String> get_g_v1_outX1_knowsX_name() {
-            return g.v(1).out(1, "knows").value("name");
+        public Iterator<String> get_g_v1_outX1_knowsX_name(final Object v1Id) {
+            return g.v(v1Id).out(1, "knows").value("name");
         }
 
         public Iterator<String> get_g_V_bothX1_createdX_name() {
@@ -462,32 +462,32 @@ public abstract class TraversalTest extends AbstractGremlinTest {
             return g.E();
         }
 
-        public Iterator<Edge> get_g_v1_outE() {
-            return g.v(1).outE();
+        public Iterator<Edge> get_g_v1_outE(final Object v1Id) {
+            return g.v(v1Id).outE();
         }
 
-        public Iterator<Edge> get_g_v2_inE() {
-            return g.v(2).inE();
+        public Iterator<Edge> get_g_v2_inE(final Object v2Id) {
+            return g.v(v2Id).inE();
         }
 
-        public Iterator<Edge> get_g_v4_bothE() {
-            return g.v(4).bothE();
+        public Iterator<Edge> get_g_v4_bothE(final Object v4Id) {
+            return g.v(v4Id).bothE();
         }
 
-        public Iterator<Edge> get_g_v4_bothEX1_createdX() {
-            return g.v(4).bothE(1, "created");
+        public Iterator<Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {
+            return g.v(v4Id).bothE(1, "created");
         }
 
         public Iterator<String> get_g_V_inEX2_knowsX_outV_name() {
             return g.V().inE(2, "knows").outV().value("name");
         }
 
-        public Iterator<Vertex> get_g_v1_outE_inV() {
-            return g.v(1).outE().inV();
+        public Iterator<Vertex> get_g_v1_outE_inV(final Object v1Id) {
+            return g.v(v1Id).outE().inV();
         }
 
-        public Iterator<Vertex> get_g_v2_inE_outV() {
-            return g.v(2).inE().outV();
+        public Iterator<Vertex> get_g_v2_inE_outV(final Object v2Id) {
+            return g.v(v2Id).inE().outV();
         }
 
         public Iterator<Vertex> get_g_V_outE_hasXweight_1X_outV() {
@@ -498,36 +498,36 @@ public abstract class TraversalTest extends AbstractGremlinTest {
             return g.V().out().outE().inV().inE().inV().both().value("name");
         }
 
-        public Iterator<String> get_g_v1_outEXknowsX_bothV_name() {
-            return g.v(1).outE("knows").bothV().value("name");
+        public Iterator<String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id) {
+            return g.v(v1Id).outE("knows").bothV().value("name");
         }
 
-        public Iterator<Vertex> get_g_v1_outXknowsX() {
-            return g.v(1).out("knows");
+        public Iterator<Vertex> get_g_v1_outXknowsX(final Object v1Id) {
+            return g.v(v1Id).out("knows");
         }
 
-        public Iterator<Vertex> get_g_v1_outXknows_createdX() {
-            return g.v(1).out("knows", "created");
+        public Iterator<Vertex> get_g_v1_outXknows_createdX(final Object v1Id) {
+            return g.v(v1Id).out("knows", "created");
         }
 
-        public Iterator<Vertex> get_g_v1_outEXknowsX_inV() {
-            return g.v(1).outE("knows").inV();
+        public Iterator<Vertex> get_g_v1_outEXknowsX_inV(final Object v1Id) {
+            return g.v(v1Id).outE("knows").inV();
         }
 
-        public Iterator<Vertex> get_g_v1_outEXknows_createdX_inV() {
-            return g.v(1).outE("knows", "created").inV();
+        public Iterator<Vertex> get_g_v1_outEXknows_createdX_inV(final Object v1Id) {
+            return g.v(v1Id).outE("knows", "created").inV();
         }
 
         public Iterator<Vertex> get_g_V_out_out() {
             return g.V().out().out();
         }
 
-        public Iterator<Vertex> get_g_v1_out_out_out() {
-            return g.v(1).out().out().out();
+        public Iterator<Vertex> get_g_v1_out_out_out(final Object v1Id) {
+            return g.v(v1Id).out().out().out();
         }
 
-        public Iterator<String> get_g_v1_out_propertyXnameX() {
-            return g.v(1).out().value("name");
+        public Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id) {
+            return g.v(v1Id).out().value("name");
         }
     }
 }

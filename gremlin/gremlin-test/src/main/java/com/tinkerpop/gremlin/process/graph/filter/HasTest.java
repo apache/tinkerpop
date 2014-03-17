@@ -30,7 +30,7 @@ public abstract class HasTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXblahX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X();
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X();
 
@@ -70,10 +70,10 @@ public abstract class HasTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_hasXid_2X() {
-        final Iterator<Vertex> traversal = get_g_v1_out_hasXid_2X();
+        final Iterator<Vertex> traversal = get_g_v1_out_hasXid_2X(convertToId("marko"), convertToId("vadas"));
         System.out.println("Testing: " + traversal);
         assertTrue(traversal.hasNext());
-        assertEquals("2", traversal.next().getId().toString());
+        assertEquals(convertToId("vadas"), traversal.next().getId());
     }
 
     @Test
@@ -124,8 +124,8 @@ public abstract class HasTest extends AbstractGremlinTest {
             return g.V().has("blah");
         }
 
-        public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X() {
-            return g.v(1).out().has("id", "2");
+        public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
+            return g.v(v1Id).out().has(Element.ID, v2Id);
         }
 
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {

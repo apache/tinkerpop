@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AggregateTest extends AbstractGremlinTest {
 
-    public abstract Iterator<Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX();
+    public abstract Iterator<Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Object v1Id);
 
     public abstract List<String> get_g_V_valueXnameX_aggregateXaX_iterate_getXaX();
 
@@ -28,7 +28,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX() {
-        final Iterator<Vertex> step = get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX();
+        final Iterator<Vertex> step = get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -65,8 +65,8 @@ public abstract class AggregateTest extends AbstractGremlinTest {
 
     public static class JavaAggregateTest extends AggregateTest {
 
-        public Iterator<Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX() {
-            return g.v(1).with("x", new HashSet<>()).aggregate("x").out("created").in("created").except("x");
+        public Iterator<Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Object v1Id) {
+            return g.v(v1Id).with("x", new HashSet<>()).aggregate("x").out("created").in("created").except("x");
         }
 
         public List<String> get_g_V_valueXnameX_aggregateXaX_iterate_getXaX() {

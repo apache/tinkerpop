@@ -16,12 +16,12 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class TreeTest extends AbstractGremlinTest {
-    public abstract Map get_g_v1_out_out_treeXnameX();
+    public abstract Map get_g_v1_out_out_treeXnameX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_out_treeXnameX() {
-        final Map map = get_g_v1_out_out_treeXnameX();
+        final Map map = get_g_v1_out_out_treeXnameX(convertToId("marko"));
         assertEquals(1, map.size());
         assertTrue(map.containsKey("marko"));
         assertEquals(1, ((Map) map.get("marko")).size());
@@ -31,8 +31,8 @@ public abstract class TreeTest extends AbstractGremlinTest {
     }
 
     public static class JavaTreeTest extends TreeTest {
-        public Map get_g_v1_out_out_treeXnameX() {
-            return g.v(1).out().out().tree(v -> ((Vertex) v).getValue("name"));
+        public Map get_g_v1_out_out_treeXnameX(final Object v1Id) {
+            return g.v(v1Id).out().out().tree(v -> ((Vertex) v).getValue("name"));
         }
     }
 }
