@@ -43,7 +43,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXname_markoX() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_hasXname_markoX();
         System.out.println("Testing: " + traversal);
         assertEquals("marko", traversal.next().<String>getValue("name"));
@@ -53,7 +52,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXname_blahX() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_hasXname_blahX();
         System.out.println("Testing: " + traversal);
         assertFalse(traversal.hasNext());
@@ -62,7 +60,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXage_gt_30X() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_hasXage_gt_30X();
         System.out.println("Testing: " + traversal);
         final List<Element> list = StreamFactory.stream(traversal).collect(Collectors.toList());
@@ -75,7 +72,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_hasXid_2X() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_v1_out_hasXid_2X(convertToId("marko"), convertToId("vadas"));
         System.out.println("Testing: " + traversal);
         assertTrue(traversal.hasNext());
@@ -94,7 +90,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_E_hasXlabelXknowsX() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Edge> traversal = get_g_E_hasXlabelXknowsX();
         System.out.println("Testing: " + traversal);
         int counter = 0;
@@ -108,7 +103,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_E_hasXlabelXknows_createdX() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Edge> traversal = get_g_E_hasXlabelXknows_createdX();
         System.out.println("Testing: " + traversal);
         int counter = 0;

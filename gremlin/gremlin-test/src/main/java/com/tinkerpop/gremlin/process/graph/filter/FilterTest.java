@@ -36,7 +36,6 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXfalseX() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_filterXfalseX();
         System.out.println("Testing: " + traversal);
         assertFalse(traversal.hasNext());
@@ -46,7 +45,6 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXtrueX() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_filterXtrueX();
         System.out.println("Testing: " + traversal);
         int counter = 0;
@@ -63,7 +61,6 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXlang_eq_javaX() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_filterXlang_eq_javaX();
         System.out.println("Testing: " + traversal);
         int counter = 0;
@@ -82,7 +79,6 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_filterXage_gt_30X() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_v1_out_filterXage_gt_30X(convertToId("marko"));
         System.out.println("Testing: " + traversal);
         assertEquals(Integer.valueOf(32), traversal.next().<Integer>getValue("age"));
@@ -92,7 +88,6 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
-        assumeTrue(graphMeetsTestRequirements());
         final Iterator<Vertex> traversal = get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
         System.out.println("Testing: " + traversal);
         int counter = 0;

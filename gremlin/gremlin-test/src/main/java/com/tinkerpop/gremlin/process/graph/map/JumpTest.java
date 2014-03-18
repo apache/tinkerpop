@@ -46,7 +46,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
     public static class JavaComputerJumpTest extends JumpTest {
         public JavaComputerJumpTest() {
-            requiresGraphComputer = false;
+            requiresGraphComputer = true;
         }
 
         public Iterator<String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {

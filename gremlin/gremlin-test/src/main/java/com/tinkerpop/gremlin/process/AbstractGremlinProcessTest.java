@@ -1,6 +1,9 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import org.junit.Before;
+
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Base test class for Gremlin Process tests.
@@ -22,5 +25,10 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
      */
     protected boolean graphMeetsTestRequirements() {
         return !requiresGraphComputer || g.getFeatures().graph().supportsComputer();
+    }
+
+    @Before
+    public void setupTest() {
+        assumeTrue(graphMeetsTestRequirements());
     }
 }
