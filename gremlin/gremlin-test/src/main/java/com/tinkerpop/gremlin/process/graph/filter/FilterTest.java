@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.filter;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -15,7 +15,6 @@ import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

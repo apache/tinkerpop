@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

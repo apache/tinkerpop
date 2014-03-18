@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Path;
@@ -12,7 +11,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
