@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.MemoryHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.tinkergraph.process.graph.map.TinkerGraphStep;
 import com.tinkerpop.tinkergraph.process.graph.util.optimizers.TinkerGraphStepOptimizer;
@@ -20,7 +19,6 @@ import org.apache.commons.configuration.Configuration;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 

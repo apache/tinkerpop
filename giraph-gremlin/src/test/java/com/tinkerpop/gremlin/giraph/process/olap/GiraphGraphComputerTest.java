@@ -1,12 +1,5 @@
 package com.tinkerpop.gremlin.giraph.process.olap;
 
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
-import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphInputFormat;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.giraph.io.formats.IdWithValueTextOutputFormat;
 import org.junit.Test;
 
 /**

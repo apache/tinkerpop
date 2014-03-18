@@ -3,19 +3,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.tinkerpop</groupId>
+        <groupId>com.tinkerpop.tinkerpop3</groupId>
         <artifactId>tinkerpop3</artifactId>
         <version>3.0.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>neo4j-gremlin</artifactId>
     <name>Neo4j Gremlin</name>
     <description>Neo4j implementation of Gremlin.</description>
     <dependencies>
         <dependency>
-            <groupId>com.tinkerpop.gremlin</groupId>
+            <groupId>com.tinkerpop.tinkerpop3</groupId>
             <artifactId>gremlin-core</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.neo4j</groupId>
@@ -36,9 +35,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop.gremlin</groupId>
+            <groupId>com.tinkerpop.tinkerpop3</groupId>
             <artifactId>gremlin-test</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

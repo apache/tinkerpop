@@ -8,7 +8,7 @@
         <artifactId>oss-parent</artifactId>
         <version>7</version>
     </parent>
-    <groupId>com.tinkerpop</groupId>
+    <groupId>com.tinkerpop.tinkerpop3</groupId>
     <artifactId>tinkerpop3</artifactId>
     <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -22,12 +22,15 @@
         </license>
     </licenses>
     <modules>
-        <module>gremlin</module>
+        <module>gremlin-core</module>
+        <module>gremlin-algorithm</module>
+        <module>gremlin-test</module>
         <module>tinkergraph</module>
-        <module>giraph-gremlin</module>
         <module>neo4j-gremlin</module>
+        <module>giraph-gremlin</module>
+        <module>gremlin-groovy</module>
+        <module>gremlin-server</module>
     </modules>
-
     <properties>
         <tinkerpop.version>3.0.0-SNAPSHOT</tinkerpop.version>
         <junit.version>4.11</junit.version>
@@ -44,7 +47,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.1.2</version>
+                <version>2.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -92,8 +95,9 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.5.1</version>
+                    <version>3.1</version>
                     <configuration>
                         <source>1.8</source>
                         <target>1.8</target>
