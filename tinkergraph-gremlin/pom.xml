@@ -7,7 +7,7 @@
         <artifactId>tinkerpop3</artifactId>
         <version>3.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>tinkergraph</artifactId>
+    <artifactId>tinkergraph-gremlin</artifactId>
     <name>TinkerGraph</name>
     <description>TinkerGraph</description>
     <dependencies>

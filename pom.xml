@@ -25,7 +25,7 @@
         <module>gremlin-core</module>
         <module>gremlin-algorithm</module>
         <module>gremlin-test</module>
-        <module>tinkergraph</module>
+        <module>tinkergraph-gremlin</module>
         <module>neo4j-gremlin</module>
         <module>giraph-gremlin</module>
         <module>gremlin-groovy</module>
