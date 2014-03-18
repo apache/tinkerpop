@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.graph.util.As;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -17,7 +18,7 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class SelectTest extends AbstractGremlinTest {
+public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id);
 
@@ -93,6 +94,9 @@ public abstract class SelectTest extends AbstractGremlinTest {
     }
 
     public static class JavaSelectTest extends SelectTest {
+        public JavaSelectTest() {
+            requiresGraphComputer = false;
+        }
 
         public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select();
@@ -108,6 +112,30 @@ public abstract class SelectTest extends AbstractGremlinTest {
 
         public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));
+        }
+    }
+
+    // todo: all computer tests fail
+
+    public static class JavaComputerSelectTest extends SelectTest {
+        public JavaComputerSelectTest() {
+            requiresGraphComputer = true;
+        }
+
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
+            return g.v(v1Id).as("a").out("knows").as("b").select(); // .submit(g.compute());
+        }
+
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
+            return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).getValue("name"));  // .submit(g.compute());
+        }
+
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
+            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"));  // .submit(g.compute());
+        }
+
+        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
+            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));  // .submit(g.compute());
         }
     }
 }
