@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class TraversalTest extends AbstractGremlinTest {
+public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
     public abstract Iterator<Vertex> get_g_V();
 
@@ -434,6 +434,10 @@ public abstract class TraversalTest extends AbstractGremlinTest {
     }
 
     public static class JavaTraversalTest extends TraversalTest {
+        public JavaTraversalTest() {
+            requiresGraphComputer = false;
+        }
+
         public Iterator<Vertex> get_g_V() {
             return g.V();
         }
@@ -528,6 +532,110 @@ public abstract class TraversalTest extends AbstractGremlinTest {
 
         public Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id) {
             return g.v(v1Id).out().value("name");
+        }
+    }
+
+    // todo: some of the graph computer tests do not pass
+
+    public static class JavaComputerTraversalTest extends TraversalTest {
+        public JavaComputerTraversalTest() {
+            requiresGraphComputer = true;
+        }
+
+        public Iterator<Vertex> get_g_V() {
+            return g.V().submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v1_out(final Object v1Id) {
+            return g.v(v1Id).out(); //.submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v2_in(final Object v2Id) {
+            return g.v(v2Id).in();  //.submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v4_both(final Object v4Id) {
+            return g.v(v4Id).both(); // .submit(g.compute());
+        }
+
+        public Iterator<String> get_g_v1_outX1_knowsX_name(final Object v1Id) {
+            return g.v(v1Id).out(1, "knows").value("name");  // .submit(g.compute());
+        }
+
+        public Iterator<String> get_g_V_bothX1_createdX_name() {
+            return g.V().both(1, "created").<String>value("name").submit(g.compute());
+        }
+
+        public Iterator<Edge> get_g_E() {
+            return g.E().submit(g.compute());
+        }
+
+        public Iterator<Edge> get_g_v1_outE(final Object v1Id) {
+            return g.v(v1Id).outE(); //.submit(g.compute());
+        }
+
+        public Iterator<Edge> get_g_v2_inE(final Object v2Id) {
+            return g.v(v2Id).inE(); // .submit(g.compute());
+        }
+
+        public Iterator<Edge> get_g_v4_bothE(final Object v4Id) {
+            return g.v(v4Id).bothE();  // .submit(g.compute());
+        }
+
+        public Iterator<Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {
+            return g.v(v4Id).bothE(1, "created"); //.submit(g.compute());
+        }
+
+        public Iterator<String> get_g_V_inEX2_knowsX_outV_name() {
+            return g.V().inE(2, "knows").outV().<String>value("name").submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v1_outE_inV(final Object v1Id) {
+            return g.v(v1Id).outE().inV(); //.submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v2_inE_outV(final Object v2Id) {
+            return g.v(v2Id).inE().outV(); // .submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_V_outE_hasXweight_1X_outV() {
+            return g.V().outE().has("weight", 1.0f).outV().submit(g.compute());
+        }
+
+        public Iterator<String> get_g_V_out_outE_inV_inE_inV_both_name() {
+            return g.V().out().outE().inV().inE().inV().both().<String>value("name").submit(g.compute());
+        }
+
+        public Iterator<String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id) {
+            return g.v(v1Id).outE("knows").bothV().value("name"); //.submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v1_outXknowsX(final Object v1Id) {
+            return g.v(v1Id).out("knows");  //.submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v1_outXknows_createdX(final Object v1Id) {
+            return g.v(v1Id).out("knows", "created"); //.submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v1_outEXknowsX_inV(final Object v1Id) {
+            return g.v(v1Id).outE("knows").inV(); //.submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v1_outEXknows_createdX_inV(final Object v1Id) {
+            return g.v(v1Id).outE("knows", "created").inV();  //.submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_V_out_out() {
+            return g.V().out().out().submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v1_out_out_out(final Object v1Id) {
+            return g.v(v1Id).out().out().out(); //.submit(g.compute());
+        }
+
+        public Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id) {
+            return g.v(v1Id).out().value("name"); //.submit(g.compute());
         }
     }
 }
