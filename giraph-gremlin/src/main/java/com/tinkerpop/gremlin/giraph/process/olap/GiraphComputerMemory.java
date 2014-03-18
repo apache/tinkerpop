@@ -8,7 +8,9 @@ import com.tinkerpop.gremlin.structure.util.EmptyGraph;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import com.tinkerpop.tinkergraph.TinkerGraph;
 import org.apache.giraph.master.MasterCompute;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.log4j.Logger;
 
 import java.io.DataInput;
@@ -41,6 +43,18 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
         this.giraphVertex = giraphVertex;
         this.initialize();
 
+    }
+
+    public <T> void registerComputerVariable(final String variable, final T initialValue) {
+        /*this.registerAggregator(variable, new BasicAggregator<T>() {
+            public T createInitialValue() {
+                return initialValue;
+            }
+
+            public void aggregate(T t) {
+
+            }
+        });*/
     }
 
     public void initialize() {
@@ -92,32 +106,35 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public void set(final String variable, Object value) {
-        this.setAggregatedValue(variable, (Writable) value);
+        this.giraphVertex.aggregate(variable, new ObjectWritable(value));
     }
 
     public void setIfAbsent(final String variable, final Object value) {
-        this.getConf().set(variable, value.toString());
+        this.giraphVertex.aggregate(variable, new ObjectWritable(value));
     }
 
     public long incr(final String variable, final long delta) {
-        return 1l;
+        this.giraphVertex.aggregate(variable, new LongWritable(delta));
+        return this.giraphVertex.<LongWritable>getAggregatedValue(variable).get();
     }
 
     public long decr(final String variable, final long delta) {
-        return 1l;
+        this.giraphVertex.aggregate(variable, new LongWritable(delta));
+        return this.giraphVertex.<LongWritable>getAggregatedValue(variable).get();
     }
 
     public boolean and(final String variable, final boolean bool) {
-        return true;
+        this.giraphVertex.aggregate(variable, new BooleanWritable(bool));
+        return this.giraphVertex.<BooleanWritable>getAggregatedValue(variable).get();
     }
 
     public boolean or(final String variable, final boolean bool) {
-        return true;
+        this.giraphVertex.aggregate(variable, new BooleanWritable(bool));
+        return this.giraphVertex.<BooleanWritable>getAggregatedValue(variable).get();
     }
 
     public Graph getGraph() {
         return EmptyGraph.instance();
     }
-
 
 }

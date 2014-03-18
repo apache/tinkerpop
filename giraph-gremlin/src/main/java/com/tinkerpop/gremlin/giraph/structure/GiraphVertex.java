@@ -33,7 +33,6 @@ public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritabl
         } catch (Exception e) {
             java.lang.System.out.println(e.getMessage());
         }
-        System.out.println(this.vertexProgram.getComputeKeys());
         this.gremlinVertex = gremlinVertex;
         this.computerMemory = new GiraphComputerMemory(this);
         this.initialize(new LongWritable(Long.valueOf(gremlinVertex.getId().toString())), NullWritable.get(), EmptyOutEdges.instance());
