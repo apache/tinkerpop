@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.structure.Element;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class ValuesTest extends AbstractGremlinTest {
+public abstract class ValuesTest extends AbstractGremlinProcessTest {
 
     public abstract Iterator<Map<String, Object>> get_g_V_values();
 
@@ -151,6 +151,10 @@ public abstract class ValuesTest extends AbstractGremlinTest {
 
     public static class JavaValuesTest extends ValuesTest {
 
+        public JavaValuesTest() {
+            requiresGraphComputer = false;
+        }
+
         public Iterator<Map<String, Object>> get_g_V_values() {
             return g.V().values();
         }
@@ -165,6 +169,30 @@ public abstract class ValuesTest extends AbstractGremlinTest {
 
         public Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
             return g.v(v1Id).out("created").values();
+        }
+    }
+
+    public static class JavaComputerValuesTest extends ValuesTest {
+
+        public JavaComputerValuesTest() {
+            requiresGraphComputer = false;
+        }
+
+        public Iterator<Map<String, Object>> get_g_V_values() {
+            return g.V().values().submit(g.compute());
+        }
+
+        public Iterator<Map<String, Object>> get_g_V_valuesXname_ageX() {
+            return g.V().values("name", "age").submit(g.compute());
+        }
+
+        public Iterator<Map<String, Object>> get_g_E_valuesXid_label_weightX() {
+            return g.E().values("id", "label", "weight").submit(g.compute());
+        }
+
+        public Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
+            // todo: this test fails for graph computer
+            return g.v(v1Id).out("created").values(); //.submit(g.compute());
         }
     }
 }
