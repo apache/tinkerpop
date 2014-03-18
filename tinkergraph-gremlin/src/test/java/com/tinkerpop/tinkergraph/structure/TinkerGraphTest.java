@@ -1,4 +1,4 @@
-package com.tinkerpop.tinkergraph;
+package com.tinkerpop.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.Step;
@@ -15,6 +15,8 @@ import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.tinkergraph.structure.TinkerFactory;
+import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.junit.Ignore;
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.tinkerpop.tinkergraph;
+package com.tinkerpop.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;

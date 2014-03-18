@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
-import com.tinkerpop.tinkergraph.TinkerAnnotatedList;
-import com.tinkerpop.tinkergraph.TinkerHelper;
+import com.tinkerpop.tinkergraph.structure.TinkerAnnotatedList;
+import com.tinkerpop.tinkergraph.structure.TinkerHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

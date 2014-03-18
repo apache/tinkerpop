@@ -1,4 +1,4 @@
-package com.tinkerpop.tinkergraph;
+package com.tinkerpop.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.util.AnnotatedValueHelper;

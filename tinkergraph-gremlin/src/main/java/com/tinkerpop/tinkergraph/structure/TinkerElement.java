@@ -1,4 +1,4 @@
-package com.tinkerpop.tinkergraph;
+package com.tinkerpop.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;

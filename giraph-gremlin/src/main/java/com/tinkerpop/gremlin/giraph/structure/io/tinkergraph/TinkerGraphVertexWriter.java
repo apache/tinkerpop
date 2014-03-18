@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.giraph.structure.io.tinkergraph;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.tinkergraph.TinkerGraph;
+import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;

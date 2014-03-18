@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.EmptyGraph;
 import com.tinkerpop.gremlin.util.function.SSupplier;
-import com.tinkerpop.tinkergraph.TinkerGraph;
+import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.apache.giraph.master.MasterCompute;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;

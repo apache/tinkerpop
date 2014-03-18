@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.As;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.tinkergraph.TinkerFactory;
+import com.tinkerpop.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
 /**

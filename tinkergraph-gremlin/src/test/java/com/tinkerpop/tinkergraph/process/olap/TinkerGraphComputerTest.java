@@ -1,7 +1,7 @@
 package com.tinkerpop.tinkergraph.process.olap;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.tinkergraph.TinkerFactory;
+import com.tinkerpop.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
 import java.util.Arrays;

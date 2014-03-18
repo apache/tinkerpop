@@ -1,8 +1,9 @@
-package com.tinkerpop.tinkergraph;
+package com.tinkerpop.tinkergraph.process;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.process.ProcessComputerStandardSuite;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runner.RunWith;
 

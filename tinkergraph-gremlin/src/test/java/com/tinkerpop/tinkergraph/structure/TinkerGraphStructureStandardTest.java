@@ -1,7 +1,7 @@
-package com.tinkerpop.tinkergraph;
+package com.tinkerpop.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
-import com.tinkerpop.gremlin.structure.StructurePerformanceSuite;
+import com.tinkerpop.gremlin.structure.StructureStandardSuite;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runner.RunWith;
@@ -12,13 +12,13 @@ import java.util.Map;
 
 
 /**
- * Executes the Gremlin Structure Performance Test Suite using TinkerGraph.
+ * Executes the Standard Gremlin Structure Test Suite using TinkerGraph.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(StructurePerformanceSuite.class)
-@StructurePerformanceSuite.GraphProviderClass(TinkerGraphStructurePerformanceTest.class)
-public class TinkerGraphStructurePerformanceTest extends AbstractGraphProvider {
+@RunWith(StructureStandardSuite.class)
+@StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class)
+public class TinkerGraphStructureStandardTest extends AbstractGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName) {

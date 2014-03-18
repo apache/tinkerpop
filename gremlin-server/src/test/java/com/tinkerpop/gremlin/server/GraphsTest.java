@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.tinkergraph.TinkerGraph;
+import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
 import java.util.Map;

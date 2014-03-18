@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.tinkergraph.TinkerGraph;
+import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runner.RunWith;
 
