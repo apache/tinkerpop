@@ -23,11 +23,13 @@ class GremlinLoader {
 
     public static void load() {
 
+        /*
         Traversal.getMethods().each {
             if (it.getReturnType().equals(Pipeline.class)) {
                 addStep(it.getName())
             }
         }
+        */
 
         //ElementLoader.load()
         GraphLoader.load()
