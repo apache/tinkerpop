@@ -10,39 +10,6 @@
     </parent>
     <artifactId>gremlin-groovy</artifactId>
     <name>Gremlin-Groovy: Gremlin for the Groovy Language</name>
-    <developers>
-        <developer>
-            <name>Marko A. Rodriguez</name>
-            <email>marko@markorodriguez.com</email>
-            <url>http://markorodriguez.com</url>
-        </developer>
-    </developers>
-    <contributors>
-        <contributor>
-            <name>Pavel Yaskevich</name>
-            <email>povel.y@gmail.com</email>
-            <url>http://github.com/xedin</url>
-        </contributor>
-        <contributor>
-            <name>Darrick Wiebe</name>
-            <email>darrick@innatesoftware.com</email>
-            <url>http://github.com/pangloss</url>
-        </contributor>
-        <contributor>
-            <name>Peter Neubauer</name>
-            <email>peter.neubauer@neotechnology.com</email>
-            <url>http://www.linkedin.com/in/neubauer</url>
-        </contributor>
-    </contributors>
-    <mailingLists>
-        <mailingList>
-            <name>Gremlin Users</name>
-            <subscribe>http://groups.google.com/group/gremlin-users</subscribe>
-            <unsubscribe>http://groups.google.com/group/gremlin-users</unsubscribe>
-            <archive>http://groups.google.com/group/gremlin-users/topics</archive>
-        </mailingList>
-    </mailingLists>
-    <inceptionYear>2009</inceptionYear>
     <dependencies>
         <dependency>
             <groupId>com.tinkerpop.tinkerpop3</groupId>

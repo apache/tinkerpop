@@ -14,6 +14,14 @@
     <packaging>pom</packaging>
     <url>http://tinkerpop.com</url>
     <name>TinkerPop3: The Third Incarnation of the TinkerPop</name>
+    <mailingLists>
+        <mailingList>
+            <name>Gremlin Users</name>
+            <subscribe>http://groups.google.com/group/gremlin-users</subscribe>
+            <unsubscribe>http://groups.google.com/group/gremlin-users</unsubscribe>
+            <archive>http://groups.google.com/group/gremlin-users/topics</archive>
+        </mailingList>
+    </mailingLists>
     <inceptionYear>2013</inceptionYear>
     <licenses>
         <license>
@@ -21,6 +29,64 @@
             <url>http://www.opensource.org/licenses/Apache-2.0</url>
         </license>
     </licenses>
+    <organization>
+        <name>TinkerPop</name>
+        <url>http://tinkerpop.com</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>Marko A. Rodriguez</name>
+            <email>marko@markorodriguez.com</email>
+            <url>http://markorodriguez.com</url>
+        </developer>
+        <developer>
+            <name>Stephen Mallette</name>
+            <email>spmva@genoprime.com</email>
+            <url>http://stephen.genoprime.com</url>
+        </developer>
+    </developers>
+    <contributors>
+        <contributor>
+            <name>Blake Eggleston</name>
+            <email>bdeggleston@gmail.com</email>
+            <url>https://github.com/bdeggleston</url>
+        </contributor>
+        <contributor>
+            <name>Bryn Cooke</name>
+            <email>bryn@jglue.org</email>
+            <url>http://jglue.org</url>
+        </contributor>
+        <contributor>
+            <name>Darrick Wiebe</name>
+            <email>darrick@innatesoftware.com</email>
+            <url>http://github.com/pangloss</url>
+        </contributor>
+        <contributor>
+            <name>Joshua Shinavier</name>
+            <email>josh@fortytwo.net</email>
+            <url>http://fortytwo.net</url>
+        </contributor>
+        <contributor>
+            <name>Luca Garulli</name>
+            <email>l.garulli@orientechnologies.com</email>
+            <url>http://zion-city.blogspot.com</url>
+        </contributor>
+        <contributor>
+            <name>Matthias Broecheler</name>
+            <email>me@matthiasb.com</email>
+            <url>http://matthiasb.com</url>
+        </contributor>
+        <contributor>
+            <name>Pavel Yaskevich</name>
+            <email>povel.y@gmail.com</email>
+            <url>http://github.com/xedin</url>
+        </contributor>
+        <contributor>
+            <name>Peter Neubauer</name>
+            <email>peter.neubauer@neotechnology.com</email>
+            <url>http://www.linkedin.com/in/neubauer</url>
+        </contributor>
+    </contributors>
     <modules>
         <module>gremlin-core</module>
         <module>gremlin-algorithm</module>
@@ -31,6 +97,11 @@
         <module>gremlin-groovy</module>
         <module>gremlin-server</module>
     </modules>
+    <scm>
+        <connection>scm:git:git@github.com:tinkerpop/tinkerpop3.git</connection>
+        <developerConnection>scm:git:git@github.com:tinkerpop/tinkerpop3.git</developerConnection>
+        <url>git@github.com:tinkerpop/tinkerpop3.git</url>
+    </scm>
     <properties>
         <tinkerpop.version>3.0.0-SNAPSHOT</tinkerpop.version>
         <junit.version>4.11</junit.version>
@@ -40,7 +111,6 @@
         <skipIntegrationTests>true</skipIntegrationTests>
         <skipPerformanceTests>true</skipPerformanceTests>
     </properties>
-
     <build>
         <directory>${basedir}/target</directory>
         <plugins>

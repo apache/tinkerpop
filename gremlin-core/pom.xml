@@ -8,23 +8,7 @@
         <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-core</artifactId>
-    <name>Gremlin-Core: Gremlin Core Components</name>
-    <developers>
-        <developer>
-            <name>Marko A. Rodriguez</name>
-            <email>marko@markorodriguez.com</email>
-            <url>http://markorodriguez.com</url>
-        </developer>
-    </developers>
-    <mailingLists>
-        <mailingList>
-            <name>Gremlin Users</name>
-            <subscribe>http://groups.google.com/group/gremlin-users</subscribe>
-            <unsubscribe>http://groups.google.com/group/gremlin-users</unsubscribe>
-            <archive>http://groups.google.com/group/gremlin-users/topics</archive>
-        </mailingList>
-    </mailingLists>
-    <inceptionYear>2009</inceptionYear>
+    <name>Gremlin core components representing graph structures and processes</name>
     <dependencies>
         <dependency>
             <groupId>commons-configuration</groupId>

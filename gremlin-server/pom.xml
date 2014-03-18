@@ -10,16 +10,6 @@
     </parent>
     <artifactId>gremlin-server</artifactId>
     <name>Gremlin-Server: Gremlin on the Server</name>
-
-    <mailingLists>
-        <mailingList>
-            <name>Gremlin Users</name>
-            <subscribe>http://groups.google.com/group/gremlin-users</subscribe>
-            <unsubscribe>http://groups.google.com/group/gremlin-users</unsubscribe>
-            <archive>http://groups.google.com/group/gremlin-users/topics</archive>
-        </mailingList>
-    </mailingLists>
-    <inceptionYear>2009</inceptionYear>
     <dependencies>
         <dependency>
             <groupId>com.tinkerpop.tinkerpop3</groupId>

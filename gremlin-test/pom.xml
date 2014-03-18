@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -9,22 +10,6 @@
     </parent>
     <artifactId>gremlin-test</artifactId>
     <name>Gremlin-Test: Gremlin Language Test Suite</name>
-    <developers>
-        <developer>
-            <name>Marko A. Rodriguez</name>
-            <email>marko@markorodriguez.com</email>
-            <url>http://markorodriguez.com</url>
-        </developer>
-    </developers>
-    <mailingLists>
-        <mailingList>
-            <name>Gremlin Users</name>
-            <subscribe>http://groups.google.com/group/gremlin-users</subscribe>
-            <unsubscribe>http://groups.google.com/group/gremlin-users</unsubscribe>
-            <archive>http://groups.google.com/group/gremlin-users/topics</archive>
-        </mailingList>
-    </mailingLists>
-    <inceptionYear>2009</inceptionYear>
     <dependencies>
         <dependency>
             <groupId>com.tinkerpop.tinkerpop3</groupId>
