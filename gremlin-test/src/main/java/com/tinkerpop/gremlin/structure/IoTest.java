@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -35,11 +37,13 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -185,6 +189,7 @@ public class IoTest extends AbstractGremlinTest {
         writer.writeEdge(os, e);
         os.close();
 
+        final AtomicBoolean called = new AtomicBoolean(false);
         final KryoReader reader = new KryoReader.Builder(g)
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
@@ -199,8 +204,47 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals("weight", properties[0]);
                     assertEquals(0.5f, properties[1]);
 
+                    called.set(true);
+
                     return null;
                 });
+
+        assertTrue(called.get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteEdgeToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex();
+        final Vertex v2 = g.addVertex();
+        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        writer.writeEdge(os, e);
+        os.close();
+
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
+                (edgeId, outId, inId, label, properties) -> {
+                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                        assertEquals(e.getId(), edgeId);
+
+                    assertEquals(v1.getId(), outId);
+                    assertEquals(v2.getId(), inId);
+                    assertEquals(e.getLabel(), label);
+                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                    assertEquals("weight", properties[0]);
+                    assertEquals(0.5d, properties[1]);    // graphson is lossy so floats become double
+
+                    called.set(true);
+
+                    return null;
+                });
+
+        assertTrue(called.get());
     }
 
     @Test
@@ -251,6 +295,46 @@ public class IoTest extends AbstractGremlinTest {
 
         verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
         verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteVertexNoEdgesToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko");
+
+        final Vertex v2 = g.addVertex();
+        v1.addEdge("friends", v2, "weight", 0.5f);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        writer.writeVertex(os, v1);
+        os.close();
+
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
+                (vertexId, properties) -> {
+                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                        assertEquals(v1.getId(), vertexId);
+
+                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+
+                    final Map<String, Object> m = new HashMap<>();
+                    for (int i = 0; i < properties.length; i = i + 2) {
+                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                            m.put((String) properties[i], properties[i + 1]);
+                    }
+
+                    assertEquals(1, m.size());
+                    assertEquals(v1.getValue("name"), m.get("name").toString());
+
+                    called.set(true);
+                    return null;
+                });
+
+        assertTrue(called.get());
     }
 
     @Test
