@@ -29,6 +29,7 @@ import java.util.Optional;
 public class JsonMessageSerializerV1d0 implements MessageSerializer {
     private static final Logger logger = LoggerFactory.getLogger(JsonMessageSerializerV1d0.class);
 
+    // todo: figure out the versioning stuff once GraphSON is done in gremlin-core
     static final Version JSON_SERIALIZATION_VERSION = new Version(1, 0, 0, "", "com.tinkerpop.gremlin", "gremlin-server");
 
     public static final String TOKEN_RESULT = "result";
