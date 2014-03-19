@@ -33,6 +33,8 @@ public interface GraphReader {
      */
     public Vertex readVertex(final InputStream inputStream, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException;
 
+    // todo: should we be consistent with IllegalStateException on readVertex when a Direction is requested that isn't present?
+
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties as well as edges
      * given the direction supplied as an argument.

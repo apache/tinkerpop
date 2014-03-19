@@ -43,6 +43,7 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatu
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -303,7 +304,6 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexNoEdgesToGraphSON() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
-
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5f);
 
@@ -402,6 +402,59 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteVertexWithOUTOUTEdgesToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v2 = g.addVertex();
+        final Edge e = v1.addEdge("friends", v2, "weight", 0.5f);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        writer.writeVertex(os, v1, Direction.OUT);
+        os.close();
+
+        final AtomicBoolean calledVertex = new AtomicBoolean(false);
+        final AtomicBoolean calledEdge = new AtomicBoolean(false);
+        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
+                Direction.OUT,
+                (vertexId, properties) -> {
+                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                        assertEquals(v1.getId(), vertexId);
+
+                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+
+                    final Map<String, Object> m = new HashMap<>();
+                    for (int i = 0; i < properties.length; i = i + 2) {
+                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                            m.put((String) properties[i], properties[i + 1]);
+                    }
+
+                    assertEquals(1, m.size());
+                    assertEquals(v1.getValue("name"), m.get("name").toString());
+                    calledVertex.set(true);
+                    return null;
+                },
+                (edgeId, outId, inId, label, properties) -> {
+                    assertEquals(e.getId(), edgeId);
+                    assertEquals(v1.getId(), outId);
+                    assertEquals(v2.getId(), inId);
+                    assertEquals(e.getLabel(), label);
+                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                    assertEquals("weight", properties[0]);
+                    assertEquals(0.5d, properties[1]);
+
+                    calledEdge.set(true);
+                    return null;
+                });
+
+        assertTrue(calledVertex.get());
+        assertTrue(calledEdge.get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithININEdgesToKryo() throws Exception {
@@ -461,6 +514,59 @@ public class IoTest extends AbstractGremlinTest {
 
         verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
         verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteVertexWithININEdgesToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v2 = g.addVertex();
+        final Edge e = v2.addEdge("friends", v1, "weight", 0.5f);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        writer.writeVertex(os, v1, Direction.IN);
+        os.close();
+
+        final AtomicBoolean calledVertex = new AtomicBoolean(false);
+        final AtomicBoolean calledEdge = new AtomicBoolean(false);
+        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
+                Direction.IN,
+                (vertexId, properties) -> {
+                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                        assertEquals(v1.getId(), vertexId);
+
+                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+
+                    final Map<String, Object> m = new HashMap<>();
+                    for (int i = 0; i < properties.length; i = i + 2) {
+                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                            m.put((String) properties[i], properties[i + 1]);
+                    }
+
+                    assertEquals(1, m.size());
+                    assertEquals(v1.getValue("name"), m.get("name").toString());
+                    calledVertex.set(true);
+                    return null;
+                },
+                (edgeId, outId, inId, label, properties) -> {
+                    assertEquals(e.getId(), edgeId);
+                    assertEquals(v1.getId(), inId);
+                    assertEquals(v2.getId(), outId);
+                    assertEquals(e.getLabel(), label);
+                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                    assertEquals("weight", properties[0]);
+                    assertEquals(0.5d, properties[1]);
+
+                    calledEdge.set(true);
+                    return null;
+                });
+
+        assertTrue(calledVertex.get());
+        assertTrue(calledEdge.get());
     }
 
     @Test
@@ -539,6 +645,79 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteVertexWithBOTHBOTHEdgesToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v2 = g.addVertex();
+        final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
+        final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        writer.writeVertex(os, v1, Direction.BOTH);
+        os.close();
+
+
+        final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+        final AtomicBoolean edge1Called = new AtomicBoolean(false);
+        final AtomicBoolean edge2Called = new AtomicBoolean(false);
+
+        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
+                Direction.BOTH,
+                (vertexId, properties) -> {
+                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                        assertEquals(v1.getId(), vertexId);
+
+                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+
+                    final Map<String, Object> m = new HashMap<>();
+                    for (int i = 0; i < properties.length; i = i + 2) {
+                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                            m.put((String) properties[i], properties[i + 1]);
+                    }
+
+                    assertEquals(1, m.size());
+                    assertEquals(v1.getValue("name"), m.get("name").toString());
+
+                    vertexCalled.set(true);
+
+                    return null;
+                },
+                (edgeId, outId, inId, label, properties) -> {
+                    if (edgeId.equals(e1.getId())) {
+                        assertEquals(v2.getId(), outId);
+                        assertEquals(v1.getId(), inId);
+                        assertEquals(e1.getLabel(), label);
+                        assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                        assertEquals("weight", properties[0]);
+                        assertEquals(0.5d, properties[1]);
+
+                        edge1Called.set(true);
+                    } else if (edgeId.equals(e2.getId())) {
+                        assertEquals(v1.getId(), outId);
+                        assertEquals(v2.getId(), inId);
+                        assertEquals(e2.getLabel(), label);
+                        assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                        assertEquals("weight", properties[0]);
+                        assertEquals(1.0d, properties[1]);
+
+                        edge2Called.set(true);
+                    } else {
+                        fail("An edge id generated that does not exist");
+                    }
+
+                    return null;
+                });
+
+        assertTrue(vertexCalled.get());
+        assertTrue(edge1Called.get());
+        assertTrue(edge2Called.get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHINEdgesToKryo() throws Exception {
@@ -606,6 +785,67 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteVertexWithBOTHINEdgesToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v2 = g.addVertex();
+        final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
+        v1.addEdge("friends", v2, "weight", 1.0f);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        writer.writeVertex(os, v1, Direction.BOTH);
+        os.close();
+
+        final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+        final AtomicBoolean edgeCalled = new AtomicBoolean(false);
+
+        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
+                Direction.IN,
+                (vertexId, properties) -> {
+                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                        assertEquals(v1.getId(), vertexId);
+
+                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+
+                    final Map<String, Object> m = new HashMap<>();
+                    for (int i = 0; i < properties.length; i = i + 2) {
+                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                            m.put((String) properties[i], properties[i + 1]);
+                    }
+
+                    assertEquals(1, m.size());
+                    assertEquals(v1.getValue("name"), m.get("name").toString());
+
+                    vertexCalled.set(true);
+
+                    return null;
+                },
+                (edgeId, outId, inId, label, properties) -> {
+                    if (edgeId.equals(e1.getId())) {
+                        assertEquals(v2.getId(), outId);
+                        assertEquals(v1.getId(), inId);
+                        assertEquals(e1.getLabel(), label);
+                        assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                        assertEquals("weight", properties[0]);
+                        assertEquals(0.5d, properties[1]);
+
+                        edgeCalled.set(true);
+                    } else {
+                        fail("An edge id generated that does not exist");
+                    }
+
+                    return null;
+                });
+
+        assertTrue(edgeCalled.get());
+        assertTrue(vertexCalled.get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHOUTEdgesToKryo() throws Exception {
@@ -669,6 +909,67 @@ public class IoTest extends AbstractGremlinTest {
 
         verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
         verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteVertexWithBOTHOUTEdgesToGraphSON() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v2 = g.addVertex();
+        v2.addEdge("friends", v1, "weight", 0.5f);
+        final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        writer.writeVertex(os, v1, Direction.BOTH);
+        os.close();
+
+        final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+        final AtomicBoolean edgeCalled = new AtomicBoolean(false);
+
+        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
+                Direction.OUT,
+                (vertexId, properties) -> {
+                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                        assertEquals(v1.getId(), vertexId);
+
+                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+
+                    final Map<String, Object> m = new HashMap<>();
+                    for (int i = 0; i < properties.length; i = i + 2) {
+                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                            m.put((String) properties[i], properties[i + 1]);
+                    }
+
+                    assertEquals(1, m.size());
+                    assertEquals(v1.getValue("name"), m.get("name").toString());
+
+                    vertexCalled.set(true);
+
+                    return null;
+                },
+                (edgeId, outId, inId, label, properties) -> {
+                    if (edgeId.equals(e2.getId())) {
+                        assertEquals(v1.getId(), outId);
+                        assertEquals(v2.getId(), inId);
+                        assertEquals(e2.getLabel(), label);
+                        assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                        assertEquals("weight", properties[0]);
+                        assertEquals(1.0d, properties[1]);
+
+                        edgeCalled.set(true);
+                    } else {
+                        fail("An edge id generated that does not exist");
+                    }
+
+                    return null;
+                });
+
+        assertTrue(edgeCalled.get());
+        assertTrue(vertexCalled.get());
     }
 
     @Test(expected = IllegalStateException.class)

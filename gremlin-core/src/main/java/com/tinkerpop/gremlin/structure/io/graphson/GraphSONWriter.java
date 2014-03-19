@@ -16,7 +16,6 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONWriter implements GraphWriter {
-
     private final Graph g;
     private final ObjectMapper mapper;
 
@@ -32,7 +31,7 @@ public class GraphSONWriter implements GraphWriter {
 
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
-        throw new UnsupportedOperationException();
+        this.mapper.writeValue(outputStream, new DirectionalVertex(v, direction));
     }
 
     @Override

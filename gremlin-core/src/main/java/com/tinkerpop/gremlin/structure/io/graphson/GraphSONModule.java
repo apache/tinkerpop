@@ -36,6 +36,7 @@ class GraphSONModule extends SimpleModule {
         addSerializer(Edge.class, new EdgeJacksonSerializer());
         addSerializer(Property.class, new PropertyJacksonSerializer());
         addSerializer(Vertex.class, new VertexJacksonSerializer());
+        addSerializer(DirectionalVertex.class, new DirectionalVertex.VertexJacksonSerializer());
     }
 
     static class EdgeJacksonSerializer extends StdSerializer<Edge> {
@@ -56,7 +57,6 @@ class GraphSONModule extends SimpleModule {
             jsonGenerator.writeEndObject();
         }
     }
-
 
     static class VertexJacksonSerializer extends StdSerializer<Vertex> {
         public VertexJacksonSerializer() {

@@ -7,14 +7,13 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -51,7 +50,47 @@ public class GraphSONReader implements GraphReader {
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
                              final BiFunction<Object, Object[], Vertex> vertexMaker,
                              final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException();
+        final Map<String,Object> vertexData = mapper.readValue(inputStream, new TypeReference<Map<String,Object>>(){});
+        final Map<String, Map<String, Object>> properties = (Map<String,Map<String, Object>>) vertexData.get(GraphSONModule.TOKEN_PROPERTIES);
+        final Object[] propsAsArray = Stream.concat(properties.entrySet().stream().flatMap(e->Stream.of(e.getKey(), e.getValue().get("value"))),
+                Stream.of(Element.LABEL, vertexData.get(GraphSONModule.TOKEN_LABEL))).toArray();
+        final Vertex v = vertexMaker.apply(vertexData.get(GraphSONModule.TOKEN_ID), propsAsArray);
+
+        if (vertexData.containsKey(GraphSONModule.TOKEN_OUT) && (direction == Direction.BOTH || direction == Direction.OUT))
+            readVertexOutEdges(edgeMaker, vertexData);
+
+        if (vertexData.containsKey(GraphSONModule.TOKEN_IN) && (direction == Direction.BOTH || direction == Direction.IN))
+            readVertexInEdges(edgeMaker, vertexData);
+
+        return v;
+    }
+
+    private static void readVertexInEdges(final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker, final Map<String, Object> vertexData) {
+        final List<Map<String,Object>> edgeDatas = (List<Map<String,Object>>) vertexData.get(GraphSONModule.TOKEN_IN);
+        for (Map<String,Object> edgeData : edgeDatas) {
+            final Map<String, Map<String, Object>> edgeProperties = (Map<String,Map<String, Object>>) edgeData.get(GraphSONModule.TOKEN_PROPERTIES);
+            final Object[] edgePropsAsArray = edgeProperties.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue().get("value"))).toArray();
+            edgeMaker.apply(
+                    edgeData.get(GraphSONModule.TOKEN_ID),
+                    edgeData.get(GraphSONModule.TOKEN_OUT),
+                    edgeData.get(GraphSONModule.TOKEN_IN),
+                    edgeData.get(GraphSONModule.TOKEN_LABEL).toString(),
+                    edgePropsAsArray);
+        }
+    }
+
+    private static void readVertexOutEdges(final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker, final Map<String, Object> vertexData) {
+        final List<Map<String,Object>> edgeDatas = (List<Map<String,Object>>) vertexData.get(GraphSONModule.TOKEN_OUT);
+        for (Map<String,Object> edgeData : edgeDatas) {
+            final Map<String, Map<String, Object>> edgeProperties = (Map<String,Map<String, Object>>) edgeData.get(GraphSONModule.TOKEN_PROPERTIES);
+            final Object[] edgePropsAsArray = edgeProperties.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue().get("value"))).toArray();
+            edgeMaker.apply(
+                    edgeData.get(GraphSONModule.TOKEN_ID),
+                    edgeData.get(GraphSONModule.TOKEN_OUT),
+                    edgeData.get(GraphSONModule.TOKEN_IN),
+                    edgeData.get(GraphSONModule.TOKEN_LABEL).toString(),
+                    edgePropsAsArray);
+        }
     }
 
     @Override
