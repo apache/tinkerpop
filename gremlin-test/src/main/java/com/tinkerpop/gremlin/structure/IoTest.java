@@ -194,9 +194,7 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
                 (edgeId, outId, inId, label, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(e.getId(), edgeId);
-
+                    assertEquals(e.getId(), edgeId);
                     assertEquals(v1.getId(), outId);
                     assertEquals(v2.getId(), inId);
                     assertEquals(e.getLabel(), label);
@@ -229,9 +227,7 @@ public class IoTest extends AbstractGremlinTest {
         final GraphSONReader reader = new GraphSONReader.Builder(g).build();
         reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
                 (edgeId, outId, inId, label, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(e.getId(), edgeId);
-
+                    assertEquals(e.getId().toString(), edgeId.toString()); // lossy
                     assertEquals(v1.getId().toString(), outId.toString()); // lossy
                     assertEquals(v2.getId().toString(), inId.toString());  // lossy
                     assertEquals(e.getLabel(), label);
@@ -271,9 +267,7 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId(), vertexId);
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
@@ -315,9 +309,7 @@ public class IoTest extends AbstractGremlinTest {
         final GraphSONReader reader = new GraphSONReader.Builder(g).build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
@@ -361,9 +353,7 @@ public class IoTest extends AbstractGremlinTest {
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId(), vertexId);
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
@@ -419,9 +409,7 @@ public class IoTest extends AbstractGremlinTest {
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
@@ -477,9 +465,7 @@ public class IoTest extends AbstractGremlinTest {
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId(), vertexId);
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
@@ -535,9 +521,7 @@ public class IoTest extends AbstractGremlinTest {
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
@@ -666,9 +650,7 @@ public class IoTest extends AbstractGremlinTest {
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.BOTH,
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
@@ -741,9 +723,7 @@ public class IoTest extends AbstractGremlinTest {
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId(), vertexId);
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
@@ -804,9 +784,7 @@ public class IoTest extends AbstractGremlinTest {
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
@@ -869,9 +847,7 @@ public class IoTest extends AbstractGremlinTest {
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId(), vertexId);
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
@@ -932,9 +908,7 @@ public class IoTest extends AbstractGremlinTest {
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
                 (vertexId, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
-
+                    assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
                     assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
 
                     final Map<String, Object> m = new HashMap<>();
