@@ -26,7 +26,7 @@ public class GraphSONWriter implements GraphWriter {
 
     @Override
     public void writeGraph(final OutputStream outputStream) throws IOException {
-        throw new UnsupportedOperationException();
+        this.mapper.writeValue(outputStream, new GraphSONGraph(g));
     }
 
     @Override

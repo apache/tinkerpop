@@ -1,5 +1,8 @@
 package com.tinkerpop.gremlin.structure.io.graphson;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -9,10 +12,12 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
+import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,8 +37,50 @@ public class GraphSONReader implements GraphReader {
     }
 
     @Override
-    public void readGraph(InputStream inputStream) throws IOException {
-        throw new UnsupportedOperationException();
+    public void readGraph(final InputStream inputStream) throws IOException {
+        final JsonFactory factory = mapper.getFactory();
+        final JsonParser parser = factory.createParser(inputStream);
+
+        // todo: configurable batchs ize
+        final BatchGraph graph = new BatchGraph.Builder<>(g)
+                .bufferSize(10000).build();
+
+        if (parser.nextToken() != JsonToken.START_OBJECT)
+            throw new IOException("Expected data to start with an Object");
+
+        while (parser.nextToken() != JsonToken.END_OBJECT) {
+            final String fieldName = parser.getCurrentName();
+            parser.nextToken();
+
+            if (fieldName.equals(GraphSONModule.TOKEN_PROPERTIES)) {
+                final Map<String,Object> graphProperties = parser.readValueAs(new TypeReference<Map<String,Object>>(){});
+                if (g.getFeatures().graph().supportsMemory())
+                    graphProperties.entrySet().forEach(entry-> g.memory().set(entry.getKey(), entry.getValue()));
+            } else if (fieldName.equals(GraphSONModule.TOKEN_VERTICES)) {
+                while (parser.nextToken() != JsonToken.END_ARRAY) {
+                    final Map<String,Object> vertexData = parser.readValueAs(new TypeReference<Map<String, Object>>() { });
+                    final Map<String, Map<String, Object>> properties = (Map<String,Map<String, Object>>) vertexData.get(GraphSONModule.TOKEN_PROPERTIES);
+                    final Object[] propsAsArray = Stream.concat(properties.entrySet().stream().flatMap(e->Stream.of(e.getKey(), e.getValue().get("value"))),
+                            Stream.of(Element.LABEL, vertexData.get(GraphSONModule.TOKEN_LABEL), Element.ID, vertexData.get(GraphSONModule.TOKEN_ID))).toArray();
+                    graph.addVertex(propsAsArray);
+                }
+            } else if (fieldName.equals(GraphSONModule.TOKEN_EDGES)) {
+                while (parser.nextToken() != JsonToken.END_ARRAY) {
+                    final Map<String,Object> edgeData = parser.readValueAs(new TypeReference<Map<String, Object>>() {});
+                    final Map<String, Map<String, Object>> properties = (Map<String,Map<String, Object>>) edgeData.get(GraphSONModule.TOKEN_PROPERTIES);
+                    final Object[] propsAsArray = Stream.concat(properties.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue().get("value"))),
+                            Stream.of(Element.ID, edgeData.get(GraphSONModule.TOKEN_ID))).toArray();
+                    final Vertex vOut = graph.v(edgeData.get(GraphSONModule.TOKEN_OUT));
+                    final Vertex vIn = graph.v(edgeData.get(GraphSONModule.TOKEN_IN));
+                    vOut.addEdge(edgeData.get(GraphSONModule.TOKEN_LABEL).toString(), vIn, propsAsArray);
+                }
+            } else {
+                // todo: invalidstateexception?  what was done in kryo/graphml? consistent?
+            }
+        }
+
+        graph.tx().commit();
+        parser.close();
     }
 
     @Override

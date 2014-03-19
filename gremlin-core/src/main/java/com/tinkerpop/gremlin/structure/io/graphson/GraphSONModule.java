@@ -25,7 +25,9 @@ class GraphSONModule extends SimpleModule {
     public static final String TOKEN_VALUE = "value";
     public static final String TOKEN_PROPERTIES = "properties";
     public static final String TOKEN_EDGE = "edge";
+    public static final String TOKEN_EDGES = "edges";
     public static final String TOKEN_VERTEX = "vertex";
+    public static final String TOKEN_VERTICES = "vertices";
     public static final String TOKEN_IN = "in";
     public static final String TOKEN_OUT = "out";
     public static final String TOKEN_LABEL = "label";
@@ -37,6 +39,7 @@ class GraphSONModule extends SimpleModule {
         addSerializer(Property.class, new PropertyJacksonSerializer());
         addSerializer(Vertex.class, new VertexJacksonSerializer());
         addSerializer(DirectionalVertex.class, new DirectionalVertex.VertexJacksonSerializer());
+        addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer());
     }
 
     static class EdgeJacksonSerializer extends StdSerializer<Edge> {

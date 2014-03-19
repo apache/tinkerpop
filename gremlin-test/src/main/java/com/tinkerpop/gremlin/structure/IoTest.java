@@ -57,7 +57,8 @@ public class IoTest extends AbstractGremlinTest {
 
     // todo: should expand test here significantly.  see blueprints2
 
-    private static final String RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/util/io/graphml/";
+    private static final String GRAPHML_RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/util/io/graphml/";
+    private static final String GRAPHSON_RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/util/io/graphson/";
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
@@ -65,7 +66,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadGraphML() throws IOException {
         readGraphMLIntoGraph(g);
-        assertClassicGraph(g);
+        assertClassicGraph(g, false);
     }
 
     @Test
@@ -79,7 +80,7 @@ public class IoTest extends AbstractGremlinTest {
         final GraphMLWriter w = new GraphMLWriter.Builder(g).setNormalize(true).build();
         w.writeGraph(bos);
 
-        final String expected = streamToString(IoTest.class.getResourceAsStream(RESOURCE_PATH_PREFIX + "graph-example-1-normalized.xml"));
+        final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-normalized.xml"));
         assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
     }
 
@@ -96,7 +97,7 @@ public class IoTest extends AbstractGremlinTest {
                 .setEdgeLabelKey("label").build();
         w.writeGraph(bos);
 
-        String expected = streamToString(IoTest.class.getResourceAsStream(RESOURCE_PATH_PREFIX + "graph-example-1-schema-valid.xml"));
+        String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-schema-valid.xml"));
         assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
     }
 
@@ -154,7 +155,26 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readGraph(new ByteArrayInputStream(os.toByteArray()));
 
-        assertClassicGraph(g1);
+        assertClassicGraph(g1, false);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    public void shouldReadWriteClassicToGraphSON() throws Exception {
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        writer.writeGraph(os);
+        os.close();
+
+        final Graph g1 = graphProvider.openTestGraph(graphProvider.newGraphConfiguration("readGraph"));
+        final GraphSONReader reader = new GraphSONReader.Builder(g1).build();
+        reader.readGraph(new ByteArrayInputStream(os.toByteArray()));
+
+        assertClassicGraph(g1, true);
     }
 
     @Test
@@ -1068,7 +1088,7 @@ public class IoTest extends AbstractGremlinTest {
 
     }
 
-    public static void assertClassicGraph(final Graph g1) {
+    public static void assertClassicGraph(final Graph g1, final boolean lossyOfFloat) {
         assertEquals(6, g1.V().count());
         assertEquals(6, g1.E().count());
 
@@ -1083,19 +1103,28 @@ public class IoTest extends AbstractGremlinTest {
         v1Edges.forEach(e -> {
             if (e.getVertex(Direction.IN).getValue("name").equals("vadas")) {
                 assertEquals("knows", e.getLabel());
-                assertEquals(0.5f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(0.5d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(0.5f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("7", e.getId());
             } else if (e.getVertex(Direction.IN).getValue("name").equals("josh")) {
                 assertEquals("knows", e.getLabel());
-                assertEquals(1.0f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(1.0, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(1.0f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("8", e.getId());
             } else if (e.getVertex(Direction.IN).getValue("name").equals("lop")) {
                 assertEquals("created", e.getLabel());
-                assertEquals(0.4f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(0.4d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(0.4f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("9", e.getId());
@@ -1115,7 +1144,10 @@ public class IoTest extends AbstractGremlinTest {
         v2Edges.forEach(e -> {
             if (e.getVertex(Direction.OUT).getValue("name").equals("marko")) {
                 assertEquals("knows", e.getLabel());
-                assertEquals(0.5f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(0.5d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(0.5f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("7", e.getId());
@@ -1135,19 +1167,28 @@ public class IoTest extends AbstractGremlinTest {
         v3Edges.forEach(e -> {
             if (e.getVertex(Direction.OUT).getValue("name").equals("peter")) {
                 assertEquals("created", e.getLabel());
-                assertEquals(0.2f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(0.2d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(0.2f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("12", e.getId());
             } else if (e.getVertex(Direction.OUT).getValue("name").equals("josh")) {
                 assertEquals("created", e.getLabel());
-                assertEquals(0.4f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(0.4d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(0.4f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("11", e.getId());
             } else if (e.getVertex(Direction.OUT).getValue("name").equals("marko")) {
                 assertEquals("created", e.getLabel());
-                assertEquals(0.4f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(0.4d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(0.4f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("9", e.getId());
@@ -1167,19 +1208,28 @@ public class IoTest extends AbstractGremlinTest {
         v4Edges.forEach(e -> {
             if (e.getVertex(Direction.IN).getValue("name").equals("ripple")) {
                 assertEquals("created", e.getLabel());
-                assertEquals(1.0f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(1.0d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(1.0f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("10", e.getId());
             } else if (e.getVertex(Direction.IN).getValue("name").equals("lop")) {
                 assertEquals("created", e.getLabel());
-                assertEquals(0.4f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(0.4d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(0.4f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("11", e.getId());
             } else if (e.getVertex(Direction.OUT).getValue("name").equals("marko")) {
                 assertEquals("knows", e.getLabel());
-                assertEquals(1.0f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(1.0d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(1.0f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("8", e.getId());
@@ -1199,7 +1249,10 @@ public class IoTest extends AbstractGremlinTest {
         v5Edges.forEach(e -> {
             if (e.getVertex(Direction.OUT).getValue("name").equals("josh")) {
                 assertEquals("created", e.getLabel());
-                assertEquals(1.0f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(1.0d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(1.0f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("10", e.getId());
@@ -1219,7 +1272,10 @@ public class IoTest extends AbstractGremlinTest {
         v6Edges.forEach(e -> {
             if (e.getVertex(Direction.IN).getValue("name").equals("lop")) {
                 assertEquals("created", e.getLabel());
-                assertEquals(0.2f, e.getValue("weight"), 0.0001f);
+                if (lossyOfFloat)
+                    assertEquals(0.2d, e.getValue("weight"), 0.0001d);
+                else
+                    assertEquals(0.2f, e.getValue("weight"), 0.0001f);
                 assertEquals(1, e.getPropertyKeys().size());
                 if (g1.getFeatures().edge().supportsUserSuppliedIds())
                     assertEquals("12", e.getId());
@@ -1233,14 +1289,21 @@ public class IoTest extends AbstractGremlinTest {
         final Source xmlFile = new StreamSource(file);
         final SchemaFactory schemaFactory = SchemaFactory
                 .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        final Schema schema = schemaFactory.newSchema(IoTest.class.getResource(RESOURCE_PATH_PREFIX + "graphml-1.1.xsd"));
+        final Schema schema = schemaFactory.newSchema(IoTest.class.getResource(GRAPHML_RESOURCE_PATH_PREFIX + "graphml-1.1.xsd"));
         final Validator validator = schema.newValidator();
         validator.validate(xmlFile);
     }
 
     private static void readGraphMLIntoGraph(final Graph g) throws IOException {
         final GraphReader reader = new GraphMLReader.Builder(g).build();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(RESOURCE_PATH_PREFIX + "graph-example-1.xml")) {
+        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1.xml")) {
+            reader.readGraph(stream);
+        }
+    }
+
+    private static void readGraphSONIntoGraph(final Graph g) throws IOException {
+        final GraphReader reader = new GraphSONReader.Builder(g).build();
+        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "graph-example-1.json")) {
             reader.readGraph(stream);
         }
     }

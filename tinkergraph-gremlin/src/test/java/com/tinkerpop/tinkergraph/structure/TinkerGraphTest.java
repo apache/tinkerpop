@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.tinkergraph.structure.TinkerFactory;
@@ -92,6 +93,13 @@ public class TinkerGraphTest {
     public void shouldWriteClassicGraph() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.gio");
         new KryoWriter.Builder(TinkerFactory.createClassic()).build().writeGraph(os);
+        os.close();
+    }
+
+    @Test
+    public void shouldWriteClassicGraphAsGraphSON() throws IOException {
+        final OutputStream os = new FileOutputStream("/tmp/graph-example-1.json");
+        new GraphSONWriter.Builder(TinkerFactory.createClassic()).build().writeGraph(os);
         os.close();
     }
 
@@ -379,7 +387,7 @@ public class TinkerGraphTest {
 
         try {
             final TinkerGraph g1 = (TinkerGraph) input.readObject();
-            IoTest.assertClassicGraph(g1);
+            IoTest.assertClassicGraph(g1, false);
         } catch (ClassNotFoundException cnfe) {
             throw new RuntimeException(cnfe);
         } finally {
