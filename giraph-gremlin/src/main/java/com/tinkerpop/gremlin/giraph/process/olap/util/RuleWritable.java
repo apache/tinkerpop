@@ -13,7 +13,7 @@ import java.io.IOException;
 public class RuleWritable implements Writable {
 
     public enum Rule {
-        OR, AND, INCR, DECR, NO_OP
+        OR, AND, INCR, DECR, SET, SET_IF_ABSENT
     }
 
     private Rule rule;
@@ -29,12 +29,7 @@ public class RuleWritable implements Writable {
     }
 
     public <T> T getObject() {
-        if (null == this.object) {
-            //if (this.rule.equals(Rule.OR) || this.rule.equals(Rule.AND))
-            return (T) new Boolean(true);
-        } else {
-            return (T) this.object;
-        }
+        return (T) this.object;
     }
 
     public Rule getRule() {

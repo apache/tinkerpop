@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.giraph.structure.io.tinkergraph;
 
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounters;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.apache.giraph.graph.Vertex;
@@ -22,7 +24,7 @@ public class TinkerGraphVertexWriter extends VertexWriter {
     }
 
     public void writeVertex(final Vertex vertex) throws IOException {
-        System.out.println(((GiraphVertex) vertex).getGremlinVertex());
+        System.out.println(((GiraphVertex) vertex).getGremlinVertex() + ":" + ((GiraphVertex) vertex).getGremlinVertex().<TraversalCounters>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).get().getDoneObjectTracks());
     }
 
     public void close(final TaskAttemptContext context) {

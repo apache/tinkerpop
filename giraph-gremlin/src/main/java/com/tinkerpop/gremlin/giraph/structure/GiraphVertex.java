@@ -22,7 +22,8 @@ import java.io.ObjectInputStream;
  */
 public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritable, KryoWritable> {
 
-    Logger logger = Logger.getLogger(GiraphVertex.class);
+    private static final Logger LOGGER = Logger.getLogger(GiraphVertex.class);
+
     private VertexProgram vertexProgram;
     private com.tinkerpop.gremlin.structure.Vertex gremlinVertex;
     private GiraphComputerMemory computerMemory;
@@ -31,7 +32,7 @@ public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritabl
         try {
             this.vertexProgram = (VertexProgram) new ObjectInputStream(new FileInputStream(GiraphGraphComputer.VERTEX_PROGRAM)).readObject();
         } catch (Exception e) {
-            java.lang.System.out.println(e.getMessage());
+            java.lang.System.out.println(e + "--->" + e.getMessage());
         }
         this.gremlinVertex = gremlinVertex;
         this.computerMemory = new GiraphComputerMemory(this);
@@ -46,7 +47,6 @@ public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritabl
     public void compute(final Iterable<KryoWritable> messages) {
         //System.out.println(this.gremlinVertex + ": " + this.gremlinVertex.<TraversalPaths>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(new TraversalPaths(this.gremlinVertex)).getDoneObjectTracks());
         System.out.println(this.gremlinVertex + ": " + this.gremlinVertex.<TraversalCounters>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(new TraversalCounters(this.gremlinVertex)).getDoneObjectTracks());
-
         this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.computerMemory);
     }
 
