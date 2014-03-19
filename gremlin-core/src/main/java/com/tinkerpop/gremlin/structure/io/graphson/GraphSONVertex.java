@@ -12,11 +12,11 @@ import java.io.IOException;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class DirectionalVertex {
+class GraphSONVertex {
     private final Direction direction;
     private final Vertex vertexToSerialize;
 
-    public DirectionalVertex(final Vertex vertexToSerialize, final Direction direction) {
+    public GraphSONVertex(final Vertex vertexToSerialize, final Direction direction) {
         this.direction = direction;
         this.vertexToSerialize = vertexToSerialize;
     }
@@ -29,13 +29,13 @@ class DirectionalVertex {
         return vertexToSerialize;
     }
 
-    static class VertexJacksonSerializer extends StdSerializer<DirectionalVertex> {
+    static class VertexJacksonSerializer extends StdSerializer<GraphSONVertex> {
         public VertexJacksonSerializer() {
-            super(DirectionalVertex.class);
+            super(GraphSONVertex.class);
         }
 
         @Override
-        public void serialize(final DirectionalVertex directionalVertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+        public void serialize(final GraphSONVertex directionalVertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
             final Vertex vertex = directionalVertex.getVertexToSerialize();
             jsonGenerator.writeStartObject();

@@ -38,7 +38,7 @@ class GraphSONModule extends SimpleModule {
         addSerializer(Edge.class, new EdgeJacksonSerializer());
         addSerializer(Property.class, new PropertyJacksonSerializer());
         addSerializer(Vertex.class, new VertexJacksonSerializer());
-        addSerializer(DirectionalVertex.class, new DirectionalVertex.VertexJacksonSerializer());
+        addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer());
     }
 
