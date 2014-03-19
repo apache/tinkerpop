@@ -8,24 +8,28 @@ import org.apache.giraph.aggregators.BasicAggregator;
 public class MemoryAggregator extends BasicAggregator<RuleWritable> {
 
     public RuleWritable createInitialValue() {
-        return new RuleWritable(RuleWritable.Rule.NO_OP, null);
+        return new RuleWritable(RuleWritable.Rule.SET, null);
     }
 
     public void aggregate(RuleWritable ruleWritable) {
-        if (ruleWritable.getRule().equals(RuleWritable.Rule.AND)) {
-            if (null == this.getAggregatedValue().getObject())
-                this.setAggregatedValue(new RuleWritable(this.getAggregatedValue().getRule(), ruleWritable.<Boolean>getObject()));
-            else
-                this.setAggregatedValue(new RuleWritable(this.getAggregatedValue().getRule(), this.getAggregatedValue().<Boolean>getObject() && ruleWritable.<Boolean>getObject()));
-        } else if (ruleWritable.getRule().equals(RuleWritable.Rule.OR)) {
-            if (null == this.getAggregatedValue().getObject())
-                this.setAggregatedValue(new RuleWritable(this.getAggregatedValue().getRule(), ruleWritable.<Boolean>getObject()));
-            else
-                this.setAggregatedValue(new RuleWritable(this.getAggregatedValue().getRule(), this.getAggregatedValue().<Boolean>getObject() || ruleWritable.<Boolean>getObject()));
-        } else if (ruleWritable.getRule().equals(RuleWritable.Rule.NO_OP)) {
+        final RuleWritable.Rule rule = ruleWritable.getRule();
+        final Object object = ruleWritable.getObject();
+        if (null == this.getAggregatedValue().getObject() || rule.equals(RuleWritable.Rule.SET))
             this.setAggregatedValue(ruleWritable);
-        } else {
-            throw new IllegalArgumentException("The provided rule is unknown: " + ruleWritable.getRule());
+        else {
+            if (rule.equals(RuleWritable.Rule.AND)) {
+                this.setAggregatedValue(new RuleWritable(rule, this.getAggregatedValue().<Boolean>getObject() && (Boolean) object));
+            } else if (rule.equals(RuleWritable.Rule.OR)) {
+                this.setAggregatedValue(new RuleWritable(rule, this.getAggregatedValue().<Boolean>getObject() || (Boolean) object));
+            } else if (rule.equals(RuleWritable.Rule.INCR)) {
+                this.setAggregatedValue(new RuleWritable(rule, this.getAggregatedValue().<Long>getObject() + (Long) object));
+            } else if (rule.equals(RuleWritable.Rule.DECR)) {
+                this.setAggregatedValue(new RuleWritable(rule, this.getAggregatedValue().<Long>getObject() - (Long) object));
+            } else if (rule.equals(RuleWritable.Rule.SET_IF_ABSENT)) {
+                // should have been set earlier in first null; else do nothing
+            } else {
+                throw new IllegalArgumentException("The provided rule is unknown: " + ruleWritable.getRule());
+            }
         }
     }
 }

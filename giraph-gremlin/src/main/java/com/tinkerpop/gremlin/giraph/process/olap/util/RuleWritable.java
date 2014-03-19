@@ -13,7 +13,7 @@ import java.io.IOException;
 public class RuleWritable implements Writable {
 
     public enum Rule {
-        OR, AND, INCR, DECR, NO_OP
+        OR, AND, INCR, DECR, SET, SET_IF_ABSENT
     }
 
     private Rule rule;

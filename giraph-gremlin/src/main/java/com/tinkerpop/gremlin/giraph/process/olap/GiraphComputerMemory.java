@@ -69,15 +69,9 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public void write(final DataOutput output) {
-
     }
 
     public void readFields(final DataInput input) {
-        /*try {
-            this.vertexProgram = (VertexProgram) new ObjectInputStream(new FileInputStream(GiraphGraphComputer.VERTEX_PROGRAM)).readObject();
-        } catch (Exception e) {
-            java.lang.System.out.println(e.getMessage() + "---" + e);
-        }*/
     }
 
     public int getIteration() {
@@ -110,9 +104,9 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     public void set(final String variable, Object value) {
         if (null == this.giraphVertex) {
             //java.lang.System.out.println("Setting value: " + variable + ":" + value);
-            this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.NO_OP, value));
+            this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.SET, value));
         } else
-            this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.NO_OP, value));
+            this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.SET, value));
     }
 
     public void setIfAbsent(final String variable, final Object value) {
