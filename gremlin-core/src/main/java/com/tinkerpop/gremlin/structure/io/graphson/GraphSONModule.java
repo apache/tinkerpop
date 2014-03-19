@@ -18,7 +18,7 @@ import java.io.IOException;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONModule extends SimpleModule {
+class GraphSONModule extends SimpleModule {
 
     public static final String TOKEN_ID = "id";
     public static final String TOKEN_TYPE = "type";

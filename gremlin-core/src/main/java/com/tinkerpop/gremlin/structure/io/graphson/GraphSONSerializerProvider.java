@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONSerializerProvider extends DefaultSerializerProvider {
+class GraphSONSerializerProvider extends DefaultSerializerProvider {
     private static final long serialVersionUID = 1L;
     private static final ToStringSerializer toStringSerializer = new ToStringSerializer();
 
