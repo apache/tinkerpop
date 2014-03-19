@@ -43,7 +43,6 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatu
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -233,12 +232,12 @@ public class IoTest extends AbstractGremlinTest {
                     if (g.getFeatures().vertex().supportsUserSuppliedIds())
                         assertEquals(e.getId(), edgeId);
 
-                    assertEquals(v1.getId(), outId);
-                    assertEquals(v2.getId(), inId);
+                    assertEquals(v1.getId().toString(), outId.toString()); // lossy
+                    assertEquals(v2.getId().toString(), inId.toString());  // lossy
                     assertEquals(e.getLabel(), label);
                     assertEquals(e.getPropertyKeys().size(), properties.length / 2);
                     assertEquals("weight", properties[0]);
-                    assertEquals(0.5d, properties[1]);    // graphson is lossy so floats become double
+                    assertEquals(0.5d, properties[1]);    // lossy
 
                     called.set(true);
 
@@ -437,13 +436,13 @@ public class IoTest extends AbstractGremlinTest {
                     return null;
                 },
                 (edgeId, outId, inId, label, properties) -> {
-                    assertEquals(e.getId(), edgeId);
-                    assertEquals(v1.getId(), outId);
-                    assertEquals(v2.getId(), inId);
+                    assertEquals(e.getId().toString(), edgeId.toString());  // lossy
+                    assertEquals(v1.getId().toString(), outId.toString());  // lossy
+                    assertEquals(v2.getId().toString(), inId.toString());   // lossy
                     assertEquals(e.getLabel(), label);
                     assertEquals(e.getPropertyKeys().size(), properties.length / 2);
                     assertEquals("weight", properties[0]);
-                    assertEquals(0.5d, properties[1]);
+                    assertEquals(0.5d, properties[1]);                      // lossy
 
                     calledEdge.set(true);
                     return null;
@@ -553,13 +552,13 @@ public class IoTest extends AbstractGremlinTest {
                     return null;
                 },
                 (edgeId, outId, inId, label, properties) -> {
-                    assertEquals(e.getId(), edgeId);
-                    assertEquals(v1.getId(), inId);
-                    assertEquals(v2.getId(), outId);
+                    assertEquals(e.getId().toString(), edgeId.toString()); // lossy
+                    assertEquals(v1.getId().toString(), inId.toString());  // lossy
+                    assertEquals(v2.getId().toString(), outId.toString()); // lossy
                     assertEquals(e.getLabel(), label);
                     assertEquals(e.getPropertyKeys().size(), properties.length / 2);
                     assertEquals("weight", properties[0]);
-                    assertEquals(0.5d, properties[1]);
+                    assertEquals(0.5d, properties[1]);                     // lossy
 
                     calledEdge.set(true);
                     return null;
@@ -686,22 +685,22 @@ public class IoTest extends AbstractGremlinTest {
                     return null;
                 },
                 (edgeId, outId, inId, label, properties) -> {
-                    if (edgeId.equals(e1.getId())) {
-                        assertEquals(v2.getId(), outId);
-                        assertEquals(v1.getId(), inId);
+                    if (edgeId.toString().equals(e1.getId().toString())) {      // lossy
+                        assertEquals(v2.getId().toString(), outId.toString());  // lossy
+                        assertEquals(v1.getId().toString(), inId.toString());   // lossy
                         assertEquals(e1.getLabel(), label);
                         assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
                         assertEquals("weight", properties[0]);
-                        assertEquals(0.5d, properties[1]);
+                        assertEquals(0.5d, properties[1]);                      // lossy
 
                         edge1Called.set(true);
-                    } else if (edgeId.equals(e2.getId())) {
-                        assertEquals(v1.getId(), outId);
-                        assertEquals(v2.getId(), inId);
+                    } else if (edgeId.toString().equals(e2.getId().toString())) { // lossy
+                        assertEquals(v1.getId().toString(), outId.toString());    // lossy
+                        assertEquals(v2.getId().toString(), inId.toString());     // lossy
                         assertEquals(e2.getLabel(), label);
                         assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
                         assertEquals("weight", properties[0]);
-                        assertEquals(1.0d, properties[1]);
+                        assertEquals(1.0d, properties[1]);                        // lossy
 
                         edge2Called.set(true);
                     } else {
@@ -824,13 +823,13 @@ public class IoTest extends AbstractGremlinTest {
                     return null;
                 },
                 (edgeId, outId, inId, label, properties) -> {
-                    if (edgeId.equals(e1.getId())) {
-                        assertEquals(v2.getId(), outId);
-                        assertEquals(v1.getId(), inId);
+                    if (edgeId.toString().equals(e1.getId().toString())) { // lossy
+                        assertEquals(v2.getId().toString(), outId.toString()); // lossy
+                        assertEquals(v1.getId().toString(), inId.toString()); // lossy
                         assertEquals(e1.getLabel(), label);
                         assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
                         assertEquals("weight", properties[0]);
-                        assertEquals(0.5d, properties[1]);
+                        assertEquals(0.5d, properties[1]);                    // lossy
 
                         edgeCalled.set(true);
                     } else {
@@ -952,13 +951,13 @@ public class IoTest extends AbstractGremlinTest {
                     return null;
                 },
                 (edgeId, outId, inId, label, properties) -> {
-                    if (edgeId.equals(e2.getId())) {
-                        assertEquals(v1.getId(), outId);
-                        assertEquals(v2.getId(), inId);
+                    if (edgeId.toString().equals(e2.getId().toString())) {     // lossy
+                        assertEquals(v1.getId().toString(), outId.toString()); // lossy
+                        assertEquals(v2.getId().toString(), inId.toString()); // lossy
                         assertEquals(e2.getLabel(), label);
                         assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
                         assertEquals("weight", properties[0]);
-                        assertEquals(1.0d, properties[1]);
+                        assertEquals(1.0d, properties[1]);                 // lossy
 
                         edgeCalled.set(true);
                     } else {
