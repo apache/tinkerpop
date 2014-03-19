@@ -55,7 +55,8 @@ public abstract class AbstractGremlinTest {
         // persisted graphs will likely just have their directories removed
         graphProvider.clear(null, config);
 
-        g = graphProvider.openTestGraph(config, strategyToTest);
+        // not sure how the strategy can ever be null, but it seems to happen in the performance tests
+        g = graphProvider.openTestGraph(config, strategyToTest == null ? Optional.empty() : strategyToTest);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
         final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);

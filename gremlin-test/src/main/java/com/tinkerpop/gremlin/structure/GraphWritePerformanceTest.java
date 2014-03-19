@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,6 +70,10 @@ public class GraphWritePerformanceTest {
     @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-io-write")
     public static class WriteToIO extends AbstractGremlinTest {
 
+        public WriteToIO(){
+            super(Optional.empty());
+        }
+
         @Rule
         public TestRule benchmarkRun = new BenchmarkRule();
 
@@ -86,6 +91,15 @@ public class GraphWritePerformanceTest {
         @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
         public void writeGraphML() throws Exception {
             final GraphWriter writer = new GraphMLWriter.Builder(g).build();
+            final OutputStream os = new ByteArrayOutputStream();
+            writer.writeGraph(os);
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
+        @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
+        public void writeGraphSON() throws Exception {
+            final GraphWriter writer = new GraphSONWriter.Builder(g).build();
             final OutputStream os = new ByteArrayOutputStream();
             writer.writeGraph(os);
         }
