@@ -14,7 +14,7 @@ import java.io.IOException;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONGraph {
+class GraphSONGraph {
     private final Graph graphToSerialize;
 
     public GraphSONGraph(final Graph graphToSerialize) {
