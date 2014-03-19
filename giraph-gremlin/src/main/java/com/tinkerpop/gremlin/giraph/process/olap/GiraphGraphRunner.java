@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphInputFor
 import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphOutputFormat;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.structure.util.EmptyGraph;
+import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConfiguration;
@@ -53,6 +53,6 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
         GraphComputer g = new GiraphGraphComputer();
         //g.program(new PageRankVertexProgram.Builder().build()).configuration(configuration).submit();
-        g.program(new TraversalVertexProgram.Builder().traversal(() -> EmptyGraph.instance().V()).build()).configuration(configuration).submit();
+        g.program(new TraversalVertexProgram.Builder().traversal(() -> TinkerGraph.open().V().out().value("name")).build()).configuration(configuration).submit();
     }
 }

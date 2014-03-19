@@ -6,10 +6,7 @@ import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.EmptyGraph;
-import com.tinkerpop.gremlin.util.function.SSupplier;
-import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.apache.giraph.master.MasterCompute;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.Logger;
 
 import java.io.DataInput;
@@ -48,47 +45,26 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
 
     }
 
-    public <T> void registerComputerVariable(final String variable, final Object type) throws IllegalAccessException, InstantiationException {
-        /*if (type instanceof Boolean) {
-            this.registerAggregator(variable, BooleanOrAggregator.class);
-        } else if (type instanceof Boolean) {
-            this.registerAggregator(variable, BooleanAndAggregator.class);
-        } else if (type instanceof Long) {
-            this.registerAggregator(variable, LongSumAggregator.class);
-        } else {
-            this.registerAggregator(variable, ObjectOverwriteAggregator.class);
-        }*/
-
-    }
-
     public void initialize() {
         try {
-
             this.vertexProgram = (VertexProgram) new ObjectInputStream(new FileInputStream(GiraphGraphComputer.VERTEX_PROGRAM)).readObject();
-            this.registerAggregator("trackPaths", MemoryAggregator.class);
+            this.registerPersistentAggregator("trackPaths", MemoryAggregator.class);
             this.registerAggregator("voteToHalt", MemoryAggregator.class);
-            this.registerAggregator("traversal", MemoryAggregator.class);
+            this.registerPersistentAggregator("traversal", MemoryAggregator.class);
 
-            /*java.lang.System.out.println("Doing INITIALIZE right now");
-            this.setAggregatedValue("trackPaths", new RuleWritable(RuleWritable.Rule.NO_OP, false));
-            this.setAggregatedValue("voteToHalt", new RuleWritable(RuleWritable.Rule.NO_OP, false));
-            SSupplier supplier = () -> TinkerGraph.open().V().out().<String>value("name").map(s -> s.get().length());
-            this.setAggregatedValue("traversal", new RuleWritable(RuleWritable.Rule.NO_OP, supplier));*/
-
+            this.vertexProgram.setup(this);
         } catch (Exception e) {
-            java.lang.System.out.println(e.getMessage());
+            // java.lang.System.out.println(e + "***" + e.getMessage());
         }
     }
 
     public void compute() {
-        java.lang.System.out.println("Doing COMPUTE right now");
-        this.setAggregatedValue("trackPaths", new RuleWritable(RuleWritable.Rule.NO_OP, false));
-        this.setAggregatedValue("voteToHalt", new RuleWritable(RuleWritable.Rule.NO_OP, false));
-        SSupplier supplier = () -> TinkerGraph.open().V().out().<String>value("name").map(s -> s.get().length());
-        this.setAggregatedValue("traversal", new RuleWritable(RuleWritable.Rule.NO_OP, supplier));
-        if (this.vertexProgram.terminate(this)) {
-            java.lang.System.out.println("here done:  " + this + " steps: " + this.getSuperstep());
-            this.haltComputation();
+        //java.lang.System.out.println("SUPERSTEP: " + this.getSuperstep() + "----" + this.get("voteToHalt"));
+        if (this.getSuperstep() > 0) {
+            if (this.vertexProgram.terminate(this)) {
+                //java.lang.System.out.println("here done:  " + this + " steps: " + this.getSuperstep());
+                this.haltComputation();
+            }
         }
     }
 
@@ -97,7 +73,11 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public void readFields(final DataInput input) {
-
+        /*try {
+            this.vertexProgram = (VertexProgram) new ObjectInputStream(new FileInputStream(GiraphGraphComputer.VERTEX_PROGRAM)).readObject();
+        } catch (Exception e) {
+            java.lang.System.out.println(e.getMessage() + "---" + e);
+        }*/
     }
 
     public int getIteration() {
@@ -113,8 +93,10 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public <R> R get(final String variable) {
-        //return (R) this.getAggregatedValue(variable);
-        return ((RuleWritable) this.giraphVertex.getAggregatedValue(variable)).getObject();
+        RuleWritable rule = null == this.giraphVertex ? this.getAggregatedValue(variable) : this.giraphVertex.getAggregatedValue(variable);
+        //java.lang.System.out.println("Getting variable: " + variable + ":" + rule.getObject() + ":" + rule.getRule());
+        return (R) rule.getObject();
+
         /*if (variable.equals(TraversalVertexProgram.TRACK_PATHS))
             return (R) new Boolean(false);
         else if (variable.equals("voteToHalt")) {
@@ -126,35 +108,49 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public void set(final String variable, Object value) {
-        this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.NO_OP, value));
+        if (null == this.giraphVertex) {
+            //java.lang.System.out.println("Setting value: " + variable + ":" + value);
+            this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.NO_OP, value));
+        } else
+            this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.NO_OP, value));
     }
 
     public void setIfAbsent(final String variable, final Object value) {
-        this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.NO_OP, value));
+        this.set(variable, value);
     }
 
     public long incr(final String variable, final long delta) {
-        this.giraphVertex.aggregate(variable, new LongWritable(delta));
-        return this.giraphVertex.<LongWritable>getAggregatedValue(variable).get();
+        return 1;
     }
 
     public long decr(final String variable, final long delta) {
-        this.giraphVertex.aggregate(variable, new LongWritable(delta));
-        return this.giraphVertex.<LongWritable>getAggregatedValue(variable).get();
+        return 1;
     }
 
     public boolean and(final String variable, final boolean bool) {
-        this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.AND, bool));
-        return ((RuleWritable) this.giraphVertex.getAggregatedValue(variable)).getObject();
+        //java.lang.System.out.println("ANDing: " + variable + ":" + bool);
+        //this.set(variable, this.<Boolean>get(variable) && bool);
+        //return this.get(variable);
+        if (null == this.giraphVertex) {
+            this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.AND, ((RuleWritable) this.getAggregatedValue(variable)).<Boolean>getObject() && bool));
+            return ((RuleWritable) this.getAggregatedValue(variable)).getObject();
+        } else {
+            this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.AND, bool));
+            return ((RuleWritable) this.giraphVertex.getAggregatedValue(variable)).getObject();
+        }
     }
 
     public boolean or(final String variable, final boolean bool) {
-        this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.OR, bool));
-        return ((RuleWritable) this.giraphVertex.getAggregatedValue(variable)).getObject();
-    }
-
-    public void voteToHalt() {
-        this.giraphVertex.voteToHalt();
+        //java.lang.System.out.println("ORing: " + variable + ":" + bool);
+        // this.set(variable, this.<Boolean>get(variable) || bool);
+        // return this.get(variable);
+        if (null == this.giraphVertex) {
+            this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.OR, ((RuleWritable) this.getAggregatedValue(variable)).<Boolean>getObject() || bool));
+            return ((RuleWritable) this.getAggregatedValue(variable)).getObject();
+        } else {
+            this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.OR, bool));
+            return ((RuleWritable) this.giraphVertex.getAggregatedValue(variable)).getObject();
+        }
     }
 
     public Graph getGraph() {

@@ -63,7 +63,7 @@ public class GiraphGraphComputer implements GraphComputer {
             Arrays.asList("/usr/local/giraph-1.0.0/giraph-core/target/giraph-1.0.0-for-hadoop-1.2.1-jar-with-dependencies.jar",
                     "/Users/marko/software/tinkerpop/tinkerpop3/giraph-gremlin/target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar",
                     "/Users/marko/software/tinkerpop/tinkerpop3/gremlin-core/target/gremlin-core-3.0.0-SNAPSHOT.jar",
-                    "/Users/marko/software/tinkerpop/tinkerpop3/tinkergraph/target/tinkergraph-3.0.0-SNAPSHOT.jar")
+                    "/Users/marko/software/tinkerpop/tinkerpop3/tinkergraph-gremlin/target/tinkergraph-gremlin-3.0.0-SNAPSHOT.jar")
                     .forEach(s -> {
                         try {
                             DistributedCache.addArchiveToClassPath(new Path(s), this.hadoopConfiguration, local);

@@ -11,13 +11,21 @@ public class MemoryAggregator extends BasicAggregator<RuleWritable> {
         return new RuleWritable(RuleWritable.Rule.NO_OP, null);
     }
 
-    public void aggregate(RuleWritable t) {
-        if (t.getRule().equals(RuleWritable.Rule.AND)) {
-            this.setAggregatedValue(new RuleWritable(this.getAggregatedValue().getRule(), this.getAggregatedValue().<Boolean>getObject() && t.<Boolean>getObject()));
-        } else if (t.getRule().equals(RuleWritable.Rule.AND)) {
-            this.setAggregatedValue(new RuleWritable(this.getAggregatedValue().getRule(), this.getAggregatedValue().<Boolean>getObject() || t.<Boolean>getObject()));
+    public void aggregate(RuleWritable ruleWritable) {
+        if (ruleWritable.getRule().equals(RuleWritable.Rule.AND)) {
+            if (null == this.getAggregatedValue().getObject())
+                this.setAggregatedValue(new RuleWritable(this.getAggregatedValue().getRule(), ruleWritable.<Boolean>getObject()));
+            else
+                this.setAggregatedValue(new RuleWritable(this.getAggregatedValue().getRule(), this.getAggregatedValue().<Boolean>getObject() && ruleWritable.<Boolean>getObject()));
+        } else if (ruleWritable.getRule().equals(RuleWritable.Rule.OR)) {
+            if (null == this.getAggregatedValue().getObject())
+                this.setAggregatedValue(new RuleWritable(this.getAggregatedValue().getRule(), ruleWritable.<Boolean>getObject()));
+            else
+                this.setAggregatedValue(new RuleWritable(this.getAggregatedValue().getRule(), this.getAggregatedValue().<Boolean>getObject() || ruleWritable.<Boolean>getObject()));
+        } else if (ruleWritable.getRule().equals(RuleWritable.Rule.NO_OP)) {
+            this.setAggregatedValue(ruleWritable);
         } else {
-            throw new IllegalStateException();
+            throw new IllegalArgumentException("The provided rule is unknown: " + ruleWritable.getRule());
         }
     }
 }

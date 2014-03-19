@@ -29,12 +29,7 @@ public class RuleWritable implements Writable {
     }
 
     public <T> T getObject() {
-        if (null == this.object) {
-            //if (this.rule.equals(Rule.OR) || this.rule.equals(Rule.AND))
-            return (T) new Boolean(true);
-        } else {
-            return (T) this.object;
-        }
+        return (T) this.object;
     }
 
     public Rule getRule() {
