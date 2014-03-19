@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.server.util.ser;
+package com.tinkerpop.gremlin.structure.io.graphson;
 
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -13,15 +13,15 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinSerializerProvider extends DefaultSerializerProvider {
+public class GraphSONSerializerProvider extends DefaultSerializerProvider {
     private static final long serialVersionUID = 1L;
     private static final ToStringSerializer toStringSerializer = new ToStringSerializer();
 
-    public GremlinSerializerProvider() {
+    public GraphSONSerializerProvider() {
         super();
     }
 
-    protected GremlinSerializerProvider(final SerializerProvider src,
+    protected GraphSONSerializerProvider(final SerializerProvider src,
                                         final SerializationConfig config, final SerializerFactory f) {
         super(src, config, f);
     }
@@ -32,8 +32,8 @@ public class GremlinSerializerProvider extends DefaultSerializerProvider {
     }
 
     @Override
-    public GremlinSerializerProvider createInstance(final SerializationConfig config,
+    public GraphSONSerializerProvider createInstance(final SerializationConfig config,
                                                     final SerializerFactory jsf) {
-        return new GremlinSerializerProvider(this, config, jsf);
+        return new GraphSONSerializerProvider(this, config, jsf);
     }
 }
