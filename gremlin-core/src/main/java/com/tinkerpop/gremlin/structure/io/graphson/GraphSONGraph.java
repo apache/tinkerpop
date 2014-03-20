@@ -32,7 +32,9 @@ class GraphSONGraph {
                 throws IOException, JsonGenerationException {
             final Graph g = graph.getGraphToSerialize();
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField(GraphSONModule.TOKEN_PROPERTIES, g.memory().asMap());
+
+            if (g.getFeatures().graph().supportsMemory())
+                jsonGenerator.writeObjectField(GraphSONModule.TOKEN_PROPERTIES, g.memory().asMap());
 
             jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_VERTICES);
             g.V().forEach(v -> {

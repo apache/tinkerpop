@@ -69,6 +69,9 @@ public class IoTest extends AbstractGremlinTest {
         assertClassicGraph(g, false);
     }
 
+    /**
+     * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
+     */
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
@@ -84,6 +87,9 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
     }
 
+    /**
+     * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
+     */
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
@@ -104,7 +110,8 @@ public class IoTest extends AbstractGremlinTest {
     /**
      * Note: this is only a very lightweight test of writer/reader encoding. It is known that there are characters
      * which, when written by GraphMLWriter, cause parse errors for GraphMLReader. However, this happens uncommonly
-     * enough that is not yet known which characters those are.
+     * enough that is not yet known which characters those are. Only need to execute this test with TinkerGraph
+     * or other graphs that support user supplied identifiers.
      */
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
@@ -162,7 +169,6 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteClassicToGraphSON() throws Exception {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
