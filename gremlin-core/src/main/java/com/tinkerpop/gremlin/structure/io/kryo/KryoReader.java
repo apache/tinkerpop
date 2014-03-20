@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuadConsumer;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
+import com.tinkerpop.gremlin.util.function.TriFunction;
 import org.javatuples.Pair;
 
 import java.io.File;
@@ -71,7 +72,7 @@ public class KryoReader implements GraphReader {
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final Direction directionRequested,
-                             final BiFunction<Object, Object[], Vertex> vertexMaker,
+                             final TriFunction<Object, String, Object[], Vertex> vertexMaker,
                              final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         if (null != directionRequested && null == edgeMaker)
             throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
@@ -82,11 +83,10 @@ public class KryoReader implements GraphReader {
         final List<Object> vertexArgs = new ArrayList<>();
 
         final Object vertexId = kryo.readClassAndObject(input);
-        vertexArgs.add(Element.LABEL);
-        vertexArgs.add(input.readString());
+        final String label = input.readString();
 
         final List<Pair<String, KryoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
-        final Vertex v = vertexMaker.apply(vertexId, vertexArgs.toArray());
+        final Vertex v = vertexMaker.apply(vertexId, label, vertexArgs.toArray());
         setAnnotatedListValues(annotatedLists, v);
 
         final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
@@ -125,7 +125,7 @@ public class KryoReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final TriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
         return readVertex(inputStream, null, vertexMaker, null);
     }
 

@@ -308,13 +308,13 @@ public class IoTest extends AbstractGremlinTest {
         final KryoReader reader = new KryoReader.Builder(g)
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId(), vertexId);
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -350,13 +350,13 @@ public class IoTest extends AbstractGremlinTest {
         final AtomicBoolean called = new AtomicBoolean(false);
         final GraphSONReader reader = new GraphSONReader.Builder(g).build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -394,13 +394,13 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId(), vertexId);
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -450,13 +450,13 @@ public class IoTest extends AbstractGremlinTest {
         final GraphSONReader reader = new GraphSONReader.Builder(g).build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -506,13 +506,13 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId(), vertexId);
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -562,13 +562,13 @@ public class IoTest extends AbstractGremlinTest {
         final GraphSONReader reader = new GraphSONReader.Builder(g).build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -619,15 +619,15 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.BOTH,
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     if (g.getFeatures().vertex().supportsUserSuppliedIds())
                         assertEquals(v1.getId(), vertexId);
 
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -691,13 +691,13 @@ public class IoTest extends AbstractGremlinTest {
         final GraphSONReader reader = new GraphSONReader.Builder(g).build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.BOTH,
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -764,13 +764,13 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId(), vertexId);
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -825,13 +825,13 @@ public class IoTest extends AbstractGremlinTest {
         final GraphSONReader reader = new GraphSONReader.Builder(g).build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -888,13 +888,13 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId(), vertexId);
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -949,13 +949,13 @@ public class IoTest extends AbstractGremlinTest {
         final GraphSONReader reader = new GraphSONReader.Builder(g).build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
-                (vertexId, properties) -> {
+                (vertexId, label, properties) -> {
                     assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
-                    assertEquals(v1.getLabel(), ElementHelper.getLabelValue(properties).get());
+                    assertEquals(v1.getLabel(), label);
 
                     final Map<String, Object> m = new HashMap<>();
                     for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID) && !properties[i].equals(Element.LABEL))
+                        if (!properties[i].equals(Element.ID))
                             m.put((String) properties[i], properties[i + 1]);
                     }
 
@@ -1004,7 +1004,7 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.BOTH,
-                (vertexId, properties) -> null,
+                (vertexId, label, properties) -> null,
                 (edgeId, outId, inId, label, properties) -> null);
     }
 
@@ -1025,7 +1025,7 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.BOTH,
-                (vertexId, properties) -> null,
+                (vertexId, label, properties) -> null,
                 (edgeId, outId, inId, label, properties) -> null);
     }
 
@@ -1046,7 +1046,7 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
-                (vertexId, properties) -> null,
+                (vertexId, label, properties) -> null,
                 (edgeId, outId, inId, label, properties) -> null);
     }
 
@@ -1067,7 +1067,7 @@ public class IoTest extends AbstractGremlinTest {
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
-                (vertexId, properties) -> null,
+                (vertexId, label, properties) -> null,
                 (edgeId, outId, inId, label, properties) -> null);
     }
 

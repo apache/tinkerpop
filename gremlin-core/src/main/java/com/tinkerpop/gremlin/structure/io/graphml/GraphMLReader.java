@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
+import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -51,13 +52,13 @@ public class GraphMLReader implements GraphReader {
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
-                             final BiFunction<Object, Object[], Vertex> vertexMaker,
+                             final TriFunction<Object, String, Object[], Vertex> vertexMaker,
                              final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final BiFunction<Object, Object[], Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final TriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
