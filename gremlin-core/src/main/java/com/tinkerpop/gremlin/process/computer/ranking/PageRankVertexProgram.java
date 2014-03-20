@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.commons.configuration.Configuration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,16 +29,19 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private int totalIterations = 30;
     private boolean weighted = false;
 
-    protected PageRankVertexProgram() {
-        computeKeys.put(PAGE_RANK, KeyType.VARIABLE);
-        computeKeys.put(EDGE_COUNT, KeyType.CONSTANT);
+    private PageRankVertexProgram() {
+
     }
 
     public Map<String, KeyType> getComputeKeys() {
-        return computeKeys;
+        return VertexProgram.ofComputeKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
     }
 
-    public void setup(final Graph.Memory.Computer graphMemory) {
+    public Class<Double> getMessageClass() {
+        return Double.class;
+    }
+
+    public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory) {
 
     }
 
@@ -59,7 +63,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
                 messenger.sendMessage(vertex, this.messageType, newPageRank);
             else
                 messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getProperty(EDGE_COUNT).orElse(0.0d));
-
         }
     }
 

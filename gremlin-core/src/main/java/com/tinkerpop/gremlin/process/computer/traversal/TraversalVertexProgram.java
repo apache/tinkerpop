@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SSupplier;
+import org.apache.commons.configuration.Configuration;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,7 +38,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         this.traversalSupplier = traversalSupplier;
     }
 
-    public void setup(final Graph.Memory.Computer graphMemory) {
+    public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory) {
         graphMemory.setIfAbsent(TRAVERSAL, this.traversalSupplier);
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
         graphMemory.setIfAbsent(TRACK_PATHS, HolderOptimizer.trackPaths(this.traversalSupplier.get()));
@@ -104,6 +105,10 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             graphMemory.or(VOTE_TO_HALT, true);
             return false;
         }
+    }
+
+    public Class<M> getMessageClass() {
+        return (Class) (HolderOptimizer.trackPaths(this.traversalSupplier.get()) ? TraversalPathMessage.class : TraversalCounterMessage.class);
     }
 
     public Map<String, KeyType> getComputeKeys() {

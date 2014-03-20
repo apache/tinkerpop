@@ -89,7 +89,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                 throw new IllegalArgumentException("The provided execution type is not supported: " + this.configuration.getString(EXECUTION_TYPE));
 
             // execute the vertex program
-            this.vertexProgram.setup(g.memory());
+            this.vertexProgram.setup(this.configuration, g.memory());
             while (true) {
                 if (parallel)
                     StreamFactory.parallelStream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, this.messenger, g.memory()));

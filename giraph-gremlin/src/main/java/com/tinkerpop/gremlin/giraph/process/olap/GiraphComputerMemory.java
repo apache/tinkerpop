@@ -6,7 +6,9 @@ import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.EmptyGraph;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.master.MasterCompute;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
 
 import java.io.DataInput;
@@ -23,11 +25,10 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
 
     // TODO: vertex program needs to have ComputeKeys but for master as well.
 
-    private final Logger logger = Logger.getLogger(GiraphComputerMemory.class);
+    private final Logger LOGGER = Logger.getLogger(GiraphComputerMemory.class);
     private VertexProgram vertexProgram;
     private GiraphVertex giraphVertex;
-    private int counter = 0;
-    private long runtime = java.lang.System.currentTimeMillis();
+    private long runtime = System.currentTimeMillis();
 
     public GiraphComputerMemory() {
         this.giraphVertex = null;
@@ -47,14 +48,14 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
             this.registerPersistentAggregator("trackPaths", MemoryAggregator.class);
             this.registerAggregator("voteToHalt", MemoryAggregator.class);
             this.registerPersistentAggregator("traversal", MemoryAggregator.class);
-            this.vertexProgram.setup(this);
+            this.vertexProgram.setup(generateConfiguration(this.getConf()), this);
         } catch (Exception e) {
-            // java.lang.System.out.println(e + "***" + e.getMessage());
+            // System.out.println(e + "***" + e.getMessage());
         }
     }
 
     public void compute() {
-        //java.lang.System.out.println("SUPERSTEP: " + this.getSuperstep() + "----" + this.get("voteToHalt"));
+        //System.out.println("SUPERSTEP: " + this.getSuperstep() + "----" + this.get("voteToHalt"));
         if (!this.isInitialIteration()) {
             if (this.vertexProgram.terminate(this)) {
                 this.haltComputation();
@@ -67,7 +68,7 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public long getRuntime() {
-        return java.lang.System.currentTimeMillis() - this.runtime;
+        return System.currentTimeMillis() - this.runtime;
     }
 
     public Set<String> getVariables() {
@@ -94,7 +95,7 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public boolean and(final String variable, final boolean bool) {
-        //java.lang.System.out.println("ANDing: " + variable + ":" + bool);
+        //System.out.println("ANDing: " + variable + ":" + bool);
         if (null == this.giraphVertex) {
             this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.AND, ((RuleWritable) this.getAggregatedValue(variable)).<Boolean>getObject() && bool));
             return ((RuleWritable) this.getAggregatedValue(variable)).getObject();
@@ -105,7 +106,7 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public boolean or(final String variable, final boolean bool) {
-        //java.lang.System.out.println("ORing: " + variable + ":" + bool);
+        //System.out.println("ORing: " + variable + ":" + bool);
         if (null == this.giraphVertex) {
             this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.OR, ((RuleWritable) this.getAggregatedValue(variable)).<Boolean>getObject() || bool));
             return ((RuleWritable) this.getAggregatedValue(variable)).getObject();
@@ -129,6 +130,12 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     }
 
     public void readFields(final DataInput input) {
+    }
+
+    private static org.apache.commons.configuration.Configuration generateConfiguration(final Configuration configuration) {
+        final org.apache.commons.configuration.Configuration c = new BaseConfiguration();
+        configuration.iterator().forEachRemaining(e -> c.setProperty(e.getKey(), e.getValue()));
+        return c;
     }
 
 }

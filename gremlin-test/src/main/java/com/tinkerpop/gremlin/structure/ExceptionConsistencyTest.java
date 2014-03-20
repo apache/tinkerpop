@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -15,9 +16,9 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures.FEATURE_ANNOTATIONS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures.FEATURE_MEMORY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
+import static com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures.FEATURE_MEMORY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.*;
@@ -687,7 +688,12 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final Graph.Memory.Computer graphMemory) {
+        public Class getMessageClass() {
+            return Object.class;
+        }
+
+        @Override
+        public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory) {
         }
 
         @Override
@@ -720,7 +726,12 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final Graph.Memory.Computer graphMemory) {
+        public Class getMessageClass() {
+            return Object.class;
+        }
+
+        @Override
+        public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory) {
         }
 
         @Override

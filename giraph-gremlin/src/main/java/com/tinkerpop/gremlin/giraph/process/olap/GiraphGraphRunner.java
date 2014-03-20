@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphInputFormat;
 import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphOutputFormat;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -29,7 +30,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
     public int run(final String[] args) {
         try {
-            final GiraphJob job = new GiraphJob(this.giraphConfiguration, "GiraphGraph Play");
+            final GiraphJob job = new GiraphJob(this.giraphConfiguration, "GiraphGraph");
             job.getInternalJob().setJarByClass(GiraphJob.class);
             job.run(true);
         } catch (Exception e) {
@@ -52,7 +53,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
         //configuration.setProperty("gremlin.messageClass", Double.class);
 
         GraphComputer g = new GiraphGraphComputer();
-        //g.program(new PageRankVertexProgram.Builder().build()).configuration(configuration).submit();
-        g.program(new TraversalVertexProgram.Builder().traversal(() -> TinkerGraph.open().V().as("x").out().jump("x", h -> h.getLoops() < 2).value("name")).build()).configuration(configuration).submit();
+        g.program(new PageRankVertexProgram.Builder().build()).configuration(configuration).submit();
+        //g.program(new TraversalVertexProgram.Builder().traversal(() -> TinkerGraph.open().V().as("x").out().jump("x", h -> h.getLoops() < 2).value("name")).build()).configuration(configuration).submit();
     }
 }

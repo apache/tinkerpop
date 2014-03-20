@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      *
      * @param graphMemory The global GraphMemory of the GraphComputer
      */
-    public void setup(final Graph.Memory.Computer graphMemory);
+    public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory);
 
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
@@ -50,6 +51,8 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
     public boolean terminate(final Graph.Memory.Computer graphMemory);
 
     public Map<String, KeyType> getComputeKeys();
+
+    public Class<M> getMessageClass();
 
     public static Map<String, KeyType> ofComputeKeys(final Object... computeKeys) {
         if (computeKeys.length % 2 != 0)
