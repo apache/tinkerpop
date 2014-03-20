@@ -103,8 +103,6 @@ public interface Graph extends AutoCloseable {
 
             public long incr(final String variable, final long delta);
 
-            public long decr(final String variable, final long delta);
-
             public boolean and(final String variable, final boolean bool);
 
             public boolean or(final String variable, final boolean bool);
@@ -113,7 +111,7 @@ public interface Graph extends AutoCloseable {
                 return this.getIteration() == 0;
             }
 
-            public interface System extends Computer {
+            public interface Administrative extends Computer {
 
                 public void incrIteration();
 

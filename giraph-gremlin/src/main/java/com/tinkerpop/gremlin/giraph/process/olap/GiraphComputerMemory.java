@@ -121,10 +121,6 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
         return 1;
     }
 
-    public long decr(final String variable, final long delta) {
-        return 1;
-    }
-
     public Graph getGraph() {
         return EmptyGraph.instance();
     }

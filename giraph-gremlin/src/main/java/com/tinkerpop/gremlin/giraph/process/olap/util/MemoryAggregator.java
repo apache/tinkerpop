@@ -23,8 +23,6 @@ public class MemoryAggregator extends BasicAggregator<RuleWritable> {
                 this.setAggregatedValue(new RuleWritable(rule, this.getAggregatedValue().<Boolean>getObject() || (Boolean) object));
             } else if (rule.equals(RuleWritable.Rule.INCR)) {
                 this.setAggregatedValue(new RuleWritable(rule, this.getAggregatedValue().<Long>getObject() + (Long) object));
-            } else if (rule.equals(RuleWritable.Rule.DECR)) {
-                this.setAggregatedValue(new RuleWritable(rule, this.getAggregatedValue().<Long>getObject() - (Long) object));
             } else if (rule.equals(RuleWritable.Rule.SET_IF_ABSENT)) {
                 // should have been set earlier in first null; else do nothing
             } else {
