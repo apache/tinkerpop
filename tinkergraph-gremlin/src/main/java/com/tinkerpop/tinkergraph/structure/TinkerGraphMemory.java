@@ -60,28 +60,28 @@ public class TinkerGraphMemory implements Graph.Memory.Computer.Administrative, 
     public long incr(final String variable, final long delta) {
         final Object value = this.memory.get(variable);
         final long incremented = value == null ? delta : (Long) value + delta;
-        this.memory.put(variable, incremented);
+        this.set(variable, incremented);
         return incremented;
     }
 
     public boolean and(final String variable, final boolean bool) {
         final boolean value = (Boolean) this.memory.getOrDefault(variable, bool);
         final boolean returnValue = value && bool;
-        this.memory.put(variable, returnValue);
+        this.set(variable, returnValue);
         return returnValue;
     }
 
     public boolean or(final String variable, final boolean bool) {
         final boolean value = (Boolean) this.memory.getOrDefault(variable, bool);
         final boolean returnValue = value || bool;
-        this.memory.put(variable, returnValue);
+        this.set(variable, returnValue);
         return returnValue;
     }
 
     public void setIfAbsent(final String variable, final Object value) {
         if (this.memory.containsKey(variable))
             throw new IllegalStateException("The memory already has a value for key " + variable);
-        this.memory.put(variable, value);
+        this.set(variable, value);
     }
 
     public void set(final String variable, final Object value) {
