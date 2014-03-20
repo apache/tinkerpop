@@ -48,6 +48,17 @@ public class FeatureSupportTest  {
     public static class GraphFunctionalityTest extends AbstractGremlinTest {
 
         /**
+         * This isn't really a test.  It just pretty prints the features for the graph for reference.  Of course,
+         * if the implementing classes use anonymous inner classes it will
+         */
+        @Test
+        public void printTheFeatureList() {
+            System.out.println(String.format("Printing Features of %s for reference: ", g.getClass().getSimpleName()));
+            System.out.println(g.getFeatures());
+            assertTrue(true);
+        }
+
+        /**
          * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_COMPUTER} must call
          * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#graphComputerNotSupported()}.
          */

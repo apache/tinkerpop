@@ -7,9 +7,18 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.javatuples.Pair;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 
 /**
@@ -32,7 +41,10 @@ public class StringFactory {
     private static final String DASH = "-";
     private static final String ARROW = "->";
     private static final String EMPTY_PROPERTY = "p[empty]";
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
+    private static final String featuresStartWith = "supports";
+    private static final int prefixLength = featuresStartWith.length();
 
     /**
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Vertex}.
@@ -91,5 +103,37 @@ public class StringFactory {
     public static String memoryString(final Graph.Memory memory) {
         // todo: should this be owned by the implementation...it won't be consistent
         return memory.toString();
+    }
+
+    public static String featureString(final Graph.Features features) {
+        final StringBuilder sb = new StringBuilder("FEATURES");
+        final Predicate<Method> supportMethods = (m) -> m.getModifiers() == Modifier.PUBLIC && m.getName().startsWith(featuresStartWith) && !m.getName().equals(featuresStartWith);
+        sb.append(LINE_SEPARATOR);
+
+        Stream.of(Pair.with(Graph.Features.GraphFeatures.class, features.graph()),
+                Pair.with(Graph.Features.MemoryFeatures.class, features.graph().memory()),
+                Pair.with(Graph.Features.VertexFeatures.class, features.vertex()),
+                Pair.with(Graph.Features.VertexAnnotationFeatures.class, features.vertex().annotations()),
+                Pair.with(Graph.Features.VertexPropertyFeatures.class, features.vertex().properties()),
+                Pair.with(Graph.Features.EdgeFeatures.class, features.edge()),
+                Pair.with(Graph.Features.EdgePropertyFeatures.class, features.edge().properties())).forEach(p -> {
+            printFeatureTitle(p.getValue0(), sb);
+            Stream.of(p.getValue0().getMethods())
+                    .filter(supportMethods)
+                    .map(createTransform(p.getValue1()))
+                    .forEach(sb::append);
+        });
+
+        return sb.toString();
+    }
+
+    private static Function<Method, String> createTransform(final Graph.Features.FeatureSet features) {
+        return FunctionUtils.wrap((m) ->  ">-- " + m.getName().substring(prefixLength) + ": " + m.invoke(features, null).toString() + LINE_SEPARATOR);
+    }
+
+    private static void printFeatureTitle(final Class<? extends Graph.Features.FeatureSet> featureClass, final StringBuilder sb) {
+        sb.append("> ");
+        sb.append(featureClass.getSimpleName());
+        sb.append(LINE_SEPARATOR);
     }
 }

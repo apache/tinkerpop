@@ -177,23 +177,30 @@ public class TinkerGraph implements Graph, Serializable {
     public static class TinkerGraphFeatures implements Features {
         @Override
         public GraphFeatures graph() {
-            return new GraphFeatures() {
-                @Override
-                public boolean supportsTransactions() {
-                    return false;
-                }
+            return new TinkerGraphGraphFeatures();
+        }
 
-                @Override
-                public boolean supportsPersistence() {
-                    // todo: temporary.........
-                    return false;
-                }
+        @Override
+        public String toString() {
+            return StringFactory.featureString(this);
+        }
+    }
 
-                @Override
-                public boolean supportsThreadedTransactions() {
-                    return false;
-                }
-            };
+    public static class TinkerGraphGraphFeatures implements Features.GraphFeatures {
+        @Override
+        public boolean supportsTransactions() {
+            return false;
+        }
+
+        @Override
+        public boolean supportsPersistence() {
+            // todo: temporary.........
+            return false;
+        }
+
+        @Override
+        public boolean supportsThreadedTransactions() {
+            return false;
         }
     }
 
