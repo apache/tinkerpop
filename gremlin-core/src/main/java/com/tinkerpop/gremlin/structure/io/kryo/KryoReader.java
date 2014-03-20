@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 
@@ -33,20 +34,27 @@ import java.util.stream.IntStream;
  * The {@link GraphReader} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
  * non-lossy in terms of Gremlin Structure to Gremlin Structure migrations (assuming both structure implementations
  * support the same graph features).
+ * <br/>
+ * This implementation is not thread-safe.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoReader implements GraphReader {
+    public static final int DEFAULT_BATCH_SIZE = 1000;
     private final Kryo kryo = makeKryo();
     private final Graph graphToWriteTo;
+    private final int batchSize;
 
     private final File tempFile;
     private final Map<Object, Object> idMap;
 
-    private KryoReader(final Graph g, final Map<Object, Object> idMap, final File tempFile) {
+    final AtomicLong counter = new AtomicLong(0);
+
+    private KryoReader(final Graph g, final Map<Object, Object> idMap, final File tempFile, final int batchSize) {
         this.graphToWriteTo = g;
         this.idMap = idMap;
         this.tempFile = tempFile;
+        this.batchSize = batchSize;
 
         // todo: centralize kryo instance creation
         // todo: need way to register custom types.
@@ -137,8 +145,7 @@ public class KryoReader implements GraphReader {
 
     @Override
     public void readGraph(final InputStream inputStream) throws IOException {
-        // todo: get BatchGraph in here when TinkerPop3 has it
-
+        this.counter.set(0);
         final Input input = new Input(inputStream);
         readHeader(input);
         final Output output = new Output(new FileOutputStream(tempFile));
@@ -156,6 +163,9 @@ public class KryoReader implements GraphReader {
                     final Graph.Memory memory = graphToWriteTo.memory();
                     memMap.forEach(memory::set);
                 }
+
+                if (graphToWriteTo.getFeatures().graph().supportsTransactions())
+                    graphToWriteTo.tx().commit();
             }
 
             final boolean hasSomeVertices = input.readBoolean();
@@ -175,6 +185,8 @@ public class KryoReader implements GraphReader {
                     setAnnotatedListValues(annotatedLists, v);
 
                     idMap.put(current, v.getId());
+
+                    considerCommit();
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
@@ -209,9 +221,17 @@ public class KryoReader implements GraphReader {
         try {
             readFromTempEdges(edgeInput);
         } finally {
+            if (graphToWriteTo.getFeatures().graph().supportsTransactions())
+                graphToWriteTo.tx().commit();
             edgeInput.close();
             deleteTempFileSilently();
         }
+    }
+
+    private void considerCommit() {
+        if (graphToWriteTo.getFeatures().graph().supportsTransactions() &&
+            counter.incrementAndGet() % batchSize == 0)
+            graphToWriteTo.tx().commit();
     }
 
     private void readHeader(final Input input) throws IOException {
@@ -335,6 +355,7 @@ public class KryoReader implements GraphReader {
                 readElementProperties(input, edgeArgs);
 
                 vOut.addEdge(edgeLabel, inV, edgeArgs.toArray());
+                considerCommit();
 
                 inId = kryo.readClassAndObject(input);
             }
@@ -379,11 +400,17 @@ public class KryoReader implements GraphReader {
         private Graph g;
         private Map<Object, Object> idMap;
         private File tempFile;
+        private int batchSize = DEFAULT_BATCH_SIZE;
 
         public Builder(final Graph g) {
             this.g = g;
             this.idMap = new HashMap<>();
             this.tempFile = new File(UUID.randomUUID() + ".tmp");
+        }
+
+        public Builder setBatchSize(final int batchSize) {
+            this.batchSize = batchSize;
+            return this;
         }
 
         /**
@@ -409,7 +436,7 @@ public class KryoReader implements GraphReader {
         }
 
         public KryoReader build() {
-            return new KryoReader(g, idMap, tempFile);
+            return new KryoReader(g, idMap, tempFile, batchSize);
         }
     }
 

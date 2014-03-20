@@ -27,22 +27,23 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONReader implements GraphReader {
+    public static final int DEFAULT_BATCH_SIZE = 1000;
     private final Graph graphToWriteTo;
     private final ObjectMapper mapper;
+    private final int batchSize;
 
-    public GraphSONReader(final Graph g, final ObjectMapper mapper) {
+    public GraphSONReader(final Graph g, final ObjectMapper mapper, final int batchSize) {
         this.graphToWriteTo = g;
         this.mapper = mapper;
+        this.batchSize = batchSize;
     }
 
     @Override
     public void readGraph(final InputStream inputStream) throws IOException {
         final JsonFactory factory = mapper.getFactory();
         final JsonParser parser = factory.createParser(inputStream);
-
-        // todo: configurable batchs ize
         final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
-                .bufferSize(10000).build();
+                .bufferSize(batchSize).build();
 
         if (parser.nextToken() != JsonToken.START_OBJECT)
             throw new IOException("Expected data to start with an Object");
@@ -155,6 +156,7 @@ public class GraphSONReader implements GraphReader {
     public static class Builder {
         private final Graph g;
         private ObjectMapper mapper = new GraphSONObjectMapper();
+        private int batchSize = DEFAULT_BATCH_SIZE;
 
         public Builder(final Graph g) {
             this.g = g;
@@ -166,8 +168,13 @@ public class GraphSONReader implements GraphReader {
             return this;
         }
 
+        public Builder setBatchSize(final int batchSize) {
+            this.batchSize = batchSize;
+            return this;
+        }
+
         public GraphSONReader build() {
-            return new GraphSONReader(g, mapper);
+            return new GraphSONReader(g, mapper, batchSize);
         }
     }
 }
