@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
+import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuadConsumer;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import org.javatuples.Pair;
@@ -40,17 +41,16 @@ import java.util.stream.IntStream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoReader implements GraphReader {
-    public static final int DEFAULT_BATCH_SIZE = 1000;
     private final Kryo kryo = makeKryo();
     private final Graph graphToWriteTo;
-    private final int batchSize;
+    private final long batchSize;
 
     private final File tempFile;
     private final Map<Object, Object> idMap;
 
     final AtomicLong counter = new AtomicLong(0);
 
-    private KryoReader(final Graph g, final Map<Object, Object> idMap, final File tempFile, final int batchSize) {
+    private KryoReader(final Graph g, final Map<Object, Object> idMap, final File tempFile, final long batchSize) {
         this.graphToWriteTo = g;
         this.idMap = idMap;
         this.tempFile = tempFile;
@@ -400,7 +400,7 @@ public class KryoReader implements GraphReader {
         private Graph g;
         private Map<Object, Object> idMap;
         private File tempFile;
-        private int batchSize = DEFAULT_BATCH_SIZE;
+        private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
 
         public Builder(final Graph g) {
             this.g = g;
@@ -408,7 +408,7 @@ public class KryoReader implements GraphReader {
             this.tempFile = new File(UUID.randomUUID() + ".tmp");
         }
 
-        public Builder setBatchSize(final int batchSize) {
+        public Builder batchSize(final long batchSize) {
             this.batchSize = batchSize;
             return this;
         }

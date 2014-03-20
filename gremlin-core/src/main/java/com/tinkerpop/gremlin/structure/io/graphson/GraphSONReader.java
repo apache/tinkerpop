@@ -27,12 +27,11 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONReader implements GraphReader {
-    public static final int DEFAULT_BATCH_SIZE = 1000;
     private final Graph graphToWriteTo;
     private final ObjectMapper mapper;
-    private final int batchSize;
+    private final long batchSize;
 
-    public GraphSONReader(final Graph g, final ObjectMapper mapper, final int batchSize) {
+    public GraphSONReader(final Graph g, final ObjectMapper mapper, final long batchSize) {
         this.graphToWriteTo = g;
         this.mapper = mapper;
         this.batchSize = batchSize;
@@ -156,7 +155,7 @@ public class GraphSONReader implements GraphReader {
     public static class Builder {
         private final Graph g;
         private ObjectMapper mapper = new GraphSONObjectMapper();
-        private int batchSize = DEFAULT_BATCH_SIZE;
+        private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
 
         public Builder(final Graph g) {
             this.g = g;
@@ -168,7 +167,7 @@ public class GraphSONReader implements GraphReader {
             return this;
         }
 
-        public Builder setBatchSize(final int batchSize) {
+        public Builder batchSize(final long batchSize) {
             this.batchSize = batchSize;
             return this;
         }

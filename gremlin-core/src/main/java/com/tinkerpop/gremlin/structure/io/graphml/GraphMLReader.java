@@ -31,7 +31,6 @@ import java.util.function.BiFunction;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphMLReader implements GraphReader {
-    public static final int DEFAULT_BATCH_SIZE = 1000;
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
     private final Graph graphToWriteTo;
@@ -39,10 +38,10 @@ public class GraphMLReader implements GraphReader {
     private final Optional<String> vertexIdKey;
     private final Optional<String> edgeIdKey;
     private final Optional<String> edgeLabelKey;
-    private final int batchSize;
+    private final long batchSize;
 
     private GraphMLReader(final Graph graph, final String vertexIdKey, final String edgeIdKey,
-                          final String edgeLabelKey, final int batchSize) {
+                          final String edgeLabelKey, final long batchSize) {
         this.graphToWriteTo = graph;
         this.vertexIdKey = Optional.ofNullable(vertexIdKey);
         this.edgeIdKey = Optional.ofNullable(edgeIdKey);
@@ -239,7 +238,7 @@ public class GraphMLReader implements GraphReader {
         private String vertexIdKey = null;
         private String edgeIdKey = null;
         private String edgeLabelKey = null;
-        private int batchSize = DEFAULT_BATCH_SIZE;
+        private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
 
         public Builder(final Graph g) {
             if (null == g)
@@ -248,22 +247,22 @@ public class GraphMLReader implements GraphReader {
             this.g = g;
         }
 
-        public Builder setVertexIdKey(final String vertexIdKey) {
+        public Builder vertexIdKey(final String vertexIdKey) {
             this.vertexIdKey = vertexIdKey;
             return this;
         }
 
-        public Builder setEdgeIdKey(final String edgeIdKey) {
+        public Builder edgeIdKey(final String edgeIdKey) {
             this.edgeIdKey = edgeIdKey;
             return this;
         }
 
-        public Builder setEdgeLabelKey(final String edgeLabelKey) {
+        public Builder edgeLabelKey(final String edgeLabelKey) {
             this.edgeLabelKey = edgeLabelKey;
             return this;
         }
 
-        public Builder setBatchSize(final int batchSize) {
+        public Builder batchSize(final long batchSize) {
             this.batchSize = batchSize;
             return this;
         }
