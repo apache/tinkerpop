@@ -53,8 +53,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
         final Traversal traversal = graphMemory.<SSupplier<Traversal>>get(TRAVERSAL).get();
-        traversal.iterate();  // TODO: this needs to go away
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
+        startStep.clear();
         final String future = (traversal.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
 
         // TODO: Was doing some HasContainer.testAll() stuff prior to the big change (necessary?)
@@ -80,9 +80,9 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         graphMemory.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
-    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory graphMemory) {
+    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
         final Traversal traversal = graphMemory.<SSupplier<Traversal>>get(TRAVERSAL).get();
-        traversal.iterate(); // TODO: this needs to go away
+        ((GraphStep) traversal.getSteps().get(0)).clear();
         if (graphMemory.<Boolean>get(TRACK_PATHS)) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
             graphMemory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));

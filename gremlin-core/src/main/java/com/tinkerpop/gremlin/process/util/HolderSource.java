@@ -6,4 +6,6 @@ package com.tinkerpop.gremlin.process.util;
 public interface HolderSource {
 
     public void generateHolderIterator(final boolean trackPaths);
+
+    public void clear();
 }

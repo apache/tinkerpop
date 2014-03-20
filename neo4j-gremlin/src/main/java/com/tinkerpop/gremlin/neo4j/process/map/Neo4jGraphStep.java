@@ -47,6 +47,10 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
 
     }
 
+    public void clear() {
+        this.starts.clear();
+    }
+
     private Iterator<Edge> edges() {
         this.graph.tx().readWrite();
         final HasContainer indexedContainer = getIndexKey(Edge.class);
@@ -81,7 +85,7 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         final AutoIndexer indexer = this.graph.getRawGraph().index().getNodeAutoIndexer();
         if (indexer.isEnabled() && indexer.getAutoIndexedProperties().contains(indexedContainer.key))
             return StreamFactory.stream(this.graph.getRawGraph().index().getNodeAutoIndexer().getAutoIndex().get(indexedContainer.key, indexedContainer.value).iterator())
-                            .map(n -> new Neo4jVertex(n, this.graph));
+                    .map(n -> new Neo4jVertex(n, this.graph));
         else
             throw new IllegalStateException("Index not here"); // todo: unecessary check/throw?
     }
