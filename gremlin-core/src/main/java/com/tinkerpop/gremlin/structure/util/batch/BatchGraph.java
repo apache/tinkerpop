@@ -51,7 +51,7 @@ public class BatchGraph<T extends Graph> implements Graph {
     /**
      * Default buffer size
      */
-    public static final long DEFAULT_BUFFER_SIZE = 100000;
+    public static final long DEFAULT_BUFFER_SIZE = 10000;
 
     private final T baseGraph;
 
