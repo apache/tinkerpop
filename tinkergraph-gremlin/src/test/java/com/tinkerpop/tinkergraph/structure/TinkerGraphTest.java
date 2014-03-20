@@ -92,14 +92,14 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicGraph() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.gio");
-        new KryoWriter.Builder(TinkerFactory.createClassic()).build().writeGraph(os);
+        new KryoWriter.Builder().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
     @Test
     public void shouldWriteClassicGraphAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.json");
-        new GraphSONWriter.Builder(TinkerFactory.createClassic()).build().writeGraph(os);
+        new GraphSONWriter.Builder().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
@@ -115,7 +115,7 @@ public class TinkerGraphTest {
         }
 
         final OutputStream os = new FileOutputStream("/tmp/graph-example-2.gio");
-        new KryoWriter.Builder(g).build().writeGraph(os);
+        new KryoWriter.Builder().build().writeGraph(os, g);
         os.close();
     }
 
@@ -126,7 +126,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernGraph() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-5.gio");
-        new KryoWriter.Builder(TinkerFactory.createModern()).build().writeGraph(os);
+        new KryoWriter.Builder().build().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
 

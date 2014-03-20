@@ -34,7 +34,6 @@ import java.util.Optional;
 public class GraphMLWriter implements GraphWriter {
     private static final Comparator<Element> ELEMENT_COMPARATOR = Comparator.comparing(e -> e.getId().toString(), String.CASE_INSENSITIVE_ORDER);
     private final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
-    private final Graph graph;
     private boolean normalize = false;
 
     private final Optional<Map<String, String>> vertexKeyTypes;
@@ -42,10 +41,9 @@ public class GraphMLWriter implements GraphWriter {
     private final Optional<String> xmlSchemaLocation;
     private final Optional<String> edgeLabelKey;
 
-    private GraphMLWriter(final Graph graph, final boolean normalize, final Map<String, String> vertexKeyTypes,
+    private GraphMLWriter(final boolean normalize, final Map<String, String> vertexKeyTypes,
                           final Map<String, String> edgeKeyTypes, final String xmlSchemaLocation,
                           final String edgeLabelKey) {
-        this.graph = graph;
         this.normalize = normalize;
         this.vertexKeyTypes = Optional.ofNullable(vertexKeyTypes);
         this.edgeKeyTypes = Optional.ofNullable(edgeKeyTypes);
@@ -75,9 +73,9 @@ public class GraphMLWriter implements GraphWriter {
      * @throws java.io.IOException thrown if there is an error generating the GraphML data
      */
     @Override
-    public void writeGraph(final OutputStream outputStream) throws IOException {
-        final Map<String, String> identifiedVertexKeyTypes = this.vertexKeyTypes.orElseGet(this::determineVertexTypes);
-        final Map<String, String> identifiedEdgeKeyTypes = this.edgeKeyTypes.orElseGet(this::determineEdgeTypes);
+    public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
+        final Map<String, String> identifiedVertexKeyTypes = this.vertexKeyTypes.orElseGet(() -> this.determineVertexTypes(g));
+        final Map<String, String> identifiedEdgeKeyTypes = this.edgeKeyTypes.orElseGet(() -> this.determineEdgeTypes(g));
 
         // adding the edge label key will push the label into the data portion of the graphml otherwise it
         // will live with the edge data itself (which won't validate against the graphml schema)
@@ -98,8 +96,8 @@ public class GraphMLWriter implements GraphWriter {
             writer.writeAttribute(GraphMLTokens.ID, GraphMLTokens.G);
             writer.writeAttribute(GraphMLTokens.EDGEDEFAULT, GraphMLTokens.DIRECTED);
 
-            writeVertices(writer);
-            writeEdges(writer);
+            writeVertices(writer, g);
+            writeEdges(writer, g);
 
             writer.writeEndElement(); // graph
             writer.writeEndElement(); // graphml
@@ -147,7 +145,7 @@ public class GraphMLWriter implements GraphWriter {
         }
     }
 
-    private void writeEdges(final XMLStreamWriter writer) throws XMLStreamException {
+    private void writeEdges(final XMLStreamWriter writer, final Graph graph) throws XMLStreamException {
         if (normalize) {
             final List<Edge> edges = graph.E().toList();
             Collections.sort(edges, ELEMENT_COMPARATOR);
@@ -204,8 +202,8 @@ public class GraphMLWriter implements GraphWriter {
         }
     }
 
-    private void writeVertices(final XMLStreamWriter writer) throws XMLStreamException {
-        final Iterable<Vertex> vertices = getVerticesAndNormalizeIfRequired();
+    private void writeVertices(final XMLStreamWriter writer, final Graph graph) throws XMLStreamException {
+        final Iterable<Vertex> vertices = getVerticesAndNormalizeIfRequired(graph);
         for (Vertex vertex : vertices) {
             writer.writeStartElement(GraphMLTokens.NODE);
             writer.writeAttribute(GraphMLTokens.ID, vertex.getId().toString());
@@ -234,7 +232,7 @@ public class GraphMLWriter implements GraphWriter {
         return keys;
     }
 
-    private Iterable<Vertex> getVerticesAndNormalizeIfRequired() {
+    private Iterable<Vertex> getVerticesAndNormalizeIfRequired(final Graph graph) {
         final Iterable<Vertex> vertices;
         if (normalize) {
             vertices = new ArrayList<>();
@@ -283,7 +281,7 @@ public class GraphMLWriter implements GraphWriter {
                 GraphMLTokens.GRAPHML_XMLNS + " " + this.xmlSchemaLocation.orElse(GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION));
     }
 
-    private Map<String, String> determineVertexTypes() {
+    private Map<String, String> determineVertexTypes(final Graph graph) {
         final Map<String, String> vertexKeyTypes = new HashMap<>();
         for (Vertex vertex : graph.V().toList()) {
             for (String key : vertex.getPropertyKeys()) {
@@ -296,7 +294,7 @@ public class GraphMLWriter implements GraphWriter {
         return vertexKeyTypes;
     }
 
-    private Map<String, String> determineEdgeTypes() {
+    private Map<String, String> determineEdgeTypes(final Graph graph) {
         final Map<String, String> edgeKeyTypes = new HashMap<>();
         for (Edge edge : graph.E().toList()) {
             for (String key : edge.getPropertyKeys()) {
@@ -326,22 +324,12 @@ public class GraphMLWriter implements GraphWriter {
     }
 
     public static final class Builder {
-        private final Graph g;
         private boolean normalize = false;
         private Map<String, String> vertexKeyTypes = null;
         private Map<String, String> edgeKeyTypes = null;
 
         private String xmlSchemaLocation = null;
         private String edgeLabelKey = null;
-
-        /**
-         * Constructs a GraphMLWriter.
-         *
-         * @param g The Graph instance to write out.
-         */
-        public Builder(final Graph g) {
-            this.g = Optional.ofNullable(g).orElseThrow(() -> new IllegalArgumentException("Graph argument cannot be null"));
-        }
 
         /**
          * Normalized output is deterministic with respect to the order of elements and properties in the resulting
@@ -358,7 +346,7 @@ public class GraphMLWriter implements GraphWriter {
         /**
          * Map of the data types of the vertex keys.
          */
-        public Builder setVertexKeyTypes(final Map<String, String> vertexKeyTypes) {
+        public Builder vertexKeyTypes(final Map<String, String> vertexKeyTypes) {
             this.vertexKeyTypes = vertexKeyTypes;
             return this;
         }
@@ -366,12 +354,12 @@ public class GraphMLWriter implements GraphWriter {
         /**
          * Map of the data types of the edge keys.
          */
-        public Builder setEdgeKeyTypes(final Map<String, String> edgeKeyTypes) {
+        public Builder edgeKeyTypes(final Map<String, String> edgeKeyTypes) {
             this.edgeKeyTypes = edgeKeyTypes;
             return this;
         }
 
-        public Builder setXmlSchemaLocation(final String xmlSchemaLocation) {
+        public Builder xmlSchemaLocation(final String xmlSchemaLocation) {
             this.xmlSchemaLocation = xmlSchemaLocation;
             return this;
         }
@@ -384,13 +372,13 @@ public class GraphMLWriter implements GraphWriter {
          *
          * @param edgeLabelKey if the label of an edge will be handled by the data property.
          */
-        public Builder setEdgeLabelKey(final String edgeLabelKey) {
+        public Builder edgeLabelKey(final String edgeLabelKey) {
             this.edgeLabelKey = edgeLabelKey;
             return this;
         }
 
         public GraphMLWriter build() {
-            return new GraphMLWriter(g, normalize, vertexKeyTypes, edgeKeyTypes, xmlSchemaLocation, edgeLabelKey);
+            return new GraphMLWriter(normalize, vertexKeyTypes, edgeKeyTypes, xmlSchemaLocation, edgeLabelKey);
         }
     }
 }

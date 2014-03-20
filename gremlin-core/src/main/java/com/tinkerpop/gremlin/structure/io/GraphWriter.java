@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.io;
 
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
@@ -17,7 +18,7 @@ public interface GraphWriter {
     /**
      * Write the entire graph to a stream.
      */
-    public void writeGraph(final OutputStream outputStream) throws IOException;
+    public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException;
 
     /**
      * Write a vertex to a stream with its associated edges.  Only write edges as defined by the requested direction.

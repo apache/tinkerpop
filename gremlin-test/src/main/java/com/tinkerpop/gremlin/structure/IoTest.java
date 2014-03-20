@@ -80,8 +80,8 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphML() throws Exception {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        final GraphMLWriter w = new GraphMLWriter.Builder(g).setNormalize(true).build();
-        w.writeGraph(bos);
+        final GraphMLWriter w = new GraphMLWriter.Builder().setNormalize(true).build();
+        w.writeGraph(bos, g);
 
         final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-normalized.xml"));
         assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
@@ -98,10 +98,10 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphMLWithEdgeLabel() throws Exception {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        final GraphMLWriter w = new GraphMLWriter.Builder(g)
+        final GraphMLWriter w = new GraphMLWriter.Builder()
                 .setNormalize(true)
-                .setEdgeLabelKey("label").build();
-        w.writeGraph(bos);
+                .edgeLabelKey("label").build();
+        w.writeGraph(bos, g);
 
         String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-schema-valid.xml"));
         assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
@@ -120,11 +120,11 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v = g.addVertex(Element.ID, "1");
         v.setProperty("text", "\u00E9");
 
-        final GraphMLWriter w = new GraphMLWriter.Builder(g).build();
+        final GraphMLWriter w = new GraphMLWriter.Builder().build();
 
         final File f = File.createTempFile("test", "txt");
         try (final OutputStream out = new FileOutputStream(f)) {
-            w.writeGraph(out);
+            w.writeGraph(out, g);
         }
 
         validateXmlAgainstGraphMLXsd(f);
@@ -154,8 +154,8 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteClassicToKryo() throws Exception {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
-        writer.writeGraph(os);
+        final KryoWriter writer = new KryoWriter.Builder().build();
+        writer.writeGraph(os, g);
         os.close();
 
         final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
@@ -178,8 +178,8 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteClassicToGraphSON() throws Exception {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
-        writer.writeGraph(os);
+        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
+        writer.writeGraph(os, g);
         os.close();
 
         final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
@@ -202,8 +202,8 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldReadWriteModernToKryo() throws Exception {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
-        writer.writeGraph(os);
+        final KryoWriter writer = new KryoWriter.Builder().build();
+        writer.writeGraph(os, g);
         os.close();
 
         final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
@@ -227,7 +227,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeEdge(os, e);
         os.close();
 
@@ -261,7 +261,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
         writer.writeEdge(os, e);
         os.close();
 
@@ -299,7 +299,7 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeVertex(os, v1);
         os.close();
 
@@ -343,7 +343,7 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
         writer.writeVertex(os, v1);
         os.close();
 
@@ -384,7 +384,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friends", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.OUT);
         os.close();
 
@@ -441,7 +441,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("friends", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.OUT);
         os.close();
 
@@ -496,7 +496,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v2.addEdge("friends", v1, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 
@@ -553,7 +553,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e = v2.addEdge("friends", v1, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 
@@ -609,7 +609,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.BOTH);
         os.close();
 
@@ -679,7 +679,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.BOTH);
         os.close();
 
@@ -754,7 +754,7 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 1.0f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.BOTH);
         os.close();
 
@@ -815,7 +815,7 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 1.0f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.BOTH);
         os.close();
 
@@ -878,7 +878,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.BOTH);
         os.close();
 
@@ -939,7 +939,7 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder(g).build();
+        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.BOTH);
         os.close();
 
@@ -996,7 +996,7 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.OUT);
         os.close();
 
@@ -1017,7 +1017,7 @@ public class IoTest extends AbstractGremlinTest {
         v2.addEdge("friends", v1, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 
@@ -1038,7 +1038,7 @@ public class IoTest extends AbstractGremlinTest {
         v2.addEdge("friends", v1, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 
@@ -1059,7 +1059,7 @@ public class IoTest extends AbstractGremlinTest {
         v1.addEdge("friends", v2, "weight", 0.5f);
 
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder(g).build();
+        final KryoWriter writer = new KryoWriter.Builder().build();
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 

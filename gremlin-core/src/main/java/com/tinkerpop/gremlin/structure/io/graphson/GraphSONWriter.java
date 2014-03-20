@@ -19,16 +19,14 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONWriter implements GraphWriter {
-    private final Graph g;
     private final ObjectMapper mapper;
 
-    private GraphSONWriter(final Graph g, final ObjectMapper mapper) {
-        this.g = g;
+    private GraphSONWriter(final ObjectMapper mapper) {
         this.mapper = mapper;
     }
 
     @Override
-    public void writeGraph(final OutputStream outputStream) throws IOException {
+    public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
         this.mapper.writeValue(outputStream, new GraphSONGraph(g));
     }
 
@@ -48,12 +46,7 @@ public class GraphSONWriter implements GraphWriter {
     }
 
     public static class Builder {
-        private final Graph g;
         private ObjectMapper mapper = new GraphSONObjectMapper();
-
-        public Builder(final Graph g) {
-            this.g = g;
-        }
 
         public Builder customSerializer(final SimpleModule module) {
             this.mapper = new GraphSONObjectMapper(
@@ -62,7 +55,7 @@ public class GraphSONWriter implements GraphWriter {
         }
 
         public GraphSONWriter build() {
-            return new GraphSONWriter(g, mapper);
+            return new GraphSONWriter(mapper);
         }
     }
 }

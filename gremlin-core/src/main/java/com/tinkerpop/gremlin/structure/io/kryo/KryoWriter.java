@@ -28,13 +28,10 @@ import java.util.Optional;
  */
 public class KryoWriter implements GraphWriter {
     private final Kryo kryo = new Kryo();
-    private final Graph graph;
 
     static final byte[] GIO = "gio".getBytes();
 
-    private KryoWriter(final Graph g) {
-        this.graph = g;
-
+    private KryoWriter() {
         // todo: centralize kryo instance creation
         // todo: need way to register custom types.
         // todo: hardcode types
@@ -49,16 +46,16 @@ public class KryoWriter implements GraphWriter {
     }
 
     @Override
-    public void writeGraph(final OutputStream outputStream) throws IOException {
+    public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
         final Output output = new Output(outputStream);
         writeHeader(output);
 
-        final boolean supportsGraphMemory = graph.getFeatures().graph().supportsMemory();
+        final boolean supportsGraphMemory = g.getFeatures().graph().supportsMemory();
         output.writeBoolean(supportsGraphMemory);
         if (supportsGraphMemory)
-            kryo.writeObject(output, new HashMap(graph.memory().asMap()));
+            kryo.writeObject(output, new HashMap(g.memory().asMap()));
 
-        final Iterator<Vertex> vertices = graph.V();
+        final Iterator<Vertex> vertices = g.V();
         final boolean hasSomeVertices = vertices.hasNext();
         output.writeBoolean(hasSomeVertices);
         while (vertices.hasNext()) {
@@ -178,14 +175,8 @@ public class KryoWriter implements GraphWriter {
     }
 
     public static class Builder {
-        private final Graph graph;
-
-        public Builder(final Graph g) {
-            this.graph = g;
-        }
-
         public KryoWriter build() {
-            return new KryoWriter(this.graph);
+            return new KryoWriter();
         }
     }
 }

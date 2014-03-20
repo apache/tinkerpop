@@ -20,7 +20,7 @@ public class TinkerGraphVertexWriter extends VertexWriter {
     KryoWriter writer;
 
     public void initialize(final TaskAttemptContext context) {
-        this.writer = new KryoWriter.Builder(TinkerGraph.open()).build();
+        this.writer = new KryoWriter.Builder().build();
     }
 
     public void writeVertex(final Vertex vertex) throws IOException {
