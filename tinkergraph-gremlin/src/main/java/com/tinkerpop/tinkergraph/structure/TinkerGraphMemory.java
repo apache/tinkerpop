@@ -64,23 +64,16 @@ public class TinkerGraphMemory implements Graph.Memory.Computer.Administrative, 
         return incremented;
     }
 
-    public long decr(final String variable, final long delta) {
-        final Object value = this.memory.get(variable);
-        final long decremented = value == null ? delta : (Long) value - delta;
-        this.memory.put(variable, decremented);
-        return decremented;
-    }
-
     public boolean and(final String variable, final boolean bool) {
         final boolean value = (Boolean) this.memory.getOrDefault(variable, bool);
-        final boolean returnValue = value & bool;
+        final boolean returnValue = value && bool;
         this.memory.put(variable, returnValue);
         return returnValue;
     }
 
     public boolean or(final String variable, final boolean bool) {
         final boolean value = (Boolean) this.memory.getOrDefault(variable, bool);
-        final boolean returnValue = value | bool;
+        final boolean returnValue = value || bool;
         this.memory.put(variable, returnValue);
         return returnValue;
     }
