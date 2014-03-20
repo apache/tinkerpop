@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiFunction;
 
 /**
  * GraphMLReader writes the data from a GraphML stream to a graph.  Note that this format is lossy, in the sense that data

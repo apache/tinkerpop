@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 /**
@@ -91,7 +90,7 @@ public class GraphSONReader implements GraphReader {
                              final TriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
         final Map<String,Object> vertexData = mapper.readValue(inputStream, new TypeReference<Map<String,Object>>(){});
         final Map<String, Map<String, Object>> properties = (Map<String,Map<String, Object>>) vertexData.get(GraphSONModule.TOKEN_PROPERTIES);
-        final Object[] propsAsArray = properties.entrySet().stream().flatMap(e->Stream.of(e.getKey(), e.getValue().get("value"))).toArray();
+        final Object[] propsAsArray = properties.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue().get("value"))).toArray();
         return vertexMaker.apply(vertexData.get(GraphSONModule.TOKEN_ID), vertexData.get(GraphSONModule.TOKEN_LABEL).toString(), propsAsArray);
     }
 

@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.function.BiFunction;
 
 /**
  * Functions for reading a graph and its graph elements from a different format.
