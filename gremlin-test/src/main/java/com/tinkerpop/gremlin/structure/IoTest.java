@@ -131,6 +131,7 @@ public class IoTest extends AbstractGremlinTest {
 
         // reusing the same config used for creation of "g".
         final Configuration configuration = graphProvider.newGraphConfiguration("g2");
+        graphProvider.clear(null, configuration);
         final Graph g2 = graphProvider.openTestGraph(configuration);
         final GraphMLReader r = new GraphMLReader.Builder(g2).build();
 
@@ -157,12 +158,17 @@ public class IoTest extends AbstractGremlinTest {
         writer.writeGraph(os);
         os.close();
 
-        final Graph g1 = graphProvider.openTestGraph(graphProvider.newGraphConfiguration("readGraph"));
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        graphProvider.clear(null, configuration);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
         final KryoReader reader = new KryoReader.Builder(g1)
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readGraph(new ByteArrayInputStream(os.toByteArray()));
 
         assertClassicGraph(g1, false);
+
+        // need to manually close the "g1" instance
+        graphProvider.clear(g1, configuration);
     }
 
     @Test
@@ -176,11 +182,16 @@ public class IoTest extends AbstractGremlinTest {
         writer.writeGraph(os);
         os.close();
 
-        final Graph g1 = graphProvider.openTestGraph(graphProvider.newGraphConfiguration("readGraph"));
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        graphProvider.clear(null, configuration);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
         final GraphSONReader reader = new GraphSONReader.Builder(g1).build();
         reader.readGraph(new ByteArrayInputStream(os.toByteArray()));
 
         assertClassicGraph(g1, true);
+
+        // need to manually close the "g1" instance
+        graphProvider.clear(g1, configuration);
     }
 
     @Test
@@ -195,12 +206,17 @@ public class IoTest extends AbstractGremlinTest {
         writer.writeGraph(os);
         os.close();
 
-        final Graph g1 = graphProvider.openTestGraph(graphProvider.newGraphConfiguration("readGraph"));
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        graphProvider.clear(null, configuration);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
         final KryoReader reader = new KryoReader.Builder(g1)
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readGraph(new ByteArrayInputStream(os.toByteArray()));
 
         assertModernGraph(g1);
+
+        // need to manually close the "g1" instance
+        graphProvider.clear(g1, configuration);
     }
 
     @Test

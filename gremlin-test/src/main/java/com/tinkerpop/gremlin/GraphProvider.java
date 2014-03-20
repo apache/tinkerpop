@@ -51,9 +51,9 @@ public interface GraphProvider {
     }
 
     /**
-     * Clears a {@link com.tinkerpop.gremlin.structure.Graph} of all data and settings.  Implementations will have different ways of handling this.
-     * For a brute force approach, implementers can simply delete data directories provided in the configuration.
-     * Implementers may choose a more elegant approach if it exists.
+     * Clears a {@link com.tinkerpop.gremlin.structure.Graph} of all data and settings.  Implementations will have
+     * different ways of handling this. For a brute force approach, implementers can simply delete data directories
+     * provided in the configuration. Implementers may choose a more elegant approach if it exists.
      */
     public void clear(final Graph g, final Configuration configuration) throws Exception;  // todo: should Graph be Optional<Graph>
 
