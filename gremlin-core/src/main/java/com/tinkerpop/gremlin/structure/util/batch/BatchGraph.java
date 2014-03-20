@@ -60,6 +60,7 @@ public class BatchGraph<T extends Graph> implements Graph {
     private final boolean loadingFromScratch;
     private final boolean baseSupportsSuppliedVertexId;
     private final boolean baseSupportsSuppliedEdgeId;
+    private final boolean baseSupportsTransactions;
 
     private final VertexCache cache;
 
@@ -98,13 +99,14 @@ public class BatchGraph<T extends Graph> implements Graph {
         this.loadingFromScratch = loadingFromScratch;
         this.baseSupportsSuppliedEdgeId = this.baseGraph.getFeatures().edge().supportsUserSuppliedIds();
         this.baseSupportsSuppliedVertexId = this.baseGraph.getFeatures().vertex().supportsUserSuppliedIds();
+        this.baseSupportsTransactions = this.baseGraph.getFeatures().graph().supportsTransactions();
     }
 
     private void nextElement() {
         currentEdge = null;
         currentEdgeCached = null;
         if (remainingBufferSize <= 0) {
-            if (baseGraph.getFeatures().graph().supportsTransactions()) baseGraph.tx().commit();
+            if (this.baseSupportsTransactions) baseGraph.tx().commit();
             cache.newTransaction();
             remainingBufferSize = bufferSize;
         }
