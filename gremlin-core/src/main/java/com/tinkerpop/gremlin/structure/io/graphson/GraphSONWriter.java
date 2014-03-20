@@ -13,6 +13,9 @@ import java.io.OutputStream;
 import java.util.Optional;
 
 /**
+ * A @{link GraphWriter} that writes a graph and its emelemtnst to a JSON-based representation. This implementation
+ * only supports JSON data types and is therefore lossy with respect to data types (e.g. a float will become a double).
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONWriter implements GraphWriter {

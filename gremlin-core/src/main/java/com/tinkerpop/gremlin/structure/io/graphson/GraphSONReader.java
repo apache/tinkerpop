@@ -24,6 +24,10 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 /**
+ * A @{link GraphReader} that constructs a graph from a JSON-based representation of a graph and its elements.
+ * This implementation only supports JSON data types and is therefore lossy with respect to data types (e.g. a
+ * float will become a double).
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONReader implements GraphReader {
@@ -73,9 +77,8 @@ public class GraphSONReader implements GraphReader {
                     final Vertex vIn = graph.v(edgeData.get(GraphSONModule.TOKEN_IN));
                     vOut.addEdge(edgeData.get(GraphSONModule.TOKEN_LABEL).toString(), vIn, propsAsArray);
                 }
-            } else {
-                // todo: invalidstateexception?  what was done in kryo/graphml? consistent?
-            }
+            } else
+                throw new IllegalStateException(String.format("Unexpected token in GraphSON - %s", fieldName));
         }
 
         graph.tx().commit();
