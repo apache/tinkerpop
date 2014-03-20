@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphMemory implements Graph.Memory.Computer.System, Serializable {
+public class TinkerGraphMemory implements Graph.Memory.Computer.Administrative, Serializable {
 
     private final Graph graph;
     private final Map<String, Object> memory;
