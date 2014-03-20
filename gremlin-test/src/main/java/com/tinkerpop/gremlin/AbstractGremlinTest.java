@@ -63,7 +63,7 @@ public abstract class AbstractGremlinTest {
         final List<FeatureRequirement> frs = Arrays.asList(featureRequirement);
         for (FeatureRequirement fr : frs) {
             try {
-                System.out.println(String.format("Assume that %s meets Feature Requirement - %s - with %s", fr.featureClass().getSimpleName(), fr.feature(), fr.supported()));
+                //System.out.println(String.format("Assume that %s meets Feature Requirement - %s - with %s", fr.featureClass().getSimpleName(), fr.feature(), fr.supported()));
                 assumeThat(g.getFeatures().supports(fr.featureClass(), fr.feature()), is(fr.supported()));
             } catch (NoSuchMethodException nsme) {
                 throw new NoSuchMethodException(String.format("[supports%s] is not a valid feature on %s", fr.feature(), fr.featureClass()));
