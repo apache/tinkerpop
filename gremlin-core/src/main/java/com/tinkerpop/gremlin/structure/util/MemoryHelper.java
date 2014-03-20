@@ -7,12 +7,12 @@ import com.tinkerpop.gremlin.structure.Graph;
  */
 public class MemoryHelper {
 
-    public static void validateMemory(final String annotationKey, final Object annotationValue) throws IllegalArgumentException {
-        if (null == annotationValue)
+    public static void validateMemory(final String variable, final Object value) throws IllegalArgumentException {
+        if (null == value)
             throw Graph.Memory.Exceptions.memoryValueCanNotBeNull();
-        if (null == annotationKey)
+        if (null == variable)
             throw Graph.Memory.Exceptions.memoryKeyCanNotBeNull();
-        if (annotationKey.isEmpty())
+        if (variable.isEmpty())
             throw Graph.Memory.Exceptions.memoryKeyCanNotBeEmpty();
     }
 }
