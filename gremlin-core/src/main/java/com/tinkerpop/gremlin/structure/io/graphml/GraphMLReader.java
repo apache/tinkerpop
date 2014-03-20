@@ -34,7 +34,7 @@ public class GraphMLReader implements GraphReader {
     public static final int DEFAULT_BATCH_SIZE = 1000;
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
-    private final Graph inputGraph;
+    private final Graph graphToWriteTo;
 
     private final Optional<String> vertexIdKey;
     private final Optional<String> edgeIdKey;
@@ -43,7 +43,7 @@ public class GraphMLReader implements GraphReader {
 
     private GraphMLReader(final Graph graph, final String vertexIdKey, final String edgeIdKey,
                           final String edgeLabelKey, final int batchSize) {
-        this.inputGraph = graph;
+        this.graphToWriteTo = graph;
         this.vertexIdKey = Optional.ofNullable(vertexIdKey);
         this.edgeIdKey = Optional.ofNullable(edgeIdKey);
         this.edgeLabelKey = Optional.ofNullable(edgeLabelKey);
@@ -73,7 +73,7 @@ public class GraphMLReader implements GraphReader {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
 
             // todo: get BatchGraph in here when TinkerPop3 has it
-            final BatchGraph graph = new BatchGraph.Builder<>(inputGraph)
+            final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
                     .bufferSize(batchSize).build();
 
             final Map<String, String> keyIdMap = new HashMap<>();

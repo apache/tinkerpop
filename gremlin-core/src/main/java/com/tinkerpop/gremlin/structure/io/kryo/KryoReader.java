@@ -38,13 +38,13 @@ import java.util.stream.IntStream;
  */
 public class KryoReader implements GraphReader {
     private final Kryo kryo = makeKryo();
-    private final Graph graph;
+    private final Graph graphToWriteTo;
 
     private final File tempFile;
     private final Map<Object, Object> idMap;
 
     private KryoReader(final Graph g, final Map<Object, Object> idMap, final File tempFile) {
-        this.graph = g;
+        this.graphToWriteTo = g;
         this.idMap = idMap;
         this.tempFile = tempFile;
 
@@ -152,8 +152,8 @@ public class KryoReader implements GraphReader {
                 // to advance the reader forward.  if the graph being read into doesn't support the memory
                 // then we just setting the data to memory.
                 final Map<String,Object> memMap = (Map<String,Object>) kryo.readObject(input, HashMap.class);
-                if (graph.getFeatures().graph().supportsMemory()) {
-                    final Graph.Memory memory = graph.memory();
+                if (graphToWriteTo.getFeatures().graph().supportsMemory()) {
+                    final Graph.Memory memory = graphToWriteTo.memory();
                     memMap.forEach(memory::set);
                 }
             }
@@ -163,13 +163,13 @@ public class KryoReader implements GraphReader {
                 while (!input.eof()) {
                     final List<Object> vertexArgs = new ArrayList<>();
                     final Object current = kryo.readClassAndObject(input);
-                    if (graph.getFeatures().vertex().supportsUserSuppliedIds())
+                    if (graphToWriteTo.getFeatures().vertex().supportsUserSuppliedIds())
                         vertexArgs.addAll(Arrays.asList(Element.ID, current));
 
                     vertexArgs.addAll(Arrays.asList(Element.LABEL, input.readString()));
                     final List<Pair<String, KryoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
 
-                    final Vertex v = graph.addVertex(vertexArgs.toArray());
+                    final Vertex v = graphToWriteTo.addVertex(vertexArgs.toArray());
 
                     // annotated list properties are set after the fact
                     setAnnotatedListValues(annotatedLists, v);
@@ -324,14 +324,14 @@ public class KryoReader implements GraphReader {
             Object inId = kryo.readClassAndObject(input);
             while (!inId.equals(EdgeTerminator.INSTANCE)) {
                 final List<Object> edgeArgs = new ArrayList<>();
-                final Vertex vOut = graph.v(outId);
+                final Vertex vOut = graphToWriteTo.v(outId);
 
                 final Object edgeId = kryo.readClassAndObject(input);
-                if (graph.getFeatures().edge().supportsUserSuppliedIds())
+                if (graphToWriteTo.getFeatures().edge().supportsUserSuppliedIds())
                     edgeArgs.addAll(Arrays.asList(Element.ID, edgeId));
 
                 final String edgeLabel = input.readString();
-                final Vertex inV = graph.v(idMap.get(inId));
+                final Vertex inV = graphToWriteTo.v(idMap.get(inId));
                 readElementProperties(input, edgeArgs);
 
                 vOut.addEdge(edgeLabel, inV, edgeArgs.toArray());

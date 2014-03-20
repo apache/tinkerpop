@@ -27,11 +27,11 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONReader implements GraphReader {
-    private final Graph g;
+    private final Graph graphToWriteTo;
     private final ObjectMapper mapper;
 
     public GraphSONReader(final Graph g, final ObjectMapper mapper) {
-        this.g = g;
+        this.graphToWriteTo = g;
         this.mapper = mapper;
     }
 
@@ -41,7 +41,7 @@ public class GraphSONReader implements GraphReader {
         final JsonParser parser = factory.createParser(inputStream);
 
         // todo: configurable batchs ize
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
                 .bufferSize(10000).build();
 
         if (parser.nextToken() != JsonToken.START_OBJECT)
@@ -53,8 +53,8 @@ public class GraphSONReader implements GraphReader {
 
             if (fieldName.equals(GraphSONModule.TOKEN_PROPERTIES)) {
                 final Map<String,Object> graphProperties = parser.readValueAs(new TypeReference<Map<String,Object>>(){});
-                if (g.getFeatures().graph().supportsMemory())
-                    graphProperties.entrySet().forEach(entry-> g.memory().set(entry.getKey(), entry.getValue()));
+                if (graphToWriteTo.getFeatures().graph().supportsMemory())
+                    graphProperties.entrySet().forEach(entry-> graphToWriteTo.memory().set(entry.getKey(), entry.getValue()));
             } else if (fieldName.equals(GraphSONModule.TOKEN_VERTICES)) {
                 while (parser.nextToken() != JsonToken.END_ARRAY) {
                     final Map<String,Object> vertexData = parser.readValueAs(new TypeReference<Map<String, Object>>() { });
