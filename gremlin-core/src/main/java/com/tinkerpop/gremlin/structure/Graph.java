@@ -84,16 +84,6 @@ public interface Graph extends AutoCloseable {
 
         public void set(final String variable, Object value);
 
-        public void setIfAbsent(final String variable, final Object value);
-
-        public long incr(final String variable, final long delta);
-
-        public long decr(final String variable, final long delta);
-
-        public boolean and(final String variable, final boolean bool);
-
-        public boolean or(final String variable, final boolean bool);
-
         public Graph getGraph();
 
         public default Map<String, Object> asMap() {
@@ -108,6 +98,16 @@ public interface Graph extends AutoCloseable {
             public int getIteration();
 
             public long getRuntime();
+
+            public void setIfAbsent(final String variable, final Object value);
+
+            public long incr(final String variable, final long delta);
+
+            public long decr(final String variable, final long delta);
+
+            public boolean and(final String variable, final boolean bool);
+
+            public boolean or(final String variable, final boolean bool);
 
             public default boolean isInitialIteration() {
                 return this.getIteration() == 0;

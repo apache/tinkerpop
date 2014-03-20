@@ -4,9 +4,9 @@ import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.PathHolder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.HolderIterator;
 import com.tinkerpop.gremlin.process.util.HolderSource;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
-import com.tinkerpop.gremlin.process.util.HolderIterator;
 
 import java.util.Iterator;
 
@@ -21,6 +21,10 @@ public class StartStep<S> extends MapStep<S, S> implements HolderSource {
         super(traversal, Holder::get);
         this.start = start;
         this.generateHolderIterator(false);
+    }
+
+    public void clear() {
+        this.starts.clear();
     }
 
     public void generateHolderIterator(final boolean trackPaths) {

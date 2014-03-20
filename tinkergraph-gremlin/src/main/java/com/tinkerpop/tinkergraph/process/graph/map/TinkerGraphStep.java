@@ -40,6 +40,10 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
     }
 
+    public void clear() {
+        this.starts.clear();
+    }
+
     private Iterator<Edge> edges() {
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         return (Iterator) ((null == indexedContainer) ?
