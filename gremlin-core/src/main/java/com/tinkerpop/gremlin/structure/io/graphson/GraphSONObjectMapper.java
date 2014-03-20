@@ -12,10 +12,14 @@ import java.util.Optional;
  */
 public class GraphSONObjectMapper extends ObjectMapper {
     public GraphSONObjectMapper() {
-        this(null);
+        this(null, false);
     }
 
     public GraphSONObjectMapper(final SimpleModule custom) {
+        this(custom, false);
+    }
+
+    public GraphSONObjectMapper(final SimpleModule custom, final boolean loadExternalModules) {
         disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
         // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
@@ -27,6 +31,7 @@ public class GraphSONObjectMapper extends ObjectMapper {
         Optional.ofNullable(custom).ifPresent(this::registerModule);
 
         // plugin external serialization modules
-        findAndRegisterModules();
+        if (loadExternalModules)
+            findAndRegisterModules();
     }
 }
