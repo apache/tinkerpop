@@ -340,10 +340,7 @@ public class GraphMLWriter implements GraphWriter {
          * @param g The Graph instance to write out.
          */
         public Builder(final Graph g) {
-            if (null == g)
-                throw new IllegalArgumentException("Graph argument cannot be null");
-
-            this.g = g;
+            this.g = Optional.ofNullable(g).orElseThrow(() -> new IllegalArgumentException("Graph argument cannot be null"));
         }
 
         /**
