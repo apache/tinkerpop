@@ -14,7 +14,10 @@ use:
 scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
-    staticImports: [java.lang.Math.PI]}}
+    staticImports: [java.lang.Math.PI]},
+  nashorn: {
+      imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
+      staticImports: [java.lang.Math.PI]}}
 metrics: {
   consoleReporter: {enabled: true, interval: 180000},
   csvReporter: {enabled: true, interval: 180000, fileName: /tmp/gremlin-server-metrics.csv},
