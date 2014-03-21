@@ -688,6 +688,10 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
+        public void initialize(final Configuration configuration) {
+        }
+
+        @Override
         public Class getMessageClass() {
             return Object.class;
         }
@@ -723,6 +727,10 @@ public class ExceptionConsistencyTest {
         public MockVertexProgramForEdge(final String key, final String val) {
             this.key = key;
             this.val = val;
+        }
+
+        @Override
+        public void initialize(final Configuration configuration) {
         }
 
         @Override

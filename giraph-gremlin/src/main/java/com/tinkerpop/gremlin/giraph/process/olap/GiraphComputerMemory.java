@@ -1,14 +1,13 @@
 package com.tinkerpop.gremlin.giraph.process.olap;
 
+import com.tinkerpop.gremlin.giraph.process.olap.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.olap.util.MemoryAggregator;
 import com.tinkerpop.gremlin.giraph.process.olap.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.EmptyGraph;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.master.MasterCompute;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
 
 import java.io.DataInput;
@@ -48,7 +47,7 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
             this.registerPersistentAggregator("trackPaths", MemoryAggregator.class);
             this.registerAggregator("voteToHalt", MemoryAggregator.class);
             this.registerPersistentAggregator("traversal", MemoryAggregator.class);
-            this.vertexProgram.setup(generateConfiguration(this.getConf()), this);
+            this.vertexProgram.setup(ConfUtil.apacheConfiguration(this.getConf()), this);
         } catch (Exception e) {
             // System.out.println(e + "***" + e.getMessage());
         }
@@ -131,11 +130,4 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
 
     public void readFields(final DataInput input) {
     }
-
-    private static org.apache.commons.configuration.Configuration generateConfiguration(final Configuration configuration) {
-        final org.apache.commons.configuration.Configuration c = new BaseConfiguration();
-        configuration.iterator().forEachRemaining(e -> c.setProperty(e.getKey(), e.getValue()));
-        return c;
-    }
-
 }

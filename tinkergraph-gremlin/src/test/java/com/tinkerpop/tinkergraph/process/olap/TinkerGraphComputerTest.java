@@ -2,6 +2,7 @@ package com.tinkerpop.tinkergraph.process.olap;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.structure.TinkerFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import java.util.Arrays;
  */
 public class TinkerGraphComputerTest {
 
+    @Ignore
     @Test
     public void testStuff() throws Exception {
         Graph g = TinkerFactory.createClassic();
@@ -29,6 +31,7 @@ public class TinkerGraphComputerTest {
         // g.V().pageRank().order((a, b) -> b.get().getValue1().compareTo(a.get().getValue1())).range(0,2).forEachRemaining(System.out::println);
     }
 
+    @Ignore
     @Test
     public void testOLAPWriteBack() throws Exception {
         Graph g = TinkerFactory.createClassic();

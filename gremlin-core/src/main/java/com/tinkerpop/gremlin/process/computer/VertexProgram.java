@@ -19,10 +19,14 @@ import java.util.Objects;
  */
 public interface VertexProgram<M extends Serializable> extends Serializable {
 
+    public static final String VERTEX_PROGRAM_CLASS = "vertex.program.class";
+
     public enum KeyType {
         VARIABLE,
         CONSTANT
     }
+
+    public void initialize(final Configuration configuration);
 
     /**
      * The method is called at the beginning of the computation. The method is global to the {@link GraphComputer}
@@ -62,6 +66,17 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
             keys.put(Objects.requireNonNull(computeKeys[i].toString()), (KeyType) Objects.requireNonNull(computeKeys[i + 1]));
         }
         return keys;
+    }
+
+    public static <V extends VertexProgram> V createVertexProgram(final Configuration configuration) {
+        try {
+            final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(VERTEX_PROGRAM_CLASS));
+            final V vertexProgram = vertexProgramClass.getConstructor().newInstance();
+            vertexProgram.initialize(configuration);
+            return vertexProgram;
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
 }

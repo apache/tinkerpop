@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.ProcessComputerStandardSuite;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.tinkergraph.structure.TinkerGraph;
 import org.apache.commons.configuration.Configuration;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import java.io.File;
@@ -17,6 +18,7 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(ProcessComputerStandardSuite.class)
+@Ignore
 @ProcessComputerStandardSuite.GraphProviderClass(TinkerGraphProcessComputerStandardTest.class)
 public class TinkerGraphProcessComputerStandardTest extends AbstractGraphProvider {
 

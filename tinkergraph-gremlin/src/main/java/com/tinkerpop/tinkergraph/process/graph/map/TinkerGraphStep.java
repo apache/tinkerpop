@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
-    private final TinkerGraph graph;
+    private TinkerGraph graph;
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
     public TinkerGraphStep(final Traversal traversal, final Class<E> returnClass, final TinkerGraph graph) {
@@ -38,6 +38,12 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
         else
             this.starts.add(new HolderIterator(Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
 
+    }
+
+    //TODO: Remove if not needed
+    public void clearGraph() {
+        this.graph = null;
+        this.starts = null;
     }
 
     public void clear() {

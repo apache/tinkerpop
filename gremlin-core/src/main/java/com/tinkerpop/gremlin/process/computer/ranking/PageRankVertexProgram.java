@@ -8,9 +8,9 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -18,19 +18,30 @@ import java.util.Map;
  */
 public class PageRankVertexProgram implements VertexProgram<Double> {
 
-    protected final Map<String, KeyType> computeKeys = new HashMap<>();
     private MessageType.Local messageType = MessageType.Local.of(new VertexQueryBuilder().direction(Direction.OUT));
 
     public static final String PAGE_RANK = PageRankVertexProgram.class.getName() + ".pageRank";
     public static final String EDGE_COUNT = PageRankVertexProgram.class.getName() + ".edgeCount";
+
+    private static final String VERTEX_COUNT = PageRankVertexProgram.class.getName() + ".vertexCount";
+    private static final String ALPHA = PageRankVertexProgram.class.getName() + ".alpha";
+    private static final String TOTAL_ITERATIONS = PageRankVertexProgram.class.getName() + ".totalIterations";
+    private static final String WEIGHTED = PageRankVertexProgram.class.getName() + ".weighted";
 
     private double vertexCountAsDouble = 1;
     private double alpha = 0.85d;
     private int totalIterations = 30;
     private boolean weighted = false;
 
-    private PageRankVertexProgram() {
+    public PageRankVertexProgram() {
 
+    }
+
+    public void initialize(final Configuration configuration) {
+        this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
+        this.alpha = configuration.getDouble(ALPHA, 0.85d);
+        this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
+        this.weighted = configuration.getBoolean(WEIGHTED, false);
     }
 
     public Map<String, KeyType> getComputeKeys() {
@@ -70,43 +81,54 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         return graphMemory.getIteration() >= this.totalIterations;
     }
 
+    public static Builder create(final Configuration configuration) {
+        return new Builder(configuration);
+    }
+
     public static Builder create() {
-        return new Builder();
+        return new Builder(new BaseConfiguration());
     }
 
     //////////////////////////////
 
     public static class Builder {
 
-        private final PageRankVertexProgram vertexProgram = new PageRankVertexProgram();
+        private final Configuration configuration;
+
+        public Builder(final Configuration configuration) {
+            this.configuration = configuration;
+        }
 
         public Builder iterations(final int iterations) {
-            this.vertexProgram.totalIterations = iterations;
+            this.configuration.setProperty(TOTAL_ITERATIONS, iterations);
             return this;
         }
 
         public Builder alpha(final double alpha) {
-            this.vertexProgram.alpha = alpha;
+            this.configuration.setProperty(ALPHA, alpha);
             return this;
         }
 
         public Builder messageType(final MessageType.Local messageType) {
-            this.vertexProgram.messageType = messageType;
+            //this.vertexProgram.messageType = messageType;
             return this;
         }
 
         public Builder weighted(final boolean weighted) {
-            this.vertexProgram.weighted = weighted;
+            this.configuration.setProperty(WEIGHTED, weighted);
             return this;
         }
 
-        public Builder vertexCount(final long count) {
-            this.vertexProgram.vertexCountAsDouble = (double) count;
+        public Builder vertexCount(final long vertexCount) {
+            this.configuration.setProperty(VERTEX_COUNT, (double) vertexCount);
             return this;
         }
 
         public PageRankVertexProgram build() {
-            return this.vertexProgram;
+            this.configuration.setProperty(VERTEX_PROGRAM_CLASS, PageRankVertexProgram.class.getName());
+            final PageRankVertexProgram program = new PageRankVertexProgram();
+            program.initialize(this.configuration);
+            return program;
         }
     }
 

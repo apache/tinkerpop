@@ -13,9 +13,14 @@ import com.tinkerpop.gremlin.process.util.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.function.SSupplier;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,21 +32,35 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private MessageType.Global global = MessageType.Global.of();
 
-    private static final String TRAVERSAL = "traversal";
+    private static final String TRAVERSAL = TraversalVertexProgram.class.getSimpleName() + ".traversal";
+    private static final String TRACK_PATHS = TraversalVertexProgram.class.getSimpleName() + ".trackPaths";
     private static final String VOTE_TO_HALT = "voteToHalt";
-    public static final String TRACK_PATHS = "trackPaths";
-    // TODO: public static final String MESSAGES_SENT = "messagesSent";
     public static final String TRAVERSAL_TRACKER = "traversalTracker";
-    private final SSupplier<Traversal> traversalSupplier;
+    // TODO: public static final String MESSAGES_SENT = "messagesSent";
 
-    private TraversalVertexProgram(final SSupplier<Traversal> traversalSupplier) {
-        this.traversalSupplier = traversalSupplier;
+    private SSupplier<Traversal> traversalSupplier;
+    private boolean trackPaths = false;
+
+
+    public TraversalVertexProgram() {
+    }
+
+    public void initialize(final Configuration configuration) {
+        try {
+            this.trackPaths = configuration.getBoolean(TRACK_PATHS, false);
+            final List byteList = configuration.getList(TRAVERSAL);
+            byte[] bytes = new byte[byteList.size()];
+            for (int i = 0; i < byteList.size(); i++) {
+                bytes[i] = Byte.valueOf(byteList.get(i).toString().replace("[", "").replace("]", ""));
+            }
+            this.traversalSupplier = (SSupplier<Traversal>) Serializer.deserializeObject(bytes);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory) {
-        graphMemory.setIfAbsent(TRAVERSAL, this.traversalSupplier);
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
-        graphMemory.setIfAbsent(TRACK_PATHS, HolderOptimizer.trackPaths(this.traversalSupplier.get()));
     }
 
     public void execute(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
@@ -53,7 +72,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
-        final Traversal traversal = graphMemory.<SSupplier<Traversal>>get(TRAVERSAL).get();
+        final Traversal traversal = this.traversalSupplier.get();
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         startStep.clear();
         final String future = (traversal.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
@@ -62,7 +81,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         // TODO: Make this an optimizer.
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         if (Vertex.class.isAssignableFrom(startStep.returnClass)) {
-            final Holder<Vertex> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
+            final Holder<Vertex> holder = this.trackPaths ?
                     new PathHolder<>(startStep.getAs(), vertex) :
                     new SimpleHolder<>(vertex);
             holder.setFuture(future);
@@ -70,7 +89,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             voteToHalt.set(false);
         } else if (Edge.class.isAssignableFrom(startStep.returnClass)) {
             vertex.outE().forEach(e -> {
-                final Holder<Edge> holder = graphMemory.<Boolean>get(TRACK_PATHS) ?
+                final Holder<Edge> holder = this.trackPaths ?
                         new PathHolder<>(startStep.getAs(), e) :
                         new SimpleHolder<>(e);
                 holder.setFuture(future);
@@ -82,9 +101,9 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
-        final Traversal traversal = graphMemory.<SSupplier<Traversal>>get(TRAVERSAL).get();
+        final Traversal traversal = this.traversalSupplier.get();
         ((GraphStep) traversal.getSteps().get(0)).clear();
-        if (graphMemory.<Boolean>get(TRACK_PATHS)) {
+        if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
             graphMemory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
             vertex.setProperty(TRAVERSAL_TRACKER, tracker);
@@ -108,27 +127,48 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     public Class<M> getMessageClass() {
-        return (Class) (HolderOptimizer.trackPaths(this.traversalSupplier.get()) ? TraversalPathMessage.class : TraversalCounterMessage.class);
+        return (Class) (this.trackPaths ? TraversalPathMessage.class : TraversalCounterMessage.class);
     }
 
     public Map<String, KeyType> getComputeKeys() {
         return VertexProgram.ofComputeKeys(TRAVERSAL_TRACKER, KeyType.VARIABLE);
     }
 
+    public static Builder create(final Configuration configuration) {
+        return new Builder(configuration);
+    }
+
     public static Builder create() {
-        return new Builder();
+        return new Builder(new BaseConfiguration());
     }
 
     public static class Builder {
-        private SSupplier<Traversal> traversalSupplier;
+        private final Configuration configuration;
+
+        public Builder(final Configuration configuration) {
+            this.configuration = configuration;
+        }
 
         public Builder traversal(final SSupplier<Traversal> traversalSupplier) {
-            this.traversalSupplier = traversalSupplier;
+            try {
+                this.configuration.setProperty(TRACK_PATHS, HolderOptimizer.trackPaths(traversalSupplier.get()));
+                final List<Byte> byteList = new ArrayList<>();
+                final byte[] bytes = Serializer.serializeObject(traversalSupplier);
+                for (byte b : bytes) {
+                    byteList.add(b);
+                }
+                this.configuration.setProperty(TRAVERSAL, byteList);
+            } catch (IOException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
             return this;
         }
 
         public TraversalVertexProgram build() {
-            return new TraversalVertexProgram(this.traversalSupplier);
+            this.configuration.setProperty(VERTEX_PROGRAM_CLASS, TraversalVertexProgram.class.getName());
+            final TraversalVertexProgram program = new TraversalVertexProgram();
+            program.initialize(this.configuration);
+            return program;
         }
     }
 }

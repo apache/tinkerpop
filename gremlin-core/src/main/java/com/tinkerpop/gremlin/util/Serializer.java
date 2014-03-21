@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.giraph.structure.io.util;
+package com.tinkerpop.gremlin.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

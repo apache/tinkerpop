@@ -1,6 +1,5 @@
 package com.tinkerpop.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
@@ -14,6 +13,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.tinkergraph.process.graph.map.TinkerGraphStep;
 import com.tinkerpop.tinkergraph.process.graph.util.optimizers.TinkerGraphStepOptimizer;
+import com.tinkerpop.tinkergraph.process.graph.util.optimizers.TinkerGraphStepSerializationOptimizer;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
@@ -98,12 +98,14 @@ public class TinkerGraph implements Graph, Serializable {
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>() {
             public GraphTraversal submit(final TraversalEngine engine) {
-                if (engine instanceof GraphComputer)
+                if (engine instanceof GraphComputer) {
                     this.optimizers().unregister(TinkerGraphStepOptimizer.class);
+                    //this.optimizers().register(new TinkerGraphStepSerializationOptimizer());
+                }
                 return super.submit(engine);
             }
         };
-        traversal.memory().set(Traversal.Memory.Variable.hidden("g"), this);    // TODO: is this good?
+        //traversal.memory().set(Traversal.Memory.Variable.hidden("g"), this);    // TODO: is this good?
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
         traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         return traversal;
