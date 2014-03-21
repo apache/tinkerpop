@@ -35,7 +35,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     private static final String TRAVERSAL = TraversalVertexProgram.class.getSimpleName() + ".traversal";
     private static final String TRACK_PATHS = TraversalVertexProgram.class.getSimpleName() + ".trackPaths";
     private static final String VOTE_TO_HALT = "voteToHalt";
-    public static final String TRAVERSAL_TRACKER = "traversalTracker";
+    public static final String TRAVERSAL_TRACKER = TraversalVertexProgram.class.getSimpleName() + ".traversalTracker";
     // TODO: public static final String MESSAGES_SENT = "messagesSent";
 
     private SSupplier<Traversal> traversalSupplier;

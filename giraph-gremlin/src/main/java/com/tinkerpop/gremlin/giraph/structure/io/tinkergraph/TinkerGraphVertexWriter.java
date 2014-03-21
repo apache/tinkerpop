@@ -2,7 +2,8 @@ package com.tinkerpop.gremlin.giraph.structure.io.tinkergraph;
 
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
-import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounters;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexWriter;
@@ -23,8 +24,8 @@ public class TinkerGraphVertexWriter extends VertexWriter {
 
     public void writeVertex(final Vertex giraphVertex) throws IOException {
         //this.writer.writeVertex(System.out, ((GiraphVertex) giraphVertex).getGremlinVertex());
-        //System.out.println(((GiraphVertex) giraphVertex).getGremlinVertex() + ":" + ((GiraphVertex) giraphVertex).getGremlinVertex().<TraversalCounters>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).get().getDoneObjectTracks());
-        System.out.println(((GiraphVertex) giraphVertex).getGremlinVertex() + ":" + ((GiraphVertex) giraphVertex).getGremlinVertex().<Double>getValue(PageRankVertexProgram.PAGE_RANK));
+        System.out.println(((GiraphVertex) giraphVertex).getGremlinVertex() + ":" + ((GiraphVertex) giraphVertex).getGremlinVertex().<TraversalCounters>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).get().getDoneObjectTracks());
+        //System.out.println(((GiraphVertex) giraphVertex).getGremlinVertex() + ":" + ((GiraphVertex) giraphVertex).getGremlinVertex().<Double>getValue(PageRankVertexProgram.PAGE_RANK));
     }
 
     public void close(final TaskAttemptContext context) {

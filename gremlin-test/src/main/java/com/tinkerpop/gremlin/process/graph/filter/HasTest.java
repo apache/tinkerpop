@@ -16,9 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -156,6 +154,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX() {
             return g.V().<Vertex>has("name", "marko").submit(g.compute());
+            //return new TraversalResult(g, () -> g.V().<Vertex>has("name", "marko"));
         }
 
         public Traversal<Vertex, Vertex> get_g_V_hasXname_blahX() {

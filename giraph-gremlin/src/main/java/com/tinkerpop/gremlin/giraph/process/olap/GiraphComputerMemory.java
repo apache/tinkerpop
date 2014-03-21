@@ -44,9 +44,7 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
     public void initialize() {
         try {
             this.vertexProgram = (VertexProgram) new ObjectInputStream(new FileInputStream(GiraphGraphComputer.VERTEX_PROGRAM)).readObject();
-            this.registerPersistentAggregator("trackPaths", MemoryAggregator.class);
             this.registerAggregator("voteToHalt", MemoryAggregator.class);
-            this.registerPersistentAggregator("traversal", MemoryAggregator.class);
             this.vertexProgram.setup(ConfUtil.apacheConfiguration(this.getConf()), this);
         } catch (Exception e) {
             // System.out.println(e + "***" + e.getMessage());
