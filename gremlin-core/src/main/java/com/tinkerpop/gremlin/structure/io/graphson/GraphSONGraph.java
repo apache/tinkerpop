@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.io.IOException;
 
@@ -37,23 +38,11 @@ class GraphSONGraph {
                 jsonGenerator.writeObjectField(GraphSONModule.TOKEN_PROPERTIES, g.memory().asMap());
 
             jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_VERTICES);
-            g.V().forEach(v -> {
-                try {
-                    jsonGenerator.writeObject(v);
-                } catch (Exception ex) {
-                    // todo: wish this would just throw
-                }
-            });
+            g.V().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             jsonGenerator.writeEndArray();
 
             jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_EDGES);
-            g.E().forEach(e -> {
-                try {
-                    jsonGenerator.writeObject(e);
-                } catch (Exception ex) {
-                    // todo: wish this would just throw
-                }
-            });
+            g.E().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             jsonGenerator.writeEndArray();
 
             jsonGenerator.writeEndObject();
