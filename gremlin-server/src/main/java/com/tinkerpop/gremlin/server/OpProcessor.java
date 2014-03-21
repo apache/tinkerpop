@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
+import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 
 /**
  * Interface for providing commands that websocket requests will respond to.
@@ -20,9 +21,4 @@ public interface OpProcessor {
      * and return the Consumer function for that particular operation.
      */
     public ThrowingConsumer<Context> select(final Context ctx) throws OpProcessorException;
-
-    @FunctionalInterface
-    public interface ThrowingConsumer<Context> {
-        public void accept(final Context ctx) throws OpProcessorException;
-    }
 }

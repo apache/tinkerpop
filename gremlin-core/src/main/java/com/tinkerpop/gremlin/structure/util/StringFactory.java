@@ -128,7 +128,7 @@ public class StringFactory {
     }
 
     private static Function<Method, String> createTransform(final Graph.Features.FeatureSet features) {
-        return FunctionUtils.wrap((m) ->  ">-- " + m.getName().substring(prefixLength) + ": " + m.invoke(features, null).toString() + LINE_SEPARATOR);
+        return FunctionUtils.wrapFunction((m) ->  ">-- " + m.getName().substring(prefixLength) + ": " + m.invoke(features, null).toString() + LINE_SEPARATOR);
     }
 
     private static void printFeatureTitle(final Class<? extends Graph.Features.FeatureSet> featureClass, final StringBuilder sb) {

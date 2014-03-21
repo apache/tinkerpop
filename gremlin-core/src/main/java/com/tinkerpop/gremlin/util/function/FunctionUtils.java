@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.util.function;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -9,7 +10,7 @@ public final class FunctionUtils {
     private FunctionUtils() {
     }
 
-    public static <T, U> Function<T,U> wrap(final ThrowingFunction<T, U> functionThatThrows) {
+    public static <T, U> Function<T,U> wrapFunction(final ThrowingFunction<T, U> functionThatThrows) {
         return (a) -> {
             try {
                 return functionThatThrows.apply(a);
@@ -21,5 +22,16 @@ public final class FunctionUtils {
         };
     }
 
+    public static <T> Consumer<T> wrapConsumer(final ThrowingConsumer<T> consumerThatThrows) {
+        return (a) -> {
+            try {
+                consumerThatThrows.accept(a);
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
 
 }

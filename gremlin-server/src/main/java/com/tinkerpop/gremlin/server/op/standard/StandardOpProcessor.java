@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.server.RequestMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
 import com.tinkerpop.gremlin.server.Tokens;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
+import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
