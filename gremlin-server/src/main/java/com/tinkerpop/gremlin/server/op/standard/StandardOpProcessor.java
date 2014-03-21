@@ -30,7 +30,7 @@ public class StandardOpProcessor implements OpProcessor {
     }
 
     @Override
-    public ConsumerThatThrows<Context> select(final Context ctx) throws OpProcessorException {
+    public ThrowingConsumer<Context> select(final Context ctx) throws OpProcessorException {
         final RequestMessage message = ctx.getRequestMessage();
         if (logger.isDebugEnabled())
             logger.debug("Selecting processor for RequestMessage {}", message);
@@ -39,7 +39,7 @@ public class StandardOpProcessor implements OpProcessor {
                 message.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
                 MessageSerializer.DEFAULT_RESULT_SERIALIZER);
 
-        final ConsumerThatThrows<Context> op;
+        final ThrowingConsumer<Context> op;
         switch (message.op) {
             case Tokens.OPS_VERSION:
                 // todo: rework this op for sessionless
@@ -71,7 +71,7 @@ public class StandardOpProcessor implements OpProcessor {
         return op;
     }
 
-    private static Optional<ConsumerThatThrows<Context>> validateEvalMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
+    private static Optional<ThrowingConsumer<Context>> validateEvalMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
         if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_EVAL, Tokens.ARGS_GREMLIN);
             throw new OpProcessorException(msg, serializer.serializeResult(msg, ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, ctx));
@@ -80,7 +80,7 @@ public class StandardOpProcessor implements OpProcessor {
         return Optional.empty();
     }
 
-    private static Optional<ConsumerThatThrows<Context>> validateImportMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
+    private static Optional<ThrowingConsumer<Context>> validateImportMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
         final Optional<List> l = message.optionalArgs(Tokens.ARGS_IMPORTS);
         if (!l.isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_IMPORT, Tokens.ARGS_IMPORTS);
@@ -97,7 +97,7 @@ public class StandardOpProcessor implements OpProcessor {
         return Optional.empty();
     }
 
-    private static Optional<ConsumerThatThrows<Context>> validateShowMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
+    private static Optional<ThrowingConsumer<Context>> validateShowMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
         final Optional<String> infoType = message.optionalArgs(Tokens.ARGS_INFO_TYPE);
         if (!infoType.isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.",
@@ -116,7 +116,7 @@ public class StandardOpProcessor implements OpProcessor {
 
     }
 
-    private static Optional<ConsumerThatThrows<Context>> validateUseMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
+    private static Optional<ThrowingConsumer<Context>> validateUseMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
         final Optional<List> l = message.optionalArgs(Tokens.ARGS_COORDINATES);
         if (!l.isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.",

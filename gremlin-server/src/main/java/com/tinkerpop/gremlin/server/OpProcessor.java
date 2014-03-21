@@ -19,10 +19,10 @@ public interface OpProcessor {
      * executed with the context.  A typical implementation will simply check the "op" field on the RequestMessage
      * and return the Consumer function for that particular operation.
      */
-    public ConsumerThatThrows<Context> select(final Context ctx) throws OpProcessorException;
+    public ThrowingConsumer<Context> select(final Context ctx) throws OpProcessorException;
 
     @FunctionalInterface
-    public interface ConsumerThatThrows<Context> {
+    public interface ThrowingConsumer<Context> {
         public void accept(final Context ctx) throws OpProcessorException;
     }
 }
