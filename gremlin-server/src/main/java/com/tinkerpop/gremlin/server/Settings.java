@@ -168,6 +168,7 @@ public class Settings {
             final Yaml yaml = new Yaml(constructor);
             return Optional.of(yaml.loadAs(stream, Settings.class));
         } catch (Exception fnfe) {
+            // todo: need some errors logged or something...no messages come up if unparseable
             return Optional.empty();
         }
     }
