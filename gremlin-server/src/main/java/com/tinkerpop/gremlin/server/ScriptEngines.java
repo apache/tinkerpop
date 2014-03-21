@@ -111,6 +111,7 @@ public class ScriptEngines {
 
     private static Optional<ScriptEngine> createScriptEngine(final String language, final Set<String> imports,
                                                              final Set<String> staticImports) {
+        // todo: log names of scriptengines crated.
         if (language.equals(gremlinGroovyScriptEngineFactory.getLanguageName())) {
             // gremlin-groovy gets special initialization for custom imports and such.  could implement this more
             // generically with the DependencyManager interface, but going to wait to see how other ScriptEngines
