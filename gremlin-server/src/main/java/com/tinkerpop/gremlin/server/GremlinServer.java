@@ -69,6 +69,7 @@ public class GremlinServer {
     }
 
     public static void main(final String[] args) throws Exception {
+        // add to vm options: -Dlog4j.configuration=file:config/log4j.properties
         printHeader();
         final String file;
         if (args.length > 0) {
