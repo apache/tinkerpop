@@ -41,7 +41,7 @@ import java.util.stream.IntStream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoReader implements GraphReader {
-    private final Kryo kryo = makeKryo();
+    private final Kryo kryo;
     private final Graph graphToWriteTo;
     private final long batchSize;
 
@@ -50,23 +50,13 @@ public class KryoReader implements GraphReader {
 
     final AtomicLong counter = new AtomicLong(0);
 
-    private KryoReader(final Graph g, final Map<Object, Object> idMap, final File tempFile, final long batchSize) {
+    private KryoReader(final Graph g, final Map<Object, Object> idMap, final File tempFile, final long batchSize,
+                       final Kryo kryo) {
+        this.kryo = kryo;
         this.graphToWriteTo = g;
         this.idMap = idMap;
         this.tempFile = tempFile;
         this.batchSize = batchSize;
-
-        // todo: centralize kryo instance creation
-        // todo: need way to register custom types.
-        // todo: hardcode types
-        kryo.setRegistrationRequired(true);
-        kryo.register(ArrayList.class);
-        kryo.register(HashMap.class);
-        kryo.register(Direction.class);
-        kryo.register(VertexTerminator.class);
-        kryo.register(EdgeTerminator.class);
-        kryo.register(KryoAnnotatedList.class);
-        kryo.register(KryoAnnotatedValue.class);
     }
 
     @Override
@@ -400,6 +390,7 @@ public class KryoReader implements GraphReader {
         private Map<Object, Object> idMap;
         private File tempFile;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
+        private GremlinKryo gremlinKryo = new GremlinKryo();
 
         public Builder(final Graph g) {
             this.g = g;
@@ -416,8 +407,13 @@ public class KryoReader implements GraphReader {
          * A {@link Map} implementation that will handle vertex id translation in the event that the graph does
          * not support identifier assignment. If this value is not set, it uses a standard HashMap.
          */
-        public Builder setIdMap(final Map<Object, Object> idMap) {
+        public Builder idMap(final Map<Object, Object> idMap) {
             this.idMap = idMap;
+            return this;
+        }
+
+        public Builder custom(final GremlinKryo gremlinKryo) {
+            this.gremlinKryo = gremlinKryo;
             return this;
         }
 
@@ -435,11 +431,7 @@ public class KryoReader implements GraphReader {
         }
 
         public KryoReader build() {
-            return new KryoReader(g, idMap, tempFile, batchSize);
+            return new KryoReader(g, idMap, tempFile, batchSize, this.gremlinKryo.create());
         }
-    }
-
-    private static Kryo makeKryo() {
-        return new Kryo();
     }
 }

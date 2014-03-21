@@ -13,7 +13,6 @@ import com.tinkerpop.gremlin.structure.io.GraphWriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,22 +26,12 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoWriter implements GraphWriter {
-    private final Kryo kryo = new Kryo();
+    private Kryo kryo;
 
     static final byte[] GIO = "gio".getBytes();
 
-    private KryoWriter() {
-        // todo: centralize kryo instance creation
-        // todo: need way to register custom types.
-        // todo: hardcode types
-        kryo.setRegistrationRequired(true);
-        kryo.register(ArrayList.class);        // 10
-        kryo.register(HashMap.class);
-        kryo.register(Direction.class);
-        kryo.register(VertexTerminator.class);
-        kryo.register(EdgeTerminator.class);
-        kryo.register(KryoAnnotatedList.class);
-        kryo.register(KryoAnnotatedValue.class);    // 16
+    private KryoWriter(final Kryo kryo) {
+        this.kryo = kryo;
     }
 
     @Override
@@ -175,8 +164,15 @@ public class KryoWriter implements GraphWriter {
     }
 
     public static class Builder {
+        private GremlinKryo gremlinKryo = new GremlinKryo();
+
+        public Builder custom(final GremlinKryo gremlinKryo) {
+            this.gremlinKryo = gremlinKryo;
+            return this;
+        }
+
         public KryoWriter build() {
-            return new KryoWriter();
+            return new KryoWriter(this.gremlinKryo.create());
         }
     }
 }
