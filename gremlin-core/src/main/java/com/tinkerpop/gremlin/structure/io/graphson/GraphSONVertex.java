@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.io.IOException;
 
@@ -46,25 +47,13 @@ class GraphSONVertex {
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
                 jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_OUT);
-                vertex.outE().forEach(e -> {
-                    try {
-                        jsonGenerator.writeObject(e);
-                    } catch (IOException ioe) {
-                        // todo: what do we do here?
-                    }
-                });
+                vertex.outE().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
                 jsonGenerator.writeEndArray();
             }
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.IN) {
                 jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_IN);
-                vertex.inE().forEach(e -> {
-                    try {
-                        jsonGenerator.writeObject(e);
-                    } catch (IOException ioe) {
-                        // todo: what do we do here?
-                    }
-                });
+                vertex.inE().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
                 jsonGenerator.writeEndArray();
             }
             jsonGenerator.writeEndObject();
