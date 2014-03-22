@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.giraph.structure.io.tinkergraph;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.tinkergraph.structure.TinkerFactory;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.mapreduce.InputSplit;

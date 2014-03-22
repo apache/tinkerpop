@@ -4,8 +4,8 @@ import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.tinkergraph.structure.TinkerFactory;
-import com.tinkerpop.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
 import java.util.UUID;

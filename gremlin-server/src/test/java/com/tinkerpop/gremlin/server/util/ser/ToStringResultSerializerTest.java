@@ -2,8 +2,8 @@ package com.tinkerpop.gremlin.server.util.ser;
 
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.tinkergraph.structure.TinkerFactory;
-import com.tinkerpop.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.MessageSerializer;
 import com.tinkerpop.gremlin.server.RequestMessage;

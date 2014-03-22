@@ -1,7 +1,8 @@
-package com.tinkerpop.gremlin.process;
+package com.tinkerpop.gremlin.tinkergraph.process;
 
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
+import com.tinkerpop.gremlin.process.ProcessStandardSuite;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.commons.configuration.Configuration;
@@ -12,14 +13,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Executes the Gremlin Process Test Suite using the Groovy flavor of Gremlin process, using TinkerGraph as the test
- * graph database to execute traversals over.
+ * Executes the Standard Gremlin Process Test Suite using TinkerGraph.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(GroovyProcessStandardSuite.class)
-@ProcessStandardSuite.GraphProviderClass(GroovyTinkerGraphProcessStandardTest.class)
-public class GroovyTinkerGraphProcessStandardTest extends AbstractGraphProvider {
+@RunWith(ProcessStandardSuite.class)
+@ProcessStandardSuite.GraphProviderClass(TinkerGraphProcessStandardTest.class)
+public class TinkerGraphProcessStandardTest extends AbstractGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName) {
@@ -31,7 +31,8 @@ public class GroovyTinkerGraphProcessStandardTest extends AbstractGraphProvider 
 
     @Override
     public void clear(final Graph g, final Configuration configuration) throws Exception {
-        g.close();
+        if (g != null)
+            g.close();
 
         if (configuration.containsKey("gremlin.tg.directory")) {
             // this is a non-in-memory configuration so blow away the directory

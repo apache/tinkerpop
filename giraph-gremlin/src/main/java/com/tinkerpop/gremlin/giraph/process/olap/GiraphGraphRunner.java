@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphInputFor
 import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphOutputFormat;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConfiguration;

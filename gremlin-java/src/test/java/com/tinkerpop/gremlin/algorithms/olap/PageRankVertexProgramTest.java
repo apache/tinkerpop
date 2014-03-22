@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.process.olap.ComputeResult;
 import com.tinkerpop.gremlin.process.olap.MessageType;
 import com.tinkerpop.gremlin.structure.query.util.VertexQueryBuilder;
-import com.tinkerpop.tinkergraph.TinkerFactory;
+import com.tinkerpop.gremlin.tinkergraph.TinkerFactory;
 import junit.framework.TestCase;
 
 import java.util.HashMap;

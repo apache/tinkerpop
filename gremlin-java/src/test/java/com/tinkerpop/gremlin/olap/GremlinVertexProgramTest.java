@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.olap;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.StreamFactory;
-import com.tinkerpop.tinkergraph.TinkerFactory;
+import com.tinkerpop.gremlin.tinkergraph.TinkerFactory;
 import org.junit.Test;
 
 import java.util.Iterator;
