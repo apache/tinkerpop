@@ -25,7 +25,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     protected Map<String, Set<Edge>> outEdges = new HashMap<>();
     protected Map<String, Set<Edge>> inEdges = new HashMap<>();
 
-    protected TinkerVertex(final String id, final String label, final TinkerGraph graph) {
+    protected TinkerVertex(final Object id, final String label, final TinkerGraph graph) {
         super(id, label, graph);
     }
 

@@ -30,8 +30,8 @@ import java.util.Set;
 public class TinkerGraph implements Graph, Serializable {
 
     protected Long currentId = -1l;
-    protected Map<String, Vertex> vertices = new HashMap<>();
-    protected Map<String, Edge> edges = new HashMap<>();
+    protected Map<Object, Vertex> vertices = new HashMap<>();
+    protected Map<Object, Edge> edges = new HashMap<>();
     protected TinkerGraphMemory graphMemory = new TinkerGraphMemory(this);
     protected TinkerElementMemory elementMemory;
 
@@ -78,7 +78,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     public Vertex v(final Object id) {
         if (null == id) throw Graph.Exceptions.elementNotFound();
-        final Vertex vertex = this.vertices.get(id.toString());
+        final Vertex vertex = this.vertices.get(id);
         if (null == vertex)
             throw Graph.Exceptions.elementNotFound();
         else
@@ -87,7 +87,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     public Edge e(final Object id) {
         if (null == id) throw Graph.Exceptions.elementNotFound();
-        final Edge edge = this.edges.get(id.toString());
+        final Edge edge = this.edges.get(id);
         if (null == edge)
             throw Graph.Exceptions.elementNotFound();
         else
@@ -125,18 +125,18 @@ public class TinkerGraph implements Graph, Serializable {
 
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
-        Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
+        Object idValue = ElementHelper.getIdValue(keyValues).orElse(null);
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Element.DEFAULT_LABEL);
 
-        if (null != idString) {
-            if (this.vertices.containsKey(idString.toString()))
-                throw Exceptions.vertexWithIdAlreadyExists(idString);
+        if (null != idValue) {
+            if (this.vertices.containsKey(idValue))
+                throw Exceptions.vertexWithIdAlreadyExists(idValue);
         } else {
-            idString = TinkerHelper.getNextId(this);
+            idValue = TinkerHelper.getNextId(this);
         }
 
-        final Vertex vertex = new TinkerVertex(idString.toString(), label, this);
-        this.vertices.put(vertex.getId().toString(), vertex);
+        final Vertex vertex = new TinkerVertex(idValue, label, this);
+        this.vertices.put(vertex.getId(), vertex);
         ElementHelper.attachProperties(vertex, keyValues);
         return vertex;
     }

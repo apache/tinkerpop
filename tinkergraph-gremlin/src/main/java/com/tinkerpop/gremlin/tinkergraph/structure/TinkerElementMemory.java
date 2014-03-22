@@ -75,7 +75,7 @@ public class TinkerElementMemory {
 
     //////////////////////
 
-    private void setValue(final String id, final String key, final Object value) {
+    private void setValue(final Object id, final String key, final Object value) {
         final Map<Object, Map<String, Object>> map = isConstantKey(key) ? this.constantMap : this.setMap;
         final Map<String, Object> nextMap = map.getOrDefault(id, new HashMap<>());
         map.put(id, nextMap);
@@ -84,13 +84,13 @@ public class TinkerElementMemory {
         nextMap.put(key, value);
     }
 
-    private void removeValue(final String id, final String key) {
+    private void removeValue(final Object id, final String key) {
         final Map<String, Object> map = this.setMap.get(id);
         if (null != map)
             map.remove(key);
     }
 
-    private <V> Property<V> getValue(final String id, final String key) {
+    private <V> Property<V> getValue(final Object id, final String key) {
         final Map<String, Object> map = this.isConstantKey(key) ? this.constantMap.get(id) : this.getMap.get(id);
         if (null == map)
             return Property.empty();

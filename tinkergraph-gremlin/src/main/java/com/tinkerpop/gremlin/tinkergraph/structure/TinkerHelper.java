@@ -31,19 +31,19 @@ public class TinkerHelper {
             throw Edge.Exceptions.edgeLabelCanNotBeNull();
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
-        Object idString = ElementHelper.getIdValue(keyValues).orElse(null);
+        Object idValue = ElementHelper.getIdValue(keyValues).orElse(null);
 
         final Edge edge;
-        if (null != idString) {
-            if (graph.edges.containsKey(idString.toString()))
-                throw Graph.Exceptions.edgeWithIdAlreadyExist(idString);
+        if (null != idValue) {
+            if (graph.edges.containsKey(idValue))
+                throw Graph.Exceptions.edgeWithIdAlreadyExist(idValue);
         } else {
-            idString = TinkerHelper.getNextId(graph);
+            idValue = TinkerHelper.getNextId(graph);
         }
 
-        edge = new TinkerEdge(idString.toString(), outVertex, label, inVertex, graph);
+        edge = new TinkerEdge(idValue, outVertex, label, inVertex, graph);
         ElementHelper.attachProperties(edge, keyValues);
-        graph.edges.put(edge.getId().toString(), edge);
+        graph.edges.put(edge.getId(), edge);
         TinkerHelper.addOutEdge(outVertex, label, edge);
         TinkerHelper.addInEdge(inVertex, label, edge);
         return edge;

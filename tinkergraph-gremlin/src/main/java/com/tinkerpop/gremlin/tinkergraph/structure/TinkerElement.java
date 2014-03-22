@@ -14,11 +14,11 @@ import java.util.Map;
 abstract class TinkerElement implements Element, Serializable {
 
     protected Map<String, Property> properties = new HashMap<>();
-    protected final String id;
+    protected final Object id;
     protected final String label;
     protected final TinkerGraph graph;
 
-    protected TinkerElement(final String id, final String label, final TinkerGraph graph) {
+    protected TinkerElement(final Object id, final String label, final TinkerGraph graph) {
         this.graph = graph;
         this.id = id;
         this.label = label;
@@ -28,7 +28,7 @@ abstract class TinkerElement implements Element, Serializable {
         return this.id.hashCode();
     }
 
-    public String getId() {
+    public Object getId() {
         return this.id;
     }
 
