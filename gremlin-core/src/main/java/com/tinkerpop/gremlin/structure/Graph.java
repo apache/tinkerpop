@@ -239,6 +239,8 @@ public interface Graph extends AutoCloseable {
         public interface EdgePropertyFeatures extends PropertyFeatures {
         }
 
+        // todo: how do we sort out features in relation to property types, arrays, ids, memory, etc. (e.g. graph supports id assignment, but only for Longs)
+
         public interface PropertyFeatures extends DataTypeFeatures {
             public static final String FEATURE_PROPERTIES = "Properties";
 
