@@ -385,7 +385,7 @@ public class TinkerGraphTest {
 
         try {
             final TinkerGraph g1 = (TinkerGraph) input.readObject();
-            IoTest.assertClassicGraph(g1, false);
+            IoTest.assertClassicGraph(g1, false, false);
         } catch (ClassNotFoundException cnfe) {
             throw new RuntimeException(cnfe);
         } finally {
