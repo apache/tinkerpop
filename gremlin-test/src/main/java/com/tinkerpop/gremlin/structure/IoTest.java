@@ -172,7 +172,6 @@ public class IoTest extends AbstractGremlinTest {
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             writer.writeGraph(baos, g);
 
-            System.out.println(new String(baos.toByteArray()));
             final JsonNode jsonGraph = new ObjectMapper().readTree(baos.toByteArray());
             final JsonNode onlyVertex = jsonGraph.findValues(GraphSONModule.TOKEN_VERTICES).get(0).get(0);
             final JsonNode idValue = onlyVertex.get(GraphSONModule.TOKEN_ID);
