@@ -31,18 +31,16 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONReader implements GraphReader {
-    private final Graph graphToWriteTo;
     private final ObjectMapper mapper;
     private final long batchSize;
 
-    public GraphSONReader(final Graph g, final ObjectMapper mapper, final long batchSize) {
-        this.graphToWriteTo = g;
+    public GraphSONReader(final ObjectMapper mapper, final long batchSize) {
         this.mapper = mapper;
         this.batchSize = batchSize;
     }
 
     @Override
-    public void readGraph(final InputStream inputStream) throws IOException {
+    public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
         final JsonFactory factory = mapper.getFactory();
         final JsonParser parser = factory.createParser(inputStream);
         final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
@@ -154,13 +152,8 @@ public class GraphSONReader implements GraphReader {
     }
 
     public static class Builder {
-        private final Graph g;
         private ObjectMapper mapper = new GraphSONObjectMapper();
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-
-        public Builder(final Graph g) {
-            this.g = g;
-        }
 
         public Builder customSerializer(final SimpleModule module) {
             this.mapper = new GraphSONObjectMapper(
@@ -174,7 +167,7 @@ public class GraphSONReader implements GraphReader {
         }
 
         public GraphSONReader build() {
-            return new GraphSONReader(g, mapper, batchSize);
+            return new GraphSONReader(mapper, batchSize);
         }
     }
 }

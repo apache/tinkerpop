@@ -14,6 +14,8 @@ import java.io.PipedOutputStream;
  */
 public final class GraphMigrator {
 
+    // todo: tests for this
+
     /**
      * Pipe the data from one graph to another graph.  It is important that the reader and writer utilize the
      * same format.
@@ -47,7 +49,7 @@ public final class GraphMigrator {
 
         new Thread(() -> {
             try {
-                writer.writeGraph(outPipe, toGraph);
+                writer.writeGraph(outPipe, fromGraph);
                 outPipe.flush();
                 outPipe.close();
             } catch (IOException e) {
@@ -55,6 +57,6 @@ public final class GraphMigrator {
             }
         }).start();
 
-        reader.readGraph(inPipe);
+        reader.readGraph(inPipe, toGraph);
     }
 }

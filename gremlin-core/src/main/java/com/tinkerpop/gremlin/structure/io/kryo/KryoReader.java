@@ -42,7 +42,6 @@ import java.util.stream.IntStream;
  */
 public class KryoReader implements GraphReader {
     private final Kryo kryo;
-    private final Graph graphToWriteTo;
     private final long batchSize;
 
     private final File tempFile;
@@ -50,10 +49,9 @@ public class KryoReader implements GraphReader {
 
     final AtomicLong counter = new AtomicLong(0);
 
-    private KryoReader(final Graph g, final Map<Object, Object> idMap, final File tempFile, final long batchSize,
+    private KryoReader(final Map<Object, Object> idMap, final File tempFile, final long batchSize,
                        final Kryo kryo) {
         this.kryo = kryo;
-        this.graphToWriteTo = g;
         this.idMap = idMap;
         this.tempFile = tempFile;
         this.batchSize = batchSize;
@@ -133,7 +131,7 @@ public class KryoReader implements GraphReader {
     }
 
     @Override
-    public void readGraph(final InputStream inputStream) throws IOException {
+    public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
         this.counter.set(0);
         final Input input = new Input(inputStream);
         readHeader(input);
@@ -175,7 +173,7 @@ public class KryoReader implements GraphReader {
 
                     idMap.put(current, v.getId());
 
-                    considerCommit();
+                    considerCommit(graphToWriteTo);
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
@@ -208,7 +206,7 @@ public class KryoReader implements GraphReader {
         // start reading in the edges now from the temp file
         final Input edgeInput = new Input(new FileInputStream(tempFile));
         try {
-            readFromTempEdges(edgeInput);
+            readFromTempEdges(edgeInput, graphToWriteTo);
         } finally {
             if (graphToWriteTo.getFeatures().graph().supportsTransactions())
                 graphToWriteTo.tx().commit();
@@ -217,7 +215,7 @@ public class KryoReader implements GraphReader {
         }
     }
 
-    private void considerCommit() {
+    private void considerCommit(final Graph graphToWriteTo) {
         if (graphToWriteTo.getFeatures().graph().supportsTransactions() &&
             counter.incrementAndGet() % batchSize == 0)
             graphToWriteTo.tx().commit();
@@ -326,7 +324,7 @@ public class KryoReader implements GraphReader {
     /**
      * Read the edges from the temp file and load them to the graph.
      */
-    private void readFromTempEdges(final Input input) {
+    private void readFromTempEdges(final Input input, final Graph graphToWriteTo) {
         while (!input.eof()) {
             // in this case the outId is the id assigned by the graph
             final Object outId = kryo.readClassAndObject(input);
@@ -344,7 +342,7 @@ public class KryoReader implements GraphReader {
                 readElementProperties(input, edgeArgs);
 
                 vOut.addEdge(edgeLabel, inV, edgeArgs.toArray());
-                considerCommit();
+                considerCommit(graphToWriteTo);
 
                 inId = kryo.readClassAndObject(input);
             }
@@ -386,14 +384,12 @@ public class KryoReader implements GraphReader {
     }
 
     public static class Builder {
-        private Graph g;
         private Map<Object, Object> idMap;
         private File tempFile;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private GremlinKryo gremlinKryo = new GremlinKryo();
 
-        public Builder(final Graph g) {
-            this.g = g;
+        public Builder() {
             this.idMap = new HashMap<>();
             this.tempFile = new File(UUID.randomUUID() + ".tmp");
         }
@@ -431,7 +427,7 @@ public class KryoReader implements GraphReader {
         }
 
         public KryoReader build() {
-            return new KryoReader(g, idMap, tempFile, batchSize, this.gremlinKryo.create());
+            return new KryoReader(idMap, tempFile, batchSize, this.gremlinKryo.create());
         }
     }
 }

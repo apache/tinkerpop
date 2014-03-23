@@ -17,7 +17,6 @@ import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -142,10 +141,10 @@ public class IoTest extends AbstractGremlinTest {
         final Configuration configuration = graphProvider.newGraphConfiguration("g2");
         graphProvider.clear(null, configuration);
         final Graph g2 = graphProvider.openTestGraph(configuration);
-        final GraphMLReader r = new GraphMLReader.Builder(g2).build();
+        final GraphMLReader r = new GraphMLReader.Builder().build();
 
         try (final InputStream in = new FileInputStream(f)) {
-            r.readGraph(in);
+            r.readGraph(in, g2);
         }
 
         final Vertex v2 = g2.v("1");
@@ -164,6 +163,7 @@ public class IoTest extends AbstractGremlinTest {
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
         final GraphWriter writer = new GraphSONWriter.Builder().customSerializer(module).build();
 
+        // todo: finish off these tests
         //writer.writeGraph(System.out, g);
     }
 
@@ -182,9 +182,9 @@ public class IoTest extends AbstractGremlinTest {
         final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
         graphProvider.clear(null, configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
-        final KryoReader reader = new KryoReader.Builder(g1)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readGraph(new ByteArrayInputStream(os.toByteArray()));
+        reader.readGraph(new ByteArrayInputStream(os.toByteArray()), g1);
 
         assertClassicGraph(g1, false);
 
@@ -206,8 +206,8 @@ public class IoTest extends AbstractGremlinTest {
         final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
         graphProvider.clear(null, configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
-        final GraphSONReader reader = new GraphSONReader.Builder(g1).build();
-        reader.readGraph(new ByteArrayInputStream(os.toByteArray()));
+        final GraphSONReader reader = new GraphSONReader.Builder().build();
+        reader.readGraph(new ByteArrayInputStream(os.toByteArray()), g1);
 
         assertClassicGraph(g1, true);
 
@@ -230,9 +230,9 @@ public class IoTest extends AbstractGremlinTest {
         final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
         graphProvider.clear(null, configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
-        final KryoReader reader = new KryoReader.Builder(g1)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readGraph(new ByteArrayInputStream(os.toByteArray()));
+        reader.readGraph(new ByteArrayInputStream(os.toByteArray()), g1);
 
         assertModernGraph(g1);
 
@@ -253,7 +253,7 @@ public class IoTest extends AbstractGremlinTest {
         os.close();
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
                 (edgeId, outId, inId, label, properties) -> {
@@ -287,7 +287,7 @@ public class IoTest extends AbstractGremlinTest {
         os.close();
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        final GraphSONReader reader = new GraphSONReader.Builder().build();
         reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
                 (edgeId, outId, inId, label, properties) -> {
                     assertEquals(e.getId().toString(), edgeId.toString()); // lossy
@@ -326,7 +326,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 (vertexId, label, properties) -> {
@@ -369,7 +369,7 @@ public class IoTest extends AbstractGremlinTest {
         os.close();
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        final GraphSONReader reader = new GraphSONReader.Builder().build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 (vertexId, label, properties) -> {
                     assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
@@ -411,7 +411,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
@@ -468,7 +468,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final AtomicBoolean calledVertex = new AtomicBoolean(false);
         final AtomicBoolean calledEdge = new AtomicBoolean(false);
-        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        final GraphSONReader reader = new GraphSONReader.Builder().build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
                 (vertexId, label, properties) -> {
@@ -523,7 +523,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
@@ -580,7 +580,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final AtomicBoolean calledVertex = new AtomicBoolean(false);
         final AtomicBoolean calledEdge = new AtomicBoolean(false);
-        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        final GraphSONReader reader = new GraphSONReader.Builder().build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
                 (vertexId, label, properties) -> {
@@ -636,7 +636,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.BOTH,
@@ -709,7 +709,7 @@ public class IoTest extends AbstractGremlinTest {
         final AtomicBoolean edge1Called = new AtomicBoolean(false);
         final AtomicBoolean edge2Called = new AtomicBoolean(false);
 
-        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        final GraphSONReader reader = new GraphSONReader.Builder().build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.BOTH,
                 (vertexId, label, properties) -> {
@@ -781,7 +781,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
@@ -843,7 +843,7 @@ public class IoTest extends AbstractGremlinTest {
         final AtomicBoolean vertexCalled = new AtomicBoolean(false);
         final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
-        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        final GraphSONReader reader = new GraphSONReader.Builder().build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.IN,
                 (vertexId, label, properties) -> {
@@ -905,7 +905,7 @@ public class IoTest extends AbstractGremlinTest {
 
         final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
@@ -967,7 +967,7 @@ public class IoTest extends AbstractGremlinTest {
         final AtomicBoolean vertexCalled = new AtomicBoolean(false);
         final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
-        final GraphSONReader reader = new GraphSONReader.Builder(g).build();
+        final GraphSONReader reader = new GraphSONReader.Builder().build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
                 (vertexId, label, properties) -> {
@@ -1021,7 +1021,7 @@ public class IoTest extends AbstractGremlinTest {
         writer.writeVertex(os, v1, Direction.OUT);
         os.close();
 
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.BOTH,
@@ -1042,7 +1042,7 @@ public class IoTest extends AbstractGremlinTest {
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.BOTH,
@@ -1063,7 +1063,7 @@ public class IoTest extends AbstractGremlinTest {
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
@@ -1084,7 +1084,7 @@ public class IoTest extends AbstractGremlinTest {
         writer.writeVertex(os, v1, Direction.IN);
         os.close();
 
-        final KryoReader reader = new KryoReader.Builder(g)
+        final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
         reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
                 Direction.OUT,
@@ -1338,16 +1338,16 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     private static void readGraphMLIntoGraph(final Graph g) throws IOException {
-        final GraphReader reader = new GraphMLReader.Builder(g).build();
+        final GraphReader reader = new GraphMLReader.Builder().build();
         try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1.xml")) {
-            reader.readGraph(stream);
+            reader.readGraph(stream, g);
         }
     }
 
     private static void readGraphSONIntoGraph(final Graph g) throws IOException {
-        final GraphReader reader = new GraphSONReader.Builder(g).build();
+        final GraphReader reader = new GraphSONReader.Builder().build();
         try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "graph-example-1.json")) {
-            reader.readGraph(stream);
+            reader.readGraph(stream, g);
         }
     }
 

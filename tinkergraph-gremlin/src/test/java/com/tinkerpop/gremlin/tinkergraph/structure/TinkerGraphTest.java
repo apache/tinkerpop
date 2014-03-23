@@ -107,9 +107,9 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteGratefulGraph() throws IOException {
         final Graph g = TinkerGraph.open();
-        final GraphReader reader = new GraphMLReader.Builder(g).build();
+        final GraphReader reader = new GraphMLReader.Builder().build();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/graphml/graph-example-2.xml")) {
-            reader.readGraph(stream);
+            reader.readGraph(stream, g);
         }
 
         final OutputStream os = new FileOutputStream("/tmp/graph-example-2.gio");

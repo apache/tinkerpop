@@ -69,8 +69,8 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                     g = TinkerGraph.open();
                     final ByteBufferOutputStream output = new ByteBufferOutputStream();
                     new KryoWriter.Builder().build().writeGraph(output, this.graph);
-                    final KryoReader reader = new KryoReader.Builder(g).build();
-                    reader.readGraph(new ByteBufferInputStream(output.getByteBuffer()));
+                    final KryoReader reader = new KryoReader.Builder().build();
+                    reader.readGraph(new ByteBufferInputStream(output.getByteBuffer()), g);
                 } catch (IOException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }

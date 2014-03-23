@@ -33,16 +33,13 @@ import java.util.Optional;
 public class GraphMLReader implements GraphReader {
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
-    private final Graph graphToWriteTo;
-
     private final Optional<String> vertexIdKey;
     private final Optional<String> edgeIdKey;
     private final Optional<String> edgeLabelKey;
     private final long batchSize;
 
-    private GraphMLReader(final Graph graph, final String vertexIdKey, final String edgeIdKey,
+    private GraphMLReader(final String vertexIdKey, final String edgeIdKey,
                           final String edgeLabelKey, final long batchSize) {
-        this.graphToWriteTo = graph;
         this.vertexIdKey = Optional.ofNullable(vertexIdKey);
         this.edgeIdKey = Optional.ofNullable(edgeIdKey);
         this.edgeLabelKey = Optional.ofNullable(edgeLabelKey);
@@ -67,7 +64,7 @@ public class GraphMLReader implements GraphReader {
     }
 
     @Override
-    public void readGraph(final InputStream graphInputStream) throws IOException {
+    public void readGraph(final InputStream graphInputStream,final Graph graphToWriteTo) throws IOException {
         try {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
 
@@ -234,18 +231,10 @@ public class GraphMLReader implements GraphReader {
      * Allows configuration and construction of the GraphMLReader instance.
      */
     public static final class Builder {
-        private final Graph g;
         private String vertexIdKey = null;
         private String edgeIdKey = null;
         private String edgeLabelKey = null;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-
-        public Builder(final Graph g) {
-            if (null == g)
-                throw new IllegalArgumentException("Graph argument cannot be null");
-
-            this.g = g;
-        }
 
         public Builder vertexIdKey(final String vertexIdKey) {
             this.vertexIdKey = vertexIdKey;
@@ -268,7 +257,7 @@ public class GraphMLReader implements GraphReader {
         }
 
         public GraphMLReader build() {
-            return new GraphMLReader(g, vertexIdKey, edgeIdKey, edgeLabelKey, batchSize);
+            return new GraphMLReader(vertexIdKey, edgeIdKey, edgeLabelKey, batchSize);
         }
     }
 }

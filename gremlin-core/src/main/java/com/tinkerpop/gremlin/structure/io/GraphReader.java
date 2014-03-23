@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.io;
 
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import com.tinkerpop.gremlin.util.function.TriFunction;
@@ -21,7 +22,7 @@ public interface GraphReader {
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
      */
-    public void readGraph(final InputStream inputStream) throws IOException;
+    public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException;
 
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties but not edges.
