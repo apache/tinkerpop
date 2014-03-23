@@ -33,8 +33,7 @@ public class GraphSONModule extends SimpleModule {
     public static final String TOKEN_LABEL = "label";
 
     public GraphSONModule() {
-        // todo: fix versioning of GraphSON module
-        super("graphson", new Version(1, 0, 0, "", "com.tinkerpop.gremlin", "gremlin-core"));
+        super("graphson");
         addSerializer(Edge.class, new EdgeJacksonSerializer());
         addSerializer(Property.class, new PropertyJacksonSerializer());
         addSerializer(Vertex.class, new VertexJacksonSerializer());
