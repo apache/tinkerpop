@@ -88,12 +88,13 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphML() throws Exception {
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        final GraphMLWriter w = new GraphMLWriter.Builder().setNormalize(true).build();
-        w.writeGraph(bos, g);
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            final GraphMLWriter w = new GraphMLWriter.Builder().setNormalize(true).build();
+            w.writeGraph(bos, g);
 
-        final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-normalized.xml"));
-        assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+            final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-normalized.xml"));
+            assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+        }
     }
 
     /**
@@ -106,14 +107,15 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphMLWithEdgeLabel() throws Exception {
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        final GraphMLWriter w = new GraphMLWriter.Builder()
-                .setNormalize(true)
-                .edgeLabelKey("label").build();
-        w.writeGraph(bos, g);
+        try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            final GraphMLWriter w = new GraphMLWriter.Builder()
+                    .setNormalize(true)
+                    .edgeLabelKey("label").build();
+            w.writeGraph(bos, g);
 
-        String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-schema-valid.xml"));
-        assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+            String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-schema-valid.xml"));
+            assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+        }
     }
 
     /**
@@ -194,22 +196,24 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteClassicToKryo() throws Exception {
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeGraph(os, g);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeGraph(os, g);
 
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
-        graphProvider.clear(null, configuration);
-        final Graph g1 = graphProvider.openTestGraph(configuration);
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readGraph(new ByteArrayInputStream(os.toByteArray()), g1);
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+            graphProvider.clear(null, configuration);
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readGraph(bais, g1);
+            }
 
-        assertClassicGraph(g1, false);
+            assertClassicGraph(g1, false);
 
-        // need to manually close the "g1" instance
-        graphProvider.clear(g1, configuration);
+            // need to manually close the "g1" instance
+            graphProvider.clear(g1, configuration);
+        }
     }
 
     @Test
@@ -218,21 +222,23 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteClassicToGraphSON() throws Exception {
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
-        writer.writeGraph(os, g);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = new GraphSONWriter.Builder().build();
+            writer.writeGraph(os, g);
 
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
-        graphProvider.clear(null, configuration);
-        final Graph g1 = graphProvider.openTestGraph(configuration);
-        final GraphSONReader reader = new GraphSONReader.Builder().build();
-        reader.readGraph(new ByteArrayInputStream(os.toByteArray()), g1);
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+            graphProvider.clear(null, configuration);
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            final GraphSONReader reader = new GraphSONReader.Builder().build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readGraph(bais, g1);
+            }
 
-        assertClassicGraph(g1, true);
+            assertClassicGraph(g1, true);
 
-        // need to manually close the "g1" instance
-        graphProvider.clear(g1, configuration);
+            // need to manually close the "g1" instance
+            graphProvider.clear(g1, configuration);
+        }
     }
 
     @Test
@@ -242,22 +248,24 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldReadWriteModernToKryo() throws Exception {
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeGraph(os, g);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeGraph(os, g);
 
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
-        graphProvider.clear(null, configuration);
-        final Graph g1 = graphProvider.openTestGraph(configuration);
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readGraph(new ByteArrayInputStream(os.toByteArray()), g1);
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+            graphProvider.clear(null, configuration);
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readGraph(bais, g1);
+            }
 
-        assertModernGraph(g1);
+            assertModernGraph(g1);
 
-        // need to manually close the "g1" instance
-        graphProvider.clear(g1, configuration);
+            // need to manually close the "g1" instance
+            graphProvider.clear(g1, configuration);
+        }
     }
 
     @Test
@@ -267,30 +275,32 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeEdge(os, e);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeEdge(os, e);
 
-        final AtomicBoolean called = new AtomicBoolean(false);
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
-                (edgeId, outId, inId, label, properties) -> {
-                    assertEquals(e.getId(), edgeId);
-                    assertEquals(v1.getId(), outId);
-                    assertEquals(v2.getId(), inId);
-                    assertEquals(e.getLabel(), label);
-                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
-                    assertEquals("weight", properties[0]);
-                    assertEquals(0.5f, properties[1]);
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readEdge(bais,
+                        (edgeId, outId, inId, label, properties) -> {
+                            assertEquals(e.getId(), edgeId);
+                            assertEquals(v1.getId(), outId);
+                            assertEquals(v2.getId(), inId);
+                            assertEquals(e.getLabel(), label);
+                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals("weight", properties[0]);
+                            assertEquals(0.5f, properties[1]);
 
-                    called.set(true);
+                            called.set(true);
 
-                    return null;
-                });
+                            return null;
+                        });
+            }
 
-        assertTrue(called.get());
+            assertTrue(called.get());
+        }
     }
 
     @Test
@@ -301,29 +311,31 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
-        writer.writeEdge(os, e);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = new GraphSONWriter.Builder().build();
+            writer.writeEdge(os, e);
 
-        final AtomicBoolean called = new AtomicBoolean(false);
-        final GraphSONReader reader = new GraphSONReader.Builder().build();
-        reader.readEdge(new ByteArrayInputStream(os.toByteArray()),
-                (edgeId, outId, inId, label, properties) -> {
-                    assertEquals(e.getId().toString(), edgeId.toString()); // lossy
-                    assertEquals(v1.getId().toString(), outId.toString()); // lossy
-                    assertEquals(v2.getId().toString(), inId.toString());  // lossy
-                    assertEquals(e.getLabel(), label);
-                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
-                    assertEquals("weight", properties[0]);
-                    assertEquals(0.5d, properties[1]);    // lossy
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = new GraphSONReader.Builder().build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readEdge(bais,
+                        (edgeId, outId, inId, label, properties) -> {
+                            assertEquals(e.getId().toString(), edgeId.toString()); // lossy
+                            assertEquals(v1.getId().toString(), outId.toString()); // lossy
+                            assertEquals(v2.getId().toString(), inId.toString());  // lossy
+                            assertEquals(e.getLabel(), label);
+                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals("weight", properties[0]);
+                            assertEquals(0.5d, properties[1]);    // lossy
 
-                    called.set(true);
+                            called.set(true);
 
-                    return null;
-                });
+                            return null;
+                        });
+            }
 
-        assertTrue(called.get());
+            assertTrue(called.get());
+        }
     }
 
     @Test
@@ -339,39 +351,41 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeVertex(os, v1);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeVertex(os, v1);
 
-        final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId(), vertexId);
-                    assertEquals(v1.getLabel(), label);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId(), vertexId);
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(2, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
-                    assertEquals(AnnotatedList.make(), m.get("locations"));
+                            assertEquals(2, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                    // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                    // set after the fact.
-                    final Vertex vsub1 = mock(Vertex.class);
-                    when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                    return vsub1;
-                });
+                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
+                            // set after the fact.
+                            final Vertex vsub1 = mock(Vertex.class);
+                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
+                            return vsub1;
+                        });
+            }
 
-        verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-        verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
+            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        }
     }
 
     @Test
@@ -383,32 +397,34 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
-        writer.writeVertex(os, v1);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = new GraphSONWriter.Builder().build();
+            writer.writeVertex(os, v1);
 
-        final AtomicBoolean called = new AtomicBoolean(false);
-        final GraphSONReader reader = new GraphSONReader.Builder().build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
-                    assertEquals(v1.getLabel(), label);
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = new GraphSONReader.Builder().build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(1, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(1, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
 
-                    called.set(true);
-                    return null;
-                });
+                            called.set(true);
+                            return null;
+                        });
+            }
 
-        assertTrue(called.get());
+            assertTrue(called.get());
+        }
     }
 
     @Test
@@ -424,52 +440,55 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         final Edge e = v1.addEdge("friends", v2, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.OUT);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.OUT);
 
-        final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.OUT,
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId(), vertexId);
-                    assertEquals(v1.getLabel(), label);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.OUT,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId(), vertexId);
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(2, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
-                    assertEquals(AnnotatedList.make(), m.get("locations"));
+                            assertEquals(2, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                    // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                    // set after the fact.
-                    final Vertex vsub1 = mock(Vertex.class);
-                    when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                    when(vsub1.getId()).thenReturn(v1.getId());
-                    return vsub1;
-                },
-                (edgeId, outId, inId, label, properties) -> {
-                    assertEquals(e.getId(), edgeId);
-                    assertEquals(v1.getId(), outId);
-                    assertEquals(v2.getId(), inId);
-                    assertEquals(e.getLabel(), label);
-                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
-                    assertEquals("weight", properties[0]);
-                    assertEquals(0.5f, properties[1]);
+                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
+                            // set after the fact.
+                            final Vertex vsub1 = mock(Vertex.class);
+                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.getId()).thenReturn(v1.getId());
+                            return vsub1;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            assertEquals(e.getId(), edgeId);
+                            assertEquals(v1.getId(), outId);
+                            assertEquals(v2.getId(), inId);
+                            assertEquals(e.getLabel(), label);
+                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals("weight", properties[0]);
+                            assertEquals(0.5f, properties[1]);
 
-                    return null;
-                });
+                            return null;
+                        });
+                }
 
-        verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-        verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
+            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+
+            }
     }
 
     @Test
@@ -481,46 +500,48 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         final Edge e = v1.addEdge("friends", v2, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.OUT);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = new GraphSONWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.OUT);
 
-        final AtomicBoolean calledVertex = new AtomicBoolean(false);
-        final AtomicBoolean calledEdge = new AtomicBoolean(false);
-        final GraphSONReader reader = new GraphSONReader.Builder().build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.OUT,
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
-                    assertEquals(v1.getLabel(), label);
+            final AtomicBoolean calledVertex = new AtomicBoolean(false);
+            final AtomicBoolean calledEdge = new AtomicBoolean(false);
+            final GraphSONReader reader = new GraphSONReader.Builder().build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.OUT,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(1, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
-                    calledVertex.set(true);
-                    return null;
-                },
-                (edgeId, outId, inId, label, properties) -> {
-                    assertEquals(e.getId().toString(), edgeId.toString());  // lossy
-                    assertEquals(v1.getId().toString(), outId.toString());  // lossy
-                    assertEquals(v2.getId().toString(), inId.toString());   // lossy
-                    assertEquals(e.getLabel(), label);
-                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
-                    assertEquals("weight", properties[0]);
-                    assertEquals(0.5d, properties[1]);                      // lossy
+                            assertEquals(1, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            calledVertex.set(true);
+                            return null;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            assertEquals(e.getId().toString(), edgeId.toString());  // lossy
+                            assertEquals(v1.getId().toString(), outId.toString());  // lossy
+                            assertEquals(v2.getId().toString(), inId.toString());   // lossy
+                            assertEquals(e.getLabel(), label);
+                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals("weight", properties[0]);
+                            assertEquals(0.5d, properties[1]);                      // lossy
 
-                    calledEdge.set(true);
-                    return null;
-                });
+                            calledEdge.set(true);
+                            return null;
+                        });
+            }
 
-        assertTrue(calledVertex.get());
-        assertTrue(calledEdge.get());
+            assertTrue(calledVertex.get());
+            assertTrue(calledEdge.get());
+        }
     }
 
     @Test
@@ -536,52 +557,54 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         final Edge e = v2.addEdge("friends", v1, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.IN);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.IN);
 
-        final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.IN,
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId(), vertexId);
-                    assertEquals(v1.getLabel(), label);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.IN,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId(), vertexId);
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(2, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
-                    assertEquals(AnnotatedList.make(), m.get("locations"));
+                            assertEquals(2, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                    // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                    // set after the fact.
-                    final Vertex vsub1 = mock(Vertex.class);
-                    when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                    when(vsub1.getId()).thenReturn(v1.getId());
-                    return vsub1;
-                },
-                (edgeId, outId, inId, label, properties) -> {
-                    assertEquals(e.getId(), edgeId);
-                    assertEquals(v2.getId(), outId);
-                    assertEquals(v1.getId(), inId);
-                    assertEquals(e.getLabel(), label);
-                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
-                    assertEquals("weight", properties[0]);
-                    assertEquals(0.5f, properties[1]);
+                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
+                            // set after the fact.
+                            final Vertex vsub1 = mock(Vertex.class);
+                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.getId()).thenReturn(v1.getId());
+                            return vsub1;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            assertEquals(e.getId(), edgeId);
+                            assertEquals(v2.getId(), outId);
+                            assertEquals(v1.getId(), inId);
+                            assertEquals(e.getLabel(), label);
+                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals("weight", properties[0]);
+                            assertEquals(0.5f, properties[1]);
 
-                    return null;
-                });
+                            return null;
+                        });
+            }
 
-        verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-        verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
+            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        }
     }
 
     @Test
@@ -593,46 +616,49 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         final Edge e = v2.addEdge("friends", v1, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.IN);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = new GraphSONWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.IN);
+            os.close();
 
-        final AtomicBoolean calledVertex = new AtomicBoolean(false);
-        final AtomicBoolean calledEdge = new AtomicBoolean(false);
-        final GraphSONReader reader = new GraphSONReader.Builder().build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.IN,
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
-                    assertEquals(v1.getLabel(), label);
+            final AtomicBoolean calledVertex = new AtomicBoolean(false);
+            final AtomicBoolean calledEdge = new AtomicBoolean(false);
+            final GraphSONReader reader = new GraphSONReader.Builder().build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.IN,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(1, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
-                    calledVertex.set(true);
-                    return null;
-                },
-                (edgeId, outId, inId, label, properties) -> {
-                    assertEquals(e.getId().toString(), edgeId.toString()); // lossy
-                    assertEquals(v1.getId().toString(), inId.toString());  // lossy
-                    assertEquals(v2.getId().toString(), outId.toString()); // lossy
-                    assertEquals(e.getLabel(), label);
-                    assertEquals(e.getPropertyKeys().size(), properties.length / 2);
-                    assertEquals("weight", properties[0]);
-                    assertEquals(0.5d, properties[1]);                     // lossy
+                            assertEquals(1, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            calledVertex.set(true);
+                            return null;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            assertEquals(e.getId().toString(), edgeId.toString()); // lossy
+                            assertEquals(v1.getId().toString(), inId.toString());  // lossy
+                            assertEquals(v2.getId().toString(), outId.toString()); // lossy
+                            assertEquals(e.getLabel(), label);
+                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals("weight", properties[0]);
+                            assertEquals(0.5d, properties[1]);                     // lossy
 
-                    calledEdge.set(true);
-                    return null;
-                });
+                            calledEdge.set(true);
+                            return null;
+                        });
+            }
 
-        assertTrue(calledVertex.get());
-        assertTrue(calledEdge.get());
+            assertTrue(calledVertex.get());
+            assertTrue(calledEdge.get());
+        }
     }
 
     @Test
@@ -649,64 +675,66 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.BOTH);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.BOTH);
 
-        final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.BOTH,
-                (vertexId, label, properties) -> {
-                    if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                        assertEquals(v1.getId(), vertexId);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.BOTH,
+                        (vertexId, label, properties) -> {
+                            if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                                assertEquals(v1.getId(), vertexId);
 
-                    assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(2, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
-                    assertEquals(AnnotatedList.make(), m.get("locations"));
+                            assertEquals(2, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                    // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                    // set after the fact.
-                    final Vertex vsub1 = mock(Vertex.class);
-                    when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                    when(vsub1.getId()).thenReturn(v1.getId());
-                    return vsub1;
-                },
-                (edgeId, outId, inId, label, properties) -> {
-                    if (edgeId.equals(e1.getId())) {
-                        assertEquals(v2.getId(), outId);
-                        assertEquals(v1.getId(), inId);
-                        assertEquals(e1.getLabel(), label);
-                        assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
-                        assertEquals("weight", properties[0]);
-                        assertEquals(0.5f, properties[1]);
-                    } else if (edgeId.equals(e2.getId())) {
-                        assertEquals(v1.getId(), outId);
-                        assertEquals(v2.getId(), inId);
-                        assertEquals(e2.getLabel(), label);
-                        assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
-                        assertEquals("weight", properties[0]);
-                        assertEquals(1.0f, properties[1]);
-                    } else {
-                        fail("An edge id generated that does not exist");
-                    }
+                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
+                            // set after the fact.
+                            final Vertex vsub1 = mock(Vertex.class);
+                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.getId()).thenReturn(v1.getId());
+                            return vsub1;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            if (edgeId.equals(e1.getId())) {
+                                assertEquals(v2.getId(), outId);
+                                assertEquals(v1.getId(), inId);
+                                assertEquals(e1.getLabel(), label);
+                                assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                                assertEquals("weight", properties[0]);
+                                assertEquals(0.5f, properties[1]);
+                            } else if (edgeId.equals(e2.getId())) {
+                                assertEquals(v1.getId(), outId);
+                                assertEquals(v2.getId(), inId);
+                                assertEquals(e2.getLabel(), label);
+                                assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                                assertEquals("weight", properties[0]);
+                                assertEquals(1.0f, properties[1]);
+                            } else {
+                                fail("An edge id generated that does not exist");
+                            }
 
-                    return null;
-                });
+                            return null;
+                        });
+            }
 
-        verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-        verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
+            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        }
     }
 
     @Test
@@ -719,65 +747,66 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.BOTH);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = new GraphSONWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.BOTH);
 
+            final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+            final AtomicBoolean edge1Called = new AtomicBoolean(false);
+            final AtomicBoolean edge2Called = new AtomicBoolean(false);
 
-        final AtomicBoolean vertexCalled = new AtomicBoolean(false);
-        final AtomicBoolean edge1Called = new AtomicBoolean(false);
-        final AtomicBoolean edge2Called = new AtomicBoolean(false);
+            final GraphSONReader reader = new GraphSONReader.Builder().build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.BOTH,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
+                            assertEquals(v1.getLabel(), label);
 
-        final GraphSONReader reader = new GraphSONReader.Builder().build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.BOTH,
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
-                    assertEquals(v1.getLabel(), label);
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            assertEquals(1, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
 
-                    assertEquals(1, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
+                            vertexCalled.set(true);
 
-                    vertexCalled.set(true);
+                            return null;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            if (edgeId.toString().equals(e1.getId().toString())) {      // lossy
+                                assertEquals(v2.getId().toString(), outId.toString());  // lossy
+                                assertEquals(v1.getId().toString(), inId.toString());   // lossy
+                                assertEquals(e1.getLabel(), label);
+                                assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                                assertEquals("weight", properties[0]);
+                                assertEquals(0.5d, properties[1]);                      // lossy
 
-                    return null;
-                },
-                (edgeId, outId, inId, label, properties) -> {
-                    if (edgeId.toString().equals(e1.getId().toString())) {      // lossy
-                        assertEquals(v2.getId().toString(), outId.toString());  // lossy
-                        assertEquals(v1.getId().toString(), inId.toString());   // lossy
-                        assertEquals(e1.getLabel(), label);
-                        assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
-                        assertEquals("weight", properties[0]);
-                        assertEquals(0.5d, properties[1]);                      // lossy
+                                edge1Called.set(true);
+                            } else if (edgeId.toString().equals(e2.getId().toString())) { // lossy
+                                assertEquals(v1.getId().toString(), outId.toString());    // lossy
+                                assertEquals(v2.getId().toString(), inId.toString());     // lossy
+                                assertEquals(e2.getLabel(), label);
+                                assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                                assertEquals("weight", properties[0]);
+                                assertEquals(1.0d, properties[1]);                        // lossy
 
-                        edge1Called.set(true);
-                    } else if (edgeId.toString().equals(e2.getId().toString())) { // lossy
-                        assertEquals(v1.getId().toString(), outId.toString());    // lossy
-                        assertEquals(v2.getId().toString(), inId.toString());     // lossy
-                        assertEquals(e2.getLabel(), label);
-                        assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
-                        assertEquals("weight", properties[0]);
-                        assertEquals(1.0d, properties[1]);                        // lossy
+                                edge2Called.set(true);
+                            } else {
+                                fail("An edge id generated that does not exist");
+                            }
 
-                        edge2Called.set(true);
-                    } else {
-                        fail("An edge id generated that does not exist");
-                    }
+                            return null;
+                        });
+            }
 
-                    return null;
-                });
-
-        assertTrue(vertexCalled.get());
-        assertTrue(edge1Called.get());
-        assertTrue(edge2Called.get());
+            assertTrue(vertexCalled.get());
+            assertTrue(edge1Called.get());
+            assertTrue(edge2Called.get());
+        }
     }
 
     @Test
@@ -794,55 +823,57 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
         v1.addEdge("friends", v2, "weight", 1.0f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.BOTH);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.BOTH);
 
-        final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.IN,
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId(), vertexId);
-                    assertEquals(v1.getLabel(), label);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.IN,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId(), vertexId);
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(2, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
-                    assertEquals(AnnotatedList.make(), m.get("locations"));
+                            assertEquals(2, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                    // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                    // set after the fact.
-                    final Vertex vsub1 = mock(Vertex.class);
-                    when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                    when(vsub1.getId()).thenReturn(v1.getId());
-                    return vsub1;
-                },
-                (edgeId, outId, inId, label, properties) -> {
-                    if (edgeId.equals(e1.getId())) {
-                        assertEquals(v2.getId(), outId);
-                        assertEquals(v1.getId(), inId);
-                        assertEquals(e1.getLabel(), label);
-                        assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
-                        assertEquals("weight", properties[0]);
-                        assertEquals(0.5f, properties[1]);
-                    } else {
-                        fail("An edge id generated that does not exist");
-                    }
+                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
+                            // set after the fact.
+                            final Vertex vsub1 = mock(Vertex.class);
+                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.getId()).thenReturn(v1.getId());
+                            return vsub1;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            if (edgeId.equals(e1.getId())) {
+                                assertEquals(v2.getId(), outId);
+                                assertEquals(v1.getId(), inId);
+                                assertEquals(e1.getLabel(), label);
+                                assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                                assertEquals("weight", properties[0]);
+                                assertEquals(0.5f, properties[1]);
+                            } else {
+                                fail("An edge id generated that does not exist");
+                            }
 
-                    return null;
-                });
+                            return null;
+                        });
+            }
 
-        verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-        verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
+            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        }
     }
 
     @Test
@@ -855,53 +886,55 @@ public class IoTest extends AbstractGremlinTest {
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
         v1.addEdge("friends", v2, "weight", 1.0f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.BOTH);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = new GraphSONWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.BOTH);
 
-        final AtomicBoolean vertexCalled = new AtomicBoolean(false);
-        final AtomicBoolean edgeCalled = new AtomicBoolean(false);
+            final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+            final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
-        final GraphSONReader reader = new GraphSONReader.Builder().build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.IN,
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
-                    assertEquals(v1.getLabel(), label);
+            final GraphSONReader reader = new GraphSONReader.Builder().build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.IN,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(1, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(1, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
 
-                    vertexCalled.set(true);
+                            vertexCalled.set(true);
 
-                    return null;
-                },
-                (edgeId, outId, inId, label, properties) -> {
-                    if (edgeId.toString().equals(e1.getId().toString())) { // lossy
-                        assertEquals(v2.getId().toString(), outId.toString()); // lossy
-                        assertEquals(v1.getId().toString(), inId.toString()); // lossy
-                        assertEquals(e1.getLabel(), label);
-                        assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
-                        assertEquals("weight", properties[0]);
-                        assertEquals(0.5d, properties[1]);                    // lossy
+                            return null;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            if (edgeId.toString().equals(e1.getId().toString())) { // lossy
+                                assertEquals(v2.getId().toString(), outId.toString()); // lossy
+                                assertEquals(v1.getId().toString(), inId.toString()); // lossy
+                                assertEquals(e1.getLabel(), label);
+                                assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                                assertEquals("weight", properties[0]);
+                                assertEquals(0.5d, properties[1]);                    // lossy
 
-                        edgeCalled.set(true);
-                    } else {
-                        fail("An edge id generated that does not exist");
-                    }
+                                edgeCalled.set(true);
+                            } else {
+                                fail("An edge id generated that does not exist");
+                            }
 
-                    return null;
-                });
+                            return null;
+                        });
+            }
 
-        assertTrue(edgeCalled.get());
-        assertTrue(vertexCalled.get());
+            assertTrue(edgeCalled.get());
+            assertTrue(vertexCalled.get());
+        }
     }
 
     @Test
@@ -918,55 +951,57 @@ public class IoTest extends AbstractGremlinTest {
         v2.addEdge("friends", v1, "weight", 0.5f);
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.BOTH);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.BOTH);
 
-        final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
 
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.OUT,
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId(), vertexId);
-                    assertEquals(v1.getLabel(), label);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.OUT,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId(), vertexId);
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(2, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
-                    assertEquals(AnnotatedList.make(), m.get("locations"));
+                            assertEquals(2, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                    // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                    // set after the fact.
-                    final Vertex vsub1 = mock(Vertex.class);
-                    when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                    when(vsub1.getId()).thenReturn(v1.getId());
-                    return vsub1;
-                },
-                (edgeId, outId, inId, label, properties) -> {
-                    if (edgeId.equals(e2.getId())) {
-                        assertEquals(v1.getId(), outId);
-                        assertEquals(v2.getId(), inId);
-                        assertEquals(e2.getLabel(), label);
-                        assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
-                        assertEquals("weight", properties[0]);
-                        assertEquals(1.0f, properties[1]);
-                    } else {
-                        fail("An edge id generated that does not exist");
-                    }
+                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
+                            // set after the fact.
+                            final Vertex vsub1 = mock(Vertex.class);
+                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.getId()).thenReturn(v1.getId());
+                            return vsub1;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            if (edgeId.equals(e2.getId())) {
+                                assertEquals(v1.getId(), outId);
+                                assertEquals(v2.getId(), inId);
+                                assertEquals(e2.getLabel(), label);
+                                assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                                assertEquals("weight", properties[0]);
+                                assertEquals(1.0f, properties[1]);
+                            } else {
+                                fail("An edge id generated that does not exist");
+                            }
 
-                    return null;
-                });
+                            return null;
+                        });
+            }
 
-        verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-        verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
+            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        }
     }
 
     @Test
@@ -979,53 +1014,55 @@ public class IoTest extends AbstractGremlinTest {
         v2.addEdge("friends", v1, "weight", 0.5f);
         final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final GraphSONWriter writer = new GraphSONWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.BOTH);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = new GraphSONWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.BOTH);
 
-        final AtomicBoolean vertexCalled = new AtomicBoolean(false);
-        final AtomicBoolean edgeCalled = new AtomicBoolean(false);
+            final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+            final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
-        final GraphSONReader reader = new GraphSONReader.Builder().build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.OUT,
-                (vertexId, label, properties) -> {
-                    assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
-                    assertEquals(v1.getLabel(), label);
+            final GraphSONReader reader = new GraphSONReader.Builder().build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.OUT,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
+                            assertEquals(v1.getLabel(), label);
 
-                    final Map<String, Object> m = new HashMap<>();
-                    for (int i = 0; i < properties.length; i = i + 2) {
-                        if (!properties[i].equals(Element.ID))
-                            m.put((String) properties[i], properties[i + 1]);
-                    }
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
 
-                    assertEquals(1, m.size());
-                    assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(1, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
 
-                    vertexCalled.set(true);
+                            vertexCalled.set(true);
 
-                    return null;
-                },
-                (edgeId, outId, inId, label, properties) -> {
-                    if (edgeId.toString().equals(e2.getId().toString())) {     // lossy
-                        assertEquals(v1.getId().toString(), outId.toString()); // lossy
-                        assertEquals(v2.getId().toString(), inId.toString()); // lossy
-                        assertEquals(e2.getLabel(), label);
-                        assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
-                        assertEquals("weight", properties[0]);
-                        assertEquals(1.0d, properties[1]);                 // lossy
+                            return null;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            if (edgeId.toString().equals(e2.getId().toString())) {     // lossy
+                                assertEquals(v1.getId().toString(), outId.toString()); // lossy
+                                assertEquals(v2.getId().toString(), inId.toString()); // lossy
+                                assertEquals(e2.getLabel(), label);
+                                assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                                assertEquals("weight", properties[0]);
+                                assertEquals(1.0d, properties[1]);                 // lossy
 
-                        edgeCalled.set(true);
-                    } else {
-                        fail("An edge id generated that does not exist");
-                    }
+                                edgeCalled.set(true);
+                            } else {
+                                fail("An edge id generated that does not exist");
+                            }
 
-                    return null;
-                });
+                            return null;
+                        });
+            }
 
-        assertTrue(edgeCalled.get());
-        assertTrue(vertexCalled.get());
+            assertTrue(edgeCalled.get());
+            assertTrue(vertexCalled.get());
+        }
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1036,17 +1073,19 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.OUT);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.OUT);
 
         final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.BOTH,
-                (vertexId, label, properties) -> null,
-                (edgeId, outId, inId, label, properties) -> null);
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.BOTH,
+                        (vertexId, label, properties) -> null,
+                        (edgeId, outId, inId, label, properties) -> null);
+            }
+        }
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1057,17 +1096,19 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         v2.addEdge("friends", v1, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.IN);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.IN);
 
-        final KryoReader reader = new KryoReader.Builder()
+            final KryoReader reader = new KryoReader.Builder()
                 .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.BOTH,
-                (vertexId, label, properties) -> null,
-                (edgeId, outId, inId, label, properties) -> null);
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.BOTH,
+                        (vertexId, label, properties) -> null,
+                        (edgeId, outId, inId, label, properties) -> null);
+            }
+        }
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1078,17 +1119,19 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         v2.addEdge("friends", v1, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.IN);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.IN);
 
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.OUT,
-                (vertexId, label, properties) -> null,
-                (edgeId, outId, inId, label, properties) -> null);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.OUT,
+                        (vertexId, label, properties) -> null,
+                        (edgeId, outId, inId, label, properties) -> null);
+            }
+        }
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1099,17 +1142,19 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5f);
 
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final KryoWriter writer = new KryoWriter.Builder().build();
-        writer.writeVertex(os, v1, Direction.IN);
-        os.close();
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = new KryoWriter.Builder().build();
+            writer.writeVertex(os, v1, Direction.IN);
 
-        final KryoReader reader = new KryoReader.Builder()
-                .setWorkingDirectory(File.separator + "tmp").build();
-        reader.readVertex(new ByteArrayInputStream(os.toByteArray()),
-                Direction.OUT,
-                (vertexId, label, properties) -> null,
-                (edgeId, outId, inId, label, properties) -> null);
+            final KryoReader reader = new KryoReader.Builder()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.OUT,
+                        (vertexId, label, properties) -> null,
+                        (edgeId, outId, inId, label, properties) -> null);
+            }
+        }
     }
 
     public static void assertModernGraph(final Graph g1) {
