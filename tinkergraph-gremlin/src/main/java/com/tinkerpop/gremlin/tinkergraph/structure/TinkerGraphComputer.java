@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.io.GraphMigrator;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -67,10 +68,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             if (this.configuration.getBoolean(CLONE_GRAPH, false)) {
                 try {
                     g = TinkerGraph.open();
-                    final ByteBufferOutputStream output = new ByteBufferOutputStream();
-                    new KryoWriter.Builder().build().writeGraph(output, this.graph);
-                    final KryoReader reader = new KryoReader.Builder().build();
-                    reader.readGraph(new ByteBufferInputStream(output.getByteBuffer()), g);
+                    GraphMigrator.migrateGraph(this.graph, g);
                 } catch (IOException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
