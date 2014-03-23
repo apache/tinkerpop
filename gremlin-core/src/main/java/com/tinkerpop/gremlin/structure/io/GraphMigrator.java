@@ -68,4 +68,6 @@ public final class GraphMigrator {
 
         reader.readGraph(inPipe, toGraph);
     }
+
+    // todo: could do a "mergeGraph" maybe if IO ends up supporting incremental loading
 }
