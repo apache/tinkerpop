@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
+import com.tinkerpop.gremlin.structure.io.GraphMigrator;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
@@ -166,6 +167,25 @@ public class IoTest extends AbstractGremlinTest {
         // todo: finish off these tests
         //writer.writeGraph(System.out, g);
     }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    public void shouldMigrateGraph() throws Exception {
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        graphProvider.clear(null, configuration);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
+
+        GraphMigrator.migrateGraph(g, g1);
+
+        assertClassicGraph(g1, false);
+
+        // need to manually close the "g1" instance
+        graphProvider.clear(g1, configuration);
+    }
+
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)

@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.structure.io;
 
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -14,7 +16,13 @@ import java.io.PipedOutputStream;
  */
 public final class GraphMigrator {
 
-    // todo: tests for this
+    private static final KryoReader defaultKryoReader = new KryoReader.Builder().build();
+    private static final KryoWriter defaultKryoWriter = new KryoWriter.Builder().build();
+
+    public static void migrateGraph(final Graph fromGraph, final Graph toGraph) throws IOException {
+        // todo: incremental loading?
+        migrateGraph(fromGraph, toGraph, defaultKryoReader, defaultKryoWriter);
+    }
 
     /**
      * Pipe the data from one graph to another graph.  It is important that the reader and writer utilize the
@@ -27,7 +35,7 @@ public final class GraphMigrator {
      * @throws java.io.IOException        thrown if there is an error in steam between the two graphs
      */
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph,
-                                    final GraphReader reader, final GraphWriter writer) throws IOException {
+                                    final KryoReader reader, final KryoWriter writer) throws IOException {
 
         final PipedInputStream inPipe = new PipedInputStream() {
             // Default is 1024
