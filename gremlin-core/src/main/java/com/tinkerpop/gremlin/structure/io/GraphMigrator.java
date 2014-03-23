@@ -9,7 +9,8 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
 /**
- * {@link GraphMigrator} takes the data in one graph and pipes it to another graph.
+ * {@link GraphMigrator} takes the data in one graph and pipes it to another graph.  Uses the {@link KryoReader}
+ * and {@link KryoWriter} to migrate the graph data as it is the only IO implementation that is non-lossy.
  *
  * @author Alex Averbuch (alex.averbuch@gmail.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
