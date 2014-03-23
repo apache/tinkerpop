@@ -39,6 +39,8 @@ public class GraphSONReader implements GraphReader {
         this.batchSize = batchSize;
     }
 
+    // todo: do we allow custom deserializers for ID and properties mapping property keys to data types?  would make graphson configurably lossy?
+
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
         final JsonFactory factory = mapper.getFactory();
