@@ -38,6 +38,7 @@ public final class GraphMigrator {
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph,
                                     final KryoReader reader, final KryoWriter writer) throws IOException {
 
+        // todo: if this is the standard way to "migrate" a graph, then rethink exception handling and such
         final PipedInputStream inPipe = new PipedInputStream() {
             // Default is 1024
             protected static final int PIPE_SIZE = 1024;
