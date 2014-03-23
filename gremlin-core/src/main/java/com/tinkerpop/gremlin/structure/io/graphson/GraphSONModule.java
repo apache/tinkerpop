@@ -50,7 +50,6 @@ public class GraphSONModule extends SimpleModule {
         @Override
         public void serialize(final Edge edge, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
-            // todo: better serialization of id
             jsonGenerator.writeStartObject();
             jsonGenerator.writeObjectField(TOKEN_ID, edge.getId());
             jsonGenerator.writeStringField(TOKEN_LABEL, edge.getLabel());
@@ -70,7 +69,6 @@ public class GraphSONModule extends SimpleModule {
         @Override
         public void serialize(final Vertex vertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
-            // todo: better serialization of id
             jsonGenerator.writeStartObject();
             jsonGenerator.writeObjectField(TOKEN_ID, vertex.getId());
             jsonGenerator.writeStringField(TOKEN_LABEL, vertex.getLabel());
@@ -100,7 +98,6 @@ public class GraphSONModule extends SimpleModule {
     static class GraphSONKeySerializer extends StdKeySerializer {
         @Override
         public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
-            // todo: better serialization of id
             if (Element.class.isAssignableFrom(o.getClass()))
                 jsonGenerator.writeFieldName((((Element) o).getId()).toString());
             else
