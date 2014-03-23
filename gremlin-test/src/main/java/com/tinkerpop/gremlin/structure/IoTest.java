@@ -19,6 +19,7 @@ import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONModule;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import org.apache.commons.configuration.Configuration;
@@ -178,8 +179,33 @@ public class IoTest extends AbstractGremlinTest {
             assertTrue(idValue.has("cluster"));
             assertEquals("vertex", idValue.get("cluster").asText());
             assertTrue(idValue.has("elementId"));
-            assertEquals("AF4B5965-B176-4552-B3C1-FBBE2F52C305", idValue.get("elementId").asText());
+            assertEquals("AF4B5965-B176-4552-B3C1-FBBE2F52C305".toLowerCase(), idValue.get("elementId").asText());
         }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+    public void shouldProperlySerializeCustomIdWithKryo() throws Exception {
+        g.addVertex(Element.ID, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
+        final GremlinKryo kryo = new GremlinKryo();
+        kryo.addCustom(CustomId.class);
+
+        final KryoWriter writer = new KryoWriter.Builder().custom(kryo).build();
+        final KryoReader reader = new KryoReader.Builder().custom(kryo).build();
+
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        graphProvider.clear(null, configuration);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
+
+        GraphMigrator.migrateGraph(g, g1, reader, writer);
+
+        final Vertex onlyVertex = g1.V().next();
+        final CustomId id = (CustomId) onlyVertex.getId();
+        assertEquals("vertex", id.getCluster());
+        assertEquals(UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305"), id.getElementId());
+
+        // need to manually close the "g1" instance
+        graphProvider.clear(g1, configuration);
     }
 
     @Test
@@ -1435,6 +1461,10 @@ public class IoTest extends AbstractGremlinTest {
     public static class CustomId {
         private String cluster;
         private UUID elementId;
+
+        private CustomId() {
+            // required no-arg for kryo serialization
+        }
 
         public CustomId(final String cluster, final UUID elementId) {
             this.cluster = cluster;

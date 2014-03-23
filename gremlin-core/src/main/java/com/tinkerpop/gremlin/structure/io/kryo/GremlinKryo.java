@@ -1,13 +1,20 @@
 package com.tinkerpop.gremlin.structure.io.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.Direction;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -15,14 +22,15 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GremlinKryo {
-    private final List<Pair<Class, Integer>> serializationList = new ArrayList<Pair<Class,Integer>>() {{
-        add(Pair.<Class, Integer>with(ArrayList.class, 10));
-        add(Pair.<Class, Integer>with(HashMap.class, 11));
-        add(Pair.<Class, Integer>with(Direction.class, 12));
-        add(Pair.<Class, Integer>with(VertexTerminator.class, 13));
-        add(Pair.<Class, Integer>with(EdgeTerminator.class, 14));
-        add(Pair.<Class, Integer>with(KryoAnnotatedList.class, 15));
-        add(Pair.<Class, Integer>with(KryoAnnotatedValue.class, 16));
+    private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class,Serializer, Integer>>() {{
+        add(Triplet.<Class, Serializer, Integer>with(ArrayList.class, null, 10));
+        add(Triplet.<Class, Serializer, Integer>with(HashMap.class, null, 11));
+        add(Triplet.<Class, Serializer, Integer>with(Direction.class, null, 12));
+        add(Triplet.<Class, Serializer, Integer>with(VertexTerminator.class, null, 13));
+        add(Triplet.<Class, Serializer, Integer>with(EdgeTerminator.class, null, 14));
+        add(Triplet.<Class, Serializer, Integer>with(KryoAnnotatedList.class, null, 15));
+        add(Triplet.<Class, Serializer, Integer>with(KryoAnnotatedValue.class, null, 16));
+        add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
     }};
 
     /**
@@ -33,14 +41,30 @@ public final class GremlinKryo {
     public synchronized void addCustom(final Class... custom) {
         if (custom.length > 0)
             serializationList.addAll(Arrays.asList(custom).stream()
-                    .map(c->Pair.<Class, Integer>with(c, currentSerializationId.getAndIncrement()))
-                    .collect(Collectors.<Pair<Class, Integer>>toList()));
+                    .map(c->Triplet.<Class, Serializer, Integer>with(c, null, currentSerializationId.getAndIncrement()))
+                    .collect(Collectors.<Triplet<Class, Serializer, Integer>>toList()));
     }
 
     public Kryo create() {
         final Kryo kryo = new Kryo();
         kryo.setRegistrationRequired(true);
-        serializationList.forEach(p-> kryo.register(p.getValue0(), p.getValue1()));
+        serializationList.forEach(p -> {
+            final Serializer serializer = Optional.ofNullable(p.getValue1()).orElse(kryo.getDefaultSerializer(p.getValue0()));
+            kryo.register(p.getValue0(), serializer, p.getValue2());
+        });
         return kryo;
+    }
+
+    public static class UUIDSerializer extends Serializer<UUID> {
+        @Override
+        public void write(final Kryo kryo, final Output output, final UUID uuid) {
+            output.writeLong(uuid.getMostSignificantBits());
+            output.writeLong(uuid.getLeastSignificantBits());
+        }
+
+        @Override
+        public UUID read(final Kryo kryo, final Input input, final Class<UUID> uuidClass) {
+            return new UUID(input.readLong(), input.readLong());
+        }
     }
 }
