@@ -2,6 +2,9 @@ package com.tinkerpop.gremlin.structure;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -14,6 +17,7 @@ import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONModule;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
@@ -156,7 +160,9 @@ public class IoTest extends AbstractGremlinTest {
         graphProvider.clear(g2, configuration);
     }
 
-    @Ignore("sort out ID issues now that tinkergraph keeps it as object")
+    /**
+     * This is just a serialization check.  GraphSON doens't allow the ID to deserialize back to a complex type.
+     */
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldProperlySerializeCustomIdWithGraphSON() throws Exception {
@@ -165,8 +171,18 @@ public class IoTest extends AbstractGremlinTest {
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
         final GraphWriter writer = new GraphSONWriter.Builder().customSerializer(module).build();
 
-        // todo: finish off these tests
-        //writer.writeGraph(System.out, g);
+        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            writer.writeGraph(baos, g);
+
+            System.out.println(new String(baos.toByteArray()));
+            final JsonNode jsonGraph = new ObjectMapper().readTree(baos.toByteArray());
+            final JsonNode onlyVertex = jsonGraph.findValues(GraphSONModule.TOKEN_VERTICES).get(0).get(0);
+            final JsonNode idValue = onlyVertex.get(GraphSONModule.TOKEN_ID);
+            assertTrue(idValue.has("cluster"));
+            assertEquals("vertex", idValue.get("cluster").asText());
+            assertTrue(idValue.has("elementId"));
+            assertEquals("AF4B5965-B176-4552-B3C1-FBBE2F52C305", idValue.get("elementId").asText());
+        }
     }
 
     @Test
