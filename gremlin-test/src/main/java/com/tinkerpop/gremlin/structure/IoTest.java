@@ -164,7 +164,7 @@ public class IoTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldProperlySerializeCustomIdWithGraphSON() throws Exception {
-        final Vertex v = g.addVertex(Element.ID, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
+        g.addVertex(Element.ID, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
         final SimpleModule module = new SimpleModule();
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
         final GraphWriter writer = new GraphSONWriter.Builder().customSerializer(module).build();
