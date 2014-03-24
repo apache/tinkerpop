@@ -8,12 +8,16 @@ import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_FLOAT_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -265,4 +269,61 @@ public class TransactionTest extends AbstractGremlinTest {
         graphProvider.clear(g1, configuration);
     }
 
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldSupportTransactionIsolationCommitCheck() throws Exception {
+        // the purpose of this test is to simulate gremlin server access to a graph instance, where one thread modifies
+        // the graph and a separate thread cannot affect the transaction of the first
+        final Graph graph = g;
+
+        final CountDownLatch latchCommittedInOtherThread = new CountDownLatch(1);
+        final CountDownLatch latchCommitInOtherThread = new CountDownLatch(1);
+
+        final AtomicBoolean noVerticesInFirstThread = new AtomicBoolean(false);
+
+        // this thread starts a transaction then waits while the second thread tries to commit it.
+        final Thread threadTxStarter = new Thread() {
+            public void run() {
+                graph.addVertex();
+                latchCommitInOtherThread.countDown();
+
+                try {
+                    latchCommittedInOtherThread.await();
+                } catch (InterruptedException ie) {
+                    throw new RuntimeException(ie);
+                }
+
+                graph.tx().rollback();
+
+                // there should be no vertices here
+                noVerticesInFirstThread.set(!graph.V().hasNext());
+            }
+        };
+
+        threadTxStarter.start();
+
+        // this thread tries to commit the transaction started in the first thread above.
+        final Thread threadTryCommitTx = new Thread() {
+            public void run() {
+                try {
+                    latchCommitInOtherThread.await();
+                } catch (InterruptedException ie) {
+                    throw new RuntimeException(ie);
+                }
+
+                // try to commit the other transaction
+                graph.tx().commit();
+
+                latchCommittedInOtherThread.countDown();
+            }
+        };
+
+        threadTryCommitTx.start();
+
+        threadTxStarter.join();
+        threadTryCommitTx.join();
+
+        assertTrue(noVerticesInFirstThread.get());
+        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+    }
 }
