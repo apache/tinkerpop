@@ -4,8 +4,11 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import org.junit.Test;
 
+import java.util.NoSuchElementException;
+
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -13,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldAllowAutoTransactionToWorkWithoutMutation() {
+    public void shouldAllowAutoTransactionToWorkWithoutMutationByDefault() {
         // expecting no exceptions to be thrown here
         g.tx().commit();
         g.tx().rollback();
@@ -22,7 +25,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldCommitElementAutoTransaction() {
+    public void shouldCommitElementAutoTransactionByDefault() {
         final Vertex v1 = g.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
@@ -36,7 +39,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void shouldRollbackElementAutoTransaction() {
+    public void shouldRollbackElementAutoTransactionByDefault() {
         final Vertex v1 = g.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
@@ -49,7 +52,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    public void shouldCommitPropertyAutoTransaction() {
+    public void shouldCommitPropertyAutoTransactionByDefault() {
         final Vertex v1 = g.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
         g.tx().commit();
@@ -93,7 +96,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    public void shouldRollbackPropertyAutoTransaction() {
+    public void shouldRollbackPropertyAutoTransactionByDefault() {
         final Vertex v1 = g.addVertex("name", "marko");
         final Edge e1 = v1.addEdge("l", v1, "name", "xxx");
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
@@ -128,4 +131,35 @@ public class TransactionTest extends AbstractGremlinTest {
 
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
     }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldCommitOnShutdownByDefault() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko");
+        final Object oid = v1.getId();
+        g.close();
+
+        g = graphProvider.openTestGraph(config);
+        final Vertex v2 = g.v(oid);
+        assertEquals("marko", v2.<String>getValue("name"));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldRollbackOnShutdownWhenConfigured() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko");
+        final Object oid = v1.getId();
+        g.tx().onClose(Transaction.CLOSE_BEHAVIOR.ROLLBACK);
+        g.close();
+
+        g = graphProvider.openTestGraph(config);
+        try {
+            g.v(oid);
+            fail("Vertex should not be found as close behavior was set to rollback");
+        } catch (Exception ex) {
+            final Exception expected = Graph.Exceptions.elementNotFound();
+            assertEquals(expected.getMessage(), ex.getMessage());
+        }
+    }
+
 }
