@@ -2,11 +2,15 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import static com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import org.junit.Test;
 
-import java.util.NoSuchElementException;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_FLOAT_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -51,7 +55,8 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldCommitPropertyAutoTransactionByDefault() {
         final Vertex v1 = g.addVertex();
         final Edge e1 = v1.addEdge("l", v1);
@@ -95,7 +100,8 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldRollbackPropertyAutoTransactionByDefault() {
         final Vertex v1 = g.addVertex("name", "marko");
         final Edge e1 = v1.addEdge("l", v1, "name", "xxx");
@@ -134,6 +140,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldCommitOnShutdownByDefault() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
         final Object oid = v1.getId();
@@ -146,6 +153,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldRollbackOnShutdownWhenConfigured() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko");
         final Object oid = v1.getId();
@@ -160,6 +168,62 @@ public class TransactionTest extends AbstractGremlinTest {
             final Exception expected = Graph.Exceptions.elementNotFound();
             assertEquals(expected.getMessage(), ex.getMessage());
         }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
+    public void shouldExecuteWithCompetingThreads() {
+        final Graph graph = g;
+        int totalThreads = 250;
+        final AtomicInteger vertices = new AtomicInteger(0);
+        final AtomicInteger edges = new AtomicInteger(0);
+        final AtomicInteger completedThreads = new AtomicInteger(0);
+        for (int i = 0; i < totalThreads; i++) {
+            new Thread() {
+                public void run() {
+                    final Random random = new Random();
+                    if (random.nextBoolean()) {
+                        final Vertex a = graph.addVertex();
+                        final Vertex b = graph.addVertex();
+                        final Edge e = a.addEdge("friend", b);
+
+                        vertices.getAndAdd(2);
+                        a.setProperty("test", this.getId());
+                        b.setProperty("blah", random.nextFloat());
+                        e.setProperty("bloop", random.nextInt());
+                        edges.getAndAdd(1);
+                        graph.tx().commit();
+                    } else {
+                        final Vertex a = graph.addVertex();
+                        final Vertex b = graph.addVertex();
+                        final Edge e = a.addEdge("friend", b);
+
+                        a.setProperty("test", this.getId());
+                        b.setProperty("blah", random.nextFloat());
+                        e.setProperty("bloop", random.nextInt());
+
+                        if (random.nextBoolean()) {
+                            graph.tx().commit();
+                            vertices.getAndAdd(2);
+                            edges.getAndAdd(1);
+                        } else {
+                            graph.tx().rollback();
+                        }
+                    }
+                    completedThreads.getAndAdd(1);
+                }
+            }.start();
+        }
+
+        while (completedThreads.get() < totalThreads) {
+        }
+
+        assertEquals(completedThreads.get(), 250);
+        AbstractGremlinSuite.assertVertexEdgeCounts(vertices.get(), edges.get());
     }
 
 }
