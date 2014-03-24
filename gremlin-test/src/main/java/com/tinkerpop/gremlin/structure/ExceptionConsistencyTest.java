@@ -191,6 +191,7 @@ public class ExceptionConsistencyTest {
             }
         }
 
+        // todo: fix this test around graph computer
         @Test
         @Ignore
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
@@ -210,6 +211,7 @@ public class ExceptionConsistencyTest {
             }
         }
 
+        // todo: fix this test around graph computer
         @Test
         @Ignore
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_PROPERTIES)
