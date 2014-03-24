@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.structure;
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import static com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
+
+import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import java.util.Random;
@@ -224,6 +226,47 @@ public class TransactionTest extends AbstractGremlinTest {
 
         assertEquals(completedThreads.get(), 250);
         AbstractGremlinSuite.assertVertexEdgeCounts(vertices.get(), edges.get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_INTEGER_VALUES)
+    public void shouldExcecuteCompetingThreadsOnMultipleDbInstances() throws Exception {
+        // the idea behind this test is to simulate a gremlin-server environment where two graphs of the same type
+        // are being mutated by multiple threads. originally replicated a bug that was part of OrientDB.
+
+        final Configuration configuration = graphProvider.newGraphConfiguration("g1");
+        graphProvider.clear(null, configuration);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
+
+        final Thread threadModFirstGraph = new Thread() {
+            public void run() {
+                g.addVertex();
+                g.tx().commit();
+            }
+        };
+
+        threadModFirstGraph.start();
+        threadModFirstGraph.join();
+
+        final Thread threadReadBothGraphs = new Thread() {
+            public void run() {
+                final long gCounter = g.V().count();
+                assertEquals(1l, gCounter);
+
+                final long g1Counter = g1.V().count();
+                assertEquals(0l, g1Counter);
+            }
+        };
+
+        threadReadBothGraphs.start();
+        threadReadBothGraphs.join();
+
+        // need to manually close the "g1" instance
+        graphProvider.clear(g1, configuration);
     }
 
 }
