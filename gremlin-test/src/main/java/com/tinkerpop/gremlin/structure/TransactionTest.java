@@ -341,7 +341,28 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
-    public void testTransactionGraphHelperFireAndForget() {
+    public void shouldSupportTransactionFireAndForget() {
+        final Graph graph = g;
+
+        // first fail the tx
+        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+            grx.addVertex();
+            throw new Exception("fail");
+        })).fireAndForget();
+        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+
+        // this tx will work
+        final Vertex v = g.tx().submit(grx->graph.addVertex()).fireAndForget();
+        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+
+        // make sure a commit happened and a new tx started
+        g.tx().rollback();
+        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldSupportTransactionOneAndDone() {
         final Graph graph = g;
 
         // first fail the tx
