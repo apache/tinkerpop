@@ -80,6 +80,21 @@ public class IoTest extends AbstractGremlinTest {
         assertClassicGraph(g, false, true);
     }
 
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldReadGraphMLAsProperties() throws IOException {
+        final GraphReader reader = new GraphMLReader.Builder()
+                .edgeLabelKey("_label").build();
+        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-3.xml")) {
+            reader.readGraph(stream, g);
+        }
+
+        assertEquals(4, g.E().filter(e-> e.get().getLabel().equals("has high fived")).count());
+        assertEquals(2, g.E().filter(e-> e.get().getLabel().equals("created")).count());
+    }
+
     /**
      * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
      */
