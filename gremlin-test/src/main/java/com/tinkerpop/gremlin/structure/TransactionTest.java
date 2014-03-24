@@ -524,6 +524,8 @@ public class TransactionTest extends AbstractGremlinTest {
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
     }
 
+    // todo: is this a feature.  neo4j doesn't respect transactional state in getVertices()
+
     @Ignore("Still fails even in TinkerPop3")
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
