@@ -1,17 +1,25 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.map.StartStep;
+import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.map.StartStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerVertexStep;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers.TinkerGraphStepOptimizer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +73,18 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     //////////////////////
 
     public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
+        final TinkerVertex tempVertex = this;
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
+            public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
+                if (engine instanceof GraphComputer) {
+                    this.optimizers().unregister(TinkerGraphStepOptimizer.class);
+                    TraversalHelper.removeStep(0, this);
+                    TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, tempVertex.getId())), 0, this);
+                    TraversalHelper.insertStep(new TinkerGraphStep(this, Vertex.class, tempVertex.graph), 0, this);
+                }
+                return super.submit(engine);
+            }
+        };
         traversal.addStep(new StartStep<Vertex>(traversal, this));
         traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, Direction.OUT, branchFactor, labels));
         return traversal;

@@ -93,15 +93,27 @@ public class TraversalHelper {
         }
     }
 
+    public static void removeStep(final int index, final Traversal traversal) {
+        TraversalHelper.removeStep((Step) traversal.getSteps().get(index), traversal);
+    }
+
     public static void insertStep(final Step step, final int index, final Traversal traversal) {
         final List<Step> steps = traversal.getSteps();
-        final Step leftStep = steps.get(index - 1);
-        final Step rightStep = steps.get(index);
-        leftStep.setNextStep(step);
-        step.setPreviousStep(leftStep);
-        step.setNextStep(rightStep);
-        rightStep.setPreviousStep(step);
+        final Step leftStep = index > 0 ? steps.get(index - 1) : null;
+        final Step rightStep = index <= traversal.getSteps().size() ? steps.get(index) : null;
+        if (null != leftStep) {
+            leftStep.setNextStep(step);
+            step.setPreviousStep(leftStep);
+        }
+        if (null != rightStep) {
+            step.setNextStep(rightStep);
+            rightStep.setPreviousStep(step);
+        }
         steps.add(index, step);
+        for (int i = 0; i < steps.size(); i++) {
+            if (!TraversalHelper.isLabeled(steps.get(i)))
+                steps.get(i).setAs("_" + i);
+        }
     }
 
     public static String makeStepString(final Step step, final Object... arguments) {

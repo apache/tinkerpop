@@ -96,7 +96,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>() {
-            public GraphTraversal submit(final TraversalEngine engine) {
+            public GraphTraversal<Object, Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer)
                     this.optimizers().unregister(TinkerGraphStepOptimizer.class);
                 return super.submit(engine);
@@ -110,7 +110,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     public GraphTraversal<Edge, Edge> E() {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>() {
-            public GraphTraversal submit(final TraversalEngine engine) {
+            public GraphTraversal<Object, Edge> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer)
                     this.optimizers().unregister(TinkerGraphStepOptimizer.class);
                 return super.submit(engine);

@@ -76,7 +76,6 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         startStep.clear();
         final String future = (traversal.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
-
         // TODO: Was doing some HasContainer.testAll() stuff prior to the big change (necessary?)
         // TODO: Make this an optimizer.
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
