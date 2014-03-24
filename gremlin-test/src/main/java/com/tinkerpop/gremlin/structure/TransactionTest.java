@@ -352,7 +352,7 @@ public class TransactionTest extends AbstractGremlinTest {
         AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
 
         // this tx will work
-        final Vertex v = g.tx().submit(grx->graph.addVertex()).fireAndForget();
+        g.tx().submit(grx->graph.addVertex()).fireAndForget();
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
 
         // make sure a commit happened and a new tx started
@@ -366,14 +366,57 @@ public class TransactionTest extends AbstractGremlinTest {
         final Graph graph = g;
 
         // first fail the tx
-        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
-            grx.addVertex();
-            throw new Exception("fail");
-        })).fireAndForget();
+        try {
+            g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+                grx.addVertex();
+                throw new Exception("fail");
+            })).oneAndDone();
+        } catch (Exception ex) {
+            assertEquals("fail", ex.getCause().getCause().getMessage());
+        }
+
         AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
 
         // this tx will work
-        final Vertex v = g.tx().submit(grx->graph.addVertex()).fireAndForget();
+        g.tx().submit(grx->graph.addVertex()).oneAndDone();
+        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+
+        // make sure a commit happened and a new tx started
+        g.tx().rollback();
+        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldSupportTransactionExponentialBackoff() {
+        final Graph graph = g;
+
+        // first fail the tx
+        final AtomicInteger attempts = new AtomicInteger(0);
+        try {
+            g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+                grx.addVertex();
+                attempts.incrementAndGet();
+                throw new Exception("fail");
+            })).exponentialBackoff();
+        } catch (Exception ex) {
+            assertEquals("fail", ex.getCause().getCause().getMessage());
+        }
+
+        assertEquals(Transaction.Workload.DEFAULT_TRIES, attempts.get());
+        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+
+        // this tx will work after several tries
+        final AtomicInteger tries = new AtomicInteger(0);
+        final Vertex v = g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+            final int tryNumber = tries.incrementAndGet();
+            if (tryNumber == Transaction.Workload.DEFAULT_TRIES - 2)
+                return graph.addVertex();
+            else
+                throw new Exception("fail");
+        })).exponentialBackoff();
+
+        assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
 
         // make sure a commit happened and a new tx started
