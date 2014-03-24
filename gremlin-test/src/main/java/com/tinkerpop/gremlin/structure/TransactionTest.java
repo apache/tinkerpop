@@ -4,9 +4,12 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import static com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 
+import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -335,4 +338,26 @@ public class TransactionTest extends AbstractGremlinTest {
         assertTrue(noVerticesInFirstThread.get());
         AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
     }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void testTransactionGraphHelperFireAndForget() {
+        final Graph graph = g;
+
+        // first fail the tx
+        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+            grx.addVertex();
+            throw new Exception("fail");
+        })).fireAndForget();
+        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+
+        // this tx will work
+        final Vertex v = g.tx().submit(grx->graph.addVertex()).fireAndForget();
+        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+
+        // make sure a commit happened and a new tx started
+        g.tx().rollback();
+        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+    }
+
 }

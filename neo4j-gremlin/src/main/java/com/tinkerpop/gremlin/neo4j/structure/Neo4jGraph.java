@@ -276,8 +276,8 @@ public class Neo4jGraph implements Graph {
         }
 
         @Override
-        public <G extends Graph, R> Workload<G, R> submit(final Function<G, R> work) {
-            return new Workload<>((G) Neo4jGraph.this, work);
+        public <R> Workload<R> submit(final Function<Graph, R> work) {
+            return new Workload<>(Neo4jGraph.this, work);
         }
 
         @Override

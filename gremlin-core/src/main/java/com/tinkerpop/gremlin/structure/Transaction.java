@@ -20,7 +20,7 @@ public interface Transaction extends Closeable {
 
     public void rollback();
 
-    public <G extends Graph, R> Workload<G, R> submit(final Function<G, R> work);
+    public <R> Workload<R> submit(final Function<Graph, R> work);
 
     public <G extends Graph> G create();
 
@@ -114,15 +114,14 @@ public interface Transaction extends Closeable {
      * failed unit of work is rolled back and executed again until retries are exhausted or the unit of work succeeds
      * with a commit operation.
      *
-     * @param <G> The {@link Graph} instance.
      * @param <R> The type of the result from the unit of work.
      */
-    public static class Workload<G extends Graph, R> {
+    public static class Workload<R> {
         public static final long DEFAULT_DELAY_MS = 20;
         public static final int DEFAULT_TRIES = 8;
 
-        private final Function<G, R> workToDo;
-        private final G g;
+        private final Function<Graph, R> workToDo;
+        private final Graph g;
 
         /**
          * Creates a new {@link Workload} that will be tried to be executed within a transaction.
@@ -130,7 +129,7 @@ public interface Transaction extends Closeable {
          * @param g    The {@link Graph} instance on which the work will be performed.
          * @param work The work to be executed on the Graph instance which will optionally return a value.
          */
-        public Workload(final G g, final Function<G, R> work) {
+        public Workload(final Graph g, final Function<Graph, R> work) {
             this.g = g;
             this.workToDo = work;
         }
@@ -143,7 +142,7 @@ public interface Transaction extends Closeable {
          *                      result of the encapsulated work function.
          * @return The result of the encapsulated work.
          */
-        public R attempt(final BiFunction<G, Function<G, R>, R> retryStrategy) {
+        public R attempt(final BiFunction<Graph, Function<Graph, R>, R> retryStrategy) {
             return retryStrategy.apply(g, workToDo);
         }
 
@@ -253,9 +252,9 @@ public interface Transaction extends Closeable {
          * Creates a generic retry function to be passed to the {@link Workload#attempt(java.util.function.BiFunction)}
          * method.
          */
-        private static <G extends Graph, R> BiFunction<G, Function<G, R>, R> retry(final int tries,
-                                                                                   final Set<Class> exceptionsToRetryOn,
-                                                                                   final Function<Integer, Long> delay) {
+        private static <R> BiFunction<Graph, Function<Graph, R>, R> retry(final int tries,
+                                                                          final Set<Class> exceptionsToRetryOn,
+                                                                          final Function<Integer, Long> delay) {
             return (g, w) -> {
                 R returnValue;
 

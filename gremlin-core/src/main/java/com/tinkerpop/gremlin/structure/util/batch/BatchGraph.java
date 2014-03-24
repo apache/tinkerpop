@@ -278,7 +278,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public <G extends Graph, R> Workload<G, R> submit(final Function<G, R> work) {
+        public <R> Workload<R> submit(final Function<Graph, R> work) {
             throw new UnsupportedOperationException("Cannot submit a workload during batch loading");
         }
 
