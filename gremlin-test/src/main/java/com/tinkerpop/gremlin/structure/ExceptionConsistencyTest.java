@@ -366,7 +366,8 @@ public class ExceptionConsistencyTest {
     @ExceptionCoverage(exceptionClass = Transaction.Exceptions.class, methods = {
             "transactionAlreadyOpen",
             "threadedTransactionsNotSupported",
-            "openTransactionsOnClose"
+            "openTransactionsOnClose",
+            "transactionMustBeOpenToReadWrite"
     })
     public static class TransactionTest extends AbstractGremlinTest {
 
@@ -399,6 +400,21 @@ public class ExceptionConsistencyTest {
                 fail("An exception should be thrown when close behavior is manual and the graph is close with an open transaction");
             } catch (Exception ex) {
                 final Exception expectedException = Transaction.Exceptions.openTransactionsOnClose();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+        public void testManualTransaction() {
+            g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+
+            try {
+                g.addVertex();
+                fail("An exception should be thrown when read/write behavior is manual and no transaction is opened");
+            } catch (Exception ex) {
+                final Exception expectedException = Transaction.Exceptions.transactionMustBeOpenToReadWrite();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
