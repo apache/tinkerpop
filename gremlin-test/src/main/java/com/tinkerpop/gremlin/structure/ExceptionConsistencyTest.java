@@ -365,7 +365,8 @@ public class ExceptionConsistencyTest {
      */
     @ExceptionCoverage(exceptionClass = Transaction.Exceptions.class, methods = {
             "transactionAlreadyOpen",
-            "threadedTransactionsNotSupported"
+            "threadedTransactionsNotSupported",
+            "openTransactionsOnClose"
     })
     public static class TransactionTest extends AbstractGremlinTest {
 
@@ -380,6 +381,24 @@ public class ExceptionConsistencyTest {
                 fail("An exception should be thrown when a transaction is opened twice");
             } catch (Exception ex) {
                 final Exception expectedException = Transaction.Exceptions.transactionAlreadyOpen();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+        public void testTransactionOpenOnClose() {
+            g.tx().onClose(Transaction.CLOSE_BEHAVIOR.MANUAL);
+
+            if (!g.tx().isOpen())
+                g.tx().open();
+
+            try {
+                g.close();
+                fail("An exception should be thrown when close behavior is manual and the graph is close with an open transaction");
+            } catch (Exception ex) {
+                final Exception expectedException = Transaction.Exceptions.openTransactionsOnClose();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }

@@ -52,7 +52,6 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#isolationNotSupported");
             add("com.tinkerpop.gremlin.structure.Transaction$Exceptions#transactionMustBeOpenToReadWrite");
-            add("com.tinkerpop.gremlin.structure.Transaction$Exceptions#openTransactionsOnClose");
         }};
 
         // implemented exceptions are the classes that potentially contains exception consistency checks.
