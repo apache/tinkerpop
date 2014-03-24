@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.SConsumer;
 
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
@@ -132,7 +133,7 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> sideEffect(final Consumer<Holder<Vertex>> consumer) {
+    public GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Holder<Vertex>> consumer) {
         return this.baseVertex.sideEffect(consumer);
     }
 }

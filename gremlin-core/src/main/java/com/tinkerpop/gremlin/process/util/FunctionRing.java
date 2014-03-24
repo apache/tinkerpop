@@ -1,22 +1,24 @@
 package com.tinkerpop.gremlin.process.util;
 
-import java.util.function.Function;
+import com.tinkerpop.gremlin.util.function.SFunction;
+
+import java.io.Serializable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class FunctionRing<A, B> {
+public class FunctionRing<A, B> implements Serializable {
 
-    public Function<A, B>[] functions;
+    public SFunction<A, B>[] functions;
     private int currentFunction = -1;
 
-    public FunctionRing(final Function... functions) {
+    public FunctionRing(final SFunction... functions) {
         this.functions = functions;
     }
 
-    public Function<A, B> next() {
+    public SFunction<A, B> next() {
         if (this.functions.length == 0) {
-            return (Function<A, B>) Function.identity();
+            return SFunction.identity();
         } else {
             this.currentFunction = (this.currentFunction + 1) % this.functions.length;
             return this.functions[this.currentFunction];

@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,7 +19,7 @@ public class AggregateStep<S> extends FlatMapStep<S, S> {
     public final FunctionRing<S, ?> functionRing;
     final Collection aggregate;
 
-    public AggregateStep(final Traversal traversal, final String variable, final Function<S, ?>... preAggregateFunctions) {
+    public AggregateStep(final Traversal traversal, final String variable, final SFunction<S, ?>... preAggregateFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing<>(preAggregateFunctions);
         this.aggregate = this.traversal.memory().getOrCreate(variable, ArrayList::new);

@@ -5,13 +5,14 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasContainer {
+public class HasContainer implements Serializable {
 
     public String key;
     public BiPredicate predicate;

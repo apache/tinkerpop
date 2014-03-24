@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
+import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,11 +18,11 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
 
     public Map<K, Collection<V>> groupMap;
     public final Map<K, R> reduceMap;
-    public final Function<S, K> keyFunction;
-    public final Function<S, V> valueFunction;
-    public final Function<Collection<V>, R> reduceFunction;
+    public final SFunction<S, K> keyFunction;
+    public final SFunction<S, V> valueFunction;
+    public final SFunction<Collection<V>, R> reduceFunction;
 
-    public GroupByStep(final Traversal traversal, final Map<K, Collection<V>> groupMap, final Function<S, K> keyFunction, final Function<S, V> valueFunction, final Function<Collection<V>, R> reduceFunction) {
+    public GroupByStep(final Traversal traversal, final Map<K, Collection<V>> groupMap, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
         super(traversal);
         this.groupMap = groupMap;
         this.reduceMap = new HashMap<>();
@@ -39,11 +40,11 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
         });
     }
 
-    public GroupByStep(final Traversal traversal, final String variable, final Function<S, K> keyFunction, final Function<S, V> valueFunction, final Function<Collection<V>, R> reduceFunction) {
+    public GroupByStep(final Traversal traversal, final String variable, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
         this(traversal, traversal.memory().getOrCreate(variable, HashMap<K, Collection<V>>::new), keyFunction, valueFunction, reduceFunction);
     }
 
-    private static <S, K, V> void doGroup(final S s, final Map<K, Collection<V>> groupMap, final Function<S, K> keyFunction, final Function<S, V> valueFunction) {
+    private static <S, K, V> void doGroup(final S s, final Map<K, Collection<V>> groupMap, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction) {
         final K key = keyFunction.apply(s);
         final V value = valueFunction.apply(s);
         Collection<V> values = groupMap.get(key);
@@ -54,7 +55,7 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
         GroupByStep.addValue(value, values);
     }
 
-    private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final Function<Collection<V>, R> reduceFunction) {
+    private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final SFunction<Collection<V>, R> reduceFunction) {
         groupMap.forEach((k, vv) -> {
             reduceMap.put(k, (R) reduceFunction.apply(vv));
         });

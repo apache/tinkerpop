@@ -2,11 +2,11 @@ package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.PathConsumer;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
+import com.tinkerpop.gremlin.process.util.PathConsumer;
+import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -16,7 +16,7 @@ public class SelectStep extends MapStep<Object, Path> implements PathConsumer {
     public final FunctionRing functionRing;
     public final String[] asLabels;
 
-    public SelectStep(final Traversal traversal, final List<String> asLabels, Function... stepFunctions) {
+    public SelectStep(final Traversal traversal, final List<String> asLabels, SFunction... stepFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing(stepFunctions);
         this.asLabels = asLabels.toArray(new String[asLabels.size()]);

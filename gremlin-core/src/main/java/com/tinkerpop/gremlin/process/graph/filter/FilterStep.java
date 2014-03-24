@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.filter;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
+import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.function.Predicate;
 
@@ -11,9 +12,9 @@ import java.util.function.Predicate;
  */
 public class FilterStep<S> extends AbstractStep<S, S> {
 
-    public Predicate<Holder<S>> predicate;
+    public SPredicate<Holder<S>> predicate;
 
-    public FilterStep(final Traversal traversal, final Predicate<Holder<S>> predicate) {
+    public FilterStep(final Traversal traversal, final SPredicate<Holder<S>> predicate) {
         super(traversal);
         this.predicate = predicate;
     }
@@ -22,7 +23,7 @@ public class FilterStep<S> extends AbstractStep<S, S> {
         super(traversal);
     }
 
-    public void setPredicate(final Predicate<Holder<S>> predicate) {
+    public void setPredicate(final SPredicate<Holder<S>> predicate) {
         this.predicate = predicate;
     }
 

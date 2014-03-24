@@ -1,11 +1,12 @@
 package com.tinkerpop.gremlin.process;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Optimizers {
+public interface Optimizers extends Serializable {
 
     public List<Optimizer> get();
 

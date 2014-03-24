@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MapHelper;
+import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +18,7 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
     public final Map<Object, Long> groupCountMap;
     public FunctionRing<S, ?> functionRing;
 
-    public GroupCountStep(final Traversal traversal, final Map<Object, Long> groupCountMap, final Function<S, ?>... preGroupFunctions) {
+    public GroupCountStep(final Traversal traversal, final Map<Object, Long> groupCountMap, final SFunction<S, ?>... preGroupFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing<>(preGroupFunctions);
         this.groupCountMap = groupCountMap;
@@ -28,7 +29,7 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
         });
     }
 
-    public GroupCountStep(final Traversal traversal, final String variable, final Function<S, ?>... preGroupFunctions) {
+    public GroupCountStep(final Traversal traversal, final String variable, final SFunction<S, ?>... preGroupFunctions) {
         this(traversal, traversal.memory().getOrCreate(variable, HashMap<Object, Long>::new), preGroupFunctions);
     }
 }

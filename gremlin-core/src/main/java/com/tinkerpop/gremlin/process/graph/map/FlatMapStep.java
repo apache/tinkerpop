@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
+import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -15,10 +16,10 @@ import java.util.function.Function;
  */
 public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
-    public Function<Holder<S>, Iterator<E>> function;
+    public SFunction<Holder<S>, Iterator<E>> function;
     protected final Queue<Iterator<Holder<E>>> queue = new LinkedList<>();
 
-    public FlatMapStep(final Traversal traversal, Function<Holder<S>, Iterator<E>> function) {
+    public FlatMapStep(final Traversal traversal, SFunction<Holder<S>, Iterator<E>> function) {
         super(traversal);
         this.function = function;
     }
@@ -27,7 +28,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
         super(traversal);
     }
 
-    public void setFunction(final Function<Holder<S>, Iterator<E>> function) {
+    public void setFunction(final SFunction<Holder<S>, Iterator<E>> function) {
         this.function = function;
     }
 

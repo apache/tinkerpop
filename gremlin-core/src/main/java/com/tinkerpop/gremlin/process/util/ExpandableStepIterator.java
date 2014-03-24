@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Step;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -10,7 +11,7 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExpandableStepIterator<E> implements Iterator<Holder<E>> {
+public class ExpandableStepIterator<E> implements Iterator<Holder<E>>, Serializable {
 
     private final ExpandableIterator<Holder<E>> expander = new ExpandableIterator<>();
     private Step<?, E> hostStep = EmptyStep.instance();
@@ -38,7 +39,7 @@ public class ExpandableStepIterator<E> implements Iterator<Holder<E>> {
         this.expander.add((Iterator) iterator);
     }
 
-    public class ExpandableIterator<T> implements Iterator<T> {
+    public class ExpandableIterator<T> implements Iterator<T>, Serializable {
 
         private final Queue<Iterator<T>> queue = new LinkedList<>();
 

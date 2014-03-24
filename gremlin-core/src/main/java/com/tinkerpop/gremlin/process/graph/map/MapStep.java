@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.map;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
+import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.function.Function;
 
@@ -11,13 +12,13 @@ import java.util.function.Function;
  */
 public class MapStep<S, E> extends AbstractStep<S, E> {
 
-    public Function<Holder<S>, E> function;
+    public SFunction<Holder<S>, E> function;
 
     public MapStep(final Traversal traversal) {
         super(traversal);
     }
 
-    public MapStep(final Traversal traversal, final Function<Holder<S>, E> function) {
+    public MapStep(final Traversal traversal, final SFunction<Holder<S>, E> function) {
         super(traversal);
         this.function = function;
     }
@@ -34,7 +35,7 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
         }
     }
 
-    public void setFunction(final Function<Holder<S>, E> function) {
+    public void setFunction(final SFunction<Holder<S>, E> function) {
         this.function = function;
     }
 }

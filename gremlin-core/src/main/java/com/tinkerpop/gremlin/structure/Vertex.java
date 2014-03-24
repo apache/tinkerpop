@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.util.function.SConsumer;
 
 import java.util.function.Consumer;
 
@@ -92,7 +93,7 @@ public interface Vertex extends Element {
         return (GraphTraversal) this.start().with(variableValues);
     }
 
-    public default GraphTraversal<Vertex, Vertex> sideEffect(final Consumer<Holder<Vertex>> consumer) {
+    public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Holder<Vertex>> consumer) {
         return (GraphTraversal) this.start().sideEffect(consumer);
     }
 

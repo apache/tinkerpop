@@ -38,7 +38,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         return traversal;
     }
 
-    public interface Memory {
+    public interface Memory extends Serializable {
 
         public static class Variable {
 

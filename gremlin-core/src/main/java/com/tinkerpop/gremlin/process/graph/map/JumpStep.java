@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Iterator;
 import java.util.function.Predicate;
@@ -14,7 +15,7 @@ import java.util.function.Predicate;
  */
 public class JumpStep<S> extends MapStep<S, S> {
 
-    public JumpStep(final Traversal traversal, final String as, final Predicate<Holder<S>> ifPredicate, final Predicate<Holder<S>> emitPredicate) {
+    public JumpStep(final Traversal traversal, final String as, final SPredicate<Holder<S>> ifPredicate, final SPredicate<Holder<S>> emitPredicate) {
         super(traversal);
         final Step<?, ?> jumpStep = TraversalHelper.asExists(as, this.traversal) ? TraversalHelper.getAs(as, this.traversal) : null;
         this.setFunction(holder -> {
