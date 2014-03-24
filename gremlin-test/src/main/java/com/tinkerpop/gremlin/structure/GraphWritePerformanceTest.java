@@ -43,6 +43,7 @@ public class GraphWritePerformanceTest {
             final int verticesToGenerate = 100000;
             for (int ix = 0; ix < verticesToGenerate; ix++) {
                 g.addVertex();
+                tryBatchCommit(g, ix);
             }
 
             AbstractGremlinSuite.assertVertexEdgeCounts(verticesToGenerate, 0).accept(g);
@@ -59,6 +60,7 @@ public class GraphWritePerformanceTest {
                     v.addEdge("parent", lastVertex.get());
 
                 lastVertex = Optional.of(v);
+                tryBatchCommit(g, ix);
             }
 
             AbstractGremlinSuite.assertVertexEdgeCounts(verticesToGenerate, verticesToGenerate - 1).accept(g);
@@ -103,5 +105,10 @@ public class GraphWritePerformanceTest {
             final OutputStream os = new ByteArrayOutputStream();
             writer.writeGraph(os, g);
         }
+    }
+
+    private static void tryBatchCommit(final Graph g, int ix) {
+        if (g.getFeatures().graph().supportsTransactions() && ix % 1000 == 0)
+            g.tx().commit();
     }
 }
