@@ -18,7 +18,6 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(ProcessComputerStandardSuite.class)
-@Ignore
 @ProcessComputerStandardSuite.GraphProviderClass(TinkerGraphProcessComputerStandardTest.class)
 public class TinkerGraphProcessComputerStandardTest extends AbstractGraphProvider {
 
