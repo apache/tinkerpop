@@ -59,25 +59,31 @@ public class TransactionTest extends AbstractGremlinTest {
 
         v1.setProperty("name", "marko");
         assertEquals("marko", v1.<String>getValue("name"));
+        assertEquals("marko", g.v(v1.getId()).<String>getValue("name"));
         g.tx().commit();
 
         assertEquals("marko", v1.<String>getValue("name"));
+        assertEquals("marko", g.v(v1.getId()).<String>getValue("name"));
 
         v1.setProperty("name", "stephen");
 
         assertEquals("stephen", v1.<String>getValue("name"));
+        assertEquals("stephen", g.v(v1.getId()).<String>getValue("name"));
 
         g.tx().commit();
 
         assertEquals("stephen", v1.<String>getValue("name"));
+        assertEquals("stephen", g.v(v1.getId()).<String>getValue("name"));
 
         e1.setProperty("name", "xxx");
 
         assertEquals("xxx", e1.<String>getValue("name"));
+        assertEquals("xxx", g.e(e1.getId()).<String>getValue("name"));
 
         g.tx().commit();
 
         assertEquals("xxx", e1.<String>getValue("name"));
+        assertEquals("xxx", g.e(e1.getId()).<String>getValue("name"));
 
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
         assertEquals(v1.getId(), g.v(v1.getId()).getId());
@@ -98,22 +104,27 @@ public class TransactionTest extends AbstractGremlinTest {
         g.tx().commit();
 
         assertEquals("marko", v1.<String>getValue("name"));
+        assertEquals("marko", g.v(v1.getId()).<String>getValue("name"));
 
         v1.setProperty("name", "stephen");
 
         assertEquals("stephen", v1.<String>getValue("name"));
+        assertEquals("stephen", g.v(v1.getId()).<String>getValue("name"));
 
         g.tx().rollback();
 
         assertEquals("marko", v1.<String>getValue("name"));
+        assertEquals("marko", g.v(v1.getId()).<String>getValue("name"));
 
         e1.setProperty("name", "yyy");
 
         assertEquals("yyy", e1.<String>getValue("name"));
+        assertEquals("yyy", g.e(e1.getId()).<String>getValue("name"));
 
         g.tx().rollback();
 
         assertEquals("xxx", e1.<String>getValue("name"));
+        assertEquals("xxx", g.e(e1.getId()).<String>getValue("name"));
 
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
     }
