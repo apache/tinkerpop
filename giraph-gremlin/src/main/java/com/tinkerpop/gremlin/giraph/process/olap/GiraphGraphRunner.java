@@ -24,7 +24,6 @@ public class GiraphGraphRunner extends Configured implements Tool {
         this.giraphConfiguration = new GiraphConfiguration(hadoopConfiguration);
         this.giraphConfiguration.setMasterComputeClass(GiraphComputerMemory.class);
         this.giraphConfiguration.setWorkerConfiguration(1, 1, 100.0f);
-        // this.giraphConfiguration.setClass("gremlin.messageClass", Double.class, Double.class);
     }
 
     public int run(final String[] args) {
@@ -49,7 +48,6 @@ public class GiraphGraphRunner extends Configured implements Tool {
         configuration.setProperty("mapred.job.tracker", "localhost:9001");
         // configuration.setProperty("giraph.vertex.input.dir", "tiny_graph.txt");
         configuration.setProperty("mapred.output.dir", "output");
-        //configuration.setProperty("gremlin.messageClass", Double.class);
 
         GraphComputer g = new GiraphGraphComputer();
         //g.program(new PageRankVertexProgram.Builder(configuration).build()).configuration(configuration).submit();
