@@ -9,8 +9,10 @@ import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -408,7 +410,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
         // this tx will work after several tries
         final AtomicInteger tries = new AtomicInteger(0);
-        final Vertex v = g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
             final int tryNumber = tries.incrementAndGet();
             if (tryNumber == Transaction.Workload.DEFAULT_TRIES - 2)
                 return graph.addVertex();
@@ -423,5 +425,60 @@ public class TransactionTest extends AbstractGremlinTest {
         g.tx().rollback();
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
     }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldSupportTransactionExponentialBackoffWithExceptionChecks() {
+        final Graph graph = g;
+        final Set<Class> exceptions = new HashSet<Class>() {{
+            add(IllegalStateException.class);
+        }};
+
+        // first fail the tx
+        final AtomicInteger attempts = new AtomicInteger(0);
+        try {
+            g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+                grx.addVertex();
+                attempts.incrementAndGet();
+                throw new Exception("fail");
+            })).exponentialBackoff(Transaction.Workload.DEFAULT_TRIES, 20, exceptions);
+        } catch (Exception ex) {
+            assertEquals("fail", ex.getCause().getCause().getMessage());
+        }
+
+        assertEquals(1, attempts.get());
+        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+
+        // this tx will retry for specific tx and then fail after several tries
+        final AtomicInteger setOfTries = new AtomicInteger(0);
+        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+            final int tryNumber = setOfTries.incrementAndGet();
+            if (tryNumber == Transaction.Workload.DEFAULT_TRIES - 2)
+                throw new Exception("fail");
+            else
+                throw new IllegalStateException("fail");
+        })).exponentialBackoff(Transaction.Workload.DEFAULT_TRIES, 20, exceptions);
+
+        assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, setOfTries.get());
+        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+
+        // this tx will work after several tries
+        final AtomicInteger tries = new AtomicInteger(0);
+        g.tx().submit(FunctionUtils.wrapFunction(grx -> {
+            final int tryNumber = tries.incrementAndGet();
+            if (tryNumber == Transaction.Workload.DEFAULT_TRIES - 2)
+                return graph.addVertex();
+            else
+                throw new IllegalStateException("fail");
+        })).exponentialBackoff(Transaction.Workload.DEFAULT_TRIES, 20, exceptions);
+
+        assertEquals(Transaction.Workload.DEFAULT_TRIES - 2, tries.get());
+        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+
+        // make sure a commit happened and a new tx started
+        g.tx().rollback();
+        AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+    }
+
 
 }
