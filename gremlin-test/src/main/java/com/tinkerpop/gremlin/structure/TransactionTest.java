@@ -44,6 +44,16 @@ public class TransactionTest extends AbstractGremlinTest {
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
         assertEquals(v1.getId(), g.v(v1.getId()).getId());
         assertEquals(e1.getId(), g.e(e1.getId()).getId());
+
+        g.v(v1.getId()).remove();
+        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        g.tx().rollback();
+        AbstractGremlinSuite.assertVertexEdgeCounts(1, 1);
+
+        g.v(v1.getId()).remove();
+        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
+        g.tx().commit();
+        AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
     }
 
     @Test
