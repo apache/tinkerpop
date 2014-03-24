@@ -13,9 +13,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -142,23 +140,23 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         }
 
         public Iterator<Vertex> get_g_v1_asXhereX_out_backXhereX(final Object v1Id) {
-            return g.v(v1Id).as("here").out().<Vertex>back("here"); //.submit(g.compute());
+            return g.v(v1Id).as("here").out().<Vertex>back("here"); //TODO:.submit(g.compute());
         }
 
         public Iterator<Vertex> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(final Object v4Id) {
-            return g.v(v4Id).out().as("here").has("lang", "java").<Vertex>back("here");// .submit(g.compute());
+            return g.v(v4Id).out().as("here").has("lang", "java").<Vertex>back("here").submit(g.compute());
         }
 
         public Iterator<String> get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(final Object v4Id) {
-            return g.v(v4Id).out().as("here").has("lang", "java").back("here").<String>value("name"); //.submit(g.compute());
+            return g.v(v4Id).out().as("here").has("lang", "java").back("here").<String>value("name").submit(g.compute());
         }
 
         public Iterator<Edge> get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(final Object v1Id) {
-            return g.v(v1Id).outE().as("here").inV().has("name", "vadas").<Edge>back("here");//.submit(g.compute());
+            return g.v(v1Id).outE().as("here").inV().has("name", "vadas").<Edge>back("here").submit(g.compute());
         }
 
         public Iterator<Edge> get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(final Object v1Id) {
-            return g.v(v1Id).outE("knows").has("weight", 1.0f).as("here").inV().has("name", "josh").<Edge>back("here"); //.submit(g.compute());
+            return g.v(v1Id).outE("knows").has("weight", 1.0f).as("here").inV().has("name", "josh").<Edge>back("here").submit(g.compute());
         }
     }
 }

@@ -48,8 +48,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
-            // todo: convert to graph computer
-            return g.v(v1Id).outE().interval("weight", 0.0f, 0.6f).inV(); //.submit(g.compute());
+            return g.v(v1Id).outE().interval("weight", 0.0f, 0.6f).inV().submit(g.compute());
         }
     }
 }

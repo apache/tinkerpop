@@ -547,19 +547,19 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         }
 
         public Iterator<Vertex> get_g_v1_out(final Object v1Id) {
-            return g.v(v1Id).out(); //.submit(g.compute());
+            return g.v(v1Id).out().submit(g.compute());
         }
 
         public Iterator<Vertex> get_g_v2_in(final Object v2Id) {
-            return g.v(v2Id).in();  //.submit(g.compute());
+            return g.v(v2Id).in().submit(g.compute());
         }
 
         public Iterator<Vertex> get_g_v4_both(final Object v4Id) {
-            return g.v(v4Id).both(); // .submit(g.compute());
+            return g.v(v4Id).both().submit(g.compute());
         }
 
         public Iterator<String> get_g_v1_outX1_knowsX_name(final Object v1Id) {
-            return g.v(v1Id).out(1, "knows").value("name");  // .submit(g.compute());
+            return g.v(v1Id).out(1, "knows").<String>value("name").submit(g.compute());
         }
 
         public Iterator<String> get_g_V_bothX1_createdX_name() {
@@ -571,19 +571,19 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         }
 
         public Iterator<Edge> get_g_v1_outE(final Object v1Id) {
-            return g.v(v1Id).outE(); //.submit(g.compute());
+            return g.v(v1Id).outE().submit(g.compute());
         }
 
         public Iterator<Edge> get_g_v2_inE(final Object v2Id) {
-            return g.v(v2Id).inE(); // .submit(g.compute());
+            return g.v(v2Id).inE().submit(g.compute());
         }
 
         public Iterator<Edge> get_g_v4_bothE(final Object v4Id) {
-            return g.v(v4Id).bothE();  // .submit(g.compute());
+            return g.v(v4Id).bothE().submit(g.compute());
         }
 
         public Iterator<Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {
-            return g.v(v4Id).bothE(1, "created"); //.submit(g.compute());
+            return g.v(v4Id).bothE(1, "created").submit(g.compute());
         }
 
         public Iterator<String> get_g_V_inEX2_knowsX_outV_name() {
@@ -591,11 +591,11 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         }
 
         public Iterator<Vertex> get_g_v1_outE_inV(final Object v1Id) {
-            return g.v(v1Id).outE().inV(); //.submit(g.compute());
+            return g.v(v1Id).outE().inV().submit(g.compute());
         }
 
         public Iterator<Vertex> get_g_v2_inE_outV(final Object v2Id) {
-            return g.v(v2Id).inE().outV(); // .submit(g.compute());
+            return g.v(v2Id).inE().outV().submit(g.compute());
         }
 
         public Iterator<Vertex> get_g_V_outE_hasXweight_1X_outV() {
@@ -607,23 +607,23 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         }
 
         public Iterator<String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id) {
-            return g.v(v1Id).outE("knows").bothV().value("name"); //.submit(g.compute());
+            return g.v(v1Id).outE("knows").bothV().<String>value("name").submit(g.compute());
         }
 
         public Iterator<Vertex> get_g_v1_outXknowsX(final Object v1Id) {
-            return g.v(v1Id).out("knows");  //.submit(g.compute());
+            return g.v(v1Id).out("knows").submit(g.compute());
         }
 
         public Iterator<Vertex> get_g_v1_outXknows_createdX(final Object v1Id) {
-            return g.v(v1Id).out("knows", "created"); //.submit(g.compute());
+            return g.v(v1Id).out("knows", "created").submit(g.compute());
         }
 
         public Iterator<Vertex> get_g_v1_outEXknowsX_inV(final Object v1Id) {
-            return g.v(v1Id).outE("knows").inV(); //.submit(g.compute());
+            return g.v(v1Id).outE("knows").inV().submit(g.compute());
         }
 
         public Iterator<Vertex> get_g_v1_outEXknows_createdX_inV(final Object v1Id) {
-            return g.v(v1Id).outE("knows", "created").inV();  //.submit(g.compute());
+            return g.v(v1Id).outE("knows", "created").inV().submit(g.compute());
         }
 
         public Iterator<Vertex> get_g_V_out_out() {
@@ -631,11 +631,11 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         }
 
         public Iterator<Vertex> get_g_v1_out_out_out(final Object v1Id) {
-            return g.v(v1Id).out().out().out(); //.submit(g.compute());
+            return g.v(v1Id).out().out().out().submit(g.compute());
         }
 
         public Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id) {
-            return g.v(v1Id).out().value("name"); //.submit(g.compute());
+            return g.v(v1Id).out().<String>value("name").submit(g.compute());
         }
     }
 }
