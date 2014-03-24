@@ -19,7 +19,7 @@ import java.util.Objects;
  */
 public interface VertexProgram<M extends Serializable> extends Serializable {
 
-    public static final String VERTEX_PROGRAM_CLASS = "vertex.program.class";
+    public static final String VERTEX_PROGRAM_CLASS = VertexProgram.class + ".vertexProgram";
 
     public enum KeyType {
         VARIABLE,
@@ -74,7 +74,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
             final V vertexProgram = vertexProgramClass.getConstructor().newInstance();
             vertexProgram.initialize(configuration);
             return vertexProgram;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }

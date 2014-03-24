@@ -12,8 +12,6 @@ import org.apache.log4j.Logger;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
 import java.util.Collections;
 import java.util.Set;
 
@@ -43,11 +41,12 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
 
     public void initialize() {
         try {
-            this.vertexProgram = (VertexProgram) new ObjectInputStream(new FileInputStream(GiraphGraphComputer.VERTEX_PROGRAM)).readObject();
+            this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(this.getConf()));
             this.registerAggregator("voteToHalt", MemoryAggregator.class);
             this.vertexProgram.setup(ConfUtil.apacheConfiguration(this.getConf()), this);
         } catch (Exception e) {
-            // System.out.println(e + "***" + e.getMessage());
+            // do nothing as Giraph has a hard time starting up with random exceptions until ZooKeeper comes online
+            //System.out.println(e + "***" + e.getMessage());
         }
     }
 
