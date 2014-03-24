@@ -6,6 +6,7 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeature
 
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.commons.configuration.Configuration;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_FLOAT_VALUES;
@@ -520,5 +522,73 @@ public class TransactionTest extends AbstractGremlinTest {
         // make sure a commit happened and a new tx started
         g.tx().rollback();
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
+    }
+
+    @Ignore("Still fails even in TinkerPop3")
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldSupportTransactionIsolationWithSeparateThreads() throws Exception {
+        // one thread modifies the graph and a separate thread reads before the transaction is committed.
+        // the expectation is that the changes in the transaction are isolated to the thread that made the change
+        // and the second thread should not see the change until commit() in the first thread.
+        final Graph graph = g;
+
+        final CountDownLatch latchCommit = new CountDownLatch(1);
+        final CountDownLatch latchFirstRead = new CountDownLatch(1);
+        final CountDownLatch latchSecondRead = new CountDownLatch(1);
+
+        final Thread threadMod = new Thread() {
+            public void run() {
+                graph.addVertex();
+
+                latchFirstRead.countDown();
+
+                try {
+                    latchCommit.await();
+                } catch (InterruptedException ie) {
+                    throw new RuntimeException(ie);
+                }
+
+                graph.tx().commit();
+
+                latchSecondRead.countDown();
+            }
+        };
+
+        threadMod.start();
+
+        final AtomicLong beforeCommitInOtherThread = new AtomicLong(0);
+        final AtomicLong afterCommitInOtherThread = new AtomicLong(0);
+        final Thread threadRead = new Thread() {
+            public void run() {
+                try {
+                    latchFirstRead.await();
+                } catch (InterruptedException ie) {
+                    throw new RuntimeException(ie);
+                }
+
+                // reading vertex before tx from other thread is committed...should have zero vertices
+                beforeCommitInOtherThread.set(graph.V().count());
+
+                latchCommit.countDown();
+
+                try {
+                    latchSecondRead.await();
+                } catch (InterruptedException ie) {
+                    throw new RuntimeException(ie);
+                }
+
+                // tx in other thread is committed...should have one vertex
+                afterCommitInOtherThread.set(graph.V().count());
+            }
+        };
+
+        threadRead.start();
+
+        threadMod.join();
+        threadRead.join();
+
+        assertEquals(0l, beforeCommitInOtherThread.get());
+        assertEquals(1l, afterCommitInOtherThread.get());
     }
 }
