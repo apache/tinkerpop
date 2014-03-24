@@ -22,7 +22,6 @@ import java.util.concurrent.Future;
 public class GiraphGraphComputer implements GraphComputer {
 
     private org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
-    //private VertexProgram vertexProgram;
 
     public GraphComputer isolation(final Isolation isolation) {
         if (isolation.equals(Isolation.DIRTY_BSP))
@@ -30,13 +29,14 @@ public class GiraphGraphComputer implements GraphComputer {
         return this;
     }
 
-    public GraphComputer program(final VertexProgram program) {
-        //this.vertexProgram = program;
+    public GraphComputer program(final VertexProgram.Builder vertexProgramBuilder) {
+        final Configuration configuration = vertexProgramBuilder.build();
+        configuration.getKeys().forEachRemaining(key -> this.hadoopConfiguration.set(key, configuration.getProperty(key).toString()));
         return this;
     }
 
     public GraphComputer configuration(final Configuration configuration) {
-        this.hadoopConfiguration = ConfUtil.hadoopConfiguration(configuration);
+        ConfUtil.hadoopConfiguration(configuration).forEach(entry -> this.hadoopConfiguration.set(entry.getKey(), entry.getValue()));
         return this;
     }
 

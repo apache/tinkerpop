@@ -30,7 +30,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
     public Holder<Pair<Vertex, Double>> processNextStart() {
         try {
             if (this.firstNext) {
-                this.resultantGraph = this.graph.compute().program(PageRankVertexProgram.create().alpha(this.alpha).build()).submit().get();
+                this.resultantGraph = this.graph.compute().program(PageRankVertexProgram.create().alpha(this.alpha)).submit().get();
                 this.firstNext = false;
             }
         } catch (Exception e) {

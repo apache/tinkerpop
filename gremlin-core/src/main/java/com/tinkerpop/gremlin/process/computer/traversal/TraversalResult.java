@@ -28,7 +28,7 @@ public class TraversalResult<T> implements Iterator<T> {
         this.gremlinSupplier = traversalSupplier;
         this.graph = graph;
         final GraphComputer computer = graph.compute();
-        computer.program(TraversalVertexProgram.create().traversal(traversalSupplier).build());
+        computer.program(TraversalVertexProgram.create().traversal(traversalSupplier));
 
         try {
             this.result = computer.submit().get();

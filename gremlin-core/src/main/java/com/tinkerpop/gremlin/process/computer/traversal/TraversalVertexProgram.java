@@ -134,19 +134,17 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         return VertexProgram.ofComputeKeys(TRAVERSAL_TRACKER, KeyType.VARIABLE);
     }
 
-    public static Builder create(final Configuration configuration) {
-        return new Builder(configuration);
-    }
+    //////////////
 
     public static Builder create() {
-        return new Builder(new BaseConfiguration());
+        return new Builder();
     }
 
-    public static class Builder {
-        private final Configuration configuration;
+    public static class Builder implements VertexProgram.Builder {
+        private final Configuration configuration = new BaseConfiguration();
 
-        public Builder(final Configuration configuration) {
-            this.configuration = configuration;
+        public Builder() {
+            this.configuration.setProperty(VERTEX_PROGRAM_CLASS, TraversalVertexProgram.class.getName());
         }
 
         public Builder traversal(final SSupplier<Traversal> traversalSupplier) {
@@ -164,11 +162,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             return this;
         }
 
-        public TraversalVertexProgram build() {
-            this.configuration.setProperty(VERTEX_PROGRAM_CLASS, TraversalVertexProgram.class.getName());
-            final TraversalVertexProgram program = new TraversalVertexProgram();
-            program.initialize(this.configuration);
-            return program;
+        public Configuration build() {
+            return this.configuration;
         }
     }
 }

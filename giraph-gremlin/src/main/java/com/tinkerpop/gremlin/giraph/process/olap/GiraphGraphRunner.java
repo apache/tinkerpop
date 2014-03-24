@@ -51,6 +51,6 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
         GraphComputer g = new GiraphGraphComputer();
         //g.program(new PageRankVertexProgram.Builder(configuration).build()).configuration(configuration).submit();
-        g.program(new TraversalVertexProgram.Builder(configuration).traversal(() -> TinkerGraph.open().V().as("x").out().jump("x", h -> h.getLoops() < 2).value("name")).build()).configuration(configuration).submit();
+        g.program(new TraversalVertexProgram.Builder().traversal(() -> TinkerGraph.open().V().as("x").out().jump("x", h -> h.getLoops() < 2).value("name"))).configuration(configuration).submit();
     }
 }

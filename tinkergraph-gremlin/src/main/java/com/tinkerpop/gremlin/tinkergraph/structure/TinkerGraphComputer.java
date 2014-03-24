@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.esotericsoftware.kryo.io.ByteBufferInputStream;
-import com.esotericsoftware.kryo.io.ByteBufferOutputStream;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -9,8 +7,6 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.GraphMigrator;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -31,7 +27,6 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     public static final String SERIAL = "serial";
 
     private Isolation isolation = Isolation.BSP;
-    private VertexProgram vertexProgram;
     private Configuration configuration = new BaseConfiguration();
     private final TinkerGraph graph;
     private final TinkerMessenger messenger = new TinkerMessenger();
@@ -49,13 +44,14 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         return this;
     }
 
-    public GraphComputer program(final VertexProgram program) {
-        this.vertexProgram = program;
+    public GraphComputer program(final VertexProgram.Builder vertexProgramBuilder) {
+        final Configuration configuration = vertexProgramBuilder.build();
+        configuration.getKeys().forEachRemaining(key -> this.configuration.setProperty(key, configuration.getProperty(key)));
         return this;
     }
 
     public GraphComputer configuration(final Configuration configuration) {
-        this.configuration = configuration;
+        configuration.getKeys().forEachRemaining(key -> this.configuration.setProperty(key, configuration.getProperty(key)));
         return this;
     }
 
@@ -76,8 +72,9 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                 g = this.graph;
             }
 
+            final VertexProgram vertexProgram = VertexProgram.createVertexProgram(this.configuration);
             g.usesElementMemory = true;
-            g.elementMemory = new TinkerElementMemory(this.isolation, this.vertexProgram.getComputeKeys());
+            g.elementMemory = new TinkerElementMemory(this.isolation, vertexProgram.getComputeKeys());
             final boolean parallel;
             if (this.configuration.getString(EXECUTION_TYPE, PARALLEL).equals(PARALLEL))
                 parallel = true;
@@ -87,17 +84,17 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                 throw new IllegalArgumentException("The provided execution type is not supported: " + this.configuration.getString(EXECUTION_TYPE));
 
             // execute the vertex program
-            this.vertexProgram.setup(this.configuration, g.memory());
+            vertexProgram.setup(this.configuration, g.memory());
             while (true) {
                 if (parallel)
-                    StreamFactory.parallelStream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, this.messenger, g.memory()));
+                    StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, g.memory()));
                 else
-                    StreamFactory.stream(g.V()).forEach(vertex -> this.vertexProgram.execute(vertex, this.messenger, g.memory()));
+                    StreamFactory.stream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, g.memory()));
 
                 g.<Graph.Memory.Computer.Administrative>memory().incrIteration();
                 g.elementMemory.completeIteration();
                 this.messenger.completeIteration();
-                if (this.vertexProgram.terminate(g.memory())) break;
+                if (vertexProgram.terminate(g.memory())) break;
             }
 
             // update runtime and return the newly computed graph

@@ -81,22 +81,18 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         return graphMemory.getIteration() >= this.totalIterations;
     }
 
-    public static Builder create(final Configuration configuration) {
-        return new Builder(configuration);
-    }
-
-    public static Builder create() {
-        return new Builder(new BaseConfiguration());
-    }
-
     //////////////////////////////
 
-    public static class Builder {
+    public static Builder create() {
+        return new Builder();
+    }
 
-        private final Configuration configuration;
+    public static class Builder implements VertexProgram.Builder {
 
-        public Builder(final Configuration configuration) {
-            this.configuration = configuration;
+        private final Configuration configuration = new BaseConfiguration();
+
+        public Builder() {
+            this.configuration.setProperty(VERTEX_PROGRAM_CLASS, PageRankVertexProgram.class.getName());
         }
 
         public Builder iterations(final int iterations) {
@@ -124,11 +120,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             return this;
         }
 
-        public PageRankVertexProgram build() {
-            this.configuration.setProperty(VERTEX_PROGRAM_CLASS, PageRankVertexProgram.class.getName());
-            final PageRankVertexProgram program = new PageRankVertexProgram();
-            program.initialize(this.configuration);
-            return program;
+        public Configuration build() {
+            return this.configuration;
         }
     }
 

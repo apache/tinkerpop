@@ -79,4 +79,10 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
         }
     }
 
+    public interface Builder {
+
+        public Configuration build();
+
+    }
+
 }
