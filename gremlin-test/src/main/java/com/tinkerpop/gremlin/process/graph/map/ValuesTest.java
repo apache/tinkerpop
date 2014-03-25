@@ -10,10 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -105,27 +102,27 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
             counter++;
             final Map<String, Object> values = step.next();
             final Integer id = Integer.valueOf(values.get(Element.ID).toString());
-            if (id == 7) {
+            if (id.toString().equals("7")) {
                 assertEquals("knows", values.get("label"));
                 assertEquals(0.5f, values.get("weight"));
                 assertEquals(3, values.size());
-            } else if (id == 8) {
+            } else if (id.toString().equals("8")) {
                 assertEquals("knows", values.get("label"));
                 assertEquals(1.0f, values.get("weight"));
                 assertEquals(3, values.size());
-            } else if (id == 9) {
+            } else if (id.toString().equals("9")) {
                 assertEquals("created", values.get("label"));
                 assertEquals(0.4f, values.get("weight"));
                 assertEquals(3, values.size());
-            } else if (id == 10) {
+            } else if (id.toString().equals("10")) {
                 assertEquals("created", values.get("label"));
                 assertEquals(1.0f, values.get("weight"));
                 assertEquals(3, values.size());
-            } else if (id == 11) {
+            } else if (id.toString().equals("11")) {
                 assertEquals("created", values.get("label"));
                 assertEquals(0.4f, values.get("weight"));
                 assertEquals(3, values.size());
-            } else if (id == 12) {
+            } else if (id.toString().equals("12")) {
                 assertEquals("created", values.get("label"));
                 assertEquals(0.2f, values.get("weight"));
                 assertEquals(3, values.size());
@@ -192,7 +189,7 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
 
         public Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
             // todo: this test fails for graph computer
-            return g.v(v1Id).out("created").values(); //.submit(g.compute());
+            return g.v(v1Id).out("created").values().submit(g.compute());
         }
     }
 }
