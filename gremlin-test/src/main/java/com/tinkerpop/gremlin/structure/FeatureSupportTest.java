@@ -36,6 +36,16 @@ import static org.junit.Assume.assumeThat;
 public class FeatureSupportTest  {
     private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
+    public static class FeatureToStringTest extends AbstractGremlinTest {
+        /**
+         * A rough test to ensure that StringFactory is being used to toString Features.
+         */
+        @Test
+        public void shouldHaveStandardToStringRepresentation() {
+            assertTrue(g.getFeatures().toString().startsWith("FEATURES"));
+        }
+    }
+
     /**
      * Feature checks that test {@link com.tinkerpop.gremlin.structure.Graph} functionality to determine if a feature should be on when it is marked
      * as not supported.

@@ -355,6 +355,11 @@ public class Neo4jGraph implements Graph {
             return new Neo4jEdgeFeatures();
         }
 
+        @Override
+        public String toString() {
+            return StringFactory.featureString(this);
+        }
+
         public static class Neo4jVertexFeatures implements VertexFeatures {
             @Override
             public VertexAnnotationFeatures annotations() {
