@@ -199,6 +199,7 @@ public class Neo4jGraph implements Graph {
     }
 
     public Iterator<Map<String,Object>> query(final String query, final Map<String,Object> params) {
+        this.tx().readWrite();
         return cypher.execute(query,null == params ? Collections.<String,Object>emptyMap() : params).iterator();
     }
 

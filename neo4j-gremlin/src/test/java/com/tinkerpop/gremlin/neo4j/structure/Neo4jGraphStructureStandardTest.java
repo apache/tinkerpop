@@ -17,29 +17,6 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(StructureStandardSuite.class)
-@StructureStandardSuite.GraphProviderClass(Neo4jGraphStructureStandardTest.class)
-public class Neo4jGraphStructureStandardTest extends AbstractGraphProvider {
-
-    @Override
-    public Map<String, Object> getBaseConfiguration(final String graphName) {
-        return new HashMap<String, Object>() {{
-            put("gremlin.graph", Neo4jGraph.class.getName());
-            put("gremlin.neo4j.directory", getWorkingDirectory() + File.separator + graphName);
-        }};
-    }
-
-    @Override
-    public void clear(final Graph g, final Configuration configuration) throws Exception {
-        if (null != g) {
-            if (g.getFeatures().graph().supportsTransactions())
-                g.tx().rollback();
-            g.close();
-        }
-
-        if (configuration.containsKey("gremlin.neo4j.directory")) {
-            // this is a non-in-memory configuration so blow away the directory
-            final File graphDirectory = new File(configuration.getString("gremlin.neo4j.directory"));
-            deleteDirectory(graphDirectory);
-        }
-    }
+@StructureStandardSuite.GraphProviderClass(Neo4jGraphProvider.class)
+public class Neo4jGraphStructureStandardTest {
 }
