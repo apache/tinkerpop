@@ -60,4 +60,15 @@ public abstract class AnnotatedValuesTest extends AbstractGremlinTest {
             return g.V().annotatedValues("locations").has("startTime", 2005).value();
         }
     }
+
+    public static class JavaComputerAnnotatedValuesTest extends AnnotatedValuesTest {
+
+        public Traversal<Vertex, AnnotatedValue<String>> get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X(final Object v1Id) {
+            return g.v(v1Id).annotatedValues("locations").<AnnotatedValue<String>>interval("startTime", 2004, 2006).submit(g.compute());
+        }
+
+        public Traversal<Vertex, String> get_g_V_annotatedValuesXlocationsX_hasXstartTime_2005X_value() {
+            return g.V().annotatedValues("locations").has("startTime", 2005).<String>value().submit(g.compute());
+        }
+    }
 }
