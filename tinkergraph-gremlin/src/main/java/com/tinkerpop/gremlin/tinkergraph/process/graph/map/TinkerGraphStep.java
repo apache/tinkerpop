@@ -40,12 +40,6 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
     }
 
-    //TODO: Remove if not needed
-    public void clearGraph() {
-        this.graph = null;
-        this.starts = null;
-    }
-
     public void clear() {
         this.starts.clear();
     }
