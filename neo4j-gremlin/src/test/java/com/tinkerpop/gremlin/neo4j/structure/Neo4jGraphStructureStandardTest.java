@@ -24,7 +24,7 @@ public class Neo4jGraphStructureStandardTest extends AbstractGraphProvider {
     public Map<String, Object> getBaseConfiguration(final String graphName) {
         return new HashMap<String, Object>() {{
             put("gremlin.graph", Neo4jGraph.class.getName());
-            put("gremlin.neo4j.directory", "/tmp/" + graphName);  // todo: better job with directory setup?  see tp2
+            put("gremlin.neo4j.directory", getWorkingDirectory() + File.separator + graphName);
         }};
     }
 

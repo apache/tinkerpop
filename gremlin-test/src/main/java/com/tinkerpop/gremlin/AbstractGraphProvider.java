@@ -4,6 +4,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Map;
 
 /**
@@ -57,5 +58,17 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         if (directory.exists()) {
             throw new RuntimeException("unable to delete directory " + directory.getAbsolutePath());
         }
+    }
+
+    protected String getWorkingDirectory() {
+        return this.computeTestDataRoot().getAbsolutePath();
+    }
+
+    protected File computeTestDataRoot() {
+        final String clsUri = this.getClass().getName().replace('.', '/') + ".class";
+        final URL url = this.getClass().getClassLoader().getResource(clsUri);
+        final String clsPath = url.getPath();
+        final File root = new File(clsPath.substring(0, clsPath.length() - clsUri.length()));
+        return new File(root.getParentFile(), "test-data");
     }
 }
