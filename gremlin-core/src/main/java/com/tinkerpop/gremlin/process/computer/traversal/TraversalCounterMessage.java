@@ -47,14 +47,14 @@ public class TraversalCounterMessage extends TraversalMessage {
                                   final Iterable<TraversalCounterMessage> messages,
                                   final Messenger messenger,
                                   final TraversalCounters tracker,
-                                  final Traversal gremlin) {
+                                  final Traversal traversal) {
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final Map<Holder, Long> localCounts = new HashMap<>();
 
         messages.forEach(message -> {
             message.holder.inflate(vertex);
-            if (message.executeCounts(tracker, gremlin, localCounts))
+            if (message.executeCounts(tracker, traversal, localCounts))
                 voteToHalt.set(false);
         });
 
@@ -62,7 +62,7 @@ public class TraversalCounterMessage extends TraversalMessage {
             if (holder.isDone()) {
                 MapHelper.incr(tracker.getDoneObjectTracks(), holder, counts);
             } else {
-                final Step step = TraversalHelper.getAs(holder.getFuture(), gremlin);
+                final Step step = TraversalHelper.getAs(holder.getFuture(), traversal);
                 for (int i = 0; i < counts; i++) {
                     step.addStarts(new SingleIterator(holder));
                 }
@@ -88,7 +88,7 @@ public class TraversalCounterMessage extends TraversalMessage {
     }
 
     private boolean executeCounts(final TraversalCounters tracker,
-                                  final Traversal gremlin, Map<Holder, Long> localCounts) {
+                                  final Traversal traversal, Map<Holder, Long> localCounts) {
 
         if (this.holder.isDone()) {
             this.holder.deflate();
@@ -96,7 +96,7 @@ public class TraversalCounterMessage extends TraversalMessage {
             return false;
         }
 
-        final Step step = TraversalHelper.getAs(this.holder.getFuture(), gremlin);
+        final Step step = TraversalHelper.getAs(this.holder.getFuture(), traversal);
         MapHelper.incr(tracker.getGraphTracks(), this.holder, this.counter);
         for (int i = 0; i < this.counter; i++) {
             step.addStarts(new SingleIterator(this.holder));

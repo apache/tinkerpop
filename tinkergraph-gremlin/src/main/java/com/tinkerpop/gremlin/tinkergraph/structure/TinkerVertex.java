@@ -1,10 +1,12 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
@@ -72,58 +74,68 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     //////////////////////
 
-    private static GraphTraversal generateGraphTraversal(final TinkerVertex vertex) {
-        return new DefaultGraphTraversal<Vertex, Vertex>() {
+
+    public GraphTraversal<Vertex, Vertex> start() {
+        final TinkerVertex vertex = this;
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
             public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
+                //System.out.println("here!!!!" + this);
                 if (engine instanceof GraphComputer) {
                     this.optimizers().unregister(TinkerGraphStepOptimizer.class);
+                    final String label = this.getSteps().get(0).getAs();
                     TraversalHelper.removeStep(0, this);
+                    final Step identityStep = new IdentityStep(this);
+                    if (TraversalHelper.isLabeled(label))
+                        identityStep.setAs(label);
+                    TraversalHelper.insertStep(identityStep, 0, this);
                     TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, vertex.getId())), 0, this);
                     TraversalHelper.insertStep(new TinkerGraphStep(this, Vertex.class, vertex.graph), 0, this);
+                    /*System.out.println(this);
+                    System.out.println(this.getSteps().stream().map(step -> step.getAs()).collect(Collectors.toList()));
+                    System.out.println(this.getSteps().get(0));
+                    System.out.println(this.getSteps().get(0).getNextStep());
+                    System.out.println(this.getSteps().get(0).getNextStep().getNextStep());
+                    System.out.println(this.getSteps().get(0).getNextStep().getNextStep().getNextStep());
+                    System.out.println(this.getSteps().get(0).getNextStep().getNextStep().getNextStep().getNextStep());*/
                 }
                 return super.submit(engine);
             }
         };
+        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
     public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
-        final GraphTraversal<Vertex, Vertex> traversal = generateGraphTraversal(this);
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
+        final GraphTraversal<Vertex, Vertex> traversal = this.start();
         traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, Direction.OUT, branchFactor, labels));
         return traversal;
     }
 
     public GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
-        final GraphTraversal<Vertex, Vertex> traversal = generateGraphTraversal(this);
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
+        final GraphTraversal<Vertex, Vertex> traversal = this.start();
         traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, Direction.IN, branchFactor, labels));
         return traversal;
     }
 
     public GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
-        final GraphTraversal<Vertex, Vertex> traversal = generateGraphTraversal(this);
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
+        final GraphTraversal<Vertex, Vertex> traversal = this.start();
         traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, Direction.BOTH, branchFactor, labels));
         return traversal;
     }
 
     public GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
-        final GraphTraversal<Vertex, Edge> traversal = generateGraphTraversal(this);
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
+        final GraphTraversal traversal = this.start();
         traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.OUT, branchFactor, labels));
         return traversal;
     }
 
     public GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
-        final GraphTraversal<Vertex, Edge> traversal = generateGraphTraversal(this);
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
+        final GraphTraversal traversal = this.start();
         traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.IN, branchFactor, labels));
         return traversal;
     }
 
     public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
-        final GraphTraversal<Vertex, Edge> traversal = generateGraphTraversal(this);
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
+        final GraphTraversal traversal = this.start();
         traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.BOTH, branchFactor, labels));
         return traversal;
     }

@@ -142,7 +142,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
     }
 
-    // todo: convert to graph computer
+    // TODO: Range doesn't make sense in GraphComputer as its all parallel
     public static class JavaComputerRangeTest extends RangeTest {
         public JavaComputerRangeTest() {
             requiresGraphComputer = true;

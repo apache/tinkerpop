@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.process.olap;
 
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Ignore;
@@ -18,11 +19,15 @@ public class TinkerGraphComputerTest {
         Graph g = TinkerFactory.createClassic();
 
         //ComputeResult result = g.compute().program(TraversalVertexProgram.create().gremlin(() -> g.V().outE()).build()).submit().get();
-        g.V().has("name", "marko").out().value("name").forEach(System.out::println);
-        System.out.println("----------");
+        //g.V().has("name", "marko").out().value("name").forEach(System.out::println);
+       // System.out.println("----------");
         //new TraversalResult<>(g, () -> g.V().out().value("name")).forEachRemaining(System.out::println);
 
-        g.V().has("name", "marko").out().value("name").submit(g.compute()).forEachRemaining(System.out::println);
+        //g.v(1).as("x").has("name", "marko").out().value("name").back("x").submit(g.compute()).forEachRemaining(System.out::println);
+
+        //System.out.println(g.v(1).as("x").out().jump("x", h -> h.getLoops() < 1).<String>value("name").path().submit(g.compute()));
+        System.out.println(g.v(1).as("x").out().jump("x", h -> h.getLoops() < 1).<String>value("name").path());
+        g.v(1).identity().as("x").out().jump("x", h -> h.getLoops() < 2).<String>value("name").path().submit(g.compute()).forEachRemaining(path -> System.out.println(path));
 
         //g.V().pageRank().map(pair -> pair.get().getValue0()).value("name").path().submit(g.compute()).forEachRemaining(System.out::println);
 

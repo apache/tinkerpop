@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import com.tinkerpop.gremlin.structure.Element;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -50,7 +51,8 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
         public Iterator<String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
             // todo: this test does not yet pass
-            return g.v(v1Id).as("x").out().jump("x", h -> h.getLoops() < 2).<String>value("name"); // .submit(g.compute());
+            return g.v(v1Id).identity().as("x").out().jump("x", h -> h.getLoops() < 2).<String>value("name").submit(g.compute());
+            //return g.V().has(Element.ID, v1Id).identity().as("x").out().jump("x", h -> h.getLoops() < 2).<String>value("name"); //.submit(g.compute());
         }
     }
 }

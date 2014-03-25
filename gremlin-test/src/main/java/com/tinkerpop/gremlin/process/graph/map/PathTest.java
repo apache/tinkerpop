@@ -11,9 +11,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -76,7 +74,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     public static class JavaPathTest extends PathTest {
-        public JavaPathTest(){
+        public JavaPathTest() {
             requiresGraphComputer = false;
         }
 
@@ -96,22 +94,21 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     public static class JavaComputerPathTest extends PathTest {
-        public JavaComputerPathTest(){
+        public JavaComputerPathTest() {
             requiresGraphComputer = true;
         }
 
         public Iterator<Path> get_g_v1_propertyXnameX_path(final Object v1Id) {
-            // todo: test does not yet pass for graph computer
-            return g.v(v1Id).value("name").path(); // .submit(g.compute())
+            return g.v(v1Id).value("name").path().submit(g.compute());
         }
 
         public Iterator<Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
-            // todo: test does not yet pass for graph computer
+            // TODO: Micro elements do not store properties (inflate)
             return g.v(v1Id).out().path(v -> ((Vertex) v).getValue("age"), v -> ((Vertex) v).getValue("name")); // .submit(g.compute())
         }
 
         public Iterator<Path> get_g_V_asXxX_out_loopXx_loops_lt_3X_pathXit__name__langX() {
-            // todo: test does not yet pass - Micro elements do not store properties (inflate): v[4]
+            // TODO: Micro elements do not store properties (inflate)
             return g.V().as("x").out()
                     .jump("x", o -> o.getLoops() < 2)
                     .path(v -> v, v -> ((Vertex) v).getValue("name"), v -> ((Vertex) v).getValue("lang")); // .submit(g.compute());

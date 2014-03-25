@@ -37,13 +37,13 @@ public class TraversalPathMessage extends TraversalMessage {
                                   final Iterable<TraversalPathMessage> messages,
                                   final Messenger messenger,
                                   final TraversalPaths tracker,
-                                  final Traversal gremlin) {
+                                  final Traversal traversal) {
 
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         messages.forEach(message -> {
             message.holder.inflate(vertex);
-            if (message.executePaths(vertex, messenger, tracker, gremlin))
+            if (message.executePaths(vertex, messenger, tracker, traversal))
                 voteToHalt.set(false);
         });
         tracker.getPreviousObjectTracks().forEach((object, holders) -> {
@@ -55,7 +55,7 @@ public class TraversalPathMessage extends TraversalMessage {
                         MapHelper.incr(tracker.getDoneObjectTracks(), object, holder);
                     }
                 } else {
-                    final Step step = TraversalHelper.getAs(holder.getFuture(), gremlin);
+                    final Step step = TraversalHelper.getAs(holder.getFuture(), traversal);
                     step.addStarts(new SingleIterator(holder));
                     if (processStep(step, vertex, messenger, tracker))
                         voteToHalt.set(false);
@@ -68,14 +68,14 @@ public class TraversalPathMessage extends TraversalMessage {
 
     private boolean executePaths(final Vertex vertex, final Messenger messenger,
                                  final TraversalPaths tracker,
-                                 final Traversal gremlin) {
+                                 final Traversal traversal) {
         if (this.holder.isDone()) {
             this.holder.deflate();
             MapHelper.incr(tracker.getDoneGraphTracks(), this.holder.get(), this.holder);
             return false;
         }
 
-        final Step step = TraversalHelper.getAs(this.holder.getFuture(), gremlin);
+        final Step step = TraversalHelper.getAs(this.holder.getFuture(), traversal);
         MapHelper.incr(tracker.getGraphTracks(), this.holder.get(), this.holder);
         step.addStarts(new SingleIterator(this.holder));
         return processStep(step, vertex, messenger, tracker);

@@ -20,12 +20,12 @@ import java.util.function.Supplier;
 public class TraversalResult<T> implements Iterator<T> {
 
     private Iterator<T> itty;
-    private final Supplier<Traversal> gremlinSupplier;
+    private final Supplier<Traversal> traversalSupplier;
     private final Graph graph;
     private final Graph result;
 
     public TraversalResult(final Graph graph, final SSupplier<Traversal> traversalSupplier) {
-        this.gremlinSupplier = traversalSupplier;
+        this.traversalSupplier = traversalSupplier;
         this.graph = graph;
         final GraphComputer computer = graph.compute();
         computer.program(TraversalVertexProgram.create().traversal(traversalSupplier));
@@ -47,11 +47,11 @@ public class TraversalResult<T> implements Iterator<T> {
     }
 
     public String toString() {
-        return this.gremlinSupplier.get().toString();
+        return this.traversalSupplier.get().toString();
     }
 
     private void buildIterator() {
-        if (HolderOptimizer.trackPaths(this.gremlinSupplier.get())) {
+        if (HolderOptimizer.trackPaths(this.traversalSupplier.get())) {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.graph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
                         .map(v -> this.result.v(v.getId()).<TraversalPaths>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(null))
