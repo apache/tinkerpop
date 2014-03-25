@@ -2,8 +2,6 @@ package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.structure.Element;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -92,44 +90,29 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore("can't easily check edge ids as they are different from one graph implementation to the next...some other method to test this traversal?")
     @LoadGraphWith(CLASSIC)
     public void g_E_valuesXid_label_weightX() {
         final Iterator<Map<String, Object>> step = get_g_E_valuesXid_label_weightX();
         System.out.println("Testing: " + step);
         int counter = 0;
+        int counter2 = 0;
         while (step.hasNext()) {
             counter++;
             final Map<String, Object> values = step.next();
-            final Integer id = Integer.valueOf(values.get(Element.ID).toString());
-            if (id.toString().equals("7")) {
-                assertEquals("knows", values.get("label"));
-                assertEquals(0.5f, values.get("weight"));
-                assertEquals(3, values.size());
-            } else if (id.toString().equals("8")) {
-                assertEquals("knows", values.get("label"));
-                assertEquals(1.0f, values.get("weight"));
-                assertEquals(3, values.size());
-            } else if (id.toString().equals("9")) {
-                assertEquals("created", values.get("label"));
-                assertEquals(0.4f, values.get("weight"));
-                assertEquals(3, values.size());
-            } else if (id.toString().equals("10")) {
-                assertEquals("created", values.get("label"));
-                assertEquals(1.0f, values.get("weight"));
-                assertEquals(3, values.size());
-            } else if (id.toString().equals("11")) {
-                assertEquals("created", values.get("label"));
-                assertEquals(0.4f, values.get("weight"));
-                assertEquals(3, values.size());
-            } else if (id.toString().equals("12")) {
-                assertEquals("created", values.get("label"));
-                assertEquals(0.2f, values.get("weight"));
-                assertEquals(3, values.size());
-            } else {
-                throw new IllegalStateException("It is not possible to reach here: " + values);
-            }
+            if (values.get("label").equals("knows") && values.get("weight").equals(0.5f) && values.size() == 3)
+                counter2++;
+            else if (values.get("label").equals("knows") && values.get("weight").equals(1.0f) && values.size() == 3)
+                counter2++;
+            else if (values.get("label").equals("created") && values.get("weight").equals(0.4f) && values.size() == 3)
+                counter2++;
+            else if (values.get("label").equals("created") && values.get("weight").equals(1.0f) && values.size() == 3)
+                counter2++;
+            else if (values.get("label").equals("created") && values.get("weight").equals(0.4f) && values.size() == 3)
+                counter2++;
+            else if (values.get("label").equals("created") && values.get("weight").equals(0.2f) && values.size() == 3)
+                counter2++;
         }
+        assertEquals(6, counter2);
         assertEquals(6, counter);
     }
 
@@ -188,7 +171,6 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
         }
 
         public Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
-            // todo: this test fails for graph computer
             return g.v(v1Id).out("created").values().submit(g.compute());
         }
     }

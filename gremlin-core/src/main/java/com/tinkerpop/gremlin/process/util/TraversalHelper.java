@@ -91,6 +91,7 @@ public class TraversalHelper {
             if (i == steps.size() - 1)
                 steps.get(i).setNextStep(EmptyStep.instance());
         }
+        reLabelSteps(traversal);
     }
 
     public static void removeStep(final int index, final Traversal traversal) {
@@ -110,9 +111,14 @@ public class TraversalHelper {
             rightStep.setPreviousStep(step);
         }
         steps.add(index, step);
+        reLabelSteps(traversal);
+    }
+
+    private static void reLabelSteps(final Traversal traversal) {
+        final List<Step> steps = traversal.getSteps();
         for (int i = 0; i < steps.size(); i++) {
             if (!TraversalHelper.isLabeled(steps.get(i)))
-                steps.get(i).setAs("_" + i);
+                steps.get(i).setAs(UNDERSCORE + i);
         }
     }
 

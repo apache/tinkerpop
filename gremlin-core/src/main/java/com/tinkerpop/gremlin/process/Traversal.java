@@ -32,11 +32,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public Traversal<S, E> submit(final TraversalEngine engine);
 
-    public static Traversal of() {
+    /*public static Traversal of() {
         Traversal traversal = new DefaultTraversal<>();
         traversal.addStep(new IdentityStep(traversal));
         return traversal;
-    }
+    }*/
 
     public interface Memory extends Serializable {
 
