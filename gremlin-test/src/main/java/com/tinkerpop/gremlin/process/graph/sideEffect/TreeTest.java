@@ -40,8 +40,8 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaProcessTreeTest extends TreeTest {
-        public JavaProcessTreeTest() {
+    public static class JavaComputerTreeTest extends TreeTest {
+        public JavaComputerTreeTest() {
             requiresGraphComputer = true;
         }
 

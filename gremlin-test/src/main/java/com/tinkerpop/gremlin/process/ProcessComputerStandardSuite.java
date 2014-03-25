@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.process.graph.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.filter.HasTest;
 import com.tinkerpop.gremlin.process.graph.filter.IntervalTest;
-import com.tinkerpop.gremlin.process.graph.filter.RangeTest;
 import com.tinkerpop.gremlin.process.graph.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.map.AnnotatedValuesTest;
@@ -49,16 +48,16 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            CyclicPathTest.JavaCyclicPathTest.class,
-            // DedupTest.JavaDedupTest.class,  TODO: Makes no sense in GraphComputer
-            ExceptTest.JavaExceptTest.class,
+            CyclicPathTest.JavaComputerCyclicPathTest.class,
+            // DedupTest.JavaComputerDedupTest.class,  TODO: Makes no sense in GraphComputer
+            ExceptTest.JavaComputerExceptTest.class,
             FilterTest.JavaComputerFilterTest.class,
             HasTest.JavaComputerHasTest.class,
             IntervalTest.JavaComputerIntervalTest.class,
             // RangeTest.JavaComputerRangeTest.class, TODO: Makes no sense in GraphComputer
-            RetainTest.JavaRetainTest.class,
-            SimplePathTest.JavaSimplePathTest.class,
-            AnnotatedValuesTest.JavaAnnotatedValuesTest.class,
+            RetainTest.JavaComputerRetainTest.class,
+            SimplePathTest.JavaComputerSimplePathTest.class,
+            AnnotatedValuesTest.JavaComputerAnnotatedValuesTest.class,
             BackTest.JavaComputerBackTest.class,
             JumpTest.JavaComputerJumpTest.class,
             // OrderTest.JavaOrderTest.class
@@ -66,9 +65,10 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             SelectTest.JavaComputerSelectTest.class,
             TraversalTest.JavaComputerTraversalTest.class,
             ValuesTest.JavaComputerValuesTest.class,
-            TreeTest.JavaProcessTreeTest.class
+            TreeTest.JavaComputerTreeTest.class
 
           /*
+            // TODO: Be sure to XXComputerXX then class names
             AggregateTest.JavaAggregateTest.class,
             GroupByTest.JavaGroupByTest.class,
             GroupCountTest.JavaGroupCountTest.class,
@@ -82,10 +82,15 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
      * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
      */
     protected static final Class<?>[] testsToEnforce = new Class<?>[]{
+            CyclicPathTest.class,
+            ExceptTest.class,
             FilterTest.class,
             HasTest.class,
             IntervalTest.class,
-            RangeTest.class,
+            // RangeTest.class,
+            RetainTest.class,
+            SimplePathTest.class,
+            AnnotatedValuesTest.class,
             BackTest.class,
             JumpTest.class,
             PathTest.class,
