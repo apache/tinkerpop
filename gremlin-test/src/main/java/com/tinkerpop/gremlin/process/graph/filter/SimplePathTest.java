@@ -7,9 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,6 +35,13 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
 
         public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
             return g.v(v1Id).out("created").in("created").simplePath();
+        }
+    }
+
+    public static class JavaComputerSimplePathTest extends SimplePathTest {
+
+        public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
+            return g.v(v1Id).out("created").in("created").simplePath().submit(g.compute());
         }
     }
 }

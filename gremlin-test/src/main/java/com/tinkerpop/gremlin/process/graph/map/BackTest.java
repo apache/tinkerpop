@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -131,8 +130,6 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
             return g.v(v1Id).outE("knows").has("weight", 1.0f).as("here").inV().has("name", "josh").back("here");
         }
     }
-
-    // todo: all these test currently fail for GraphComputer
 
     public static class JavaComputerBackTest extends BackTest {
         public JavaComputerBackTest() {

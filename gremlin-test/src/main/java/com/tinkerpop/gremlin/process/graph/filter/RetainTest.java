@@ -50,4 +50,15 @@ public abstract class RetainTest extends AbstractGremlinTest {
             return g.v(v1Id).out().aggregate("x").out().retain("x");
         }
     }
+
+    public static class JavaComputerRetainTest extends RetainTest {
+
+        public Traversal<Vertex, Vertex> get_g_v1_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
+            return g.v(v1Id).out().retain(g.v(v2Id)).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_retainXxX(final Object v1Id) {
+            return g.v(v1Id).out().aggregate("x").out().retain("x").submit(g.compute());
+        }
+    }
 }

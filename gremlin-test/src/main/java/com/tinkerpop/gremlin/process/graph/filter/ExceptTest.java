@@ -80,4 +80,18 @@ public abstract class ExceptTest extends AbstractGremlinTest {
             return g.v(v1Id).out("created").in("created").except(g.v(v1Id)).value("name");
         }
     }
+
+    public static class JavaComputerExceptTest extends ExceptTest {
+        public Traversal<Vertex, Vertex> get_g_v1_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {
+            return g.v(v1Id).out().except(g.v(v2Id)).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_out_aggregateXxX_out_exceptXxX(final Object v1Id) {
+            return g.v(v1Id).out().aggregate("x").out().except("x").submit(g.compute());
+        }
+
+        public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(final Object v1Id) {
+            return g.v(v1Id).out("created").in("created").except(g.v(v1Id)).<String>value("name").submit(g.compute());
+        }
+    }
 }

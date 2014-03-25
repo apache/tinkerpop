@@ -1,10 +1,14 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.process.graph.filter.CyclicPathTest;
+import com.tinkerpop.gremlin.process.graph.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.filter.FilterTest;
 import com.tinkerpop.gremlin.process.graph.filter.HasTest;
 import com.tinkerpop.gremlin.process.graph.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.graph.filter.RangeTest;
+import com.tinkerpop.gremlin.process.graph.filter.RetainTest;
+import com.tinkerpop.gremlin.process.graph.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.map.BackTest;
 import com.tinkerpop.gremlin.process.graph.map.JumpTest;
 import com.tinkerpop.gremlin.process.graph.map.PathTest;
@@ -44,17 +48,33 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+            CyclicPathTest.JavaCyclicPathTest.class,
+            // DedupTest.JavaDedupTest.class,  TODO: Makes no sense in GraphComputer
+            ExceptTest.JavaExceptTest.class,
             FilterTest.JavaComputerFilterTest.class,
             HasTest.JavaComputerHasTest.class,
             IntervalTest.JavaComputerIntervalTest.class,
-            RangeTest.JavaComputerRangeTest.class,
+            // RangeTest.JavaComputerRangeTest.class, TODO: Makes no sense in GraphComputer
+            RetainTest.JavaRetainTest.class,
+            SimplePathTest.JavaSimplePathTest.class,
+            // AnnotatedValuesTest.JavaAnnotatedValuesTest.class,
             BackTest.JavaComputerBackTest.class,
             JumpTest.JavaComputerJumpTest.class,
+            // OrderTest.JavaOrderTest.class
             PathTest.JavaComputerPathTest.class,
             SelectTest.JavaComputerSelectTest.class,
             TraversalTest.JavaComputerTraversalTest.class,
             ValuesTest.JavaComputerValuesTest.class,
             TreeTest.JavaProcessTreeTest.class
+
+          /*
+            AggregateTest.JavaAggregateTest.class,
+            GroupByTest.JavaGroupByTest.class,
+            GroupCountTest.JavaGroupCountTest.class,
+            LinkTest.JavaLinkTest.class,
+            SideEffectTest.JavaSideEffectTest.class,
+            TreeTest.JavaTreeTest.class
+          */
     };
 
     /**
