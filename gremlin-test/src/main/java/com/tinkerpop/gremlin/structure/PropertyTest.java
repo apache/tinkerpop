@@ -17,9 +17,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -35,10 +39,37 @@ public class PropertyTest {
      */
     public static class BasicPropertyTest extends AbstractGremlinTest {
         @Test
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldHaveStandardStringRepresentation() {
             final Vertex v = g.addVertex("name", "marko");
             final Property p = v.getProperty("name");
             assertEquals(StringFactory.propertyString(p), p.toString());
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        public void shouldReturnEmptyPropertyIfKeyNonExistent() {
+            final Vertex v = g.addVertex("name", "marko");
+            tryCommit(g, (graph) -> {
+                final Vertex v1 = g.v(v.getId());
+                final Property p = v1.getProperty("nonexistent-key");
+                assertEquals(Property.empty(), p);
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        public void shouldAllowRemovalWhenAlreadyRemoved() {
+            final Vertex v = g.addVertex("name", "marko");
+            tryCommit(g);
+            final Vertex v1 = g.v(v.getId());
+            try {
+                final Property p = v1.getProperty("name");
+                p.remove();
+                p.remove();
+            } catch (Exception ex) {
+                fail("Removing a property that was already removed should not throw an exception");
+            }
         }
     }
 
