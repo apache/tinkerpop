@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.util.optimizers;
+package com.tinkerpop.gremlin.process.graph.util.optimizers;
 
 import org.junit.Test;
 
