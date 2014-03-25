@@ -168,6 +168,7 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_TRANSACTIONS = "Transactions";
             public static final String FEATURE_PERSISTENCE = "Persistence";
             public static final String FEATURE_THREADED_TRANSACTIONS = "ThreadedTransactions";
+            public static final String FEATURE_FULLY_ISOLATED_TRANSACTIONS = "FullyIsolatedTransactions";
 
             @FeatureDescriptor(name = FEATURE_MEMORY)
             public default boolean supportsMemory() {
@@ -191,6 +192,21 @@ public interface Graph extends AutoCloseable {
 
             @FeatureDescriptor(name = FEATURE_THREADED_TRANSACTIONS)
             public default boolean supportsThreadedTransactions() {
+                return true;
+            }
+
+            /**
+             * Refers to the ability of the Graph implementation to fully isolate a change within a transaction across
+             * threads.  There are a number of tests in the suite that start a transaction in one thread and do
+             * assertions on the graph in a different thread to ensure that those changes are not reflected in the
+             * other thread.  Not all graphs cleanly support that.
+             * <br/>
+             * This feature is a bit of a hazy one.  Implementers should evaluate the tests themselves to determine
+             * if they can support the feature and if not, they should carefully document for users the capabilities
+             * in this area.
+             */
+            @FeatureDescriptor(name = FEATURE_FULLY_ISOLATED_TRANSACTIONS)
+            public default boolean supportsFullyIsolatedTransactions() {
                 return true;
             }
 

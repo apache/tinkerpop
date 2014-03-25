@@ -524,11 +524,9 @@ public class TransactionTest extends AbstractGremlinTest {
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
     }
 
-    // todo: is this a feature.  neo4j doesn't respect transactional state in getVertices()
-
-    @Ignore("Still fails even in TinkerPop3")
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
     public void shouldSupportTransactionIsolationWithSeparateThreads() throws Exception {
         // one thread modifies the graph and a separate thread reads before the transaction is committed.
         // the expectation is that the changes in the transaction are isolated to the thread that made the change

@@ -343,6 +343,16 @@ public class Neo4jGraph implements Graph {
                 public boolean supportsThreadedTransactions() {
                     return false;
                 }
+
+                /**
+                 * Neo4j does not support transaction consistency across threads when iterating over {@code g.V/E}
+                 * in the sense that a vertex added in one thread will appear in the iteration of vertices in a
+                 * different thread even prior to transaction commit in the first thread.
+                 */
+                @Override
+                public boolean supportsFullyIsolatedTransactions() {
+                    return false;
+                }
             };
         }
 
