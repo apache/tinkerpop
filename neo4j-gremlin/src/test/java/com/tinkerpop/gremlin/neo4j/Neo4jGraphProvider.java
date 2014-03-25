@@ -1,6 +1,7 @@
-package com.tinkerpop.gremlin.neo4j.structure;
+package com.tinkerpop.gremlin.neo4j;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
+import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 

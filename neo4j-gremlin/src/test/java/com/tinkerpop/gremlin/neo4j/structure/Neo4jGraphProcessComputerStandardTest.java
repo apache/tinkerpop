@@ -1,14 +1,8 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.AbstractGraphProvider;
+import com.tinkerpop.gremlin.neo4j.Neo4jGraphProvider;
 import com.tinkerpop.gremlin.process.ProcessComputerStandardSuite;
-import com.tinkerpop.gremlin.structure.Graph;
-import org.apache.commons.configuration.Configuration;
 import org.junit.runner.RunWith;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
