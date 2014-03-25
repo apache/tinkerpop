@@ -159,7 +159,7 @@ public class IoTest extends AbstractGremlinTest {
 
         // reusing the same config used for creation of "g".
         final Configuration configuration = graphProvider.newGraphConfiguration("g2");
-        graphProvider.clear(null, configuration);
+        graphProvider.clear(configuration);
         final Graph g2 = graphProvider.openTestGraph(configuration);
         final GraphMLReader r = new GraphMLReader.Builder().build();
 
@@ -209,7 +209,7 @@ public class IoTest extends AbstractGremlinTest {
         final KryoReader reader = new KryoReader.Builder().custom(kryo).build();
 
         final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
-        graphProvider.clear(null, configuration);
+        graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
         GraphMigrator.migrateGraph(g, g1, reader, writer);
@@ -230,7 +230,7 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldMigrateGraph() throws Exception {
         final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
-        graphProvider.clear(null, configuration);
+        graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
         GraphMigrator.migrateGraph(g, g1);
@@ -254,7 +254,7 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeGraph(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
-            graphProvider.clear(null, configuration);
+            graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final KryoReader reader = new KryoReader.Builder()
                     .setWorkingDirectory(File.separator + "tmp").build();
@@ -280,7 +280,7 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeGraph(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
-            graphProvider.clear(null, configuration);
+            graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GraphSONReader reader = new GraphSONReader.Builder().build();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
@@ -306,7 +306,7 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeGraph(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
-            graphProvider.clear(null, configuration);
+            graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final KryoReader reader = new KryoReader.Builder()
                     .setWorkingDirectory(File.separator + "tmp").build();

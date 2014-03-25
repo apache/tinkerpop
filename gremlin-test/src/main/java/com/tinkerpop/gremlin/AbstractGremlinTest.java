@@ -53,7 +53,7 @@ public abstract class AbstractGremlinTest {
 
         // this should clear state from a previously unfinished test. since the graph does not yet exist,
         // persisted graphs will likely just have their directories removed
-        graphProvider.clear(null, config);
+        graphProvider.clear(config);
 
         // not sure how the strategy can ever be null, but it seems to happen in the performance tests
         g = graphProvider.openTestGraph(config, strategyToTest == null ? Optional.empty() : strategyToTest);

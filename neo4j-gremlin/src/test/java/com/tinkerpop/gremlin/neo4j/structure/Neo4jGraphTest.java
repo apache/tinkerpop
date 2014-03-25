@@ -25,8 +25,8 @@ public class Neo4jGraphTest {
 
     @Test
     public void shouldExecuteCypher() throws Exception {
-        final Configuration conf = new MapConfiguration(graphProvider.getBaseConfiguration("standard"));
-        graphProvider.clear(null, conf);
+        final Configuration conf = graphProvider.newGraphConfiguration("standard");
+        graphProvider.clear(conf);
 
         final Neo4jGraph g = (Neo4jGraph) GraphFactory.open(conf);
         g.addVertex("name", "marko");

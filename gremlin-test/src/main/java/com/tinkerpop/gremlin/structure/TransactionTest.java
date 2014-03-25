@@ -255,7 +255,7 @@ public class TransactionTest extends AbstractGremlinTest {
         // are being mutated by multiple threads. originally replicated a bug that was part of OrientDB.
 
         final Configuration configuration = graphProvider.newGraphConfiguration("g1");
-        graphProvider.clear(null, configuration);
+        graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
         final Thread threadModFirstGraph = new Thread() {

@@ -51,11 +51,25 @@ public interface GraphProvider {
     }
 
     /**
+     * If possible (usually with persisted graph) clear the space on disk given the configuration that would be used
+     * to construct the graph.  The default implementation simply calls
+     * {@link #clear(com.tinkerpop.gremlin.structure.Graph, org.apache.commons.configuration.Configuration)} with
+     * a null graph argument.
+     */
+    public default void clear(final Configuration configuration) throws Exception {
+        clear(null, configuration);
+    }
+
+    /**
      * Clears a {@link com.tinkerpop.gremlin.structure.Graph} of all data and settings.  Implementations will have
      * different ways of handling this. For a brute force approach, implementers can simply delete data directories
      * provided in the configuration. Implementers may choose a more elegant approach if it exists.
+     * <br/>
+     * Implementations should be able to accept an argument of null for the Graph, in which case the only action
+     * that can be performed is a clear given the configuration.  The method will typically be called this way
+     * as clean up task on setup to ensure that a persisted graph has a clear space to create a test graph.
      */
-    public void clear(final Graph g, final Configuration configuration) throws Exception;  // todo: should Graph be Optional<Graph>
+    public void clear(final Graph g, final Configuration configuration) throws Exception;
 
     /**
      * Converts an identifier from a test to an identifier accepted by the Graph instance.  Test that try to
