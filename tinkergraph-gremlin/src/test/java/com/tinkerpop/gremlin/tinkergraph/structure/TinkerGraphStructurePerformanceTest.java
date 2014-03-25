@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGraphProvider;
 import com.tinkerpop.gremlin.structure.StructurePerformanceSuite;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
 import org.apache.commons.configuration.Configuration;
 import org.junit.runner.RunWith;
 
@@ -17,26 +18,7 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(StructurePerformanceSuite.class)
-@StructurePerformanceSuite.GraphProviderClass(TinkerGraphStructurePerformanceTest.class)
-public class TinkerGraphStructurePerformanceTest extends AbstractGraphProvider {
+@StructurePerformanceSuite.GraphProviderClass(TinkerGraphGraphProvider.class)
+public class TinkerGraphStructurePerformanceTest {
 
-    @Override
-    public Map<String, Object> getBaseConfiguration(final String graphName) {
-        // todo: when tinkergraph has persistence this will need to change to ensure unique graphs are generated...now it's all in memory
-        return new HashMap<String, Object>() {{
-            put("gremlin.graph", TinkerGraph.class.getName());
-        }};
-    }
-
-    @Override
-    public void clear(final Graph g, final Configuration configuration) throws Exception {
-        if (g != null)
-            g.close();
-
-        if (configuration.containsKey("gremlin.tg.directory")) {
-            // this is a non-in-memory configuration so blow away the directory
-            final File graphDirectory = new File(configuration.getString("gremlin.tg.directory"));
-            graphDirectory.delete();
-        }
-    }
 }
