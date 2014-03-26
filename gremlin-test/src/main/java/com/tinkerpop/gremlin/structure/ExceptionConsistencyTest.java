@@ -377,7 +377,9 @@ public class ExceptionConsistencyTest {
             "transactionAlreadyOpen",
             "threadedTransactionsNotSupported",
             "openTransactionsOnClose",
-            "transactionMustBeOpenToReadWrite"
+            "transactionMustBeOpenToReadWrite",
+            "onCloseBehaviorCannotBeNull",
+            "onReadWriteBehaviorCannotBeNull"
     })
     public static class TransactionTest extends AbstractGremlinTest {
 
@@ -425,6 +427,32 @@ public class ExceptionConsistencyTest {
                 fail("An exception should be thrown when read/write behavior is manual and no transaction is opened");
             } catch (Exception ex) {
                 final Exception expectedException = Transaction.Exceptions.transactionMustBeOpenToReadWrite();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+        public void testOnCloseToNull() {
+            try {
+                g.tx().onClose(null);
+                fail("An exception should be thrown when onClose behavior is set to null");
+            } catch (Exception ex) {
+                final Exception expectedException = Transaction.Exceptions.onCloseBehaviorCannotBeNull();
+                assertEquals(expectedException.getClass(), ex.getClass());
+                assertEquals(expectedException.getMessage(), ex.getMessage());
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+        public void testOnReadWriteToNull() {
+            try {
+                g.tx().onReadWrite(null);
+                fail("An exception should be thrown when onClose behavior is set to null");
+            } catch (Exception ex) {
+                final Exception expectedException = Transaction.Exceptions.onReadWriteBehaviorCannotBeNull();
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }

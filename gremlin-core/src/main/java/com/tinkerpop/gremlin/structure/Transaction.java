@@ -50,6 +50,14 @@ public interface Transaction extends Closeable {
         public static UnsupportedOperationException threadedTransactionsNotSupported() {
             return new UnsupportedOperationException("Graph does not support threaded transactions");
         }
+
+        public static IllegalArgumentException onCloseBehaviorCannotBeNull() {
+            return new IllegalArgumentException("Transaction behavior for onClose cannot be null");
+        }
+
+        public static IllegalArgumentException onReadWriteBehaviorCannotBeNull() {
+            return new IllegalArgumentException("Transaction behavior for onReadWrite cannot be null");
+        }
     }
 
     /**
