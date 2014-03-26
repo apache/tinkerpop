@@ -95,8 +95,11 @@ public class Neo4jGraph implements Graph {
         return (G) new Neo4jGraph(configuration.get());
     }
 
+    /**
+     * Construct a Neo4jGraph instance using an existing Neo4j raw instance.
+     */
     public static <G extends Graph> G open(final GraphDatabaseService rawGraph) {
-        return (G) new Neo4jGraph(rawGraph);
+        return (G) new Neo4jGraph(Optional.ofNullable(rawGraph).orElseThrow(()->Graph.Exceptions.argumentCanNotBeNull("rawGraph")));
     }
 
     @Override
