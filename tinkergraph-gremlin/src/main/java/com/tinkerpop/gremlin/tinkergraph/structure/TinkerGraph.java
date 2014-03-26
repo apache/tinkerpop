@@ -63,8 +63,13 @@ public class TinkerGraph implements Graph, Serializable {
      * Open a new {@link TinkerGraph} instance.
      * <p/>
      * <b>Reference Implementation Help:</b> This method is the one use by the
-     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory} to instantiate {@link com.tinkerpop.gremlin.structure.Graph} instances.  This method must
-     * be overridden for the Blueprint Test Suite to pass.
+     * {@link com.tinkerpop.gremlin.structure.util.GraphFactory} to instantiate
+     * {@link com.tinkerpop.gremlin.structure.Graph} instances.  This method must be overridden for the Blueprint Test
+     * Suite to pass. Implementers have latitude in terms of how exceptions are handled within this method.  Such
+     * exceptions will be considered implementation specific by the test suite as all test generate graph instances
+     * by way of {@link com.tinkerpop.gremlin.structure.util.GraphFactory}. As such, the exceptions get generalized
+     * behind that facade and since {@link com.tinkerpop.gremlin.structure.util.GraphFactory} is the preferred method
+     * to opening graphs it will be consistent at that level.
      *
      * @param configuration the configuration for the instance
      * @param <G>           the {@link com.tinkerpop.gremlin.structure.Graph} instance
