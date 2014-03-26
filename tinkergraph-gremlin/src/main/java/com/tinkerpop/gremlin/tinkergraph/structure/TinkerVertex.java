@@ -26,6 +26,7 @@ import com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers.TinkerGra
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -87,12 +88,13 @@ public class TinkerVertex extends TinkerElement implements Vertex {
                     final Step identityStep = new IdentityStep(this);
                     if (TraversalHelper.isLabeled(label))
                         identityStep.setAs(label);
+
                     TraversalHelper.insertStep(identityStep, 0, this);
                     TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, vertex.getId())), 0, this);
                     TraversalHelper.insertStep(new TinkerGraphStep<>(this, Vertex.class, vertex.graph), 0, this);
-                    /*System.out.println(this);
-                    System.out.println(this.getSteps().stream().map(step -> step.getAs()).collect(Collectors.toList()));
-                    System.out.println(this.getSteps().get(0));
+                    //System.out.println(this);
+                    //System.out.println(this.getSteps().stream().map(step -> step.getAs()).collect(Collectors.toList()));
+                    /*System.out.println(this.getSteps().get(0));
                     System.out.println(this.getSteps().get(0).getNextStep());
                     System.out.println(this.getSteps().get(0).getNextStep().getNextStep());
                     System.out.println(this.getSteps().get(0).getNextStep().getNextStep().getNextStep());

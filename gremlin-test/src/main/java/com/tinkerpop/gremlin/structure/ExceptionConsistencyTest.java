@@ -753,7 +753,7 @@ public class ExceptionConsistencyTest {
 
     private static class MockVertexProgramBuilder implements VertexProgram.Builder {
         @Override
-        public Configuration build() {
+        public Configuration configure() {
             return new BaseConfiguration();
         }
     }
@@ -781,7 +781,7 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory) {
+        public void setup(final Graph.Memory.Computer graphMemory) {
         }
 
         @Override
@@ -823,7 +823,7 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory) {
+        public void setup(final Graph.Memory.Computer graphMemory) {
         }
 
         @Override

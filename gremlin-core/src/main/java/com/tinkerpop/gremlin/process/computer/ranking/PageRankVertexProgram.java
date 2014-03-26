@@ -52,7 +52,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         return Double.class;
     }
 
-    public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory) {
+    public void setup(final Graph.Memory.Computer graphMemory) {
 
     }
 
@@ -120,7 +120,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             return this;
         }
 
-        public Configuration build() {
+        public Configuration configure() {
             return this.configuration;
         }
     }

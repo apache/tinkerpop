@@ -47,7 +47,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     }
 
     public GraphComputer program(final VertexProgram.Builder vertexProgramBuilder) {
-        final Configuration configuration = vertexProgramBuilder.build();
+        final Configuration configuration = vertexProgramBuilder.configure();
         configuration.getKeys().forEachRemaining(key -> this.configuration.setProperty(key, configuration.getProperty(key)));
         return this;
     }
@@ -86,7 +86,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                 throw new IllegalArgumentException("The provided execution type is not supported: " + this.configuration.getString(EXECUTION_TYPE));
 
             // execute the vertex program
-            vertexProgram.setup(this.configuration, g.memory());
+            vertexProgram.setup(g.memory());
             while (true) {
                 if (parallel)
                     StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, g.memory()));

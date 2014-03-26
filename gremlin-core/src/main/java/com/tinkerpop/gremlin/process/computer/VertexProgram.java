@@ -34,7 +34,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      *
      * @param graphMemory The global GraphMemory of the GraphComputer
      */
-    public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory);
+    public void setup(final Graph.Memory.Computer graphMemory);
 
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
@@ -81,7 +81,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
 
     public interface Builder {
 
-        public Configuration build();
+        public Configuration configure();
 
     }
 
