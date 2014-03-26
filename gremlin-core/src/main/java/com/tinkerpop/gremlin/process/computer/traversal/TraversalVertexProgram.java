@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
+import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.HolderOptimizer;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -59,7 +60,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
     }
 
-    public void setup(final Configuration configuration, final Graph.Memory.Computer graphMemory) {
+    public void setup(final Graph.Memory.Computer graphMemory) {
         graphMemory.setIfAbsent(VOTE_TO_HALT, true);
     }
 
@@ -161,7 +162,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             return this;
         }
 
-        public Configuration build() {
+        public Configuration configure() {
             return this.configuration;
         }
     }

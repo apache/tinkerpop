@@ -43,7 +43,7 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
         try {
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(this.getConf()));
             this.registerAggregator("voteToHalt", MemoryAggregator.class);
-            this.vertexProgram.setup(ConfUtil.apacheConfiguration(this.getConf()), this);
+            this.vertexProgram.setup(this);
         } catch (Exception e) {
             // do nothing as Giraph has a hard time starting up with random exceptions until ZooKeeper comes online
             //System.out.println(e + "***" + e.getMessage());

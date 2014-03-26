@@ -30,7 +30,7 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public GraphComputer program(final VertexProgram.Builder vertexProgramBuilder) {
-        final Configuration configuration = vertexProgramBuilder.build();
+        final Configuration configuration = vertexProgramBuilder.configure();
         configuration.getKeys().forEachRemaining(key -> this.hadoopConfiguration.set(key, configuration.getProperty(key).toString()));
         return this;
     }

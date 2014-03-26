@@ -75,23 +75,9 @@ public class TraversalHelper {
     }
 
     public static void removeStep(final Step step, final Traversal traversal) {
-        final List<Step> steps = traversal.getSteps();
-        steps.remove(step);
-        if (steps.size() == 1) {
-            steps.get(0).setPreviousStep(EmptyStep.instance());
-            steps.get(0).setNextStep(EmptyStep.instance());
-        }
-        for (int i = 0; i < steps.size(); i++) {
-            if (i == 0)
-                steps.get(i).setPreviousStep(EmptyStep.instance());
-            if (i < steps.size() - 1)
-                steps.get(i).setNextStep(steps.get(i + 1));
-            if (i > 0)
-                steps.get(i).setPreviousStep(steps.get(i - 1));
-            if (i == steps.size() - 1)
-                steps.get(i).setNextStep(EmptyStep.instance());
-        }
+        traversal.getSteps().remove(step);
         reLabelSteps(traversal);
+        reLinkSteps(traversal);
     }
 
     public static void removeStep(final int index, final Traversal traversal) {
@@ -99,19 +85,9 @@ public class TraversalHelper {
     }
 
     public static void insertStep(final Step step, final int index, final Traversal traversal) {
-        final List<Step> steps = traversal.getSteps();
-        final Step leftStep = index > 0 ? steps.get(index - 1) : null;
-        final Step rightStep = index <= traversal.getSteps().size() ? steps.get(index) : null;
-        if (null != leftStep) {
-            leftStep.setNextStep(step);
-            step.setPreviousStep(leftStep);
-        }
-        if (null != rightStep) {
-            step.setNextStep(rightStep);
-            rightStep.setPreviousStep(step);
-        }
-        steps.add(index, step);
+        traversal.getSteps().add(index, step);
         reLabelSteps(traversal);
+        reLinkSteps(traversal);
     }
 
     private static void reLabelSteps(final Traversal traversal) {
@@ -119,6 +95,17 @@ public class TraversalHelper {
         for (int i = 0; i < steps.size(); i++) {
             if (!TraversalHelper.isLabeled(steps.get(i)))
                 steps.get(i).setAs(UNDERSCORE + i);
+        }
+    }
+
+    private static void reLinkSteps(final Traversal traversal) {
+        final List<Step> steps = traversal.getSteps();
+        for (int i = 0; i < steps.size(); i++) {
+            final Step previousStep = i > 0 ? steps.get(i - 1) : null;
+            final Step currentStep = steps.get(i);
+            final Step nextStep = i < steps.size() - 1 ? steps.get(i + 1) : null;
+            currentStep.setPreviousStep(null != previousStep ? previousStep : EmptyStep.instance());
+            currentStep.setNextStep(null != nextStep ? nextStep : EmptyStep.instance());
         }
     }
 
