@@ -40,6 +40,10 @@ import java.util.function.Function;
  */
 public class Neo4jGraph implements Graph {
     private GraphDatabaseService rawGraph;
+
+    private static final String CONFIG_DIRECTORY = "gremlin.neo4j.directory";
+    private static final String CONFIG_CONF = "gremlin.neo4j.conf";
+
     private static final String INDEXED_KEYS_POSTFIX = ":indexed_keys";
 
     protected final ThreadLocal<Boolean> checkElementsInTransaction = new ThreadLocal<Boolean>() {
@@ -91,8 +95,12 @@ public class Neo4jGraph implements Graph {
      * @return a newly opened {@link com.tinkerpop.gremlin.structure.Graph}
      */
     public static <G extends Graph> G open(final Optional<Configuration> configuration) {
-        // todo: check null on configuration and validate what's passed in
-        return (G) new Neo4jGraph(configuration.get());
+        if (null == configuration) throw Graph.Exceptions.argumentCanNotBeNull("configuration");
+        final Configuration config = configuration.orElseThrow(()->Graph.Exceptions.argumentCanNotBeNull("configuration"));
+
+        if (!config.containsKey(CONFIG_DIRECTORY)) throw new IllegalArgumentException(String.format("Neo4j configuration requires that the %s be set", CONFIG_DIRECTORY));
+
+        return (G) new Neo4jGraph(config);
     }
 
     /**
