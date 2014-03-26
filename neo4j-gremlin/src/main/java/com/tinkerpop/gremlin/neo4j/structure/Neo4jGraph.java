@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
@@ -98,9 +99,19 @@ public class Neo4jGraph implements Graph {
         if (null == configuration) throw Graph.Exceptions.argumentCanNotBeNull("configuration");
         final Configuration config = configuration.orElseThrow(()->Graph.Exceptions.argumentCanNotBeNull("configuration"));
 
-        if (!config.containsKey(CONFIG_DIRECTORY)) throw new IllegalArgumentException(String.format("Neo4j configuration requires that the %s be set", CONFIG_DIRECTORY));
+        if (!config.containsKey(CONFIG_DIRECTORY))
+            throw new IllegalArgumentException(String.format("Neo4j configuration requires that the %s be set", CONFIG_DIRECTORY));
 
         return (G) new Neo4jGraph(config);
+    }
+
+    /**
+     * Construct a Neo4jGraph instance by specifying the directory to create the database in..
+     */
+    public static <G extends Graph> G open(final String directory) {
+        final Configuration config = new BaseConfiguration();
+        config.setProperty(CONFIG_DIRECTORY, directory);
+        return open(Optional.of(config));
     }
 
     /**
