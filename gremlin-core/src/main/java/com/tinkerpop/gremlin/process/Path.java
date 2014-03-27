@@ -1,10 +1,13 @@
 package com.tinkerpop.gremlin.process;
 
+import org.javatuples.Pair;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -70,6 +73,10 @@ public class Path {
         for (int i = 0; i < this.size(); i++) {
             consumer.accept(this.asLabels.get(i), this.objects.get(i));
         }
+    }
+
+    public Stream<Pair<String, Object>> stream(){
+        return IntStream.range(0, this.size()).mapToObj(i->Pair.with(this.asLabels.get(i), this.objects.get(i)));
     }
 
     public Path subset(final String... asLabels) {
