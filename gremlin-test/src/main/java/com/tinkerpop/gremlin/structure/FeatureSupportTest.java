@@ -15,7 +15,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_MEMORY;
+import static com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures.FEATURE_MEMORY;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
@@ -99,15 +99,15 @@ public class FeatureSupportTest  {
         }
 
         /**
-         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#FEATURE_MEMORY} must call
+         * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures#FEATURE_MEMORY} must call
          * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#memoryNotSupported()}.
          */
         @Test
-        @FeatureRequirement(featureClass = GraphFeatures.class, feature = FEATURE_MEMORY, supported = false)
+        @FeatureRequirement(featureClass = MemoryFeatures.class, feature = FEATURE_MEMORY, supported = false)
         public void ifAGraphAcceptsMemoryThenItMustSupportMemory() throws Exception {
             try {
                 g.memory();
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, GraphFeatures.class.getSimpleName(), FEATURE_MEMORY));
+                fail(String.format(INVALID_FEATURE_SPECIFICATION, MemoryFeatures.class.getSimpleName(), FEATURE_MEMORY));
             } catch (UnsupportedOperationException e) {
                 assertEquals(Graph.Exceptions.memoryNotSupported().getMessage(), e.getMessage());
             }

@@ -86,10 +86,6 @@ class BatchFeatures implements Graph.Features {
     }
 
     class BatchGraphFeatures implements GraphFeatures {
-        @Override
-        public boolean supportsMemory() {
-            return false;
-        }
 
         @Override
         public boolean supportsComputer() {

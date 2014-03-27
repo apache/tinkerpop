@@ -34,7 +34,7 @@ class GraphSONGraph {
             final Graph g = graph.getGraphToSerialize();
             jsonGenerator.writeStartObject();
 
-            if (g.getFeatures().graph().supportsMemory())
+            if (g.getFeatures().graph().memory().supportsMemory())
                 jsonGenerator.writeObjectField(GraphSONModule.TOKEN_PROPERTIES, g.memory().asMap());
 
             jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_VERTICES);

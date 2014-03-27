@@ -57,7 +57,7 @@ public class GraphSONReader implements GraphReader {
 
             if (fieldName.equals(GraphSONModule.TOKEN_PROPERTIES)) {
                 final Map<String,Object> graphProperties = parser.readValueAs(new TypeReference<Map<String,Object>>(){});
-                if (graphToWriteTo.getFeatures().graph().supportsMemory())
+                if (graphToWriteTo.getFeatures().graph().memory().supportsMemory())
                     graphProperties.entrySet().forEach(entry-> graphToWriteTo.memory().set(entry.getKey(), entry.getValue()));
             } else if (fieldName.equals(GraphSONModule.TOKEN_VERTICES)) {
                 while (parser.nextToken() != JsonToken.END_ARRAY) {

@@ -162,18 +162,11 @@ public interface Graph extends AutoCloseable {
         }
 
         public interface GraphFeatures extends FeatureSet {
-            // todo: do we need this memory feature and the Graph.Memory feature???
-            public static final String FEATURE_MEMORY = "Memory";
             public static final String FEATURE_COMPUTER = "Computer";
             public static final String FEATURE_TRANSACTIONS = "Transactions";
             public static final String FEATURE_PERSISTENCE = "Persistence";
             public static final String FEATURE_THREADED_TRANSACTIONS = "ThreadedTransactions";
             public static final String FEATURE_FULLY_ISOLATED_TRANSACTIONS = "FullyIsolatedTransactions";
-
-            @FeatureDescriptor(name = FEATURE_MEMORY)
-            public default boolean supportsMemory() {
-                return true;
-            }
 
             @FeatureDescriptor(name = FEATURE_COMPUTER)
             public default boolean supportsComputer() {

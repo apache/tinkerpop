@@ -146,7 +146,7 @@ public class KryoReader implements GraphReader {
                 // to advance the reader forward.  if the graph being read into doesn't support the memory
                 // then we just setting the data to memory.
                 final Map<String,Object> memMap = (Map<String,Object>) kryo.readObject(input, HashMap.class);
-                if (graphToWriteTo.getFeatures().graph().supportsMemory()) {
+                if (graphToWriteTo.getFeatures().graph().memory().supportsMemory()) {
                     final Graph.Memory memory = graphToWriteTo.memory();
                     memMap.forEach(memory::set);
                 }

@@ -341,11 +341,6 @@ public class Neo4jGraph implements Graph {
         public GraphFeatures graph() {
             return new GraphFeatures() {
                 @Override
-                public boolean supportsMemory() {
-                    return false;    // todo: temporary...doesn't neo4j support graph properties?
-                }
-
-                @Override
                 public boolean supportsComputer() {
                     return false;  // todo: temporary...
                 }

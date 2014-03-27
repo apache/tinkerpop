@@ -39,7 +39,7 @@ public class KryoWriter implements GraphWriter {
         final Output output = new Output(outputStream);
         writeHeader(output);
 
-        final boolean supportsGraphMemory = g.getFeatures().graph().supportsMemory();
+        final boolean supportsGraphMemory = g.getFeatures().graph().memory().supportsMemory();
         output.writeBoolean(supportsGraphMemory);
         if (supportsGraphMemory)
             kryo.writeObject(output, new HashMap(g.memory().asMap()));
