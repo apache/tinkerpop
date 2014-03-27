@@ -28,6 +28,8 @@ public class SubGraphStep<S> extends FilterStep<S> implements SideEffectCapable,
     private final Map<Object, Vertex> idMap;
     private final Set<Object> edgesAdded;
 
+    // todo: how does cap() work with this
+
     public SubGraphStep(final Traversal traversal, final Graph subgraph,
                         final Set<Object> edgeIdHolder,
                         final Map<Object, Vertex> vertexMap,
