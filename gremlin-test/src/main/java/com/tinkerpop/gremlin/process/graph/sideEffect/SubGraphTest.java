@@ -50,6 +50,7 @@ public abstract class SubGraphTest extends AbstractGremlinTest {
                 fail("There's a vertex present that should not be in the subgraph");
         });
 
+        graphProvider.clear(subgraph, config);
     }
 
     @Test
@@ -61,6 +62,8 @@ public abstract class SubGraphTest extends AbstractGremlinTest {
         get_g_E_subgraphXcreatedX(subgraph).iterate();
 
         AbstractGremlinSuite.assertVertexEdgeCounts(5, 4).accept(subgraph);
+
+        graphProvider.clear(subgraph, config);
     }
 
     public static class JavaSideEffectTest extends SubGraphTest {
