@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.neo4j.structure;
+package com.tinkerpop.gremlin.neo4j.process;
 
 import com.tinkerpop.gremlin.neo4j.Neo4jGraphProvider;
 import com.tinkerpop.gremlin.process.ProcessComputerStandardSuite;
