@@ -1,8 +1,5 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
-import com.tinkerpop.gremlin.process.util.DefaultTraversal;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
