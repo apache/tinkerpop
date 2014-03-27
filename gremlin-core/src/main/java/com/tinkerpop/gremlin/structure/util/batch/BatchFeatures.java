@@ -154,16 +154,6 @@ class BatchFeatures implements Graph.Features {
         }
 
         @Override
-        public boolean supportsMetaProperties() {
-            return baseFeatures.graph().memory().supportsMetaProperties();
-        }
-
-        @Override
-        public boolean supportsMixedListValues() {
-            return baseFeatures.graph().memory().supportsMixedListValues();
-        }
-
-        @Override
         public boolean supportsPrimitiveArrayValues() {
             return baseFeatures.graph().memory().supportsPrimitiveArrayValues();
         }

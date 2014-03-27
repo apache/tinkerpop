@@ -260,7 +260,7 @@ public interface Graph extends AutoCloseable {
             public default boolean supportsProperties() {
                 return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
                         || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
-                        || supportsMetaProperties() || supportsMixedListValues() || supportsPrimitiveArrayValues()
+                        || supportsMixedListValues() || supportsPrimitiveArrayValues()
                         || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
                         || supportsUniformListValues();
             }
@@ -276,7 +276,7 @@ public interface Graph extends AutoCloseable {
             public default boolean supportsMemory() {
                 return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
                         || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
-                        || supportsMetaProperties() || supportsMixedListValues() || supportsPrimitiveArrayValues()
+                        || supportsMixedListValues() || supportsPrimitiveArrayValues()
                         || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
                         || supportsUniformListValues();
             }
@@ -295,7 +295,7 @@ public interface Graph extends AutoCloseable {
             public default boolean supportsAnnotations() {
                 return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
                         || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
-                        || supportsMetaProperties() || supportsMixedListValues() || supportsPrimitiveArrayValues()
+                        || supportsMixedListValues() || supportsPrimitiveArrayValues()
                         || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
                         || supportsUniformListValues();
             }
@@ -309,7 +309,6 @@ public interface Graph extends AutoCloseable {
             public static final String FEATURE_INTEGER_VALUES = "IntegerValues";
             public static final String FEATURE_LONG_VALUES = "LongValues";
             public static final String FEATURE_MAP_VALUES = "MapValues";
-            public static final String FEATURE_META_PROPERTIES = "MetaProperties";  // todo: remove meta properties feature
             public static final String FEATURE_MIXED_LIST_VALUES = "MixedListValues";
             public static final String FEATURE_PRIMITIVE_ARRAY_VALUES = "PrimitiveArrayValues";
             public static final String FEATURE_SERIALIZABLE_VALUES = "SerializableValues";
@@ -343,11 +342,6 @@ public interface Graph extends AutoCloseable {
 
             @FeatureDescriptor(name = FEATURE_MAP_VALUES)
             public default boolean supportsMapValues() {
-                return true;
-            }
-
-            @FeatureDescriptor(name = FEATURE_META_PROPERTIES)
-            public default boolean supportsMetaProperties() {
                 return true;
             }
 

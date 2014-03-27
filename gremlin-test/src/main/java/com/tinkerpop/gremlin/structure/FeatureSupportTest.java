@@ -332,7 +332,7 @@ public class FeatureSupportTest  {
             assertEquals(memoryFeatures.supportsMemory(), (memoryFeatures.supportsBooleanValues() || memoryFeatures.supportsDoubleValues()
                     || memoryFeatures.supportsFloatValues() || memoryFeatures.supportsIntegerValues()
                     || memoryFeatures.supportsLongValues() || memoryFeatures.supportsMapValues()
-                    || memoryFeatures.supportsMetaProperties() || memoryFeatures.supportsMixedListValues()
+                    || memoryFeatures.supportsMixedListValues()
                     || memoryFeatures.supportsPrimitiveArrayValues() || memoryFeatures.supportsPrimitiveArrayValues()
                     || memoryFeatures.supportsSerializableValues() || memoryFeatures.supportsStringValues()
                     || memoryFeatures.supportsUniformListValues()));
@@ -343,7 +343,7 @@ public class FeatureSupportTest  {
             assertEquals(vertexAnnotationFeatures.supportsAnnotations(), (vertexAnnotationFeatures.supportsBooleanValues() || vertexAnnotationFeatures.supportsDoubleValues()
                     || vertexAnnotationFeatures.supportsFloatValues() || vertexAnnotationFeatures.supportsIntegerValues()
                     || vertexAnnotationFeatures.supportsLongValues() || vertexAnnotationFeatures.supportsMapValues()
-                    || vertexAnnotationFeatures.supportsMetaProperties() || vertexAnnotationFeatures.supportsMixedListValues()
+                    || vertexAnnotationFeatures.supportsMixedListValues()
                     || vertexAnnotationFeatures.supportsPrimitiveArrayValues() || vertexAnnotationFeatures.supportsPrimitiveArrayValues()
                     || vertexAnnotationFeatures.supportsSerializableValues() || vertexAnnotationFeatures.supportsStringValues()
                     || vertexAnnotationFeatures.supportsUniformListValues()));
@@ -354,7 +354,7 @@ public class FeatureSupportTest  {
             assertEquals(edgePropertyFeatures.supportsProperties(), (edgePropertyFeatures.supportsBooleanValues() || edgePropertyFeatures.supportsDoubleValues()
                     || edgePropertyFeatures.supportsFloatValues() || edgePropertyFeatures.supportsIntegerValues()
                     || edgePropertyFeatures.supportsLongValues() || edgePropertyFeatures.supportsMapValues()
-                    || edgePropertyFeatures.supportsMetaProperties() || edgePropertyFeatures.supportsMixedListValues()
+                    || edgePropertyFeatures.supportsMixedListValues()
                     || edgePropertyFeatures.supportsPrimitiveArrayValues() || edgePropertyFeatures.supportsPrimitiveArrayValues()
                     || edgePropertyFeatures.supportsSerializableValues() || edgePropertyFeatures.supportsStringValues()
                     || edgePropertyFeatures.supportsUniformListValues()));
@@ -365,7 +365,7 @@ public class FeatureSupportTest  {
             assertEquals(vertexPropertyFeatures.supportsProperties(), (vertexPropertyFeatures.supportsBooleanValues() || vertexPropertyFeatures.supportsDoubleValues()
                     || vertexPropertyFeatures.supportsFloatValues() || vertexPropertyFeatures.supportsIntegerValues()
                     || vertexPropertyFeatures.supportsLongValues() || vertexPropertyFeatures.supportsMapValues()
-                    || vertexPropertyFeatures.supportsMetaProperties() || vertexPropertyFeatures.supportsMixedListValues()
+                    || vertexPropertyFeatures.supportsMixedListValues()
                     || vertexPropertyFeatures.supportsPrimitiveArrayValues() || vertexPropertyFeatures.supportsPrimitiveArrayValues()
                     || vertexPropertyFeatures.supportsSerializableValues() || vertexPropertyFeatures.supportsStringValues()
                     || vertexPropertyFeatures.supportsUniformListValues()));

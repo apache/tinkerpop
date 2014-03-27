@@ -487,11 +487,6 @@ public class Neo4jGraph implements Graph {
             }
 
             @Override
-            public boolean supportsMetaProperties() {
-                return false;
-            }
-
-            @Override
             public boolean supportsMixedListValues() {
                 return false;
             }
@@ -545,11 +540,6 @@ public class Neo4jGraph implements Graph {
 
             @Override
             public boolean supportsMapValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsMetaProperties() {
                 return false;
             }
 
