@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,7 +59,6 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
             reduceMap.put(k, (R) reduceFunction.apply(vv));
         });
     }
-
 
     public static void addValue(final Object value, final Collection values) {
         if (value instanceof Iterator) {
