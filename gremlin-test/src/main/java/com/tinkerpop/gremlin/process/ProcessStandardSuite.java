@@ -23,6 +23,7 @@ import com.tinkerpop.gremlin.process.graph.sideEffect.GroupByTest;
 import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.sideEffect.LinkTest;
 import com.tinkerpop.gremlin.process.graph.sideEffect.SideEffectTest;
+import com.tinkerpop.gremlin.process.graph.sideEffect.SubGraphTest;
 import com.tinkerpop.gremlin.process.graph.sideEffect.TreeTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -76,6 +77,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             GroupCountTest.JavaGroupCountTest.class,
             LinkTest.JavaLinkTest.class,
             SideEffectTest.JavaSideEffectTest.class,
+            SubGraphTest.JavaSideEffectTest.class,
             TreeTest.JavaTreeTest.class
     };
 
@@ -103,6 +105,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             GroupCountTest.class,
             LinkTest.class,
             SideEffectTest.class,
+            SubGraphTest.class,
             TreeTest.class
     };
 

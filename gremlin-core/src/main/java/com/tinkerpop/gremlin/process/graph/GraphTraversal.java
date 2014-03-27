@@ -42,6 +42,7 @@ import com.tinkerpop.gremlin.process.graph.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.LinkStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.SideEffectStep;
+import com.tinkerpop.gremlin.process.graph.sideEffect.SubGraphStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.HolderOptimizer;
@@ -52,6 +53,7 @@ import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
@@ -68,7 +70,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -343,6 +347,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> sideEffect(final SConsumer<Holder<E>> consumer) {
         return (GraphTraversal) this.addStep(new SideEffectStep<>(this, consumer));
+    }
+
+    public default GraphTraversal<S, E> subGraph(final Graph g, final SPredicate<Edge> includeEdge) {
+        return (GraphTraversal) this.addStep(new SubGraphStep<>(this, g, null, null, includeEdge));
+    }
+
+    public default GraphTraversal<S, E> subGraph(final Graph g, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
+        return (GraphTraversal) this.addStep(new SubGraphStep<>(this, g, edgeIdHolder, vertexMap, includeEdge));
     }
 
     public default GraphTraversal<S, E> aggregate(final String variable, final SFunction<E, ?>... preAggregateFunctions) {
