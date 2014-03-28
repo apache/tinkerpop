@@ -32,17 +32,22 @@ public class Settings {
     public int port = 8182;
 
     /**
-     * Size of the worker thread pool.   Defaults to 1
+     * Size of the worker thread pool.   Defaults to 1 and should generally not exceed 2 * number of cores. A
+     * worker thread performs non-blocking read and write for one or more Channels in a non-blocking mode.
      */
     public int threadPoolWorker = 1;
 
     /**
-     * Size of the Gremlin thread pool.   Defaults to 8
+     * Size of the Gremlin thread pool. This pool handles Gremlin script execution and other related "long-run"
+     * processing.  This setting should be sufficiently large to ensure that requests processed by the non-blocking
+     * worker threads are processed with limited queuing.  Defaults to 8.
      */
     public int gremlinPool = 8;
 
     /**
-     * Size of the boss thread pool.  Defaults to 1.
+     * Size of the boss thread pool.  Defaults to 1 and should likely stay at 1.  The bossy thread accepts incoming
+     * connections on a port until it is unbound. Once a connection is accepted successfully, the boss thread
+     * passes processing to the worker threads.
      */
     public int threadPoolBoss = 1;
 
