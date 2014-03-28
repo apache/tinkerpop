@@ -137,7 +137,7 @@ public class GremlinServer {
         @Override
         public void initChannel(final SocketChannel ch) throws Exception {
             final ChannelPipeline pipeline = ch.pipeline();
-            pipeline.addLast("http-request-decoder", new HttpRequestDecoder());
+            pipeline.addLast("http-request-decoder", new HttpRequestDecoder(settings.maxInitialLineLength, settings.maxHeaderSize, settings.maxChunkSize));
             pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
             pipeline.addLast("http-response-encoder", new HttpResponseEncoder());
             pipeline.addLast("request-handler", new WebSocketServerProtocolHandler("/gremlin"));

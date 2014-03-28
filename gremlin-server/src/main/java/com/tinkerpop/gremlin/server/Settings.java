@@ -74,6 +74,27 @@ public class Settings {
     public int frameQueueSize = 256;
 
     /**
+     * The maximum length of the initial line (e.g. {@code "GET / HTTP/1.0"}). Can reduce excessive memory consumption.
+     * This setting ties to the Netty {@code HttpRequestDecoder}
+     */
+    public int maxInitialLineLength = 4096;
+
+    /**
+     * The maximum length of all headers.  If the sum of the length of each header exceeds this value. Can reduce
+     * excessive memory consumption. This setting ties to the Netty {@code HttpRequestDecoder}
+     */
+    public int maxHeaderSize = 8192;
+
+    /**
+     * The maximum length of the content or each chunk.  If the content length exceeds this value, the transfer
+     * encoding of the decoded request will be converted to 'chunked' and the content will be split into multiple
+     * {@code HttpContent}s.  If the transfer encoding of the HTTP request is 'chunked' already, each chunk will be
+     * split into smaller chunks if the length of the chunk exceeds this value. Can reduce excessive memory
+     * consumption. This setting ties to the Netty {@code HttpRequestDecoder}
+     */
+    public int maxChunkSize = 8192;
+
+    /**
      * Configured metrics for Gremlin Server.
      */
     public ServerMetrics metrics = null;
