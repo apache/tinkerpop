@@ -90,14 +90,14 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicGraph() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.gio");
-        new KryoWriter.Builder().build().writeGraph(os, TinkerFactory.createClassic());
+        KryoWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
     @Test
     public void shouldWriteClassicGraphAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.json");
-        new GraphSONWriter.Builder().build().writeGraph(os, TinkerFactory.createClassic());
+        GraphSONWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
@@ -107,13 +107,13 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteGratefulGraph() throws IOException {
         final Graph g = TinkerGraph.open();
-        final GraphReader reader = new GraphMLReader.Builder().build();
+        final GraphReader reader = GraphMLReader.create().build();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/graphml/graph-example-2.xml")) {
             reader.readGraph(stream, g);
         }
 
         final OutputStream os = new FileOutputStream("/tmp/graph-example-2.gio");
-        new KryoWriter.Builder().build().writeGraph(os, g);
+        KryoWriter.create().build().writeGraph(os, g);
         os.close();
     }
 
@@ -124,7 +124,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernGraph() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-5.gio");
-        new KryoWriter.Builder().build().writeGraph(os, TinkerFactory.createModern());
+        KryoWriter.create().build().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
 

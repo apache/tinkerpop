@@ -17,8 +17,8 @@ import java.io.PipedOutputStream;
  */
 public final class GraphMigrator {
 
-    private static final KryoReader defaultKryoReader = new KryoReader.Builder().build();
-    private static final KryoWriter defaultKryoWriter = new KryoWriter.Builder().build();
+    private static final KryoReader defaultKryoReader = KryoReader.create().build();
+    private static final KryoWriter defaultKryoWriter = KryoWriter.create().build();
 
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph) throws IOException {
         // todo: incremental loading?

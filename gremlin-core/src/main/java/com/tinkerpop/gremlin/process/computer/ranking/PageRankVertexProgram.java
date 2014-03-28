@@ -91,7 +91,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
         private final Configuration configuration = new BaseConfiguration();
 
-        public Builder() {
+        private Builder() {
             this.configuration.setProperty(VERTEX_PROGRAM_CLASS, PageRankVertexProgram.class.getName());
         }
 

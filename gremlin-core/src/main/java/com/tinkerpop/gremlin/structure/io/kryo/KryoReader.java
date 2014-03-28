@@ -383,13 +383,17 @@ public class KryoReader implements GraphReader {
         } catch (Exception ex) { }
     }
 
+    public static Builder create() {
+        return new Builder();
+    }
+
     public static class Builder {
         private Map<Object, Object> idMap;
         private File tempFile;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private GremlinKryo gremlinKryo = new GremlinKryo();
 
-        public Builder() {
+        private Builder() {
             this.idMap = new HashMap<>();
             this.tempFile = new File(UUID.randomUUID() + ".tmp");
         }

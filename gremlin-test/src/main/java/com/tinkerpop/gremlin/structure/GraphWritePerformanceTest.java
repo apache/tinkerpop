@@ -83,7 +83,7 @@ public class GraphWritePerformanceTest {
         @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
         @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
         public void writeKryo() throws Exception {
-            final GraphWriter writer = new KryoWriter.Builder().build();
+            final GraphWriter writer = KryoWriter.create().build();
             final OutputStream os = new ByteArrayOutputStream();
             writer.writeGraph(os, g);
         }
@@ -92,7 +92,7 @@ public class GraphWritePerformanceTest {
         @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
         @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
         public void writeGraphML() throws Exception {
-            final GraphWriter writer = new GraphMLWriter.Builder().build();
+            final GraphWriter writer = GraphMLWriter.create().build();
             final OutputStream os = new ByteArrayOutputStream();
             writer.writeGraph(os, g);
         }
@@ -101,7 +101,7 @@ public class GraphWritePerformanceTest {
         @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
         @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
         public void writeGraphSON() throws Exception {
-            final GraphWriter writer = new GraphSONWriter.Builder().build();
+            final GraphWriter writer = GraphSONWriter.create().build();
             final OutputStream os = new ByteArrayOutputStream();
             writer.writeGraph(os, g);
         }

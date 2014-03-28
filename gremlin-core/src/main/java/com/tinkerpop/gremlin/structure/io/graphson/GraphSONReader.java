@@ -153,9 +153,15 @@ public class GraphSONReader implements GraphReader {
                 propsAsArray);
     }
 
+    public static Builder create() {
+        return new Builder();
+    }
+
     public static class Builder {
         private ObjectMapper mapper = new GraphSONObjectMapper();
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
+
+        private Builder() {}
 
         public Builder customSerializer(final SimpleModule module) {
             this.mapper = new GraphSONObjectMapper(

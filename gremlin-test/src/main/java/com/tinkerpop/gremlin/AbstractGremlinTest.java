@@ -161,7 +161,7 @@ public abstract class AbstractGremlinTest {
     }
 
     private static void readIntoGraph(final Graph g, final String path) throws IOException {
-        final GraphReader reader = new KryoReader.Builder().setWorkingDirectory(File.separator + "tmp").build();
+        final GraphReader reader = KryoReader.create().setWorkingDirectory(File.separator + "tmp").build();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
             reader.readGraph(stream, g);
         }

@@ -45,8 +45,14 @@ public class GraphSONWriter implements GraphWriter {
         this.mapper.writeValue(outputStream, e);
     }
 
+    public static Builder create() {
+        return new Builder();
+    }
+
     public static class Builder {
         private ObjectMapper mapper = new GraphSONObjectMapper();
+
+        private Builder() {}
 
         public Builder customSerializer(final SimpleModule module) {
             this.mapper = new GraphSONObjectMapper(

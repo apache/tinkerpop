@@ -227,6 +227,10 @@ public class GraphMLReader implements GraphReader {
             return value;
     }
 
+    public static Builder create() {
+        return new Builder();
+    }
+
     /**
      * Allows configuration and construction of the GraphMLReader instance.
      */
@@ -235,6 +239,8 @@ public class GraphMLReader implements GraphReader {
         private String edgeIdKey = null;
         private String edgeLabelKey = null;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
+
+        private Builder() {}
 
         public Builder vertexIdKey(final String vertexIdKey) {
             this.vertexIdKey = vertexIdKey;

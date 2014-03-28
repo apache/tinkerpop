@@ -163,8 +163,14 @@ public class KryoWriter implements GraphWriter {
             kryo.writeClassAndObject(output, val.get());
     }
 
+    public static Builder create() {
+        return new Builder();
+    }
+
     public static class Builder {
         private GremlinKryo gremlinKryo = new GremlinKryo();
+
+        private Builder() {}
 
         public Builder custom(final GremlinKryo gremlinKryo) {
             this.gremlinKryo = gremlinKryo;

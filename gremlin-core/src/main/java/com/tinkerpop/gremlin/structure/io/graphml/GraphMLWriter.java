@@ -323,6 +323,10 @@ public class GraphMLWriter implements GraphWriter {
             return GraphMLTokens.STRING;
     }
 
+    public static Builder create() {
+        return new Builder();
+    }
+
     public static final class Builder {
         private boolean normalize = false;
         private Map<String, String> vertexKeyTypes = null;
@@ -330,6 +334,8 @@ public class GraphMLWriter implements GraphWriter {
 
         private String xmlSchemaLocation = null;
         private String edgeLabelKey = null;
+
+        private Builder() {}
 
         /**
          * Normalized output is deterministic with respect to the order of elements and properties in the resulting
