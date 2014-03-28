@@ -5,10 +5,8 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.Direction;
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
