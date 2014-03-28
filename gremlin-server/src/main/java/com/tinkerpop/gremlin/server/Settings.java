@@ -95,6 +95,16 @@ public class Settings {
     public int maxChunkSize = 8192;
 
     /**
+     * The maximum length of the aggregated content for a message.  Works in concert with {@link #maxChunkSize} where
+     * chunked requests are accumulated back into a single message.  A request exceeding this size will
+     * return a 413 - Request Entity Too Large status code.  A response exceeding this size will raise an internal
+     * exception.
+     */
+    public int maxContentLength = 65536;
+
+    public int maxAccumulationBufferComponents = 1024;
+
+    /**
      * Configured metrics for Gremlin Server.
      */
     public ServerMetrics metrics = null;

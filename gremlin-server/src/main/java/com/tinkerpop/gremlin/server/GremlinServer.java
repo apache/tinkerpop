@@ -13,6 +13,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
@@ -137,8 +139,27 @@ public class GremlinServer {
         @Override
         public void initChannel(final SocketChannel ch) throws Exception {
             final ChannelPipeline pipeline = ch.pipeline();
+
+            if (logger.isDebugEnabled())
+                pipeline.addLast(new LoggingHandler("log-io", LogLevel.DEBUG));
+
+            logger.debug("HttpRequestDecoder settings - maxInitialLineLength={}, maxHeaderSize={}, maxChunkSize={}",
+                    settings.maxInitialLineLength, settings.maxHeaderSize, settings.maxChunkSize);
             pipeline.addLast("http-request-decoder", new HttpRequestDecoder(settings.maxInitialLineLength, settings.maxHeaderSize, settings.maxChunkSize));
-            pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
+
+            if (logger.isDebugEnabled())
+                pipeline.addLast(new LoggingHandler("log-decoder-aggregator", LogLevel.DEBUG));
+
+
+            logger.debug("HttpObjectAggregator settings - maxContentLength={}, maxAccumulationBufferComponents={}",
+                    settings.maxContentLength, settings.maxAccumulationBufferComponents);
+            final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxContentLength);
+            aggregator.setMaxCumulationBufferComponents(settings.maxAccumulationBufferComponents);
+            pipeline.addLast("aggregator", aggregator);
+
+            if (logger.isDebugEnabled())
+                pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
+
             pipeline.addLast("http-response-encoder", new HttpResponseEncoder());
             pipeline.addLast("request-handler", new WebSocketServerProtocolHandler("/gremlin"));
             pipeline.addLast("gremlin-decoder", new GremlinRequestDecoder());

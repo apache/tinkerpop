@@ -7,6 +7,7 @@ import org.junit.rules.TestName;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertTrue;
 
@@ -24,12 +25,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Override
     public Settings overrideSettings(final Settings settings) {
         final String nameOfTest = name.getMethodName();
-        if (nameOfTest.equals("shouldReceiveFailureTimeOutOnScriptEval"))
-            settings.scriptEvaluationTimeout = 200;
-        else if (nameOfTest.equals("shouldReceiveFailureTimeOutOnTotalSerialization"))
-            settings.serializedResponseTimeout = 1;
-        else if (nameOfTest.equals("shouldReceiveFailureForTimeoutOfIndividualSerialization"))
-            settings.serializeResultTimeout = 1;
+        switch (nameOfTest) {
+            case "shouldReceiveFailureTimeOutOnScriptEval":
+                settings.scriptEvaluationTimeout = 200;
+                break;
+            case "shouldReceiveFailureTimeOutOnTotalSerialization":
+                settings.serializedResponseTimeout = 1;
+                break;
+            case "shouldReceiveFailureForTimeoutOfIndividualSerialization":
+                settings.serializeResultTimeout = 1;
+                break;
+            case "shouldBlockRequestWhenTooBig":
+                settings.maxContentLength = 1;
+                break;
+        }
 
         return settings;
     }
@@ -84,6 +93,24 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
         final List<String> results = client.<String>eval("def class C { def C getC(){return this}}; new C()").collect(Collectors.toList());
+
+        // the last item in the list is the error
+        final String result = results.get(results.size() - 1);
+        assertTrue(result.equals("Error during serialization: Direct self-reference leading to cycle (through reference chain: java.util.HashMap[\"result\"]->C[\"c\"])"));
+
+        client.close();
+    }
+
+    @Test
+    @Ignore("This test needs to be fixed feedback is retrieved from netty.")
+    public void shouldBlockRequestWhenTooBig() throws Exception {
+        final String url = getWebSocketBaseUri();
+        final WebSocketClient client = new WebSocketClient(url);
+        client.open();
+
+        // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
+        final String fatty = IntStream.range(0, 65536).mapToObj(String::valueOf).collect(Collectors.joining());
+        final List<String> results = client.<String>eval("'" + fatty + "'").collect(Collectors.toList());
 
         // the last item in the list is the error
         final String result = results.get(results.size() - 1);
