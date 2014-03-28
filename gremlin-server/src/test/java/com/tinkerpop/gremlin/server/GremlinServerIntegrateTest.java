@@ -36,7 +36,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.serializeResultTimeout = 1;
                 break;
             case "shouldBlockRequestWhenTooBig":
-                settings.maxContentLength = 1;
+                settings.maxContentLength = 1;    // todo: get this to work properly
                 break;
         }
 
