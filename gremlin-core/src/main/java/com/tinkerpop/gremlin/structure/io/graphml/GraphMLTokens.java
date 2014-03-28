@@ -27,7 +27,8 @@ public class GraphMLTokens {
     public static final String SOURCE = "source";
     public static final String TARGET = "target";
     public static final String DATA = "data";
-    public static final String LABEL = "label";
+    public static final String LABEL_E = "labelE";
+    public static final String LABEL_V = "labelV";
     public static final String STRING = "string";
     public static final String FLOAT = "float";
     public static final String DOUBLE = "double";

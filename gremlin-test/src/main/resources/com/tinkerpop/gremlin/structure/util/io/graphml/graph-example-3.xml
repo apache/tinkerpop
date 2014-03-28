@@ -10,6 +10,8 @@
     <key id="id-l" for="node" attr.name="l" attr.type="long"/>
     <key id="id-f" for="node" attr.name="f" attr.type="float"/>
     <key id="id-n" for="node" attr.name="n" attr.type="nothing-supported-and-goes-to-string"/>
+    <key id="labelV" for="node" attr.name="labelV" attr.type="string"/>
+    <key id="labelE" for="edge" attr.name="labelE" attr.type="string"/>
     <graph id="G" edgedefault="directed">
         <node id="1">
             <data key="id-d">123.45</data>
@@ -19,6 +21,7 @@
             <data key="id-l">10000000</data>
             <data key="id-f">123.54</data>
             <data key="id-n">junk</data>
+            <data key="label">default</data>
         </node>
     </graph>
 </graphml>

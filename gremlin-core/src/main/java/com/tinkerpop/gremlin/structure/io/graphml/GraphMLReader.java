@@ -36,14 +36,17 @@ public class GraphMLReader implements GraphReader {
     private final Optional<String> vertexIdKey;
     private final Optional<String> edgeIdKey;
     private final String edgeLabelKey;
+    private final String vertexLabelKey;
     private final long batchSize;
 
     private GraphMLReader(final String vertexIdKey, final String edgeIdKey,
-                          final String edgeLabelKey, final long batchSize) {
+                          final String edgeLabelKey, final String vertexLabelKey,
+                          final long batchSize) {
         this.vertexIdKey = Optional.ofNullable(vertexIdKey);
         this.edgeIdKey = Optional.ofNullable(edgeIdKey);
         this.edgeLabelKey = edgeLabelKey;
         this.batchSize = batchSize;
+        this.vertexLabelKey = vertexLabelKey;
     }
 
     @Override
@@ -80,6 +83,7 @@ public class GraphMLReader implements GraphReader {
 
             // Buffered Vertex Data
             String vertexId = null;
+            String vertexLabel = null;
             Map<String, Object> vertexProps = null;
             boolean isInVertex = false;
 
@@ -151,7 +155,9 @@ public class GraphMLReader implements GraphReader {
                                 final String value = reader.getElementText();
 
                                 if (isInVertex) {
-                                    if (vertexIdKey.isPresent() && key.equals(vertexIdKey.get())) {
+                                    if (key.equals(vertexLabelKey))
+                                        vertexLabel = value;
+                                    else if (vertexIdKey.isPresent() && key.equals(vertexIdKey.get())) {
                                         // Should occur at most once per Vertex
                                         // Assumes single ID prop per Vertex
                                         vertexMappedIdMap.put(vertexId, value);
@@ -175,13 +181,15 @@ public class GraphMLReader implements GraphReader {
 
                     if (elementName.equals(GraphMLTokens.NODE)) {
                         final String currentVertexId = vertexId;
+                        final String currentVertexLabel = Optional.ofNullable(vertexLabel).orElse(Element.DEFAULT_LABEL);
                         final Vertex currentVertex = Optional.ofNullable(graph.v(vertexId))
-                                .orElseGet(() -> graph.addVertex(Element.ID, currentVertexId));
+                                .orElseGet(() -> graph.addVertex(Element.ID, currentVertexId, Element.LABEL, currentVertexLabel));
                         for (Map.Entry<String, Object> prop : vertexProps.entrySet()) {
                             currentVertex.setProperty(prop.getKey(), prop.getValue());
                         }
 
                         vertexId = null;
+                        vertexLabel = null;
                         vertexProps = null;
                         isInVertex = false;
                     } else if (elementName.equals(GraphMLTokens.EDGE)) {
@@ -235,7 +243,8 @@ public class GraphMLReader implements GraphReader {
     public static final class Builder {
         private String vertexIdKey = null;
         private String edgeIdKey = null;
-        private String edgeLabelKey = GraphMLTokens.LABEL;
+        private String edgeLabelKey = GraphMLTokens.LABEL_E;
+        private String vertexLabelKey = GraphMLTokens.LABEL_V;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
 
         private Builder() {}
@@ -255,13 +264,18 @@ public class GraphMLReader implements GraphReader {
             return this;
         }
 
+        public Builder vertexLabelKey(final String vertexLabelKey) {
+            this.vertexLabelKey = vertexLabelKey;
+            return this;
+        }
+
         public Builder batchSize(final long batchSize) {
             this.batchSize = batchSize;
             return this;
         }
 
         public GraphMLReader build() {
-            return new GraphMLReader(vertexIdKey, edgeIdKey, edgeLabelKey, batchSize);
+            return new GraphMLReader(vertexIdKey, edgeIdKey, edgeLabelKey, vertexLabelKey, batchSize);
         }
     }
 }

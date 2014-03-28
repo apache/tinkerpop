@@ -40,15 +40,17 @@ public class GraphMLWriter implements GraphWriter {
     private final Optional<Map<String, String>> edgeKeyTypes;
     private final Optional<String> xmlSchemaLocation;
     private final String edgeLabelKey;
+    private final String vertexLabelKey;
 
     private GraphMLWriter(final boolean normalize, final Map<String, String> vertexKeyTypes,
                           final Map<String, String> edgeKeyTypes, final String xmlSchemaLocation,
-                          final String edgeLabelKey) {
+                          final String edgeLabelKey, final String vertexLabelKey) {
         this.normalize = normalize;
         this.vertexKeyTypes = Optional.ofNullable(vertexKeyTypes);
         this.edgeKeyTypes = Optional.ofNullable(edgeKeyTypes);
         this.xmlSchemaLocation = Optional.ofNullable(xmlSchemaLocation);
         this.edgeLabelKey = edgeLabelKey;
+        this.vertexLabelKey = vertexLabelKey;
     }
 
     @Override
@@ -79,8 +81,11 @@ public class GraphMLWriter implements GraphWriter {
 
         if (identifiedEdgeKeyTypes.containsKey(this.edgeLabelKey))
             throw new IllegalStateException(String.format("The edgeLabelKey value of[%s] conflicts with the name of an existing property key to be included in the GraphML", this.edgeLabelKey));
+        if (identifiedEdgeKeyTypes.containsKey(this.edgeLabelKey))
+            throw new IllegalStateException(String.format("The vertexLabelKey value of[%s] conflicts with the name of an existing property key to be included in the GraphML", this.vertexLabelKey));
 
         identifiedEdgeKeyTypes.put(this.edgeLabelKey, GraphMLTokens.STRING);
+        identifiedVertexKeyTypes.put(this.vertexLabelKey, GraphMLTokens.STRING);
 
         try {
             final XMLStreamWriter writer;
@@ -206,6 +211,12 @@ public class GraphMLWriter implements GraphWriter {
             writer.writeStartElement(GraphMLTokens.NODE);
             writer.writeAttribute(GraphMLTokens.ID, vertex.getId().toString());
             final Collection<String> keys = getElementKeysAndNormalizeIfRequired(vertex);
+
+            writer.writeStartElement(GraphMLTokens.DATA);
+            writer.writeAttribute(GraphMLTokens.KEY, this.vertexLabelKey);
+            writer.writeCharacters(vertex.getLabel());
+            writer.writeEndElement();
+
             for (String key : keys) {
                 writer.writeStartElement(GraphMLTokens.DATA);
                 writer.writeAttribute(GraphMLTokens.KEY, key);
@@ -331,7 +342,8 @@ public class GraphMLWriter implements GraphWriter {
         private Map<String, String> edgeKeyTypes = null;
 
         private String xmlSchemaLocation = null;
-        private String edgeLabelKey = GraphMLTokens.LABEL;
+        private String edgeLabelKey = GraphMLTokens.LABEL_E;
+        private String vertexLabelKey = GraphMLTokens.LABEL_V;
 
         private Builder() {}
 
@@ -369,7 +381,7 @@ public class GraphMLWriter implements GraphWriter {
         }
 
         /**
-         * Set the name of the edge label in the GraphML. This value is defaulted to {@link GraphMLTokens#LABEL}.
+         * Set the name of the edge label in the GraphML. This value is defaulted to {@link GraphMLTokens#LABEL_E}.
          * The value of Edge.getLabel() is written as a data element on the edge and the appropriate key element is
          * added to define it in the GraphML.  It is important that when reading this GraphML back in with the
          * reader that this label key is set appropriately to properly read the edge labels.
@@ -381,8 +393,13 @@ public class GraphMLWriter implements GraphWriter {
             return this;
         }
 
+        public Builder vertexLabelKey(final String vertexLabelKey) {
+            this.vertexLabelKey = vertexLabelKey;
+            return this;
+        }
+
         public GraphMLWriter build() {
-            return new GraphMLWriter(normalize, vertexKeyTypes, edgeKeyTypes, xmlSchemaLocation, edgeLabelKey);
+            return new GraphMLWriter(normalize, vertexKeyTypes, edgeKeyTypes, xmlSchemaLocation, edgeLabelKey, vertexLabelKey);
         }
     }
 }

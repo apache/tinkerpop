@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -88,12 +89,25 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraph() throws IOException {
+    public void shouldWriteClassicGraphAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.gio");
         KryoWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteClassicGraphAsGraphML() throws IOException {
+        final OutputStream os = new FileOutputStream("/tmp/graph-example-1.xml");
+        GraphMLWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
     @Test
     public void shouldWriteClassicGraphAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.json");
@@ -116,6 +130,22 @@ public class TinkerGraphTest {
         KryoWriter.create().build().writeGraph(os, g);
         os.close();
     }
+
+    /* only necessary when the graphml version needs to be adjusted
+    @Test
+    public void shouldWriteGratefulGraphToGraphML() throws IOException {
+        final Graph g = TinkerGraph.open();
+
+        final GraphReader reader = com.tinkerpop.gremlin.structure.io.kryo.KryoReader.create().build();
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/kryo/graph-example-2.gio")) {
+            reader.readGraph(stream, g);
+        }
+
+        final OutputStream os = new FileOutputStream("/tmp/graph-example-2.xml");
+        GraphMLWriter.create().build().writeGraph(os, g);
+        os.close();
+    }
+    */
 
 
     /**
