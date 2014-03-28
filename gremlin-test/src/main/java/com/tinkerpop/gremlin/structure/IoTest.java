@@ -52,6 +52,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_LONG_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_DOUBLE_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_FLOAT_VALUES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_BOOLEAN_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -83,15 +87,25 @@ public class IoTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_BOOLEAN_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_LONG_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_DOUBLE_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadGraphMLAsProperties() throws IOException {
-        final GraphReader reader = GraphMLReader.create().edgeLabelKey("_label").build();
+    public void shouldReadGraphMLAnAllSupportedDataTypes() throws IOException {
+        final GraphReader reader = GraphMLReader.create().build();
         try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-3.xml")) {
             reader.readGraph(stream, g);
         }
 
-        assertEquals(4, g.E().filter(e-> e.get().getLabel().equals("has high fived")).count());
-        assertEquals(2, g.E().filter(e-> e.get().getLabel().equals("created")).count());
+        final Vertex v = g.V().next();
+        assertEquals(123.45d, v.getValue("d"), 0.000001d);
+        assertEquals("some-string", v.<String>getValue("s"));
+        assertEquals(29, v.<Integer>getValue("i").intValue());
+        assertEquals(true, v.<Boolean>getValue("b"));
+        assertEquals(123.54f, v.getValue("f"), 0.000001f);
+        assertEquals(10000000l, v.<Long>getValue("l").longValue());
+        assertEquals("junk", v.<String>getValue("n"));
     }
 
     /**
@@ -109,27 +123,6 @@ public class IoTest extends AbstractGremlinTest {
             w.writeGraph(bos, g);
 
             final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-normalized.xml"));
-            assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
-        }
-    }
-
-    /**
-     * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
-     */
-    @Test
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    public void shouldWriteNormalizedGraphMLWithEdgeLabel() throws Exception {
-        try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            final GraphMLWriter w = GraphMLWriter.create()
-                    .setNormalize(true)
-                    .edgeLabelKey("label").build();
-            w.writeGraph(bos, g);
-
-            String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-schema-valid.xml"));
             assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
         }
     }

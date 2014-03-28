@@ -39,7 +39,7 @@ public class GraphMLWriter implements GraphWriter {
     private final Optional<Map<String, String>> vertexKeyTypes;
     private final Optional<Map<String, String>> edgeKeyTypes;
     private final Optional<String> xmlSchemaLocation;
-    private final Optional<String> edgeLabelKey;
+    private final String edgeLabelKey;
 
     private GraphMLWriter(final boolean normalize, final Map<String, String> vertexKeyTypes,
                           final Map<String, String> edgeKeyTypes, final String xmlSchemaLocation,
@@ -48,7 +48,7 @@ public class GraphMLWriter implements GraphWriter {
         this.vertexKeyTypes = Optional.ofNullable(vertexKeyTypes);
         this.edgeKeyTypes = Optional.ofNullable(edgeKeyTypes);
         this.xmlSchemaLocation = Optional.ofNullable(xmlSchemaLocation);
-        this.edgeLabelKey = Optional.ofNullable(edgeLabelKey);
+        this.edgeLabelKey = edgeLabelKey;
     }
 
     @Override
@@ -77,10 +77,10 @@ public class GraphMLWriter implements GraphWriter {
         final Map<String, String> identifiedVertexKeyTypes = this.vertexKeyTypes.orElseGet(() -> this.determineVertexTypes(g));
         final Map<String, String> identifiedEdgeKeyTypes = this.edgeKeyTypes.orElseGet(() -> this.determineEdgeTypes(g));
 
-        // adding the edge label key will push the label into the data portion of the graphml otherwise it
-        // will live with the edge data itself (which won't validate against the graphml schema)
-        if (this.edgeLabelKey.isPresent() && null == identifiedEdgeKeyTypes.get(this.edgeLabelKey.get()))
-            identifiedEdgeKeyTypes.put(this.edgeLabelKey.get(), GraphMLTokens.STRING);
+        if (identifiedEdgeKeyTypes.containsKey(this.edgeLabelKey))
+            throw new IllegalStateException(String.format("The edgeLabelKey value of[%s] conflicts with the name of an existing property key to be included in the GraphML", this.edgeLabelKey));
+
+        identifiedEdgeKeyTypes.put(this.edgeLabelKey, GraphMLTokens.STRING);
 
         try {
             final XMLStreamWriter writer;
@@ -156,16 +156,10 @@ public class GraphMLWriter implements GraphWriter {
                 writer.writeAttribute(GraphMLTokens.SOURCE, edge.getVertex(Direction.OUT).getId().toString());
                 writer.writeAttribute(GraphMLTokens.TARGET, edge.getVertex(Direction.IN).getId().toString());
 
-                if (this.edgeLabelKey.isPresent()) {
-                    writer.writeStartElement(GraphMLTokens.DATA);
-                    writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey.get());
-                    writer.writeCharacters(edge.getLabel());
-                    writer.writeEndElement();
-                } else {
-                    // this will not comply with the graphml schema but is here so that the label is not
-                    // mixed up with properties.
-                    writer.writeAttribute(GraphMLTokens.LABEL, edge.getLabel());
-                }
+                writer.writeStartElement(GraphMLTokens.DATA);
+                writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey);
+                writer.writeCharacters(edge.getLabel());
+                writer.writeEndElement();
 
                 final List<String> keys = new ArrayList<>();
                 keys.addAll(edge.getPropertyKeys());
@@ -187,7 +181,11 @@ public class GraphMLWriter implements GraphWriter {
                 writer.writeAttribute(GraphMLTokens.ID, edge.getId().toString());
                 writer.writeAttribute(GraphMLTokens.SOURCE, edge.getVertex(Direction.OUT).getId().toString());
                 writer.writeAttribute(GraphMLTokens.TARGET, edge.getVertex(Direction.IN).getId().toString());
-                writer.writeAttribute(GraphMLTokens.LABEL, edge.getLabel());
+
+                writer.writeStartElement(GraphMLTokens.DATA);
+                writer.writeAttribute(GraphMLTokens.KEY, this.edgeLabelKey);
+                writer.writeCharacters(edge.getLabel());
+                writer.writeEndElement();
 
                 for (String key : edge.getPropertyKeys()) {
                     writer.writeStartElement(GraphMLTokens.DATA);
@@ -333,7 +331,7 @@ public class GraphMLWriter implements GraphWriter {
         private Map<String, String> edgeKeyTypes = null;
 
         private String xmlSchemaLocation = null;
-        private String edgeLabelKey = null;
+        private String edgeLabelKey = GraphMLTokens.LABEL;
 
         private Builder() {}
 
@@ -371,10 +369,10 @@ public class GraphMLWriter implements GraphWriter {
         }
 
         /**
-         * Set the name of the edge label in the GraphML. When this value is not set the value of the Edge.getLabel()
-         * is written as a "label" attribute on the edge element.  This does not validate against the GraphML schema.
-         * If this value is set then the the value of Edge.getLabel() is written as a data element on the edge and
-         * the appropriate key element is added to define it in the GraphML
+         * Set the name of the edge label in the GraphML. This value is defaulted to {@link GraphMLTokens#LABEL}.
+         * The value of Edge.getLabel() is written as a data element on the edge and the appropriate key element is
+         * added to define it in the GraphML.  It is important that when reading this GraphML back in with the
+         * reader that this label key is set appropriately to properly read the edge labels.
          *
          * @param edgeLabelKey if the label of an edge will be handled by the data property.
          */

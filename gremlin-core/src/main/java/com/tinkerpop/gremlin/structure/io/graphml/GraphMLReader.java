@@ -35,14 +35,14 @@ public class GraphMLReader implements GraphReader {
 
     private final Optional<String> vertexIdKey;
     private final Optional<String> edgeIdKey;
-    private final Optional<String> edgeLabelKey;
+    private final String edgeLabelKey;
     private final long batchSize;
 
     private GraphMLReader(final String vertexIdKey, final String edgeIdKey,
                           final String edgeLabelKey, final long batchSize) {
         this.vertexIdKey = Optional.ofNullable(vertexIdKey);
         this.edgeIdKey = Optional.ofNullable(edgeIdKey);
-        this.edgeLabelKey = Optional.ofNullable(edgeLabelKey);
+        this.edgeLabelKey = edgeLabelKey;
         this.batchSize = batchSize;
     }
 
@@ -113,8 +113,6 @@ public class GraphMLReader implements GraphReader {
                             break;
                         case GraphMLTokens.EDGE:
                             edgeId = reader.getAttributeValue(null, GraphMLTokens.ID);
-                            edgeLabel = reader.getAttributeValue(null, GraphMLTokens.LABEL);
-                            edgeLabel = edgeLabel == null ? GraphMLTokens._DEFAULT : edgeLabel;
 
                             final String vertexIdOut = reader.getAttributeValue(null, GraphMLTokens.SOURCE);
                             final String vertexIdIn = reader.getAttributeValue(null, GraphMLTokens.TARGET);
@@ -161,7 +159,7 @@ public class GraphMLReader implements GraphReader {
                                     } else
                                         vertexProps.put(dataAttributeName, typeCastValue(key, value, keyTypesMaps));
                                 } else if (isInEdge) {
-                                    if (edgeLabelKey.isPresent() && key.equals(edgeLabelKey.get()))
+                                    if (key.equals(edgeLabelKey))
                                         edgeLabel = value;
                                     else if (edgeIdKey.isPresent() && key.equals(edgeIdKey.get()))
                                         edgeId = value;
@@ -237,7 +235,7 @@ public class GraphMLReader implements GraphReader {
     public static final class Builder {
         private String vertexIdKey = null;
         private String edgeIdKey = null;
-        private String edgeLabelKey = null;
+        private String edgeLabelKey = GraphMLTokens.LABEL;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
 
         private Builder() {}
