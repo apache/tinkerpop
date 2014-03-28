@@ -23,23 +23,20 @@ public abstract class AbstractGremlinServerPerformanceTest {
     @BeforeClass
     public static void setUp() throws Exception {
         final InputStream stream = AbstractGremlinServerPerformanceTest.class.getResourceAsStream("gremlin-server-performance.yaml");
-        final Optional<Settings> settings = Settings.read(stream);
-        if (settings.isPresent()) {
-            thread = new Thread(() -> {
-                try {
-                    new GremlinServer(settings.get()).run();
-                } catch (InterruptedException ie) {
-                    logger.info("Shutting down Gremlin Server");
-                } catch (Exception ex) {
-                    logger.error("Could not start Gremlin Server for performance tests", ex);
-                }
-            });
-            thread.start();
+        final Settings settings = Settings.read(stream);
+        thread = new Thread(() -> {
+            try {
+                new GremlinServer(settings).run();
+            } catch (InterruptedException ie) {
+                logger.info("Shutting down Gremlin Server");
+            } catch (Exception ex) {
+                logger.error("Could not start Gremlin Server for performance tests", ex);
+            }
+        });
+        thread.start();
 
-            // make sure gremlin server gets off the ground
-            Thread.sleep(1500);
-        } else
-            logger.error("Configuration file at gremlin-server-performance.yaml could not be found or parsed properly.");
+        // make sure gremlin server gets off the ground
+        Thread.sleep(1500);
 
         host = System.getProperty("host", "localhost");
         port = System.getProperty("port", "8182");

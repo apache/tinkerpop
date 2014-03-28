@@ -15,7 +15,7 @@ import static org.junit.Assert.assertTrue;
 public class GraphsTest {
     @Test(expected = UnsupportedOperationException.class)
     public void shouldReturnImmutableMapOfGraphs() {
-        final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml")).get();
+        final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
         final Graphs graphs = new Graphs(settings);
         final Map<String, Graph> m = graphs.getGraphs();
 
@@ -24,7 +24,7 @@ public class GraphsTest {
 
     @Test
     public void shouldReturnGraphs() {
-        final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml")).get();
+        final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
         final Graphs graphs = new Graphs(settings);
         final Map<String, Graph> m = graphs.getGraphs();
 

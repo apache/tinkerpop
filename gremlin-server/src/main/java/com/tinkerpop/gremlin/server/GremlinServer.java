@@ -72,20 +72,22 @@ public class GremlinServer {
         // add to vm options: -Dlog4j.configuration=file:config/log4j.properties
         printHeader();
         final String file;
-        if (args.length > 0) {
+        if (args.length > 0)
             file = args[0];
-        } else {
+        else
             file = "config/gremlin-server.yaml";
+
+        final Settings settings;
+        try {
+            settings = Settings.read(file);
+        } catch (Exception ex) {
+            logger.error("Configuration file at {} could not be found or parsed properly. [{}]", file, ex.getMessage());
+            return;
         }
 
-        final Optional<Settings> settings = Settings.read(file);
-        if (settings.isPresent()) {
-            logger.info("Configuring Gremlin Server from {}", file);
-            final Settings config = settings.get();
-            config.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
-            new GremlinServer(config).run();
-        } else
-            logger.error("Configuration file at {} could not be found or parsed properly.", file);
+        logger.info("Configuring Gremlin Server from {}", file);
+        settings.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
+        new GremlinServer(settings).run();
     }
 
     public static String getHeader() {

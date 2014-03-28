@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -108,69 +109,57 @@ public class Settings {
      * Read configuration from a file into a new {@link Settings} object.
      *
      * @param file the location of a Gremlin Server YAML configuration file
-     * @return a new {@link Optional} object wrapping the created {@link Settings} or an empty {@link Optional} if
-     *         the file cannot be read
+     * @return a new {@link Optional} object wrapping the created {@link Settings}
      */
-    public static Optional<Settings> read(final String file) {
-        try {
-            final InputStream input = new FileInputStream(new File(file));
-            return read(input);
-        } catch (Exception ex) {
-            return Optional.empty();
-        }
+    public static Settings read(final String file) throws Exception {
+        final InputStream input = new FileInputStream(new File(file));
+        return read(input);
     }
 
     /**
      * Read configuration from a file into a new {@link Settings} object.
      *
      * @param stream an input stream containing a Gremlin Server YAML configuration
-     * @return a new {@link Optional} object wrapping the created {@link Settings} or an empty {@link Optional} if
-     *         the file cannot be read
+     * @return a new {@link Optional} object wrapping the created {@link Settings}
      */
-    public static Optional<Settings> read(final InputStream stream) {
-        if (stream == null)
-            return Optional.empty();
+    public static Settings read(final InputStream stream) {
+        Objects.requireNonNull(stream);
 
-        try {
-            final Constructor constructor = new Constructor(Settings.class);
-            final TypeDescription settingsDescription = new TypeDescription(Settings.class);
-            settingsDescription.putMapPropertyType("graphs", String.class, String.class);
-            settingsDescription.putMapPropertyType("scriptEngines", String.class, ScriptEngineSettings.class);
-            settingsDescription.putListPropertyType("use", List.class);
-            constructor.addTypeDescription(settingsDescription);
+        final Constructor constructor = new Constructor(Settings.class);
+        final TypeDescription settingsDescription = new TypeDescription(Settings.class);
+        settingsDescription.putMapPropertyType("graphs", String.class, String.class);
+        settingsDescription.putMapPropertyType("scriptEngines", String.class, ScriptEngineSettings.class);
+        settingsDescription.putListPropertyType("use", List.class);
+        constructor.addTypeDescription(settingsDescription);
 
-            final TypeDescription scriptEngineSettingsDescription = new TypeDescription(ScriptEngineSettings.class);
-            scriptEngineSettingsDescription.putListPropertyType("imports", String.class);
-            scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
-            constructor.addTypeDescription(scriptEngineSettingsDescription);
+        final TypeDescription scriptEngineSettingsDescription = new TypeDescription(ScriptEngineSettings.class);
+        scriptEngineSettingsDescription.putListPropertyType("imports", String.class);
+        scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
+        constructor.addTypeDescription(scriptEngineSettingsDescription);
 
-            final TypeDescription serverMetricsDescription = new TypeDescription(ServerMetrics.class);
-            constructor.addTypeDescription(serverMetricsDescription);
+        final TypeDescription serverMetricsDescription = new TypeDescription(ServerMetrics.class);
+        constructor.addTypeDescription(serverMetricsDescription);
 
-            final TypeDescription consoleReporterDescription = new TypeDescription(ConsoleReporterMetrics.class);
-            constructor.addTypeDescription(consoleReporterDescription);
+        final TypeDescription consoleReporterDescription = new TypeDescription(ConsoleReporterMetrics.class);
+        constructor.addTypeDescription(consoleReporterDescription);
 
-            final TypeDescription csvReporterDescription = new TypeDescription(CsvReporterMetrics.class);
-            constructor.addTypeDescription(csvReporterDescription);
+        final TypeDescription csvReporterDescription = new TypeDescription(CsvReporterMetrics.class);
+        constructor.addTypeDescription(csvReporterDescription);
 
-            final TypeDescription jmxReporterDescription = new TypeDescription(JmxReporterMetrics.class);
-            constructor.addTypeDescription(jmxReporterDescription);
+        final TypeDescription jmxReporterDescription = new TypeDescription(JmxReporterMetrics.class);
+        constructor.addTypeDescription(jmxReporterDescription);
 
-            final TypeDescription slf4jReporterDescription = new TypeDescription(Slf4jReporterMetrics.class);
-            constructor.addTypeDescription(slf4jReporterDescription);
+        final TypeDescription slf4jReporterDescription = new TypeDescription(Slf4jReporterMetrics.class);
+        constructor.addTypeDescription(slf4jReporterDescription);
 
-            final TypeDescription gangliaReporterDescription = new TypeDescription(GangliaReporterMetrics.class);
-            constructor.addTypeDescription(gangliaReporterDescription);
+        final TypeDescription gangliaReporterDescription = new TypeDescription(GangliaReporterMetrics.class);
+        constructor.addTypeDescription(gangliaReporterDescription);
 
-            final TypeDescription graphiteReporterDescription = new TypeDescription(GraphiteReporterMetrics.class);
-            constructor.addTypeDescription(graphiteReporterDescription);
+        final TypeDescription graphiteReporterDescription = new TypeDescription(GraphiteReporterMetrics.class);
+        constructor.addTypeDescription(graphiteReporterDescription);
 
-            final Yaml yaml = new Yaml(constructor);
-            return Optional.of(yaml.loadAs(stream, Settings.class));
-        } catch (Exception fnfe) {
-            // todo: need some errors logged or something...no messages come up if unparseable
-            return Optional.empty();
-        }
+        final Yaml yaml = new Yaml(constructor);
+        return yaml.loadAs(stream, Settings.class);
     }
 
     /**
