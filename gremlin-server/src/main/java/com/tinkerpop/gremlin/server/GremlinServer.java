@@ -48,6 +48,9 @@ public class GremlinServer {
         final EventLoopGroup workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
         try {
             final ServerBootstrap b = new ServerBootstrap();
+
+            // when high value is reached then the channel becomes non-writeable and stays like that until the
+            // low value is so that there is time to recover
             b.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024);
             b.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024);
             b.group(bossGroup, workerGroup)
