@@ -45,10 +45,10 @@ class GremlinOpHandler extends SimpleChannelInboundHandler<RequestMessage> {
             final Optional<OpProcessor> processor = OpLoader.getProcessor(msg.processor);
             final Context gremlinServerContext = new Context(msg, ctx, settings, graphs, gremlinExecutor);
 
-            if (processor.isPresent()) {
+            if (processor.isPresent())
                 // the processor is known so use it to evaluate the message
                 processor.get().select(gremlinServerContext).accept(gremlinServerContext);
-            } else {
+            else {
                 // invalid op processor selected so write back an error by way of OpProcessorException.
                 final String errorMessage = String.format("Invalid OpProcessor requested [%s]", msg.processor);
                 final MessageSerializer serializer = MessageSerializer.select(
@@ -59,13 +59,13 @@ class GremlinOpHandler extends SimpleChannelInboundHandler<RequestMessage> {
         } catch (OpProcessorException ope) {
             errorMeter.mark();
             logger.warn(ope.getMessage(), ope);
-            ctx.channel().write(ope.getFrame()); // todo: just do ctx.write() ???
+            ctx.write(ope.getFrame());
         } finally {
             // sending the requestId acts as a termination message for this request.
             final ByteBuf uuidBytes = Unpooled.directBuffer(16);
             uuidBytes.writeLong(msg.requestId.getMostSignificantBits());
             uuidBytes.writeLong(msg.requestId.getLeastSignificantBits());
-            ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));     // todo: just do ctx.write() ???
+            ctx.write(new BinaryWebSocketFrame(uuidBytes));
         }
     }
 

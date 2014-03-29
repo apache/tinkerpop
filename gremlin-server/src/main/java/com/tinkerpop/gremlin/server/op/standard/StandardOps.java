@@ -83,7 +83,7 @@ final class StandardOps {
         }
 
         try {
-            ctx.channel().write(new TextWebSocketFrame(serializer.serializeResult(infoToShow, context)));
+            ctx.write(new TextWebSocketFrame(serializer.serializeResult(infoToShow, context)));
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.",
                     infoToShow, context.getRequestMessage(), ex);
@@ -119,7 +119,7 @@ final class StandardOps {
                 put("version", version);
             }};
 
-            context.getChannelHandlerContext().channel().write(new TextWebSocketFrame(serializer.serializeResult(coords, context)));
+            context.getChannelHandlerContext().write(new TextWebSocketFrame(serializer.serializeResult(coords, context)));
         });
     }
 
@@ -208,7 +208,7 @@ final class StandardOps {
                     if (logger.isDebugEnabled())
                         logger.debug("Writing from frame queue to client [{}] for msg [{}]", currentFrame.get(), msg);
 
-                    ctx.channel().write(currentFrame.get());
+                    ctx.write(currentFrame.get());
                 } else {
                     if (!iterationComplete.get())
                         throw new TimeoutException("Serialization of an individual result exceeded the serializeResultTimeout setting");
