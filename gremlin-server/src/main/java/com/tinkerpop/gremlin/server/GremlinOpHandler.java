@@ -57,13 +57,13 @@ class GremlinOpHandler extends SimpleChannelInboundHandler<RequestMessage> {
         } catch (OpProcessorException ope) {
             errorMeter.mark();
             logger.warn(ope.getMessage(), ope);
-            ctx.channel().write(ope.getFrame());
+            ctx.channel().write(ope.getFrame()); // todo: just do ctx.write() ???
         } finally {
             // sending the requestId acts as a termination message for this request.
             final ByteBuf uuidBytes = Unpooled.directBuffer(16);
             uuidBytes.writeLong(msg.requestId.getMostSignificantBits());
             uuidBytes.writeLong(msg.requestId.getLeastSignificantBits());
-            ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));
+            ctx.channel().write(new BinaryWebSocketFrame(uuidBytes));     // todo: just do ctx.write() ???
         }
     }
 
