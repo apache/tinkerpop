@@ -16,6 +16,8 @@ import java.util.Optional;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
+// todo: use @shareable?
+
 /**
  * Adapted from https://github.com/netty/netty/tree/netty-4.0.10.Final/example/src/main/java/io/netty/example/http/websocketx/server
  *
