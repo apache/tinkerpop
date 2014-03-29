@@ -360,7 +360,8 @@ public class GraphMLWriter implements GraphWriter {
         }
 
         /**
-         * Map of the data types of the vertex keys.
+         * Map of the data types of the vertex keys.  It is best to specify this Map if possible as the only
+         * other way to attain it is to iterate all vertices to find all the property keys.
          */
         public Builder vertexKeyTypes(final Map<String, String> vertexKeyTypes) {
             this.vertexKeyTypes = vertexKeyTypes;
@@ -368,7 +369,8 @@ public class GraphMLWriter implements GraphWriter {
         }
 
         /**
-         * Map of the data types of the edge keys.
+         * Map of the data types of the edge keys.  It is best to specify this Map if possible as the only
+         * other way to attain it is to iterate all vertices to find all the property keys.
          */
         public Builder edgeKeyTypes(final Map<String, String> edgeKeyTypes) {
             this.edgeKeyTypes = edgeKeyTypes;
