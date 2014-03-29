@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -47,6 +48,8 @@ public class GremlinServer {
         final EventLoopGroup workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
         try {
             final ServerBootstrap b = new ServerBootstrap();
+            b.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024);
+            b.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024);
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new WebSocketServerInitializer(this.settings));
