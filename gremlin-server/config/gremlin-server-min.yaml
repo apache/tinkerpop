@@ -1,7 +1,7 @@
 host: localhost
 port: 8182
-threadPoolWorker: 1
-gremlinPool: 1
+threadPoolWorker: 4
+gremlinPool: 32
 scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
 serializeResultTimeout: 200

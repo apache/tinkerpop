@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server.util;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Provides a static way to get a {@link ThreadLocal} "single thread executor". In this way any thread can have its own
@@ -15,7 +16,7 @@ public class LocalExecutorService {
     private static ThreadLocal<ExecutorService> threadLocalExecutorService = new ThreadLocal<ExecutorService>() {
         @Override
         protected ExecutorService initialValue() {
-            return Executors.newSingleThreadExecutor();
+            return Executors.newSingleThreadExecutor(r -> new Thread(r, "gremlin-executor"));
         }
     };
 

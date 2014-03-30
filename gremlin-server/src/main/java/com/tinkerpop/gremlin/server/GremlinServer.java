@@ -137,12 +137,16 @@ public class GremlinServer {
         private final Settings settings;
         private final GremlinExecutor gremlinExecutor;
 
+        final EventExecutorGroup gremlinGroup;
+
         public WebSocketServerInitializer(final Settings settings) {
             this.settings = settings;
             synchronized (this) {
                 if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
                 gremlinExecutor = new GremlinExecutor(this.settings);
             }
+
+            this.gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, r -> new Thread(r, "gremlin-handler"));
 
             logger.info("Initialize GremlinExecutor and configured ScriptEngines.");
         }
@@ -175,7 +179,6 @@ public class GremlinServer {
             pipeline.addLast("request-handler", new WebSocketServerProtocolHandler("/gremlin"));
             pipeline.addLast("gremlin-decoder", new GremlinRequestDecoder());
 
-            final EventExecutorGroup gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool);
             pipeline.addLast(gremlinGroup, "gremlin-handler", new GremlinOpHandler(settings, graphs.get(), gremlinExecutor));
         }
     }
