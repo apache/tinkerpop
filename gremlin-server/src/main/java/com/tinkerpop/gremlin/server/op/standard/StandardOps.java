@@ -136,7 +136,8 @@ final class StandardOps {
                 MessageSerializer.DEFAULT_RESULT_SERIALIZER);
 
         // a worker service bound to the current thread
-        final ExecutorService executorService = LocalExecutorService.getLocal();
+        // final ExecutorService executorService = LocalExecutorService.getLocal();
+        final ExecutorService executorService = ctx.channel().eventLoop().next();
 
         // a marker to determine if the code has succeeded at evaluation of the script
         boolean evaluated = false;
@@ -151,7 +152,7 @@ final class StandardOps {
         Object o;
         try {
             // evaluate the script
-            o = context.getGremlinExecutor().eval(msg, context.getGraphs());
+            o = context.getGremlinExecutor().eval(msg, context);
 
             // make all results an iterator
             final Iterator itty = convertToIterator(o);

@@ -51,12 +51,12 @@ public class GremlinExecutor {
      * Evaluate the {@link RequestMessage} within a {@code ScriptEngine} instance.
      *
      * @param message the current message
-     * @param graphs  the list of {@link com.tinkerpop.gremlin.structure.Graph} instances configured for the server
+     * @param ctx the server context
      * @return the result from the evaluation
      */
-    public Object eval(final RequestMessage message, final Graphs graphs)
+    public Object eval(final RequestMessage message, final Context ctx)
             throws ScriptException, InterruptedException, ExecutionException, TimeoutException {
-
+        final Graphs graphs = ctx.getGraphs();
         final Bindings bindings = new SimpleBindings();
         bindings.putAll(extractBindingsFromMessage(message));
 
@@ -64,7 +64,8 @@ public class GremlinExecutor {
         bindings.putAll(graphs.getGraphs());
 
         // an executor service for the current thread so that script evaluation can be timed out if it runs too long
-        final ExecutorService executorService = LocalExecutorService.getLocal();
+        // final ExecutorService executorService = LocalExecutorService.getLocal();
+        final ExecutorService executorService = ctx.getChannelHandlerContext().channel().eventLoop().next();
         try {
             // do a safety cleanup of previous transaction...if any
             executorService.submit(graphs::rollbackAll).get();
