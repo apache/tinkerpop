@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server.op.standard;
 
 import com.codahale.metrics.Timer;
+import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
@@ -11,9 +12,7 @@ import com.tinkerpop.gremlin.server.ScriptEngines;
 import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.Tokens;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
-import com.tinkerpop.gremlin.server.util.LocalExecutorService;
 import com.tinkerpop.gremlin.server.util.MetricManager;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;

@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.server.util;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * Provides a static way to get a {@link ThreadLocal} "single thread executor". In this way any thread can have its own
