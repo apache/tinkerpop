@@ -78,7 +78,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
 
                 // todo: batch flush?
                 while (itty.hasNext()) {
-                    ctx.write(Pair.with(requestMessage, itty.next()), promise);
+                    ctx.write(Pair.with(requestMessage, itty.next()));
 
                     stopWatch.split();
                     if (stopWatch.getSplitTime() > settings.serializedResponseTimeout)
@@ -98,10 +98,10 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
 
                     final OpProcessorException ope = new OpProcessorException(errorMessage, serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context));
                     logger.warn(ope.getMessage(), ope);
-                    ctx.write(ope.getFrame(), promise);
+                    ctx.write(ope.getFrame());
                 }
 
-                ctx.write(terminator, promise);
+                ctx.write(terminator);
                 ctx.flush();
             });
 
