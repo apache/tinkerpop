@@ -47,7 +47,7 @@ public class StandardOpProcessor implements OpProcessor {
                 op = null;
                 break;
             case Tokens.OPS_EVAL:
-                op = validateEvalMessage(message, serializer, ctx).orElse(StandardOps::evalOp);
+                op = validateEvalMessage(message, serializer, ctx).orElse(StandardOps::evalOp2);
                 break;
             case Tokens.OPS_IMPORT:
                 op = validateImportMessage(message, serializer, ctx).orElse(StandardOps::importOp);

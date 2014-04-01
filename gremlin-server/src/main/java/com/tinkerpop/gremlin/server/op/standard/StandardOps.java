@@ -14,10 +14,14 @@ import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.LocalExecutorService;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.apache.commons.collections.iterators.ArrayIterator;
 import org.apache.commons.lang.time.StopWatch;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -121,6 +126,42 @@ final class StandardOps {
 
             context.getChannelHandlerContext().write(new TextWebSocketFrame(serializer.serializeResult(coords, context)));
         });
+    }
+
+    public static void evalOp2(final Context context) throws OpProcessorException {
+        final Timer.Context timerContext = evalOpTimer.time();
+        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
+        final RequestMessage msg = context.getRequestMessage();
+
+        final MessageSerializer serializer = MessageSerializer.select(
+                msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
+                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
+        try {
+            final CompletableFuture<Object> future = context.getGremlinExecutor().eval(msg, context);
+            future.thenAccept(o -> {
+                ctx.write(Pair.with(msg, convertToIterator(o)));
+            }).thenRun(timerContext::stop);
+
+            future.exceptionally(se -> {
+                logger.debug("Exception from ScriptException error.", se);
+
+                // todo: error handling has got to be better...
+                ctx.write(new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
+                        serializer.serializeResult(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context)).getFrame());
+                final ByteBuf uuidBytes = Unpooled.directBuffer(16);
+                uuidBytes.writeLong(msg.requestId.getMostSignificantBits());
+                uuidBytes.writeLong(msg.requestId.getLeastSignificantBits());
+                final BinaryWebSocketFrame terminator = new BinaryWebSocketFrame(uuidBytes);
+                ctx.writeAndFlush(terminator);
+
+                return null;
+            }).thenRun(timerContext::stop);
+
+        } catch (Exception ex) {
+            // todo: waaay too general
+            throw new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
+                    serializer.serializeResult(ex.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context));
+        }
     }
 
     /**

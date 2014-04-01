@@ -1,6 +1,13 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.server.util.LocalExecutorService;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.util.concurrent.EventExecutorGroup;
+import io.netty.util.concurrent.ScheduledFuture;
+import org.apache.commons.lang.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -54,7 +62,7 @@ public class GremlinExecutor {
      * @param ctx the server context
      * @return the result from the evaluation
      */
-    public Object eval(final RequestMessage message, final Context ctx)
+    public CompletableFuture<Object> eval(final RequestMessage message, final Context ctx)
             throws ScriptException, InterruptedException, ExecutionException, TimeoutException {
         final Graphs graphs = ctx.getGraphs();
         final Bindings bindings = new SimpleBindings();
@@ -65,15 +73,26 @@ public class GremlinExecutor {
 
         // an executor service for the current thread so that script evaluation can be timed out if it runs too long
         // final ExecutorService executorService = LocalExecutorService.getLocal();
-        final ExecutorService executorService = ctx.getChannelHandlerContext().channel().eventLoop().next();
+        final EventExecutorGroup executorService = ctx.getChannelHandlerContext().channel().eventLoop().next();
         try {
-            // do a safety cleanup of previous transaction...if any
-            executorService.submit(graphs::rollbackAll).get();
-            final Future<Object> future = executorService.submit((Callable<Object>) () ->
-                    sharedScriptEngines.eval(message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language));
-            final Object o = future.get(settings.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
-            executorService.submit(graphs::commitAll).get();
-            return o;
+
+            final CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
+                try {
+                    graphs.rollbackAll();
+                    final Object o = sharedScriptEngines.eval(message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language);
+                    graphs.commitAll();
+
+                    return o;
+                } catch (Exception ex) {
+                    graphs.rollbackAll();
+                    return null;
+                }
+
+            }, executorService);
+
+            scheduleTimeout(ctx.getChannelHandlerContext(), future, message);
+
+            return future;
         } catch (Exception ex) {
             logger.warn("Script did not evaluate with success [{}]", message);
 
@@ -83,6 +102,20 @@ public class GremlinExecutor {
             // throw the exception as it will be handled by the request processor and messaged back to the
             // calling client.
             throw ex;
+        }
+    }
+
+    private void scheduleTimeout(final ChannelHandlerContext ctx, final CompletableFuture<Object> future,
+                                 final RequestMessage requestMessage) {
+        if (settings.scriptEvaluationTimeout > 0) {
+            // Schedule a timeout.
+            final ScheduledFuture<?> sf = ctx.executor().schedule(() -> {
+                if (!future.isDone())
+                    future.completeExceptionally(new TimeoutException(String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", settings.scriptEvaluationTimeout, requestMessage)));
+            }, settings.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
+
+            // Cancel the scheduled timeout if the eval future is complete.
+            future.thenRun(() -> sf.cancel(false));
         }
     }
 

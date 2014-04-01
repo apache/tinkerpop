@@ -17,6 +17,8 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Start and stop Gremlin Server.  Adapted from
@@ -177,9 +180,22 @@ public class GremlinServer {
 
             pipeline.addLast("http-response-encoder", new HttpResponseEncoder());
             pipeline.addLast("request-handler", new WebSocketServerProtocolHandler("/gremlin"));
-            pipeline.addLast("gremlin-decoder", new GremlinRequestDecoder());
 
-            pipeline.addLast(gremlinGroup, "gremlin-handler", new GremlinOpHandler(settings, graphs.get(), gremlinExecutor));
+            if (logger.isDebugEnabled())
+                pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
+
+            // todo: configurable encoder in the gremlinGroup??
+            pipeline.addLast("response-encoder", new GremlinResponseEncoder(settings, graphs.get(), gremlinExecutor));
+            pipeline.addLast("request-decoder", new GremlinRequestDecoder());
+
+            if (logger.isDebugEnabled())
+                pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
+
+            pipeline.addLast("op-selector", new OpSelectorHandler(settings, graphs.get(), gremlinExecutor));
+
+            pipeline.addLast(gremlinGroup, "result-iterator-handler", new IteratorHandler(settings, graphs.get(), gremlinExecutor));
+
+            pipeline.addLast(gremlinGroup, "op-executor", new OpExecutorHandler(settings, graphs.get(), gremlinExecutor));
         }
     }
 }
