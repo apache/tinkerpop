@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.util.ReferenceCountUtil;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,8 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
             logger.warn(ope.getMessage(), ope);
             channelHandlerContext.write(ope.getFrame());
             channelHandlerContext.writeAndFlush(new TextWebSocketFrame(serializer.serializeResult(msg.requestId, ResultCode.SUCCESS_TERMINATOR, gremlinServerContext)));
+        } finally {
+            ReferenceCountUtil.release(objects);
         }
     }
 }
