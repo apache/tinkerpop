@@ -70,6 +70,12 @@ public class Settings {
     public long serializeResultTimeout = 200l;
 
     /**
+     * Number of items in a particular resultset to iterate and serialize prior to pushing the data down the wire
+     * to the client.
+     */
+    public long resultIterationBatchSize = 64l;
+
+    /**
      * The size of the frame queue which contains an individual serialized result (a frame) to be written back
      * to the client on each request. If the frame queue fills (i.e. the server serializes results far faster than
      * it can write them back to the client) then serialization will cease until there is space in the queue.  Note

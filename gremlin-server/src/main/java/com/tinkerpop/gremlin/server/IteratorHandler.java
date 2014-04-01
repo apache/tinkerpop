@@ -37,7 +37,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
     }
 
     @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+    public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) throws Exception {
         if (msg instanceof Pair) {
             final Pair pair = (Pair) msg;
             final Iterator itty = (Iterator) pair.getValue1();
@@ -56,9 +56,14 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
 
                 stopWatch.start();
 
-                // todo: batch flush?
+                int counter = 0;
                 while (itty.hasNext()) {
                     ctx.write(Pair.with(requestMessage, itty.next()));
+
+                    // iteration listener will call the final flush for any leftovers on completion.
+                    counter++;
+                    if (counter % settings.resultIterationBatchSize == 0)
+                        ctx.flush();
 
                     stopWatch.split();
                     if (stopWatch.getSplitTime() > settings.serializedResponseTimeout)

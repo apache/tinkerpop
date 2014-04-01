@@ -30,7 +30,7 @@ public class GremlinResponseEncoder extends MessageToMessageEncoder<Pair<Request
     }
 
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext, Pair<RequestMessage, Object> o, List<Object> objects) throws Exception {
+    protected void encode(final ChannelHandlerContext channelHandlerContext, final Pair<RequestMessage, Object> o, final List<Object> objects) throws Exception {
         final Context gremlinServerContext = new Context(o.getValue0(), channelHandlerContext, settings, graphs, gremlinExecutor);
         final MessageSerializer serializer = MessageSerializer.select(
                 o.getValue0().<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
