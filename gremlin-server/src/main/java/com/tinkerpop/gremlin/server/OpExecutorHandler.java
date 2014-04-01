@@ -17,7 +17,7 @@ import static com.codahale.metrics.MetricRegistry.name;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestMessage, ThrowingConsumer<Context>>> {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinOpHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(OpExecutorHandler.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     private final Settings settings;

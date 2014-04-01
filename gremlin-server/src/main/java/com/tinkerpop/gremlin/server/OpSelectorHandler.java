@@ -20,7 +20,7 @@ import static com.codahale.metrics.MetricRegistry.name;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinOpHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(OpSelectorHandler.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     private final Settings settings;
