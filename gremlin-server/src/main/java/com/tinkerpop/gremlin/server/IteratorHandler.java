@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.lang.time.StopWatch;
@@ -50,15 +51,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
             // timer for the total serialization time
             final StopWatch stopWatch = new StopWatch();
 
-            //final ExecutorService executorService = LocalExecutorService.getLocal();
             final EventExecutorGroup executorService = ctx.channel().eventLoop().next();
-
-            // sending the requestId acts as a termination message for this request.
-            final ByteBuf uuidBytes = Unpooled.directBuffer(16);
-            uuidBytes.writeLong(requestMessage.requestId.getMostSignificantBits());
-            uuidBytes.writeLong(requestMessage.requestId.getLeastSignificantBits());
-            final BinaryWebSocketFrame terminator = new BinaryWebSocketFrame(uuidBytes);
-
             final Future<?> iteration = executorService.submit((Callable<Void>) () -> {
 
                 stopWatch.start();
@@ -82,14 +75,11 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
 
                 if (!f.isSuccess()) {
                     final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, f.cause().getMessage());
-
-                    final OpProcessorException ope = new OpProcessorException(errorMessage, serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context));
-                    logger.warn(ope.getMessage(), ope);
-                    ctx.write(ope.getFrame());
+                    logger.warn(errorMessage);
+                    ctx.write(new TextWebSocketFrame(serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context)));
                 }
 
-                ctx.write(terminator);
-                ctx.flush();
+                ctx.writeAndFlush(new TextWebSocketFrame(serializer.serializeResult(requestMessage.requestId, ResultCode.SUCCESS_TERMINATOR, context)));
             });
 
         } else {

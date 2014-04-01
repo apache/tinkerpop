@@ -63,8 +63,6 @@ public class GremlinExecutor {
         final String language = message.<String>optionalArgs(Tokens.ARGS_LANGUAGE).orElse("gremlin-groovy");
         bindings.putAll(graphs.getGraphs());
 
-        // an executor service for the current thread so that script evaluation can be timed out if it runs too long
-        // final ExecutorService executorService = LocalExecutorService.getLocal();
         final EventExecutorGroup executorService = ctx.getChannelHandlerContext().channel().eventLoop().next();
         try {
 

@@ -127,7 +127,7 @@ final class StandardOps {
         });
     }
 
-    public static void evalOp2(final Context context) throws OpProcessorException {
+    public static void evalOp(final Context context) throws OpProcessorException {
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
@@ -145,13 +145,8 @@ final class StandardOps {
                 logger.debug("Exception from ScriptException error.", se);
 
                 // todo: error handling has got to be better...
-                ctx.write(new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
-                        serializer.serializeResult(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context)).getFrame());
-                final ByteBuf uuidBytes = Unpooled.directBuffer(16);
-                uuidBytes.writeLong(msg.requestId.getMostSignificantBits());
-                uuidBytes.writeLong(msg.requestId.getLeastSignificantBits());
-                final BinaryWebSocketFrame terminator = new BinaryWebSocketFrame(uuidBytes);
-                ctx.writeAndFlush(terminator);
+                ctx.write(new TextWebSocketFrame(serializer.serializeResult(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context)));
+                ctx.writeAndFlush(new TextWebSocketFrame(serializer.serializeResult(msg.requestId, ResultCode.SUCCESS_TERMINATOR, context)));
 
                 return null;
             }).thenRun(timerContext::stop);
@@ -160,143 +155,6 @@ final class StandardOps {
             // todo: waaay too general
             throw new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
                     serializer.serializeResult(ex.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context));
-        }
-    }
-
-    /**
-     * Evaluate a script in the {@code ScriptEngine}.
-     */
-    public static void evalOp(final Context context) throws OpProcessorException {
-        final Timer.Context timerContext = evalOpTimer.time();
-        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-        final RequestMessage msg = context.getRequestMessage();
-        final Settings settings = context.getSettings();
-        final MessageSerializer serializer = MessageSerializer.select(
-                msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
-                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
-
-        // a worker service bound to the current thread
-        // final ExecutorService executorService = LocalExecutorService.getLocal();
-        final ExecutorService executorService = ctx.channel().eventLoop().next();
-
-        // a marker to determine if the code has succeeded at evaluation of the script
-        boolean evaluated = false;
-
-        // the task that is doing the serialization work
-        Optional<Future<Void>> serializing = Optional.empty();
-
-        // timer for the total serialization time
-        final StopWatch stopWatch = new StopWatch();
-
-        // the result from the script evaluation
-        Object o;
-        try {
-            // evaluate the script
-            o = context.getGremlinExecutor().eval(msg, context);
-
-            // make all results an iterator
-            final Iterator itty = convertToIterator(o);
-
-            // mark this request as having its results evaluated
-            evaluated = true;
-            stopWatch.start();
-
-            // determines when the iteration of all results is complete and queue is full
-            final AtomicBoolean iterationComplete = new AtomicBoolean(false);
-
-            // need to queue results as the frames need to be written in the request that handled the response.
-            // hard to write a good integration test for the serialization/response timeouts.  add a Thread.sleep()
-            // into the Callable to force different scenarios or to throw exceptions.
-            final ArrayBlockingQueue<TextWebSocketFrame> frameQueue = new ArrayBlockingQueue<>(settings.frameQueueSize);
-            serializing = Optional.of(executorService.submit((Callable<Void>) () -> {
-                while (itty.hasNext()) {
-                    final Object individualResult = itty.next();
-                    try {
-                        if (logger.isDebugEnabled())
-                            logger.debug("Writing to frame queue [{}] for msg [{}]", individualResult, msg);
-
-                        frameQueue.put(new TextWebSocketFrame(true, 0, serializer.serializeResult(individualResult, context)));
-                    } catch (InterruptedException ie) {
-                        // InterruptedException occurs here if the the serialization of an individual element exceeds
-                        // the configured time for serializeResultTimeout.  the loop will exit here and a failure
-                        // message was already written by a separate process to the client.
-                        logger.warn("Serialization cancelled as the total request size was exceeded.", ie);
-                    } catch (Exception ex) {
-                        // this is generally just serialization exceptions. write back the error then exit the
-                        // serialization loop
-                        logger.warn("The result [{}] in the request {} could not be serialized and returned.", individualResult, context.getRequestMessage(), ex);
-                        final String errorMessage = String.format("Error during serialization: %s",
-                                ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-                        frameQueue.put(new TextWebSocketFrame(serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_SERIALIZATION, context)));
-                        break;
-                    }
-                }
-
-                iterationComplete.set(true);
-                return null;
-            }));
-
-            do {
-                // poll for frames placed in the queue by the process in the executor service.  the poll is governed by
-                // the serializeResultTimeout and if it returns null and the iteration of all results is not yet
-                // finished then that means that the serialization of a single element is just taking too long and
-                // the timeout is exceeded so an exception is thrown.  the loop can get into state where a poll for
-                // the specified serializeResultTimeout will return null and iteration will be complete.  In such
-                // cases the logger is the only one that needs to know about it.
-                final Optional<TextWebSocketFrame> currentFrame
-                        = Optional.ofNullable(frameQueue.poll(settings.serializeResultTimeout, TimeUnit.MILLISECONDS));
-                if (currentFrame.isPresent()) {
-                    if (logger.isDebugEnabled())
-                        logger.debug("Writing from frame queue to client [{}] for msg [{}]", currentFrame.get(), msg);
-
-                    ctx.write(currentFrame.get());
-                } else {
-                    if (!iterationComplete.get())
-                        throw new TimeoutException("Serialization of an individual result exceeded the serializeResultTimeout setting");
-                    else
-                        logger.debug("The Frame queue was empty and iteration is complete.");
-                }
-
-                stopWatch.split();
-                if (stopWatch.getSplitTime() > settings.serializedResponseTimeout)
-                    throw new TimeoutException("Serialization of the entire response exceeded the serializeResponseTimeout setting");
-
-                stopWatch.unsplit();
-            } while (!iterationComplete.get() || frameQueue.size() > 0);
-
-        } catch (ScriptException se) {
-            logger.debug("Exception from ScriptException error.", se);
-            throw new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
-                    serializer.serializeResult(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context));
-        } catch (InterruptedException ie) {
-            logger.debug("Exception from InterruptedException error.", ie);
-            throw new OpProcessorException(String.format("Thread interrupted (perhaps script ran for too long) while processing this request [%s]", msg),
-                    serializer.serializeResult(ie.getMessage(), ResultCode.SERVER_ERROR, context));
-        } catch (ExecutionException ee) {
-            logger.debug("Exception from ExecutionException error.", ee.getCause());
-            Throwable inner = ee.getCause();
-            if (inner instanceof ScriptException)
-                inner = inner.getCause();
-
-            throw new OpProcessorException(String.format("Error while processing response from the script evaluated on request [%s]", msg),
-                    serializer.serializeResult(inner.getMessage(), ResultCode.SERVER_ERROR, context));
-        } catch (TimeoutException toe) {
-            final String errorMessage;
-            if (!evaluated)
-                errorMessage = String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", settings.scriptEvaluationTimeout, msg);
-            else
-                errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, toe.getMessage());
-
-            throw new OpProcessorException(errorMessage, serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context));
-        } finally {
-            // try to cancel the serialization task if its still running somehow
-            serializing.ifPresent(f -> f.cancel(true));
-
-            // the stopwatch was only started after a script was evaluated
-            if (evaluated)
-                stopWatch.stop();
-
-            timerContext.stop();
         }
     }
 

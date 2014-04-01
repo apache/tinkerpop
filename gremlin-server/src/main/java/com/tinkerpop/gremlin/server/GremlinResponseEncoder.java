@@ -39,17 +39,11 @@ public class GremlinResponseEncoder extends MessageToMessageEncoder<Pair<Request
             try {
                 objects.add(new TextWebSocketFrame(true, 0, serializer.serializeResult(o.getValue1(), gremlinServerContext)));
             } catch (Exception ex) {
-                // sending the requestId acts as a termination message for this request.
-                final ByteBuf uuidBytes = Unpooled.directBuffer(16);
-                uuidBytes.writeLong(o.getValue0().requestId.getMostSignificantBits());
-                uuidBytes.writeLong(o.getValue0().requestId.getLeastSignificantBits());
-                final BinaryWebSocketFrame terminator = new BinaryWebSocketFrame(uuidBytes);
-
                 logger.warn("The result [{}] in the request {} could not be serialized and returned.", o.getValue1(), o.getValue0(), ex);
                 final String errorMessage = String.format("Error during serialization: %s",
                         ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
                 channelHandlerContext.write(new TextWebSocketFrame(serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_SERIALIZATION, gremlinServerContext)));
-                channelHandlerContext.writeAndFlush(terminator);
+                channelHandlerContext.writeAndFlush(new TextWebSocketFrame(serializer.serializeResult(o.getValue0().requestId, ResultCode.SUCCESS_TERMINATOR, gremlinServerContext)));
             }
     }
 }

@@ -74,19 +74,18 @@ class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
         if (frame instanceof TextWebSocketFrame) {
             final TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
             final JsonNode node = mapper.readTree(textFrame.text());
-            client.putResponse(UUID.fromString(node.get("requestId").asText()), Optional.of(node));
+
+            final int code = node.get("code").asInt();
+            if (code != 299)
+                client.putResponse(UUID.fromString(node.get("requestId").asText()), Optional.of(node));
+            else {
+                final UUID requestId = UUID.fromString(node.get("requestId").asText());
+                client.putResponse(requestId, Optional.empty());
+            }
         } else if (frame instanceof PongWebSocketFrame) {
+        } else if (frame instanceof BinaryWebSocketFrame) {
         } else if (frame instanceof CloseWebSocketFrame)
             ch.close();
-        else if (frame instanceof BinaryWebSocketFrame) {
-            // a binary frame witht he requestid in it basically represents the termination of a particular
-            // results sets serialization process.  at this point the iteration on the client side can be killed.
-            // pushing in an empty object to the stream will tell the client-side iterator to stop interpreting
-            // results on this request
-            final ByteBuf bb = frame.content();
-            final UUID requestId = new UUID(bb.readLong(), bb.readLong());
-            client.putResponse(requestId, Optional.empty());
-        }
 
     }
 

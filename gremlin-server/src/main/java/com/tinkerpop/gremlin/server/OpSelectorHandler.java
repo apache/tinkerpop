@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,10 +36,15 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final RequestMessage msg, final List<Object> objects) throws Exception {
+
+        final MessageSerializer serializer = MessageSerializer.select(
+                msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
+                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
+        final Context gremlinServerContext = new Context(msg, channelHandlerContext, settings, graphs, gremlinExecutor);
+
         try {
             // choose a processor to do the work based on the request message.
             final Optional<OpProcessor> processor = OpLoader.getProcessor(msg.processor);
-            final Context gremlinServerContext = new Context(msg, channelHandlerContext, settings, graphs, gremlinExecutor);
 
             if (processor.isPresent())
                 // the processor is known so use it to evaluate the message
@@ -46,16 +52,14 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
             else {
                 // invalid op processor selected so write back an error by way of OpProcessorException.
                 final String errorMessage = String.format("Invalid OpProcessor requested [%s]", msg.processor);
-                final MessageSerializer serializer = MessageSerializer.select(
-                        msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
-                        MessageSerializer.DEFAULT_RESULT_SERIALIZER);
 
                 throw new OpProcessorException(errorMessage, serializer.serializeResult(msg, ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, gremlinServerContext));
             }
         } catch (OpProcessorException ope) {
             errorMeter.mark();
             logger.warn(ope.getMessage(), ope);
-            channelHandlerContext.writeAndFlush(ope.getFrame());
+            channelHandlerContext.write(ope.getFrame());
+            channelHandlerContext.writeAndFlush(new TextWebSocketFrame(serializer.serializeResult(msg.requestId, ResultCode.SUCCESS_TERMINATOR, gremlinServerContext)));
         }
     }
 }
