@@ -34,7 +34,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.0.18.Final-SNAPSHOT</version>
+            <version>4.0.18.Final</version>
         </dependency>
         <!-- METRICS -->
         <dependency>
