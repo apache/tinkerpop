@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.util.function;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -26,6 +27,18 @@ public final class FunctionUtils {
         return (a) -> {
             try {
                 consumerThatThrows.accept(a);
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    public static <T> Supplier<T> wrapSupplier(final ThrowingSupplier<T> supplierThatThrows) {
+        return () -> {
+            try {
+                return supplierThatThrows.get();
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
