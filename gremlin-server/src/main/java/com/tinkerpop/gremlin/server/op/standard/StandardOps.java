@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.server.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.MessageSerializer;
 import com.tinkerpop.gremlin.server.RequestMessage;
+import com.tinkerpop.gremlin.server.ResponseMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
 import com.tinkerpop.gremlin.server.ScriptEngines;
 import com.tinkerpop.gremlin.server.Settings;
@@ -67,10 +68,6 @@ final class StandardOps {
      */
     public static void showOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
-        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-        final MessageSerializer serializer = MessageSerializer.select(
-                msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
-                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         final String infoType = msg.<String>optionalArgs(Tokens.ARGS_INFO_TYPE).get();
         final GremlinExecutor executor = context.getGremlinExecutor();
         final ScriptEngines scriptEngines = executor.getSharedScriptEngines();
@@ -87,7 +84,8 @@ final class StandardOps {
         }
 
         try {
-            ctx.write(new TextWebSocketFrame(serializer.serializeResult(infoToShow, context)));
+            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS).result(infoToShow).build());
+            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS_TERMINATOR).result(Optional.empty()).build());
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.",
                     infoToShow, context.getRequestMessage(), ex);
@@ -106,9 +104,6 @@ final class StandardOps {
      */
     public static void useOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
-        final MessageSerializer serializer = MessageSerializer.select(
-                msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
-                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         final List<Map<String, String>> usings = (List<Map<String, String>>) msg.args.get(Tokens.ARGS_COORDINATES);
         usings.forEach(c -> {
             final String group = c.get(Tokens.ARGS_COORDINATES_GROUP);
@@ -123,7 +118,8 @@ final class StandardOps {
                 put("version", version);
             }};
 
-            context.getChannelHandlerContext().write(new TextWebSocketFrame(serializer.serializeResult(coords, context)));
+            context.getChannelHandlerContext().write(ResponseMessage.create(msg).code(ResultCode.SUCCESS).result(coords).build());
+            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS_TERMINATOR).result(Optional.empty()).build());
         });
     }
 
@@ -131,10 +127,6 @@ final class StandardOps {
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
-
-        final MessageSerializer serializer = MessageSerializer.select(
-                msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
-                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         try {
             final CompletableFuture<Object> future = context.getGremlinExecutor().eval(msg, context);
             future.thenAccept(o -> {
@@ -143,23 +135,19 @@ final class StandardOps {
 
             future.exceptionally(se -> {
                 logger.debug("Exception from ScriptException error.", se);
-
-                // todo: error handling has got to be better...
-                ctx.write(new TextWebSocketFrame(serializer.serializeResult(se.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context)));
-                ctx.writeAndFlush(new TextWebSocketFrame(serializer.serializeResult(msg.requestId, ResultCode.SUCCESS_TERMINATOR, context)));
-
+                ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).build());
                 return null;
             }).thenRun(timerContext::stop);
 
         } catch (Exception ex) {
-            // todo: waaay too general
+            // todo: necessary?
             throw new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
-                    serializer.serializeResult(ex.getMessage(), ResultCode.SERVER_ERROR_SCRIPT_EVALUATION, context));
+                    ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(ex.getMessage()).build());
         }
     }
 
-    private static Iterator convertToIterator(Object o) {
-        Iterator itty;
+    private static Iterator convertToIterator(final Object o) {
+        final Iterator itty;
         if (o instanceof Iterable)
             itty = ((Iterable) o).iterator();
         else if (o instanceof Iterator)

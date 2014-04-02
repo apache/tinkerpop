@@ -68,4 +68,8 @@ public enum ResultCode {
     public int getValue() {
         return value;
     }
+
+    public boolean isSuccess() {
+        return String.valueOf(this.value).startsWith("2");
+    }
 }

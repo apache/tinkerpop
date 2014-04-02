@@ -37,7 +37,7 @@ public class JsonResultSerializerV1d0Test {
 
     @Test
     public void serializeToJsonNullResultReturnsNull() throws Exception {
-        final String results = SERIALIZER.serializeResult(null, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(Optional.empty(), Optional.ofNullable(msg));
         final JSONObject json = new JSONObject(results);
         assertNotNull(json);
         assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
@@ -85,7 +85,7 @@ public class JsonResultSerializerV1d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResult(funList, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(funList), Optional.ofNullable(msg));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -104,7 +104,7 @@ public class JsonResultSerializerV1d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResult(funList.iterator(), new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(funList.iterator()), Optional.ofNullable(msg));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -125,7 +125,7 @@ public class JsonResultSerializerV1d0Test {
         funList.add(null);
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResult(funList.iterator(), new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(funList.iterator()), Optional.ofNullable(msg));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -149,7 +149,7 @@ public class JsonResultSerializerV1d0Test {
         map.put("y", "some");
         map.put("z", innerMap);
 
-        final String results = SERIALIZER.serializeResult(map, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(map), Optional.ofNullable(msg));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -173,8 +173,8 @@ public class JsonResultSerializerV1d0Test {
         ////// final Vertex.Property withMetaProperties = v.setProperty("xyz", 321);
         ///// withMetaProperties.setProperty("audit", "stephen");
 
-        final Iterator iterable = g.V().toList().iterator();
-        final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
+        final Iterable iterable = g.V().toList();
+        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(iterable), Optional.ofNullable(msg));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -214,8 +214,8 @@ public class JsonResultSerializerV1d0Test {
         final Vertex v = g.addVertex("abc", 123);
         v.setProperty(Property.Key.hidden("hidden"), "stephen");
 
-        final Iterator iterable = g.V().toList().iterator();
-        final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
+        final Iterable iterable = g.V().toList();
+        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(iterable), Optional.ofNullable(msg));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -292,7 +292,7 @@ public class JsonResultSerializerV1d0Test {
         e.setProperty("abc", 123);
 
         final Iterable<Edge> iterable = g.E().toList();
-        final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(iterable), Optional.ofNullable(msg));
 
         final JSONObject json = new JSONObject(results);
 
@@ -336,8 +336,8 @@ public class JsonResultSerializerV1d0Test {
 
         v.setProperty("friends", friends);
 
-        final Iterator iterable = g.V().toList().iterator();
-        final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
+        final Iterable iterable = g.V().toList();
+        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(iterable), Optional.ofNullable(msg));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -374,7 +374,7 @@ public class JsonResultSerializerV1d0Test {
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.V().<Vertex>has("name", Compare.EQUAL, "marko").next(), 1000);
 
-        final String results = SERIALIZER.serializeResult(map, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(map), Optional.ofNullable(msg));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);

@@ -70,17 +70,13 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
     }
 
     @Override
-    public String serializeResult(final Object o, final ResultCode code, final Context context) {
+    public String serializeResult(final Optional<Object> o, final ResultCode code, final Optional<RequestMessage> requestMessage) {
         try {
             final Map<String, Object> result = new HashMap<>();
             result.put(TOKEN_CODE, code.getValue());
-            result.put(TOKEN_RESULT, o);
+            result.put(TOKEN_RESULT, o.isPresent() ? o.get() : null);
             result.put(TOKEN_VERSION, JSON_SERIALIZATION_VERSION.toString());
-
-            // todo: make optional instead of null check
-            // a context may not be available
-            if (context != null)
-                result.put(TOKEN_REQUEST, context.getRequestMessage().requestId);
+            result.put(TOKEN_REQUEST, requestMessage.isPresent() ? requestMessage.get().requestId : null);
 
             return mapper.writeValueAsString(result);
         } catch (Exception ex) {

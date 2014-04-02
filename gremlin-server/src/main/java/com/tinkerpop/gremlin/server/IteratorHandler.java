@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
@@ -27,14 +28,9 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
     private static final Logger logger = LoggerFactory.getLogger(IteratorHandler.class);
 
     private final Settings settings;
-    private final Graphs graphs;
 
-    private final GremlinExecutor gremlinExecutor;
-
-    public IteratorHandler(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor) {
+    public IteratorHandler(final Settings settings) {
         this.settings = settings;
-        this.graphs = graphs;
-        this.gremlinExecutor = gremlinExecutor;
     }
 
     @Override
@@ -44,11 +40,6 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
                 final Pair pair = (Pair) msg;
                 final Iterator itty = (Iterator) pair.getValue1();
                 final RequestMessage requestMessage = (RequestMessage) pair.getValue0();
-
-                final Context context = new Context(requestMessage, ctx, settings, graphs, gremlinExecutor);
-                final MessageSerializer serializer = MessageSerializer.select(
-                        requestMessage.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
-                        MessageSerializer.DEFAULT_RESULT_SERIALIZER);
 
                 // timer for the total serialization time
                 final StopWatch stopWatch = new StopWatch();
@@ -60,7 +51,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
 
                     int counter = 0;
                     while (itty.hasNext()) {
-                        ctx.write(Pair.with(requestMessage, itty.next()));
+                        ctx.write(ResponseMessage.create(requestMessage).code(ResultCode.SUCCESS).result(itty.next()).build());
 
                         // iteration listener will call the final flush for any leftovers on completion.
                         counter++;
@@ -83,10 +74,10 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
                     if (!f.isSuccess()) {
                         final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, f.cause().getMessage());
                         logger.warn(errorMessage);
-                        ctx.write(new TextWebSocketFrame(serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_TIMEOUT, context)));
+                        ctx.writeAndFlush(ResponseMessage.create(requestMessage).code(ResultCode.SERVER_ERROR_TIMEOUT).result(errorMessage).build());
                     }
 
-                    ctx.writeAndFlush(new TextWebSocketFrame(serializer.serializeResult(requestMessage.requestId, ResultCode.SUCCESS_TERMINATOR, context)));
+                    ctx.writeAndFlush(ResponseMessage.create(requestMessage).code(ResultCode.SUCCESS_TERMINATOR).result(Optional.empty()).build());
                 });
             } finally {
                 ReferenceCountUtil.release(msg);

@@ -181,7 +181,7 @@ public class GremlinServer {
                 pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
 
             // todo: configurable encoder in the gremlinGroup??
-            pipeline.addLast("response-encoder", new GremlinResponseEncoder(settings, graphs.get(), gremlinExecutor));
+            pipeline.addLast("response-encoder", new GremlinResponseEncoder());
             pipeline.addLast("request-decoder", new GremlinRequestDecoder());
 
             if (logger.isDebugEnabled())
@@ -189,7 +189,7 @@ public class GremlinServer {
 
             pipeline.addLast("op-selector", new OpSelectorHandler(settings, graphs.get(), gremlinExecutor));
 
-            pipeline.addLast(gremlinGroup, "result-iterator-handler", new IteratorHandler(settings, graphs.get(), gremlinExecutor));
+            pipeline.addLast(gremlinGroup, "result-iterator-handler", new IteratorHandler(settings));
 
             pipeline.addLast(gremlinGroup, "op-executor", new OpExecutorHandler(settings, graphs.get(), gremlinExecutor));
         }

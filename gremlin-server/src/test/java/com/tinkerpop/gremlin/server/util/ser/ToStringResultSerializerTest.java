@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -24,7 +25,7 @@ public class ToStringResultSerializerTest {
 
     @Test
     public void serializeToStringNull() throws Exception {
-        final String results = serializer.serializeResult(null, new Context(msg, null, null, null, null));
+        final String results = serializer.serializeResult(Optional.empty(), Optional.ofNullable(msg));
         assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>null", results);
     }
 
@@ -32,7 +33,7 @@ public class ToStringResultSerializerTest {
     public void serializeToStringAVertex() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
         final Vertex v = (Vertex) g.V().has("name", Compare.EQUAL, "marko").next();
-        final String results = serializer.serializeResult(v, new Context(msg, null, null, null, null));
+        final String results = serializer.serializeResult(Optional.empty(), Optional.ofNullable(msg));
         assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>v[1]", results);
     }
 }

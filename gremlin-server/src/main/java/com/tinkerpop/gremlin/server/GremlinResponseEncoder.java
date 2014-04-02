@@ -11,39 +11,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinResponseEncoder extends MessageToMessageEncoder<Pair<RequestMessage, Object>> {
+public class GremlinResponseEncoder extends MessageToMessageEncoder<ResponseMessage> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinResponseEncoder.class);
 
-    private final Settings settings;
-    private final Graphs graphs;
-
-    private final GremlinExecutor gremlinExecutor;
-
-    public GremlinResponseEncoder(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor) {
-        this.settings = settings;
-        this.graphs = graphs;
-        this.gremlinExecutor = gremlinExecutor;
-    }
-
     @Override
-    protected void encode(final ChannelHandlerContext channelHandlerContext, final Pair<RequestMessage, Object> o, final List<Object> objects) throws Exception {
-        final Context gremlinServerContext = new Context(o.getValue0(), channelHandlerContext, settings, graphs, gremlinExecutor);
+    protected void encode(final ChannelHandlerContext channelHandlerContext, final ResponseMessage o, final List<Object> objects) throws Exception {
         final MessageSerializer serializer = MessageSerializer.select(
-                o.getValue0().<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
+                o.getRequestMessage().<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
                 MessageSerializer.DEFAULT_RESULT_SERIALIZER);
 
-            try {
-                objects.add(new TextWebSocketFrame(true, 0, serializer.serializeResult(o.getValue1(), gremlinServerContext)));
-            } catch (Exception ex) {
-                logger.warn("The result [{}] in the request {} could not be serialized and returned.", o.getValue1(), o.getValue0(), ex);
-                final String errorMessage = String.format("Error during serialization: %s",
-                        ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-                channelHandlerContext.write(new TextWebSocketFrame(serializer.serializeResult(errorMessage, ResultCode.SERVER_ERROR_SERIALIZATION, gremlinServerContext)));
-                channelHandlerContext.writeAndFlush(new TextWebSocketFrame(serializer.serializeResult(o.getValue0().requestId, ResultCode.SUCCESS_TERMINATOR, gremlinServerContext)));
+        try {
+            if (o.getCode().isSuccess())
+                objects.add(new TextWebSocketFrame(true, 0, serializer.serializeResult(Optional.ofNullable(o.getResult()), o.getCode(), Optional.of(o.getRequestMessage()))));
+            else {
+                objects.add(new TextWebSocketFrame(true, 0, serializer.serializeResult(Optional.ofNullable(o.getResult()), o.getCode(), Optional.of(o.getRequestMessage()))));
+                objects.add(new TextWebSocketFrame(true, 0, serializer.serializeResult(Optional.empty(), ResultCode.SUCCESS_TERMINATOR, Optional.of(o.getRequestMessage()))));
             }
+
+        } catch (Exception ex) {
+            logger.warn("The result [{}] in the request {} could not be serialized and returned.", o.getResult(), o.getRequestMessage(), ex);
+            final String errorMessage = String.format("Error during serialization: %s",
+                    ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+            channelHandlerContext.write(new TextWebSocketFrame(serializer.serializeResult(Optional.<Object>ofNullable(errorMessage), ResultCode.SERVER_ERROR_SERIALIZATION, Optional.ofNullable(o.getRequestMessage()))));
+            channelHandlerContext.writeAndFlush(new TextWebSocketFrame(serializer.serializeResult(Optional.empty(), ResultCode.SUCCESS_TERMINATOR, Optional.of(o.getRequestMessage()))));
+        }
     }
 }

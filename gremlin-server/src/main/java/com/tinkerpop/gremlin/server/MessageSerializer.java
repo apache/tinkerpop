@@ -52,8 +52,8 @@ public interface MessageSerializer {
     /**
      * Serialize a result message with a {@link ResultCode#SUCCESS} result code.
      */
-    public default String serializeResult(final Object o, final Context context) {
-        return this.serializeResult(o, ResultCode.SUCCESS, context);
+    public default String serializeResult(final Optional<Object> o, final Optional<RequestMessage> requestMessage) {
+        return this.serializeResult(o, ResultCode.SUCCESS, requestMessage);
     }
 
     /**
@@ -61,10 +61,10 @@ public interface MessageSerializer {
      *
      * @param o       the result
      * @param code    the response code
-     * @param context the context of the server and request
+     * @param requestMessage the request message that generated this result
      * @return the result serialized to a String
      */
-    public String serializeResult(final Object o, final ResultCode code, final Context context);
+    public String serializeResult(final Optional<Object> o, final ResultCode code, final Optional<RequestMessage> requestMessage);
 
     /**
      * Serialize an object.

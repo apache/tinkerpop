@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -49,7 +50,7 @@ public class MessageSerializerTest {
 
     @Test
     public void serializeToStringNull() throws Exception {
-        final String results = MessageSerializer.select("text/plain", MessageSerializer.DEFAULT_RESULT_SERIALIZER).serializeResult(null, new Context(msg, null, null, null, null));
+        final String results = MessageSerializer.select("text/plain", MessageSerializer.DEFAULT_RESULT_SERIALIZER).serializeResult(Optional.empty(), Optional.ofNullable(msg));
         assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>null", results);
     }
 
@@ -57,7 +58,7 @@ public class MessageSerializerTest {
     public void serializeToStringAVertex() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
         final Vertex v = g.V().<Vertex>has("name", Compare.EQUAL, "marko").next();
-        final String results = MessageSerializer.select("text/plain", MessageSerializer.DEFAULT_RESULT_SERIALIZER).serializeResult(v, new Context(msg, null, null, null, null));
+        final String results = MessageSerializer.select("text/plain", MessageSerializer.DEFAULT_RESULT_SERIALIZER).serializeResult(Optional.<Object>ofNullable(v), Optional.ofNullable(msg));
         assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>v[1]", results);
     }
 

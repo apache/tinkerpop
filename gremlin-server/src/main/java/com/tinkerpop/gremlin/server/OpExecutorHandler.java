@@ -37,17 +37,13 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
         final RequestMessage msg = objects.getValue0();
         final ThrowingConsumer<Context> op = objects.getValue1();
         final Context gremlinServerContext = new Context(msg, channelHandlerContext, settings, graphs, gremlinExecutor);
-        final MessageSerializer serializer = MessageSerializer.select(
-                msg.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
-                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
 
         try {
             op.accept(gremlinServerContext);
         } catch (OpProcessorException ope) {
             errorMeter.mark();
             logger.warn(ope.getMessage(), ope);
-            channelHandlerContext.write(ope.getFrame());
-            channelHandlerContext.writeAndFlush(new TextWebSocketFrame(serializer.serializeResult(msg.requestId, ResultCode.SUCCESS_TERMINATOR, gremlinServerContext)));
+            channelHandlerContext.writeAndFlush(ope.getResponseMessage());
         } finally {
             ReferenceCountUtil.release(objects);
         }
