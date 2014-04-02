@@ -164,7 +164,6 @@ public class GremlinServer {
             if (logger.isDebugEnabled())
                 pipeline.addLast(new LoggingHandler("log-decoder-aggregator", LogLevel.DEBUG));
 
-
             logger.debug("HttpObjectAggregator settings - maxContentLength={}, maxAccumulationBufferComponents={}",
                     settings.maxContentLength, settings.maxAccumulationBufferComponents);
             final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxContentLength);
@@ -180,7 +179,6 @@ public class GremlinServer {
             if (logger.isDebugEnabled())
                 pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
 
-            // todo: configurable encoder in the gremlinGroup??
             pipeline.addLast("response-encoder", new GremlinResponseEncoder());
             pipeline.addLast("request-decoder", new GremlinRequestDecoder());
 
@@ -190,7 +188,6 @@ public class GremlinServer {
             pipeline.addLast("op-selector", new OpSelectorHandler(settings, graphs.get(), gremlinExecutor));
 
             pipeline.addLast(gremlinGroup, "result-iterator-handler", new IteratorHandler(settings));
-
             pipeline.addLast(gremlinGroup, "op-executor", new OpExecutorHandler(settings, graphs.get(), gremlinExecutor));
         }
     }
