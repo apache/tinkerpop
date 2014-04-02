@@ -34,7 +34,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.0.16.Final-SNAPSHOT</version>
+            <version>4.0.18.Final-SNAPSHOT</version>
         </dependency>
         <!-- METRICS -->
         <dependency>
@@ -62,11 +62,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.5</version>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
         </dependency>
         <!-- TESTING -->
         <dependency>
