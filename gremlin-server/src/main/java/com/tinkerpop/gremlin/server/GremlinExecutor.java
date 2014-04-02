@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Execute Gremlin scripts against a {@code ScriptEngine} instance.  The shared {@code ScriptEngine} can not be
@@ -64,44 +65,40 @@ public class GremlinExecutor {
         bindings.putAll(graphs.getGraphs());
 
         final EventExecutorGroup executorService = ctx.getChannelHandlerContext().channel().eventLoop().next();
-        try {
+        final AtomicBoolean abort = new AtomicBoolean(false);
+        final CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
+            try {
+                graphs.rollbackAll();
+                final Object o = sharedScriptEngines.eval(message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language);
 
-            final CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
-                try {
+                // if the eval timed-out then it will have been "aborted", thus any action performed on the graph
+                // must be rolledback
+                if (abort.get())
                     graphs.rollbackAll();
-                    final Object o = sharedScriptEngines.eval(message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language);
+                else
                     graphs.commitAll();
 
-                    return o;
-                } catch (Exception ex) {
-                    graphs.rollbackAll();
-                    return null;
-                }
+                return o;
+            } catch (Exception ex) {
+                graphs.rollbackAll();
+                return null;
+            }
+        }, executorService);
 
-            }, executorService);
+        scheduleTimeout(ctx.getChannelHandlerContext(), future, message, abort);
 
-            scheduleTimeout(ctx.getChannelHandlerContext(), future, message);
-
-            return future;
-        } catch (Exception ex) {
-            logger.warn("Script did not evaluate with success [{}]", message);
-
-            // try to rollback the changes
-            executorService.submit(graphs::rollbackAll).get();
-
-            // throw the exception as it will be handled by the request processor and messaged back to the
-            // calling client.
-            throw ex;
-        }
+        return future;
     }
 
     private void scheduleTimeout(final ChannelHandlerContext ctx, final CompletableFuture<Object> future,
-                                 final RequestMessage requestMessage) {
+                                 final RequestMessage requestMessage, final AtomicBoolean abort) {
         if (settings.scriptEvaluationTimeout > 0) {
             // Schedule a timeout.
             final ScheduledFuture<?> sf = ctx.executor().schedule(() -> {
-                if (!future.isDone())
+                if (!future.isDone()) {
+                    abort.set(true);
                     future.completeExceptionally(new TimeoutException(String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", settings.scriptEvaluationTimeout, requestMessage)));
+                }
             }, settings.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
 
             // Cancel the scheduled timeout if the eval future is complete.
