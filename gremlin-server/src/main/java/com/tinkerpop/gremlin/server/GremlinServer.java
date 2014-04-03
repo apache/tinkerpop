@@ -159,26 +159,17 @@ public class GremlinServer {
                 gremlinExecutor = new GremlinExecutor(this.settings);
             }
 
+            logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
+
             final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
             this.gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, threadFactory);
 
-            if (Optional.ofNullable(settings.ssl).isPresent() && settings.ssl.enabled) {
-                logger.info("SSL was enabled.  Initializing SSLEngine instance...");
-                SSLEngine engine = null;
-                try {
-                    engine = createSSLContext(settings).createSSLEngine();
-                    engine.setUseClientMode(false);
-                } catch (Exception ex) {
-                    logger.warn("SSL could not be enabled.  Check the ssl section of the configuration file.", ex);
-                    engine = null;
-                } finally {
-                    sslEngine = Optional.ofNullable(engine);
-                }
-            } else {
-                sslEngine = Optional.empty();
-            }
+            logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
-            logger.info("Initialize GremlinExecutor and configured ScriptEngines.");
+            if (Optional.ofNullable(settings.ssl).isPresent() && settings.ssl.enabled)
+                this.sslEngine = Optional.ofNullable(createSslEngine());
+            else
+                sslEngine = Optional.empty();
         }
 
         @Override
@@ -222,6 +213,19 @@ public class GremlinServer {
 
             pipeline.addLast(gremlinGroup, "result-iterator-handler", new IteratorHandler(settings));
             pipeline.addLast(gremlinGroup, "op-executor", new OpExecutorHandler(settings, graphs.get(), gremlinExecutor));
+        }
+
+        private SSLEngine createSslEngine() {
+            try {
+                logger.info("SSL was enabled.  Initializing SSLEngine instance...");
+                final SSLEngine engine = createSSLContext(settings).createSSLEngine();
+                engine.setUseClientMode(false);
+                logger.info("SSLEngine was properly configured and initialized.");
+                return engine;
+            } catch (Exception ex) {
+                logger.warn("SSL could not be enabled.  Check the ssl section of the configuration file.", ex);
+                return null;
+            }
         }
 
         private SSLContext createSSLContext(final Settings settings) throws Exception {
