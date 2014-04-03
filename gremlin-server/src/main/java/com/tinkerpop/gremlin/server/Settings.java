@@ -113,7 +113,22 @@ public class Settings {
      */
     public int maxContentLength = 65536;
 
+    /**
+     * Maximum number of request components that can be aggregated for a message.
+     */
     public int maxAccumulationBufferComponents = 1024;
+
+    /**
+     * If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable,
+     * accepting no additional writes until buffer is drained and the low water mark is met.
+     */
+    public int writeBufferHighWaterMark = 1024 * 64;
+
+    /**
+     * Once the number of bytes queued in the network send buffer exceeds the high water mark, the channel will not
+     * become writeable again until the buffer is drained and it drops below this value.
+     */
+    public int writeBufferLowWaterMark = 1024 * 32;
 
     /**
      * Configured metrics for Gremlin Server.
