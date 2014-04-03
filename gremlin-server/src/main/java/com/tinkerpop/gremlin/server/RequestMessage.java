@@ -16,7 +16,7 @@ public class RequestMessage {
     /**
      * An "invalid" message.  Used internally only.
      */
-    static RequestMessage INVALID = new RequestMessage("invalid");
+    public static RequestMessage INVALID = new RequestMessage("invalid");
 
     /**
      * The id of the current request and is used to track the message within Gremlin Server and in its response.  This

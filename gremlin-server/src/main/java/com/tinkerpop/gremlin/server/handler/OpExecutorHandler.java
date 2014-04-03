@@ -1,12 +1,17 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
+import com.tinkerpop.gremlin.server.Context;
+import com.tinkerpop.gremlin.server.Graphs;
+import com.tinkerpop.gremlin.server.GremlinExecutor;
+import com.tinkerpop.gremlin.server.GremlinServer;
+import com.tinkerpop.gremlin.server.RequestMessage;
+import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.ReferenceCountUtil;
 import org.javatuples.Pair;
 import org.slf4j.Logger;

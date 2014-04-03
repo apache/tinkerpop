@@ -1,5 +1,10 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.handler.GremlinRequestDecoder;
+import com.tinkerpop.gremlin.server.handler.GremlinResponseEncoder;
+import com.tinkerpop.gremlin.server.handler.IteratorHandler;
+import com.tinkerpop.gremlin.server.handler.OpExecutorHandler;
+import com.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;

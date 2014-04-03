@@ -1,5 +1,7 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.server.handler;
 
+import com.tinkerpop.gremlin.server.MessageSerializer;
+import com.tinkerpop.gremlin.server.RequestMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -14,7 +16,7 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GremlinRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
+public class GremlinRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
         final Pair<String, String> parts = segmentMessage((frame).text());

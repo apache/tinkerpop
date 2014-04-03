@@ -1,13 +1,12 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.server.handler;
 
-import com.tinkerpop.gremlin.server.op.OpProcessorException;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import com.tinkerpop.gremlin.server.RequestMessage;
+import com.tinkerpop.gremlin.server.ResponseMessage;
+import com.tinkerpop.gremlin.server.ResultCode;
+import com.tinkerpop.gremlin.server.Settings;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.concurrent.Future;

@@ -1,12 +1,12 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.server.handler;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import com.tinkerpop.gremlin.server.MessageSerializer;
+import com.tinkerpop.gremlin.server.ResponseMessage;
+import com.tinkerpop.gremlin.server.ResultCode;
+import com.tinkerpop.gremlin.server.Tokens;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
