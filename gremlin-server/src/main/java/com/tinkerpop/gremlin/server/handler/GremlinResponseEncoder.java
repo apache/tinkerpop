@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.server.handler;
 
 import com.tinkerpop.gremlin.server.MessageSerializer;
-import com.tinkerpop.gremlin.server.ResponseMessage;
+import com.tinkerpop.gremlin.server.message.ResponseMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
 import com.tinkerpop.gremlin.server.Tokens;
 import io.netty.channel.ChannelHandlerContext;

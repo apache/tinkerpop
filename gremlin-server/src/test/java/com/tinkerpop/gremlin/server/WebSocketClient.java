@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.tinkerpop.gremlin.server.message.RequestMessage;
 import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;

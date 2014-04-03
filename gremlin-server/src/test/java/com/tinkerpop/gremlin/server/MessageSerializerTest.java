@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.message.RequestMessage;
 import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer;
 import com.tinkerpop.gremlin.structure.Compare;

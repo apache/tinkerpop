@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.server.util.ser;
 
-import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.RequestMessage;
+import com.tinkerpop.gremlin.server.message.RequestMessage;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -16,7 +15,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;

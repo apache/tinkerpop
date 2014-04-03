@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.server.op;
 
-import com.tinkerpop.gremlin.server.ResponseMessage;
+import com.tinkerpop.gremlin.server.message.ResponseMessage;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

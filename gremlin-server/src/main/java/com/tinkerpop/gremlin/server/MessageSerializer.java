@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.message.RequestMessage;
 import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
 
 /**
  * Serializes data to and from Gremlin Server.  Typically the object being serialized or deserialized will be an item
- * from an {@link java.util.Iterator} as returned from the {@code ScriptEngine} or an incoming {@link RequestMessage}.
+ * from an {@link java.util.Iterator} as returned from the {@code ScriptEngine} or an incoming {@link com.tinkerpop.gremlin.server.message.RequestMessage}.
  * {@link MessageSerializer} instances are instantiated to a cache via {@link ServiceLoader} and indexed based on
  * the mime types they support.  If a mime type is supported more than once, the last {@link MessageSerializer}
  * instance loaded for that mime type is assigned. If a mime type is not found the default

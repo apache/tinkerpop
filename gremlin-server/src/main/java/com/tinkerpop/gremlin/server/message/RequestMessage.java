@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.server.message;
 
 import com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 
@@ -25,12 +25,12 @@ public class RequestMessage {
     public UUID requestId = null;
 
     /**
-     * The operation or command to perform as defined by a particular {@link OpProcessor}.
+     * The operation or command to perform as defined by a particular {@link com.tinkerpop.gremlin.server.OpProcessor}.
      */
     public String op;
 
     /**
-     * The name of the {@link OpProcessor} that should handle the {@link #op}.  Defaults to the
+     * The name of the {@link com.tinkerpop.gremlin.server.OpProcessor} that should handle the {@link #op}.  Defaults to the
      * {@link StandardOpProcessor} if not specified.
      */
     public String processor = StandardOpProcessor.OP_PROCESSOR_NAME;

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.server.handler;
 
 import com.tinkerpop.gremlin.server.MessageSerializer;
-import com.tinkerpop.gremlin.server.RequestMessage;
+import com.tinkerpop.gremlin.server.message.RequestMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;

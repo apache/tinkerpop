@@ -1,4 +1,6 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.server.message;
+
+import com.tinkerpop.gremlin.server.ResultCode;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

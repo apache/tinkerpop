@@ -1,8 +1,7 @@
 package com.tinkerpop.gremlin.server.util.ser;
 
-import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.MessageSerializer;
-import com.tinkerpop.gremlin.server.RequestMessage;
+import com.tinkerpop.gremlin.server.message.RequestMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
 
 import java.util.Optional;

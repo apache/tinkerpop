@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.message.RequestMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.concurrent.ScheduledFuture;
@@ -49,7 +50,7 @@ public class GremlinExecutor {
     }
 
     /**
-     * Evaluate the {@link RequestMessage} within a {@code ScriptEngine} instance.
+     * Evaluate the {@link com.tinkerpop.gremlin.server.message.RequestMessage} within a {@code ScriptEngine} instance.
      *
      * @param message the current message
      * @param ctx the server context
