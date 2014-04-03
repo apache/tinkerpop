@@ -25,6 +25,7 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,7 +159,8 @@ public class GremlinServer {
                 gremlinExecutor = new GremlinExecutor(this.settings);
             }
 
-            this.gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, r -> new Thread(r, "gremlin-handler"));
+            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
+            this.gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, threadFactory);
 
             if (Optional.ofNullable(settings.ssl).isPresent() && settings.ssl.enabled) {
                 logger.info("SSL was enabled.  Initializing SSLEngine instance...");
