@@ -47,14 +47,14 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
         final Context gremlinServerContext = new Context(msg, channelHandlerContext, settings, graphs, gremlinExecutor);
         try {
             // choose a processor to do the work based on the request message.
-            final Optional<OpProcessor> processor = OpLoader.getProcessor(msg.processor);
+            final Optional<OpProcessor> processor = OpLoader.getProcessor(msg.getProcessor());
 
             if (processor.isPresent())
                 // the processor is known so use it to evaluate the message
                 objects.add(Pair.with(msg, processor.get().select(gremlinServerContext)));
             else {
                 // invalid op processor selected so write back an error by way of OpProcessorException.
-                final String errorMessage = String.format("Invalid OpProcessor requested [%s]", msg.processor);
+                final String errorMessage = String.format("Invalid OpProcessor requested [%s]", msg.getProcessor());
                 throw new OpProcessorException(errorMessage, ResponseMessage.create(msg).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(errorMessage).build());
             }
         } catch (OpProcessorException ope) {

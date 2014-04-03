@@ -43,7 +43,7 @@ final class StandardOps {
      */
     public static void importOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
-        final List<String> l = (List<String>) msg.args.get(Tokens.ARGS_IMPORTS);
+        final List<String> l = (List<String>) msg.getArgs().get(Tokens.ARGS_IMPORTS);
         context.getGremlinExecutor().getSharedScriptEngines().addImports(new HashSet<>(l));
     }
 
@@ -88,7 +88,7 @@ final class StandardOps {
      */
     public static void useOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
-        final List<Map<String, String>> usings = (List<Map<String, String>>) msg.args.get(Tokens.ARGS_COORDINATES);
+        final List<Map<String, String>> usings = (List<Map<String, String>>) msg.getArgs().get(Tokens.ARGS_COORDINATES);
         usings.forEach(c -> {
             final String group = c.get(Tokens.ARGS_COORDINATES_GROUP);
             final String artifact = c.get(Tokens.ARGS_COORDINATES_ARTIFACT);

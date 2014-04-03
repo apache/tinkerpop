@@ -25,7 +25,7 @@ public class ToStringMessageSerializer implements MessageSerializer {
 
     @Override
     public String serializeResult(final Optional<Object> o, final ResultCode code, final Optional<RequestMessage> requestMessage) {
-        final String requestId = requestMessage.isPresent() ? requestMessage.get().requestId.toString() : "";
+        final String requestId = requestMessage.isPresent() ? requestMessage.get().getRequestId().toString() : "";
         return !o.isPresent() ?
                 String.format(TEXT_RESPONSE_FORMAT_WITH_NULL, requestId) :
                 String.format(TEXT_RESPONSE_FORMAT_WITH_RESULT, requestId, o.get().toString());

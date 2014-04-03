@@ -2,9 +2,15 @@ package com.tinkerpop.gremlin.server.util.ser;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.server.MessageSerializer;
@@ -75,7 +81,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
             result.put(TOKEN_CODE, code.getValue());
             result.put(TOKEN_RESULT, o.isPresent() ? o.get() : null);
             result.put(TOKEN_VERSION, JSON_SERIALIZATION_VERSION.toString());
-            result.put(TOKEN_REQUEST, requestMessage.isPresent() ? requestMessage.get().requestId : null);
+            result.put(TOKEN_REQUEST, requestMessage.isPresent() ? requestMessage.get().getRequestId() : null);
 
             return mapper.writeValueAsString(result);
         } catch (Exception ex) {

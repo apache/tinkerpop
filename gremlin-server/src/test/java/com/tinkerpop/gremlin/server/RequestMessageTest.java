@@ -19,22 +19,22 @@ public class RequestMessageTest {
     public void shouldOverrideRequest() {
         final UUID request = UUID.randomUUID();
         final RequestMessage msg = RequestMessage.create("op").overrideRequestId(request).build();
-        assertEquals(request, msg.requestId);
+        assertEquals(request, msg.getRequestId());
     }
 
     @Test
     public void shouldSetProcessor() {
         final RequestMessage msg = RequestMessage.create("op").setProcessor("ppp").build();
-        assertEquals("ppp", msg.processor);
+        assertEquals("ppp", msg.getProcessor());
     }
 
     @Test
     public void shouldSetOpWithDefaults() {
         final RequestMessage msg = RequestMessage.create("op").build();
-        assertEquals(StandardOpProcessor.OP_PROCESSOR_NAME, msg.processor);
-        assertNotNull(msg.requestId);
-        assertEquals("op", msg.op);
-        assertNotNull(msg.args);
+        assertEquals(StandardOpProcessor.OP_PROCESSOR_NAME, msg.getProcessor());
+        assertNotNull(msg.getRequestId());
+        assertEquals("op", msg.getOp());
+        assertNotNull(msg.getArgs());
     }
 
     @Test
@@ -45,8 +45,13 @@ public class RequestMessageTest {
 
     @Test
     public void shouldReturnArgAsOptional() {
-        final RequestMessage msg = RequestMessage.create("op").build();
-        msg.args.put("test", "testing");
+        final RequestMessage msg = RequestMessage.create("op").add("test", "testing").build();
         assertEquals("testing", msg.optionalArgs("test").get());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void shouldNotAllowArgsToBeChanged() {
+        final RequestMessage msg = RequestMessage.create("op").build();
+        msg.getArgs().put("test", "testing");
     }
 }

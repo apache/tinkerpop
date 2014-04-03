@@ -38,7 +38,7 @@ public class JsonResultSerializerV1d0Test {
         final String results = SERIALIZER.serializeResult(Optional.empty(), Optional.ofNullable(msg));
         final JSONObject json = new JSONObject(results);
         assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
+        assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
         assertEquals(JSONObject.NULL, json.get(JsonMessageSerializerV1d0.TOKEN_RESULT));
     }
 
@@ -87,7 +87,7 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
+        assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(JsonMessageSerializerV1d0.TOKEN_RESULT);
 
         assertEquals(2, converted.length());
@@ -106,7 +106,7 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
+        assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(JsonMessageSerializerV1d0.TOKEN_RESULT);
 
         assertEquals(2, converted.length());
@@ -127,7 +127,7 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
+        assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(JsonMessageSerializerV1d0.TOKEN_RESULT);
 
         assertEquals(3, converted.length());
@@ -151,7 +151,7 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
+        assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
         final JSONObject jsonObject = json.getJSONObject(JsonMessageSerializerV1d0.TOKEN_RESULT);
 
         assertNotNull(jsonObject);
@@ -176,7 +176,7 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
+        assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(JsonMessageSerializerV1d0.TOKEN_RESULT);
 
         assertNotNull(converted);
@@ -217,7 +217,7 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
+        assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(JsonMessageSerializerV1d0.TOKEN_RESULT);
 
         assertNotNull(converted);
@@ -295,7 +295,7 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
+        assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(JsonMessageSerializerV1d0.TOKEN_RESULT);
 
         assertNotNull(converted);
@@ -339,7 +339,7 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
+        assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
         final JSONArray converted = json.getJSONArray(JsonMessageSerializerV1d0.TOKEN_RESULT);
 
         assertNotNull(converted);
@@ -376,7 +376,7 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
+        assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
         final JSONObject converted = json.getJSONObject(JsonMessageSerializerV1d0.TOKEN_RESULT);
 
         assertNotNull(converted);
@@ -400,10 +400,10 @@ public class JsonResultSerializerV1d0Test {
         assertTrue(msg.isPresent());
 
         final RequestMessage m = msg.get();
-        assertEquals(request, m.requestId);
-        assertEquals("eval", m.op);
-        assertNotNull(m.args);
-        assertEquals(0, m.args.size());
+        assertEquals(request, m.getRequestId());
+        assertEquals("eval", m.getOp());
+        assertNotNull(m.getArgs());
+        assertEquals(0, m.getArgs().size());
     }
 
     @Test
@@ -413,10 +413,10 @@ public class JsonResultSerializerV1d0Test {
         assertTrue(msg.isPresent());
 
         final RequestMessage m = msg.get();
-        assertEquals(request, m.requestId);
-        assertEquals("eval", m.op);
-        assertNotNull(m.args);
-        assertEquals("y", m.args.get("x"));
+        assertEquals(request, m.getRequestId());
+        assertEquals("eval", m.getOp());
+        assertNotNull(m.getArgs());
+        assertEquals("y", m.getArgs().get("x"));
     }
 
     @Test

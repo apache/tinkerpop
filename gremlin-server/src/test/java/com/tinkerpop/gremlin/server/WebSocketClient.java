@@ -114,14 +114,10 @@ class WebSocketClient {
     }
 
     public <T> Stream<T> eval(final String gremlin) throws IOException {
-        final RequestMessage msg = RequestMessage.create(Tokens.OPS_EVAL).build();
-        msg.args = new HashMap<String, Object>() {{
-            put(Tokens.ARGS_GREMLIN, gremlin);
-            put(Tokens.ARGS_ACCEPT, "application/json");
-        }};
-
+        final RequestMessage msg = RequestMessage.create(Tokens.OPS_EVAL).add(
+                Tokens.ARGS_GREMLIN, gremlin, Tokens.ARGS_ACCEPT, "application/json").build();
         final ArrayBlockingQueue<Optional<JsonNode>> responseQueue = new ArrayBlockingQueue<>(256);
-        final UUID requestId = msg.requestId;
+        final UUID requestId = msg.getRequestId();
         responses.put(requestId, responseQueue);
 
         ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + serializer.serialize(msg)));

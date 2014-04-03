@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.server.message;
 
 import com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -18,34 +20,58 @@ public class RequestMessage {
      */
     public static final RequestMessage INVALID = new RequestMessage("invalid");
 
+    private final UUID requestId;
+    private final String op;
+    private final String processor;
+    private final Map<String, Object> args;
+
+    private RequestMessage(final UUID requestId, final String op, final String processor, final Map<String,Object> args) {
+        this.requestId = requestId;
+        this.op = op;
+        this.processor = processor;
+        this.args = Optional.ofNullable(args).orElse(new HashMap<>());
+    }
+
+    /**
+     * Empty constructor for serialization.
+     */
+    private RequestMessage() {
+        this(null);
+    }
+
+    private RequestMessage(final String op) {
+        this(null, op, null, null);
+    }
+
     /**
      * The id of the current request and is used to track the message within Gremlin Server and in its response.  This
      * value should be unique per request made.
      */
-    public UUID requestId = null;
+    public UUID getRequestId() {
+        return requestId;
+    }
 
     /**
      * The operation or command to perform as defined by a particular {@link com.tinkerpop.gremlin.server.OpProcessor}.
      */
-    public String op;
+    public String getOp() {
+        return op;
+    }
 
     /**
      * The name of the {@link com.tinkerpop.gremlin.server.OpProcessor} that should handle the {@link #op}.  Defaults to the
      * {@link StandardOpProcessor} if not specified.
      */
-    public String processor = StandardOpProcessor.OP_PROCESSOR_NAME;
+    public String getProcessor() {
+        return processor;
+    }
 
     /**
      * A {@link Map} of arguments that are supplied to the {@link #op}.  Each {@link #op} accepts different argument,
      * so consult the documentation for a particular one to understand what is expected.
      */
-    public Map<String, Object> args = new HashMap<>();
-
-    private RequestMessage() {
-    }
-
-    private RequestMessage(final String op) {
-        this.op = op;
+    public Map<String, Object> getArgs() {
+        return Collections.unmodifiableMap(args);
     }
 
     public <T> Optional<T> optionalArgs(final String key) {
@@ -90,17 +116,21 @@ public class RequestMessage {
             return this;
         }
 
+        public Builder addArg(final String key, final Object val) {
+            args.put(key, val);
+            return this;
+        }
+
+        public Builder add(final Object... keyValues) {
+            args.putAll(ElementHelper.asMap(keyValues));
+            return this;
+        }
+
         /**
          * Create the request message given the settings provided to the {@link Builder}.
          */
         public RequestMessage build() {
-            final RequestMessage msg = new RequestMessage();
-            msg.args = this.args;
-            msg.op = this.op;
-            msg.processor = this.processor;
-            msg.requestId = this.requestId;
-
-            return msg;
+            return new RequestMessage(requestId, op, processor, args);
         }
     }
 

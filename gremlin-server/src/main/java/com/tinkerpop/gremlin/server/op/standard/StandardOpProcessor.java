@@ -42,7 +42,7 @@ public class StandardOpProcessor implements OpProcessor {
                 MessageSerializer.DEFAULT_RESULT_SERIALIZER);
 
         final ThrowingConsumer<Context> op;
-        switch (message.op) {
+        switch (message.getOp()) {
             case Tokens.OPS_VERSION:
                 // todo: rework this op for sessionless
                 op = null;
@@ -66,7 +66,7 @@ public class StandardOpProcessor implements OpProcessor {
                 final String msgInvalid = String.format("Message could not be parsed.  Check the format of the request. [%s]", message);
                 throw new OpProcessorException(msgInvalid, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_MALFORMED_REQUEST).result(msgInvalid).build());
             default:
-                final String msgDefault = String.format("Message with op code [%s] is not recognized.", message.op);
+                final String msgDefault = String.format("Message with op code [%s] is not recognized.", message.getOp());
                 throw new OpProcessorException(msgDefault, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_MALFORMED_REQUEST).result(msgDefault).build());
         }
 
