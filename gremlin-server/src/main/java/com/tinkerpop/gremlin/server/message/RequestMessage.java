@@ -53,6 +53,10 @@ public class RequestMessage {
         return o == null ? Optional.empty() : Optional.of((T) o);
     }
 
+    public static Builder create(final String op) {
+        return new Builder(op);
+    }
+
     /**
      * Builder class for {@link RequestMessage}.
      */
@@ -62,7 +66,7 @@ public class RequestMessage {
         private String processor = StandardOpProcessor.OP_PROCESSOR_NAME;
         private Map<String, Object> args = new HashMap<>();
 
-        public Builder(final String op) {
+        private Builder(final String op) {
             this.op = op;
         }
 

@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 public class JsonResultSerializerV1d0Test {
 
     public static final JsonMessageSerializerV1d0 SERIALIZER = new JsonMessageSerializerV1d0();
-    private static final RequestMessage msg = new RequestMessage.Builder("op")
+    private static final RequestMessage msg = RequestMessage.create("op")
             .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).build();
 
     @Test

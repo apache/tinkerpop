@@ -18,19 +18,19 @@ public class RequestMessageTest {
     @Test
     public void shouldOverrideRequest() {
         final UUID request = UUID.randomUUID();
-        final RequestMessage msg = new RequestMessage.Builder("op").overrideRequestId(request).build();
+        final RequestMessage msg = RequestMessage.create("op").overrideRequestId(request).build();
         assertEquals(request, msg.requestId);
     }
 
     @Test
     public void shouldSetProcessor() {
-        final RequestMessage msg = new RequestMessage.Builder("op").setProcessor("ppp").build();
+        final RequestMessage msg = RequestMessage.create("op").setProcessor("ppp").build();
         assertEquals("ppp", msg.processor);
     }
 
     @Test
     public void shouldSetOpWithDefaults() {
-        final RequestMessage msg = new RequestMessage.Builder("op").build();
+        final RequestMessage msg = RequestMessage.create("op").build();
         assertEquals(StandardOpProcessor.OP_PROCESSOR_NAME, msg.processor);
         assertNotNull(msg.requestId);
         assertEquals("op", msg.op);
@@ -39,13 +39,13 @@ public class RequestMessageTest {
 
     @Test
     public void shouldReturnEmptyOptionalArg() {
-        final RequestMessage msg = new RequestMessage.Builder("op").build();
+        final RequestMessage msg = RequestMessage.create("op").build();
         assertFalse(msg.optionalArgs("test").isPresent());
     }
 
     @Test
     public void shouldReturnArgAsOptional() {
-        final RequestMessage msg = new RequestMessage.Builder("op").build();
+        final RequestMessage msg = RequestMessage.create("op").build();
         msg.args.put("test", "testing");
         assertEquals("testing", msg.optionalArgs("test").get());
     }

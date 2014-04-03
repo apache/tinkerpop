@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class MessageSerializerTest {
 
-    private static final RequestMessage msg = new RequestMessage.Builder("op")
+    private static final RequestMessage msg = RequestMessage.create("op")
             .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).build();
 
     @Test
