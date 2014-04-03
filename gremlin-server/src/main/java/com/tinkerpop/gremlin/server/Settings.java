@@ -147,6 +147,11 @@ public class Settings {
     public Map<String, ScriptEngineSettings> scriptEngines;
 
     /**
+     * Configures settings for SSL.
+     */
+    public SslSettings ssl = null;
+
+    /**
      * {@link List} of maven coordinates stored as a {@link List} of {@link String} objects to be used with the
      * {@code ScriptEngine} instances.
      */
@@ -194,6 +199,9 @@ public class Settings {
         scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
         constructor.addTypeDescription(scriptEngineSettingsDescription);
 
+        final TypeDescription sslSettings = new TypeDescription(SslSettings.class);
+        constructor.addTypeDescription(sslSettings);
+
         final TypeDescription serverMetricsDescription = new TypeDescription(ServerMetrics.class);
         constructor.addTypeDescription(serverMetricsDescription);
 
@@ -225,6 +233,22 @@ public class Settings {
     public static class ScriptEngineSettings {
         public List<String> imports;
         public List<String> staticImports;
+    }
+
+    /**
+     * Settings to configure SSL support.
+     */
+    public static class SslSettings {
+        public boolean enabled = false;
+        public String keyManagerAlgorithm = "SunX509";
+        public String keyStoreFormat = "JKS";
+        public String keyStoreFile = null;
+        public String keyStorePassword = null;
+        public String keyManagerPassword = null;
+        public String trustStoreFile = null;
+        public String trustStoreFormat = null;
+        public String trustStorePassword = null;
+        public String trustStoreAlgorithm = null;
     }
 
     /**

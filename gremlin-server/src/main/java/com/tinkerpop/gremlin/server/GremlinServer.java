@@ -22,12 +22,21 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
 import java.util.Optional;
 
 /**
@@ -139,7 +148,7 @@ public class GremlinServer {
     private class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
         private final Settings settings;
         private final GremlinExecutor gremlinExecutor;
-
+        private final Optional<SSLEngine> sslEngine;
         final EventExecutorGroup gremlinGroup;
 
         public WebSocketServerInitializer(final Settings settings) {
@@ -151,12 +160,30 @@ public class GremlinServer {
 
             this.gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, r -> new Thread(r, "gremlin-handler"));
 
+            if (Optional.ofNullable(settings.ssl).isPresent() && settings.ssl.enabled) {
+                logger.info("SSL was enabled.  Initializing SSLEngine instance...");
+                SSLEngine engine = null;
+                try {
+                    engine = createSSLContext(settings).createSSLEngine();
+                    engine.setUseClientMode(false);
+                } catch (Exception ex) {
+                    logger.warn("SSL could not be enabled.  Check the ssl section of the configuration file.", ex);
+                    engine = null;
+                } finally {
+                    sslEngine = Optional.ofNullable(engine);
+                }
+            } else {
+                sslEngine = Optional.empty();
+            }
+
             logger.info("Initialize GremlinExecutor and configured ScriptEngines.");
         }
 
         @Override
         public void initChannel(final SocketChannel ch) throws Exception {
             final ChannelPipeline pipeline = ch.pipeline();
+
+            sslEngine.ifPresent(ssl -> pipeline.addLast("ssl", new SslHandler(ssl)));
 
             if (logger.isDebugEnabled())
                 pipeline.addLast(new LoggingHandler("log-io", LogLevel.DEBUG));
@@ -193,6 +220,36 @@ public class GremlinServer {
 
             pipeline.addLast(gremlinGroup, "result-iterator-handler", new IteratorHandler(settings));
             pipeline.addLast(gremlinGroup, "op-executor", new OpExecutorHandler(settings, graphs.get(), gremlinExecutor));
+        }
+
+        private SSLContext createSSLContext(final Settings settings) throws Exception {
+            final Settings.SslSettings sslSettings = settings.ssl;
+
+            TrustManager[] managers = null;
+            if (sslSettings.trustStoreFile != null) {
+                final KeyStore ts = KeyStore.getInstance(Optional.ofNullable(sslSettings.trustStoreFormat).orElseThrow(() -> new IllegalStateException("The trustStoreFormat is not set")));
+                try (final InputStream trustStoreInputStream = new FileInputStream(Optional.ofNullable(sslSettings.trustStoreFile).orElseThrow(() -> new IllegalStateException("The trustStoreFile is not set")))) {
+                    ts.load(trustStoreInputStream, sslSettings.trustStorePassword.toCharArray());
+                }
+
+                final String trustStoreAlgorithm = Optional.ofNullable(sslSettings.trustStoreAlgorithm).orElse(TrustManagerFactory.getDefaultAlgorithm());
+                final TrustManagerFactory tmf = TrustManagerFactory.getInstance(trustStoreAlgorithm);
+                tmf.init(ts);
+                managers = tmf.getTrustManagers();
+            }
+
+            final KeyStore ks = KeyStore.getInstance(Optional.ofNullable(sslSettings.keyStoreFormat).orElseThrow(() -> new IllegalStateException("The keyStoreFormat is not set")));
+            try (final InputStream keyStoreInputStream = new FileInputStream(Optional.ofNullable(sslSettings.keyStoreFile).orElseThrow(() -> new IllegalStateException("The keyStoreFile is not set")))) {
+                ks.load(keyStoreInputStream, sslSettings.keyStorePassword.toCharArray());
+            }
+
+            final String keyManagerAlgorithm = Optional.ofNullable(sslSettings.keyManagerAlgorithm).orElse(KeyManagerFactory.getDefaultAlgorithm());
+            final KeyManagerFactory kmf = KeyManagerFactory.getInstance(keyManagerAlgorithm);
+            kmf.init(ks, Optional.ofNullable(sslSettings.keyManagerPassword).orElseThrow(() -> new IllegalStateException("The keyManagerPassword is not set")).toCharArray());
+
+            final SSLContext serverContext = SSLContext.getInstance("TLS");
+            serverContext.init(kmf.getKeyManagers(), managers, null);
+            return serverContext;
         }
     }
 }
