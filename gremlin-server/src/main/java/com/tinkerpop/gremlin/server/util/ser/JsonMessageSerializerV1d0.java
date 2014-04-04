@@ -32,19 +32,9 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
     static final Version JSON_SERIALIZATION_VERSION = new Version(1, 0, 0, "", "com.tinkerpop.gremlin", "gremlin-server");
 
     public static final String TOKEN_RESULT = "result";
-    public static final String TOKEN_ID = "id";
-    public static final String TOKEN_TYPE = "type";
-    public static final String TOKEN_KEY = "key";
-    public static final String TOKEN_VALUE = "value";
     public static final String TOKEN_CODE = "code";
-    public static final String TOKEN_PROPERTIES = "properties";
-    public static final String TOKEN_EDGE = "edge";
     public static final String TOKEN_VERSION = "version";
-    public static final String TOKEN_VERTEX = "vertex";
     public static final String TOKEN_REQUEST = "requestId";
-    public static final String TOKEN_IN = "in";
-    public static final String TOKEN_OUT = "out";
-    public static final String TOKEN_LABEL = "label";
 
     /**
      * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write

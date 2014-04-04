@@ -186,10 +186,10 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject vertexAsJson = converted.optJSONObject(0);
         assertNotNull(vertexAsJson);
 
-        assertEquals(v.getId(), vertexAsJson.get(JsonMessageSerializerV1d0.TOKEN_ID));
-        assertEquals(JsonMessageSerializerV1d0.TOKEN_VERTEX, vertexAsJson.get(JsonMessageSerializerV1d0.TOKEN_TYPE));
+        assertEquals(v.getId(), vertexAsJson.get(GraphSONTokens.ID));
+        assertEquals(GraphSONTokens.VERTEX, vertexAsJson.get(GraphSONTokens.TYPE));
 
-        final JSONObject properties = vertexAsJson.optJSONObject(JsonMessageSerializerV1d0.TOKEN_PROPERTIES);
+        final JSONObject properties = vertexAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
         assertEquals(123, properties.getInt("abc"));
 
@@ -224,10 +224,10 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject vertexAsJson = converted.optJSONObject(0);
         assertNotNull(vertexAsJson);
 
-        assertEquals(v.getId(), vertexAsJson.get(JsonMessageSerializerV1d0.TOKEN_ID));
-        assertEquals(JsonMessageSerializerV1d0.TOKEN_VERTEX, vertexAsJson.get(JsonMessageSerializerV1d0.TOKEN_TYPE));
+        assertEquals(v.getId(), vertexAsJson.get(GraphSONTokens.ID));
+        assertEquals(GraphSONTokens.VERTEX, vertexAsJson.get(GraphSONTokens.TYPE));
 
-        final JSONObject properties = vertexAsJson.optJSONObject(JsonMessageSerializerV1d0.TOKEN_PROPERTIES);
+        final JSONObject properties = vertexAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
 
         assertEquals(123, properties.getInt("abc"));
@@ -297,11 +297,11 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject edgeAsJson = converted.optJSONObject(0);
         assertNotNull(edgeAsJson);
 
-        assertEquals(e.getId(), edgeAsJson.get(JsonMessageSerializerV1d0.TOKEN_ID));
-        assertEquals(v1.getId(), edgeAsJson.get(JsonMessageSerializerV1d0.TOKEN_OUT));
-        assertEquals(v2.getId(), edgeAsJson.get(JsonMessageSerializerV1d0.TOKEN_IN));
-        assertEquals(e.getLabel(), edgeAsJson.get(JsonMessageSerializerV1d0.TOKEN_LABEL));
-        assertEquals(JsonMessageSerializerV1d0.TOKEN_EDGE, edgeAsJson.get(JsonMessageSerializerV1d0.TOKEN_TYPE));
+        assertEquals(e.getId(), edgeAsJson.get(GraphSONTokens.ID));
+        assertEquals(v1.getId(), edgeAsJson.get(GraphSONTokens.OUT));
+        assertEquals(v2.getId(), edgeAsJson.get(GraphSONTokens.IN));
+        assertEquals(e.getLabel(), edgeAsJson.get(GraphSONTokens.LABEL));
+        assertEquals(GraphSONTokens.EDGE, edgeAsJson.get(GraphSONTokens.TYPE));
 
         final JSONObject properties = edgeAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
