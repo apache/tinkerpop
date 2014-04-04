@@ -24,7 +24,6 @@ public class GraphSONModule extends SimpleModule {
     public GraphSONModule(final boolean normalize) {
         super("graphson");
         addSerializer(Edge.class, new EdgeJacksonSerializer(normalize));
-        addSerializer(Property.class, new PropertyJacksonSerializer());
         addSerializer(Vertex.class, new VertexJacksonSerializer(normalize));
         addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer(normalize));
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
@@ -49,11 +48,14 @@ public class GraphSONModule extends SimpleModule {
 
             if (normalize){
                 jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
-                edge.getProperties().entrySet().stream().sorted(Comparators.PROPERTY_ENTRY_COMPARATOR)
-                        .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.getValue())));
+                edge.getProperties().values().stream().sorted(Comparators.PROPERTY_COMPARATOR)
+                        .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
                 jsonGenerator.writeEndObject();
-            } else
-                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, edge.getProperties());
+            } else {
+                jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
+                edge.getProperties().values().forEach(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
+                jsonGenerator.writeEndObject();
+            }
 
 
             jsonGenerator.writeEndObject();
@@ -77,28 +79,15 @@ public class GraphSONModule extends SimpleModule {
 
             if (normalize) {
                 jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
-                vertex.getProperties().entrySet().stream().sorted(Comparators.PROPERTY_ENTRY_COMPARATOR)
-                        .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.getValue())));
+                vertex.getProperties().values().stream().sorted(Comparators.PROPERTY_COMPARATOR)
+                        .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
                 jsonGenerator.writeEndObject();
-            } else
-                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, vertex.getProperties());
+            } else {
+                jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
+                vertex.getProperties().values().forEach(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
+                jsonGenerator.writeEndObject();
+            }
 
-            jsonGenerator.writeEndObject();
-        }
-    }
-
-    // todo: should properties be encoded as Map, or just stream out values as Property...would remove hierarchy
-
-    static class PropertyJacksonSerializer extends StdSerializer<Property> {
-        public PropertyJacksonSerializer() {
-            super(Property.class);
-        }
-
-        @Override
-        public void serialize(final Property property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException, JsonGenerationException {
-            jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, property.get());
             jsonGenerator.writeEndObject();
         }
     }

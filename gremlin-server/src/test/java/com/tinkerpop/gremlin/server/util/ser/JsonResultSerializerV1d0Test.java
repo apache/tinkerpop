@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.json.JSONArray;
@@ -190,10 +191,7 @@ public class JsonResultSerializerV1d0Test {
 
         final JSONObject properties = vertexAsJson.optJSONObject(JsonMessageSerializerV1d0.TOKEN_PROPERTIES);
         assertNotNull(properties);
-
-        final JSONObject valAbcProperty = properties.optJSONObject("abc");
-        assertNotNull(valAbcProperty);
-        assertEquals(123, valAbcProperty.getInt(JsonMessageSerializerV1d0.TOKEN_VALUE));
+        assertEquals(123, properties.getInt("abc"));
 
         /*
         final JSONObject valXyzProperty = properties.optJSONObject("xyz");
@@ -232,13 +230,8 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject properties = vertexAsJson.optJSONObject(JsonMessageSerializerV1d0.TOKEN_PROPERTIES);
         assertNotNull(properties);
 
-        final JSONObject valAbcProperty = properties.optJSONObject("abc");
-        assertNotNull(valAbcProperty);
-        assertEquals(123, valAbcProperty.getInt(JsonMessageSerializerV1d0.TOKEN_VALUE));
-
-        final JSONObject valHiddenProperty = properties.optJSONObject(Property.Key.hidden("hidden"));
-        assertNotNull(valHiddenProperty);
-        assertEquals("stephen", valHiddenProperty.getString(JsonMessageSerializerV1d0.TOKEN_VALUE));
+        assertEquals(123, properties.getInt("abc"));
+        assertEquals("stephen", properties.getString(Property.Key.hidden("hidden")));
     }
 
     /*
@@ -310,12 +303,9 @@ public class JsonResultSerializerV1d0Test {
         assertEquals(e.getLabel(), edgeAsJson.get(JsonMessageSerializerV1d0.TOKEN_LABEL));
         assertEquals(JsonMessageSerializerV1d0.TOKEN_EDGE, edgeAsJson.get(JsonMessageSerializerV1d0.TOKEN_TYPE));
 
-        final JSONObject properties = edgeAsJson.optJSONObject(JsonMessageSerializerV1d0.TOKEN_PROPERTIES);
+        final JSONObject properties = edgeAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
-
-        final JSONObject valAbcProperty = properties.optJSONObject("abc");
-        assertNotNull(valAbcProperty);
-        assertEquals(123, valAbcProperty.getInt(JsonMessageSerializerV1d0.TOKEN_VALUE));
+        assertEquals(123, properties.getInt("abc"));
 
     }
 
@@ -348,10 +338,10 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject vertexAsJson = converted.optJSONObject(0);
         assertNotNull(vertexAsJson);
 
-        final JSONObject properties = vertexAsJson.optJSONObject(JsonMessageSerializerV1d0.TOKEN_PROPERTIES);
+        final JSONObject properties = vertexAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
 
-        final JSONArray friendsProperty = properties.optJSONObject("friends").optJSONArray(JsonMessageSerializerV1d0.TOKEN_VALUE);
+        final JSONArray friendsProperty = properties.optJSONArray("friends");
         assertNotNull(friendsProperty);
         assertEquals(3, friends.size());
 

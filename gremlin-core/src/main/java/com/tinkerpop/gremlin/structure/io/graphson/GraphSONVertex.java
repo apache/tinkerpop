@@ -50,11 +50,14 @@ class GraphSONVertex {
 
             if (normalize) {
                 jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
-                vertex.getProperties().entrySet().stream().sorted(Comparators.PROPERTY_ENTRY_COMPARATOR)
-                        .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.getValue())));
+                vertex.getProperties().values().stream().sorted(Comparators.PROPERTY_COMPARATOR)
+                        .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
                 jsonGenerator.writeEndObject();
-            } else
-                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, vertex.getProperties());
+            } else {
+                jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
+                vertex.getProperties().values().forEach(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
+                jsonGenerator.writeEndObject();
+            }
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
                 jsonGenerator.writeArrayFieldStart(GraphSONTokens.OUT);
