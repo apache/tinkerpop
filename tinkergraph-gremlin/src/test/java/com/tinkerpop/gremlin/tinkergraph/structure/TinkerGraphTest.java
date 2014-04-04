@@ -89,7 +89,7 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsKryo() throws IOException {
+    public void shouldWriteClassicGraphAsKryoAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.gio");
         KryoWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -150,7 +150,7 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteGratefulGraph() throws IOException {
+    public void shouldWriteGratefulGraphAsKryo() throws IOException {
         final Graph g = TinkerGraph.open();
         final GraphReader reader = GraphMLReader.create().build();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/graphml/graph-example-2.xml")) {
@@ -183,7 +183,7 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraph() throws IOException {
+    public void shouldWriteModernGraphAsKryo() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-5.gio");
         KryoWriter.create().build().writeGraph(os, TinkerFactory.createModern());
         os.close();

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.io.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -10,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
+import com.tinkerpop.gremlin.util.function.ThrowingBiConsumer;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,6 +19,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 /**
  * The {@link GraphWriter} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
@@ -27,17 +30,18 @@ import java.util.Optional;
  */
 public class KryoWriter implements GraphWriter {
     private Kryo kryo;
+    private final GremlinKryo.HeaderWriter headerWriter;
 
-    static final byte[] GIO = "gio".getBytes();
+    private KryoWriter(final GremlinKryo gremlinKryo) {
+        this.kryo = gremlinKryo.createKryo();
+        this.headerWriter = gremlinKryo.getHeaderWriter();
 
-    private KryoWriter(final Kryo kryo) {
-        this.kryo = kryo;
     }
 
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
         final Output output = new Output(outputStream);
-        writeHeader(output);
+        this.headerWriter.write(kryo, output);
 
         final boolean supportsGraphMemory = g.getFeatures().graph().memory().supportsMemory();
         output.writeBoolean(supportsGraphMemory);
@@ -58,7 +62,7 @@ public class KryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
         final Output output = new Output(outputStream);
-        writeHeader(output);
+        this.headerWriter.write(kryo, output);
         writeVertexToOutput(output, v, direction);
         output.flush();
     }
@@ -66,7 +70,7 @@ public class KryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
         final Output output = new Output(outputStream);
-        writeHeader(output);
+        this.headerWriter.write(kryo, output);
         writeVertexWithNoEdgesToOutput(output, v);
         output.flush();
     }
@@ -74,24 +78,11 @@ public class KryoWriter implements GraphWriter {
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
-        writeHeader(output);
+        this.headerWriter.write(kryo, output);
         kryo.writeClassAndObject(output, e.getVertex(Direction.OUT).getId());
         kryo.writeClassAndObject(output, e.getVertex(Direction.IN).getId());
         writeEdgeToOutput(output, e);
         output.flush();
-    }
-
-    private void writeHeader(final Output output) {
-        // 32 byte header total
-        output.writeBytes(GIO);
-
-        // some space for later
-        output.writeBytes(new byte[26]);
-
-        // version x.y.z
-        output.writeByte(1);
-        output.writeByte(0);
-        output.writeByte(0);
     }
 
     private void writeEdgeToOutput(final Output output, final Edge e) {
@@ -168,7 +159,10 @@ public class KryoWriter implements GraphWriter {
     }
 
     public static class Builder {
-        private GremlinKryo gremlinKryo = new GremlinKryo();
+        /**
+         * Always creates the most current version available.
+         */
+        private GremlinKryo gremlinKryo = GremlinKryo.create().build();
 
         private Builder() {}
 
@@ -178,7 +172,7 @@ public class KryoWriter implements GraphWriter {
         }
 
         public KryoWriter build() {
-            return new KryoWriter(this.gremlinKryo.create());
+            return new KryoWriter(this.gremlinKryo);
         }
     }
 }

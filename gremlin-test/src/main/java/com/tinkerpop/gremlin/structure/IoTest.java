@@ -213,8 +213,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldProperlySerializeCustomIdWithKryo() throws Exception {
         g.addVertex(Element.ID, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
-        final GremlinKryo kryo = new GremlinKryo();
-        kryo.addCustom(CustomId.class);
+        final GremlinKryo kryo = GremlinKryo.create().addCustom(CustomId.class).build();
 
         final KryoWriter writer = KryoWriter.create().custom(kryo).build();
         final KryoReader reader = KryoReader.create().custom(kryo).build();

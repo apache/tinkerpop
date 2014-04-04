@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuadConsumer;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
+import com.tinkerpop.gremlin.util.function.ThrowingBiConsumer;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 import org.javatuples.Pair;
 
@@ -42,6 +43,8 @@ import java.util.stream.IntStream;
  */
 public class KryoReader implements GraphReader {
     private final Kryo kryo;
+    private final GremlinKryo.HeaderReader headerReader;
+
     private final long batchSize;
 
     private final File tempFile;
@@ -50,8 +53,9 @@ public class KryoReader implements GraphReader {
     final AtomicLong counter = new AtomicLong(0);
 
     private KryoReader(final Map<Object, Object> idMap, final File tempFile, final long batchSize,
-                       final Kryo kryo) {
-        this.kryo = kryo;
+                       final GremlinKryo gremlinKryo) {
+        this.kryo = gremlinKryo.createKryo();
+        this.headerReader = gremlinKryo.getHeaderReader();
         this.idMap = idMap;
         this.tempFile = tempFile;
         this.batchSize = batchSize;
@@ -65,7 +69,7 @@ public class KryoReader implements GraphReader {
             throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
 
         final Input input = new Input(inputStream);
-        readHeader(input);
+        this.headerReader.read(kryo, input);
 
         final List<Object> vertexArgs = new ArrayList<>();
 
@@ -119,7 +123,7 @@ public class KryoReader implements GraphReader {
     @Override
     public Edge readEdge(final InputStream inputStream, final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
-        readHeader(input);
+        this.headerReader.read(kryo, input);
         final Object outId = kryo.readClassAndObject(input);
         final Object inId = kryo.readClassAndObject(input);
         final Object edgeId = kryo.readClassAndObject(input);
@@ -134,7 +138,7 @@ public class KryoReader implements GraphReader {
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
         this.counter.set(0);
         final Input input = new Input(inputStream);
-        readHeader(input);
+        this.headerReader.read(kryo, input);
         final Output output = new Output(new FileOutputStream(tempFile));
 
         try {
@@ -219,23 +223,6 @@ public class KryoReader implements GraphReader {
         if (graphToWriteTo.getFeatures().graph().supportsTransactions() &&
             counter.incrementAndGet() % batchSize == 0)
             graphToWriteTo.tx().commit();
-    }
-
-    private void readHeader(final Input input) throws IOException {
-        if (!Arrays.equals(KryoWriter.GIO, input.readBytes(3)))
-            throw new IOException("Invalid format - first three bytes of header do not match expected value");
-
-        // skip the next 26 bytes in v1
-        input.readBytes(26);
-
-        // final three bytes of header are the version which should be 1.0.0
-        byte[] version = input.readBytes(3);
-
-        // direct match on version for now
-        if (version[0] != 1 || version[1] != 0 || version[2] != 0)
-            throw new IOException(String.format(
-                    "The version [%s.%s.%s] in the stream cannot be understood by this reader",
-                    version[0], version[1], version[2]));
     }
 
     private void readEdges(final Input input, final QuadConsumer<Object, Object, String, Object[]> edgeMaker) {
@@ -391,7 +378,11 @@ public class KryoReader implements GraphReader {
         private Map<Object, Object> idMap;
         private File tempFile;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-        private GremlinKryo gremlinKryo = new GremlinKryo();
+
+        /**
+         * Always use the most recent kryo version by default
+         */
+        private GremlinKryo gremlinKryo = GremlinKryo.create().build();
 
         private Builder() {
             this.idMap = new HashMap<>();
@@ -431,7 +422,7 @@ public class KryoReader implements GraphReader {
         }
 
         public KryoReader build() {
-            return new KryoReader(idMap, tempFile, batchSize, this.gremlinKryo.create());
+            return new KryoReader(idMap, tempFile, batchSize, this.gremlinKryo);
         }
     }
 }
