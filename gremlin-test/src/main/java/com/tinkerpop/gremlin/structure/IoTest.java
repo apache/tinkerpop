@@ -16,8 +16,8 @@ import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONModule;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
@@ -200,8 +200,8 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeGraph(baos, g);
 
             final JsonNode jsonGraph = new ObjectMapper().readTree(baos.toByteArray());
-            final JsonNode onlyVertex = jsonGraph.findValues(GraphSONModule.TOKEN_VERTICES).get(0).get(0);
-            final JsonNode idValue = onlyVertex.get(GraphSONModule.TOKEN_ID);
+            final JsonNode onlyVertex = jsonGraph.findValues(GraphSONTokens.TOKEN_VERTICES).get(0).get(0);
+            final JsonNode idValue = onlyVertex.get(GraphSONTokens.TOKEN_ID);
             assertTrue(idValue.has("cluster"));
             assertEquals("vertex", idValue.get("cluster").asText());
             assertTrue(idValue.has("elementId"));

@@ -10,8 +10,6 @@ import com.tinkerpop.gremlin.structure.util.Comparators;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -46,20 +44,20 @@ class GraphSONVertex {
                 throws IOException, JsonGenerationException {
             final Vertex vertex = directionalVertex.getVertexToSerialize();
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField(GraphSONModule.TOKEN_ID, vertex.getId());
-            jsonGenerator.writeStringField(GraphSONModule.TOKEN_LABEL, vertex.getLabel());
-            jsonGenerator.writeStringField(GraphSONModule.TOKEN_TYPE, GraphSONModule.TOKEN_VERTEX);
+            jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_ID, vertex.getId());
+            jsonGenerator.writeStringField(GraphSONTokens.TOKEN_LABEL, vertex.getLabel());
+            jsonGenerator.writeStringField(GraphSONTokens.TOKEN_TYPE, GraphSONTokens.TOKEN_VERTEX);
 
             if (normalize) {
-                jsonGenerator.writeObjectFieldStart(GraphSONModule.TOKEN_PROPERTIES);
+                jsonGenerator.writeObjectFieldStart(GraphSONTokens.TOKEN_PROPERTIES);
                 vertex.getProperties().entrySet().stream().sorted(Comparators.PROPERTY_ENTRY_COMPARATOR)
                         .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.getValue())));
                 jsonGenerator.writeEndObject();
             } else
-                jsonGenerator.writeObjectField(GraphSONModule.TOKEN_PROPERTIES, vertex.getProperties());
+                jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_PROPERTIES, vertex.getProperties());
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
-                jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_OUT);
+                jsonGenerator.writeArrayFieldStart(GraphSONTokens.TOKEN_OUT);
                 if (normalize)
                     vertex.outE().order(Comparators.HELD_EDGE_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
                 else
@@ -68,7 +66,7 @@ class GraphSONVertex {
             }
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.IN) {
-                jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_IN);
+                jsonGenerator.writeArrayFieldStart(GraphSONTokens.TOKEN_IN);
                 if (normalize)
                     vertex.inE().order(Comparators.HELD_EDGE_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
                 else

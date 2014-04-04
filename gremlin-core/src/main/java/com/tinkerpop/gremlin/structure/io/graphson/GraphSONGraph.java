@@ -9,8 +9,6 @@ import com.tinkerpop.gremlin.structure.util.Comparators;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -42,21 +40,21 @@ class GraphSONGraph {
 
             if (g.getFeatures().graph().memory().supportsMemory())
                 if (normalize) {
-                    jsonGenerator.writeObjectFieldStart(GraphSONModule.TOKEN_PROPERTIES);
+                    jsonGenerator.writeObjectFieldStart(GraphSONTokens.TOKEN_PROPERTIES);
                     g.memory().asMap().entrySet().stream().sorted(Comparators.OBJECT_ENTRY_COMPARATOR)
                             .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.getValue())));
                     jsonGenerator.writeEndObject();
                 } else
-                    jsonGenerator.writeObjectField(GraphSONModule.TOKEN_PROPERTIES, g.memory().asMap());
+                    jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_PROPERTIES, g.memory().asMap());
 
-            jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_VERTICES);
+            jsonGenerator.writeArrayFieldStart(GraphSONTokens.TOKEN_VERTICES);
             if (normalize)
                 g.V().order(Comparators.HELD_VERTEX_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             else
                 g.V().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             jsonGenerator.writeEndArray();
 
-            jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_EDGES);
+            jsonGenerator.writeArrayFieldStart(GraphSONTokens.TOKEN_EDGES);
             if (normalize)
                 g.E().order(Comparators.HELD_EDGE_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             else
