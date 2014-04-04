@@ -265,7 +265,7 @@ public class JsonResultSerializerV1d0Test {
         final JSONObject vertexAsJson = converted.optJSONObject(0);
         assertNotNull(vertexAsJson);
 
-        assertEquals(v.getId(), vertexAsJson.get(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_ID));
+        assertEquals(v.getId(), vertexAsJson.get(MessageSerializer.JsonMessageSerializerV1d0.ID));
         assertEquals(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_VERTEX, vertexAsJson.get(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_TYPE));
 
         final JSONObject properties = vertexAsJson.optJSONObject(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_PROPERTIES);

@@ -200,8 +200,8 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeGraph(baos, g);
 
             final JsonNode jsonGraph = new ObjectMapper().readTree(baos.toByteArray());
-            final JsonNode onlyVertex = jsonGraph.findValues(GraphSONTokens.TOKEN_VERTICES).get(0).get(0);
-            final JsonNode idValue = onlyVertex.get(GraphSONTokens.TOKEN_ID);
+            final JsonNode onlyVertex = jsonGraph.findValues(GraphSONTokens.VERTICES).get(0).get(0);
+            final JsonNode idValue = onlyVertex.get(GraphSONTokens.ID);
             assertTrue(idValue.has("cluster"));
             assertEquals("vertex", idValue.get("cluster").asText());
             assertTrue(idValue.has("elementId"));

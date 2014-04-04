@@ -44,20 +44,20 @@ class GraphSONVertex {
                 throws IOException, JsonGenerationException {
             final Vertex vertex = directionalVertex.getVertexToSerialize();
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_ID, vertex.getId());
-            jsonGenerator.writeStringField(GraphSONTokens.TOKEN_LABEL, vertex.getLabel());
-            jsonGenerator.writeStringField(GraphSONTokens.TOKEN_TYPE, GraphSONTokens.TOKEN_VERTEX);
+            jsonGenerator.writeObjectField(GraphSONTokens.ID, vertex.getId());
+            jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertex.getLabel());
+            jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
 
             if (normalize) {
-                jsonGenerator.writeObjectFieldStart(GraphSONTokens.TOKEN_PROPERTIES);
+                jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
                 vertex.getProperties().entrySet().stream().sorted(Comparators.PROPERTY_ENTRY_COMPARATOR)
                         .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.getValue())));
                 jsonGenerator.writeEndObject();
             } else
-                jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_PROPERTIES, vertex.getProperties());
+                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, vertex.getProperties());
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
-                jsonGenerator.writeArrayFieldStart(GraphSONTokens.TOKEN_OUT);
+                jsonGenerator.writeArrayFieldStart(GraphSONTokens.OUT);
                 if (normalize)
                     vertex.outE().order(Comparators.HELD_EDGE_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
                 else
@@ -66,7 +66,7 @@ class GraphSONVertex {
             }
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.IN) {
-                jsonGenerator.writeArrayFieldStart(GraphSONTokens.TOKEN_IN);
+                jsonGenerator.writeArrayFieldStart(GraphSONTokens.IN);
                 if (normalize)
                     vertex.inE().order(Comparators.HELD_EDGE_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
                 else

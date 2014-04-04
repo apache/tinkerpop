@@ -41,19 +41,19 @@ public class GraphSONModule extends SimpleModule {
         public void serialize(final Edge edge, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_ID, edge.getId());
-            jsonGenerator.writeStringField(GraphSONTokens.TOKEN_LABEL, edge.getLabel());
-            jsonGenerator.writeStringField(GraphSONTokens.TOKEN_TYPE, GraphSONTokens.TOKEN_EDGE);
-            jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_IN, edge.getVertex(Direction.IN).getId());
-            jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_OUT, edge.getVertex(Direction.OUT).getId());
+            jsonGenerator.writeObjectField(GraphSONTokens.ID, edge.getId());
+            jsonGenerator.writeStringField(GraphSONTokens.LABEL, edge.getLabel());
+            jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
+            jsonGenerator.writeObjectField(GraphSONTokens.IN, edge.getVertex(Direction.IN).getId());
+            jsonGenerator.writeObjectField(GraphSONTokens.OUT, edge.getVertex(Direction.OUT).getId());
 
             if (normalize){
-                jsonGenerator.writeObjectFieldStart(GraphSONTokens.TOKEN_PROPERTIES);
+                jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
                 edge.getProperties().entrySet().stream().sorted(Comparators.PROPERTY_ENTRY_COMPARATOR)
                         .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.getValue())));
                 jsonGenerator.writeEndObject();
             } else
-                jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_PROPERTIES, edge.getProperties());
+                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, edge.getProperties());
 
 
             jsonGenerator.writeEndObject();
@@ -71,17 +71,17 @@ public class GraphSONModule extends SimpleModule {
         public void serialize(final Vertex vertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_ID, vertex.getId());
-            jsonGenerator.writeStringField(GraphSONTokens.TOKEN_LABEL, vertex.getLabel());
-            jsonGenerator.writeStringField(GraphSONTokens.TOKEN_TYPE, GraphSONTokens.TOKEN_VERTEX);
+            jsonGenerator.writeObjectField(GraphSONTokens.ID, vertex.getId());
+            jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertex.getLabel());
+            jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
 
             if (normalize) {
-                jsonGenerator.writeObjectFieldStart(GraphSONTokens.TOKEN_PROPERTIES);
+                jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
                 vertex.getProperties().entrySet().stream().sorted(Comparators.PROPERTY_ENTRY_COMPARATOR)
                         .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.getValue())));
                 jsonGenerator.writeEndObject();
             } else
-                jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_PROPERTIES, vertex.getProperties());
+                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, vertex.getProperties());
 
             jsonGenerator.writeEndObject();
         }
@@ -98,7 +98,7 @@ public class GraphSONModule extends SimpleModule {
         public void serialize(final Property property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField(GraphSONTokens.TOKEN_VALUE, property.get());
+            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, property.get());
             jsonGenerator.writeEndObject();
         }
     }
