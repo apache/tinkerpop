@@ -158,23 +158,39 @@ public class GraphSONReader implements GraphReader {
     }
 
     public static class Builder {
-        private ObjectMapper mapper = new GraphSONObjectMapper();
+        private boolean loadCustomSerializers = false;
+        private SimpleModule custom = null;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
 
         private Builder() {}
 
+        /**
+         * Specify a custom serializer module to handle types beyond those supported generally by TinkerPop.
+         */
         public Builder customSerializer(final SimpleModule module) {
-            this.mapper = new GraphSONObjectMapper(
-                    Optional.ofNullable(module).orElseThrow(IllegalArgumentException::new));
+            this.custom = module;
             return this;
         }
 
+        /**
+         * Attempt to load external custom serialization modules from the class path.
+         */
+        public Builder loadCustomSerializers(final boolean loadCustomSerializers) {
+            this.loadCustomSerializers = loadCustomSerializers;
+            return this;
+        }
+
+        /**
+         * Number of mutations to perform before a commit is executed.
+         */
         public Builder batchSize(final long batchSize) {
             this.batchSize = batchSize;
             return this;
         }
 
         public GraphSONReader build() {
+            final ObjectMapper mapper = GraphSONObjectMapper.create()
+                    .customSerializer(custom).loadCustomSerializers(loadCustomSerializers).build();
             return new GraphSONReader(mapper, batchSize);
         }
     }

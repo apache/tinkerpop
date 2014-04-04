@@ -119,6 +119,37 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
+    public void shouldWriteClassicGraphNormalizedAsGraphSON() throws IOException {
+        final OutputStream os = new FileOutputStream("/tmp/graph-example-1-normalized.json");
+        GraphSONWriter.create().normalize(true).build().writeGraph(os, TinkerFactory.createClassic());
+        os.close();
+    }
+
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteModernGraphAsGraphSON() throws IOException {
+        final OutputStream os = new FileOutputStream("/tmp/graph-example-5.json");
+        GraphSONWriter.create().build().writeGraph(os, TinkerFactory.createModern());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteModernGraphNormalizedAsGraphSON() throws IOException {
+        final OutputStream os = new FileOutputStream("/tmp/graph-example-5-normalized.json");
+        GraphSONWriter.create().normalize(true).build().writeGraph(os, TinkerFactory.createModern());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
     public void shouldWriteGratefulGraph() throws IOException {
         final Graph g = TinkerGraph.open();
         final GraphReader reader = GraphMLReader.create().build();

@@ -50,17 +50,45 @@ public class GraphSONWriter implements GraphWriter {
     }
 
     public static class Builder {
-        private ObjectMapper mapper = new GraphSONObjectMapper();
+        private boolean loadCustomSerializers = false;
+        private boolean normalize = false;
+        private SimpleModule custom = null;
 
         private Builder() {}
 
+        /**
+         * Specify a custom serializer module to handle types beyond those supported generally by TinkerPop.
+         */
         public Builder customSerializer(final SimpleModule module) {
-            this.mapper = new GraphSONObjectMapper(
-                    Optional.ofNullable(module).orElseThrow(IllegalArgumentException::new));
+            this.custom = module;
+            return this;
+        }
+
+        /**
+         * Attempt to load external custom serialization modules from the class path.
+         */
+        public Builder loadCustomSerializers(final boolean loadCustomSerializers) {
+            this.loadCustomSerializers = loadCustomSerializers;
+            return this;
+        }
+
+        /**
+         * Normalized output is deterministic with respect to the order of elements and properties in the resulting
+         * XML document, and is compatible with line diff-based tools such as Git. Note: normalized output is
+         * memory-intensive and is not appropriate for very large graphs.
+         *
+         * @param normalize whether to normalize the output.
+         */
+        public Builder normalize(final boolean normalize) {
+            this.normalize = normalize;
             return this;
         }
 
         public GraphSONWriter build() {
+            final GraphSONObjectMapper mapper = GraphSONObjectMapper.create()
+                    .customSerializer(custom)
+                    .loadCustomSerializers(loadCustomSerializers)
+                    .normalize(normalize).build();
             return new GraphSONWriter(mapper);
         }
     }

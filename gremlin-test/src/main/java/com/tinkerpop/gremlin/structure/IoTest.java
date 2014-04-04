@@ -128,6 +128,25 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     /**
+     * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
+     */
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    public void shouldWriteNormalizedGraphSON() throws Exception {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            final GraphSONWriter w = GraphSONWriter.create().normalize(true).build();
+            w.writeGraph(bos, g);
+
+            final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "graph-example-1-normalized.json"));
+            assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+        }
+    }
+
+    /**
      * Note: this is only a very lightweight test of writer/reader encoding. It is known that there are characters
      * which, when written by GraphMLWriter, cause parse errors for GraphMLReader. However, this happens uncommonly
      * enough that is not yet known which characters those are. Only need to execute this test with TinkerGraph

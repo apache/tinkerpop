@@ -5,9 +5,12 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.util.Comparators;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -24,8 +27,11 @@ class GraphSONGraph {
     }
 
     static class GraphJacksonSerializer extends StdSerializer<GraphSONGraph> {
-        public GraphJacksonSerializer() {
+        private final boolean normalize;
+
+        public GraphJacksonSerializer(final boolean normalize) {
             super(GraphSONGraph.class);
+            this.normalize = normalize;
         }
 
         @Override
@@ -35,14 +41,26 @@ class GraphSONGraph {
             jsonGenerator.writeStartObject();
 
             if (g.getFeatures().graph().memory().supportsMemory())
-                jsonGenerator.writeObjectField(GraphSONModule.TOKEN_PROPERTIES, g.memory().asMap());
+                if (normalize) {
+                    jsonGenerator.writeObjectFieldStart(GraphSONModule.TOKEN_PROPERTIES);
+                    g.memory().asMap().entrySet().stream().sorted(Comparators.OBJECT_ENTRY_COMPARATOR)
+                            .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.getValue())));
+                    jsonGenerator.writeEndObject();
+                } else
+                    jsonGenerator.writeObjectField(GraphSONModule.TOKEN_PROPERTIES, g.memory().asMap());
 
             jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_VERTICES);
-            g.V().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+            if (normalize)
+                g.V().order(Comparators.HELD_VERTEX_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+            else
+                g.V().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             jsonGenerator.writeEndArray();
 
             jsonGenerator.writeArrayFieldStart(GraphSONModule.TOKEN_EDGES);
-            g.E().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+            if (normalize)
+                g.E().order(Comparators.HELD_EDGE_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
+            else
+                g.E().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
             jsonGenerator.writeEndArray();
 
             jsonGenerator.writeEndObject();
