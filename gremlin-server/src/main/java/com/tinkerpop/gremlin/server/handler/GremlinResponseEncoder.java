@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.server.handler;
 
 import com.tinkerpop.gremlin.server.MessageSerializer;
-import com.tinkerpop.gremlin.server.message.ResponseMessage;
 import com.tinkerpop.gremlin.server.ResultCode;
 import com.tinkerpop.gremlin.server.Tokens;
+import com.tinkerpop.gremlin.server.message.ResponseMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;

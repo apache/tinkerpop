@@ -21,7 +21,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Spliterator;
