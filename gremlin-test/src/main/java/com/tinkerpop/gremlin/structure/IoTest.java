@@ -119,7 +119,7 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldWriteNormalizedGraphML() throws Exception {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            final GraphMLWriter w = GraphMLWriter.create().setNormalize(true).build();
+            final GraphMLWriter w = GraphMLWriter.create().normalize(true).build();
             w.writeGraph(bos, g);
 
             final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-normalized.xml"));

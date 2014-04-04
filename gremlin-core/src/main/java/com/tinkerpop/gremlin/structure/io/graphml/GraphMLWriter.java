@@ -354,7 +354,7 @@ public class GraphMLWriter implements GraphWriter {
          *
          * @param normalize whether to normalize the output.
          */
-        public Builder setNormalize(final boolean normalize) {
+        public Builder normalize(final boolean normalize) {
             this.normalize = normalize;
             return this;
         }
