@@ -28,12 +28,8 @@ import java.util.Optional;
 public class JsonMessageSerializerV1d0 implements MessageSerializer {
     private static final Logger logger = LoggerFactory.getLogger(JsonMessageSerializerV1d0.class);
 
-    // todo: figure out the versioning stuff once GraphSON is done in gremlin-core
-    static final Version JSON_SERIALIZATION_VERSION = new Version(1, 0, 0, "", "com.tinkerpop.gremlin", "gremlin-server");
-
     public static final String TOKEN_RESULT = "result";
     public static final String TOKEN_CODE = "code";
-    public static final String TOKEN_VERSION = "version";
     public static final String TOKEN_REQUEST = "requestId";
 
     /**
@@ -45,7 +41,6 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
 
     @Override
     public String[] mimeTypesSupported() {
-        // todo: rename mime type?
         return new String[]{"application/json", "application/vnd.gremlin-v1.0+json"};
     }
 
@@ -65,7 +60,6 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
             final Map<String, Object> result = new HashMap<>();
             result.put(TOKEN_CODE, code.getValue());
             result.put(TOKEN_RESULT, o.isPresent() ? o.get() : null);
-            result.put(TOKEN_VERSION, JSON_SERIALIZATION_VERSION.toString());
             result.put(TOKEN_REQUEST, requestMessage.isPresent() ? requestMessage.get().getRequestId() : null);
 
             return mapper.writeValueAsString(result);
@@ -87,7 +81,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
 
     public static class GremlinServerModule extends SimpleModule {
         public GremlinServerModule() {
-            super("graphson-gremlin-server", JsonMessageSerializerV1d0.JSON_SERIALIZATION_VERSION);
+            super("graphson-gremlin-server");
             addSerializer(JsonBuilder.class, new JsonBuilderJacksonSerializer());
         }
     }
