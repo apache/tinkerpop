@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
+import com.tinkerpop.gremlin.structure.util.Comparators;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLOutputFactory;
@@ -16,7 +17,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +32,6 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphMLWriter implements GraphWriter {
-    private static final Comparator<Element> ELEMENT_COMPARATOR = Comparator.comparing(e -> e.getId().toString(), String.CASE_INSENSITIVE_ORDER);
     private final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
     private boolean normalize = false;
 
@@ -153,7 +152,7 @@ public class GraphMLWriter implements GraphWriter {
     private void writeEdges(final XMLStreamWriter writer, final Graph graph) throws XMLStreamException {
         if (normalize) {
             final List<Edge> edges = graph.E().toList();
-            Collections.sort(edges, ELEMENT_COMPARATOR);
+            Collections.sort(edges, Comparators.ELEMENT_COMPARATOR);
 
             for (Edge edge : edges) {
                 writer.writeStartElement(GraphMLTokens.EDGE);
@@ -248,7 +247,7 @@ public class GraphMLWriter implements GraphWriter {
             for (Vertex v : graph.V().toList()) {
                 ((Collection<Vertex>) vertices).add(v);
             }
-            Collections.sort((List<Vertex>) vertices, ELEMENT_COMPARATOR);
+            Collections.sort((List<Vertex>) vertices, Comparators.ELEMENT_COMPARATOR);
         } else
             vertices = graph.V().toList();
 

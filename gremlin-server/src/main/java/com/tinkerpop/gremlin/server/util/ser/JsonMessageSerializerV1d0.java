@@ -56,7 +56,8 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
      * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write
      * out {@link com.tinkerpop.gremlin.structure.Graph} objects and {@code toString} for unknown objects.
      */
-    private static final ObjectMapper mapper = new GraphSONObjectMapper(new GremlinServerModule());
+    private static final ObjectMapper mapper = GraphSONObjectMapper.create()
+            .customSerializer(new GremlinServerModule()).build();
 
     @Override
     public String[] mimeTypesSupported() {
