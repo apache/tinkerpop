@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.server.handler;
 
-import com.tinkerpop.gremlin.server.ResultCode;
+import com.tinkerpop.gremlin.server.message.ResultCode;
 import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.message.RequestMessage;
 import com.tinkerpop.gremlin.server.message.ResponseMessage;

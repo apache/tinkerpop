@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.server.message.RequestMessage;
+import com.tinkerpop.gremlin.server.message.ResultCode;
 import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -51,7 +52,7 @@ public interface MessageSerializer {
     static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new JsonMessageSerializerV1d0();
 
     /**
-     * Serialize a result message with a {@link ResultCode#SUCCESS} result code.
+     * Serialize a result message with a {@link com.tinkerpop.gremlin.server.message.ResultCode#SUCCESS} result code.
      */
     public default String serializeResult(final Optional<Object> o, final Optional<RequestMessage> requestMessage) {
         return this.serializeResult(o, ResultCode.SUCCESS, requestMessage);

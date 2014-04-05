@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
-import com.tinkerpop.gremlin.server.ResultCode;
+import com.tinkerpop.gremlin.server.message.ResultCode;
 import com.tinkerpop.gremlin.server.ScriptEngines;
 import com.tinkerpop.gremlin.server.Tokens;
 import com.tinkerpop.gremlin.server.message.RequestMessage;

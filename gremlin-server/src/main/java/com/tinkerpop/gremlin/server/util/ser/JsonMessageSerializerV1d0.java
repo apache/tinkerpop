@@ -2,13 +2,12 @@ package com.tinkerpop.gremlin.server.util.ser;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.server.MessageSerializer;
-import com.tinkerpop.gremlin.server.ResultCode;
+import com.tinkerpop.gremlin.server.message.ResultCode;
 import com.tinkerpop.gremlin.server.message.RequestMessage;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
 import groovy.json.JsonBuilder;

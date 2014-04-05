@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.server.Graphs;
 import com.tinkerpop.gremlin.server.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.OpProcessor;
-import com.tinkerpop.gremlin.server.ResultCode;
+import com.tinkerpop.gremlin.server.message.ResultCode;
 import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.server.message.RequestMessage;
 import com.tinkerpop.gremlin.server.message.ResponseMessage;

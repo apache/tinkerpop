@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.server.message;
 
 /**
  * Result codes for Gremlin Server responses. Result codes tend to map to
@@ -53,7 +53,7 @@ public enum ResultCode {
      * Either transform the object into something Gremlin Server can process within the script or install custom
      * serialization classes to Gremlin Server.
      *
-     * @see MessageSerializer
+     * @see com.tinkerpop.gremlin.server.MessageSerializer
      * @see com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0
      */
     SERVER_ERROR_SERIALIZATION(599);
