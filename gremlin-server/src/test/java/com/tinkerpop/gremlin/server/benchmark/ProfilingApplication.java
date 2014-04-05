@@ -1,5 +1,7 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.server.benchmark;
 
+import com.tinkerpop.gremlin.server.MessageSerializer;
+import com.tinkerpop.gremlin.server.Tokens;
 import com.tinkerpop.gremlin.server.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
