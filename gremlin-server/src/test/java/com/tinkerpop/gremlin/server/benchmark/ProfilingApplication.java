@@ -30,6 +30,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.util.CharsetUtil;
 
 import java.net.URI;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.IntStream;
 
@@ -94,13 +95,15 @@ public class ProfilingApplication {
 
                 final Channel ch = b.connect(uri.getHost(), uri.getPort()).sync().channel();
                 handler.handshakeFuture().addListener(future -> {
-                    IntStream.range(0, numberOfMessages).forEach(i -> {
-                        final RequestMessage msg = RequestMessage.create(Tokens.OPS_EVAL).add(
-                                Tokens.ARGS_GREMLIN, "1+1", Tokens.ARGS_ACCEPT, "application/json").build();
-                        ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + MessageSerializer.DEFAULT_REQUEST_SERIALIZER.serialize(msg)));
-                    });
+                    CompletableFuture.runAsync(() -> {
+                        IntStream.range(0, numberOfMessages).forEach(i -> {
+                            final RequestMessage msg = RequestMessage.create(Tokens.OPS_EVAL).add(
+                                    Tokens.ARGS_GREMLIN, "1+1", Tokens.ARGS_ACCEPT, "application/json").build();
+                            ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + MessageSerializer.DEFAULT_REQUEST_SERIALIZER.serialize(msg)));
+                        });
 
-                    complete.countDown();
+                        ch.close().addListener(f -> complete.countDown());
+                    });
                 });
             }
 
