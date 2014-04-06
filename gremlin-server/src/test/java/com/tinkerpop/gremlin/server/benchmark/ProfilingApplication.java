@@ -32,6 +32,8 @@ import io.netty.util.CharsetUtil;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -43,7 +45,7 @@ public class ProfilingApplication {
 
         try {
             final String url = "ws://localhost:8182/gremlin";
-            new Worker(100, 10000, new URI(url)).execute();
+            new Worker(1000, 1000, new URI(url)).execute();
 
 
         } catch (Exception ex) {
@@ -66,7 +68,7 @@ public class ProfilingApplication {
         }
 
         public void execute() throws Exception {
-            final EventLoopGroup group = new NioEventLoopGroup();
+            final EventLoopGroup group = new NioEventLoopGroup(4);
 
             final CountDownLatch complete = new CountDownLatch(numberOfConnections);
             final AtomicInteger responses = new AtomicInteger(0);
@@ -98,13 +100,15 @@ public class ProfilingApplication {
 
                 final Channel ch = b.connect(uri.getHost(), uri.getPort()).sync().channel();
                 handler.handshakeFuture().addListener(future -> {
+                    final ExecutorService executor = Executors.newSingleThreadExecutor();
                     CompletableFuture.runAsync(() -> {
                         IntStream.range(0, numberOfMessages).forEach(i -> {
                             final RequestMessage msg = RequestMessage.create(Tokens.OPS_EVAL).add(
                                     Tokens.ARGS_GREMLIN, "1+1", Tokens.ARGS_ACCEPT, "application/json").build();
                             ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + MessageSerializer.DEFAULT_REQUEST_SERIALIZER.serialize(msg)));
                         });
-                    }).thenRun(() -> {
+                    }, executor).thenRunAsync(() -> {
+                        System.out.println("Finished sending requests");
                         while (handler.getCounter() < numberOfMessages * 2) {
                             try {
                                 Thread.sleep(100);
@@ -115,8 +119,9 @@ public class ProfilingApplication {
                         ch.close().addListener(f -> {
                             responses.addAndGet(handler.getCounter());
                             complete.countDown();
+                            System.out.println("Finished receiving responses");
                         });
-                    });
+                    }, executor);
                 });
             }
 
