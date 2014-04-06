@@ -32,6 +32,7 @@ import io.netty.util.CharsetUtil;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 /**
@@ -42,7 +43,7 @@ public class ProfilingApplication {
 
         try {
             final String url = "ws://localhost:8182/gremlin";
-            new Worker(20, 100, new URI(url)).execute();
+            new Worker(100, 10000, new URI(url)).execute();
 
 
         } catch (Exception ex) {
@@ -68,6 +69,8 @@ public class ProfilingApplication {
             final EventLoopGroup group = new NioEventLoopGroup();
 
             final CountDownLatch complete = new CountDownLatch(numberOfConnections);
+            final AtomicInteger responses = new AtomicInteger(0);
+            final long start = System.nanoTime();
 
             for (int ix = 0; ix < numberOfConnections; ix++) {
                 final Bootstrap b = new Bootstrap();
@@ -101,13 +104,30 @@ public class ProfilingApplication {
                                     Tokens.ARGS_GREMLIN, "1+1", Tokens.ARGS_ACCEPT, "application/json").build();
                             ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + MessageSerializer.DEFAULT_REQUEST_SERIALIZER.serialize(msg)));
                         });
+                    }).thenRun(() -> {
+                        while (handler.getCounter() < numberOfMessages * 2) {
+                            try {
+                                Thread.sleep(100);
+                            } catch (Exception ex) {}
 
-                        ch.close().addListener(f -> complete.countDown());
+                        }
+
+                        ch.close().addListener(f -> {
+                            responses.addAndGet(handler.getCounter());
+                            complete.countDown();
+                        });
                     });
                 });
             }
 
             complete.await();
+
+            final long total = System.nanoTime() - start;
+            final long totalSeconds = Math.round(total / 1000000000d);
+            final long requestCount = numberOfConnections * numberOfMessages;
+            final long responseCount = responses.get();
+            final long reqSec = Math.round(requestCount / totalSeconds);
+            System.out.println(String.format("connections: %s requests: %s responses: %s time(s): %s req/sec: %s", numberOfConnections, requestCount, responseCount, totalSeconds, reqSec));
         }
     }
 
@@ -115,8 +135,14 @@ public class ProfilingApplication {
         private final WebSocketClientHandshaker handshaker;
         private ChannelPromise handshakeFuture;
 
+        private int counter;
+
         public WebSocketClientHandler(final WebSocketClientHandshaker handshaker) {
             this.handshaker = handshaker;
+        }
+
+        public int getCounter() {
+            return counter;
         }
 
         public ChannelFuture handshakeFuture() {
@@ -156,8 +182,7 @@ public class ProfilingApplication {
 
             final WebSocketFrame frame = (WebSocketFrame) msg;
             if (frame instanceof TextWebSocketFrame) {
-                final TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-                System.out.println(textFrame.text());
+                counter++;
             } else if (frame instanceof PongWebSocketFrame) {
             } else if (frame instanceof BinaryWebSocketFrame) {
             } else if (frame instanceof CloseWebSocketFrame)
