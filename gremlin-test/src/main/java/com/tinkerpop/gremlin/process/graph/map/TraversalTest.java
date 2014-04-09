@@ -16,9 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -73,6 +71,8 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
     public abstract Iterator<Vertex> get_g_v1_out_out_out(final Object v1Id);
 
     public abstract Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id);
+
+    public abstract Iterator<Vertex> get_g_v1_outE_otherV(final Object v1Id);
 
     // VERTEX ADJACENCY
 
@@ -433,6 +433,26 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         assertEquals(3, names.size());
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v1_outE_otherV() {
+        final Iterator<Vertex> step = get_g_v1_outE_otherV(convertToId("marko"));
+        System.out.println("Testing: " + step);
+        int counter = 0;
+        Set<Vertex> vertices = new HashSet<>();
+        while (step.hasNext()) {
+            counter++;
+            Vertex vertex = step.next();
+            vertices.add(vertex);
+            assertTrue(vertex.getValue("name").equals("vadas") ||
+                    vertex.getValue("name").equals("josh") ||
+                    vertex.getValue("name").equals("lop"));
+        }
+        assertEquals(3, counter);
+        assertEquals(3, vertices.size());
+    }
+
+
     public static class JavaTraversalTest extends TraversalTest {
         public JavaTraversalTest() {
             requiresGraphComputer = false;
@@ -532,6 +552,10 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
         public Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id) {
             return g.v(v1Id).out().value("name");
+        }
+
+        public Iterator<Vertex> get_g_v1_outE_otherV(final Object v1Id) {
+            return g.v(v1Id).outE().otherV();
         }
     }
 
@@ -636,6 +660,10 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
         public Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id) {
             return g.v(v1Id).out().<String>value("name").submit(g.compute());
+        }
+
+        public Iterator<Vertex> get_g_v1_outE_otherV(final Object v1Id) {
+            return g.v(v1Id).outE().otherV().submit(g.compute());
         }
     }
 }

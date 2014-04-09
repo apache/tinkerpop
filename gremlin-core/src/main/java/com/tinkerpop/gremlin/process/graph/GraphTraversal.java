@@ -20,6 +20,7 @@ import com.tinkerpop.gremlin.process.graph.map.AnnotatedValueStep;
 import com.tinkerpop.gremlin.process.graph.map.AnnotationValueStep;
 import com.tinkerpop.gremlin.process.graph.map.AnnotationValuesStep;
 import com.tinkerpop.gremlin.process.graph.map.BackStep;
+import com.tinkerpop.gremlin.process.graph.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
@@ -72,7 +73,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -170,6 +170,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, Vertex> bothV() {
         return (GraphTraversal) this.addStep(new EdgeVertexStep(this, Direction.BOTH));
+    }
+
+    public default GraphTraversal<S, Vertex> otherV() {
+        return (GraphTraversal) this.addStep(new EdgeOtherVertexStep(this));
     }
 
     public default GraphTraversal<S, E> order() {
