@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @author Daniel Kuppitz (daniel@thinkaurelius.com)
+ * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
 public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
