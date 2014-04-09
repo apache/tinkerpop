@@ -2,10 +2,9 @@ package com.tinkerpop.gremlin.groovy
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import com.tinkerpop.gremlin.groovy.loaders.GraphLoader
-import com.tinkerpop.gremlin.groovy.loaders.PipeLoader
+import com.tinkerpop.gremlin.groovy.loaders.StepLoader
 import com.tinkerpop.gremlin.process.Step
 import com.tinkerpop.gremlin.process.Tokens
-import com.tinkerpop.gremlin.process.Traversal
 import groovy.grape.Grape
 
 /**
@@ -35,7 +34,7 @@ class GremlinLoader {
         GraphLoader.load()
         //IndexLoader.load()
         //ObjectLoader.load()
-        PipeLoader.load()
+        StepLoader.load()
 
         try {
             //SailGraphLoader.load()
