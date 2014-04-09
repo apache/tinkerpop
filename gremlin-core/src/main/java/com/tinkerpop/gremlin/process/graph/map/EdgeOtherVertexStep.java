@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.util.PathConsumer;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -17,9 +18,9 @@ public class EdgeOtherVertexStep extends MapStep<Edge, Vertex> implements PathCo
         this.setFunction(holder -> {
             final Path path = holder.getPath();
             final Vertex vertex = path.get(path.size() - 2);
-            return vertex.getId().equals(holder.get().getVertex(Direction.OUT)) ?
-                    holder.get().getVertex(Direction.OUT) :
-                    holder.get().getVertex(Direction.IN);
+            return ElementHelper.areEqual(vertex, holder.get().getVertex(Direction.OUT)) ?
+                    holder.get().getVertex(Direction.IN) :
+                    holder.get().getVertex(Direction.OUT);
         });
     }
 }
