@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class PipeLoader {
+class StepLoader {
 
     public static void load() {
 

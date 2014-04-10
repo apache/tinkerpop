@@ -21,14 +21,14 @@ public class TraversalHelperTest {
         Traversal traversal = new DefaultTraversal<>();
         traversal.addStep(new IdentityStep(traversal));
         traversal.addStep(new HasStep(traversal, null));
-        traversal.addStep(new FilterStep(traversal, h -> true));
+        traversal.addStep(new FilterStep(traversal));
         validateToyTraversal(traversal);
     }
 
     @Test
     public void shouldInsertCorrectly() {
         Traversal traversal = new DefaultTraversal<>();
-        TraversalHelper.insertStep(new FilterStep(traversal, h -> true), 0, traversal);
+        TraversalHelper.insertStep(new FilterStep(traversal), 0, traversal);
         TraversalHelper.insertStep(new HasStep(traversal, null), 0, traversal);
         TraversalHelper.insertStep(new IdentityStep(traversal), 0, traversal);
         validateToyTraversal(traversal);
@@ -36,7 +36,7 @@ public class TraversalHelperTest {
         traversal = new DefaultTraversal<>();
         TraversalHelper.insertStep(new IdentityStep(traversal), 0, traversal);
         TraversalHelper.insertStep(new HasStep(traversal, null), 1, traversal);
-        TraversalHelper.insertStep(new FilterStep(traversal, h -> true), 2, traversal);
+        TraversalHelper.insertStep(new FilterStep(traversal), 2, traversal);
         validateToyTraversal(traversal);
     }
 
@@ -45,7 +45,7 @@ public class TraversalHelperTest {
         Traversal traversal = new DefaultTraversal<>();
         traversal.addStep(new IdentityStep(traversal));
         traversal.addStep(new HasStep(traversal, null));
-        traversal.addStep(new FilterStep(traversal, h -> true));
+        traversal.addStep(new FilterStep(traversal));
 
         traversal.addStep(new PropertyStep(traversal, "marko"));
         TraversalHelper.removeStep(3, traversal);

@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.structure.Property;
 public class PropertyStep<E> extends MapStep<Element, Property<E>> {
 
     public PropertyStep(final Traversal traversal, final String key) {
-        super(traversal, holder -> holder.get().getProperty(key));
+        super(traversal);
+        this.setFunction(holder -> holder.get().getProperty(key));
     }
 }

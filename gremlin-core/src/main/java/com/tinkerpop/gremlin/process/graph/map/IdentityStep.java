@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 public class IdentityStep<S> extends MapStep<S, S> {
 
     public IdentityStep(final Traversal traversal) {
-        super(traversal, Holder::get);
+        super(traversal);
+        this.setFunction(Holder::get);
     }
 }

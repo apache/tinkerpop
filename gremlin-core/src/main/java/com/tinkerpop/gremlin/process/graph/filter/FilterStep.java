@@ -14,11 +14,6 @@ public class FilterStep<S> extends AbstractStep<S, S> {
 
     public SPredicate<Holder<S>> predicate;
 
-    public FilterStep(final Traversal traversal, final SPredicate<Holder<S>> predicate) {
-        super(traversal);
-        this.predicate = predicate;
-    }
-
     public FilterStep(final Traversal traversal) {
         super(traversal);
     }

@@ -45,7 +45,7 @@ public class TinkerGraphTest {
     @Test
     public void testTraversalDSL() {
         final Graph g = TinkerFactory.createClassic();
-        g.traversal(TinkerFactory.SocialTraversal.class).people(g).knows().forEach(System.out::println);
+        g.traversal(TinkerFactory.SocialTraversal.class).people(g).knows().knows().forEach(System.out::println);
     }
 
     @Test

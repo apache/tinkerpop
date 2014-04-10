@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.util.PathConsumer;
 public class CyclicPathStep<S> extends FilterStep<S> implements PathConsumer {
 
     public CyclicPathStep(final Traversal traversal) {
-        super(traversal, holder -> !holder.getPath().isSimple());
+        super(traversal);
+        this.setPredicate(holder -> !holder.getPath().isSimple());
     }
 }

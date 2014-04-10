@@ -20,6 +20,7 @@ import com.tinkerpop.gremlin.process.graph.map.AnnotatedValueStep;
 import com.tinkerpop.gremlin.process.graph.map.AnnotationValueStep;
 import com.tinkerpop.gremlin.process.graph.map.AnnotationValuesStep;
 import com.tinkerpop.gremlin.process.graph.map.BackStep;
+import com.tinkerpop.gremlin.process.graph.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
@@ -72,7 +73,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -89,11 +89,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// TRANSFORM STEPS /////////////////////
 
     public default <E2> GraphTraversal<S, E2> map(final SFunction<Holder<E>, E2> function) {
-        return (GraphTraversal) this.addStep(new MapStep<>(this, function));
+        final MapStep<E, E2> mapStep = new MapStep<>(this);
+        mapStep.setFunction(function);
+        return (GraphTraversal) this.addStep(mapStep);
     }
 
     public default <E2> GraphTraversal<S, E2> flatMap(final SFunction<Holder<E>, Iterator<E2>> function) {
-        return (GraphTraversal) this.addStep(new FlatMapStep<>(this, function));
+        final FlatMapStep<E, E2> flatMapStep = new FlatMapStep<>(this);
+        flatMapStep.setFunction(function);
+        return (GraphTraversal) this.addStep(flatMapStep);
     }
 
     public default GraphTraversal<S, E> identity() {
@@ -172,6 +176,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new EdgeVertexStep(this, Direction.BOTH));
     }
 
+    public default GraphTraversal<S, Vertex> otherV() {
+        return (GraphTraversal) this.addStep(new EdgeOtherVertexStep(this));
+    }
+
     public default GraphTraversal<S, E> order() {
         return (GraphTraversal) this.addStep(new OrderStep<E>(this, (a, b) -> ((Comparable<E>) a.get()).compareTo(b.get())));
     }
@@ -247,7 +255,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// FILTER STEPS /////////////////////
 
     public default GraphTraversal<S, E> filter(final SPredicate<Holder<E>> predicate) {
-        return (GraphTraversal) this.addStep(new FilterStep<>(this, predicate));
+        final FilterStep<E> filterStep = new FilterStep<>(this);
+        filterStep.setPredicate(predicate);
+        return (GraphTraversal) this.addStep(filterStep);
     }
 
     public default GraphTraversal<S, E> dedup() {
