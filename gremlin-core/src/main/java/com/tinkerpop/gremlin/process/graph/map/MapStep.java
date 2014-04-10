@@ -18,11 +18,6 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
         super(traversal);
     }
 
-    public MapStep(final Traversal traversal, final SFunction<Holder<S>, E> function) {
-        super(traversal);
-        this.function = function;
-    }
-
     protected Holder<E> processNextStart() {
         while (true) {
             final Holder<S> holder = this.starts.next();

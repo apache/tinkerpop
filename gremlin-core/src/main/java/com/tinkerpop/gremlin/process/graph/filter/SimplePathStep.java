@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.process.util.PathConsumer;
 public class SimplePathStep<S> extends FilterStep<S> implements PathConsumer {
 
     public SimplePathStep(final Traversal traversal) {
-        super(traversal, holder -> holder.getPath().isSimple());
+        super(traversal);
+        this.setPredicate(holder -> holder.getPath().isSimple());
     }
 }

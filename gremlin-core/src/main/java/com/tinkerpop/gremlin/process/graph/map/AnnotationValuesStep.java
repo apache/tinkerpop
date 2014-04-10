@@ -12,6 +12,7 @@ import java.util.Map;
 public class AnnotationValuesStep extends MapStep<AnnotatedValue, Map<String, Object>> {
 
     public AnnotationValuesStep(final Traversal traversal, final String... annotationKeyValues) {
-        super(traversal, holder -> AnnotatedValueHelper.annotationMap(holder.get(), annotationKeyValues));
+        super(traversal);
+        this.setFunction(holder -> AnnotatedValueHelper.annotationMap(holder.get(), annotationKeyValues));
     }
 }

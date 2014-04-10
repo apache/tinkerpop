@@ -18,7 +18,8 @@ public class StartStep<S> extends MapStep<S, S> implements HolderSource {
     public Object start;
 
     public StartStep(final Traversal traversal, final Object start) {
-        super(traversal, Holder::get);
+        super(traversal);
+        this.setFunction(Holder::get);
         this.start = start;
         this.generateHolderIterator(false);
     }

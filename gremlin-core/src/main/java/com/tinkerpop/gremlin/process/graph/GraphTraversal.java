@@ -89,11 +89,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// TRANSFORM STEPS /////////////////////
 
     public default <E2> GraphTraversal<S, E2> map(final SFunction<Holder<E>, E2> function) {
-        return (GraphTraversal) this.addStep(new MapStep<>(this, function));
+        final MapStep<E, E2> mapStep = new MapStep<>(this);
+        mapStep.setFunction(function);
+        return (GraphTraversal) this.addStep(mapStep);
     }
 
     public default <E2> GraphTraversal<S, E2> flatMap(final SFunction<Holder<E>, Iterator<E2>> function) {
-        return (GraphTraversal) this.addStep(new FlatMapStep<>(this, function));
+        final FlatMapStep<E, E2> flatMapStep = new FlatMapStep<>(this);
+        flatMapStep.setFunction(function);
+        return (GraphTraversal) this.addStep(flatMapStep);
     }
 
     public default GraphTraversal<S, E> identity() {
@@ -251,7 +255,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// FILTER STEPS /////////////////////
 
     public default GraphTraversal<S, E> filter(final SPredicate<Holder<E>> predicate) {
-        return (GraphTraversal) this.addStep(new FilterStep<>(this, predicate));
+        final FilterStep<E> filterStep = new FilterStep<>(this);
+        filterStep.setPredicate(predicate);
+        return (GraphTraversal) this.addStep(filterStep);
     }
 
     public default GraphTraversal<S, E> dedup() {

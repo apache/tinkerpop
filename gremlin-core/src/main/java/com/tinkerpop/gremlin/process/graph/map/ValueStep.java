@@ -10,7 +10,8 @@ import com.tinkerpop.gremlin.structure.Property;
 public class ValueStep<S, E> extends MapStep<S, E> {
 
     public ValueStep(final Traversal traversal) {
-        super(traversal, holder -> {
+        super(traversal);
+        this.setFunction(holder -> {
             final S s = holder.get();
             if (s instanceof AnnotatedValue)
                 return ((AnnotatedValue<E>) s).getValue();

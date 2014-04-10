@@ -19,11 +19,6 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
     public SFunction<Holder<S>, Iterator<E>> function;
     protected final Queue<Iterator<Holder<E>>> queue = new LinkedList<>();
 
-    public FlatMapStep(final Traversal traversal, SFunction<Holder<S>, Iterator<E>> function) {
-        super(traversal);
-        this.function = function;
-    }
-
     public FlatMapStep(final Traversal traversal) {
         super(traversal);
     }

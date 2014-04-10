@@ -87,7 +87,9 @@ public class TinkerFactory {
         }
 
         public default SocialTraversal<S, E> knows() {
-            return (SocialTraversal) this.addStep(new FlatMapStep<Vertex, Vertex>(this, v -> v.get().out("knows")));
+            final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
+            flatMapStep.setFunction(v -> v.get().out("knows"));
+            return (SocialTraversal) this.addStep(flatMapStep);
         }
 
         public static SocialTraversal of() {
