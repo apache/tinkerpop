@@ -53,6 +53,7 @@ public class GraphSONWriter implements GraphWriter {
         private boolean loadCustomSerializers = false;
         private boolean normalize = false;
         private SimpleModule custom = null;
+        private GraphSONObjectMapper.TypeEmbedding typeEmbedding = GraphSONObjectMapper.TypeEmbedding.NONE;
 
         private Builder() {}
 
@@ -72,6 +73,11 @@ public class GraphSONWriter implements GraphWriter {
             return this;
         }
 
+        public Builder typeEmbedding(final GraphSONObjectMapper.TypeEmbedding typeEmbedding) {
+            this.typeEmbedding = typeEmbedding;
+            return this;
+        }
+
         /**
          * Normalized output is deterministic with respect to the order of elements and properties in the resulting
          * XML document, and is compatible with line diff-based tools such as Git. Note: normalized output is
@@ -88,7 +94,8 @@ public class GraphSONWriter implements GraphWriter {
             final GraphSONObjectMapper mapper = GraphSONObjectMapper.create()
                     .customSerializer(custom)
                     .loadCustomSerializers(loadCustomSerializers)
-                    .normalize(normalize).build();
+                    .normalize(normalize)
+                    .typeEmbedding(typeEmbedding).build();
             return new GraphSONWriter(mapper);
         }
     }

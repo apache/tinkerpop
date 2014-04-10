@@ -6,18 +6,24 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
+import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import com.tinkerpop.gremlin.util.function.TriFunction;
+import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -62,9 +68,18 @@ public class GraphSONReader implements GraphReader {
                 while (parser.nextToken() != JsonToken.END_ARRAY) {
                     final Map<String,Object> vertexData = parser.readValueAs(new TypeReference<Map<String, Object>>() { });
                     final Map<String, Object> properties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
-                    final Object[] propsAsArray = Stream.concat(properties.entrySet().stream().flatMap(e->Stream.of(e.getKey(), e.getValue())),
+                    final List<Pair<String, IOAnnotatedList>> annotatedLists = new ArrayList<>();
+                    final Object[] propsAsArray = Stream.concat(properties.entrySet().stream().flatMap(e-> {
+                                final Object o = e.getValue();
+                                if (o instanceof IOAnnotatedList) {
+                                    annotatedLists.add(Pair.with(e.getKey(), (IOAnnotatedList) o));
+                                    return Stream.of(e.getKey(), AnnotatedList.make());
+                                } else {
+                                    return Stream.of(e.getKey(), e.getValue());
+                                }
+                            }),
                             Stream.of(Element.LABEL, vertexData.get(GraphSONTokens.LABEL), Element.ID, vertexData.get(GraphSONTokens.ID))).toArray();
-                    graph.addVertex(propsAsArray);
+                    setAnnotatedListValues(annotatedLists, graph.addVertex(propsAsArray));
                 }
             } else if (fieldName.equals(GraphSONTokens.EDGES)) {
                 while (parser.nextToken() != JsonToken.END_ARRAY) {
@@ -152,6 +167,16 @@ public class GraphSONReader implements GraphReader {
                 propsAsArray);
     }
 
+    private void setAnnotatedListValues(final List<Pair<String, IOAnnotatedList>> annotatedLists, final Vertex v) {
+        annotatedLists.forEach(kal -> {
+            final AnnotatedList al = v.getValue(kal.getValue0());
+            final List<IOAnnotatedValue> valuesForAnnotation = kal.getValue1().getAnnotatedValueList();
+            for (IOAnnotatedValue kav : valuesForAnnotation) {
+                al.addValue(kav.getValue(), kav.getAnnotationsArray());
+            }
+        });
+    }
+
     public static Builder create() {
         return new Builder();
     }
@@ -160,6 +185,7 @@ public class GraphSONReader implements GraphReader {
         private boolean loadCustomSerializers = false;
         private SimpleModule custom = null;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
+        private GraphSONObjectMapper.TypeEmbedding typeEmbedding = GraphSONObjectMapper.TypeEmbedding.NONE;
 
         private Builder() {}
 
@@ -179,6 +205,11 @@ public class GraphSONReader implements GraphReader {
             return this;
         }
 
+        public Builder typeEmbedding(final GraphSONObjectMapper.TypeEmbedding typeEmbedding) {
+            this.typeEmbedding = typeEmbedding;
+            return this;
+        }
+
         /**
          * Number of mutations to perform before a commit is executed.
          */
@@ -189,7 +220,9 @@ public class GraphSONReader implements GraphReader {
 
         public GraphSONReader build() {
             final ObjectMapper mapper = GraphSONObjectMapper.create()
-                    .customSerializer(custom).loadCustomSerializers(loadCustomSerializers).build();
+                    .customSerializer(custom)
+                    .typeEmbedding(typeEmbedding)
+                    .loadCustomSerializers(loadCustomSerializers).build();
             return new GraphSONReader(mapper, batchSize);
         }
     }

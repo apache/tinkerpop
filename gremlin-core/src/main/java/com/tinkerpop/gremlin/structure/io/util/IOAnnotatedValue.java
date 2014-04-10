@@ -1,5 +1,6 @@
-package com.tinkerpop.gremlin.structure.io.kryo;
+package com.tinkerpop.gremlin.structure.io.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import org.javatuples.Pair;
 
@@ -10,11 +11,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Kryo serializable form of an {@link AnnotatedValue}.
+ * Serializable form of an {@link AnnotatedValue}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class KryoAnnotatedValue<V> {
+public class IOAnnotatedValue<V> {
 
     private V value;
     private Map<String, Object> annotations = new HashMap<>();
@@ -35,20 +36,23 @@ class KryoAnnotatedValue<V> {
         this.annotations = annotations;
     }
 
+    // todo: keep implementation specific annotations in here?
+
     /**
      * Converts a set of memory in a {@link Map} to an array of key-value objects.  This is the format expected
      * when doing a {@link com.tinkerpop.gremlin.structure.Graph#addVertex(Object...)},
      * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)}
      * {@link com.tinkerpop.gremlin.structure.Element#setProperties(Object...)}.
      */
+    @JsonIgnore
     public Object[] getAnnotationsArray() {
         return this.annotations.entrySet().stream()
                 .flatMap(kv -> Stream.of(kv.getKey(), kv.getValue()))
                 .collect(Collectors.toList()).toArray();
     }
 
-    public static <V> KryoAnnotatedValue from(final AnnotatedValue<V> av) {
-        final KryoAnnotatedValue<V> kav = new KryoAnnotatedValue<>();
+    public static <V> IOAnnotatedValue from(final AnnotatedValue<V> av) {
+        final IOAnnotatedValue<V> kav = new IOAnnotatedValue<>();
         kav.setValue(av.getValue());
 
         final Map<String, Object> map = av.getAnnotationKeys().stream()

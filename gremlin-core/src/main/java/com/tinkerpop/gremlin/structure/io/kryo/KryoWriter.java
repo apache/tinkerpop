@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.structure.io.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -11,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
-import com.tinkerpop.gremlin.util.function.ThrowingBiConsumer;
+import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 /**
  * The {@link GraphWriter} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
@@ -149,7 +147,7 @@ public class KryoWriter implements GraphWriter {
 
     private void writePropertyValue(final Output output, final Property val) {
         if (val.get() instanceof AnnotatedList)
-            kryo.writeClassAndObject(output, KryoAnnotatedList.from((AnnotatedList) val.get()));
+            kryo.writeClassAndObject(output, IOAnnotatedList.from((AnnotatedList) val.get()));
         else
             kryo.writeClassAndObject(output, val.get());
     }

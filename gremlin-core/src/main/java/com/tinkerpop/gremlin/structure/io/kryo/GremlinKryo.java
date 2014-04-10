@@ -5,7 +5,8 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.util.function.ThrowingBiConsumer;
+import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
@@ -16,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -128,8 +128,8 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Direction.class, null, 12));
             add(Triplet.<Class, Serializer, Integer>with(VertexTerminator.class, null, 13));
             add(Triplet.<Class, Serializer, Integer>with(EdgeTerminator.class, null, 14));
-            add(Triplet.<Class, Serializer, Integer>with(KryoAnnotatedList.class, null, 15));
-            add(Triplet.<Class, Serializer, Integer>with(KryoAnnotatedValue.class, null, 16));
+            add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedList.class, null, 15));
+            add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedValue.class, null, 16));
             add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
         }};
 

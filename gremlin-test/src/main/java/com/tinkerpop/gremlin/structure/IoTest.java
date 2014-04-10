@@ -16,6 +16,7 @@ import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
@@ -298,6 +299,33 @@ public class IoTest extends AbstractGremlinTest {
             }
 
             assertClassicGraph(g1, true, false);
+
+            // need to manually close the "g1" instance
+            graphProvider.clear(g1, configuration);
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldReadWriteModernToGraphSON() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphWriter writer = GraphSONWriter.create().typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL).build();
+            writer.writeGraph(os, g);
+
+            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+            graphProvider.clear(configuration);
+            final Graph g1 = graphProvider.openTestGraph(configuration);
+            final GraphReader reader = GraphSONReader.create()
+                    .typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL).build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readGraph(bais, g1);
+            }
+
+            assertModernGraph(g1);
 
             // need to manually close the "g1" instance
             graphProvider.clear(g1, configuration);
@@ -1220,6 +1248,7 @@ public class IoTest extends AbstractGremlinTest {
         }
     }
 
+    // todo: assert more of this???
     public static void assertModernGraph(final Graph g1) {
         if (g1.getFeatures().graph().memory().supportsMemory()) {
             final Map<String,Object> m = g1.memory().asMap();

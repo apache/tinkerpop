@@ -2,19 +2,25 @@ package com.tinkerpop.gremlin.structure.io.graphson;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
 import com.tinkerpop.gremlin.structure.util.Comparators;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -39,22 +45,40 @@ public class GraphSONModule extends SimpleModule {
         @Override
         public void serialize(final Edge edge, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
+            ser(edge, jsonGenerator, false);
+        }
+
+        @Override
+        public void serializeWithType(final Edge edge, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+            ser(edge, jsonGenerator, true);
+        }
+
+        private void ser(final Edge edge, final JsonGenerator jsonGenerator, final boolean includeType) throws IOException, JsonProcessingException {
             jsonGenerator.writeStartObject();
+            if (includeType)
+                jsonGenerator.writeStringField(GraphSONTokens.CLASS, GraphSONTokens.MAP_CLASS);
+
             jsonGenerator.writeObjectField(GraphSONTokens.ID, edge.getId());
             jsonGenerator.writeStringField(GraphSONTokens.LABEL, edge.getLabel());
             jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
             jsonGenerator.writeObjectField(GraphSONTokens.IN, edge.getVertex(Direction.IN).getId());
             jsonGenerator.writeObjectField(GraphSONTokens.OUT, edge.getVertex(Direction.OUT).getId());
 
-            if (normalize){
+            if (normalize) {
                 jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
+
+                // if required manually set the @class since a sorted map is required here and must be manually written
+                if (includeType)
+                    jsonGenerator.writeStringField(GraphSONTokens.CLASS, GraphSONTokens.MAP_CLASS);
+
                 edge.getProperties().values().stream().sorted(Comparators.PROPERTY_COMPARATOR)
                         .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
                 jsonGenerator.writeEndObject();
             } else {
-                jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
-                edge.getProperties().values().forEach(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
-                jsonGenerator.writeEndObject();
+                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES,
+                        edge.getProperties().values().stream().collect(
+                                Collectors.toMap(Property::getKey, Property::get)));
             }
 
 
@@ -72,24 +96,45 @@ public class GraphSONModule extends SimpleModule {
         @Override
         public void serialize(final Vertex vertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
+            ser(vertex, jsonGenerator, false);
+        }
+
+        @Override
+        public void serializeWithType(final Vertex vertex, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+            ser(vertex, jsonGenerator, true);
+
+        }
+
+        private void ser(final Vertex vertex, final JsonGenerator jsonGenerator, final boolean includeType)
+                throws IOException, JsonGenerationException {
             jsonGenerator.writeStartObject();
+            if (includeType)
+                jsonGenerator.writeStringField(GraphSONTokens.CLASS, GraphSONTokens.MAP_CLASS);
+
             jsonGenerator.writeObjectField(GraphSONTokens.ID, vertex.getId());
             jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertex.getLabel());
             jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
 
             if (normalize) {
                 jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
+
+                // if required manually set the @class since a sorted map is required here and must be manually written
+                if (includeType)
+                    jsonGenerator.writeStringField(GraphSONTokens.CLASS, GraphSONTokens.MAP_CLASS);
+
                 vertex.getProperties().values().stream().sorted(Comparators.PROPERTY_COMPARATOR)
                         .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
                 jsonGenerator.writeEndObject();
             } else {
-                jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
-                vertex.getProperties().values().forEach(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
-                jsonGenerator.writeEndObject();
+                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES,
+                        vertex.getProperties().values().stream().collect(
+                                Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IOAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
             }
 
             jsonGenerator.writeEndObject();
         }
+
     }
 
     /**
@@ -97,7 +142,18 @@ public class GraphSONModule extends SimpleModule {
      */
     static class GraphSONKeySerializer extends StdKeySerializer {
         @Override
-        public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+        public void serialize(final Object o, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+            ser(o, jsonGenerator, serializerProvider);
+        }
+
+        @Override
+        public void serializeWithType(final Object o, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+            ser(o, jsonGenerator, serializerProvider);
+        }
+
+        private void ser(final Object o, final JsonGenerator jsonGenerator,
+                         final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
             if (Element.class.isAssignableFrom(o.getClass()))
                 jsonGenerator.writeFieldName((((Element) o).getId()).toString());
             else
