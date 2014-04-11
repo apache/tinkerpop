@@ -46,7 +46,7 @@ public class EmptyGraph implements Graph {
     }
 
     @Override
-    public GraphComputer compute() {
+    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
         throw new IllegalStateException(MESSAGE);
     }
 

@@ -59,7 +59,7 @@ public interface Graph extends AutoCloseable {
         }
     }
 
-    public GraphComputer compute();
+    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
 
     public Transaction tx();
 
@@ -442,6 +442,10 @@ public interface Graph extends AutoCloseable {
 
         public static NoSuchElementException elementNotFound() {
             return FastNoSuchElementException.instance();
+        }
+
+        public static IllegalArgumentException onlyOneOrNoGraphComputerClass() {
+            return new IllegalArgumentException("Provide either one or no graph computer class");
         }
     }
 }
