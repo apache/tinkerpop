@@ -499,6 +499,81 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_SERIALIZABLE_VALUES)
+    public void shouldSupportUUIDInGraphSON() throws Exception {
+        final UUID id = UUID.randomUUID();
+        final Vertex v1 = g.addVertex();
+        final Vertex v2 = g.addVertex();
+        final Edge e = v1.addEdge("friend", v2, "uuid", id);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.create()
+                    .embedTypes(true)
+                    .build();
+            writer.writeEdge(os, e);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = GraphSONReader.create()
+                    .embedTypes(true)
+                    .build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readEdge(bais,
+                        (edgeId, outId, inId, label, properties) -> {
+                            assertEquals(e.getId(), edgeId);
+                            assertEquals(v1.getId(), outId);
+                            assertEquals(v2.getId(), inId);
+                            assertEquals(e.getLabel(), label);
+                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals("uuid", properties[0]);
+                            assertEquals(id, properties[1]);
+
+                            called.set(true);
+
+                            return null;
+                        });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_SERIALIZABLE_VALUES)
+    public void shouldSupportUUIDInKryo() throws Exception {
+        final UUID id = UUID.randomUUID();
+        final Vertex v1 = g.addVertex();
+        final Vertex v2 = g.addVertex();
+        final Edge e = v1.addEdge("friend", v2, "uuid", id);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = KryoWriter.create().build();
+            writer.writeEdge(os, e);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final KryoReader reader = KryoReader.create()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readEdge(bais,
+                        (edgeId, outId, inId, label, properties) -> {
+                            assertEquals(e.getId(), edgeId);
+                            assertEquals(v1.getId(), outId);
+                            assertEquals(v2.getId(), inId);
+                            assertEquals(e.getLabel(), label);
+                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals("uuid", properties[0]);
+                            assertEquals(id, properties[1]);
+
+                            called.set(true);
+
+                            return null;
+                        });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
