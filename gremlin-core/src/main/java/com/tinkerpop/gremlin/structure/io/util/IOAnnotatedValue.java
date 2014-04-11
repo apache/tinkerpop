@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.structure.io.util;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import org.javatuples.Pair;
 

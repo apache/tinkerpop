@@ -11,8 +11,6 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
-import com.tinkerpop.gremlin.structure.util.Comparators;
-import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
