@@ -88,7 +88,7 @@ public class BatchGraph<T extends Graph> implements Graph {
      *                   larger this value, the more memory is required but the faster the loading process.
      */
     private BatchGraph(final T graph, final VertexIdType type, final long bufferSize, final Optional<String> vertexIdKey,
-                       final Optional<String> edgeIdKey, final  boolean loadingFromScratch) {
+                       final Optional<String> edgeIdKey, final boolean loadingFromScratch) {
         this.baseGraph = graph;
         this.batchTransaction = new BatchTransaction();
         this.batchFeatures = new BatchFeatures(graph.getFeatures());
@@ -204,7 +204,7 @@ public class BatchGraph<T extends Graph> implements Graph {
     }
 
     @Override
-    public GraphComputer compute() {
+    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
         throw Exceptions.graphComputerNotSupported();
     }
 
@@ -560,7 +560,8 @@ public class BatchGraph<T extends Graph> implements Graph {
 
         public Builder(final T g) {
             if (null == g) throw new IllegalArgumentException("Graph may not be null");
-            if (g instanceof BatchGraph) throw new IllegalArgumentException("BatchGraph cannot wrap another BatchGraph instance");
+            if (g instanceof BatchGraph)
+                throw new IllegalArgumentException("BatchGraph cannot wrap another BatchGraph instance");
             this.graphToLoad = g;
         }
 

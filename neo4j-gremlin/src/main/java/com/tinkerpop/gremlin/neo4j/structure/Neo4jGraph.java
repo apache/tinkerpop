@@ -28,7 +28,6 @@ import org.neo4j.kernel.impl.core.NodeManager;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -97,7 +96,7 @@ public class Neo4jGraph implements Graph {
      */
     public static <G extends Graph> G open(final Optional<Configuration> configuration) {
         if (null == configuration) throw Graph.Exceptions.argumentCanNotBeNull("configuration");
-        final Configuration config = configuration.orElseThrow(()->Graph.Exceptions.argumentCanNotBeNull("configuration"));
+        final Configuration config = configuration.orElseThrow(() -> Graph.Exceptions.argumentCanNotBeNull("configuration"));
 
         if (!config.containsKey(CONFIG_DIRECTORY))
             throw new IllegalArgumentException(String.format("Neo4j configuration requires that the %s be set", CONFIG_DIRECTORY));
@@ -118,7 +117,7 @@ public class Neo4jGraph implements Graph {
      * Construct a Neo4jGraph instance using an existing Neo4j raw instance.
      */
     public static <G extends Graph> G open(final GraphDatabaseService rawGraph) {
-        return (G) new Neo4jGraph(Optional.ofNullable(rawGraph).orElseThrow(()->Graph.Exceptions.argumentCanNotBeNull("rawGraph")));
+        return (G) new Neo4jGraph(Optional.ofNullable(rawGraph).orElseThrow(() -> Graph.Exceptions.argumentCanNotBeNull("rawGraph")));
     }
 
     @Override
@@ -184,7 +183,7 @@ public class Neo4jGraph implements Graph {
     }
 
     @Override
-    public GraphComputer compute() {
+    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
         throw Graph.Exceptions.graphComputerNotSupported(); // todo: fix later
     }
 
@@ -220,9 +219,9 @@ public class Neo4jGraph implements Graph {
         return this.rawGraph;
     }
 
-    public Iterator<Map<String,Object>> query(final String query, final Map<String,Object> params) {
+    public Iterator<Map<String, Object>> query(final String query, final Map<String, Object> params) {
         this.tx().readWrite();
-        return cypher.execute(query,null == params ? Collections.<String,Object>emptyMap() : params).iterator();
+        return cypher.execute(query, null == params ? Collections.<String, Object>emptyMap() : params).iterator();
     }
 
     private PropertyContainer getGraphProperties() {
@@ -410,48 +409,48 @@ public class Neo4jGraph implements Graph {
                 return new Neo4jEdgePropertyFeatures();
             }
         }
-        
+
         public static class Neo4jVertexPropertyFeatures implements VertexPropertyFeatures {
             @Override
             public boolean supportsMapValues() {
-                return false;  
+                return false;
             }
 
             @Override
             public boolean supportsMixedListValues() {
-                return false;  
+                return false;
             }
 
             @Override
             public boolean supportsSerializableValues() {
-                return false;  
+                return false;
             }
 
             @Override
             public boolean supportsUniformListValues() {
-                return false;  
+                return false;
             }
         }
 
         public static class Neo4jEdgePropertyFeatures implements EdgePropertyFeatures {
             @Override
             public boolean supportsMapValues() {
-                return false;  
+                return false;
             }
 
             @Override
             public boolean supportsMixedListValues() {
-                return false;  
+                return false;
             }
 
             @Override
             public boolean supportsSerializableValues() {
-                return false;  
+                return false;
             }
 
             @Override
             public boolean supportsUniformListValues() {
-                return false;  
+                return false;
             }
         }
 

@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.filter.HasAnnotationStep;
 import com.tinkerpop.gremlin.process.graph.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.filter.IntervalStep;
+import com.tinkerpop.gremlin.process.graph.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.filter.SimplePathStep;
@@ -327,6 +328,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new IntervalStep(this,
                 new HasContainer(key, Compare.GREATER_THAN_EQUAL, startValue),
                 new HasContainer(key, Compare.LESS_THAN, endValue)));
+    }
+
+    public default GraphTraversal<S, E> random(final double probability) {
+        return (GraphTraversal) this.addStep(new RandomStep<>(this, probability));
     }
 
     public default GraphTraversal<S, E> range(final int low, final int high) {

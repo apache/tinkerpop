@@ -69,8 +69,8 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
     }
 
     @Override
-    public GraphComputer compute() {
-        return this.baseGraph.compute();
+    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
+        return this.baseGraph.compute(graphComputerClass);
     }
 
     @Override

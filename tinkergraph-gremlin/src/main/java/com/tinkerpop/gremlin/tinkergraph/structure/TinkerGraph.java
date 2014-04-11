@@ -144,9 +144,17 @@ public class TinkerGraph implements Graph, Serializable {
         return vertex;
     }
 
-    public GraphComputer compute() {
-        return new TinkerGraphComputer(this);
+    public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
+        if (graphComputerClass.length > 1)
+            throw Graph.Exceptions.onlyOneOrNoGraphComputerClass();
+
+        if (graphComputerClass.length == 0) {
+            return (C) new TinkerGraphComputer(this);
+        } else {
+            return (C) new TinkerGraphComputer(this);
+        }
     }
+
 
     public <M extends Memory> M memory() {
         return (M) this.graphMemory;
