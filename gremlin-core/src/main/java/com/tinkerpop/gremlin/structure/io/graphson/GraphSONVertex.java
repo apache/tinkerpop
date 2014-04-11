@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.structure.util.Comparators;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -59,36 +60,23 @@ class GraphSONVertex {
 
         public void ser(final GraphSONVertex directionalVertex, final JsonGenerator jsonGenerator, final boolean includeType) throws IOException, JsonProcessingException {
             final Vertex vertex = directionalVertex.getVertexToSerialize();
-            jsonGenerator.writeStartObject();
-            if (includeType)
-                jsonGenerator.writeStringField(GraphSONTokens.CLASS, GraphSONTokens.MAP_CLASS);
-
-            jsonGenerator.writeObjectField(GraphSONTokens.ID, vertex.getId());
-            jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertex.getLabel());
-            jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
-
-            jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES,
-                vertex.getProperties().values().stream().collect(
-                    Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IOAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
+            final Map<String,Object> m = new HashMap<>();
+            m.put(GraphSONTokens.ID, vertex.getId());
+            m.put(GraphSONTokens.LABEL, vertex.getLabel());
+            m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
+            m.put(GraphSONTokens.PROPERTIES,
+                    vertex.getProperties().values().stream().collect(
+                            Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IOAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
-                jsonGenerator.writeArrayFieldStart(GraphSONTokens.OUT);
-                if (normalize)
-                    vertex.outE().order(Comparators.HELD_EDGE_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
-                else
-                    vertex.outE().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
-                jsonGenerator.writeEndArray();
+                m.put(GraphSONTokens.OUT, vertex.outE().toList());
             }
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.IN) {
-                jsonGenerator.writeArrayFieldStart(GraphSONTokens.IN);
-                if (normalize)
-                    vertex.inE().order(Comparators.HELD_EDGE_COMPARATOR).forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
-                else
-                    vertex.inE().forEach(FunctionUtils.wrapConsumer(jsonGenerator::writeObject));
-                jsonGenerator.writeEndArray();
+                m.put(GraphSONTokens.IN, vertex.inE().toList());
             }
-            jsonGenerator.writeEndObject();
+
+            jsonGenerator.writeObject(m);
         }
     }
 }

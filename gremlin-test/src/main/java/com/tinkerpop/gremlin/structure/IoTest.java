@@ -459,6 +459,46 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_LONG_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+    public void shouldReadWriteEdgeToGraphSONNonLossy() throws Exception {
+        final Vertex v1 = g.addVertex(Element.ID, 1l);
+        final Vertex v2 = g.addVertex(Element.ID, 2l);
+        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.create()
+                    .embedTypes(true)
+                    .build();
+            writer.writeEdge(os, e);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = GraphSONReader.create()
+                    .embedTypes(true)
+                    .build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readEdge(bais,
+                        (edgeId, outId, inId, label, properties) -> {
+                            assertEquals(e.getId(), edgeId);
+                            assertEquals(v1.getId(), outId);
+                            assertEquals(v2.getId(), inId);
+                            assertEquals(e.getLabel(), label);
+                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals("weight", properties[0]);
+                            assertEquals(0.5f, properties[1]);
+
+                            called.set(true);
+
+                            return null;
+                        });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
