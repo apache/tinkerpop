@@ -67,21 +67,9 @@ class GraphSONVertex {
             jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertex.getLabel());
             jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
 
-            if (normalize) {
-                jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
-
-                // if required manually set the @class since a sorted map is required here and must be manually written
-                if (includeType)
-                    jsonGenerator.writeStringField(GraphSONTokens.CLASS, GraphSONTokens.MAP_CLASS);
-
-                vertex.getProperties().values().stream().sorted(Comparators.PROPERTY_COMPARATOR)
-                        .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.get())));
-                jsonGenerator.writeEndObject();
-            } else {
-                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES,
-                        vertex.getProperties().values().stream().collect(
-                                Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IOAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
-            }
+            jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES,
+                vertex.getProperties().values().stream().collect(
+                    Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IOAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
                 jsonGenerator.writeArrayFieldStart(GraphSONTokens.OUT);

@@ -19,6 +19,9 @@ public class GraphSONObjectMapper extends ObjectMapper {
         if (embedTypes)
             enableDefaultTypingAsProperty(DefaultTyping.NON_FINAL, GraphSONTokens.CLASS);
 
+        if (normalize)
+            enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+
         // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
         final DefaultSerializerProvider provider = new GraphSONSerializerProvider();
         provider.setDefaultKeySerializer(new GraphSONModule.GraphSONKeySerializer());
