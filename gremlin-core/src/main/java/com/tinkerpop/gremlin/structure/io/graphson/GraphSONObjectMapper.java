@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.structure.io.graphson;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -14,10 +13,11 @@ import java.util.Optional;
 public class GraphSONObjectMapper extends ObjectMapper {
 
     private GraphSONObjectMapper(final SimpleModule custom, final boolean loadCustomSerializers,
-                                 final boolean normalize, final TypeEmbedding typeEmbedding) {
+                                 final boolean normalize, final boolean embedTypes) {
         disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
-        typeEmbedding.configureMapper(this);
+        if (embedTypes)
+            enableDefaultTypingAsProperty(DefaultTyping.NON_FINAL, GraphSONTokens.CLASS);
 
         // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
         final DefaultSerializerProvider provider = new GraphSONSerializerProvider();
@@ -32,39 +32,6 @@ public class GraphSONObjectMapper extends ObjectMapper {
             findAndRegisterModules();
     }
 
-    public enum TypeEmbedding {
-        JAVA_LANG_OBJECT,
-        OBJECT_AND_NON_CONCRETE,
-        NON_CONCRETE_AND_ARRAYS,
-        NON_FINAL,
-        NONE;
-
-        void configureMapper(GraphSONObjectMapper mapper) {
-            if (this != NONE) {
-                final DefaultTyping typing;
-                switch (this) {
-                    case JAVA_LANG_OBJECT:
-                        typing = DefaultTyping.JAVA_LANG_OBJECT;
-                        break;
-                    case OBJECT_AND_NON_CONCRETE:
-                        typing = DefaultTyping.OBJECT_AND_NON_CONCRETE;
-                        break;
-                    case NON_CONCRETE_AND_ARRAYS:
-                        typing = DefaultTyping.NON_CONCRETE_AND_ARRAYS;
-                        break;
-                    case NON_FINAL:
-                        typing = DefaultTyping.NON_FINAL;
-                        break;
-                    default:
-                        typing = null;
-                }
-
-                if (typing != null)
-                    mapper.enableDefaultTyping(typing, JsonTypeInfo.As.PROPERTY);
-            }
-        }
-    }
-
     public static Builder create() {
         return new Builder();
     }
@@ -73,7 +40,7 @@ public class GraphSONObjectMapper extends ObjectMapper {
         private SimpleModule custom = null;
         private boolean loadCustomModules = false;
         private boolean normalize = false;
-        private TypeEmbedding typeEmbedding = TypeEmbedding.NONE;
+        private boolean embedTypes = false;
 
         private Builder() {}
 
@@ -99,13 +66,13 @@ public class GraphSONObjectMapper extends ObjectMapper {
             return this;
         }
 
-        public Builder typeEmbedding(final TypeEmbedding typeEmbedding) {
-            this.typeEmbedding = typeEmbedding;
+        public Builder embedTypes(final boolean embedTypes) {
+            this.embedTypes = embedTypes;
             return this;
         }
 
         public GraphSONObjectMapper build() {
-            return new GraphSONObjectMapper(custom, loadCustomModules, normalize, typeEmbedding);
+            return new GraphSONObjectMapper(custom, loadCustomModules, normalize, embedTypes);
         }
     }
 }

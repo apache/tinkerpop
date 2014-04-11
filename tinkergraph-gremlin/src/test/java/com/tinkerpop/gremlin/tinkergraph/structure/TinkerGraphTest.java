@@ -14,8 +14,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -133,7 +131,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteClassicGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1-typed.json");
-        GraphSONWriter.create().typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL)
+        GraphSONWriter.create().embedTypes(true)
                 .build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -155,7 +153,7 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteModernGraphAsGraphSONWithTypes() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-5-typed.json");
-        GraphSONWriter.create().typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL)
+        GraphSONWriter.create().embedTypes(true)
                 .build().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }

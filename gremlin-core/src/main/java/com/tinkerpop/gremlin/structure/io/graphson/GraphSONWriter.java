@@ -52,7 +52,7 @@ public class GraphSONWriter implements GraphWriter {
         private boolean loadCustomModules = false;
         private boolean normalize = false;
         private SimpleModule custom = null;
-        private GraphSONObjectMapper.TypeEmbedding typeEmbedding = GraphSONObjectMapper.TypeEmbedding.NONE;
+        private boolean embedTypes = false;
 
         private Builder() {}
 
@@ -73,8 +73,8 @@ public class GraphSONWriter implements GraphWriter {
             return this;
         }
 
-        public Builder typeEmbedding(final GraphSONObjectMapper.TypeEmbedding typeEmbedding) {
-            this.typeEmbedding = typeEmbedding;
+        public Builder embedTypes(final boolean embedTypes) {
+            this.embedTypes = embedTypes;
             return this;
         }
 
@@ -95,7 +95,7 @@ public class GraphSONWriter implements GraphWriter {
                     .customModule(custom)
                     .loadCustomModules(loadCustomModules)
                     .normalize(normalize)
-                    .typeEmbedding(typeEmbedding).build();
+                    .embedTypes(embedTypes).build();
             return new GraphSONWriter(mapper);
         }
     }

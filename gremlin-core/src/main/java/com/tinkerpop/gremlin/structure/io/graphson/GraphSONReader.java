@@ -172,7 +172,7 @@ public class GraphSONReader implements GraphReader {
         private boolean loadCustomModules = false;
         private SimpleModule custom = null;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-        private GraphSONObjectMapper.TypeEmbedding typeEmbedding = GraphSONObjectMapper.TypeEmbedding.NONE;
+        private boolean embedTypes = false;
 
         private Builder() {}
 
@@ -193,8 +193,8 @@ public class GraphSONReader implements GraphReader {
             return this;
         }
 
-        public Builder typeEmbedding(final GraphSONObjectMapper.TypeEmbedding typeEmbedding) {
-            this.typeEmbedding = typeEmbedding;
+        public Builder embedTypes(final boolean embedTypes) {
+            this.embedTypes = embedTypes;
             return this;
         }
 
@@ -209,7 +209,7 @@ public class GraphSONReader implements GraphReader {
         public GraphSONReader build() {
             final ObjectMapper mapper = GraphSONObjectMapper.create()
                     .customModule(custom)
-                    .typeEmbedding(typeEmbedding)
+                    .embedTypes(embedTypes)
                     .loadCustomModules(loadCustomModules).build();
             return new GraphSONReader(mapper, batchSize);
         }

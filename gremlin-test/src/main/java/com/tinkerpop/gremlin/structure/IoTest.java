@@ -21,7 +21,6 @@ import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
@@ -204,7 +203,7 @@ public class IoTest extends AbstractGremlinTest {
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
         module.addDeserializer(CustomId.class, new CustomId.CustomIdJacksonDeserializer());
         final GraphWriter writer = GraphSONWriter.create()
-                .typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL)
+                .embedTypes(true)
                 .customModule(module).build();
 
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -225,7 +224,7 @@ public class IoTest extends AbstractGremlinTest {
 
             try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
                 final GraphReader reader = GraphSONReader.create()
-                        .typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL)
+                        .embedTypes(true)
                         .customModule(module).build();
                 reader.readGraph(is, g2);
             }
@@ -343,14 +342,14 @@ public class IoTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldReadWriteModernToGraphSON() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphWriter writer = GraphSONWriter.create().typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL).build();
+            final GraphWriter writer = GraphSONWriter.create().embedTypes(true).build();
             writer.writeGraph(os, g);
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
             final GraphReader reader = GraphSONReader.create()
-                    .typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL).build();
+                    .embedTypes(true).build();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readGraph(bais, g1);
             }
