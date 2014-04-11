@@ -36,16 +36,13 @@ public class IOAnnotatedValue<V> {
         this.annotations = annotations;
     }
 
-    // todo: keep implementation specific annotations in here?
-
     /**
      * Converts a set of memory in a {@link Map} to an array of key-value objects.  This is the format expected
      * when doing a {@link com.tinkerpop.gremlin.structure.Graph#addVertex(Object...)},
      * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)}
      * {@link com.tinkerpop.gremlin.structure.Element#setProperties(Object...)}.
      */
-    @JsonIgnore
-    public Object[] getAnnotationsArray() {
+    public Object[] toAnnotationsArray() {
         return this.annotations.entrySet().stream()
                 .flatMap(kv -> Stream.of(kv.getKey(), kv.getValue()))
                 .collect(Collectors.toList()).toArray();

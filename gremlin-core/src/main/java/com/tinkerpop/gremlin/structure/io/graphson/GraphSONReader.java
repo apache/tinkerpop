@@ -23,7 +23,6 @@ import org.javatuples.Pair;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -172,7 +171,7 @@ public class GraphSONReader implements GraphReader {
             final AnnotatedList al = v.getValue(kal.getValue0());
             final List<IOAnnotatedValue> valuesForAnnotation = kal.getValue1().getAnnotatedValueList();
             for (IOAnnotatedValue kav : valuesForAnnotation) {
-                al.addValue(kav.getValue(), kav.getAnnotationsArray());
+                al.addValue(kav.getValue(), kav.toAnnotationsArray());
             }
         });
     }
