@@ -38,12 +38,12 @@ public class GraphSONReader implements GraphReader {
     private final ObjectMapper mapper;
     private final long batchSize;
 
+    final TypeReference<Map<String,Object>> mapTypeReference = new TypeReference<Map<String,Object>>(){};
+
     public GraphSONReader(final ObjectMapper mapper, final long batchSize) {
         this.mapper = mapper;
         this.batchSize = batchSize;
     }
-
-    // todo: do we allow custom deserializers for ID and properties mapping property keys to data types?  would make graphson configurably lossy?
 
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
@@ -60,19 +60,19 @@ public class GraphSONReader implements GraphReader {
             parser.nextToken();
 
             if (fieldName.equals(GraphSONTokens.PROPERTIES)) {
-                final Map<String,Object> graphProperties = parser.readValueAs(new TypeReference<Map<String,Object>>(){});
+                final Map<String,Object> graphProperties = parser.readValueAs(mapTypeReference);
                 if (graphToWriteTo.getFeatures().graph().memory().supportsMemory())
                     graphProperties.entrySet().forEach(entry-> graphToWriteTo.memory().set(entry.getKey(), entry.getValue()));
             } else if (fieldName.equals(GraphSONTokens.VERTICES)) {
                 while (parser.nextToken() != JsonToken.END_ARRAY) {
-                    final Map<String,Object> vertexData = parser.readValueAs(new TypeReference<Map<String, Object>>() { });
+                    final Map<String,Object> vertexData = parser.readValueAs(mapTypeReference);
                     readVertexData(vertexData, (id, label, properties) -> graph.addVertex(Stream.concat(
                             Stream.of(Element.LABEL, label, Element.ID, id),
                             Stream.of(properties)).toArray()));
                 }
             } else if (fieldName.equals(GraphSONTokens.EDGES)) {
                 while (parser.nextToken() != JsonToken.END_ARRAY) {
-                    final Map<String,Object> edgeData = parser.readValueAs(new TypeReference<Map<String, Object>>() {});
+                    final Map<String,Object> edgeData = parser.readValueAs(mapTypeReference);
                     readEdgeData(edgeData, (id, out, in, label, props) ->  {
                         final Vertex vOut = graph.v(out);
                         final Vertex vIn = graph.v(in);
@@ -92,7 +92,7 @@ public class GraphSONReader implements GraphReader {
     @Override
     public Vertex readVertex(final InputStream inputStream,
                              final TriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
-        final Map<String,Object> vertexData = mapper.readValue(inputStream, new TypeReference<Map<String,Object>>(){});
+        final Map<String,Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
         return readVertexData(vertexData, vertexMaker);
     }
 
@@ -100,7 +100,7 @@ public class GraphSONReader implements GraphReader {
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
                              final TriFunction<Object, String, Object[], Vertex> vertexMaker,
                              final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-        final Map<String,Object> vertexData = mapper.readValue(inputStream, new TypeReference<Map<String,Object>>(){});
+        final Map<String,Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
         final Vertex v = readVertexData(vertexData, vertexMaker);
 
         if (vertexData.containsKey(GraphSONTokens.OUT) && (direction == Direction.BOTH || direction == Direction.OUT))
@@ -112,17 +112,17 @@ public class GraphSONReader implements GraphReader {
         return v;
     }
 
+    @Override
+    public Edge readEdge(final InputStream inputStream, final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+        final Map<String,Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
+        return readEdgeData(edgeData, edgeMaker);
+    }
+
     private static void readVertexEdges(final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker, final Map<String, Object> vertexData, final String direction) throws IOException {
         final List<Map<String,Object>> edgeDatas = (List<Map<String,Object>>) vertexData.get(direction);
         for (Map<String,Object> edgeData : edgeDatas) {
             readEdgeData(edgeData, edgeMaker);
         }
-    }
-
-    @Override
-    public Edge readEdge(final InputStream inputStream, final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-        final Map<String,Object> edgeData = mapper.readValue(inputStream, new TypeReference<Map<String,Object>>(){});
-        return readEdgeData(edgeData, edgeMaker);
     }
 
     private static Edge readEdgeData(final Map<String,Object> edgeData, final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
