@@ -111,7 +111,7 @@ public class TinkerGraphTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsGraphSON() throws IOException {
+    public void shouldWriteClassicGraphAsGraphSONNoTypes() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1.json");
         GraphSONWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -124,6 +124,17 @@ public class TinkerGraphTest {
     public void shouldWriteClassicGraphNormalizedAsGraphSON() throws IOException {
         final OutputStream os = new FileOutputStream("/tmp/graph-example-1-normalized.json");
         GraphSONWriter.create().normalize(true).build().writeGraph(os, TinkerFactory.createClassic());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteClassicGraphAsGraphSONWithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream("/tmp/graph-example-1-typed.json");
+        GraphSONWriter.create().typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL)
+                .build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
 
