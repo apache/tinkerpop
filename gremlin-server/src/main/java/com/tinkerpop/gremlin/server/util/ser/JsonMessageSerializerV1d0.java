@@ -36,7 +36,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
      * out {@link com.tinkerpop.gremlin.structure.Graph} objects and {@code toString} for unknown objects.
      */
     private static final ObjectMapper mapper = GraphSONObjectMapper.create()
-            .customSerializer(new GremlinServerModule()).build();
+            .customModule(new GremlinServerModule()).build();
 
     @Override
     public String[] mimeTypesSupported() {

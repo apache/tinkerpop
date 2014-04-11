@@ -71,19 +71,26 @@ public class GraphSONObjectMapper extends ObjectMapper {
 
     public static class Builder {
         private SimpleModule custom = null;
-        private boolean loadCustomSerializers = false;
+        private boolean loadCustomModules = false;
         private boolean normalize = false;
         private TypeEmbedding typeEmbedding = TypeEmbedding.NONE;
 
         private Builder() {}
 
-        public Builder customSerializer(final SimpleModule custom) {
+        /**
+         * Supply a custom module for serialization/deserialization.
+         */
+        public Builder customModule(final SimpleModule custom) {
             this.custom = custom;
             return this;
         }
 
-        public Builder loadCustomSerializers(final boolean loadCustomSerializers) {
-            this.loadCustomSerializers = loadCustomSerializers;
+        /**
+         * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
+         * the one supplied to the {@link #customModule(com.fasterxml.jackson.databind.module.SimpleModule)};
+         */
+        public Builder loadCustomModules(final boolean loadCustomModules) {
+            this.loadCustomModules = loadCustomModules;
             return this;
         }
 
@@ -98,7 +105,7 @@ public class GraphSONObjectMapper extends ObjectMapper {
         }
 
         public GraphSONObjectMapper build() {
-            return new GraphSONObjectMapper(custom, loadCustomSerializers, normalize, typeEmbedding);
+            return new GraphSONObjectMapper(custom, loadCustomModules, normalize, typeEmbedding);
         }
     }
 }

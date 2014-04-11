@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.structure.io.GraphWriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Optional;
 
 /**
  * A @{link GraphWriter} that writes a graph and its elements to a JSON-based representation. This implementation
@@ -50,7 +49,7 @@ public class GraphSONWriter implements GraphWriter {
     }
 
     public static class Builder {
-        private boolean loadCustomSerializers = false;
+        private boolean loadCustomModules = false;
         private boolean normalize = false;
         private SimpleModule custom = null;
         private GraphSONObjectMapper.TypeEmbedding typeEmbedding = GraphSONObjectMapper.TypeEmbedding.NONE;
@@ -58,18 +57,19 @@ public class GraphSONWriter implements GraphWriter {
         private Builder() {}
 
         /**
-         * Specify a custom serializer module to handle types beyond those supported generally by TinkerPop.
+         * Supply a custom module for serialization/deserialization.
          */
-        public Builder customSerializer(final SimpleModule module) {
-            this.custom = module;
+        public Builder customModule(final SimpleModule custom) {
+            this.custom = custom;
             return this;
         }
 
         /**
-         * Attempt to load external custom serialization modules from the class path.
+         * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
+         * the one supplied to the {@link #customModule(com.fasterxml.jackson.databind.module.SimpleModule)};
          */
-        public Builder loadCustomSerializers(final boolean loadCustomSerializers) {
-            this.loadCustomSerializers = loadCustomSerializers;
+        public Builder loadCustomModules(final boolean loadCustomModules) {
+            this.loadCustomModules = loadCustomModules;
             return this;
         }
 
@@ -92,8 +92,8 @@ public class GraphSONWriter implements GraphWriter {
 
         public GraphSONWriter build() {
             final GraphSONObjectMapper mapper = GraphSONObjectMapper.create()
-                    .customSerializer(custom)
-                    .loadCustomSerializers(loadCustomSerializers)
+                    .customModule(custom)
+                    .loadCustomModules(loadCustomModules)
                     .normalize(normalize)
                     .typeEmbedding(typeEmbedding).build();
             return new GraphSONWriter(mapper);

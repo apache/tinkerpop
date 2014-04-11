@@ -2,9 +2,14 @@ package com.tinkerpop.gremlin.structure;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
@@ -48,6 +53,7 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -187,15 +193,19 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     /**
-     * This is just a serialization check.  GraphSON doens't allow the ID to deserialize back to a complex type.
+     * This is just a serialization check.
      */
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-    public void shouldProperlySerializeCustomIdWithGraphSON() throws Exception {
-        g.addVertex(Element.ID, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
+    public void shouldProperlySerializeDeserializeCustomIdWithGraphSON() throws Exception {
+        final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
+        g.addVertex(Element.ID, new CustomId("vertex", id));
         final SimpleModule module = new SimpleModule();
         module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
-        final GraphWriter writer = GraphSONWriter.create().customSerializer(module).build();
+        module.addDeserializer(CustomId.class, new CustomId.CustomIdJacksonDeserializer());
+        final GraphWriter writer = GraphSONWriter.create()
+                .typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL)
+                .customModule(module).build();
 
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             writer.writeGraph(baos, g);
@@ -207,6 +217,26 @@ public class IoTest extends AbstractGremlinTest {
             assertEquals("vertex", idValue.get("cluster").asText());
             assertTrue(idValue.has("elementId"));
             assertEquals("AF4B5965-B176-4552-B3C1-FBBE2F52C305".toLowerCase(), idValue.get("elementId").asText());
+
+            // reusing the same config used for creation of "g".
+            final Configuration configuration = graphProvider.newGraphConfiguration("g2");
+            graphProvider.clear(configuration);
+            final Graph g2 = graphProvider.openTestGraph(configuration);
+
+            try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
+                final GraphReader reader = GraphSONReader.create()
+                        .typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL)
+                        .customModule(module).build();
+                reader.readGraph(is, g2);
+            }
+
+            final Vertex v2 = g2.V().next();
+            final CustomId customId = (CustomId) v2.getId();
+            assertEquals(id, customId.getElementId());
+            assertEquals("vertex", customId.getCluster());
+
+            // need to manually close the "g2" instance
+            graphProvider.clear(g2, configuration);
         }
     }
 
@@ -1541,10 +1571,54 @@ public class IoTest extends AbstractGremlinTest {
             @Override
             public void serialize(final CustomId customId, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                     throws IOException, JsonGenerationException {
+                ser(customId, jsonGenerator, false);
+            }
+
+            @Override
+            public void serializeWithType(final CustomId customId, final JsonGenerator jsonGenerator,
+                                          final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+                ser(customId, jsonGenerator, true);
+            }
+
+            private void ser(final CustomId customId, final JsonGenerator jsonGenerator, final boolean includeType) throws IOException {
                 jsonGenerator.writeStartObject();
+
+                if (includeType)
+                    jsonGenerator.writeStringField(GraphSONTokens.CLASS, CustomId.class.getName());
+
                 jsonGenerator.writeObjectField("cluster", customId.getCluster());
                 jsonGenerator.writeObjectField("elementId", customId.getElementId().toString());
                 jsonGenerator.writeEndObject();
+            }
+        }
+
+        static class CustomIdJacksonDeserializer extends StdDeserializer<CustomId> {
+            public CustomIdJacksonDeserializer() {
+                super(CustomId.class);
+            }
+
+            @Override
+            public CustomId deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+                String cluster = null;
+                UUID id = null;
+
+                while (!jsonParser.getCurrentToken().isStructEnd()) {
+                    if (jsonParser.getText().equals("cluster")) {
+                        jsonParser.nextToken();
+                        cluster = jsonParser.getText();
+                    } else if (jsonParser.getText().equals("elementId")) {
+                        jsonParser.nextToken();
+                        id = UUID.fromString(jsonParser.getText());
+                    } else
+                        jsonParser.nextToken();
+                }
+
+                if (!Optional.ofNullable(cluster).isPresent())
+                    throw deserializationContext.mappingException("Could not deserialze CustomId: 'cluster' is required");
+                if (!Optional.ofNullable(id).isPresent())
+                    throw deserializationContext.mappingException("Could not deserialze CustomId: 'id' is required");
+
+                return new CustomId(cluster, id);
             }
         }
     }
