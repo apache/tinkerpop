@@ -971,6 +971,78 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void shouldReadWriteVertexWithBOTHBOTHEdgesToGraphSONWithTypes() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v2 = g.addVertex();
+        final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
+        final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.create().embedTypes(true).build();
+            writer.writeVertex(os, v1, Direction.BOTH);
+
+            final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+            final AtomicBoolean edge1Called = new AtomicBoolean(false);
+            final AtomicBoolean edge2Called = new AtomicBoolean(false);
+
+            final GraphSONReader reader = GraphSONReader.create().embedTypes(true).build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        Direction.BOTH,
+                        (vertexId, label, properties) -> {
+                            assertEquals(v1.getId(), vertexId);
+                            assertEquals(v1.getLabel(), label);
+
+                            final Map<String, Object> m = new HashMap<>();
+                            for (int i = 0; i < properties.length; i = i + 2) {
+                                if (!properties[i].equals(Element.ID))
+                                    m.put((String) properties[i], properties[i + 1]);
+                            }
+
+                            assertEquals(1, m.size());
+                            assertEquals(v1.getValue("name"), m.get("name").toString());
+
+                            vertexCalled.set(true);
+
+                            return null;
+                        },
+                        (edgeId, outId, inId, label, properties) -> {
+                            if (edgeId.equals(e1.getId())) {
+                                assertEquals(v2.getId(), outId);
+                                assertEquals(v1.getId(), inId);
+                                assertEquals(e1.getLabel(), label);
+                                assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                                assertEquals("weight", properties[0]);
+                                assertEquals(0.5f, properties[1]);
+
+                                edge1Called.set(true);
+                            } else if (edgeId.equals(e2.getId())) {
+                                assertEquals(v1.getId(), outId);
+                                assertEquals(v2.getId(), inId);
+                                assertEquals(e2.getLabel(), label);
+                                assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                                assertEquals("weight", properties[0]);
+                                assertEquals(1.0f, properties[1]);
+
+                                edge2Called.set(true);
+                            } else {
+                                fail("An edge id generated that does not exist");
+                            }
+
+                            return null;
+                        });
+            }
+
+            assertTrue(vertexCalled.get());
+            assertTrue(edge1Called.get());
+            assertTrue(edge2Called.get());
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHINEdgesToKryo() throws Exception {
