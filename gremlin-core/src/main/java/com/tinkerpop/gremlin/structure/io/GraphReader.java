@@ -35,8 +35,6 @@ public interface GraphReader {
 
     // todo: should we be consistent with IllegalStateException on readVertex when a Direction is requested that isn't present?
     // todo: incremental loading
-    // todo: consistent features across readers/writers
-    // todo: concerns about versioning?
 
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties as well as edges
