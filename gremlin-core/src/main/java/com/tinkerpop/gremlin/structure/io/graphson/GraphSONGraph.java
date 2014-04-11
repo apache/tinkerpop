@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin.structure.io.graphson;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -37,13 +35,13 @@ class GraphSONGraph {
 
         @Override
         public void serialize(final GraphSONGraph graphSONGraph, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException, JsonGenerationException {
+                throws IOException {
             ser(graphSONGraph, jsonGenerator);
         }
 
         @Override
         public void serializeWithType(final GraphSONGraph graphSONGraph, final JsonGenerator jsonGenerator,
-                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             ser(graphSONGraph, jsonGenerator);
         }
 
@@ -52,13 +50,7 @@ class GraphSONGraph {
             jsonGenerator.writeStartObject();
 
             if (g.getFeatures().graph().memory().supportsMemory())
-                if (normalize) {
-                    jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
-                    g.memory().asMap().entrySet().stream().sorted(Comparators.OBJECT_ENTRY_COMPARATOR)
-                            .forEachOrdered(FunctionUtils.wrapConsumer(e -> jsonGenerator.writeObjectField(e.getKey(), e.getValue())));
-                    jsonGenerator.writeEndObject();
-                } else
-                    jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, new HashMap<>(g.memory().asMap()));
+                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, new HashMap<>(g.memory().asMap()));
 
             jsonGenerator.writeArrayFieldStart(GraphSONTokens.VERTICES);
             if (normalize)

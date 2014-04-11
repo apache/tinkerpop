@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin.structure.io.graphson;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -45,16 +43,17 @@ class GraphSONVertex {
 
         @Override
         public void serialize(final GraphSONVertex directionalVertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException, JsonGenerationException {
-            ser(directionalVertex, jsonGenerator, false);
+                throws IOException {
+            ser(directionalVertex, jsonGenerator);
         }
 
         @Override
-        public void serializeWithType(final GraphSONVertex directionalVertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
-            ser(directionalVertex, jsonGenerator, true);
+        public void serializeWithType(final GraphSONVertex directionalVertex, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            ser(directionalVertex, jsonGenerator);
         }
 
-        public void ser(final GraphSONVertex directionalVertex, final JsonGenerator jsonGenerator, final boolean includeType) throws IOException, JsonProcessingException {
+        public void ser(final GraphSONVertex directionalVertex, final JsonGenerator jsonGenerator) throws IOException {
             final Vertex vertex = directionalVertex.getVertexToSerialize();
             final Map<String,Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, vertex.getId());

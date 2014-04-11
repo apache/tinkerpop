@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin.structure.io.graphson;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -41,17 +39,17 @@ public class GraphSONModule extends SimpleModule {
 
         @Override
         public void serialize(final Edge edge, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException, JsonGenerationException {
+                throws IOException {
             ser(edge, jsonGenerator);
         }
 
         @Override
         public void serializeWithType(final Edge edge, final JsonGenerator jsonGenerator,
-                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             ser(edge, jsonGenerator);
         }
 
-        private void ser(final Edge edge, final JsonGenerator jsonGenerator) throws IOException, JsonProcessingException {
+        private void ser(final Edge edge, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String,Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, edge.getId());
             m.put(GraphSONTokens.LABEL, edge.getLabel());
@@ -59,8 +57,8 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.IN, edge.getVertex(Direction.IN).getId());
             m.put(GraphSONTokens.OUT, edge.getVertex(Direction.OUT).getId());
             m.put(GraphSONTokens.PROPERTIES,
-                        edge.getProperties().values().stream().collect(
-                                Collectors.toMap(Property::getKey, Property::get)));
+                    edge.getProperties().values().stream().collect(
+                            Collectors.toMap(Property::getKey, Property::get)));
 
             jsonGenerator.writeObject(m);
         }
@@ -74,19 +72,19 @@ public class GraphSONModule extends SimpleModule {
 
         @Override
         public void serialize(final Vertex vertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException, JsonGenerationException {
+                throws IOException {
             ser(vertex, jsonGenerator);
         }
 
         @Override
         public void serializeWithType(final Vertex vertex, final JsonGenerator jsonGenerator,
-                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             ser(vertex, jsonGenerator);
 
         }
 
         private void ser(final Vertex vertex, final JsonGenerator jsonGenerator)
-                throws IOException, JsonGenerationException {
+                throws IOException {
             final Map<String,Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, vertex.getId());
             m.put(GraphSONTokens.LABEL, vertex.getLabel());
@@ -105,18 +103,18 @@ public class GraphSONModule extends SimpleModule {
      */
     static class GraphSONKeySerializer extends StdKeySerializer {
         @Override
-        public void serialize(final Object o, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+        public void serialize(final Object o, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException {
             ser(o, jsonGenerator, serializerProvider);
         }
 
         @Override
         public void serializeWithType(final Object o, final JsonGenerator jsonGenerator,
-                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             ser(o, jsonGenerator, serializerProvider);
         }
 
         private void ser(final Object o, final JsonGenerator jsonGenerator,
-                         final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+                         final SerializerProvider serializerProvider) throws IOException {
             if (Element.class.isAssignableFrom(o.getClass()))
                 jsonGenerator.writeFieldName((((Element) o).getId()).toString());
             else
