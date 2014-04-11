@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.structure.io.graphson;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -16,8 +15,6 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
-import com.tinkerpop.gremlin.structure.util.Comparators;
-import com.tinkerpop.gremlin.util.function.FunctionUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -31,32 +28,30 @@ public class GraphSONModule extends SimpleModule {
 
     public GraphSONModule(final boolean normalize) {
         super("graphson");
-        addSerializer(Edge.class, new EdgeJacksonSerializer(normalize));
-        addSerializer(Vertex.class, new VertexJacksonSerializer(normalize));
-        addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer(normalize));
+        addSerializer(Edge.class, new EdgeJacksonSerializer());
+        addSerializer(Vertex.class, new VertexJacksonSerializer());
+        addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
     }
 
     static class EdgeJacksonSerializer extends StdSerializer<Edge> {
-        private final boolean normalize;
-        public EdgeJacksonSerializer(final boolean normalize) {
+        public EdgeJacksonSerializer() {
             super(Edge.class);
-            this.normalize = normalize;
         }
 
         @Override
         public void serialize(final Edge edge, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
-            ser(edge, jsonGenerator, false);
+            ser(edge, jsonGenerator);
         }
 
         @Override
         public void serializeWithType(final Edge edge, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
-            ser(edge, jsonGenerator, true);
+            ser(edge, jsonGenerator);
         }
 
-        private void ser(final Edge edge, final JsonGenerator jsonGenerator, final boolean includeType) throws IOException, JsonProcessingException {
+        private void ser(final Edge edge, final JsonGenerator jsonGenerator) throws IOException, JsonProcessingException {
             final Map<String,Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, edge.getId());
             m.put(GraphSONTokens.LABEL, edge.getLabel());
@@ -72,26 +67,25 @@ public class GraphSONModule extends SimpleModule {
     }
 
     static class VertexJacksonSerializer extends StdSerializer<Vertex> {
-        final boolean normalize;
-        public VertexJacksonSerializer(final boolean normalize) {
+
+        public VertexJacksonSerializer() {
             super(Vertex.class);
-            this.normalize = normalize;
         }
 
         @Override
         public void serialize(final Vertex vertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
-            ser(vertex, jsonGenerator, false);
+            ser(vertex, jsonGenerator);
         }
 
         @Override
         public void serializeWithType(final Vertex vertex, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
-            ser(vertex, jsonGenerator, true);
+            ser(vertex, jsonGenerator);
 
         }
 
-        private void ser(final Vertex vertex, final JsonGenerator jsonGenerator, final boolean includeType)
+        private void ser(final Vertex vertex, final JsonGenerator jsonGenerator)
                 throws IOException, JsonGenerationException {
             final Map<String,Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, vertex.getId());

@@ -40,11 +40,9 @@ class GraphSONVertex {
     }
 
     static class VertexJacksonSerializer extends StdSerializer<GraphSONVertex> {
-        private final boolean normalize;
 
-        public VertexJacksonSerializer(final boolean normalize) {
+        public VertexJacksonSerializer() {
             super(GraphSONVertex.class);
-            this.normalize = normalize;
         }
 
         @Override
