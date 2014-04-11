@@ -147,11 +147,6 @@ public class TinkerGraphTest {
         GraphSONWriter.create().typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL)
                 .build().writeGraph(os, TinkerFactory.createModern());
         os.close();
-
-        final Graph graph = TinkerGraph.open();
-        final InputStream is = new FileInputStream(("/tmp/graph-example-5-typed.json"));
-        GraphSONReader.create().typeEmbedding(GraphSONObjectMapper.TypeEmbedding.NON_FINAL).build().readGraph(is, graph);
-        System.out.println(graph);
     }
 
     /**
