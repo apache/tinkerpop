@@ -47,7 +47,7 @@ public class GraphSONReader implements GraphReader {
                           final String vertexIdKey, final boolean incrementalLoading) {
         this.mapper = mapper;
         this.batchSize = batchSize;
-        this.incrementalLoading = !incrementalLoading;
+        this.incrementalLoading = incrementalLoading;
         this.vertexIdKey = vertexIdKey;
     }
 

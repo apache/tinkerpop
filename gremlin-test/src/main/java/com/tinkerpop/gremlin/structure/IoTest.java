@@ -92,7 +92,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadGraphMLIncremental() throws Exception {
+    public void shouldReadGraphMLIncrementalCustomVertexKey() throws Exception {
         g.addVertex("name", "marko", "age", 29);
         tryCommit(g);
 
@@ -125,7 +125,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadGraphSONIncremental() throws Exception {
+    public void shouldReadGraphSONIncrementalCustomVertexKey() throws Exception {
         g.addVertex("name", "marko", "age", 29);
         tryCommit(g);
 
@@ -143,6 +143,74 @@ public class IoTest extends AbstractGremlinTest {
                 .vertexIdKey("name")
                 .embedTypes(true)
                 .incrementalLoading(true).build();
+
+        GraphMigrator.migrateGraph(g1, g, reader, writer);
+
+        final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
+        assertEquals(37, vStephen.getProperty("age").get());
+        assertTrue(vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").hasNext());
+
+        final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        assertEquals(29, vMarko.getProperty("age").get());
+
+        // need to manually close the "g1" instance
+        graphProvider.clear(g1, configuration);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+    public void shouldReadGraphMLIncrementalUsingSuppliedId() throws Exception {
+        g.addVertex(Element.ID, 1, "name", "marko", "age", 29);
+        tryCommit(g);
+
+        final Configuration configuration = graphProvider.newGraphConfiguration("graphml-incremental");
+        graphProvider.clear(configuration);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
+
+        final Vertex v2 = g1.addVertex(Element.ID, 1, "name", "marko", "age", 29);
+        final Vertex v1 = g1.addVertex(Element.ID, 2, "name", "stephen", "age", 37);
+        v1.addEdge("knows", v2, "weight", 1.0f);
+        tryCommit(g1);
+
+        final GraphWriter writer = GraphMLWriter.create().build();
+        final GraphReader reader = GraphMLReader.create().incrementalLoading(true).build();
+
+        GraphMigrator.migrateGraph(g1, g, reader, writer);
+
+        final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
+        assertEquals(37, vStephen.getProperty("age").get());
+        assertTrue(vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").hasNext());
+
+        final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        assertEquals(29, vMarko.getProperty("age").get());
+
+        // need to manually close the "g1" instance
+        graphProvider.clear(g1, configuration);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+    public void shouldReadGraphSONIncrementalUsingSuppliedId() throws Exception {
+        g.addVertex(Element.ID, 1, "name", "marko", "age", 29);
+        tryCommit(g);
+
+        final Configuration configuration = graphProvider.newGraphConfiguration("graphson-incremental");
+        graphProvider.clear(configuration);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
+
+        final Vertex v2 = g1.addVertex(Element.ID, 1, "name", "marko", "age", 29);
+        final Vertex v1 = g1.addVertex(Element.ID, 2, "name", "stephen", "age", 37);
+        v1.addEdge("knows", v2, "weight", 1.0f);
+        tryCommit(g1);
+
+        final GraphWriter writer = GraphSONWriter.create().embedTypes(true).build();
+        final GraphReader reader = GraphSONReader.create().embedTypes(true).incrementalLoading(true).build();
 
         GraphMigrator.migrateGraph(g1, g, reader, writer);
 

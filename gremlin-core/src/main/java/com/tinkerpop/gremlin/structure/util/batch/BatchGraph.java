@@ -152,8 +152,6 @@ public class BatchGraph<T extends Graph> implements Graph {
             }
         }
 
-        //final Vertex vertex = v;
-        //if (!baseSupportsSuppliedVertexId) vertexIdKey.ifPresent(k -> vertex.setProperty(k, id));
         cache.set(v, id);
 
         return new BatchVertex(id);
@@ -552,7 +550,7 @@ public class BatchGraph<T extends Graph> implements Graph {
     @SuppressWarnings("UnusedDeclaration")
     public static class Builder<T extends Graph> {
         private final T graphToLoad;
-        private boolean incrementalLoading = true;
+        private boolean incrementalLoading = false;
         private String vertexIdKey = Element.ID;
         private String edgeIdKey = Element.ID;
         private long bufferSize = DEFAULT_BUFFER_SIZE;
@@ -600,6 +598,8 @@ public class BatchGraph<T extends Graph> implements Graph {
             this.vertexIdType = type;
             return this;
         }
+
+        // todo: review javadoc
 
         /**
          * Sets whether the graph loaded through this instance of {@link BatchGraph} is loaded from scratch
