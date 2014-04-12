@@ -76,8 +76,6 @@ import static org.mockito.Mockito.when;
  */
 public class IoTest extends AbstractGremlinTest {
 
-    // todo: should expand test here significantly.  see blueprints2
-
     private static final String GRAPHML_RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/util/io/graphml/";
     private static final String GRAPHSON_RESOURCE_PATH_PREFIX = "/com/tinkerpop/gremlin/structure/util/io/graphson/";
 
@@ -88,6 +86,73 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadGraphML() throws IOException {
         readGraphMLIntoGraph(g);
         assertClassicGraph(g, false, true);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldReadGraphMLIncremental() throws Exception {
+        readGraphMLIntoGraph(g);
+        assertClassicGraph(g, false, true);
+
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        graphProvider.clear(configuration);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
+
+        final Vertex v1 = g1.addVertex("name", "stephen", "age", 37);
+        final Vertex v2 = g1.addVertex("name", "marko");
+        v1.addEdge("knows", v2, "weight", 1.0f);
+
+        final GraphWriter writer = GraphMLWriter.create().build();
+        final GraphReader reader = GraphMLReader.create().vertexIdKey("name").enableIncrementalLoading(true).build();
+
+        GraphMigrator.migrateGraph(g1, g, reader, writer);
+
+        final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
+        assertEquals(37, vStephen.getProperty("age").get());
+        assertTrue(vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").hasNext());
+
+        final Vertex vMarko = g.v("1");
+        assertEquals("marko", vMarko.getProperty("name").get());
+
+        // need to manually close the "g1" instance
+        graphProvider.clear(g1, configuration);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldReadGraphSONIncremental() throws Exception {
+        readGraphMLIntoGraph(g);
+        assertClassicGraph(g, false, true);
+
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        graphProvider.clear(configuration);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
+
+        final Vertex v1 = g1.addVertex("name", "stephen", "age", 37);
+        final Vertex v2 = g1.addVertex("name", "marko");
+        v1.addEdge("knows", v2, "weight", 1.0f);
+
+        final GraphWriter writer = GraphSONWriter.create().embedTypes(true).build();
+        final GraphReader reader = GraphSONReader.create()
+                .vertexIdKey("name")
+                .embedTypes(true)
+                .enableIncrementalLoading(true).build();
+
+        GraphMigrator.migrateGraph(g1, g, reader, writer);
+
+        final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
+        assertEquals(37, vStephen.getProperty("age").get());
+        assertTrue(vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").hasNext());
+
+        final Vertex vMarko = g.v("1");
+        assertEquals("marko", vMarko.getProperty("name").get());
+
+        // need to manually close the "g1" instance
+        graphProvider.clear(g1, configuration);
     }
 
     @Test

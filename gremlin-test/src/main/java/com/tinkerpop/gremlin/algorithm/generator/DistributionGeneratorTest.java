@@ -54,6 +54,8 @@ public class DistributionGeneratorTest {
                 final DistributionGenerator generator1 = makeGenerator(g1).build();
                 distributionGeneratorTest(g1, generator1);
 
+                // todo: still crapping out randomly...first time in several weeks on 4/6
+
                 // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
                 // same number of edges between graphs.  that should make it harder for the test to fail.
                 assertFalse(same(g, g1));

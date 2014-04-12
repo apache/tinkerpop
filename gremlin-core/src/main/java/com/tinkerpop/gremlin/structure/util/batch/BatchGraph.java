@@ -135,15 +135,30 @@ public class BatchGraph<T extends Graph> implements Graph {
     public Vertex addVertex(final Object... keyValues) {
         final Object id = ElementHelper.getIdValue(keyValues).orElse(null);
         if (null == id) throw new IllegalArgumentException("Vertex id value cannot be null");
-        if (retrieveFromCache(id) != null) throw new IllegalArgumentException("Vertex id already exists");
+        if (loadingFromScratch && retrieveFromCache(id) != null) throw new IllegalArgumentException("Vertex id already exists");
         nextElement();
 
         final Optional<Object[]> kvs = this.baseSupportsSuppliedVertexId ?
                 Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
-        final Vertex v = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
+        Vertex v;
+        if (loadingFromScratch)
+            v = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
+        else {
+            // todo: try/catch ugliness
+            try {
+                // todo: update on incremental?
+                if (baseSupportsSuppliedVertexId)
+                    v = baseGraph.v(id);
+                else
+                    v = baseGraph.V().<Vertex>has(vertexIdKey.get(), id).next();
+            } catch (NoSuchElementException nsee) {
+                v = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
+            }
+        }
 
-        vertexIdKey.ifPresent(k -> v.setProperty(k, id));
-        cache.set(v, id);
+        final Vertex vertex = v;
+        if (!baseSupportsSuppliedVertexId) vertexIdKey.ifPresent(k -> vertex.setProperty(k, id));
+        cache.set(vertex, id);
 
         return new BatchVertex(id);
     }
@@ -171,10 +186,13 @@ public class BatchGraph<T extends Graph> implements Graph {
                         if (!iter.hasNext()) return null;
                         v = iter.next();
                         if (iter.hasNext())
-                            throw new IllegalArgumentException("There are multiple vertices with the provided id in the database: " + id);
+                            throw new IllegalStateException("There are multiple vertices with the provided id in the database: " + id);
                     } else {
-                        v = baseGraph.v(id);
-                        if (null == v) return null;
+                        try {
+                            v = baseGraph.v(id);
+                        } catch (NoSuchElementException nsee) {
+                            return null;
+                        }
                     }
                     cache.set(v, id);
                 }

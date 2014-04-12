@@ -38,16 +38,20 @@ public class GraphMLReader implements GraphReader {
     private final String edgeLabelKey;
     private final String vertexLabelKey;
     private final long batchSize;
+    private final boolean incrementalLoading;
 
     private GraphMLReader(final String vertexIdKey, final String edgeIdKey,
                           final String edgeLabelKey, final String vertexLabelKey,
-                          final long batchSize) {
+                          final long batchSize, final boolean incrementalLoading) {
         this.vertexIdKey = Optional.ofNullable(vertexIdKey);
         this.edgeIdKey = Optional.ofNullable(edgeIdKey);
         this.edgeLabelKey = edgeLabelKey;
         this.batchSize = batchSize;
         this.vertexLabelKey = vertexLabelKey;
+        this.incrementalLoading = !incrementalLoading;
     }
+
+    // todo: graphml has classic graph with string ids - can now support numerics cleanly
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
@@ -71,15 +75,14 @@ public class GraphMLReader implements GraphReader {
         try {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
 
+            // will throw an exception if not constructed properly
             final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
+                    .vertexIdKey(vertexIdKey)
+                    .loadFromScratch(incrementalLoading)
                     .bufferSize(batchSize).build();
 
             final Map<String, String> keyIdMap = new HashMap<>();
             final Map<String, String> keyTypesMaps = new HashMap<>();
-            // <Mapped ID String, ID Object>
-
-            // <Default ID String, Mapped ID String>
-            final Map<String, String> vertexMappedIdMap = new HashMap<>();
 
             // Buffered Vertex Data
             String vertexId = null;
@@ -110,8 +113,6 @@ public class GraphMLReader implements GraphReader {
                             break;
                         case GraphMLTokens.NODE:
                             vertexId = reader.getAttributeValue(null, GraphMLTokens.ID);
-                            if (vertexIdKey.isPresent())
-                                vertexMappedIdMap.put(vertexId, vertexId);
                             isInVertex = true;
                             vertexProps = new HashMap<>();
                             break;
@@ -121,27 +122,11 @@ public class GraphMLReader implements GraphReader {
                             final String vertexIdOut = reader.getAttributeValue(null, GraphMLTokens.SOURCE);
                             final String vertexIdIn = reader.getAttributeValue(null, GraphMLTokens.TARGET);
 
-                            if (!vertexIdKey.isPresent())
-                                edgeOutVertex = Optional.ofNullable(graph.v(vertexIdOut))
-                                        .orElseGet(() -> graph.addVertex(Element.ID, vertexIdOut));
-                            else
-                                edgeOutVertex = Optional.ofNullable(graph.v(vertexMappedIdMap.get(vertexIdOut)))
-                                        .orElseGet(() -> graph.addVertex(Element.ID, vertexIdOut));
-
-                            // Default to standard ID system (in case no mapped ID is found later)
-                            if (vertexIdKey.isPresent())
-                                vertexMappedIdMap.put(vertexIdOut, vertexIdOut);
-
-                            if (!vertexIdKey.isPresent())
-                                edgeInVertex = Optional.ofNullable(graph.v(vertexIdIn))
-                                        .orElseGet(() -> graph.addVertex(Element.ID, vertexIdIn));
-                            else
-                                edgeInVertex = Optional.ofNullable(graph.v(vertexMappedIdMap.get(vertexIdIn)))
-                                        .orElseGet(() -> graph.addVertex(Element.ID, vertexIdIn));
-
-                            // Default to standard ID system (in case no mapped ID is found later)
-                            if (vertexIdKey.isPresent())
-                                vertexMappedIdMap.put(vertexIdIn, vertexIdIn);
+                            // todo: valid to have a graph of just edges?
+                            edgeOutVertex = Optional.ofNullable(graph.v(vertexIdOut))
+                                    .orElseGet(() -> graph.addVertex(Element.ID, vertexIdOut));
+                            edgeInVertex = Optional.ofNullable(graph.v(vertexIdIn))
+                                    .orElseGet(() -> graph.addVertex(Element.ID, vertexIdIn));
 
                             isInEdge = true;
                             edgeProps = new HashMap<>();
@@ -157,12 +142,7 @@ public class GraphMLReader implements GraphReader {
                                 if (isInVertex) {
                                     if (key.equals(vertexLabelKey))
                                         vertexLabel = value;
-                                    else if (vertexIdKey.isPresent() && key.equals(vertexIdKey.get())) {
-                                        // Should occur at most once per Vertex
-                                        // Assumes single ID prop per Vertex
-                                        vertexMappedIdMap.put(vertexId, value);
-                                        vertexId = value;
-                                    } else
+                                    else
                                         vertexProps.put(dataAttributeName, typeCastValue(key, value, keyTypesMaps));
                                 } else if (isInEdge) {
                                     if (key.equals(edgeLabelKey))
@@ -182,8 +162,9 @@ public class GraphMLReader implements GraphReader {
                     if (elementName.equals(GraphMLTokens.NODE)) {
                         final String currentVertexId = vertexId;
                         final String currentVertexLabel = Optional.ofNullable(vertexLabel).orElse(Element.DEFAULT_LABEL);
-                        final Vertex currentVertex = Optional.ofNullable(graph.v(vertexId))
-                                .orElseGet(() -> graph.addVertex(Element.ID, currentVertexId, Element.LABEL, currentVertexLabel));
+                        final Vertex currentVertex = graph.addVertex(Element.ID, currentVertexId, Element.LABEL, currentVertexLabel);
+
+                        // todo: set properties all at once
                         for (Map.Entry<String, Object> prop : vertexProps.entrySet()) {
                             currentVertex.setProperty(prop.getKey(), prop.getValue());
                         }
@@ -194,6 +175,8 @@ public class GraphMLReader implements GraphReader {
                         isInVertex = false;
                     } else if (elementName.equals(GraphMLTokens.EDGE)) {
                         final Edge currentEdge = edgeOutVertex.addEdge(edgeLabel, edgeInVertex, Element.ID, edgeId);
+
+                        // todo: set properties all at once
                         for (Map.Entry<String, Object> prop : edgeProps.entrySet()) {
                             currentEdge.setProperty(prop.getKey(), prop.getValue());
                         }
@@ -243,6 +226,7 @@ public class GraphMLReader implements GraphReader {
     public static final class Builder {
         private String vertexIdKey = null;
         private String edgeIdKey = null;
+        private boolean incrementalLoading = false;
         private String edgeLabelKey = GraphMLTokens.LABEL_E;
         private String vertexLabelKey = GraphMLTokens.LABEL_V;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
@@ -274,8 +258,13 @@ public class GraphMLReader implements GraphReader {
             return this;
         }
 
+        public Builder enableIncrementalLoading(final boolean enabled){
+            this.incrementalLoading = enabled;
+            return this;
+        }
+
         public GraphMLReader build() {
-            return new GraphMLReader(vertexIdKey, edgeIdKey, edgeLabelKey, vertexLabelKey, batchSize);
+            return new GraphMLReader(vertexIdKey, edgeIdKey, edgeLabelKey, vertexLabelKey, batchSize, incrementalLoading);
         }
     }
 }

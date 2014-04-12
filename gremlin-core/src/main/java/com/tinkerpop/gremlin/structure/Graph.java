@@ -441,7 +441,8 @@ public interface Graph extends AutoCloseable {
         }
 
         public static NoSuchElementException elementNotFound() {
-            return FastNoSuchElementException.instance();
+            // todo: could elementNotFound be configurable to allow a regular NoSuchEelementException instead of Fast version - useful in debugging
+            return  FastNoSuchElementException.instance();
         }
 
         public static IllegalArgumentException onlyOneOrNoGraphComputerClass() {

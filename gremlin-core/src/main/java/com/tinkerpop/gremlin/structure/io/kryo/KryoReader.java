@@ -422,6 +422,8 @@ public class KryoReader implements GraphReader {
             return this;
         }
 
+        // todo: incremental loading
+
         public KryoReader build() {
             return new KryoReader(idMap, tempFile, batchSize, this.gremlinKryo);
         }

@@ -10,7 +10,7 @@ import java.io.PipedOutputStream;
 
 /**
  * {@link GraphMigrator} takes the data in one graph and pipes it to another graph.  Uses the {@link KryoReader}
- * and {@link KryoWriter} to migrate the graph data as it is the only IO implementation that is non-lossy.
+ * and {@link KryoWriter} by default.
  *
  * @author Alex Averbuch (alex.averbuch@gmail.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -36,7 +36,7 @@ public final class GraphMigrator {
      * @throws java.io.IOException        thrown if there is an error in steam between the two graphs
      */
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph,
-                                    final KryoReader reader, final KryoWriter writer) throws IOException {
+                                    final GraphReader reader, final GraphWriter writer) throws IOException {
 
         // todo: if this is the standard way to "migrate" a graph, then rethink exception handling and such
         final PipedInputStream inPipe = new PipedInputStream() {
@@ -69,6 +69,4 @@ public final class GraphMigrator {
 
         reader.readGraph(inPipe, toGraph);
     }
-
-    // todo: could do a "mergeGraph" maybe if IO ends up supporting incremental loading
 }

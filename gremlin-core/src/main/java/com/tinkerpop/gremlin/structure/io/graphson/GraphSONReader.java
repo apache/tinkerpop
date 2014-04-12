@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -37,20 +38,30 @@ import java.util.stream.Stream;
 public class GraphSONReader implements GraphReader {
     private final ObjectMapper mapper;
     private final long batchSize;
+    private final boolean incrementalLoading;    // todo: poorly named
+    private final String vertexIdKey;
 
     final TypeReference<Map<String,Object>> mapTypeReference = new TypeReference<Map<String,Object>>(){};
 
-    public GraphSONReader(final ObjectMapper mapper, final long batchSize) {
+    public GraphSONReader(final ObjectMapper mapper, final long batchSize,
+                          final String vertexIdKey, final boolean incrementalLoading) {
         this.mapper = mapper;
         this.batchSize = batchSize;
+        this.incrementalLoading = !incrementalLoading;
+        this.vertexIdKey = vertexIdKey;
     }
 
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
         final JsonFactory factory = mapper.getFactory();
         final JsonParser parser = factory.createParser(inputStream);
+
+        // will throw an exception if not constructed properly
         final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
+                .vertexIdKey(Optional.ofNullable(vertexIdKey))
+                .loadFromScratch(incrementalLoading)
                 .bufferSize(batchSize).build();
+
 
         if (parser.nextToken() != JsonToken.START_OBJECT)
             throw new IOException("Expected data to start with an Object");
@@ -66,9 +77,11 @@ public class GraphSONReader implements GraphReader {
             } else if (fieldName.equals(GraphSONTokens.VERTICES)) {
                 while (parser.nextToken() != JsonToken.END_ARRAY) {
                     final Map<String,Object> vertexData = parser.readValueAs(mapTypeReference);
-                    readVertexData(vertexData, (id, label, properties) -> graph.addVertex(Stream.concat(
-                            Stream.of(Element.LABEL, label, Element.ID, id),
-                            Stream.of(properties)).toArray()));
+                    readVertexData(vertexData, (id, label, properties) ->
+                        Optional.ofNullable(graph.v(id)).orElse(
+                            graph.addVertex(Stream.concat(Stream.of(Element.LABEL, label, Element.ID, id),
+                                    Stream.of(properties)).toArray()))
+                    );
                 }
             } else if (fieldName.equals(GraphSONTokens.EDGES)) {
                 while (parser.nextToken() != JsonToken.END_ARRAY) {
@@ -173,8 +186,21 @@ public class GraphSONReader implements GraphReader {
         private SimpleModule custom = null;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private boolean embedTypes = false;
+        private String vertexIdKey = null;
+        private boolean incrementalLoading = false;
+
 
         private Builder() {}
+
+        public Builder vertexIdKey(final String vertexIdKey) {
+            this.vertexIdKey = vertexIdKey;
+            return this;
+        }
+
+        public Builder enableIncrementalLoading(final boolean enabled){
+            this.incrementalLoading = enabled;
+            return this;
+        }
 
         /**
          * Supply a custom module for serialization/deserialization.
@@ -211,7 +237,7 @@ public class GraphSONReader implements GraphReader {
                     .customModule(custom)
                     .embedTypes(embedTypes)
                     .loadCustomModules(loadCustomModules).build();
-            return new GraphSONReader(mapper, batchSize);
+            return new GraphSONReader(mapper, batchSize, vertexIdKey, incrementalLoading);
         }
     }
 }
