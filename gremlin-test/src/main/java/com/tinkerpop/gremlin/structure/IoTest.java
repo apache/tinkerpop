@@ -28,7 +28,6 @@ import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import org.apache.commons.configuration.Configuration;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.xml.XMLConstants;
@@ -107,7 +106,7 @@ public class IoTest extends AbstractGremlinTest {
         tryCommit(g1);
 
         final GraphWriter writer = GraphMLWriter.create().build();
-        final GraphReader reader = GraphMLReader.create().vertexIdKey("name").enableIncrementalLoading(true).build();
+        final GraphReader reader = GraphMLReader.create().vertexIdKey("name").incrementalLoading(true).build();
 
         GraphMigrator.migrateGraph(g1, g, reader, writer);
 
@@ -143,7 +142,7 @@ public class IoTest extends AbstractGremlinTest {
         final GraphReader reader = GraphSONReader.create()
                 .vertexIdKey("name")
                 .embedTypes(true)
-                .enableIncrementalLoading(true).build();
+                .incrementalLoading(true).build();
 
         GraphMigrator.migrateGraph(g1, g, reader, writer);
 

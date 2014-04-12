@@ -58,7 +58,7 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     private final String vertexIdKey;
     private final String edgeIdKey;
-    private final boolean loadingFromScratch;
+    private final boolean incrementalLoading;
     private final boolean baseSupportsSuppliedVertexId;
     private final boolean baseSupportsSuppliedEdgeId;
     private final boolean baseSupportsTransactions;
@@ -88,7 +88,7 @@ public class BatchGraph<T extends Graph> implements Graph {
      *                   larger this value, the more memory is required but the faster the loading process.
      */
     private BatchGraph(final T graph, final VertexIdType type, final long bufferSize, final String vertexIdKey,
-                       final String edgeIdKey, final boolean loadingFromScratch) {
+                       final String edgeIdKey, final boolean incrementalLoading) {
         this.baseGraph = graph;
         this.batchTransaction = new BatchTransaction();
         this.batchFeatures = new BatchFeatures(graph.getFeatures());
@@ -97,7 +97,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         this.remainingBufferSize = this.bufferSize;
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
-        this.loadingFromScratch = loadingFromScratch;
+        this.incrementalLoading = incrementalLoading;
         this.baseSupportsSuppliedEdgeId = this.baseGraph.getFeatures().edge().supportsUserSuppliedIds();
         this.baseSupportsSuppliedVertexId = this.baseGraph.getFeatures().vertex().supportsUserSuppliedIds();
         this.baseSupportsTransactions = this.baseGraph.getFeatures().graph().supportsTransactions();
@@ -134,13 +134,13 @@ public class BatchGraph<T extends Graph> implements Graph {
     @Override
     public Vertex addVertex(final Object... keyValues) {
         final Object id = ElementHelper.getIdValue(keyValues).orElseThrow(() -> new IllegalArgumentException("Vertex id value cannot be null"));
-        if (loadingFromScratch && retrieveFromCache(id) != null) throw new IllegalArgumentException("Vertex id already exists");
+        if (!incrementalLoading && retrieveFromCache(id) != null) throw new IllegalArgumentException("Vertex id already exists");
         nextElement();
 
         final Optional<Object[]> kvs = this.baseSupportsSuppliedVertexId && vertexIdKey.equals(Element.ID) ?
                 Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
         Vertex v;
-        if (loadingFromScratch)
+        if (!incrementalLoading)
             v = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
         else {
             // todo: try/catch ugliness
@@ -174,7 +174,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         else {
             Vertex v = retrieveFromCache(id);
             if (null == v) {
-                if (loadingFromScratch) return null;
+                if (!incrementalLoading) return null;
                 else {
                     final Iterator<Vertex> iter = baseGraph.V().has(vertexIdKey, id);
                     if (!iter.hasNext()) return null;
@@ -326,17 +326,10 @@ public class BatchGraph<T extends Graph> implements Graph {
 
             previousOutVertexId = externalID;  //keep track of the previous out vertex id
 
-            final Optional<Object> id = ElementHelper.getIdValue(keyValues);
-            final Optional<Object[]> kvs = baseSupportsSuppliedEdgeId ?
+            final Optional<Object[]> kvs = baseSupportsSuppliedEdgeId && Element.ID.equals(edgeIdKey)?
                     Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
 
             currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
-
-            /*
-            if (edgeIdKey.isPresent() && id.isPresent())
-                currentEdgeCached.setProperty(edgeIdKey.get(), id.get());
-            */
-
             currentEdge = new BatchEdge();
 
             return currentEdge;
@@ -559,7 +552,7 @@ public class BatchGraph<T extends Graph> implements Graph {
     @SuppressWarnings("UnusedDeclaration")
     public static class Builder<T extends Graph> {
         private final T graphToLoad;
-        private boolean loadingFromScratch = true;
+        private boolean incrementalLoading = true;
         private String vertexIdKey = Element.ID;
         private String edgeIdKey = Element.ID;
         private long bufferSize = DEFAULT_BUFFER_SIZE;
@@ -580,13 +573,6 @@ public class BatchGraph<T extends Graph> implements Graph {
          */
         public Builder vertexIdKey(final String key) {
             if (null == key) throw new IllegalArgumentException("Key cannot be null");
-
-            // todo: fix this logic
-            /*
-            if (!loadingFromScratch && key.equals(Element.ID) && !graphToLoad.getFeatures().vertex().supportsUserSuppliedIds())
-                throw new IllegalStateException("Cannot set vertex id key to Element.ID when not loading from scratch while ids are ignored");
-                */
-
             this.vertexIdKey = key;
             return this;
         }
@@ -630,19 +616,13 @@ public class BatchGraph<T extends Graph> implements Graph {
          * When setting loading from scratch to false, a vertex id key must be specified first using
          * {@link Builder#vertexIdKey} - otherwise an exception is thrown.
          */
-        public Builder loadFromScratch(final boolean fromScratch) {
-            // todo: fix this logic
-            /*
-            if (!fromScratch && !vertexIdKey.isPresent() && !graphToLoad.getFeatures().vertex().supportsUserSuppliedIds())
-                throw new IllegalStateException("Vertex id key is required to query existing vertices in wrapped graph.");
-            */
-
-            loadingFromScratch = fromScratch;
+        public Builder incrementalLoading(final boolean incrementalLoading) {
+            this.incrementalLoading = incrementalLoading;
             return this;
         }
 
         public BatchGraph<T> build() {
-            return new BatchGraph<>(graphToLoad, vertexIdType, bufferSize, vertexIdKey, edgeIdKey, loadingFromScratch);
+            return new BatchGraph<>(graphToLoad, vertexIdType, bufferSize, vertexIdKey, edgeIdKey, incrementalLoading);
         }
     }
 }

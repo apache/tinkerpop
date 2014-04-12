@@ -59,7 +59,7 @@ public class GraphSONReader implements GraphReader {
         // will throw an exception if not constructed properly
         final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
                 .vertexIdKey(vertexIdKey)
-                .loadFromScratch(incrementalLoading)
+                .incrementalLoading(incrementalLoading)
                 .bufferSize(batchSize).build();
 
 
@@ -197,7 +197,7 @@ public class GraphSONReader implements GraphReader {
             return this;
         }
 
-        public Builder enableIncrementalLoading(final boolean enabled){
+        public Builder incrementalLoading(final boolean enabled){
             this.incrementalLoading = enabled;
             return this;
         }
