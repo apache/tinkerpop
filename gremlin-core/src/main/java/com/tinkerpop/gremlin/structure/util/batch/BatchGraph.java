@@ -41,7 +41,7 @@ import java.util.function.Function;
  * exceptions. This is done to avoid caching of edges which would require a great amount of memory.
  * <br />
  * BatchGraph can also automatically set the provided element ids as properties on the respective element. Use
- * {@link Builder#vertexIdKey(java.util.Optional)} and {@link Builder#edgeIdKey(java.util.Optional)} to set the keys
+ * {@link Builder#vertexIdKey(String)} and {@link Builder#edgeIdKey(String)} to set the keys
  * for the vertex and edge properties respectively. This allows to make the loaded baseGraph compatible for later
  * operation with {@link com.tinkerpop.gremlin.structure.strategy.IdGraphStrategy}.
  *
@@ -56,8 +56,8 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     private final T baseGraph;
 
-    private final Optional<String> vertexIdKey;
-    private final Optional<String> edgeIdKey;
+    private final String vertexIdKey;
+    private final String edgeIdKey;
     private final boolean loadingFromScratch;
     private final boolean baseSupportsSuppliedVertexId;
     private final boolean baseSupportsSuppliedEdgeId;
@@ -87,8 +87,8 @@ public class BatchGraph<T extends Graph> implements Graph {
      * @param bufferSize Defines the number of vertices and edges loaded before starting a new transaction. The
      *                   larger this value, the more memory is required but the faster the loading process.
      */
-    private BatchGraph(final T graph, final VertexIdType type, final long bufferSize, final Optional<String> vertexIdKey,
-                       final Optional<String> edgeIdKey, final boolean loadingFromScratch) {
+    private BatchGraph(final T graph, final VertexIdType type, final long bufferSize, final String vertexIdKey,
+                       final String edgeIdKey, final boolean loadingFromScratch) {
         this.baseGraph = graph;
         this.batchTransaction = new BatchTransaction();
         this.batchFeatures = new BatchFeatures(graph.getFeatures());
@@ -133,12 +133,11 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
-        final Object id = ElementHelper.getIdValue(keyValues).orElse(null);
-        if (null == id) throw new IllegalArgumentException("Vertex id value cannot be null");
+        final Object id = ElementHelper.getIdValue(keyValues).orElseThrow(() -> new IllegalArgumentException("Vertex id value cannot be null"));
         if (loadingFromScratch && retrieveFromCache(id) != null) throw new IllegalArgumentException("Vertex id already exists");
         nextElement();
 
-        final Optional<Object[]> kvs = this.baseSupportsSuppliedVertexId ?
+        final Optional<Object[]> kvs = this.baseSupportsSuppliedVertexId && vertexIdKey.equals(Element.ID) ?
                 Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
         Vertex v;
         if (loadingFromScratch)
@@ -147,18 +146,15 @@ public class BatchGraph<T extends Graph> implements Graph {
             // todo: try/catch ugliness
             try {
                 // todo: update on incremental?
-                if (baseSupportsSuppliedVertexId)
-                    v = baseGraph.v(id);
-                else
-                    v = baseGraph.V().<Vertex>has(vertexIdKey.get(), id).next();
+                v = baseGraph.V().<Vertex>has(vertexIdKey, id).next();
             } catch (NoSuchElementException nsee) {
                 v = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
             }
         }
 
-        final Vertex vertex = v;
-        if (!baseSupportsSuppliedVertexId) vertexIdKey.ifPresent(k -> vertex.setProperty(k, id));
-        cache.set(vertex, id);
+        //final Vertex vertex = v;
+        //if (!baseSupportsSuppliedVertexId) vertexIdKey.ifPresent(k -> vertex.setProperty(k, id));
+        cache.set(v, id);
 
         return new BatchVertex(id);
     }
@@ -180,20 +176,11 @@ public class BatchGraph<T extends Graph> implements Graph {
             if (null == v) {
                 if (loadingFromScratch) return null;
                 else {
-                    if (!this.baseSupportsSuppliedVertexId) {
-                        assert vertexIdKey.isPresent();
-                        final Iterator<Vertex> iter = baseGraph.V().has(vertexIdKey.get(), id);
-                        if (!iter.hasNext()) return null;
-                        v = iter.next();
-                        if (iter.hasNext())
-                            throw new IllegalStateException("There are multiple vertices with the provided id in the database: " + id);
-                    } else {
-                        try {
-                            v = baseGraph.v(id);
-                        } catch (NoSuchElementException nsee) {
-                            return null;
-                        }
-                    }
+                    final Iterator<Vertex> iter = baseGraph.V().has(vertexIdKey, id);
+                    if (!iter.hasNext()) return null;
+                    v = iter.next();
+                    if (iter.hasNext())
+                        throw new IllegalStateException("There are multiple vertices with the provided id in the database: " + id);
                     cache.set(v, id);
                 }
             }
@@ -345,8 +332,10 @@ public class BatchGraph<T extends Graph> implements Graph {
 
             currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
 
+            /*
             if (edgeIdKey.isPresent() && id.isPresent())
                 currentEdgeCached.setProperty(edgeIdKey.get(), id.get());
+            */
 
             currentEdge = new BatchEdge();
 
@@ -571,8 +560,8 @@ public class BatchGraph<T extends Graph> implements Graph {
     public static class Builder<T extends Graph> {
         private final T graphToLoad;
         private boolean loadingFromScratch = true;
-        private Optional<String> vertexIdKey = Optional.empty();
-        private Optional<String> edgeIdKey = Optional.empty();
+        private String vertexIdKey = Element.ID;
+        private String edgeIdKey = Element.ID;
         private long bufferSize = DEFAULT_BUFFER_SIZE;
         private VertexIdType vertexIdType = VertexIdType.OBJECT;
 
@@ -584,15 +573,20 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         /**
-         * Sets the key to be used when setting the vertex id as a property on the respective vertex.
-         * If the key is null, then no property will be set.
+         * Sets the key to be used when setting the vertex id as a property on the respective vertex. If this
+         * value is not set it defaults to {@link Element#ID}.
          *
          * @param key Key to be used.
          */
-        public Builder vertexIdKey(final Optional<String> key) {
-            if (null == key) throw new IllegalArgumentException("Optional value for key cannot be null");
-            if (!loadingFromScratch && !key.isPresent() && !graphToLoad.getFeatures().vertex().supportsUserSuppliedIds())
-                throw new IllegalStateException("Cannot set vertex id key to null when not loading from scratch while ids are ignored");
+        public Builder vertexIdKey(final String key) {
+            if (null == key) throw new IllegalArgumentException("Key cannot be null");
+
+            // todo: fix this logic
+            /*
+            if (!loadingFromScratch && key.equals(Element.ID) && !graphToLoad.getFeatures().vertex().supportsUserSuppliedIds())
+                throw new IllegalStateException("Cannot set vertex id key to Element.ID when not loading from scratch while ids are ignored");
+                */
+
             this.vertexIdKey = key;
             return this;
         }
@@ -603,7 +597,7 @@ public class BatchGraph<T extends Graph> implements Graph {
          *
          * @param key Key to be used.
          */
-        public Builder edgeIdKey(final Optional<String> key) {
+        public Builder edgeIdKey(final String key) {
             if (null == key) throw new IllegalArgumentException("Optional value for key cannot be null");
             this.edgeIdKey = key;
             return this;
@@ -637,8 +631,12 @@ public class BatchGraph<T extends Graph> implements Graph {
          * {@link Builder#vertexIdKey} - otherwise an exception is thrown.
          */
         public Builder loadFromScratch(final boolean fromScratch) {
+            // todo: fix this logic
+            /*
             if (!fromScratch && !vertexIdKey.isPresent() && !graphToLoad.getFeatures().vertex().supportsUserSuppliedIds())
                 throw new IllegalStateException("Vertex id key is required to query existing vertices in wrapped graph.");
+            */
+
             loadingFromScratch = fromScratch;
             return this;
         }

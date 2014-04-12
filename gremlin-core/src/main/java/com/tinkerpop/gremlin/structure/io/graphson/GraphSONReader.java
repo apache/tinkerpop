@@ -58,7 +58,7 @@ public class GraphSONReader implements GraphReader {
 
         // will throw an exception if not constructed properly
         final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
-                .vertexIdKey(Optional.ofNullable(vertexIdKey))
+                .vertexIdKey(vertexIdKey)
                 .loadFromScratch(incrementalLoading)
                 .bufferSize(batchSize).build();
 
@@ -186,7 +186,7 @@ public class GraphSONReader implements GraphReader {
         private SimpleModule custom = null;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private boolean embedTypes = false;
-        private String vertexIdKey = null;
+        private String vertexIdKey = Element.ID;
         private boolean incrementalLoading = false;
 
 

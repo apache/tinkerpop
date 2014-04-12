@@ -33,8 +33,8 @@ import java.util.Optional;
 public class GraphMLReader implements GraphReader {
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
-    private final Optional<String> vertexIdKey;
-    private final Optional<String> edgeIdKey;
+    private final String vertexIdKey;
+    private final String edgeIdKey;
     private final String edgeLabelKey;
     private final String vertexLabelKey;
     private final long batchSize;
@@ -43,8 +43,8 @@ public class GraphMLReader implements GraphReader {
     private GraphMLReader(final String vertexIdKey, final String edgeIdKey,
                           final String edgeLabelKey, final String vertexLabelKey,
                           final long batchSize, final boolean incrementalLoading) {
-        this.vertexIdKey = Optional.ofNullable(vertexIdKey);
-        this.edgeIdKey = Optional.ofNullable(edgeIdKey);
+        this.vertexIdKey = vertexIdKey;
+        this.edgeIdKey = edgeIdKey;
         this.edgeLabelKey = edgeLabelKey;
         this.batchSize = batchSize;
         this.vertexLabelKey = vertexLabelKey;
@@ -147,7 +147,7 @@ public class GraphMLReader implements GraphReader {
                                 } else if (isInEdge) {
                                     if (key.equals(edgeLabelKey))
                                         edgeLabel = value;
-                                    else if (edgeIdKey.isPresent() && key.equals(edgeIdKey.get()))
+                                    else if (key.equals(edgeIdKey))
                                         edgeId = value;
                                     else
                                         edgeProps.put(dataAttributeName, typeCastValue(key, value, keyTypesMaps));
@@ -224,8 +224,8 @@ public class GraphMLReader implements GraphReader {
      * Allows configuration and construction of the GraphMLReader instance.
      */
     public static final class Builder {
-        private String vertexIdKey = null;
-        private String edgeIdKey = null;
+        private String vertexIdKey = Element.ID;
+        private String edgeIdKey = Element.ID;
         private boolean incrementalLoading = false;
         private String edgeLabelKey = GraphMLTokens.LABEL_E;
         private String vertexLabelKey = GraphMLTokens.LABEL_V;

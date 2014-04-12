@@ -89,22 +89,22 @@ public class IoTest extends AbstractGremlinTest {
         assertClassicGraph(g, false, true);
     }
 
-    @Ignore
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadGraphMLIncremental() throws Exception {
-        readGraphMLIntoGraph(g);
-        assertClassicGraph(g, false, true);
+        g.addVertex("name", "marko", "age", 29);
+        tryCommit(g);
 
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        final Configuration configuration = graphProvider.newGraphConfiguration("graphml-incremental");
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
         final Vertex v1 = g1.addVertex("name", "stephen", "age", 37);
         final Vertex v2 = g1.addVertex("name", "marko");
         v1.addEdge("knows", v2, "weight", 1.0f);
+        tryCommit(g1);
 
         final GraphWriter writer = GraphMLWriter.create().build();
         final GraphReader reader = GraphMLReader.create().vertexIdKey("name").enableIncrementalLoading(true).build();
@@ -115,29 +115,29 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(37, vStephen.getProperty("age").get());
         assertTrue(vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").hasNext());
 
-        final Vertex vMarko = g.v("1");
-        assertEquals("marko", vMarko.getProperty("name").get());
+        final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        assertEquals(29, vMarko.getProperty("age").get());
 
         // need to manually close the "g1" instance
         graphProvider.clear(g1, configuration);
     }
 
-    @Ignore
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadGraphSONIncremental() throws Exception {
-        readGraphMLIntoGraph(g);
-        assertClassicGraph(g, false, true);
+        g.addVertex("name", "marko", "age", 29);
+        tryCommit(g);
 
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph");
+        final Configuration configuration = graphProvider.newGraphConfiguration("graphson-incremental");
         graphProvider.clear(configuration);
         final Graph g1 = graphProvider.openTestGraph(configuration);
 
         final Vertex v1 = g1.addVertex("name", "stephen", "age", 37);
         final Vertex v2 = g1.addVertex("name", "marko");
         v1.addEdge("knows", v2, "weight", 1.0f);
+        tryCommit(g1);
 
         final GraphWriter writer = GraphSONWriter.create().embedTypes(true).build();
         final GraphReader reader = GraphSONReader.create()
@@ -151,8 +151,8 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(37, vStephen.getProperty("age").get());
         assertTrue(vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").hasNext());
 
-        final Vertex vMarko = g.v("1");
-        assertEquals("marko", vMarko.getProperty("name").get());
+        final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        assertEquals(29, vMarko.getProperty("age").get());
 
         // need to manually close the "g1" instance
         graphProvider.clear(g1, configuration);
@@ -331,7 +331,6 @@ public class IoTest extends AbstractGremlinTest {
         graphProvider.clear(g1, configuration);
     }
 
-    @Ignore
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
@@ -1778,8 +1777,8 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     private static void readGraphSONIntoGraph(final Graph g) throws IOException {
-        final GraphReader reader = GraphSONReader.create().build();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "graph-example-1.json")) {
+        final GraphReader reader = GraphSONReader.create().embedTypes(true).build();
+        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "graph-example-1-typed.json")) {
             reader.readGraph(stream, g);
         }
     }
