@@ -6,7 +6,7 @@ package com.tinkerpop.gremlin.structure.io.graphml;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphMLTokens {
+class GraphMLTokens {
     public static final String XML_SCHEMA_NAMESPACE_TAG = "xsi";
     public static final String DEFAULT_GRAPHML_SCHEMA_LOCATION = "http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd";
     public static final String XML_SCHEMA_LOCATION_ATTRIBUTE = "schemaLocation";
@@ -35,5 +35,4 @@ public class GraphMLTokens {
     public static final String LONG = "long";
     public static final String BOOLEAN = "boolean";
     public static final String INT = "int";
-    public static final String _DEFAULT = "_default";
 }
