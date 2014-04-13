@@ -20,8 +20,13 @@ public final class GraphMigrator {
     private static final KryoReader defaultKryoReader = KryoReader.create().build();
     private static final KryoWriter defaultKryoWriter = KryoWriter.create().build();
 
+    /**
+     * Use Kryo to pipe the data from one graph to another graph.  Uses all default settings for reader/writers.
+     * Refer to {@link KryoReader} and {@link KryoWriter} for those settings.  To use features like incremental
+     * loading, construct the reader/writers manually and utilize
+     * {@link #migrateGraph(com.tinkerpop.gremlin.structure.Graph, com.tinkerpop.gremlin.structure.Graph, GraphReader, GraphWriter)}
+     */
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph) throws IOException {
-        // todo: incremental loading?
         migrateGraph(fromGraph, toGraph, defaultKryoReader, defaultKryoWriter);
     }
 
@@ -37,8 +42,6 @@ public final class GraphMigrator {
      */
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph,
                                     final GraphReader reader, final GraphWriter writer) throws IOException {
-
-        // todo ensure reader/writer compatibility
         // todo: if this is the standard way to "migrate" a graph, then rethink exception handling and such
         final PipedInputStream inPipe = new PipedInputStream() {
             // Default is 1024
