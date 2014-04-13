@@ -121,7 +121,9 @@ public class GraphMLReader implements GraphReader {
                             final String vertexIdOut = reader.getAttributeValue(null, GraphMLTokens.SOURCE);
                             final String vertexIdIn = reader.getAttributeValue(null, GraphMLTokens.TARGET);
 
-                            // todo: valid to have a graph of just edges?
+                            // graphml allows edges and vertices to be mixed in terms of how they are positioned
+                            // in the xml therefore it is possible that an edge is created prior to its definition
+                            // as a vertex.
                             edgeOutVertex = Optional.ofNullable(graph.v(vertexIdOut))
                                     .orElseGet(() -> graph.addVertex(Element.ID, vertexIdOut));
                             edgeInVertex = Optional.ofNullable(graph.v(vertexIdIn))
@@ -162,6 +164,9 @@ public class GraphMLReader implements GraphReader {
                         final String currentVertexId = vertexId;
                         final String currentVertexLabel = Optional.ofNullable(vertexLabel).orElse(Element.DEFAULT_LABEL);
                         final Object[] propsAsArray = vertexProps.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
+
+                        // if incremental loading is on in batchgraph it handles graphml spec where it states that
+                        // order of edges/vertices may be mixed such that an edge may be created before an vertex.
                         graph.addVertex(Stream.concat(Stream.of(Element.ID, currentVertexId, Element.LABEL, currentVertexLabel),
                                 Stream.of(propsAsArray)).toArray());
 
