@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * GraphMLReader writes the data from a GraphML stream to a graph.  Note that this format is lossy, in the sense that data
@@ -48,10 +49,8 @@ public class GraphMLReader implements GraphReader {
         this.edgeLabelKey = edgeLabelKey;
         this.batchSize = batchSize;
         this.vertexLabelKey = vertexLabelKey;
-        this.incrementalLoading = !incrementalLoading;
+        this.incrementalLoading = incrementalLoading;
     }
-
-    // todo: graphml has classic graph with string ids - can now support numerics cleanly
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
@@ -162,24 +161,18 @@ public class GraphMLReader implements GraphReader {
                     if (elementName.equals(GraphMLTokens.NODE)) {
                         final String currentVertexId = vertexId;
                         final String currentVertexLabel = Optional.ofNullable(vertexLabel).orElse(Element.DEFAULT_LABEL);
-                        final Vertex currentVertex = graph.addVertex(Element.ID, currentVertexId, Element.LABEL, currentVertexLabel);
-
-                        // todo: set properties all at once
-                        for (Map.Entry<String, Object> prop : vertexProps.entrySet()) {
-                            currentVertex.setProperty(prop.getKey(), prop.getValue());
-                        }
+                        final Object[] propsAsArray = vertexProps.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
+                        graph.addVertex(Stream.concat(Stream.of(Element.ID, currentVertexId, Element.LABEL, currentVertexLabel),
+                                Stream.of(propsAsArray)).toArray());
 
                         vertexId = null;
                         vertexLabel = null;
                         vertexProps = null;
                         isInVertex = false;
                     } else if (elementName.equals(GraphMLTokens.EDGE)) {
-                        final Edge currentEdge = edgeOutVertex.addEdge(edgeLabel, edgeInVertex, Element.ID, edgeId);
-
-                        // todo: set properties all at once
-                        for (Map.Entry<String, Object> prop : edgeProps.entrySet()) {
-                            currentEdge.setProperty(prop.getKey(), prop.getValue());
-                        }
+                        final Object[] propsAsArray = edgeProps.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
+                        edgeOutVertex.addEdge(edgeLabel, edgeInVertex, Stream.concat(Stream.of(Element.ID, edgeId),
+                                Stream.of(propsAsArray)).toArray());
 
                         edgeId = null;
                         edgeLabel = null;
