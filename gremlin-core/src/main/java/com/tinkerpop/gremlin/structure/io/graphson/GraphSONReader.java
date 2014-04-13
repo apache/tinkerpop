@@ -38,17 +38,20 @@ import java.util.stream.Stream;
 public class GraphSONReader implements GraphReader {
     private final ObjectMapper mapper;
     private final long batchSize;
-    private final boolean incrementalLoading;    // todo: poorly named
+    private final boolean incrementalLoading;
     private final String vertexIdKey;
+    private final String edgeIdKey;
 
     final TypeReference<Map<String,Object>> mapTypeReference = new TypeReference<Map<String,Object>>(){};
 
     public GraphSONReader(final ObjectMapper mapper, final long batchSize,
-                          final String vertexIdKey, final boolean incrementalLoading) {
+                          final String vertexIdKey, final String edgeIdKey,
+                          final boolean incrementalLoading) {
         this.mapper = mapper;
         this.batchSize = batchSize;
         this.incrementalLoading = incrementalLoading;
         this.vertexIdKey = vertexIdKey;
+        this.edgeIdKey = edgeIdKey;
     }
 
     @Override
@@ -59,6 +62,7 @@ public class GraphSONReader implements GraphReader {
         // will throw an exception if not constructed properly
         final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
                 .vertexIdKey(vertexIdKey)
+                .edgeIdKey(edgeIdKey)
                 .incrementalLoading(incrementalLoading)
                 .bufferSize(batchSize).build();
 
@@ -187,13 +191,18 @@ public class GraphSONReader implements GraphReader {
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private boolean embedTypes = false;
         private String vertexIdKey = Element.ID;
+        private String edgeIdKey = Element.ID;
         private boolean incrementalLoading = false;
-
 
         private Builder() {}
 
         public Builder vertexIdKey(final String vertexIdKey) {
             this.vertexIdKey = vertexIdKey;
+            return this;
+        }
+
+        public Builder edgeIdKey(final String edgeIdKey) {
+            this.edgeIdKey = edgeIdKey;
             return this;
         }
 
@@ -237,7 +246,7 @@ public class GraphSONReader implements GraphReader {
                     .customModule(custom)
                     .embedTypes(embedTypes)
                     .loadCustomModules(loadCustomModules).build();
-            return new GraphSONReader(mapper, batchSize, vertexIdKey, incrementalLoading);
+            return new GraphSONReader(mapper, batchSize, vertexIdKey, edgeIdKey, incrementalLoading);
         }
     }
 }

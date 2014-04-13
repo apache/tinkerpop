@@ -47,17 +47,22 @@ public class KryoReader implements GraphReader {
     private final GremlinKryo.HeaderReader headerReader;
 
     private final long batchSize;
+    private final boolean incrementalLoading;
+    private final String vertexIdKey;
+    private final String edgeIdKey;
 
     private final File tempFile;
-    private final Map<Object, Object> idMap;
 
     final AtomicLong counter = new AtomicLong(0);
 
-    private KryoReader(final Map<Object, Object> idMap, final File tempFile, final long batchSize,
+    private KryoReader(final File tempFile, final long batchSize,
+                       final boolean incrementalLoading, final String vertexIdKey, final String edgeIdKey,
                        final GremlinKryo gremlinKryo) {
         this.kryo = gremlinKryo.createKryo();
         this.headerReader = gremlinKryo.getHeaderReader();
-        this.idMap = idMap;
+        this.incrementalLoading = incrementalLoading;
+        this.vertexIdKey = vertexIdKey;
+        this.edgeIdKey = edgeIdKey;
         this.tempFile = tempFile;
         this.batchSize = batchSize;
     }
@@ -140,9 +145,15 @@ public class KryoReader implements GraphReader {
         this.counter.set(0);
         final Input input = new Input(inputStream);
         this.headerReader.read(kryo, input);
-        final Output output = new Output(new FileOutputStream(tempFile));
 
-        try {
+        // will throw an exception if not constructed properly
+        final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
+                .vertexIdKey(vertexIdKey)
+                .edgeIdKey(edgeIdKey)
+                .incrementalLoading(incrementalLoading)
+                .bufferSize(batchSize).build();
+
+        try (final Output output = new Output(new FileOutputStream(tempFile))) {
             final boolean supportedMemory = input.readBoolean();
             if (supportedMemory) {
                 // todo: do we just let this fail or do we check features for supported memory types
@@ -150,14 +161,11 @@ public class KryoReader implements GraphReader {
                 // if the graph that serialized the data supported memory then the memory needs to be read
                 // to advance the reader forward.  if the graph being read into doesn't support the memory
                 // then we just setting the data to memory.
-                final Map<String,Object> memMap = (Map<String,Object>) kryo.readObject(input, HashMap.class);
+                final Map<String, Object> memMap = (Map<String, Object>) kryo.readObject(input, HashMap.class);
                 if (graphToWriteTo.getFeatures().graph().memory().supportsMemory()) {
                     final Graph.Memory memory = graphToWriteTo.memory();
                     memMap.forEach(memory::set);
                 }
-
-                if (graphToWriteTo.getFeatures().graph().supportsTransactions())
-                    graphToWriteTo.tx().commit();
             }
 
             final boolean hasSomeVertices = input.readBoolean();
@@ -165,20 +173,15 @@ public class KryoReader implements GraphReader {
                 while (!input.eof()) {
                     final List<Object> vertexArgs = new ArrayList<>();
                     final Object current = kryo.readClassAndObject(input);
-                    if (graphToWriteTo.getFeatures().vertex().supportsUserSuppliedIds())
-                        vertexArgs.addAll(Arrays.asList(Element.ID, current));
+                    vertexArgs.addAll(Arrays.asList(Element.ID, current));
 
                     vertexArgs.addAll(Arrays.asList(Element.LABEL, input.readString()));
                     final List<Pair<String, IOAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
 
-                    final Vertex v = graphToWriteTo.addVertex(vertexArgs.toArray());
+                    final Vertex v = graph.addVertex(vertexArgs.toArray());
 
                     // annotated list properties are set after the fact
                     setAnnotatedListValues(annotatedLists, v);
-
-                    idMap.put(current, v.getId());
-
-                    considerCommit(graphToWriteTo);
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
@@ -203,27 +206,18 @@ public class KryoReader implements GraphReader {
 
                 }
             }
-        } finally {
-            // done writing to temp
-            output.close();
         }
+        // done writing to temp
 
         // start reading in the edges now from the temp file
-        final Input edgeInput = new Input(new FileInputStream(tempFile));
-        try {
-            readFromTempEdges(edgeInput, graphToWriteTo);
+        try (final Input edgeInput = new Input(new FileInputStream(tempFile))) {
+            readFromTempEdges(edgeInput, graph);
         } finally {
-            if (graphToWriteTo.getFeatures().graph().supportsTransactions())
-                graphToWriteTo.tx().commit();
-            edgeInput.close();
+            if (graph.getFeatures().graph().supportsTransactions())
+                graph.tx().commit();
+
             deleteTempFileSilently();
         }
-    }
-
-    private void considerCommit(final Graph graphToWriteTo) {
-        if (graphToWriteTo.getFeatures().graph().supportsTransactions() &&
-            counter.incrementAndGet() % batchSize == 0)
-            graphToWriteTo.tx().commit();
     }
 
     private void readEdges(final Input input, final QuadConsumer<Object, Object, String, Object[]> edgeMaker) {
@@ -322,15 +316,13 @@ public class KryoReader implements GraphReader {
                 final Vertex vOut = graphToWriteTo.v(outId);
 
                 final Object edgeId = kryo.readClassAndObject(input);
-                if (graphToWriteTo.getFeatures().edge().supportsUserSuppliedIds())
-                    edgeArgs.addAll(Arrays.asList(Element.ID, edgeId));
+                edgeArgs.addAll(Arrays.asList(Element.ID, edgeId));
 
                 final String edgeLabel = input.readString();
-                final Vertex inV = graphToWriteTo.v(idMap.get(inId));
+                final Vertex inV = graphToWriteTo.v(inId);
                 readElementProperties(input, edgeArgs);
 
                 vOut.addEdge(edgeLabel, inV, edgeArgs.toArray());
-                considerCommit(graphToWriteTo);
 
                 inId = kryo.readClassAndObject(input);
             }
@@ -376,9 +368,11 @@ public class KryoReader implements GraphReader {
     }
 
     public static class Builder {
-        private Map<Object, Object> idMap;
         private File tempFile;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
+        private boolean incrementalLoading = false;
+        private String vertexIdKey = Element.ID;
+        private String edgeIdKey = Element.ID;
 
         /**
          * Always use the most recent kryo version by default
@@ -386,7 +380,6 @@ public class KryoReader implements GraphReader {
         private GremlinKryo gremlinKryo = GremlinKryo.create().build();
 
         private Builder() {
-            this.idMap = new HashMap<>();
             this.tempFile = new File(UUID.randomUUID() + ".tmp");
         }
 
@@ -395,17 +388,23 @@ public class KryoReader implements GraphReader {
             return this;
         }
 
-        /**
-         * A {@link Map} implementation that will handle vertex id translation in the event that the graph does
-         * not support identifier assignment. If this value is not set, it uses a standard HashMap.
-         */
-        public Builder idMap(final Map<Object, Object> idMap) {
-            this.idMap = idMap;
+        public Builder custom(final GremlinKryo gremlinKryo) {
+            this.gremlinKryo = gremlinKryo;
             return this;
         }
 
-        public Builder custom(final GremlinKryo gremlinKryo) {
-            this.gremlinKryo = gremlinKryo;
+        public Builder incrementalLoading(final boolean enabled){
+            this.incrementalLoading = enabled;
+            return this;
+        }
+
+        public Builder vertexIdKey(final String vertexIdKey) {
+            this.vertexIdKey = vertexIdKey;
+            return this;
+        }
+
+        public Builder edgeIdKey(final String edgeIdKey) {
+            this.edgeIdKey = edgeIdKey;
             return this;
         }
 
@@ -422,10 +421,8 @@ public class KryoReader implements GraphReader {
             return this;
         }
 
-        // todo: incremental loading
-
         public KryoReader build() {
-            return new KryoReader(idMap, tempFile, batchSize, this.gremlinKryo);
+            return new KryoReader(tempFile, batchSize, this.incrementalLoading, this.vertexIdKey, this.edgeIdKey, this.gremlinKryo);
         }
     }
 }
