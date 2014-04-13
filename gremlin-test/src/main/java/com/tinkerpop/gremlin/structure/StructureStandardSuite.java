@@ -38,7 +38,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
     /**
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
      * as needed to enforce tests upon implementations.
-     *
+     */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
             AnnotationTest.class,
             CommunityGeneratorTest.class,
@@ -60,8 +60,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             VertexTest.class
     };
 
-     */
-    private static final Class<?>[] testsToExecute = new Class<?>[]{ IoTest.class };
+    //private static final Class<?>[] testsToExecute = new Class<?>[]{ IoTest.class };
     // todo: would be nice to feed something to maven to optinally run certain test batteries.....
 
     public StructureStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
