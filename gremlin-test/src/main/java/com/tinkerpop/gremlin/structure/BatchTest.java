@@ -25,7 +25,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-    public void shouldLoadIncrementallyWithSuppliedIdentifier() {
+    public void shouldLoadVerticesIncrementallyWithSuppliedIdentifier() {
         final BatchGraph graph = new BatchGraph.Builder<>(g)
                 .incrementalLoading(true)
                 .bufferSize(1).build();
@@ -37,7 +37,7 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
         assertEquals(37, vStephen.getProperty("age").get());
-        assertTrue(vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").hasNext());
+        assertEquals(1, vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").count());
 
         final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
         assertEquals(29, vMarko.getProperty("age").get());
@@ -47,7 +47,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldLoadIncrementallyWithNamedIdentifier() {
+    public void shouldLoadVerticesIncrementallyWithNamedIdentifier() {
         final BatchGraph graph = new BatchGraph.Builder<>(g)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
@@ -60,7 +60,7 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
         assertEquals(37, vStephen.getProperty("age").get());
-        assertTrue(vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").hasNext());
+        assertEquals(1, vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").count());
 
         final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
         assertEquals(29, vMarko.getProperty("age").get());
@@ -71,7 +71,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-    public void shouldLoadIncrementallyWithSuppliedIdentifierThrowOnExistingVertex() {
+    public void shouldLoadVerticesIncrementallyWithSuppliedIdentifierThrowOnExistingVertex() {
         final BatchGraph graph = new BatchGraph.Builder<>(g)
                 .incrementalLoading(true, Exists.THROW, Exists.IGNORE)
                 .bufferSize(1).build();
@@ -88,7 +88,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldLoadIncrementallyWithNamedIdentifierThrowOnExistingVertex() {
+    public void shouldLoadVerticesIncrementallyWithNamedIdentifierThrowOnExistingVertex() {
         final BatchGraph graph = new BatchGraph.Builder<>(g)
                 .incrementalLoading(true, Exists.THROW, Exists.IGNORE)
                 .vertexIdKey("name")
@@ -107,7 +107,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-    public void shouldLoadIncrementallyWithSuppliedIdentifierOverwriteExistingVertex() {
+    public void shouldLoadVerticesIncrementallyWithSuppliedIdentifierOverwriteExistingVertex() {
         final BatchGraph graph = new BatchGraph.Builder<>(g)
                 .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
                 .bufferSize(1).build();
@@ -119,7 +119,7 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
         assertEquals(37, vStephen.getProperty("age").get());
-        assertTrue(vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").hasNext());
+        assertEquals(1, vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").count());
 
         final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
         assertEquals(34, vMarko.getProperty("age").get());
@@ -129,7 +129,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldLoadIncrementallyWithNamedIdentifierOverwriteExistingVertex() {
+    public void shouldLoadVerticesIncrementallyWithNamedIdentifierOverwriteExistingVertex() {
         final BatchGraph graph = new BatchGraph.Builder<>(g)
                 .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
                 .vertexIdKey("name")
@@ -142,9 +142,201 @@ public class BatchTest extends AbstractGremlinTest {
 
         final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
         assertEquals(37, vStephen.getProperty("age").get());
-        assertTrue(vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").hasNext());
+        assertEquals(1, vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").count());
 
         final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
         assertEquals(34, vMarko.getProperty("age").get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+    public void shouldLoadEdgesIncrementallyWithSuppliedIdentifier() {
+        final BatchGraph graph = new BatchGraph.Builder<>(g)
+                .incrementalLoading(true)
+                .vertexIdKey("name")
+                .bufferSize(1).build();
+        final Vertex v2 = graph.addVertex(Element.ID, "marko", "age", 29);
+        final Vertex v1 = graph.addVertex(Element.ID, "stephen", "age", 37);
+        v1.addEdge("knows", v2, "weight", 1.0f, Element.ID, 1);
+        v1.addEdge("knows", v2, "weight", 0.5f, Element.ID, 1); // second edge is ignored as it already exists
+        tryCommit(graph);
+
+        final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
+        assertEquals(37, vStephen.getProperty("age").get());
+        assertEquals(1, vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").count());
+        assertEquals(0, vStephen.outE("knows").has("weight",0.5f).inV().has("name", "marko").count());
+
+        final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        assertEquals(29, vMarko.getProperty("age").get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldLoadEdgesIncrementallyWithNamedIdentifier() {
+        final BatchGraph graph = new BatchGraph.Builder<>(g)
+                .incrementalLoading(true)
+                .vertexIdKey("name")
+                .edgeIdKey("uid")
+                .bufferSize(1).build();
+        final Vertex v2 = graph.addVertex(Element.ID, "marko", "age", 29);
+        final Vertex v1 = graph.addVertex(Element.ID, "stephen", "age", 37);
+        v1.addEdge("knows", v2, "weight", 1.0f, Element.ID, "abcde");
+        v1.addEdge("knows", v2, "weight", 0.5f, Element.ID, "abcde"); // second edge is ignored as it already exists
+        tryCommit(graph);
+
+        final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
+        assertEquals(37, vStephen.getProperty("age").get());
+        assertEquals(1, vStephen.outE("knows").has("uid","abcde").has("weight",1.0f).inV().has("name", "marko").count());
+        assertEquals(0, vStephen.outE("knows").has("weight",0.5f).inV().has("name", "marko").count());
+
+        final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        assertEquals(29, vMarko.getProperty("age").get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+    public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierOverwriteExistingEdge() {
+        final BatchGraph graph = new BatchGraph.Builder<>(g)
+                .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE)
+                .vertexIdKey("name")
+                .bufferSize(1).build();
+        final Vertex v2 = graph.addVertex(Element.ID, "marko", "age", 29);
+        final Vertex v1 = graph.addVertex(Element.ID, "stephen", "age", 37);
+        v1.addEdge("knows", v2, "weight", 1.0f, Element.ID, 1);
+        v1.addEdge("knows", v2, "weight", 0.5f, Element.ID, 1); // second edge is overwrites properties of the first
+        tryCommit(graph);
+
+        final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
+        assertEquals(37, vStephen.getProperty("age").get());
+        assertEquals(0, vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").count());
+        assertEquals(1, vStephen.outE("knows").has("weight",0.5f).inV().has("name", "marko").count());
+
+        final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        assertEquals(29, vMarko.getProperty("age").get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldLoadEdgesIncrementallyWithNamedIdentifierOverwriteExistingEdge() {
+        final BatchGraph graph = new BatchGraph.Builder<>(g)
+                .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE)
+                .vertexIdKey("name")
+                .edgeIdKey("uid")
+                .bufferSize(1).build();
+        final Vertex v2 = graph.addVertex(Element.ID, "marko", "age", 29);
+        final Vertex v1 = graph.addVertex(Element.ID, "stephen", "age", 37);
+        v1.addEdge("knows", v2, "weight", 1.0f, Element.ID, "abcde");
+        v1.addEdge("knows", v2, "weight", 0.5f, Element.ID, "abcde"); // second edge overwrites properties of the first
+        tryCommit(graph);
+
+        final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
+        assertEquals(37, vStephen.getProperty("age").get());
+        assertEquals(0, vStephen.outE("knows").has("uid","abcde").has("weight",1.0f).inV().has("name", "marko").count());
+        assertEquals(1, vStephen.outE("knows").has("weight",0.5f).inV().has("name", "marko").count());
+
+        final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        assertEquals(29, vMarko.getProperty("age").get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+    public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierThrowOnExistingEdge() {
+        final BatchGraph graph = new BatchGraph.Builder<>(g)
+                .incrementalLoading(true, Exists.IGNORE, Exists.THROW)
+                .vertexIdKey("name")
+                .bufferSize(1).build();
+        final Vertex v2 = graph.addVertex(Element.ID, "marko", "age", 29);
+        final Vertex v1 = graph.addVertex(Element.ID, "stephen", "age", 37);
+        v1.addEdge("knows", v2, "weight", 1.0f, Element.ID, 1);
+        try {
+            v1.addEdge("knows", v2, "weight", 0.5f, Element.ID, 1); // second edge is overwrites properties of the first
+            fail("Should have thrown an error because the vertex already exists");
+        } catch (Exception ex) {
+            assertTrue(ex instanceof IllegalStateException);
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldLoadEdgesIncrementallyWithNamedIdentifierThrowOnExistingEdge() {
+        final BatchGraph graph = new BatchGraph.Builder<>(g)
+                .incrementalLoading(true, Exists.IGNORE, Exists.THROW)
+                .vertexIdKey("name")
+                .edgeIdKey("uid")
+                .bufferSize(1).build();
+        final Vertex v2 = graph.addVertex(Element.ID, "marko", "age", 29);
+        final Vertex v1 = graph.addVertex(Element.ID, "stephen", "age", 37);
+        v1.addEdge("knows", v2, "weight", 1.0f, Element.ID, "abcde");
+        try {
+            v1.addEdge("knows", v2, "weight", 0.5f, Element.ID, "abcde"); // second edge is overwrites properties of the first
+            fail("Should have thrown an error because the vertex already exists");
+        } catch (Exception ex) {
+            assertTrue(ex instanceof IllegalStateException);
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+    public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierAndNoIdSpecified() {
+        final BatchGraph graph = new BatchGraph.Builder<>(g)
+                .incrementalLoading(true)
+                .vertexIdKey("name")
+                .bufferSize(1).build();
+        final Vertex v2 = graph.addVertex(Element.ID, "marko", "age", 29);
+        final Vertex v1 = graph.addVertex(Element.ID, "stephen", "age", 37);
+        v1.addEdge("knows", v2, "weight", 1.0f);
+        v1.addEdge("knows", v2, "weight", 0.5f);
+        tryCommit(graph);
+
+        final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
+        assertEquals(37, vStephen.getProperty("age").get());
+        assertEquals(1, vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").count());
+        assertEquals(1, vStephen.outE("knows").has("weight",0.5f).inV().has("name", "marko").count());
+
+        final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        assertEquals(29, vMarko.getProperty("age").get());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldLoadEdgesIncrementallyWithNamedIdentifierAndNoIdSpecified() {
+        final BatchGraph graph = new BatchGraph.Builder<>(g)
+                .incrementalLoading(true)
+                .vertexIdKey("name")
+                .edgeIdKey("uid")
+                .bufferSize(1).build();
+        final Vertex v2 = graph.addVertex(Element.ID, "marko", "age", 29);
+        final Vertex v1 = graph.addVertex(Element.ID, "stephen", "age", 37);
+        v1.addEdge("knows", v2, "weight", 1.0f);
+        v1.addEdge("knows", v2, "weight", 0.5f);
+        tryCommit(graph);
+
+        final Vertex vStephen = g.V().<Vertex>has("name", "stephen").next();
+        assertEquals(37, vStephen.getProperty("age").get());
+        assertEquals(1, vStephen.outE("knows").has("weight",1.0f).inV().has("name", "marko").count());
+        assertEquals(1, vStephen.outE("knows").has("weight",0.5f).inV().has("name", "marko").count());
+
+        final Vertex vMarko = g.V().<Vertex>has("name", "marko").next();
+        assertEquals(29, vMarko.getProperty("age").get());
     }
 }

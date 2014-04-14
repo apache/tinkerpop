@@ -342,21 +342,35 @@ public class BatchGraph<T extends Graph> implements Graph {
 
             previousOutVertexId = externalID;  //keep track of the previous out vertex id
 
-            final Optional<Object[]> kvs = baseSupportsSuppliedEdgeId && Element.ID.equals(edgeIdKey) ?
-                    Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
-
-            if (!incrementalLoading || existingEdgeStrategy == Exists.IGNORE)
+            if (!incrementalLoading) {
+                final Optional<Object[]> kvs = baseSupportsSuppliedEdgeId && Element.ID.equals(edgeIdKey) ?
+                        Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
                 currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
-            else {
-                final Object id = ElementHelper.getIdValue(keyValues).orElseThrow(() -> new IllegalArgumentException("Vertex id value cannot be null"));
-                final Traversal<Edge, Edge> traversal = baseGraph.E().has(edgeIdKey, id);
-                if (traversal.hasNext()) {
-                    final Edge e = traversal.next();
-                    // let the user decide how to handle conflict
-                    kvs.ifPresent(keyvals->existingEdgeStrategy.accept(e, keyvals));
-                    currentEdgeCached = e;
-                } else
+            } else {
+                final Optional<Object> id = ElementHelper.getIdValue(keyValues);
+                // if the edgeIdKey is not the Element.ID then append it as a name/value pair.  this will overwrite what
+                // is present in that field already
+                final Object[] keysVals = id.isPresent() && Element.ID.equals(edgeIdKey) ? keyValues :
+                        id.isPresent() ? ElementHelper.append(keyValues, edgeIdKey, id.get()) : keyValues;
+
+                // if the graph doesn't support edge ids or the edge id is not the Element.ID then remove that key
+                // value pair as it will foul up insertion (i.e. an exception for graphs that don't support it and the
+                // id will become the value of the edge id which might not be expected.
+                final Optional<Object[]> kvs = baseSupportsSuppliedEdgeId && Element.ID.equals(edgeIdKey) ?
+                        Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keysVals);
+
+                if (id.isPresent()) {
+                    final Traversal<Edge, Edge> traversal = baseGraph.E().has(edgeIdKey, id.get());
+                    if (traversal.hasNext()) {
+                        final Edge e = traversal.next();
+                        // let the user decide how to handle conflict
+                        kvs.ifPresent(keyvals->existingEdgeStrategy.accept(e, keyvals));
+                        currentEdgeCached = e;
+                    } else
+                        currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
+                } else {
                     currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
+                }
             }
 
             currentEdge = new BatchEdge();
