@@ -547,7 +547,6 @@ public class BatchGraph<T extends Graph> implements Graph {
         return new UnsupportedOperationException("Removal operations are not supported during batch loading");
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     public static class Builder<T extends Graph> {
         private final T graphToLoad;
         private boolean incrementalLoading = false;
@@ -599,8 +598,6 @@ public class BatchGraph<T extends Graph> implements Graph {
             return this;
         }
 
-        // todo: review javadoc
-
         /**
          * Sets whether the graph loaded through this instance of {@link BatchGraph} is loaded from scratch
          * (i.e. the wrapped graph is initially empty) or whether graph is loaded incrementally into an
@@ -612,9 +609,6 @@ public class BatchGraph<T extends Graph> implements Graph {
          * the vertex does not exist.
          * <p/>
          * By default, BatchGraph assumes that the data is loaded from scratch.
-         * <p/>
-         * When setting loading from scratch to false, a vertex id key must be specified first using
-         * {@link Builder#vertexIdKey} - otherwise an exception is thrown.
          */
         public Builder incrementalLoading(final boolean incrementalLoading) {
             this.incrementalLoading = incrementalLoading;
