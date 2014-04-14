@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -62,6 +63,8 @@ public class BatchGraph<T extends Graph> implements Graph {
     private final boolean baseSupportsSuppliedVertexId;
     private final boolean baseSupportsSuppliedEdgeId;
     private final boolean baseSupportsTransactions;
+    private final BiConsumer<Element, Object[]> existingVertexStrategy;
+    private final BiConsumer<Element, Object[]> existingEdgeStrategy;
 
     private final VertexCache cache;
 
@@ -88,7 +91,9 @@ public class BatchGraph<T extends Graph> implements Graph {
      *                   larger this value, the more memory is required but the faster the loading process.
      */
     private BatchGraph(final T graph, final VertexIdType type, final long bufferSize, final String vertexIdKey,
-                       final String edgeIdKey, final boolean incrementalLoading) {
+                       final String edgeIdKey, final boolean incrementalLoading,
+                       final BiConsumer<Element, Object[]> existingVertexStrategy,
+                       final BiConsumer<Element, Object[]> existingEdgeStrategy) {
         this.baseGraph = graph;
         this.batchTransaction = new BatchTransaction();
         this.batchFeatures = new BatchFeatures(graph.getFeatures());
@@ -101,6 +106,8 @@ public class BatchGraph<T extends Graph> implements Graph {
         this.baseSupportsSuppliedEdgeId = this.baseGraph.getFeatures().edge().supportsUserSuppliedIds();
         this.baseSupportsSuppliedVertexId = this.baseGraph.getFeatures().vertex().supportsUserSuppliedIds();
         this.baseSupportsTransactions = this.baseGraph.getFeatures().graph().supportsTransactions();
+        this.existingEdgeStrategy = existingEdgeStrategy;
+        this.existingVertexStrategy = existingVertexStrategy;
     }
 
     private void nextElement() {
@@ -137,22 +144,33 @@ public class BatchGraph<T extends Graph> implements Graph {
         if (!incrementalLoading && retrieveFromCache(id) != null) throw new IllegalArgumentException("Vertex id already exists");
         nextElement();
 
-        final Optional<Object[]> kvs = this.baseSupportsSuppliedVertexId && vertexIdKey.equals(Element.ID) ?
-                Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
-        Vertex v;
+        // if the vertexIdKey is not the Element.ID then append it as a name/value pair.  this will overwrite what
+        // is present in that field already
+        final Object[] keysVals = Element.ID.equals(vertexIdKey) ? keyValues : ElementHelper.append(keyValues, vertexIdKey, id);
+
+        // if the graph doesn't support vertex ids or the vertex id is not the Element.ID then remove that key
+        // value pair as it will foul up insertion (i.e. an exception for graphs that don't support it and the
+        // id will become the value of the vertex id which might not be expected.
+        final Optional<Object[]> kvs = this.baseSupportsSuppliedVertexId && Element.ID.equals(vertexIdKey) ?
+                Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keysVals);
+
+        Vertex currentVertex;
         if (!incrementalLoading)
-            v = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
+            currentVertex = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
         else {
-            // todo: try/catch ugliness
-            try {
-                // todo: update on incremental?
-                v = baseGraph.V().<Vertex>has(vertexIdKey, id).next();
-            } catch (NoSuchElementException nsee) {
-                v = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
-            }
+            final Traversal<Vertex,Vertex> traversal = baseGraph.V().has(vertexIdKey, id);
+            if (traversal.hasNext()) {
+                final Vertex v = traversal.next();
+                if (traversal.hasNext()) throw new IllegalStateException(String.format("There is more than one vertex identified by %s=%s", vertexIdKey, id));
+
+                // let the caller decide how to handle conflict
+                kvs.ifPresent(keyvals->existingVertexStrategy.accept(v, keyvals));
+                currentVertex = v;
+            } else
+                currentVertex = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
         }
 
-        cache.set(v, id);
+        cache.set(currentVertex, id);
 
         return new BatchVertex(id);
     }
@@ -324,10 +342,23 @@ public class BatchGraph<T extends Graph> implements Graph {
 
             previousOutVertexId = externalID;  //keep track of the previous out vertex id
 
-            final Optional<Object[]> kvs = baseSupportsSuppliedEdgeId && Element.ID.equals(edgeIdKey)?
+            final Optional<Object[]> kvs = baseSupportsSuppliedEdgeId && Element.ID.equals(edgeIdKey) ?
                     Optional.ofNullable(keyValues) : ElementHelper.remove(Element.ID, keyValues);
 
-            currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
+            if (!incrementalLoading || existingEdgeStrategy == Exists.IGNORE)
+                currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
+            else {
+                final Object id = ElementHelper.getIdValue(keyValues).orElseThrow(() -> new IllegalArgumentException("Vertex id value cannot be null"));
+                final Traversal<Edge, Edge> traversal = baseGraph.E().has(edgeIdKey, id);
+                if (traversal.hasNext()) {
+                    final Edge e = traversal.next();
+                    // let the user decide how to handle conflict
+                    kvs.ifPresent(keyvals->existingEdgeStrategy.accept(e, keyvals));
+                    currentEdgeCached = e;
+                } else
+                    currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
+            }
+
             currentEdge = new BatchEdge();
 
             return currentEdge;
@@ -554,7 +585,10 @@ public class BatchGraph<T extends Graph> implements Graph {
         private String edgeIdKey = Element.ID;
         private long bufferSize = DEFAULT_BUFFER_SIZE;
         private VertexIdType vertexIdType = VertexIdType.OBJECT;
+        private BiConsumer<Element, Object[]> existingVertexStrategy = Exists.IGNORE;
+        private BiConsumer<Element, Object[]> existingEdgeStrategy = Exists.IGNORE;
 
+        // todo: create with static on BatchGraph class
         public Builder(final T g) {
             if (null == g) throw new IllegalArgumentException("Graph may not be null");
             if (g instanceof BatchGraph)
@@ -592,6 +626,9 @@ public class BatchGraph<T extends Graph> implements Graph {
             return this;
         }
 
+        /**
+         * Sets the type of the id used for the vertex which in turn determines the cache type that is used.
+         */
         public Builder vertexIdType(final VertexIdType type) {
             if (null == type) throw new IllegalArgumentException("Type may not be null");
             this.vertexIdType = type;
@@ -615,8 +652,30 @@ public class BatchGraph<T extends Graph> implements Graph {
             return this;
         }
 
+        /**
+         * Sets whether the graph loaded through this instance of {@link BatchGraph} is loaded from scratch
+         * (i.e. the wrapped graph is initially empty) or whether graph is loaded incrementally into an
+         * existing graph.
+         * <p/>
+         * In the former case, BatchGraph does not need to check for the existence of vertices with the wrapped
+         * graph but only needs to consult its own cache which can be significantly faster. In the latter case,
+         * the cache is checked first but an additional check against the wrapped graph may be necessary if
+         * the vertex does not exist.
+         * <p/>
+         * By default, BatchGraph assumes that the data is loaded from scratch.
+         */
+        public Builder incrementalLoading(final boolean incrementalLoading,
+                                          final BiConsumer<Element, Object[]> existingVertexStrategy,
+                                          final BiConsumer<Element, Object[]> existingEdgeStrategy) {
+            this.incrementalLoading = incrementalLoading;
+            this.existingVertexStrategy = existingVertexStrategy;
+            this.existingEdgeStrategy = existingEdgeStrategy;
+            return this;
+        }
+
         public BatchGraph<T> build() {
-            return new BatchGraph<>(graphToLoad, vertexIdType, bufferSize, vertexIdKey, edgeIdKey, incrementalLoading);
+            return new BatchGraph<>(graphToLoad, vertexIdType, bufferSize, vertexIdKey, edgeIdKey,
+                    incrementalLoading, this.existingVertexStrategy, this.existingEdgeStrategy);
         }
     }
 }

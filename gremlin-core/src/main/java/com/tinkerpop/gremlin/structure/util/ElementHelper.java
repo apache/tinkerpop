@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Utility class supporting common functions for {@link com.tinkerpop.gremlin.structure.Element}.
@@ -92,6 +93,14 @@ public class ElementHelper {
                                       .mapToObj(list::get)
                                       .collect(Collectors.toList());
         return revised.size() > 0 ? Optional.of(revised.toArray()) : Optional.empty();
+    }
+
+    /**
+     * Append a key/value pair to a list of existing key/values.
+     */
+    public static Object[] append(final Object[] keyValues, final String key, final Object val) {
+        // todo: check to ensure the key isn't already there...shouldn't overwrite or duplicate the value
+        return Stream.concat(Stream.of(keyValues), Stream.of(key, val)).toArray();
     }
 
     /**

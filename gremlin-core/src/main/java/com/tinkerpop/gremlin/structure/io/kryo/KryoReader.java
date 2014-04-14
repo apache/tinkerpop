@@ -47,7 +47,6 @@ public class KryoReader implements GraphReader {
     private final GremlinKryo.HeaderReader headerReader;
 
     private final long batchSize;
-    private final boolean incrementalLoading;
     private final String vertexIdKey;
     private final String edgeIdKey;
 
@@ -56,11 +55,10 @@ public class KryoReader implements GraphReader {
     final AtomicLong counter = new AtomicLong(0);
 
     private KryoReader(final File tempFile, final long batchSize,
-                       final boolean incrementalLoading, final String vertexIdKey, final String edgeIdKey,
+                       final String vertexIdKey, final String edgeIdKey,
                        final GremlinKryo gremlinKryo) {
         this.kryo = gremlinKryo.createKryo();
         this.headerReader = gremlinKryo.getHeaderReader();
-        this.incrementalLoading = incrementalLoading;
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
         this.tempFile = tempFile;
@@ -150,7 +148,6 @@ public class KryoReader implements GraphReader {
         final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
                 .vertexIdKey(vertexIdKey)
                 .edgeIdKey(edgeIdKey)
-                .incrementalLoading(incrementalLoading)
                 .bufferSize(batchSize).build();
 
         try (final Output output = new Output(new FileOutputStream(tempFile))) {
@@ -370,7 +367,6 @@ public class KryoReader implements GraphReader {
     public static class Builder {
         private File tempFile;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-        private boolean incrementalLoading = false;
         private String vertexIdKey = Element.ID;
         private String edgeIdKey = Element.ID;
 
@@ -390,11 +386,6 @@ public class KryoReader implements GraphReader {
 
         public Builder custom(final GremlinKryo gremlinKryo) {
             this.gremlinKryo = gremlinKryo;
-            return this;
-        }
-
-        public Builder incrementalLoading(final boolean enabled){
-            this.incrementalLoading = enabled;
             return this;
         }
 
@@ -422,7 +413,7 @@ public class KryoReader implements GraphReader {
         }
 
         public KryoReader build() {
-            return new KryoReader(tempFile, batchSize, this.incrementalLoading, this.vertexIdKey, this.edgeIdKey, this.gremlinKryo);
+            return new KryoReader(tempFile, batchSize, this.vertexIdKey, this.edgeIdKey, this.gremlinKryo);
         }
     }
 }

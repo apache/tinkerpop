@@ -41,6 +41,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
             AnnotationTest.class,
+            BatchTest.class,
             CommunityGeneratorTest.class,
             DistributionGeneratorTest.class,
             EdgeTest.class,
@@ -60,7 +61,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             VertexTest.class
     };
 
-    //private static final Class<?>[] testsToExecute = new Class<?>[]{ IoTest.class };
+    // private static final Class<?>[] testsToExecute = new Class<?>[]{ BatchTest.class };
     // todo: would be nice to feed something to maven to optinally run certain test batteries.....
 
     public StructureStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

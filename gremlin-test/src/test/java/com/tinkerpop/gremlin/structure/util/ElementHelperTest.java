@@ -427,4 +427,11 @@ public class ElementHelperTest {
         final Optional<Object[]> kvs = ElementHelper.remove("1", "1", "this");
         assertEquals(Optional.empty(), kvs);
     }
+
+    @Test
+    public void shouldAppendKeyValue() {
+        final Object[] oldKvs = new Object[] { "k", "v" };
+        final Object[] newKvs = ElementHelper.append(oldKvs, "k1", "v1");
+        assertEquals(4, newKvs.length);
+    }
 }

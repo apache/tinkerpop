@@ -39,17 +39,15 @@ public class GraphMLReader implements GraphReader {
     private final String edgeLabelKey;
     private final String vertexLabelKey;
     private final long batchSize;
-    private final boolean incrementalLoading;
 
     private GraphMLReader(final String vertexIdKey, final String edgeIdKey,
                           final String edgeLabelKey, final String vertexLabelKey,
-                          final long batchSize, final boolean incrementalLoading) {
+                          final long batchSize) {
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
         this.edgeLabelKey = edgeLabelKey;
         this.batchSize = batchSize;
         this.vertexLabelKey = vertexLabelKey;
-        this.incrementalLoading = incrementalLoading;
     }
 
     @Override
@@ -77,7 +75,6 @@ public class GraphMLReader implements GraphReader {
             // will throw an exception if not constructed properly
             final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
                     .vertexIdKey(vertexIdKey)
-                    .incrementalLoading(incrementalLoading)
                     .bufferSize(batchSize).build();
 
             final Map<String, String> keyIdMap = new HashMap<>();
@@ -224,7 +221,6 @@ public class GraphMLReader implements GraphReader {
     public static final class Builder {
         private String vertexIdKey = Element.ID;
         private String edgeIdKey = Element.ID;
-        private boolean incrementalLoading = false;
         private String edgeLabelKey = GraphMLTokens.LABEL_E;
         private String vertexLabelKey = GraphMLTokens.LABEL_V;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
@@ -256,13 +252,8 @@ public class GraphMLReader implements GraphReader {
             return this;
         }
 
-        public Builder incrementalLoading(final boolean enabled){
-            this.incrementalLoading = enabled;
-            return this;
-        }
-
         public GraphMLReader build() {
-            return new GraphMLReader(vertexIdKey, edgeIdKey, edgeLabelKey, vertexLabelKey, batchSize, incrementalLoading);
+            return new GraphMLReader(vertexIdKey, edgeIdKey, edgeLabelKey, vertexLabelKey, batchSize);
         }
     }
 }
