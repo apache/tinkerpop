@@ -42,11 +42,7 @@ public final class GraphMigrator {
      */
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph,
                                     final GraphReader reader, final GraphWriter writer) throws IOException {
-        // todo: if this is the standard way to "migrate" a graph, then rethink exception handling and such
-        final PipedInputStream inPipe = new PipedInputStream() {
-            // Default is 1024
-            protected static final int PIPE_SIZE = 1024;
-        };
+        final PipedInputStream inPipe = new PipedInputStream(1024);
 
         final PipedOutputStream outPipe = new PipedOutputStream(inPipe) {
             public void close() throws IOException {
@@ -54,7 +50,7 @@ public final class GraphMigrator {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        // do nothing
                     }
                 }
                 super.close();
@@ -67,7 +63,7 @@ public final class GraphMigrator {
                 outPipe.flush();
                 outPipe.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }).start();
 
