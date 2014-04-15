@@ -96,11 +96,24 @@ public class ElementHelper {
     }
 
     /**
-     * Append a key/value pair to a list of existing key/values.
+     * Append a key/value pair to a list of existing key/values. If the key already exists in the keyValues then
+     * that value is overwritten with the provided value.
      */
-    public static Object[] append(final Object[] keyValues, final String key, final Object val) {
-        // todo: check to ensure the key isn't already there...shouldn't overwrite or duplicate the value
-        return Stream.concat(Stream.of(keyValues), Stream.of(key, val)).toArray();
+    public static Object[] upsert(final Object[] keyValues, final String key, final Object val) {
+        if (!getKeys(keyValues).contains(key))
+            return Stream.concat(Stream.of(keyValues), Stream.of(key, val)).toArray();
+        else {
+            final Object[] kvs = new Object[keyValues.length];
+            for (int i = 0; i < keyValues.length; i = i + 2) {
+                kvs[i] = keyValues[i];
+                if (keyValues[i].equals(key))
+                    kvs[i+1] = val;
+                else
+                    kvs[i+1] = keyValues[i+1];
+            }
+
+            return kvs;
+        }
     }
 
     /**

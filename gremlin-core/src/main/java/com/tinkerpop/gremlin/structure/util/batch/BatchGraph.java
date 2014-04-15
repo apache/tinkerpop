@@ -146,7 +146,7 @@ public class BatchGraph<T extends Graph> implements Graph {
 
         // if the vertexIdKey is not the Element.ID then append it as a name/value pair.  this will overwrite what
         // is present in that field already
-        final Object[] keysVals = Element.ID.equals(vertexIdKey) ? keyValues : ElementHelper.append(keyValues, vertexIdKey, id);
+        final Object[] keysVals = Element.ID.equals(vertexIdKey) ? keyValues : ElementHelper.upsert(keyValues, vertexIdKey, id);
 
         // if the graph doesn't support vertex ids or the vertex id is not the Element.ID then remove that key
         // value pair as it will foul up insertion (i.e. an exception for graphs that don't support it and the
@@ -355,7 +355,7 @@ public class BatchGraph<T extends Graph> implements Graph {
                 // if the edgeIdKey is not the Element.ID then append it as a name/value pair.  this will overwrite what
                 // is present in that field already
                 final Object[] keysVals = id.isPresent() && Element.ID.equals(edgeIdKey) ? keyValues :
-                        id.isPresent() ? ElementHelper.append(keyValues, edgeIdKey, id.get()) : keyValues;
+                        id.isPresent() ? ElementHelper.upsert(keyValues, edgeIdKey, id.get()) : keyValues;
 
                 // if the graph doesn't support edge ids or the edge id is not the Element.ID then remove that key
                 // value pair as it will foul up insertion (i.e. an exception for graphs that don't support it and the

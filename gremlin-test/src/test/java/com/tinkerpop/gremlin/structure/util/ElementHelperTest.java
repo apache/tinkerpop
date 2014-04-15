@@ -429,9 +429,19 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldAppendKeyValue() {
+    public void shouldUpsertKeyValueByAddingIt() {
         final Object[] oldKvs = new Object[] { "k", "v" };
-        final Object[] newKvs = ElementHelper.append(oldKvs, "k1", "v1");
+        final Object[] newKvs = ElementHelper.upsert(oldKvs, "k1", "v1");
         assertEquals(4, newKvs.length);
+        assertEquals("k1", newKvs[2]);
+        assertEquals("v1", newKvs[3]);
+    }
+
+    @Test
+    public void shouldUpsertKeyValueByUpdatingIt() {
+        final Object[] oldKvs = new Object[] { "k", "v", "k1", "v0" };
+        final Object[] newKvs = ElementHelper.upsert(oldKvs, "k1", "v1");
+        assertEquals(4, newKvs.length);
+        assertEquals("v1", newKvs[3]);
     }
 }
