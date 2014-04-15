@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -102,9 +104,20 @@ public final class GremlinKryo {
          * If using custom classes it might be useful to tag the version stamped to the serialization with a custom
          * value, such that Kryo serialization at 1.0.0 would have a fourth byte for an extended version.  The
          * user supplied fourth byte can then be used to ensure the right deserializer is used to read the data.
-         * If this value is not supplied then it is written as {@link Byte#MIN_VALUE}.
+         * If this value is not supplied then it is written as {@link Byte#MIN_VALUE}. The value supplied here
+         * should be greater than or equal to zero.
          */
-        public Builder extendedVersion(final byte extended);
+        public Builder extendedVersion(final byte extendedVersion);
+
+        /**
+         * By default the {@link #extendedVersion(byte)} is checked against what is read from an input source and
+         * if those values are equal the version being read is considered "compliant".  To alter this behavior,
+         * supply a custom compliance {@link Predicate} to evaluate the value read from the input source (i.e. first
+         * argument) and the value marked in the {@code GremlinKryo} instance {i.e. second argument}.  Supplying
+         * this function is useful when versions require backward compatibility or other more complex checks.  This
+         * function is only used if the {@link #extendedVersion(byte)} is set to something other than its default.
+         */
+        public Builder compliant(final BiPredicate<Byte,Byte> compliant);
 
         public GremlinKryo build();
     }
@@ -137,13 +150,17 @@ public final class GremlinKryo {
         private static final byte minor = 0;
         private static final byte patchLevel = 0;
 
-        private byte extension = Byte.MIN_VALUE;
+        private byte extendedVersion = Byte.MIN_VALUE;
+        private BiPredicate<Byte, Byte> compliant = (readExt, serExt) -> readExt.equals(serExt);
 
         /**
          * Starts numbering classes for Kryo serialization at 8192 to leave room for future usage by TinkerPop.
          */
         private final AtomicInteger currentSerializationId = new AtomicInteger(8192);
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Builder addCustom(final Class... custom) {
             if (custom != null && custom.length > 0)
@@ -153,9 +170,27 @@ public final class GremlinKryo {
             return this;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public Builder extendedVersion(final byte extended) {
-            this.extension = extended;
+        public Builder extendedVersion(final byte extendedVersion) {
+            if (extendedVersion < 0)
+                throw new IllegalArgumentException("The extendedVersion must be greater than zero");
+
+            this.extendedVersion = extendedVersion;
+            return this;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Builder compliant(final BiPredicate<Byte, Byte> compliant) {
+            if (null == compliant)
+                throw new IllegalArgumentException("compliant");
+
+            this.compliant = compliant;
             return this;
         }
 
@@ -175,7 +210,7 @@ public final class GremlinKryo {
             output.writeByte(major);
             output.writeByte(minor);
             output.writeByte(patchLevel);
-            output.writeByte(extension);
+            output.writeByte(extendedVersion);
         }
 
         private void readHeader(final Kryo kryo, final Input input) throws IOException {
@@ -186,14 +221,19 @@ public final class GremlinKryo {
             input.readBytes(25);
 
             // final three bytes of header are the version which should be 1.0.0
-            byte[] version = input.readBytes(3);
-            byte extension = input.readByte(); // todo:// read compatibility
+            final byte[] version = input.readBytes(3);
+            final byte extension = input.readByte();
 
             // direct match on version for now
             if (version[0] != major || version[1] != minor || version[2] != patchLevel)
                 throw new IOException(String.format(
                         "The version [%s.%s.%s] in the stream cannot be understood by this reader",
                         version[0], version[1], version[2]));
+
+            if (extendedVersion >= 0 && !compliant.test(extension, extendedVersion))
+                throw new IOException(String.format(
+                        "The extension [%s] in the input source is not compliant with this configuration of GremlinKryo - [%s]",
+                        extension, extendedVersion));
         }
     }
 }
