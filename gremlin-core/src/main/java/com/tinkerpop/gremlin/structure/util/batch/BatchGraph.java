@@ -258,6 +258,10 @@ public class BatchGraph<T extends Graph> implements Graph {
         remainingBufferSize = 0;
     }
 
+    public static <T extends Graph> Builder create(final T g) {
+        return new Builder<>(g);
+    }
+
     private class BatchTransaction implements Transaction {
         private final boolean supportsTx;
 
@@ -602,8 +606,7 @@ public class BatchGraph<T extends Graph> implements Graph {
         private BiConsumer<Element, Object[]> existingVertexStrategy = Exists.IGNORE;
         private BiConsumer<Element, Object[]> existingEdgeStrategy = Exists.IGNORE;
 
-        // todo: create with static on BatchGraph class
-        public Builder(final T g) {
+        private Builder(final T g) {
             if (null == g) throw new IllegalArgumentException("Graph may not be null");
             if (g instanceof BatchGraph)
                 throw new IllegalArgumentException("BatchGraph cannot wrap another BatchGraph instance");

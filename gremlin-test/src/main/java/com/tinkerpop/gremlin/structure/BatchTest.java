@@ -26,7 +26,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadVerticesIncrementallyWithSuppliedIdentifier() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true)
                 .bufferSize(1).build();
         graph.addVertex(Element.ID, 1, "name", "marko", "age", 29);
@@ -48,7 +48,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldLoadVerticesIncrementallyWithNamedIdentifier() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
                 .bufferSize(1).build();
@@ -72,7 +72,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadVerticesIncrementallyWithSuppliedIdentifierThrowOnExistingVertex() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true, Exists.THROW, Exists.IGNORE)
                 .bufferSize(1).build();
         graph.addVertex(Element.ID, 1, "name", "marko", "age", 29);
@@ -89,7 +89,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldLoadVerticesIncrementallyWithNamedIdentifierThrowOnExistingVertex() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true, Exists.THROW, Exists.IGNORE)
                 .vertexIdKey("name")
                 .bufferSize(1).build();
@@ -108,7 +108,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadVerticesIncrementallyWithSuppliedIdentifierOverwriteExistingVertex() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
                 .bufferSize(1).build();
         graph.addVertex(Element.ID, 1, "name", "marko", "age", 29);
@@ -130,7 +130,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldLoadVerticesIncrementallyWithNamedIdentifierOverwriteExistingVertex() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
                 .vertexIdKey("name")
                 .bufferSize(1).build();
@@ -154,7 +154,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadEdgesIncrementallyWithSuppliedIdentifier() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
                 .bufferSize(1).build();
@@ -178,7 +178,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldLoadEdgesIncrementallyWithNamedIdentifier() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
                 .edgeIdKey("uid")
@@ -204,7 +204,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierOverwriteExistingEdge() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE)
                 .vertexIdKey("name")
                 .bufferSize(1).build();
@@ -228,7 +228,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldLoadEdgesIncrementallyWithNamedIdentifierOverwriteExistingEdge() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true, Exists.IGNORE, Exists.OVERWRITE)
                 .vertexIdKey("name")
                 .edgeIdKey("uid")
@@ -254,7 +254,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierThrowOnExistingEdge() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true, Exists.IGNORE, Exists.THROW)
                 .vertexIdKey("name")
                 .bufferSize(1).build();
@@ -274,7 +274,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldLoadEdgesIncrementallyWithNamedIdentifierThrowOnExistingEdge() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true, Exists.IGNORE, Exists.THROW)
                 .vertexIdKey("name")
                 .edgeIdKey("uid")
@@ -296,7 +296,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldLoadEdgesIncrementallyWithSuppliedIdentifierAndNoIdSpecified() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
                 .bufferSize(1).build();
@@ -320,7 +320,7 @@ public class BatchTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldLoadEdgesIncrementallyWithNamedIdentifierAndNoIdSpecified() {
-        final BatchGraph graph = new BatchGraph.Builder<>(g)
+        final BatchGraph graph = BatchGraph.create(g)
                 .incrementalLoading(true)
                 .vertexIdKey("name")
                 .edgeIdKey("uid")

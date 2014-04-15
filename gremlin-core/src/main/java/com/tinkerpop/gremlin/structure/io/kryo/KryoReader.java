@@ -145,7 +145,7 @@ public class KryoReader implements GraphReader {
         this.headerReader.read(kryo, input);
 
         // will throw an exception if not constructed properly
-        final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
+        final BatchGraph graph = BatchGraph.create(graphToWriteTo)
                 .vertexIdKey(vertexIdKey)
                 .edgeIdKey(edgeIdKey)
                 .bufferSize(batchSize).build();

@@ -73,7 +73,7 @@ public class GraphMLReader implements GraphReader {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
 
             // will throw an exception if not constructed properly
-            final BatchGraph graph = new BatchGraph.Builder<>(graphToWriteTo)
+            final BatchGraph graph = BatchGraph.create(graphToWriteTo)
                     .vertexIdKey(vertexIdKey)
                     .bufferSize(batchSize).build();
 
