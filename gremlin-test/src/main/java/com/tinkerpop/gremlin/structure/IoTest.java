@@ -1464,7 +1464,6 @@ public class IoTest extends AbstractGremlinTest {
         }
     }
 
-    // todo: assert more of this???
     public static void assertModernGraph(final Graph g1) {
         if (g1.getFeatures().graph().memory().supportsMemory()) {
             final Map<String,Object> m = g1.memory().asMap();
