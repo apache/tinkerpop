@@ -77,7 +77,7 @@ public class DistributionGeneratorTest {
         }
 
         private DistributionGenerator.Builder makeGenerator(final Graph g) {
-            return new DistributionGenerator.Builder(g)
+            return DistributionGenerator.create(g)
                                 .label("knows")
                                 .outDistribution(outDistribution)
                                 .inDistribution(inDistribution)
@@ -125,7 +125,7 @@ public class DistributionGeneratorTest {
         @Test
         public void shouldProcessEdges() {
             final Distribution dist = new NormalDistribution(2);
-            final DistributionGenerator generator = new DistributionGenerator.Builder(g)
+            final DistributionGenerator generator = DistributionGenerator.create(g)
                     .label("knows")
                     .edgeProcessor(e -> e.setProperty("data", "test"))
                     .outDistribution(dist)

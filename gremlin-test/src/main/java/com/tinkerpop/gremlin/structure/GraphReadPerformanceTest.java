@@ -52,7 +52,7 @@ public class GraphReadPerformanceTest {
 
             final Distribution inDist = new PowerLawDistribution(2.3);
             final Distribution outDist = new PowerLawDistribution(2.8);
-            final DistributionGenerator generator = new DistributionGenerator.Builder(g)
+            final DistributionGenerator generator = DistributionGenerator.create(g)
                     .label("knows")
                     .seedGenerator(r::nextLong)
                     .outDistribution(outDist)

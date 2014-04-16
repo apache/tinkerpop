@@ -137,6 +137,10 @@ public class CommunityGenerator extends AbstractGenerator {
         return addedEdges;
     }
 
+    public static Builder create(final Graph g) {
+        return new Builder(g);
+    }
+
     public static class Builder extends AbstractGeneratorBuilder<Builder> {
         private final Graph g;
         private Distribution communitySize = null;
@@ -146,7 +150,7 @@ public class CommunityGenerator extends AbstractGenerator {
         private int expectedNumCommunities = DEFAULT_NUMBER_OF_COMMUNITIES;
         private int expectedNumEdges;
 
-        public Builder(final Graph g) {
+        private Builder(final Graph g) {
             super(Builder.class);
             this.g = g;
             final List<Vertex> allVertices = g.V().toList();

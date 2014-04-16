@@ -109,7 +109,7 @@ public class CommunityGeneratorTest {
             double localCrossPcent = crossPcent;
             while (!generated) {
                 try {
-                    final CommunityGenerator generator = new CommunityGenerator.Builder(graph)
+                    final CommunityGenerator generator = CommunityGenerator.create(graph)
                             .label("knows")
                             .communityDistribution(communityDistribution)
                             .degreeDistribution(degreeDistribution)
@@ -143,7 +143,7 @@ public class CommunityGeneratorTest {
         @Test
         public void shouldProcessVerticesEdges() {
             final Distribution dist = new NormalDistribution(2);
-            final CommunityGenerator generator = new CommunityGenerator.Builder(g)
+            final CommunityGenerator generator = CommunityGenerator.create(g)
                     .label("knows")
                     .edgeProcessor(e -> e.setProperty("data", "test"))
                     .vertexProcessor((v, m) -> {
