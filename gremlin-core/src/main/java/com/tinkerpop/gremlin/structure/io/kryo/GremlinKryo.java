@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -90,7 +91,6 @@ public final class GremlinKryo {
      * Use the most current version of Gremlin Kryo.
      */
     public static Builder create() {
-        // todo: do this more nicely based on all versions in the enum
         return Version.V_1_0_0.getBuilder();
     }
 
@@ -123,14 +123,20 @@ public final class GremlinKryo {
     }
 
     public enum Version  {
-        V_1_0_0(new BuilderV1d0());
-        private final Builder builder;
-        private Version(final Builder builder) {
+        V_1_0_0(BuilderV1d0.class);
+
+        private final Class<? extends Builder> builder;
+
+        private Version(final Class<? extends Builder> builder) {
             this.builder = builder;
         }
 
         Builder getBuilder() {
-            return builder;
+            try {
+                return builder.newInstance();
+            } catch (Exception x) {
+                throw new RuntimeException("GremlinKryo Builder implementation cannot be instantiated", x);
+            }
         }
     }
 
