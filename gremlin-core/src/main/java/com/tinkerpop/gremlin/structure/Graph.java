@@ -416,6 +416,8 @@ public interface Graph extends AutoCloseable {
 
     public static class Exceptions {
 
+        private static final boolean debug = Boolean.parseBoolean(System.getenv().getOrDefault("gremlin.structure.debug", "false"));
+
         public static UnsupportedOperationException memoryNotSupported() {
             return new UnsupportedOperationException("Graph does not support graph memory");
         }
@@ -441,8 +443,12 @@ public interface Graph extends AutoCloseable {
         }
 
         public static NoSuchElementException elementNotFound() {
-            // todo: could elementNotFound be configurable to allow a regular NoSuchEelementException instead of Fast version - useful in debugging
-            return  FastNoSuchElementException.instance();
+            // if in debug mode then write a regular exception so the whole stack trace comes with it.
+            // very hard to figure out problems in the stack without that.
+            if (debug)
+                return new NoSuchElementException();
+            else
+                return  FastNoSuchElementException.instance();
         }
 
         public static IllegalArgumentException onlyOneOrNoGraphComputerClass() {
