@@ -50,6 +50,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,6 +65,7 @@ import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatu
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_BOOLEAN_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -1475,7 +1477,9 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(6, g1.V().count());
         assertEquals(8, g1.E().count());
 
-        final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
+        final Iterator<Vertex> itty1 = g1.V().has("name", "marko");
+        final Vertex v1 = itty1.next();
+        assertFalse(itty1.hasNext());
         assertEquals("person", v1.getLabel());
         assertEquals(2, v1.getPropertyKeys().size());
         if (g1.getFeatures().vertex().supportsUserSuppliedIds())
@@ -1499,7 +1503,6 @@ public class IoTest extends AbstractGremlinTest {
 
             assertEquals(2, av.getAnnotationKeys().size());
         });
-
     }
 
     public static void assertClassicGraph(final Graph g1, final boolean lossyForFloat, final boolean lossyForId) {
