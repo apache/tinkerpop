@@ -21,10 +21,14 @@ public class ResultSet implements Iterable<Item> {
         return responseQueue.getStatus() == ResponseQueue.Status.COMPLETE;
     }
 
+    public int fetchedCount() {
+        return responseQueue.size();
+    }
+
     public CompletableFuture<List<Item>> all() {
         return CompletableFuture.supplyAsync(() -> {
             final List<Item> list = new ArrayList<>();
-            while (!isFullyFetched() || responseQueue.size() > 0) {
+            while (!isFullyFetched() || fetchedCount() > 0) {
                 final ResponseMessage msg = responseQueue.poll();
                 if (msg != null)
                     list.add(new Item(msg.getResult()));
