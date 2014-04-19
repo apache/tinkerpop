@@ -9,6 +9,8 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +45,14 @@ public class Cluster {
 
     public ClusterInfo getClusterInfo() {
         return manager.clusterInfo;
+    }
+
+    public void close() {
+        closeAsync().join();
+    }
+
+    public CompletableFuture<Void> closeAsync() {
+        return manager.close();
     }
 
     Factory getFactory() {
@@ -125,6 +135,13 @@ public class Cluster {
 
         Factory getFactory() {
             return factory;
+        }
+
+        CompletableFuture<Void> close() {
+            return CompletableFuture.supplyAsync(() -> {
+                this.factory.shutdown();
+                return null;
+            });
         }
     }
 
