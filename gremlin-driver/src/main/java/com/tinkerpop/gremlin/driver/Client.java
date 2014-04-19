@@ -53,7 +53,7 @@ public class Client {
 
         final CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-        // todo: choose a connection smartly...get into async
+        // todo: choose a connection smartly.
         final Connection connection  = connections.values().iterator().next();
         final RequestMessage request = RequestMessage.create("eval")
                 .add(Tokens.ARGS_GREMLIN, gremlin, Tokens.ARGS_ACCEPT, "application/json").build();
