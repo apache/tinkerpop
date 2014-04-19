@@ -33,8 +33,6 @@ public class Client {
 
         // todo: connection pooling
 
-        //connections.put(new Host(new InetSocketAddress("localhost", 8182)), new Connection(URI.create("ws://localhost:8182/gremlin"), new Connection.Factory()));
-
         final Cluster.Factory factory = cluster.getFactory();
         cluster.getClusterInfo().allHosts().forEach(host -> connections.put(host, new Connection(host.getWebSocketUri(), factory)));
         initialized = true;
