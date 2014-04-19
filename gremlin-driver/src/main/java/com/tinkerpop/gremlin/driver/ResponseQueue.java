@@ -38,7 +38,7 @@ class ResponseQueue {
         try {
             ResponseMessage msg;
             do {
-                msg = responseQueue.poll(100, TimeUnit.MILLISECONDS);
+                msg = responseQueue.poll(10, TimeUnit.MILLISECONDS);
             } while (null == msg && status == Status.FETCHING);
 
             return msg;
