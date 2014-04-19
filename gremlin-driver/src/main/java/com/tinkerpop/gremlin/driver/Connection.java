@@ -26,9 +26,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
+ * A single connection to a Gremlin Server instance.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Connection {
+class Connection {
     private final Channel channel;
     private final URI uri;
     private final ConcurrentMap<UUID, ResponseQueue> pending = new ConcurrentHashMap<>();
