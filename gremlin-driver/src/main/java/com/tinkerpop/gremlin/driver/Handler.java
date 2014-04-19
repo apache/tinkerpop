@@ -25,9 +25,11 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * Holder for internal handler classes for constructing the Channel Pipeline.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Handler {
+class Handler {
     static class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
         private final WebSocketClientHandshaker handshaker;
         private ChannelPromise handshakeFuture;
@@ -95,7 +97,7 @@ public class Handler {
         }
     }
 
-    public static class GremlinResponseDecoder extends SimpleChannelInboundHandler<WebSocketFrame> {
+    static class GremlinResponseDecoder extends SimpleChannelInboundHandler<WebSocketFrame> {
         // todo: serializer configuration
         private static MessageSerializer serializer = new JsonMessageSerializerV1d0();
         private final ConcurrentMap<UUID, ResponseQueue> pending;
@@ -127,10 +129,7 @@ public class Handler {
         }
     }
 
-    /**
-     * @author Stephen Mallette (http://stephen.genoprime.com)
-     */
-    public static class GremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
+    static class GremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
         private boolean binaryEncoding = false;
 
         // todo: serializer configuration
