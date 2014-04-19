@@ -12,6 +12,10 @@ public class Item {
         this.resultItem = response.getResult();
     }
 
+    public String getString() {
+        return resultItem.toString();
+    }
+
     public <T> T get(final Class<? extends T> clazz) {
         return clazz.cast(this.resultItem);
     }

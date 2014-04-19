@@ -51,8 +51,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void basicTesting() throws Exception {
         final Cluster cluster = Cluster.create("localhost").build();
+        cluster.init();
         final Client client = cluster.connect();
-        client.init();
 
         System.out.println("iterable --- ");
         ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
@@ -72,6 +72,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         System.out.println("stream them --- ");
         results = client.submit("[1,2,3,4,5,6,7,8,9]");
         results.stream().map(i -> i.get(Integer.class) * 3).forEach(System.out::println);
+
+        cluster.close();
     }
 
     @Test

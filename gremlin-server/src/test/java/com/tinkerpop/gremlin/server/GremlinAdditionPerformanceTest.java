@@ -6,6 +6,11 @@ import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 import com.carrotsearch.junitbenchmarks.annotation.LabelType;
+import com.tinkerpop.gremlin.driver.Client;
+import com.tinkerpop.gremlin.driver.Cluster;
+import com.tinkerpop.gremlin.driver.Item;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -28,6 +33,8 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
     public final static int DEFAULT_CONCURRENT_BENCHMARK_ROUNDS = 500;
     public final static int DEFAULT_CONCURRENT_WARMUP_ROUNDS = 10;
 
+    final static Cluster cluster = Cluster.create("localhost").build();
+
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule();
 
@@ -43,12 +50,18 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
         tryWebSocketGremlin();
     }
 
+    @BeforeClass
+    public static void before() {
+        cluster.init();
+    }
+
+    @AfterClass
+    public static void after() {
+        cluster.close();
+    }
+
     private void tryWebSocketGremlin() throws Exception {
-        final String url = getWebSocketBaseUri();
-        final WebSocketClient client = new WebSocketClient(url);
-        client.open();
-        //final String result = client.<String>eval("[1,2,3,4,5,6,7]").findFirst().orElse("invalid");
-        assertEquals("2", client.<String>eval("1+1").findFirst().orElse("invalid"));
-        client.close();
+        final Client client = cluster.connect();
+        assertEquals("2", client.submit("1+1").stream().map(Item::getString).findFirst().orElse("invalid"));
     }
 }

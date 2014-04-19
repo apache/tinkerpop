@@ -97,7 +97,7 @@ public class Cluster {
     }
 
     static class Factory {
-        private static final EventLoopGroup group = new NioEventLoopGroup();
+        private final EventLoopGroup group = new NioEventLoopGroup(4);
 
         Bootstrap createBootstrap() {
             return new Bootstrap().group(group);
