@@ -35,7 +35,7 @@ class Connection {
     private final URI uri;
     private final ConcurrentMap<UUID, ResponseQueue> pending = new ConcurrentHashMap<>();
 
-    public Connection(final URI uri, final Factory factory) throws InterruptedException {
+    public Connection(final URI uri, final Cluster.Factory factory)  {
         this.uri = uri;
         final Bootstrap b = factory.createBootstrap();
         final String protocol = uri.getScheme();
@@ -45,8 +45,14 @@ class Connection {
         final ClientPipelineInitializer initializer = new ClientPipelineInitializer();
         b.channel(NioSocketChannel.class).handler(initializer);
 
-        channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
-        initializer.handler.handshakeFuture().sync();
+        // todo: blocking
+        try {
+            channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
+            initializer.handler.handshakeFuture().sync();
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
+            throw new RuntimeException(ie);
+        }
     }
 
     public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> future) {
@@ -69,18 +75,6 @@ class Connection {
         channel.writeAndFlush(new CloseWebSocketFrame());
         channel.closeFuture().sync();
         //group.shutdownGracefully();
-    }
-
-    public static class Factory {
-        private static final EventLoopGroup group = new NioEventLoopGroup();
-
-        private Bootstrap createBootstrap() {
-            return new Bootstrap().group(group);
-        }
-
-        public void shutdown() {
-            group.shutdownGracefully().awaitUninterruptibly();
-        }
     }
 
     class ClientPipelineInitializer extends ChannelInitializer<SocketChannel> {

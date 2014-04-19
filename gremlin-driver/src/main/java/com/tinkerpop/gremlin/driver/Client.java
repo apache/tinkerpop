@@ -22,18 +22,21 @@ public class Client {
 
     public Client(final Cluster cluster) {
         this.cluster = cluster;
+
     }
 
-    public synchronized Client init() throws Exception {
+    public synchronized Client init() {
         if (initialized)
             return this;
 
-        connections.put(new Host(new InetSocketAddress("localhost", 8182)), new Connection(URI.create("ws://localhost:8182/gremlin"), new Connection.Factory()));
-        /*
-        for (Host host : cluster.getClusterInfo().allHosts()) {
-            // todo: build pool and use host to construct URI
-        }
-        */
+        cluster.init();
+
+        // todo: connection pooling
+
+        //connections.put(new Host(new InetSocketAddress("localhost", 8182)), new Connection(URI.create("ws://localhost:8182/gremlin"), new Connection.Factory()));
+
+        final Cluster.Factory factory = cluster.getFactory();
+        cluster.getClusterInfo().allHosts().forEach(host -> connections.put(host, new Connection(host.getWebSocketUri(), factory)));
         initialized = true;
         return this;
     }
@@ -47,6 +50,9 @@ public class Client {
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin) {
+        if (!initialized)
+            init();
+
         final CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
         // todo: choose a connection smartly...get into async

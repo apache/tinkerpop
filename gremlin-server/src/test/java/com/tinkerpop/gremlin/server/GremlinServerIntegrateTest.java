@@ -50,7 +50,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void basicTesting() throws Exception {
-        final Cluster cluster = Cluster.create().build();
+        final Cluster cluster = Cluster.create("localhost").build();
         final Client client = cluster.connect();
         client.init();
 

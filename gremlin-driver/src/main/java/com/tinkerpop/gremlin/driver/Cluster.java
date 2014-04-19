@@ -1,5 +1,9 @@
 package com.tinkerpop.gremlin.driver;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -16,8 +20,13 @@ public class Cluster {
 
     private Manager manager;
 
-    Cluster(final List<InetSocketAddress> contactPoints) {
+    private Cluster(final List<InetSocketAddress> contactPoints) {
         this.manager = new Manager(contactPoints);
+    }
+
+    public synchronized void init() {
+        if (!manager.initialized)
+            manager.init();
     }
 
     public Client connect() {
@@ -28,17 +37,25 @@ public class Cluster {
         return null;
     }
 
-    public static Builder create() {
-        return new Builder();
+    public static Builder create(final String address) {
+        return new Builder(address);
     }
 
     public ClusterInfo getClusterInfo() {
         return manager.clusterInfo;
     }
 
+    Factory getFactory() {
+        return manager.getFactory();
+    }
+
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
+
+        public Builder(final String address) {
+            addContactPoint(address);
+        }
 
         public Builder addContactPoint(final String address) {
             try {
@@ -69,14 +86,28 @@ public class Cluster {
         }
     }
 
+    static class Factory {
+        private static final EventLoopGroup group = new NioEventLoopGroup();
+
+        Bootstrap createBootstrap() {
+            return new Bootstrap().group(group);
+        }
+
+        void shutdown() {
+            group.shutdownGracefully().awaitUninterruptibly();
+        }
+    }
+
     class Manager {
         private ClusterInfo clusterInfo;
         private boolean initialized;
         private final List<InetSocketAddress> contactPoints;
+        private Factory factory;
 
         private Manager(final List<InetSocketAddress> contactPoints) {
             this.clusterInfo = new ClusterInfo(this);
             this.contactPoints = contactPoints;
+            this.factory = new Factory();
         }
 
         synchronized void init() {
@@ -92,6 +123,9 @@ public class Cluster {
             });
         }
 
+        Factory getFactory() {
+            return factory;
+        }
     }
 
 
