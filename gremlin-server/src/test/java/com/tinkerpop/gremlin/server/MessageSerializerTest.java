@@ -1,8 +1,9 @@
 package com.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.server.message.RequestMessage;
-import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
-import com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer;
+import com.tinkerpop.gremlin.driver.MessageSerializer;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
+import com.tinkerpop.gremlin.driver.ser.ToStringMessageSerializer;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -48,20 +49,5 @@ public class MessageSerializerTest {
         assertNotNull(serializer);
         assertTrue(ToStringMessageSerializer.class.isAssignableFrom(serializer.getClass()));
     }
-
-    @Test
-    public void serializeToStringNull() throws Exception {
-        final String results = MessageSerializer.select("text/plain", MessageSerializer.DEFAULT_RESULT_SERIALIZER).serializeResult(Optional.empty(), Optional.ofNullable(msg));
-        assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>null", results);
-    }
-
-    @Test
-    public void serializeToStringAVertex() throws Exception {
-        final TinkerGraph g = TinkerFactory.createClassic();
-        final Vertex v = g.V().<Vertex>has("name", Compare.EQUAL, "marko").next();
-        final String results = MessageSerializer.select("text/plain", MessageSerializer.DEFAULT_RESULT_SERIALIZER).serializeResult(Optional.<Object>ofNullable(v), Optional.ofNullable(msg));
-        assertEquals("2d62161b-9544-4f39-af44-62ec49f9a595>>v[1]", results);
-    }
-
 
 }

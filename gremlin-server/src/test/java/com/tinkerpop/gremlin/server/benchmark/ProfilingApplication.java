@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.server.benchmark;
 
-import com.tinkerpop.gremlin.server.MessageSerializer;
-import com.tinkerpop.gremlin.server.Tokens;
-import com.tinkerpop.gremlin.server.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.MessageSerializer;
+import com.tinkerpop.gremlin.driver.Tokens;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -105,7 +105,7 @@ public class ProfilingApplication {
                         IntStream.range(0, numberOfMessages).forEach(i -> {
                             final RequestMessage msg = RequestMessage.create(Tokens.OPS_EVAL).add(
                                     Tokens.ARGS_GREMLIN, "1+1", Tokens.ARGS_ACCEPT, "application/json").build();
-                            ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + MessageSerializer.DEFAULT_REQUEST_SERIALIZER.serialize(msg)));
+                            ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + MessageSerializer.DEFAULT_REQUEST_SERIALIZER.serializeRequest(msg)));
                         });
                     }, executor).thenRunAsync(() -> {
                         System.out.println("Finished sending requests");

@@ -1,4 +1,8 @@
-package com.tinkerpop.gremlin.server.message;
+package com.tinkerpop.gremlin.driver.message;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Result codes for Gremlin Server responses. Result codes tend to map to
@@ -52,14 +56,20 @@ public enum ResultCode {
      * The server was not capable of serializing an object that was returned from the script supplied on the request.
      * Either transform the object into something Gremlin Server can process within the script or install custom
      * serialization classes to Gremlin Server.
-     *
-     * @see com.tinkerpop.gremlin.server.MessageSerializer
-     * @see com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0
      */
     SERVER_ERROR_SERIALIZATION(599);
 
 
     private final int value;
+    private static Map<Integer, ResultCode> codeValueMap = new HashMap<>();
+
+    static {
+        Stream.of(ResultCode.values()).forEach(code -> codeValueMap.put(code.getValue(), code));
+    }
+
+    public static ResultCode getFromValue(final int codeValue) {
+        return codeValueMap.get(codeValue);
+    }
 
     private ResultCode(final int value) {
         this.value = value;

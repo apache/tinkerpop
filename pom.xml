@@ -96,6 +96,7 @@
         <module>giraph-gremlin</module>
         <module>gremlin-groovy</module>
         <module>gremlin-server</module>
+        <module>gremlin-driver</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:tinkerpop/tinkerpop3.git</connection>

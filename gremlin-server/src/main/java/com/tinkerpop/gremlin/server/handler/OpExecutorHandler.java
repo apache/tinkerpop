@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.server.Graphs;
 import com.tinkerpop.gremlin.server.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.Settings;
-import com.tinkerpop.gremlin.server.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.util.function.ThrowingConsumer;

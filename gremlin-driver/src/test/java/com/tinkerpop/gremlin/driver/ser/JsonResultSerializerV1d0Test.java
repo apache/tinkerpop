@@ -1,6 +1,7 @@
-package com.tinkerpop.gremlin.server.util.ser;
+package com.tinkerpop.gremlin.driver.ser;
 
-import com.tinkerpop.gremlin.server.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -36,7 +37,8 @@ public class JsonResultSerializerV1d0Test {
 
     @Test
     public void serializeToJsonNullResultReturnsNull() throws Exception {
-        final String results = SERIALIZER.serializeResult(Optional.empty(), Optional.ofNullable(msg));
+        final ResponseMessage message = ResponseMessage.create(msg).build();
+        final String results = SERIALIZER.serializeResponse(message);
         final JSONObject json = new JSONObject(results);
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(JsonMessageSerializerV1d0.TOKEN_REQUEST));
@@ -84,7 +86,7 @@ public class JsonResultSerializerV1d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(funList), Optional.ofNullable(msg));
+        final String results = SERIALIZER.serializeResponse(ResponseMessage.create(msg).result(funList).build());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -103,7 +105,7 @@ public class JsonResultSerializerV1d0Test {
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(funList.iterator()), Optional.ofNullable(msg));
+        final String results = SERIALIZER.serializeResponse(ResponseMessage.create(msg).result(funList.iterator()).build());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -124,7 +126,7 @@ public class JsonResultSerializerV1d0Test {
         funList.add(null);
         funList.add(new FunObject("y"));
 
-        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(funList.iterator()), Optional.ofNullable(msg));
+        final String results = SERIALIZER.serializeResponse(ResponseMessage.create(msg).result(funList.iterator()).build());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -148,7 +150,7 @@ public class JsonResultSerializerV1d0Test {
         map.put("y", "some");
         map.put("z", innerMap);
 
-        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(map), Optional.ofNullable(msg));
+        final String results = SERIALIZER.serializeResponse(ResponseMessage.create(msg).result(map).build());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -173,7 +175,7 @@ public class JsonResultSerializerV1d0Test {
         ///// withMetaProperties.setProperty("audit", "stephen");
 
         final Iterable iterable = g.V().toList();
-        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(iterable), Optional.ofNullable(msg));
+        final String results = SERIALIZER.serializeResponse(ResponseMessage.create(msg).result(iterable).build());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -211,7 +213,7 @@ public class JsonResultSerializerV1d0Test {
         v.setProperty(Property.Key.hidden("hidden"), "stephen");
 
         final Iterable iterable = g.V().toList();
-        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(iterable), Optional.ofNullable(msg));
+        final String results = SERIALIZER.serializeResponse(ResponseMessage.create(msg).result(iterable).build());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -245,7 +247,7 @@ public class JsonResultSerializerV1d0Test {
         v.addProperty("multi", 2);
 
         final Iterator iterable = g.query().vertices().iterator();
-        final String results = SERIALIZER.serializeResult(iterable, new Context(msg, null, null, null, null));
+        final String results = SERIALIZER.serializeResponse(iterable, new Context(msg, null, null, null, null));
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -283,7 +285,7 @@ public class JsonResultSerializerV1d0Test {
         e.setProperty("abc", 123);
 
         final Iterable<Edge> iterable = g.E().toList();
-        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(iterable), Optional.ofNullable(msg));
+        final String results = SERIALIZER.serializeResponse(ResponseMessage.create(msg).result(iterable).build());
 
         final JSONObject json = new JSONObject(results);
 
@@ -325,7 +327,7 @@ public class JsonResultSerializerV1d0Test {
         v.setProperty("friends", friends);
 
         final Iterable iterable = g.V().toList();
-        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(iterable), Optional.ofNullable(msg));
+        final String results = SERIALIZER.serializeResponse(ResponseMessage.create(msg).result(iterable).build());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -362,7 +364,7 @@ public class JsonResultSerializerV1d0Test {
         final Map<Vertex, Integer> map = new HashMap<>();
         map.put(g.V().<Vertex>has("name", Compare.EQUAL, "marko").next(), 1000);
 
-        final String results = SERIALIZER.serializeResult(Optional.<Object>ofNullable(map), Optional.ofNullable(msg));
+        final String results = SERIALIZER.serializeResponse(ResponseMessage.create(msg).result(map).build());
         final JSONObject json = new JSONObject(results);
 
         assertNotNull(json);
@@ -382,6 +384,8 @@ public class JsonResultSerializerV1d0Test {
         assertEquals(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_VERTEX, element.optString(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_TYPE));
         */
     }
+
+    // todo: more TESTS!!
 
     @Test
     public void deserializeRequestNicelyWithNoArgs() {

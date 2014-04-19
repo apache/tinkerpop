@@ -1,11 +1,19 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.driver.Client;
+import com.tinkerpop.gremlin.driver.Cluster;
+import com.tinkerpop.gremlin.driver.Connection;
+import com.tinkerpop.gremlin.driver.Item;
+import com.tinkerpop.gremlin.driver.ResultSet;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.net.URI;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -41,6 +49,29 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void basicTesting() throws Exception {
+        final Cluster cluster = Cluster.create().build();
+        final Client client = cluster.connect();
+        client.init();
+
+        ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        while (!results.isFullyFetched()) {
+            System.out.println("waiting for all...");
+            Thread.sleep(1000);
+        }
+
+        for (Item result : results) {
+            System.out.println(result.get(Integer.class));
+        }
+
+        long start = System.nanoTime();
+        results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        results.all().get(5000, TimeUnit.MILLISECONDS).stream().map(i -> i.get(Integer.class) * 2).forEach(System.out::println);
+
+        System.out.println((System.nanoTime() - start) / 1000000000);
     }
 
     @Test

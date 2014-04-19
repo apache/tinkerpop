@@ -1,8 +1,10 @@
 package com.tinkerpop.gremlin.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.tinkerpop.gremlin.server.message.RequestMessage;
-import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
+import com.tinkerpop.gremlin.driver.MessageSerializer;
+import com.tinkerpop.gremlin.driver.Tokens;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -119,7 +121,7 @@ class WebSocketClient {
         final UUID requestId = msg.getRequestId();
         responses.put(requestId, responseQueue);
 
-        ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + serializer.serialize(msg)));
+        ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + serializer.serializeRequest(msg)));
 
         return StreamSupport.stream(Spliterators.<T>spliteratorUnknownSize(new BlockingIterator<>(requestId), Spliterator.IMMUTABLE), false);
     }

@@ -1,9 +1,10 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.driver;
 
-import com.tinkerpop.gremlin.server.message.RequestMessage;
-import com.tinkerpop.gremlin.server.message.ResultCode;
-import com.tinkerpop.gremlin.server.util.ser.JsonMessageSerializerV1d0;
-import com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.message.ResponseMessage;
+import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
+import com.tinkerpop.gremlin.driver.ser.ToStringMessageSerializer;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,11 +18,11 @@ import java.util.stream.Stream;
 
 /**
  * Serializes data to and from Gremlin Server.  Typically the object being serialized or deserialized will be an item
- * from an {@link java.util.Iterator} as returned from the {@code ScriptEngine} or an incoming {@link com.tinkerpop.gremlin.server.message.RequestMessage}.
+ * from an {@link java.util.Iterator} as returned from the {@code ScriptEngine} or an incoming {@link com.tinkerpop.gremlin.driver.message.RequestMessage}.
  * {@link MessageSerializer} instances are instantiated to a cache via {@link ServiceLoader} and indexed based on
  * the mime types they support.  If a mime type is supported more than once, the last {@link MessageSerializer}
  * instance loaded for that mime type is assigned. If a mime type is not found the default
- * {@link com.tinkerpop.gremlin.server.util.ser.ToStringMessageSerializer} is used to return the results.
+ * {@link com.tinkerpop.gremlin.driver.ser.ToStringMessageSerializer} is used to return the results.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -52,31 +53,19 @@ public interface MessageSerializer {
     static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new JsonMessageSerializerV1d0();
 
     /**
-     * Serialize a result message with a {@link com.tinkerpop.gremlin.server.message.ResultCode#SUCCESS} result code.
-     */
-    public default String serializeResult(final Optional<Object> o, final Optional<RequestMessage> requestMessage) {
-        return this.serializeResult(o, ResultCode.SUCCESS, requestMessage);
-    }
-
-    /**
      * Serialize a result message.
-     *
-     * @param o       the result
-     * @param code    the response code
-     * @param requestMessage the request message that generated this result
-     * @return the result serialized to a String
      */
-    public String serializeResult(final Optional<Object> o, final ResultCode code, final Optional<RequestMessage> requestMessage);
+    public String serializeResponse(final ResponseMessage responseMessage);
 
-    /**
-     * Serialize an object.
-     */
-    public String serialize(final Object o);
+    public String serializeRequest(final RequestMessage requestMessage);
 
     /**
      * Deserialize a {@link RequestMessage} into an object.
      */
     public Optional<RequestMessage> deserializeRequest(final String msg);
+
+    // todo: determine if "Optional" is right here - probably not....
+    public Optional<ResponseMessage> deserializeResponse(final String msg);
 
     /**
      * The list of mime types that the serializer supports.

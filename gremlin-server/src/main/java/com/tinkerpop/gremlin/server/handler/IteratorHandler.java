@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.server.handler;
 
-import com.tinkerpop.gremlin.server.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.server.Settings;
-import com.tinkerpop.gremlin.server.message.RequestMessage;
-import com.tinkerpop.gremlin.server.message.ResponseMessage;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;

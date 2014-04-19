@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.server.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.junit.Test;
 

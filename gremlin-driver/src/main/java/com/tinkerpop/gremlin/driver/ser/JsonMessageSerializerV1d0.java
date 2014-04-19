@@ -1,14 +1,16 @@
-package com.tinkerpop.gremlin.server.util.ser;
+package com.tinkerpop.gremlin.driver.ser;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.tinkerpop.gremlin.server.MessageSerializer;
-import com.tinkerpop.gremlin.server.message.ResultCode;
-import com.tinkerpop.gremlin.server.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.MessageSerializer;
+import com.tinkerpop.gremlin.driver.message.ResponseMessage;
+import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONObjectMapper;
 import groovy.json.JsonBuilder;
 import org.slf4j.Logger;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Serialize results to JSON with version 1.0.x schema.
@@ -27,9 +30,13 @@ import java.util.Optional;
 public class JsonMessageSerializerV1d0 implements MessageSerializer {
     private static final Logger logger = LoggerFactory.getLogger(JsonMessageSerializerV1d0.class);
 
+    // todo: move tokens
     public static final String TOKEN_RESULT = "result";
     public static final String TOKEN_CODE = "code";
+    public static final String TOKEN_CONTENT_TYPE = "contentType";
     public static final String TOKEN_REQUEST = "requestId";
+
+    final TypeReference<Map<String,Object>> mapTypeReference = new TypeReference<Map<String,Object>>(){};
 
     /**
      * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write
@@ -44,27 +51,42 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
     }
 
     @Override
-    public String serialize(final Object o) {
+    public String serializeResponse(final ResponseMessage responseMessage) {
         try {
-            return mapper.writeValueAsString(o);
+            final Map<String, Object> result = new HashMap<>();
+            result.put(TOKEN_CODE, responseMessage.getCode().getValue());
+            result.put(TOKEN_RESULT, responseMessage.getResult());
+            result.put(TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
+
+            return mapper.writeValueAsString(result);
         } catch (Exception ex) {
-            logger.warn("Result [{}] could not be serialized by {}.", o.toString(), JsonMessageSerializerV1d0.class.getName());
+            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), JsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);
         }
     }
 
     @Override
-    public String serializeResult(final Optional<Object> o, final ResultCode code, final Optional<RequestMessage> requestMessage) {
+    public String serializeRequest(final RequestMessage requestMessage) {
         try {
-            final Map<String, Object> result = new HashMap<>();
-            result.put(TOKEN_CODE, code.getValue());
-            result.put(TOKEN_RESULT, o.isPresent() ? o.get() : null);
-            result.put(TOKEN_REQUEST, requestMessage.isPresent() ? requestMessage.get().getRequestId() : null);
-
-            return mapper.writeValueAsString(result);
+            return mapper.writeValueAsString(requestMessage);
         } catch (Exception ex) {
-            logger.warn("Result [{}] could not be serialized by {}.", o.toString(), JsonMessageSerializerV1d0.class.getName());
+            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), JsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);
+        }
+    }
+
+    @Override
+    public Optional<ResponseMessage> deserializeResponse(final String msg) {
+        try {
+            final Map<String,Object> responseData = mapper.readValue(msg, mapTypeReference);
+            // todo: content types in response?   this is a mess in terms of deserialization ....................
+            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(TOKEN_REQUEST).toString()), "")
+                    .code(ResultCode.getFromValue((Integer) responseData.get(TOKEN_CODE)))
+                    .result(responseData.get(TOKEN_RESULT))
+                    .build());
+        } catch (Exception ex) {
+            logger.warn("Response [{}] could not be deserialized by {}.", msg, JsonMessageSerializerV1d0.class.getName());
+            return Optional.empty();
         }
     }
 
@@ -73,7 +95,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
         try {
             return Optional.of(mapper.readValue(msg, RequestMessage.class));
         } catch (Exception ex) {
-            logger.warn("The request message [{}] could not be deserialized by {}.", msg, JsonMessageSerializerV1d0.class.getName());
+            logger.warn("Request [{}] could not be deserialized by {}.", msg, JsonMessageSerializerV1d0.class.getName());
             return Optional.empty();
         }
     }
@@ -81,6 +103,8 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
     public static class GremlinServerModule extends SimpleModule {
         public GremlinServerModule() {
             super("graphson-gremlin-server");
+
+            // todo: avoid this dependency ?
             addSerializer(JsonBuilder.class, new JsonBuilderJacksonSerializer());
         }
     }

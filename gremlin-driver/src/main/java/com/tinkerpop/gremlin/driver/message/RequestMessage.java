@@ -1,6 +1,5 @@
-package com.tinkerpop.gremlin.server.message;
+package com.tinkerpop.gremlin.driver.message;
 
-import com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.util.Collections;
@@ -52,15 +51,15 @@ public class RequestMessage {
     }
 
     /**
-     * The operation or command to perform as defined by a particular {@link com.tinkerpop.gremlin.server.OpProcessor}.
+     * The operation or command to perform as defined by a particular Processor.
      */
     public String getOp() {
         return op;
     }
 
     /**
-     * The name of the {@link com.tinkerpop.gremlin.server.OpProcessor} that should handle the {@link #op}.  Defaults to the
-     * {@link StandardOpProcessor} if not specified.
+     * The name of the Processor that should handle the {@link #op}.  Defaults to the standard processor if
+     * not specified.
      */
     public String getProcessor() {
         return processor;
@@ -87,9 +86,10 @@ public class RequestMessage {
      * Builder class for {@link RequestMessage}.
      */
     public static final class Builder {
+        public static final String OP_PROCESSOR_NAME = "";
         private UUID requestId = UUID.randomUUID();
         private String op;
-        private String processor = StandardOpProcessor.OP_PROCESSOR_NAME;
+        private String processor = OP_PROCESSOR_NAME;
         private Map<String, Object> args = new HashMap<>();
 
         private Builder(final String op) {
@@ -98,7 +98,7 @@ public class RequestMessage {
 
         /**
          * If this value is not set in the builder then the {@link RequestMessage#processor} defaults to
-         * {@link StandardOpProcessor}.
+         * the standard op processor (empty string).
          *
          * @param processor the name of the processor
          */
