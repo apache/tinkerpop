@@ -54,8 +54,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
         client.init();
 
+        System.out.println("iterable --- ");
         ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        while (!results.isFullyFetched()) {
+        while (!results.allItemsAvailable()) {
             System.out.println("waiting for all...");
             Thread.sleep(1000);
         }
@@ -64,11 +65,13 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             System.out.println(result.get(Integer.class));
         }
 
-        long start = System.nanoTime();
+        System.out.println("all --- ");
         results = client.submit("[1,2,3,4,5,6,7,8,9]");
         results.all().get(5000, TimeUnit.MILLISECONDS).stream().map(i -> i.get(Integer.class) * 2).forEach(System.out::println);
 
-        System.out.println((System.nanoTime() - start) / 1000000000);
+        System.out.println("stream them --- ");
+        results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        results.stream().map(i -> i.get(Integer.class) * 3).forEach(System.out::println);
     }
 
     @Test

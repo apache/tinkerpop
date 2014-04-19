@@ -34,6 +34,10 @@ class ResponseQueue {
         return this.responseQueue.size();
     }
 
+    public boolean isEmpty() {
+        return this.size() == 0;
+    }
+
     public ResponseMessage poll() {
         try {
             ResponseMessage msg;
