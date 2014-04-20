@@ -119,10 +119,8 @@ class Handler {
                     else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
                         pending.remove(response.getRequestId()).markComplete();
                     else
-                        System.out.println("busted");
+                        pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
             } finally {
                 ReferenceCountUtil.release(webSocketFrame);
             }

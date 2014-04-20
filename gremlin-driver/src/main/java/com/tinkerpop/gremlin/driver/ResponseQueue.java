@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A queue of incoming {@link ResponseMessage} objects.  The queue is updated by the
@@ -22,6 +23,8 @@ class ResponseQueue {
 
     private volatile Status status = Status.FETCHING;
 
+    private final AtomicReference<RuntimeException> error = new AtomicReference<>();
+
     public ResponseQueue(final LinkedBlockingQueue<ResponseMessage> responseQueue) {
         this.responseQueue = responseQueue;
     }
@@ -31,24 +34,31 @@ class ResponseQueue {
     }
 
     public int size() {
+        if (error.get() != null) throw error.get();
         return this.responseQueue.size();
     }
 
     public boolean isEmpty() {
+        if (error.get() != null) throw error.get();
         return this.size() == 0;
     }
 
     public ResponseMessage poll() {
-        try {
-            ResponseMessage msg;
-            do {
-                msg = responseQueue.poll(10, TimeUnit.MILLISECONDS);
-            } while (null == msg && status == Status.FETCHING);
+        // todo: something still fishy with exception handling here
 
-            return msg;
-        } catch (InterruptedException ie) {
-            throw new RuntimeException("Taking too long to get results");
-        }
+        ResponseMessage msg = null;
+        do {
+            if (error.get() != null) throw error.get();
+            try {
+                msg = responseQueue.poll(10, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ie) {
+
+            }
+        } while (null == msg && status == Status.FETCHING);
+
+        if (error.get() != null) throw error.get();
+
+        return msg;
     }
 
     public Status getStatus() {
@@ -57,5 +67,9 @@ class ResponseQueue {
 
     void markComplete() {
         this.status = Status.COMPLETE;
+    }
+
+    void markError(final RuntimeException throwable) {
+        error.set(throwable);
     }
 }

@@ -31,11 +31,7 @@ public class ResultSet implements Iterable<Item> {
         if (!responseQueue.isEmpty())
             return false;
 
-        try {
-            awaitItems(1).get();
-        } catch (Exception ex) {
-            // todo: block here...kinda have to
-        }
+        awaitItems(1).join();
 
         assert !responseQueue.isEmpty() || allItemsAvailable();
         return responseQueue.isEmpty();

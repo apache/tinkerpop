@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -78,15 +79,18 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
-        final String url = getWebSocketBaseUri();
-        final WebSocketClient client = new WebSocketClient(url);
-        client.open();
+        final Cluster cluster = Cluster.create("localhost").build();
+        cluster.init();
+        final Client client = cluster.connect();
 
-        // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
-        final String result = client.<String>eval("Thread.sleep(300);'some-stuff-that-should not return'").findFirst().orElse("nothing");
-        assertTrue(result.startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+        try {
+            client.submit("Thread.sleep(300);'some-stuff-that-should not return'").all().join();
+            fail("Should throw an exception.");
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getMessage().startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+        }
 
-        client.close();
+        cluster.close();
     }
 
     @Ignore("not working yet")
