@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.driver;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -97,7 +98,12 @@ public class Cluster {
     }
 
     static class Factory {
-        private final EventLoopGroup group = new NioEventLoopGroup(4);
+        private final EventLoopGroup group;
+
+        public Factory() {
+            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-%d").build();
+            group = new NioEventLoopGroup(4, threadFactory);
+        }
 
         Bootstrap createBootstrap() {
             return new Bootstrap().group(group);
