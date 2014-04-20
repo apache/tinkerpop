@@ -37,6 +37,7 @@ public class Cluster {
     }
 
     public Client connect(final String graph) {
+        // todo: need to support this like it was in rexpro.
         return null;
     }
 
