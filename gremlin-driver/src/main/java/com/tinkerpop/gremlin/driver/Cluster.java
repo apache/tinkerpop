@@ -143,11 +143,8 @@ public class Cluster {
             return factory;
         }
 
-        void close() {
-            closeAsync().join();
-        }
-
-        CompletableFuture<Void> closeAsync() {
+        CompletableFuture<Void> close() {
+            // this method is exposed publically in both blocking and non-blocking forms.
             return CompletableFuture.supplyAsync(() -> {
                 this.factory.shutdown();
                 return null;
