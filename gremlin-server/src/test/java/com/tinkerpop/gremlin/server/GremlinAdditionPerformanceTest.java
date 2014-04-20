@@ -52,6 +52,7 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
 
     @BeforeClass
     public static void before() {
+        // good to call init here ahead of performance tracking
         cluster.init();
     }
 

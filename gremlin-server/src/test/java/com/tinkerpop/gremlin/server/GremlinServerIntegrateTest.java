@@ -52,7 +52,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void basicTesting() throws Exception {
         final Cluster cluster = Cluster.create("localhost").build();
-        cluster.init();
         final Client client = cluster.connect();
 
         System.out.println("iterable --- ");
@@ -80,7 +79,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
         final Cluster cluster = Cluster.create("localhost").build();
-        cluster.init();
         final Client client = cluster.connect();
 
         try {
@@ -88,9 +86,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getMessage().startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+        } finally {
+            cluster.close();
         }
-
-        cluster.close();
     }
 
     @Ignore("not working yet")
