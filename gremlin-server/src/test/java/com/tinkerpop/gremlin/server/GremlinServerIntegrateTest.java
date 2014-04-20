@@ -94,92 +94,95 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Ignore("not working yet")
     @Test
     public void shouldReceiveFailureTimeOutOnWrite() throws Exception {
-        final String url = getWebSocketBaseUri();
-        final WebSocketClient client = new WebSocketClient(url);
-        client.open();
+        final Cluster cluster = Cluster.create("localhost").build();
+        final Client client = cluster.connect();
 
-        // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
-        final String result = client.<String>eval("Thread.sleep(30000);'some-stuff-that-should not return'").findFirst().orElse("nothing");
-        assertTrue(result.startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
-
-        client.close();
+        try {
+            client.submit("Thread.sleep(30000);'some-stuff-that-should not return'").all().join();
+            fail("Should throw an exception.");
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getMessage().startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     public void shouldReceiveFailureTimeOutOnTotalSerialization() throws Exception {
-        final String url = getWebSocketBaseUri();
-        final WebSocketClient client = new WebSocketClient(url);
-        client.open();
+        final Cluster cluster = Cluster.create("localhost").build();
+        final Client client = cluster.connect();
 
-        // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
-        final List<String> results = client.<String>eval("(0..<100000)").collect(Collectors.toList());
-
-        // the last item in the list is the error
-        final String result = results.get(results.size() - 1);
-        assertTrue(result.endsWith("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
-
-        client.close();
+        try {
+            client.submit("(0..<100000)").all().join();
+            fail("Should throw an exception.");
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getMessage().endsWith("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Ignore("not working yet")
     @Test
     public void shouldReceiveFailureForTimeoutOfIndividualSerialization() throws Exception {
-        final String url = getWebSocketBaseUri();
-        final WebSocketClient client = new WebSocketClient(url);
-        client.open();
+        final Cluster cluster = Cluster.create("localhost").build();
+        final Client client = cluster.connect();
 
-        // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
-        final String result = client.<String>eval("[(0..<100000),'x']").findFirst().orElse("nothing");
-        assertTrue(result.endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
-
-        client.close();
+        try {
+            client.submit("[(0..<100000),'x']").all().join();
+            fail("Should throw an exception.");
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getMessage().endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     public void shouldReceiveFailureOnBadSerialization() throws Exception {
-        final String url = getWebSocketBaseUri();
-        final WebSocketClient client = new WebSocketClient(url);
-        client.open();
+        final Cluster cluster = Cluster.create("localhost").build();
+        final Client client = cluster.connect();
 
-        // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
-        final List<String> results = client.<String>eval("def class C { def C getC(){return this}}; new C()").collect(Collectors.toList());
-
-        // the last item in the list is the error
-        final String result = results.get(results.size() - 1);
-        assertTrue(result.equals("Error during serialization: Direct self-reference leading to cycle (through reference chain: java.util.HashMap[\"result\"]->C[\"c\"])"));
-
-        client.close();
+        try {
+            client.submit("def class C { def C getC(){return this}}; new C()").all().join();
+            fail("Should throw an exception.");
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getMessage().equals("Error during serialization: Direct self-reference leading to cycle (through reference chain: java.util.HashMap[\"result\"]->C[\"c\"])"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     @Ignore("This test needs to be fixed feedback is retrieved from netty.")
     public void shouldBlockRequestWhenTooBig() throws Exception {
-        final String url = getWebSocketBaseUri();
-        final WebSocketClient client = new WebSocketClient(url);
-        client.open();
+        final Cluster cluster = Cluster.create("localhost").build();
+        final Client client = cluster.connect();
 
-        // todo: better error handling should be in the "real" client.  adjust the assertion when that happens.
-        final String fatty = IntStream.range(0, 65536).mapToObj(String::valueOf).collect(Collectors.joining());
-        final List<String> results = client.<String>eval("'" + fatty + "'").collect(Collectors.toList());
-
-        // the last item in the list is the error
-        final String result = results.get(results.size() - 1);
-        assertTrue(result.equals("Error during serialization: Direct self-reference leading to cycle (through reference chain: java.util.HashMap[\"result\"]->C[\"c\"])"));
-
-        client.close();
+        try {
+            final String fatty = IntStream.range(0, 65536).mapToObj(String::valueOf).collect(Collectors.joining());
+            client.submit("'" + fatty + "'").all().join();
+            fail("Should throw an exception.");
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getMessage().equals("Error during serialization: Direct self-reference leading to cycle (through reference chain: java.util.HashMap[\"result\"]->C[\"c\"])"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
     @Ignore("This test needs to be fixed once we have a real client that can properly deserialize things other than String.")
     public void shouldDeserializeJsonBuilder() throws Exception {
-        final String url = getWebSocketBaseUri();
-        final WebSocketClient client = new WebSocketClient(url);
-        client.open();
+        final Cluster cluster = Cluster.create("localhost").build();
+        final Client client = cluster.connect();
 
-        final String result = client.<String>eval("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").findFirst().orElse("nothing");
-        System.out.println(result);
-        assertTrue(result.endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
-
-        client.close();
+        try {
+            client.submit("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
+            fail("Should throw an exception.");
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getMessage().endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
+        } finally {
+            cluster.close();
+        }
     }
 }
