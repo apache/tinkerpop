@@ -1,6 +1,10 @@
 package com.tinkerpop.gremlin.groovy.console;
 
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import groovy.grape.Grape;
 import jline.console.history.FileHistory;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
@@ -24,6 +28,8 @@ public class Console {
     private static final String HISTORY_FILE = ".gremlin_groovy_history";
     private static final String STANDARD_INPUT_PROMPT = "gremlin> ";
     public static final String STANDARD_RESULT_PROMPT = "==>";
+    private static final String IMPORT_SPACE = "import ";
+    private static final String DOT_STAR = ".*";
 
     private static final IO STANDARD_IO = new IO(System.in, System.out, System.err);
     private static final Groovysh GROOVYSH = new Groovysh();
@@ -32,33 +38,36 @@ public class Console {
         STANDARD_IO.out.println();
         STANDARD_IO.out.println("         \\,,,/");
         STANDARD_IO.out.println("         (o o)");
-        STANDARD_IO.out.println("-----oOOo-(_)-oOOo-----");
+        STANDARD_IO.out.println("-----oOOo-(3)-oOOo-----");
 
         GROOVYSH.setResultHook(new NullResultHookClosure(GROOVYSH));
-        // todo: hookup "use" command for plugins.
-        /*for (String imps : Imports.getImports()) {
-            GROOVYSH.execute("import " + imps);
-        }*/
-        GROOVYSH.execute("import com.tinkerpop.gremlin.groovy.*");
-        GROOVYSH.execute("import com.tinkerpop.gremlin.structure.*");
-        GROOVYSH.execute("import com.tinkerpop.gremlin.process.*");
-        GROOVYSH.execute("import com.tinkerpop.tinkergraph.*");
-        GROOVYSH.execute("import groovy.grape.Grape");
+        // TODO: use import manager?
+        GROOVYSH.execute(IMPORT_SPACE + Graph.class.getPackage().getName() + DOT_STAR);
+        GROOVYSH.execute(IMPORT_SPACE + Traversal.class.getPackage().getName() + DOT_STAR);
+        GROOVYSH.execute(IMPORT_SPACE + TinkerGraph.class.getPackage().getName() + DOT_STAR);
+        GROOVYSH.execute(IMPORT_SPACE + Grape.class.getCanonicalName());
+        GROOVYSH.setResultHook(new ResultHookClosure(GROOVYSH, STANDARD_IO, STANDARD_RESULT_PROMPT));
 
+        final InteractiveShellRunner runner = new InteractiveShellRunner(GROOVYSH, new PromptClosure(GROOVYSH, STANDARD_INPUT_PROMPT));
+        runner.setErrorHandler(new ErrorHookClosure(runner, STANDARD_IO));
+        runner.getReader().setHistoryEnabled(true);
+        //runner.getReader().getTerminal().reset();
         try {
-            GROOVYSH.setResultHook(new ResultHookClosure(GROOVYSH, STANDARD_IO, STANDARD_RESULT_PROMPT));
-            GROOVYSH.setHistory(new FileHistory(new File(System.getProperty("user.home") + "/" + HISTORY_FILE)));
-            final InteractiveShellRunner runner = new InteractiveShellRunner(GROOVYSH, new PromptClosure(GROOVYSH, STANDARD_INPUT_PROMPT));
-            runner.setErrorHandler(new ErrorHookClosure(runner, STANDARD_IO));
-            runner.setHistory(new FileHistory(new File(System.getProperty("user.home") + "/" + HISTORY_FILE)));
-            GremlinLoader.load();
-            if (initScriptFile.isPresent())
-                initializeShellWithScript(STANDARD_IO, initScriptFile.get());
-            runner.run();
+            final FileHistory history = new FileHistory(new File(System.getProperty("user.home") + "/" + HISTORY_FILE));
+            //GROOVYSH.setHistory();
+            runner.setHistory(history);
         } catch (IOException e) {
             STANDARD_IO.err.println("Unable to create history file: " + HISTORY_FILE);
+        }
+
+        GremlinLoader.load();
+        if (initScriptFile.isPresent())
+            initializeShellWithScript(STANDARD_IO, initScriptFile.get());
+
+        try {
+            runner.run();
         } catch (Error e) {
-            //System.err.println(e.getMessage());
+            System.err.println(e.getMessage());
         }
     }
 
@@ -84,7 +93,6 @@ public class Console {
             while ((line = reader.readLine()) != null) {
                 GROOVYSH.execute(line);
             }
-
             reader.close();
         } catch (FileNotFoundException fnfe) {
             io.err.println(String.format("Gremlin initialization file not found at [%s].", initScriptFile));

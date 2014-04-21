@@ -46,10 +46,13 @@ public class ErrorHookClosure extends Closure {
         } else {
             io.err.println("An undefined error has occurred");
         }
-        for (int i = 0; i < 100; i++) {
-            ((InteractiveShellRunner) this.getOwner()).getShell().execute("clear");
-            ((InteractiveShellRunner) this.getOwner()).getShell().execute("\n");
+        //try {
+        for (int i = 0; i < 1000; i++) {
+            ((InteractiveShellRunner) this.getOwner()).getShell().execute(":clear");
         }
+        //} catch (final Exception e) {
+        //
+        //}
         return null;
     }
 }

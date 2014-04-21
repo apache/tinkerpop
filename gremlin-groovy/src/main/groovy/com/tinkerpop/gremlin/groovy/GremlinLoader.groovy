@@ -5,6 +5,9 @@ import com.tinkerpop.gremlin.groovy.loaders.GraphLoader
 import com.tinkerpop.gremlin.groovy.loaders.StepLoader
 import com.tinkerpop.gremlin.process.Step
 import com.tinkerpop.gremlin.process.Tokens
+import com.tinkerpop.gremlin.process.graph.GraphTraversal
+import com.tinkerpop.gremlin.structure.Graph
+import com.tinkerpop.gremlin.structure.Vertex
 import groovy.grape.Grape
 
 /**
@@ -22,17 +25,15 @@ class GremlinLoader {
 
     public static void load() {
 
-        /*
-        Traversal.getMethods().each {
-            if (it.getReturnType().equals(Pipeline.class)) {
+        [GraphTraversal, Graph, Vertex].forEach {
+            it.getMethods().findAll {
+                it.getReturnType().equals(GraphTraversal.class)
+            }.each {
                 addStep(it.getName())
             }
         }
-        */
 
-        //ElementLoader.load()
         GraphLoader.load()
-        //IndexLoader.load()
         //ObjectLoader.load()
         StepLoader.load()
 
@@ -80,7 +81,7 @@ class GremlinLoader {
         return new HashSet(steps)
     }
 
-    public static void defineStep(final String stepName, final List<Class> classes, final Closure stepClosure) {
+    /*public static void defineStep(final String stepName, final List<Class> classes, final Closure stepClosure) {
         GremlinLoader.steps.add(stepName);
         classes.each {
             stepClosure.setDelegate(delegate);
@@ -88,7 +89,7 @@ class GremlinLoader {
                 GremlinLoader.compose(delegate, stepClosure(* parameters))
             };
         }
-    }
+    }*/
 
     public static String version() {
         return Tokens.VERSION

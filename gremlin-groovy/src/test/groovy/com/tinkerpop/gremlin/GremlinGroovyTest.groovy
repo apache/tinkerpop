@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin
 
+import com.tinkerpop.gremlin.structure.Graph
+import groovy.grape.Grape
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl
 import org.junit.Ignore
 import org.junit.Test
@@ -51,4 +53,10 @@ class GremlinGroovyTest {
         """)
         */
     }
+
+    @Test
+    public void aTest() {
+        System.out.println(Grape.class.getCanonicalName())
+    }
+
 }

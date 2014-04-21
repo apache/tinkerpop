@@ -10,10 +10,9 @@ class GraphLoader {
 
     public static void load() {
 
-
         Graph.metaClass.propertyMissing = { final String name ->
             if (GremlinLoader.isStep(name)) {
-                return GremlinGroovy.of((Graph) delegate)."$name"();
+                return delegate."$name"();
             } else {
                 throw new MissingPropertyException(name, delegate.getClass());
             }
@@ -21,20 +20,10 @@ class GraphLoader {
 
         Graph.metaClass.methodMissing = { final String name, final def args ->
             if (GremlinLoader.isStep(name)) {
-                return GremlinGroovy.of((Graph) delegate)."$name"(* args);
+                return delegate."$name"(* args);
             } else {
                 throw new MissingMethodException(name, delegate.getClass());
             }
         }
-
-        /*Graph.metaClass.e = { final Object... ids ->
-            if (ids.length == 1)
-                return ((Graph) delegate).getEdge(ids[0]);
-            else {
-                final Graph g = (Graph) delegate;
-                return new GremlinGroovyPipeline(ids.collect { g.getEdge(it) });
-            }
-        }*/
-
     }
 }

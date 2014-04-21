@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import groovy.lang.Closure;
 import org.codehaus.groovy.tools.shell.IO;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class ResultHookClosure extends Closure {
     private static final String NULL = "null";
-    private Iterator tempIterator = Arrays.asList().iterator();
+    private Iterator tempIterator = Collections.emptyIterator();
     private final String resultPrompt;
     private final IO io;
 
@@ -35,12 +35,16 @@ public class ResultHookClosure extends Closure {
             } else {
                 if (result instanceof Iterator) {
                     this.tempIterator = (Iterator) result;
+                    if (!this.tempIterator.hasNext()) return null;
                 } else if (result instanceof Iterable) {
                     this.tempIterator = ((Iterable) result).iterator();
+                    if (!this.tempIterator.hasNext()) return null;
                 } else if (result instanceof Object[]) {
                     this.tempIterator = new ArrayIterator((Object[]) result);
+                    if (!this.tempIterator.hasNext()) return null;
                 } else if (result instanceof Map) {
                     this.tempIterator = ((Map) result).entrySet().iterator();
+                    if (!this.tempIterator.hasNext()) return null;
                 } else {
                     io.out.println(resultPrompt + ((null == result) ? NULL : result.toString()));
                     return null;

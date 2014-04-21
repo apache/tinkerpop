@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.GremlinLoader
-import com.tinkerpop.gremlin.process.Traversal
+import com.tinkerpop.gremlin.process.graph.GraphTraversal
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -10,11 +10,11 @@ class StepLoader {
 
     public static void load() {
 
-        Traversal.metaClass.propertyMissing = { final String name ->
+        GraphTraversal.metaClass.propertyMissing = { final String name ->
             if (GremlinLoader.isStep(name)) {
                 return delegate."$name"();
             } else {
-                return ((Traversal) delegate).value(name);
+                return ((GraphTraversal) delegate).value(name);
             }
         }
 
@@ -33,13 +33,13 @@ class StepLoader {
             }
         }
 
-        Traversal.metaClass.getAt = { final Integer index ->
-            return ((Traversal) delegate).range(index, index);
+        GraphTraversal.metaClass.getAt = { final Integer index ->
+            return ((GraphTraversal) delegate).range(index, index);
         }
 
 
-        Traversal.metaClass.getAt = { final Range range ->
-            return ((Traversal) delegate).range(range.getFrom() as Integer, range.getTo() as Integer);
+        GraphTraversal.metaClass.getAt = { final Range range ->
+            return ((GraphTraversal) delegate).range(range.getFrom() as Integer, range.getTo() as Integer);
         }
     }
 }

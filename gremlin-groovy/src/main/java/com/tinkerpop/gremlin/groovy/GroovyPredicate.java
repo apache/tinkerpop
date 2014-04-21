@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy;
 
+import com.tinkerpop.gremlin.util.function.SPredicate;
 import groovy.lang.Closure;
 
 import java.util.function.Predicate;
@@ -7,7 +8,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroovyPredicate<A> implements Predicate<A> {
+public class GroovyPredicate<A> implements SPredicate<A> {
 
     private final Closure closure;
 
