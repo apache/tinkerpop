@@ -14,19 +14,19 @@ public class ResponseMessage {
     private final String contentType;
     private final ResultCode code;
     private final Object result;
-    private final ResponseContents responseContents;
+    private final ResultType resultType;
 
     private ResponseMessage(final UUID requestId, final String contentType, final ResultCode code,
-                            final Object result, final ResponseContents responseContents) {
+                            final Object result, final ResultType resultType) {
         this.requestId = requestId;
         this.contentType = contentType;
         this.code = code;
         this.result = result;
-        this.responseContents = responseContents;
+        this.resultType = resultType;
     }
 
-    public ResponseContents getResponseContents() {
-        return responseContents;
+    public ResultType getResultType() {
+        return resultType;
     }
 
     public UUID getRequestId() {
@@ -59,7 +59,7 @@ public class ResponseMessage {
         private final String contentType;
         private ResultCode code = ResultCode.SUCCESS;
         private Object result = null;
-        private ResponseContents contents = ResponseContents.OBJECT;
+        private ResultType contents = ResultType.OBJECT;
 
         private Builder(final RequestMessage requestMessage) {
             this.contentType = requestMessage.<String>optionalArgs("accept").orElse("text/plain");
@@ -81,7 +81,7 @@ public class ResponseMessage {
             return this;
         }
 
-        public Builder contents(final ResponseContents contents) {
+        public Builder contents(final ResultType contents) {
             this.contents = contents;
             return this;
         }

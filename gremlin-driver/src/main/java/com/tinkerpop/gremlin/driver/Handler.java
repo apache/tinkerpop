@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.driver.message.ResponseContents;
+import com.tinkerpop.gremlin.driver.message.ResultType;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
@@ -116,9 +116,9 @@ class Handler {
                     final TextWebSocketFrame tf = (TextWebSocketFrame) webSocketFrame;
                     final ResponseMessage response = serializer.deserializeResponse(tf.text()).get();
                     if (response.getCode() == ResultCode.SUCCESS) {
-                        if (response.getResponseContents() == ResponseContents.OBJECT)
+                        if (response.getResultType() == ResultType.OBJECT)
                             pending.get(response.getRequestId()).add(response);
-                        else if (response.getResponseContents() == ResponseContents.COLLECTION) {
+                        else if (response.getResultType() == ResultType.COLLECTION) {
                             // unrolls the collection into individual response messages to be handled by the queue
                             final List<Object> listToUnroll = (List<Object>) response.getResult();
                             final ResponseQueue queue = pending.get(response.getRequestId());
