@@ -73,7 +73,7 @@ public class Settings {
      * Number of items in a particular resultset to iterate and serialize prior to pushing the data down the wire
      * to the client.
      */
-    public long resultIterationBatchSize = 64l;
+    public int resultIterationBatchSize = 64;
 
     /**
      * The size of the frame queue which contains an individual serialized result (a frame) to be written back

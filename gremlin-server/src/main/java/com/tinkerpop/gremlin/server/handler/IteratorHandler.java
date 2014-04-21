@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.server.handler;
 
+import com.tinkerpop.gremlin.driver.message.ResponseContents;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
@@ -15,7 +17,9 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -48,14 +52,20 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
 
                     stopWatch.start();
 
-                    int counter = 0;
+                    // todo: allow definition from the client
+                    List<Object> aggregate = new ArrayList<>(settings.resultIterationBatchSize);
                     while (itty.hasNext()) {
-                        ctx.write(ResponseMessage.create(requestMessage).code(ResultCode.SUCCESS).result(itty.next()).build());
+                        aggregate.add(itty.next());
 
-                        // iteration listener will call the final flush for any leftovers on completion.
-                        counter++;
-                        if (counter % settings.resultIterationBatchSize == 0)
-                            ctx.flush();
+                        // send back a page of results if batch size is met or if it's the end of the results being
+                        // iterated
+                        if (aggregate.size() == settings.resultIterationBatchSize || !itty.hasNext()) {
+                            ctx.writeAndFlush(ResponseMessage.create(requestMessage)
+                                    .code(ResultCode.SUCCESS)
+                                    .result(aggregate)
+                                    .contents(ResponseContents.COLLECTION).build());
+                            aggregate = new ArrayList<>(settings.resultIterationBatchSize);
+                        }
 
                         stopWatch.split();
                         if (stopWatch.getSplitTime() > settings.serializedResponseTimeout)

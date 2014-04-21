@@ -59,7 +59,6 @@ public enum ResultCode {
      */
     SERVER_ERROR_SERIALIZATION(599);
 
-
     private final int value;
     private static Map<Integer, ResultCode> codeValueMap = new HashMap<>();
 

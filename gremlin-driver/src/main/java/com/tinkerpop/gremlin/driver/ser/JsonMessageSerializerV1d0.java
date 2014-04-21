@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
+import com.tinkerpop.gremlin.driver.message.ResponseContents;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -35,6 +36,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
     public static final String TOKEN_CODE = "code";
     public static final String TOKEN_CONTENT_TYPE = "contentType";
     public static final String TOKEN_REQUEST = "requestId";
+    public static final String TOKEN_CONTENTS = "contents";
 
     final TypeReference<Map<String,Object>> mapTypeReference = new TypeReference<Map<String,Object>>(){};
 
@@ -43,7 +45,8 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
      * out {@link com.tinkerpop.gremlin.structure.Graph} objects and {@code toString} for unknown objects.
      */
     private static final ObjectMapper mapper = GraphSONObjectMapper.create()
-            .customModule(new GremlinServerModule()).build();
+            .customModule(new GremlinServerModule())
+            .build();
 
     @Override
     public String[] mimeTypesSupported() {
@@ -57,6 +60,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
             result.put(TOKEN_CODE, responseMessage.getCode().getValue());
             result.put(TOKEN_RESULT, responseMessage.getResult());
             result.put(TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
+            result.put(TOKEN_CONTENTS, responseMessage.getResponseContents().getValue());
 
             return mapper.writeValueAsString(result);
         } catch (Exception ex) {
@@ -83,6 +87,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
             return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(TOKEN_REQUEST).toString()), "")
                     .code(ResultCode.getFromValue((Integer) responseData.get(TOKEN_CODE)))
                     .result(responseData.get(TOKEN_RESULT))
+                    .contents(ResponseContents.getFromValue((Integer) responseData.get(TOKEN_CONTENTS)))
                     .build());
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, JsonMessageSerializerV1d0.class.getName());

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.message.ResponseContents;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
@@ -114,9 +115,20 @@ class Handler {
                 } else if (webSocketFrame instanceof TextWebSocketFrame) {
                     final TextWebSocketFrame tf = (TextWebSocketFrame) webSocketFrame;
                     final ResponseMessage response = serializer.deserializeResponse(tf.text()).get();
-                    if (response.getCode() == ResultCode.SUCCESS)
-                        pending.get(response.getRequestId()).add(response);
-                    else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
+                    if (response.getCode() == ResultCode.SUCCESS) {
+                        if (response.getResponseContents() == ResponseContents.OBJECT)
+                            pending.get(response.getRequestId()).add(response);
+                        else if (response.getResponseContents() == ResponseContents.COLLECTION) {
+                            // unrolls the collection into individual response messages to be handled by the queue
+                            final List<Object> listToUnroll = (List<Object>) response.getResult();
+                            final ResponseQueue queue = pending.get(response.getRequestId());
+                            listToUnroll.forEach(item -> queue.add(
+                                    ResponseMessage.create(response.getRequestId(), response.getContentType())
+                                        .result(item).build()));
+                        } else {
+                            // todo: error situation
+                        }
+                    } else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
                         pending.remove(response.getRequestId()).markComplete();
                     else
                         pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
