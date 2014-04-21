@@ -46,6 +46,7 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
      */
     private static final ObjectMapper mapper = GraphSONObjectMapper.create()
             .customModule(new GremlinServerModule())
+            .embedTypes(true)
             .build();
 
     @Override

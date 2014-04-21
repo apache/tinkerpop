@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -147,7 +148,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("def class C { def C getC(){return this}}; new C()").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
-            assertTrue(re.getCause().getMessage().equals("Error during serialization: Direct self-reference leading to cycle (through reference chain: java.util.HashMap[\"result\"]->C[\"c\"])"));
+            assertTrue(re.getCause().getMessage().startsWith("Error during serialization: Direct self-reference leading to cycle (through reference chain:"));
         } finally {
             cluster.close();
         }

@@ -69,7 +69,7 @@ final class StandardOps {
 
         try {
             context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS).result(infoToShow).build());
-            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS_TERMINATOR).result(Optional.empty()).build());
+            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS_TERMINATOR).build());
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.",
                     infoToShow, context.getRequestMessage(), ex);
@@ -103,7 +103,7 @@ final class StandardOps {
             }};
 
             context.getChannelHandlerContext().write(ResponseMessage.create(msg).code(ResultCode.SUCCESS).result(coords).build());
-            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS_TERMINATOR).result(Optional.empty()).build());
+            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS_TERMINATOR).build());
         });
     }
 

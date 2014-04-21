@@ -45,6 +45,17 @@ public class ResponseMessage {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "ResponseMessage{" +
+                "requestId=" + requestId +
+                ", contentType='" + contentType + '\'' +
+                ", code=" + code +
+                ", result=" + result +
+                ", resultType=" + resultType +
+                '}';
+    }
+
     public static Builder create(final RequestMessage requestMessage) {
         return new Builder(requestMessage);
     }

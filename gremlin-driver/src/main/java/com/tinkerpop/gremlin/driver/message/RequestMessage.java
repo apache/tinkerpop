@@ -70,7 +70,7 @@ public class RequestMessage {
      * so consult the documentation for a particular one to understand what is expected.
      */
     public Map<String, Object> getArgs() {
-        return Collections.unmodifiableMap(args);
+        return args;
     }
 
     public <T> Optional<T> optionalArgs(final String key) {
