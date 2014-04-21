@@ -52,7 +52,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void basicTesting() throws Exception {
-        final Cluster cluster = Cluster.create("localhost").build();
+        final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
         System.out.println("iterable --- ");
@@ -79,7 +79,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
-        final Cluster cluster = Cluster.create("localhost").build();
+        final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
         try {
@@ -95,7 +95,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Ignore("not working yet")
     @Test
     public void shouldReceiveFailureTimeOutOnWrite() throws Exception {
-        final Cluster cluster = Cluster.create("localhost").build();
+        final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
         try {
@@ -110,7 +110,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureTimeOutOnTotalSerialization() throws Exception {
-        final Cluster cluster = Cluster.create("localhost").build();
+        final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
         try {
@@ -126,7 +126,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Ignore("not working yet")
     @Test
     public void shouldReceiveFailureForTimeoutOfIndividualSerialization() throws Exception {
-        final Cluster cluster = Cluster.create("localhost").build();
+        final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
         try {
@@ -141,7 +141,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadSerialization() throws Exception {
-        final Cluster cluster = Cluster.create("localhost").build();
+        final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
         try {
@@ -157,7 +157,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @Ignore("This test needs to be fixed feedback is retrieved from netty.")
     public void shouldBlockRequestWhenTooBig() throws Exception {
-        final Cluster cluster = Cluster.create("localhost").build();
+        final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
         try {
@@ -174,7 +174,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @Ignore("This test needs to be fixed once we have a real client that can properly deserialize things other than String.")
     public void shouldDeserializeJsonBuilder() throws Exception {
-        final Cluster cluster = Cluster.create("localhost").build();
+        final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
         try {

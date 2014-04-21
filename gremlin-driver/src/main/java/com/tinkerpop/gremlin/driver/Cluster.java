@@ -5,13 +5,15 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +45,40 @@ public class Cluster {
 
     public static Builder create(final String address) {
         return new Builder(address);
+    }
+
+    public static Builder create(final File configurationFile) throws FileNotFoundException {
+        final Settings settings = Settings.read(new FileInputStream(configurationFile));
+        final List<String> addresses = settings.hosts;
+        if (addresses.size() == 0)
+            throw new IllegalStateException("At least one value must be specified to the hosts setting");
+
+        final Builder builder = new Builder(settings.hosts.get(0))
+                .port(settings.port);
+
+        // the first address was added above in the constructor, so skip it if there are more
+        if (addresses.size() > 1)
+            addresses.stream().skip(1).forEach(builder::addContactPoint);
+
+        return builder;
+    }
+
+    /**
+     * Create a {@code Cluster} with all default settings which will connect to one contact point at {@code localhost}.
+     */
+    public static Cluster open() {
+        return create("localhost").build();
+    }
+
+    /**
+     * Create a {@code Cluster} using a YAML-based configuration file.
+     */
+    public static Cluster open(final String configurationFile) throws Exception {
+        final File file = new File(configurationFile);
+        if (!file.exists())
+            throw new IllegalArgumentException(String.format("Configuration file at %s does not exist", configurationFile));
+
+        return create(file).build();
     }
 
     public ClusterInfo getClusterInfo() {
