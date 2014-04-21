@@ -49,6 +49,8 @@ public class JsonMessageSerializerV1d0 implements MessageSerializer {
             .embedTypes(true)
             .build();
 
+    // todo: allow reduction of serialization overhead to configured embedded types?
+
     @Override
     public String[] mimeTypesSupported() {
         return new String[]{"application/json", "application/vnd.gremlin-v1.0+json"};
