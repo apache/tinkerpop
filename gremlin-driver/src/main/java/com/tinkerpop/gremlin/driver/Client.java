@@ -20,7 +20,7 @@ public class Client {
     // todo: each host gets a connection pool?
     private ConcurrentMap<Host, Connection> connections = new ConcurrentHashMap<>();
 
-    public Client(final Cluster cluster) {
+    Client(final Cluster cluster) {
         this.cluster = cluster;
 
     }
