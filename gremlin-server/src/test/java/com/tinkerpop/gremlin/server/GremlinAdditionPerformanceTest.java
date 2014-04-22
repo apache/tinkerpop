@@ -54,11 +54,12 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
         tryWebSocketGremlin();
     }
 
-    @Ignore("need a non-json format in play to truly validate this")
-    @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 1, concurrency = BenchmarkOptions.CONCURRENCY_AVAILABLE_CORES)
+    @Ignore("need a better way to test different serialization patterns")
+    @BenchmarkOptions(benchmarkRounds = 20, warmupRounds = 1, concurrency = BenchmarkOptions.CONCURRENCY_AVAILABLE_CORES)
     @Test
     public void webSocketsGremlinConcurrentAlternateSerialization() throws Exception {
-        final String mimeType = rand.nextDouble() > 0.5d ? "application/json" : "application/vnd.gremlin-v1.0+json";
+        final String[] mimes = new String[] {"application/json", "application/vnd.gremlin-v1.0+json","application/vnd.gremlin-v1.0+kryo"};
+        String mimeType = mimes[rand.nextInt(3)];
         System.out.println(mimeType);
         final Cluster cluster = Cluster.create("localhost")
                 .serializer(mimeType)
