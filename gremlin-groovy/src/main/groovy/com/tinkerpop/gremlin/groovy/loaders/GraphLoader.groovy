@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.GremlinLoader
+import com.tinkerpop.gremlin.structure.Element
 import com.tinkerpop.gremlin.structure.Graph
+import com.tinkerpop.gremlin.structure.Vertex
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -23,6 +25,18 @@ class GraphLoader {
                 return delegate."$name"(* args);
             } else {
                 throw new MissingMethodException(name, delegate.getClass());
+            }
+        }
+
+        Element.metaClass.getAt = { final String property ->
+            return ((Element) delegate).getValue(property);
+        }
+
+        Vertex.metaClass.propertyMissing = { final String name ->
+            if (GremlinLoader.isStep(name)) {
+                return delegate."$name"();
+            } else {
+                throw new MissingPropertyException(name, delegate.getClass());
             }
         }
     }

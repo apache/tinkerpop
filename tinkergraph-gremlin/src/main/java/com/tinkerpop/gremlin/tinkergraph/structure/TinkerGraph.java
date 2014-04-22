@@ -151,6 +151,7 @@ public class TinkerGraph implements Graph, Serializable {
         if (graphComputerClass.length == 0) {
             return (C) new TinkerGraphComputer(this);
         } else {
+            // TODO: non-default implementation call
             return (C) new TinkerGraphComputer(this);
         }
     }
