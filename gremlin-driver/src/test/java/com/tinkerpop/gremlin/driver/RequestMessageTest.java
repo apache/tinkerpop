@@ -1,7 +1,7 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.UUID;
@@ -31,7 +31,7 @@ public class RequestMessageTest {
     @Test
     public void shouldSetOpWithDefaults() {
         final RequestMessage msg = RequestMessage.create("op").build();
-        assertEquals(StandardOpProcessor.OP_PROCESSOR_NAME, msg.getProcessor());
+        Assert.assertEquals("", msg.getProcessor());    // standard op processor
         assertNotNull(msg.getRequestId());
         assertEquals("op", msg.getOp());
         assertNotNull(msg.getArgs());

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.server;
+package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
