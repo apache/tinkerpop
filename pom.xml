@@ -95,8 +95,8 @@
         <module>neo4j-gremlin</module>
         <module>giraph-gremlin</module>
         <module>gremlin-groovy</module>
-        <module>gremlin-server</module>
         <module>gremlin-driver</module>
+        <module>gremlin-server</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:tinkerpop/tinkerpop3.git</connection>
