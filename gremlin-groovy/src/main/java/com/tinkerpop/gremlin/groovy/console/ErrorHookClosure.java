@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.groovy.console;
 
 import groovy.lang.Closure;
 import org.codehaus.groovy.tools.shell.IO;
-import org.codehaus.groovy.tools.shell.InteractiveShellRunner;
 
 import java.io.BufferedReader;
 
@@ -46,13 +45,6 @@ public class ErrorHookClosure extends Closure {
         } else {
             io.err.println("An undefined error has occurred");
         }
-        //try {
-        for (int i = 0; i < 1000; i++) {
-            ((InteractiveShellRunner) this.getOwner()).getShell().execute(":clear");
-        }
-        //} catch (final Exception e) {
-        //
-        //}
         return null;
     }
 }

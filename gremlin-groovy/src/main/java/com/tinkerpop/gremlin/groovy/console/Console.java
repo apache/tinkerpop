@@ -25,6 +25,11 @@ import java.util.Optional;
  */
 public class Console {
 
+    static {
+        // this is necessary so that terminal doesn't lose focus to AWT
+        System.setProperty("java.awt.headless", "true");
+    }
+
     private static final String HISTORY_FILE = ".gremlin_groovy_history";
     private static final String STANDARD_INPUT_PROMPT = "gremlin> ";
     public static final String STANDARD_RESULT_PROMPT = "==>";
@@ -50,11 +55,9 @@ public class Console {
 
         final InteractiveShellRunner runner = new InteractiveShellRunner(GROOVYSH, new PromptClosure(GROOVYSH, STANDARD_INPUT_PROMPT));
         runner.setErrorHandler(new ErrorHookClosure(runner, STANDARD_IO));
-        runner.getReader().setHistoryEnabled(true);
-        //runner.getReader().getTerminal().reset();
         try {
             final FileHistory history = new FileHistory(new File(System.getProperty("user.home") + "/" + HISTORY_FILE));
-            //GROOVYSH.setHistory();
+            GROOVYSH.setHistory(history);
             runner.setHistory(history);
         } catch (IOException e) {
             STANDARD_IO.err.println("Unable to create history file: " + HISTORY_FILE);
@@ -66,8 +69,8 @@ public class Console {
 
         try {
             runner.run();
-        } catch (Error e) {
-            System.err.println(e.getMessage());
+        } catch (final Throwable e) {
+            // System.err.println(e.getMessage());
         }
     }
 
