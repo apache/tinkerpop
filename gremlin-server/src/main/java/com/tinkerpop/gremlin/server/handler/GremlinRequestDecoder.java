@@ -10,27 +10,14 @@ import org.javatuples.Pair;
 import java.util.List;
 
 /**
- * Decodes the contents of a {@link TextWebSocketFrame}.  The frame contains text where there is either a delimited
- * string, separated by a "|-".  The part before that delimiter is the mime type of the message that follows the
- * delimiter.  If no delimiter is present, the decoder assumes "application/json".
+ * Decodes the contents of a {@link TextWebSocketFrame}.  Text-based frames are always assumed to be
+ * "application/json" when it comes to serialization.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
-        final Pair<String, String> parts = segmentMessage((frame).text());
-
-        // if the message cannot be deserialized it is passed through as an invalid message
-        objects.add(MessageSerializer.select(parts.getValue0(), MessageSerializer.DEFAULT_REQUEST_SERIALIZER)
-                                     .deserializeRequest(parts.getValue1()).orElse(RequestMessage.INVALID));
-    }
-
-    private static Pair<String, String> segmentMessage(final String msg) {
-        final int splitter = msg.indexOf("|-");
-        if (splitter == -1)
-            return Pair.with("application/json", msg);
-
-        return Pair.with(msg.substring(0, splitter), msg.substring(splitter + 2));
+        objects.add(MessageSerializer.DEFAULT_REQUEST_SERIALIZER.deserializeRequest(frame.text()).orElse(RequestMessage.INVALID));
     }
 }

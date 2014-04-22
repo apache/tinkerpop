@@ -154,7 +154,7 @@ class Handler {
             if (binaryEncoding) {
                 // todo: send BinaryWebSocketFrame
             } else {
-                objects.add(new TextWebSocketFrame("application/json|-" + serializer.serializeRequest(requestMessage)));
+                objects.add(new TextWebSocketFrame(serializer.serializeRequest(requestMessage)));
             }
         }
     }
