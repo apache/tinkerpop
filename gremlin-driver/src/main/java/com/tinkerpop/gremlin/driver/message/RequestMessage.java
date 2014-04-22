@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.driver.message;
 
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

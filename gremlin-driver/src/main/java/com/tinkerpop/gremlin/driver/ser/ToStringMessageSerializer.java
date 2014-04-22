@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.driver.ser;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 

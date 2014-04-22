@@ -1,14 +1,10 @@
 package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import io.netty.channel.ChannelPromise;
 
-import java.net.InetSocketAddress;
-import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

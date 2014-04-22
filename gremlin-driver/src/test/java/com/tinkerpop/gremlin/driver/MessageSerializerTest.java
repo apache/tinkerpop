@@ -1,20 +1,10 @@
 package com.tinkerpop.gremlin.driver;
 
-import com.tinkerpop.gremlin.driver.MessageSerializer;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.driver.ser.ToStringMessageSerializer;
-import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 

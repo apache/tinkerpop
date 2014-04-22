@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.driver.ser.ToStringMessageSerializer;
 import com.tinkerpop.gremlin.util.StreamFactory;
