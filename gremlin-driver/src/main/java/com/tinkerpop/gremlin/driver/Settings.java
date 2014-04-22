@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.driver;
 
+import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -17,6 +18,8 @@ class Settings {
     public int port = 8182;
 
     public List<String> hosts = new ArrayList<>();
+
+    public String serializer = "application/json";
 
     /**
      * Read configuration from a file into a new {@link Settings} object.

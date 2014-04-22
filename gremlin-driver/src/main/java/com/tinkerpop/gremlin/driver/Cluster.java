@@ -13,6 +13,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -25,8 +26,8 @@ public class Cluster {
 
     private Manager manager;
 
-    private Cluster(final List<InetSocketAddress> contactPoints) {
-        this.manager = new Manager(contactPoints);
+    private Cluster(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer) {
+        this.manager = new Manager(contactPoints, serializer);
     }
 
     public synchronized void init() {
@@ -59,6 +60,8 @@ public class Cluster {
         // the first address was added above in the constructor, so skip it if there are more
         if (addresses.size() > 1)
             addresses.stream().skip(1).forEach(builder::addContactPoint);
+
+        builder.serializer(settings.serializer);
 
         return builder;
     }
@@ -97,12 +100,23 @@ public class Cluster {
         return manager.getFactory();
     }
 
+    MessageSerializer getSerializer() {
+        return manager.getSerializer();
+    }
+
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
+        private MessageSerializer serializer = MessageSerializer.DEFAULT_REQUEST_SERIALIZER;
 
         public Builder(final String address) {
             addContactPoint(address);
+        }
+
+        public Builder serializer(final String mimeType) {
+            serializer = Optional.ofNullable(MessageSerializer.select(mimeType, null))
+                    .orElseThrow(() -> new IllegalStateException(String.format("Could not find serializer for %s", mimeType)));
+            return this;
         }
 
         public Builder addContactPoint(final String address) {
@@ -130,7 +144,7 @@ public class Cluster {
         }
 
         public Cluster build() {
-            return new Cluster(getContactPoints());
+            return new Cluster(getContactPoints(), serializer);
         }
     }
 
@@ -156,11 +170,13 @@ public class Cluster {
         private boolean initialized;
         private final List<InetSocketAddress> contactPoints;
         private Factory factory;
+        private MessageSerializer serializer;
 
-        private Manager(final List<InetSocketAddress> contactPoints) {
+        private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer) {
             this.clusterInfo = new ClusterInfo(this);
             this.contactPoints = contactPoints;
             this.factory = new Factory();
+            this.serializer = serializer;
         }
 
         synchronized void init() {
@@ -174,6 +190,10 @@ public class Cluster {
                 if (host != null)
                     host.makeAvailable();
             });
+        }
+
+        MessageSerializer getSerializer() {
+            return serializer;
         }
 
         Factory getFactory() {

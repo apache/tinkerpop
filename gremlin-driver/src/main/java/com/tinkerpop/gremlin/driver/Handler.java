@@ -100,12 +100,12 @@ class Handler {
     }
 
     static class GremlinResponseDecoder extends SimpleChannelInboundHandler<WebSocketFrame> {
-        // todo: serializer configuration
-        private static MessageSerializer serializer = new JsonMessageSerializerV1d0();
+        private final MessageSerializer serializer;
         private final ConcurrentMap<UUID, ResponseQueue> pending;
 
-        public GremlinResponseDecoder(final ConcurrentMap<UUID, ResponseQueue> pending) {
+        public GremlinResponseDecoder(final ConcurrentMap<UUID, ResponseQueue> pending, final MessageSerializer serializer) {
             this.pending = pending;
+            this.serializer = serializer;
         }
 
         @Override
@@ -162,10 +162,11 @@ class Handler {
         private boolean binaryEncoding = false;
 
         // todo: serializer configuration
-        private static MessageSerializer serializer = new JsonMessageSerializerV1d0();
+        private final MessageSerializer serializer;
 
-        public GremlinRequestEncoder(final boolean binaryEncoding) {
+        public GremlinRequestEncoder(final boolean binaryEncoding, final MessageSerializer serializer) {
             this.binaryEncoding = binaryEncoding;
+            this.serializer = serializer;
         }
 
         @Override

@@ -7,8 +7,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
@@ -34,10 +32,12 @@ class Connection {
     private final Channel channel;
     private final URI uri;
     private final ConcurrentMap<UUID, ResponseQueue> pending = new ConcurrentHashMap<>();
+    private final Cluster cluster;
 
-    public Connection(final URI uri, final Cluster.Factory factory)  {
+    public Connection(final URI uri, final Cluster cluster)  {
         this.uri = uri;
-        final Bootstrap b = factory.createBootstrap();
+        this.cluster = cluster;
+        final Bootstrap b = this.cluster.getFactory().createBootstrap();
         final String protocol = uri.getScheme();
         if (!"ws".equals(protocol))
             throw new IllegalArgumentException("Unsupported protocol: " + protocol);
@@ -96,8 +96,8 @@ class Connection {
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
             pipeline.addLast("ws-handler", handler);
-            pipeline.addLast("gremlin-encoder", new Handler.GremlinRequestEncoder(false)); // todo: configure binary/text
-            pipeline.addLast("gremlin-decoder", new Handler.GremlinResponseDecoder(pending));
+            pipeline.addLast("gremlin-encoder", new Handler.GremlinRequestEncoder(true, cluster.getSerializer()));
+            pipeline.addLast("gremlin-decoder", new Handler.GremlinResponseDecoder(pending, cluster.getSerializer()));
         }
     }
 

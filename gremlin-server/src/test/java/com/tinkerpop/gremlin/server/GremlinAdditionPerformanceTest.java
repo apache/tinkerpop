@@ -11,9 +11,12 @@ import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,7 +36,8 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
     public final static int DEFAULT_CONCURRENT_BENCHMARK_ROUNDS = 500;
     public final static int DEFAULT_CONCURRENT_WARMUP_ROUNDS = 10;
 
-    final static Cluster cluster = Cluster.create("localhost").build();
+    private final static Cluster cluster = Cluster.create("localhost").build();
+    private final static Random rand = new Random();
 
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule();
@@ -48,6 +52,19 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
     @Test
     public void webSocketsGremlinConcurrent() throws Exception {
         tryWebSocketGremlin();
+    }
+
+    @Ignore("need a non-json format in play to truly validate this")
+    @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 1, concurrency = BenchmarkOptions.CONCURRENCY_AVAILABLE_CORES)
+    @Test
+    public void webSocketsGremlinConcurrentAlternateSerialization() throws Exception {
+        final String mimeType = rand.nextDouble() > 0.5d ? "application/json" : "application/vnd.gremlin-v1.0+json";
+        System.out.println(mimeType);
+        final Cluster cluster = Cluster.create("localhost")
+                .serializer(mimeType)
+                .build();
+        final Client client = cluster.connect();
+        assertEquals("2", client.submit("1+1").stream().map(Item::getString).findFirst().orElse("invalid"));
     }
 
     @BeforeClass
