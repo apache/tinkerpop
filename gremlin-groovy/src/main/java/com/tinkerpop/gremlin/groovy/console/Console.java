@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.groovy.console;
 
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
+import com.tinkerpop.gremlin.groovy.console.commands.UseCommand;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -37,7 +38,7 @@ public class Console {
     private static final String DOT_STAR = ".*";
 
     private static final IO STANDARD_IO = new IO(System.in, System.out, System.err);
-    private static final Groovysh GROOVYSH = new Groovysh();
+    private static final Groovysh GROOVYSH = new Groovysh(); // TODO: Is static. Is that okay?
 
     public Console(final Optional<String> initScriptFile) {
         STANDARD_IO.out.println();
@@ -45,6 +46,7 @@ public class Console {
         STANDARD_IO.out.println("         (o o)");
         STANDARD_IO.out.println("-----oOOo-(3)-oOOo-----");
 
+        GROOVYSH.register(new UseCommand(GROOVYSH));
         GROOVYSH.setResultHook(new NullResultHookClosure(GROOVYSH));
         // TODO: use import manager?
         GROOVYSH.execute(IMPORT_SPACE + Graph.class.getPackage().getName() + DOT_STAR);
