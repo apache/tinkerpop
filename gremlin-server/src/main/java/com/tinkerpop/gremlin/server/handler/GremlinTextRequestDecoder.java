@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
+public class GremlinTextRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
         objects.add(MessageSerializer.DEFAULT_REQUEST_SERIALIZER.deserializeRequest(frame.text()).orElse(RequestMessage.INVALID));
