@@ -59,6 +59,8 @@ public interface MessageSerializer {
      */
     public String serializeResponseAsString(final ResponseMessage responseMessage);
 
+    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator);
+
     public String serializeRequestAsString(final RequestMessage requestMessage);
 
     public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator);

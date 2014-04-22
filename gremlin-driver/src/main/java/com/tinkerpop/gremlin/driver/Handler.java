@@ -112,7 +112,25 @@ class Handler {
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final WebSocketFrame webSocketFrame) throws Exception {
             try {
                 if (webSocketFrame instanceof BinaryWebSocketFrame) {
-                    // todo: binary decode this guy
+                    final BinaryWebSocketFrame tf = (BinaryWebSocketFrame) webSocketFrame;
+                    final ResponseMessage response = serializer.deserializeResponse(tf.content()).get();
+                    if (response.getCode() == ResultCode.SUCCESS) {
+                        if (response.getResultType() == ResultType.OBJECT)
+                            pending.get(response.getRequestId()).add(response);
+                        else if (response.getResultType() == ResultType.COLLECTION) {
+                            // unrolls the collection into individual response messages to be handled by the queue
+                            final List<Object> listToUnroll = (List<Object>) response.getResult();
+                            final ResponseQueue queue = pending.get(response.getRequestId());
+                            listToUnroll.forEach(item -> queue.add(
+                                    ResponseMessage.create(response.getRequestId(), response.getContentType())
+                                            .result(item).build()));
+                        } else {
+                            // todo: error situation
+                        }
+                    } else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
+                        pending.remove(response.getRequestId()).markComplete();
+                    else
+                        pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
                 } else if (webSocketFrame instanceof TextWebSocketFrame) {
                     final TextWebSocketFrame tf = (TextWebSocketFrame) webSocketFrame;
                     final ResponseMessage response = serializer.deserializeResponse(tf.text()).get();

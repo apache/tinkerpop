@@ -66,6 +66,10 @@ public class ToStringMessageSerializer implements MessageSerializer {
         return null;
     }
 
+    @Override
+    public ByteBuf serializeResponseAsBinary(ResponseMessage responseMessage, ByteBufAllocator allocator) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 
     @Override
     public Optional<RequestMessage> deserializeRequest(ByteBuf msg) {

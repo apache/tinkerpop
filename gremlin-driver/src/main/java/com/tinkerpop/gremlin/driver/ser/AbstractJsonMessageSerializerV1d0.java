@@ -61,6 +61,29 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
     }
 
     @Override
+    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) {
+        ByteBuf encodedMessage = null;
+        try {
+            final Map<String, Object> result = new HashMap<>();
+            result.put(TOKEN_CODE, responseMessage.getCode().getValue());
+            result.put(TOKEN_RESULT, responseMessage.getResult());
+            result.put(TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
+            result.put(TOKEN_TYPE, responseMessage.getResultType().getValue());
+
+            final byte[] payload = obtainMapper().writeValueAsBytes(result);
+            encodedMessage = allocator.buffer(payload.length);
+            encodedMessage.writeBytes(payload);
+
+            return encodedMessage;
+        } catch (Exception ex) {
+            if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
+
+            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
+            throw new RuntimeException("Error during serialization.", ex);
+        }
+    }
+
+    @Override
     public String serializeRequestAsString(final RequestMessage requestMessage) {
         try {
             return obtainMapper().writeValueAsString(requestMessage);
@@ -131,7 +154,9 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
     @Override
     public Optional<ResponseMessage> deserializeResponse(final ByteBuf msg) {
         try {
-            final Map<String,Object> responseData = obtainMapper().readValue(msg.array(), mapTypeReference);
+            final byte[] payload = new byte[msg.readableBytes()];
+            msg.readBytes(payload);
+            final Map<String,Object> responseData = obtainMapper().readValue(payload, mapTypeReference);
             // todo: content types in response?   this is a mess in terms of deserialization ....................
             return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(TOKEN_REQUEST).toString()), "")
                     .code(ResultCode.getFromValue((Integer) responseData.get(TOKEN_CODE)))
