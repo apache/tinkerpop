@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +26,7 @@ public class ToStringMessageSerializer implements MessageSerializer {
     private static final String TEXT_RESPONSE_FORMAT_WITH_RESULT = "%s>>%s>>%s>>%s";
 
     @Override
-    public String serializeRequest(final RequestMessage requestMessage) {
+    public String serializeRequestAsString(final RequestMessage requestMessage) {
         // todo: may as well support this?
         throw new UnsupportedOperationException(String.format("The %s does not support the %s format.",
                 ToStringMessageSerializer.class.getName(), RequestMessage.class.getName()));
@@ -38,7 +40,7 @@ public class ToStringMessageSerializer implements MessageSerializer {
     }
 
     @Override
-    public String serializeResponse(final ResponseMessage responseMessage) {
+    public String serializeResponseAsString(final ResponseMessage responseMessage) {
         final String requestId = responseMessage.getRequestId() != null ? responseMessage.getRequestId().toString() : "";
         final String result = responseMessage.getResult() != null ? responseMessage.getResult().toString() : "null";
         return String.format(TEXT_RESPONSE_FORMAT_WITH_RESULT, requestId, responseMessage.getCode().getValue(), responseMessage.getContentType(), result);
@@ -57,6 +59,22 @@ public class ToStringMessageSerializer implements MessageSerializer {
             // todo: for now
             return Optional.empty();
         }
+    }
+
+    @Override
+    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator){
+        return null;
+    }
+
+
+    @Override
+    public Optional<RequestMessage> deserializeRequest(ByteBuf msg) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public Optional<ResponseMessage> deserializeResponse(ByteBuf msg) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.driver.ser;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -28,7 +27,7 @@ public class ToStringResultSerializerTest {
     @Test
     public void serializeResponseContainingNull() throws Exception {
         final ResponseMessage msg = ResponseMessage.create(testId, "text/plain").build();
-        final String results = serializer.serializeResponse(msg);
+        final String results = serializer.serializeResponseAsString(msg);
         assertEquals(testIdString + ">>200>>text/plain>>null", results);
     }
 
@@ -39,7 +38,7 @@ public class ToStringResultSerializerTest {
         final ResponseMessage msg = ResponseMessage.create(testId, "text/plain")
                 .result(v)
                 .build();
-        final String results = serializer.serializeResponse(msg);
+        final String results = serializer.serializeResponseAsString(msg);
         assertEquals(testIdString + ">>200>>text/plain>>v[1]", results);
     }
 

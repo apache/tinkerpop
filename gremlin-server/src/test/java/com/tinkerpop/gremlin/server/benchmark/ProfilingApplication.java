@@ -105,7 +105,7 @@ public class ProfilingApplication {
                         IntStream.range(0, numberOfMessages).forEach(i -> {
                             final RequestMessage msg = RequestMessage.create(Tokens.OPS_EVAL).add(
                                     Tokens.ARGS_GREMLIN, "1+1", Tokens.ARGS_ACCEPT, "application/json").build();
-                            ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + MessageSerializer.DEFAULT_REQUEST_SERIALIZER.serializeRequest(msg)));
+                            ch.writeAndFlush(new TextWebSocketFrame("application/json|-" + MessageSerializer.DEFAULT_REQUEST_SERIALIZER.serializeRequestAsString(msg)));
                         });
                     }, executor).thenRunAsync(() -> {
                         System.out.println("Finished sending requests");

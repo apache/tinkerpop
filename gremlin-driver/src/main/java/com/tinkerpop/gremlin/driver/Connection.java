@@ -96,7 +96,7 @@ class Connection {
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
             pipeline.addLast("ws-handler", handler);
-            pipeline.addLast("gremlin-encoder", new Handler.GremlinRequestEncoder(false));
+            pipeline.addLast("gremlin-encoder", new Handler.GremlinRequestEncoder(false)); // todo: configure binary/text
             pipeline.addLast("gremlin-decoder", new Handler.GremlinResponseDecoder(pending));
         }
     }

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.handler.GremlinBinaryRequestDecoder;
 import com.tinkerpop.gremlin.server.handler.GremlinTextRequestDecoder;
 import com.tinkerpop.gremlin.server.handler.GremlinResponseEncoder;
 import com.tinkerpop.gremlin.server.handler.IteratorHandler;
@@ -204,7 +205,8 @@ public class GremlinServer {
                 pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
 
             pipeline.addLast("response-encoder", new GremlinResponseEncoder());
-            pipeline.addLast("request-decoder", new GremlinTextRequestDecoder());
+            pipeline.addLast("request-text-decoder", new GremlinTextRequestDecoder());
+            pipeline.addLast("request-binary-decoder", new GremlinBinaryRequestDecoder());
 
             if (logger.isDebugEnabled())
                 pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));

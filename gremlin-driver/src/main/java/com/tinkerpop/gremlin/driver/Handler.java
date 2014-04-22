@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.driver.message.ResultType;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -152,9 +153,10 @@ class Handler {
         @Override
         protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessage requestMessage, final List<Object> objects) throws Exception {
             if (binaryEncoding) {
-                // todo: send BinaryWebSocketFrame
+                final ByteBuf encodedMessage = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
+                objects.add(new BinaryWebSocketFrame(encodedMessage));
             } else {
-                objects.add(new TextWebSocketFrame(serializer.serializeRequest(requestMessage)));
+                objects.add(new TextWebSocketFrame(serializer.serializeRequestAsString(requestMessage)));
             }
         }
     }

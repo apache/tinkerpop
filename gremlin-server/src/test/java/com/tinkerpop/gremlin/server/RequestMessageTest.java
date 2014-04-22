@@ -48,10 +48,4 @@ public class RequestMessageTest {
         final RequestMessage msg = RequestMessage.create("op").add("test", "testing").build();
         assertEquals("testing", msg.optionalArgs("test").get());
     }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void shouldNotAllowArgsToBeChanged() {
-        final RequestMessage msg = RequestMessage.create("op").build();
-        msg.getArgs().put("test", "testing");
-    }
 }

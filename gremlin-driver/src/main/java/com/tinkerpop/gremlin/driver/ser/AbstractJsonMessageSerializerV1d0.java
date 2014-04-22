@@ -13,6 +13,9 @@ import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.message.ResultType;
 import groovy.json.JsonBuilder;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +29,7 @@ import java.util.UUID;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerializer {
-    private static final Logger logger = LoggerFactory.getLogger(JsonMessageSerializerV1d0.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractJsonMessageSerializerV1d0.class);
 
     // todo: move tokens
     public static final String TOKEN_RESULT = "result";
@@ -39,8 +42,10 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
 
     abstract ObjectMapper obtainMapper();
 
+    abstract byte[] obtainHeader();
+
     @Override
-    public String serializeResponse(final ResponseMessage responseMessage) {
+    public String serializeResponseAsString(final ResponseMessage responseMessage) {
         try {
             final Map<String, Object> result = new HashMap<>();
             result.put(TOKEN_CODE, responseMessage.getCode().getValue());
@@ -50,17 +55,37 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
 
             return obtainMapper().writeValueAsString(result);
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), JsonMessageSerializerV1d0.class.getName());
+            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);
         }
     }
 
     @Override
-    public String serializeRequest(final RequestMessage requestMessage) {
+    public String serializeRequestAsString(final RequestMessage requestMessage) {
         try {
             return obtainMapper().writeValueAsString(requestMessage);
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), JsonMessageSerializerV1d0.class.getName());
+            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
+            throw new RuntimeException("Error during serialization.", ex);
+        }
+    }
+
+    @Override
+    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) {
+        ByteBuf encodedMessage = null;
+        try {
+            final byte[] header = obtainHeader();
+            final byte[] payload = obtainMapper().writeValueAsBytes(requestMessage);
+
+            encodedMessage = allocator.buffer(header.length + payload.length);
+            encodedMessage.writeBytes(header);
+            encodedMessage.writeBytes(payload);
+
+            return encodedMessage;
+        } catch (Exception ex) {
+            if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
+
+            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);
         }
     }
@@ -76,7 +101,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
                     .contents(ResultType.getFromValue((Integer) responseData.get(TOKEN_TYPE)))
                     .build());
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be deserialized by {}.", msg, JsonMessageSerializerV1d0.class.getName());
+            logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
             return Optional.empty();
         }
     }
@@ -86,7 +111,35 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
         try {
             return Optional.of(obtainMapper().readValue(msg, RequestMessage.class));
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be deserialized by {}.", msg, JsonMessageSerializerV1d0.class.getName());
+            logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<RequestMessage> deserializeRequest(final ByteBuf msg) {
+        try {
+            final byte[] payload = new byte[msg.readableBytes()];
+            msg.readBytes(payload);
+            return Optional.of(obtainMapper().readValue(payload, RequestMessage.class));
+        } catch (Exception ex) {
+            logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<ResponseMessage> deserializeResponse(final ByteBuf msg) {
+        try {
+            final Map<String,Object> responseData = obtainMapper().readValue(msg.array(), mapTypeReference);
+            // todo: content types in response?   this is a mess in terms of deserialization ....................
+            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(TOKEN_REQUEST).toString()), "")
+                    .code(ResultCode.getFromValue((Integer) responseData.get(TOKEN_CODE)))
+                    .result(responseData.get(TOKEN_RESULT))
+                    .contents(ResultType.getFromValue((Integer) responseData.get(TOKEN_TYPE)))
+                    .build());
+        } catch (Exception ex) {
+            logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
             return Optional.empty();
         }
     }

@@ -6,6 +6,8 @@ import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
 import com.tinkerpop.gremlin.driver.ser.ToStringMessageSerializer;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,9 +57,11 @@ public interface MessageSerializer {
     /**
      * Serialize a result message.
      */
-    public String serializeResponse(final ResponseMessage responseMessage);
+    public String serializeResponseAsString(final ResponseMessage responseMessage);
 
-    public String serializeRequest(final RequestMessage requestMessage);
+    public String serializeRequestAsString(final RequestMessage requestMessage);
+
+    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator);
 
     /**
      * Deserialize a {@link RequestMessage} into an object.
@@ -66,6 +70,11 @@ public interface MessageSerializer {
 
     // todo: determine if "Optional" is right here - probably not....
     public Optional<ResponseMessage> deserializeResponse(final String msg);
+
+    public Optional<RequestMessage> deserializeRequest(final ByteBuf msg);
+
+    // todo: determine if "Optional" is right here - probably not....
+    public Optional<ResponseMessage> deserializeResponse(final ByteBuf msg);
 
     /**
      * The list of mime types that the serializer supports.

@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -30,14 +31,30 @@ import java.util.UUID;
  */
 public class JsonMessageSerializerGremlinV1d0 extends AbstractJsonMessageSerializerV1d0 {
 
+    private static final String MIME_TYPE = "application/vnd.gremlin-v1.0+json";
+
     private static final ObjectMapper mapper = GraphSONObjectMapper.create()
             .customModule(new JsonMessageSerializerV1d0.GremlinServerModule())
             .embedTypes(true)
             .build();
 
+    private static byte[] header;
+
+    static {
+        final ByteBuffer buffer = ByteBuffer.allocate(MIME_TYPE.length() + 1);
+        buffer.put((byte) MIME_TYPE.length());
+        buffer.put(MIME_TYPE.getBytes());
+        header = buffer.array();
+    }
+
     @Override
     public String[] mimeTypesSupported() {
-        return new String[]{"application/vnd.gremlin-v1.0+json"};
+        return new String[]{MIME_TYPE};
+    }
+
+    @Override
+    byte[] obtainHeader() {
+        return header;
     }
 
     @Override
