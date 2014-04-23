@@ -113,7 +113,7 @@ class Handler {
             try {
                 if (webSocketFrame instanceof BinaryWebSocketFrame) {
                     final BinaryWebSocketFrame tf = (BinaryWebSocketFrame) webSocketFrame;
-                    final ResponseMessage response = serializer.deserializeResponse(tf.content()).get();
+                    final ResponseMessage response = serializer.deserializeResponse(tf.content());
                     if (response.getCode() == ResultCode.SUCCESS) {
                         if (response.getResultType() == ResultType.OBJECT)
                             pending.get(response.getRequestId()).add(response);
@@ -134,7 +134,7 @@ class Handler {
                 } else if (webSocketFrame instanceof TextWebSocketFrame) {
                     final TextWebSocketFrame tf = (TextWebSocketFrame) webSocketFrame;
                     final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                    final ResponseMessage response = textSerializer.deserializeResponse(tf.text()).get();
+                    final ResponseMessage response = textSerializer.deserializeResponse(tf.text());
                     if (response.getCode() == ResultCode.SUCCESS) {
                         if (response.getResultType() == ResultType.OBJECT)
                             pending.get(response.getRequestId()).add(response);

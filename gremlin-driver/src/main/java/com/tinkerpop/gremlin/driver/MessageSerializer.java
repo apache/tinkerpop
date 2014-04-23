@@ -3,12 +3,14 @@ package com.tinkerpop.gremlin.driver;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
+import com.tinkerpop.gremlin.driver.ser.SerializationException;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,19 +59,30 @@ public interface MessageSerializer {
     static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new JsonMessageSerializerV1d0();
 
     /**
-     * Serialize a result message.
+     * Serialize a {@link ResponseMessage} to a Netty {@code ByteBuf}.
+     *
+     * @param responseMessage The response message to serialize to bytes.
+     * @param allocator The Netty allocator for the {@code ByteBuf} to return back.
      */
-    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator);
-
-
-    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator);
+    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
     /**
-     * Deserialize a {@link RequestMessage} into an object.
+     * Serialize a {@link ResponseMessage} to a Netty {@code ByteBuf}.
+     *
+     * @param requestMessage The request message to serialize to bytes.
+     * @param allocator The Netty allocator for the {@code ByteBuf} to return back.
      */
-    public Optional<RequestMessage> deserializeRequest(final ByteBuf msg);
+    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException;
 
-    public Optional<ResponseMessage> deserializeResponse(final ByteBuf msg);
+    /**
+     * Deserialize a Netty {@code ByteBuf} into a {@link RequestMessage}.
+     */
+    public RequestMessage deserializeRequest(final ByteBuf msg) throws SerializationException;
+
+    /**
+     * Deserialize a Netty {@code ByteBuf} into a {@link ResponseMessage}.
+     */
+    public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException;
 
     /**
      * The list of mime types that the serializer supports.

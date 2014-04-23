@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server.handler;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.ser.SerializationException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -41,7 +42,11 @@ public class GremlinBinaryRequestDecoder extends MessageToMessageDecoder<BinaryW
             // todo: use the channel to store the serializer until this is proven wrong
             channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(serializer);
             channelHandlerContext.channel().attr(StateKey.USE_BINARY).set(true);
-            objects.add(serializer.deserializeRequest(messageBytes.discardReadBytes()).orElse(RequestMessage.INVALID));
+            try {
+                objects.add(serializer.deserializeRequest(messageBytes.discardReadBytes()));
+            } catch (SerializationException se) {
+                objects.add(RequestMessage.INVALID);
+            }
         } finally {
             contentTypeBytes.release();
         }

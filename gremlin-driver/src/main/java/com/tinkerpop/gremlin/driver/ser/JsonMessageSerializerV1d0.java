@@ -58,22 +58,22 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     }
 
     @Override
-    public Optional<ResponseMessage> deserializeResponse(final String msg) {
+    public ResponseMessage deserializeResponse(final String msg) throws SerializationException {
         try {
             final Map<String,Object> responseData = obtainMapper().readValue(msg, mapTypeReference);
-            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
+            return ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                     .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                     .result(responseData.get(SerTokens.TOKEN_RESULT))
                     .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
-                    .build());
+                    .build();
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
-            return Optional.empty();
+            throw new SerializationException(ex);
         }
     }
 
     @Override
-    public String serializeResponseAsString(final ResponseMessage responseMessage) {
+    public String serializeResponseAsString(final ResponseMessage responseMessage)  throws SerializationException{
         try {
             final Map<String, Object> result = new HashMap<>();
             result.put(SerTokens.TOKEN_CODE, responseMessage.getCode().getValue());
@@ -89,17 +89,17 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     }
 
     @Override
-    public Optional<RequestMessage> deserializeRequest(final String msg) {
+    public RequestMessage deserializeRequest(final String msg)  throws SerializationException {
         try {
-            return Optional.of(obtainMapper().readValue(msg, RequestMessage.class));
+            return obtainMapper().readValue(msg, RequestMessage.class);
         } catch (Exception ex) {
             logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
-            return Optional.empty();
+            throw new SerializationException(ex);
         }
     }
 
     @Override
-    public String serializeRequestAsString(final RequestMessage requestMessage) {
+    public String serializeRequestAsString(final RequestMessage requestMessage)  throws SerializationException{
         try {
             return obtainMapper().writeValueAsString(requestMessage);
         } catch (Exception ex) {

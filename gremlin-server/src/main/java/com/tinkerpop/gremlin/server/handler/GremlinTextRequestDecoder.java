@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.server.handler;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
+import com.tinkerpop.gremlin.driver.ser.SerializationException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -25,6 +26,10 @@ public class GremlinTextRequestDecoder extends MessageToMessageDecoder<TextWebSo
         channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(serializer);
         channelHandlerContext.channel().attr(StateKey.USE_BINARY).set(false);
 
-        objects.add(serializer.deserializeRequest(frame.text()).orElse(RequestMessage.INVALID));
+        try {
+            objects.add(serializer.deserializeRequest(frame.text()));
+        } catch (SerializationException se) {
+            objects.add(RequestMessage.INVALID);
+        }
     }
 }

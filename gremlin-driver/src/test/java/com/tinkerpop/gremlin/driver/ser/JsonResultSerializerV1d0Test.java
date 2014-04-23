@@ -388,12 +388,9 @@ public class JsonResultSerializerV1d0Test {
     // todo: more TESTS!!
 
     @Test
-    public void deserializeRequestNicelyWithNoArgs() {
+    public void deserializeRequestNicelyWithNoArgs() throws Exception {
         final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
-        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest(String.format("{\"requestId\":\"%s\",\"op\":\"eval\"}", request));
-        assertTrue(msg.isPresent());
-
-        final RequestMessage m = msg.get();
+        final RequestMessage m = SERIALIZER.deserializeRequest(String.format("{\"requestId\":\"%s\",\"op\":\"eval\"}", request));
         assertEquals(request, m.getRequestId());
         assertEquals("eval", m.getOp());
         assertNotNull(m.getArgs());
@@ -401,22 +398,18 @@ public class JsonResultSerializerV1d0Test {
     }
 
     @Test
-    public void deserializeRequestNicelyWithArgs() {
+    public void deserializeRequestNicelyWithArgs() throws Exception {
         final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
-        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest(String.format("{\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}", request));
-        assertTrue(msg.isPresent());
-
-        final RequestMessage m = msg.get();
+        final RequestMessage m = SERIALIZER.deserializeRequest(String.format("{\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}", request));
         assertEquals(request, m.getRequestId());
         assertEquals("eval", m.getOp());
         assertNotNull(m.getArgs());
         assertEquals("y", m.getArgs().get("x"));
     }
 
-    @Test
-    public void deserializeRequestParseMessage() {
-        final Optional<RequestMessage> msg = SERIALIZER.deserializeRequest("{\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}");
-        assertFalse(msg.isPresent());
+    @Test(expected = SerializationException.class)
+    public void deserializeRequestParseMessage() throws Exception{
+        SERIALIZER.deserializeRequest("{\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}");
     }
 
     private class FunObject {

@@ -4,8 +4,6 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 
-import java.util.Optional;
-
 /**
  * An extension to the MessageSerializer interface that allows a format to be compatible with text-based
  * websocket messages.  This interface is for internal purposes only.  Implementers who have custom serialization
@@ -15,8 +13,8 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface MessageTextSerializer extends MessageSerializer {
-    public String serializeResponseAsString(final ResponseMessage responseMessage);
-    public String serializeRequestAsString(final RequestMessage requestMessage);
-    public Optional<RequestMessage> deserializeRequest(final String msg);
-    public Optional<ResponseMessage> deserializeResponse(final String msg);
+    public String serializeResponseAsString(final ResponseMessage responseMessage) throws SerializationException;
+    public String serializeRequestAsString(final RequestMessage requestMessage) throws SerializationException;
+    public RequestMessage deserializeRequest(final String msg) throws SerializationException;
+    public ResponseMessage deserializeResponse(final String msg) throws SerializationException;
 }

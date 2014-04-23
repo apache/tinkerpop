@@ -38,27 +38,27 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     }
 
     @Override
-    public Optional<ResponseMessage> deserializeResponse(final ByteBuf msg) {
+    public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException{
         try {
             final Kryo kryo = gremlinKryo.createKryo();
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final Map<String,Object> responseData = (Map<String,Object>) kryo.readClassAndObject(input);
-                return Optional.ofNullable(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
+                return ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                         .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                         .result(responseData.get(SerTokens.TOKEN_RESULT))
                         .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
-                        .build());
+                        .build();
             }
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, KryoMessageSerializerV1d0.class.getName());
-            return Optional.empty();
+            throw new SerializationException(ex);
         }
     }
 
     @Override
-    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) {
+    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
             final Map<String, Object> result = new HashMap<>();
@@ -82,12 +82,12 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
 
             logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), KryoMessageSerializerV1d0.class.getName());
-            throw new RuntimeException("Error during serialization.", ex);
+            throw new SerializationException(ex);
         }
     }
 
     @Override
-    public Optional<RequestMessage> deserializeRequest(final ByteBuf msg) {
+    public RequestMessage deserializeRequest(final ByteBuf msg) throws SerializationException {
         try {
             final Kryo kryo = gremlinKryo.createKryo();
             final byte[] payload = new byte[msg.readableBytes()];
@@ -99,16 +99,16 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                         .processor((String) requestData.get(SerTokens.TOKEN_PROCESSOR));
                 final Map<String,Object> args = (Map<String,Object>) requestData.get(SerTokens.TOKEN_ARGS);
                 args.forEach(builder::addArg);
-                return Optional.ofNullable(builder.build());
+                return builder.build();
             }
         } catch (Exception ex) {
             logger.warn("Request [{}] could not be deserialized by {}.", msg, KryoMessageSerializerV1d0.class.getName());
-            return Optional.empty();
+            throw new SerializationException(ex);
         }
     }
 
     @Override
-    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) {
+    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
             final Kryo kryo = gremlinKryo.createKryo();
@@ -133,7 +133,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
 
             logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), KryoMessageSerializerV1d0.class.getName());
-            throw new RuntimeException("Error during serialization.", ex);
+            throw new SerializationException(ex);
         }
     }
 }
