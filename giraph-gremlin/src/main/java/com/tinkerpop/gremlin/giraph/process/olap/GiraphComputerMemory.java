@@ -46,7 +46,6 @@ public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.
             this.vertexProgram.setup(this);
         } catch (Exception e) {
             // do nothing as Giraph has a hard time starting up with random exceptions until ZooKeeper comes online
-            //System.out.println(e + "***" + e.getMessage());
         }
     }
 

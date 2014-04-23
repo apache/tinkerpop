@@ -42,11 +42,8 @@ public class GiraphGraphRunner extends Configured implements Tool {
         configuration.setProperty("giraph.vertexClass", GiraphVertex.class.getName());
         configuration.setProperty("giraph.vertexInputFormatClass", TinkerGraphInputFormat.class.getName());
         configuration.setProperty("giraph.vertexOutputFormatClass", TinkerGraphOutputFormat.class.getName()); // TODO:
-        // configuration.setProperty("giraph.maxWorkers", "1");
-        //configuration.setProperty("giraph.zkList", "127.0.0.1:2181");
         configuration.setProperty("giraph.SplitMasterWorker", "false");
         configuration.setProperty("mapred.job.tracker", "localhost:9001");
-        // configuration.setProperty("giraph.vertex.input.dir", "tiny_graph.txt");
         configuration.setProperty("mapred.output.dir", "output");
 
         GraphComputer g = new GiraphGraphComputer();
