@@ -10,7 +10,9 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -20,6 +22,10 @@ import java.util.concurrent.Future;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GiraphGraphComputer implements GraphComputer {
+
+    private static final String GIRAPH_GREMLIN_HOME = "GIRAPH_GREMLIN_HOME";
+    private static final String DOT_JAR = ".jar";
+    private static final Logger LOGGER = Logger.getLogger(GiraphGraphComputer.class);
 
     private org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
 
@@ -43,20 +49,20 @@ public class GiraphGraphComputer implements GraphComputer {
     public Future<Graph> submit() {
         try {
             final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
-            fs.delete(new Path("output"), true);
+            fs.delete(new Path(hadoopConfiguration.get("mapred.output.dir")), true);
             final FileSystem local = FileSystem.getLocal(this.hadoopConfiguration);
-            Arrays.asList(
-                    "/usr/local/giraph-1.0.0/giraph-core/target/giraph-1.0.0-for-hadoop-1.2.1-jar-with-dependencies.jar",
-                    "/Users/marko/software/tinkerpop/tinkerpop3/giraph-gremlin/target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar",
-                    "/Users/marko/software/tinkerpop/tinkerpop3/gremlin-core/target/gremlin-core-3.0.0-SNAPSHOT.jar",
-                    "/Users/marko/software/tinkerpop/tinkerpop3/tinkergraph-gremlin/target/tinkergraph-gremlin-3.0.0-SNAPSHOT.jar")
-                    .forEach(s -> {
-                        try {
-                            DistributedCache.addArchiveToClassPath(new Path(s), this.hadoopConfiguration, local);
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
-                    });
+            final String giraphGremlinHome = System.getenv(GIRAPH_GREMLIN_HOME);
+            if (null == giraphGremlinHome)
+                throw new RuntimeException("Please set $GIRAPH_GREMLIN_HOME to the location of giraph-gremlin");
+            final File file = new File(giraphGremlinHome + "/lib");
+            Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(DOT_JAR)).forEach(f -> {
+                LOGGER.debug("Loading: " + f.getPath());
+                try {
+                    DistributedCache.addArchiveToClassPath(new Path(f.getPath()), this.hadoopConfiguration, local);
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            });
             ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration), new String[]{});
         } catch (Exception e) {
             System.out.println(e.getMessage());

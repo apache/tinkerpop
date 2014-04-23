@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.PathHolder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Step;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**

@@ -16,9 +16,9 @@ import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.structure.util.EmptyGraph;
 import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -34,7 +34,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Random;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
@@ -45,24 +45,24 @@ import static org.junit.Assert.assertTrue;
  */
 public class TinkerGraphTest implements Serializable {
 
-    /*public static class Marko implements Serializable {
-        public static Function<Integer, Integer> function;
+    public static class TraversalHolder implements Serializable {
+        public static SSupplier<Traversal> traversalSupplier = () -> TinkerGraph.open().V().out();
     }
 
-    @Test
+    @Ignore
     public void testLambdaSerialization() throws Exception {
 
-        byte[] bytes = Serializer.serializeObject(EmptyGraph.instance().V().out());
+        byte[] bytes = Serializer.serializeObject(TraversalHolder.traversalSupplier);
         FileOutputStream outputStream = new FileOutputStream("/tmp/function.bin");
         outputStream.write(bytes);
         outputStream.flush();
         outputStream.close();
 
-        bytes = new byte[(int) new File("/tmp/function.bin").length()];
+        byte[] bytes2 = new byte[(int) new File("/tmp/function.bin").length()];
         FileInputStream inputStream = new FileInputStream("/tmp/function.bin");
-        new DataInputStream(inputStream).readFully(bytes);
-        System.out.println(Serializer.deserializeObject(bytes));
-    }*/
+        new DataInputStream(inputStream).readFully(bytes2);
+        System.out.println(((Supplier) Serializer.deserializeObject(bytes2)).get());
+    }
 
     @Test
     public void testTraversalDSL() {

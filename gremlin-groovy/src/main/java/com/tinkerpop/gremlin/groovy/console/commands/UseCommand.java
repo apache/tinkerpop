@@ -23,13 +23,13 @@ public class UseCommand extends CommandSupport {
         final String version = arguments.get(2);
 
         if (group == null || group.isEmpty())
-            throw new IllegalArgumentException("group cannot be null or empty");
+            throw new IllegalArgumentException("Group cannot be null or empty");
 
         if (module == null || module.isEmpty())
-            throw new IllegalArgumentException("module cannot be null or empty");
+            throw new IllegalArgumentException("Module cannot be null or empty");
 
         if (version == null || version.isEmpty())
-            throw new IllegalArgumentException("version cannot be null or empty");
+            throw new IllegalArgumentException("Version cannot be null or empty");
 
         final Map<String, Object> map = new HashMap<>();
         map.put("classLoader", shell.getInterp().getClassLoader());
