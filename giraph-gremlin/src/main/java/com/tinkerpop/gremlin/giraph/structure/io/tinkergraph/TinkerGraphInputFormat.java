@@ -16,6 +16,8 @@ import java.util.List;
  */
 public class TinkerGraphInputFormat extends VertexInputFormat {
 
+    // public static final String GIRAPH_GREMLIN_INPUT_READER = "giraph.gremlin.inputReader";
+
     public List<InputSplit> getSplits(final JobContext context, final int minSplitCountHint) throws IOException, InterruptedException {
         return Arrays.<InputSplit>asList(new DBInputFormat.DBInputSplit());
     }
