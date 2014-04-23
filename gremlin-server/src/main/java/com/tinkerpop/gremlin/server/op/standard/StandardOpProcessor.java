@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
+import com.tinkerpop.gremlin.server.handler.StateKey;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
@@ -37,9 +38,7 @@ public class StandardOpProcessor implements OpProcessor {
         if (logger.isDebugEnabled())
             logger.debug("Selecting processor for RequestMessage {}", message);
 
-        final MessageSerializer serializer = MessageSerializer.select(
-                message.<String>optionalArgs(Tokens.ARGS_ACCEPT).orElse("text/plain"),
-                MessageSerializer.DEFAULT_RESULT_SERIALIZER);
+        final MessageSerializer serializer = ctx.getChannelHandlerContext().channel().attr(StateKey.SERIALIZER).get();
 
         final ThrowingConsumer<Context> op;
         switch (message.getOp()) {

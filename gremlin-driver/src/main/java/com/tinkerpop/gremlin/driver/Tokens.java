@@ -15,7 +15,6 @@ public class Tokens {
     public static final String OPS_USE = "use";
     public static final String OPS_VERSION = "version";
 
-    public static final String ARGS_ACCEPT = "accept";
     public static final String ARGS_BINDINGS = "bindings";
     public static final String ARGS_COORDINATES = "coordinates";
     public static final String ARGS_GREMLIN = "gremlin";

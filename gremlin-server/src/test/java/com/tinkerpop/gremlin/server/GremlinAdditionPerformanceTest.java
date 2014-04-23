@@ -55,7 +55,6 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
         tryWebSocketGremlin();
     }
 
-    @Ignore("need a better way to test different serialization patterns")
     @BenchmarkOptions(benchmarkRounds = 20, warmupRounds = 1, concurrency = BenchmarkOptions.CONCURRENCY_AVAILABLE_CORES)
     @Test
     public void webSocketsGremlinConcurrentAlternateSerialization() throws Exception {

@@ -51,7 +51,7 @@ public class Client {
         // todo: choose a connection smartly.
         final Connection connection  = connections.values().iterator().next();
         final RequestMessage request = RequestMessage.create("eval")
-                .add(Tokens.ARGS_GREMLIN, gremlin, Tokens.ARGS_ACCEPT, "application/json").build();
+                .add(Tokens.ARGS_GREMLIN, gremlin).build();
         connection.write(request, future);
 
         return future;
