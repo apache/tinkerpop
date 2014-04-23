@@ -119,6 +119,11 @@ public class Cluster {
             return this;
         }
 
+        public Builder serializer(final MessageSerializer serializer) {
+            this.serializer = serializer;
+            return this;
+        }
+
         public Builder addContactPoint(final String address) {
             try {
                 this.addresses.add(InetAddress.getByName(address));
