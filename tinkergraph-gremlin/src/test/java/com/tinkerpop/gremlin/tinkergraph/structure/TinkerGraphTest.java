@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -44,6 +45,15 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TinkerGraphTest implements Serializable {
+
+    private static String tempPath;
+    static {
+        final String temp = System.getProperty("java.io.tmpdir", File.separator + "tmp").trim();
+        if (!temp.endsWith(File.separator))
+            tempPath = temp + File.separator;
+        else
+            tempPath = temp;
+    }
 
     public static class TraversalHolder implements Serializable {
         public static SSupplier<Traversal> traversalSupplier = () -> TinkerGraph.open().V().out();
@@ -114,7 +124,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteClassicGraphAsKryoAsKryo() throws IOException {
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-1.gio");
+        final OutputStream os = new FileOutputStream(tempPath +  "graph-example-1.gio");
         KryoWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -124,7 +134,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteClassicGraphAsGraphML() throws IOException {
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-1.xml");
+        final OutputStream os = new FileOutputStream(tempPath +  "graph-example-1.xml");
         GraphMLWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -134,7 +144,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteClassicGraphAsGraphSONNoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-1.json");
+        final OutputStream os = new FileOutputStream(tempPath + "graph-example-1.json");
         GraphSONWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -144,7 +154,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteClassicGraphNormalizedAsGraphSON() throws IOException {
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-1-normalized.json");
+        final OutputStream os = new FileOutputStream(tempPath + "graph-example-1-normalized.json");
         GraphSONWriter.create().normalize(true).build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -154,7 +164,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteClassicGraphAsGraphSONWithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-1-typed.json");
+        final OutputStream os = new FileOutputStream(tempPath + "graph-example-1-typed.json");
         GraphSONWriter.create().embedTypes(true)
                 .build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -166,7 +176,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteModernGraphAsGraphSONNoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-5.json");
+        final OutputStream os = new FileOutputStream(tempPath + "graph-example-5.json");
         GraphSONWriter.create().build().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
@@ -176,7 +186,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteModernGraphAsGraphSONWithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-5-typed.json");
+        final OutputStream os = new FileOutputStream(tempPath + "graph-example-5-typed.json");
         GraphSONWriter.create().embedTypes(true)
                 .build().writeGraph(os, TinkerFactory.createModern());
         os.close();
@@ -187,7 +197,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteModernGraphNormalizedAsGraphSON() throws IOException {
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-5-normalized.json");
+        final OutputStream os = new FileOutputStream(tempPath + "graph-example-5-normalized.json");
         GraphSONWriter.create().normalize(true).build().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
@@ -203,7 +213,7 @@ public class TinkerGraphTest implements Serializable {
             reader.readGraph(stream, g);
         }
 
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-2.gio");
+        final OutputStream os = new FileOutputStream(tempPath + "graph-example-2.gio");
         KryoWriter.create().build().writeGraph(os, g);
         os.close();
     }
@@ -230,7 +240,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteModernGraphAsKryo() throws IOException {
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-5.gio");
+        final OutputStream os = new FileOutputStream(tempPath + "graph-example-5.gio");
         KryoWriter.create().build().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
@@ -328,6 +338,7 @@ public class TinkerGraphTest implements Serializable {
     }
 
     @Ignore
+    @Test
     public void shouldUpdateVertexIndicesInNewGraph() {
         final TinkerGraph g = TinkerGraph.open();
         g.createIndex("name", Vertex.class);
@@ -347,6 +358,7 @@ public class TinkerGraphTest implements Serializable {
     }
 
     @Ignore
+    @Test
     public void shouldRemoveAVertexFromAnIndex() {
         final TinkerGraph g = TinkerGraph.open();
         g.createIndex("name", Vertex.class);
@@ -373,6 +385,7 @@ public class TinkerGraphTest implements Serializable {
     }
 
     @Ignore
+    @Test
     public void shouldUpdateVertexIndicesInExistingGraph() {
         final TinkerGraph g = TinkerGraph.open();
 
@@ -400,6 +413,7 @@ public class TinkerGraphTest implements Serializable {
     }
 
     @Ignore
+    @Test
     public void shouldUpdateEdgeIndicesInNewGraph() {
         final TinkerGraph g = TinkerGraph.open();
         g.createIndex("oid", Edge.class);
@@ -420,6 +434,7 @@ public class TinkerGraphTest implements Serializable {
     }
 
     @Ignore
+    @Test
     public void shouldRemoveEdgeFromAnIndex() {
         final TinkerGraph g = TinkerGraph.open();
         g.createIndex("oid", Edge.class);
@@ -447,6 +462,7 @@ public class TinkerGraphTest implements Serializable {
     }
 
     @Ignore
+    @Test
     public void shouldUpdateEdgeIndicesInExistingGraph() {
         final TinkerGraph g = TinkerGraph.open();
 
@@ -477,18 +493,20 @@ public class TinkerGraphTest implements Serializable {
     @Test
     public void shouldSerializeGraph() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
-        final String location = "/tmp/tp/tinkergraph-serialization-test";
+        final String fileName = UUID.randomUUID().toString() + ".bin";
+        final String location = tempPath + "tp" + File.separator + "tinkergraph-serialization-test" + File.separator;
         deleteFile(location);
 
         final File f = new File(location);
         if (!f.exists())
             f.mkdirs();
 
-        final ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(location + "/tinkergraph"));
+
+        final ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(location + fileName));
         out.writeObject(g);
         out.close();
 
-        final ObjectInputStream input = new ObjectInputStream(new FileInputStream(location + "/tinkergraph"));
+        final ObjectInputStream input = new ObjectInputStream(new FileInputStream(location + fileName));
 
         try {
             final TinkerGraph g1 = (TinkerGraph) input.readObject();
