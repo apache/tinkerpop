@@ -113,7 +113,7 @@ public class LosslessSerializationV1d0Test {
         assertEquals(1, vertexList.size());
 
         final Map<String,Object> deserializedVertex = vertexList.get(0);
-        assertEquals("0", deserializedVertex.get(Element.ID));
+        assertEquals(0, deserializedVertex.get(Element.ID));
         assertEquals(Element.DEFAULT_LABEL, deserializedVertex.get(Element.LABEL));
         assertEquals("vertex", deserializedVertex.get("type"));
 
