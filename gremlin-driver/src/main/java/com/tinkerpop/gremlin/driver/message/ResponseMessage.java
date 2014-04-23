@@ -11,15 +11,13 @@ public class ResponseMessage {
      * The current request that generated this response.
      */
     private final UUID requestId;
-    private final String contentType;
     private final ResultCode code;
     private final Object result;
     private final ResultType resultType;
 
-    private ResponseMessage(final UUID requestId, final String contentType, final ResultCode code,
+    private ResponseMessage(final UUID requestId, final ResultCode code,
                             final Object result, final ResultType resultType) {
         this.requestId = requestId;
-        this.contentType = contentType;
         this.code = code;
         this.result = result;
         this.resultType = resultType;
@@ -31,10 +29,6 @@ public class ResponseMessage {
 
     public UUID getRequestId() {
         return requestId;
-    }
-
-    public String getContentType() {
-        return contentType;
     }
 
     public ResultCode getCode() {
@@ -49,7 +43,6 @@ public class ResponseMessage {
     public String toString() {
         return "ResponseMessage{" +
                 "requestId=" + requestId +
-                ", contentType='" + contentType + '\'' +
                 ", code=" + code +
                 ", result=" + result +
                 ", resultType=" + resultType +
@@ -60,25 +53,22 @@ public class ResponseMessage {
         return new Builder(requestMessage);
     }
 
-    public static Builder create(final UUID requestId, final String contentType) {
-        return new Builder(requestId, contentType);
+    public static Builder create(final UUID requestId) {
+        return new Builder(requestId);
     }
 
     public static class Builder {
 
         private final UUID requestId;
-        private final String contentType;
         private ResultCode code = ResultCode.SUCCESS;
         private Object result = null;
         private ResultType contents = ResultType.OBJECT;
 
         private Builder(final RequestMessage requestMessage) {
-            this.contentType = requestMessage.<String>optionalArgs("accept").orElse("text/plain");
             this.requestId = requestMessage.getRequestId();
         }
 
-        private Builder(final UUID requestId, final String contentType) {
-            this.contentType = contentType;
+        private Builder(final UUID requestId) {
             this.requestId = requestId;
         }
 
@@ -98,7 +88,7 @@ public class ResponseMessage {
         }
 
         public ResponseMessage build() {
-            return new ResponseMessage(requestId, contentType, code, result, contents);
+            return new ResponseMessage(requestId, code, result, contents);
         }
     }
 }

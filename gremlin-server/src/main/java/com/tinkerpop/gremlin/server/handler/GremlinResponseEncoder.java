@@ -30,7 +30,7 @@ public class GremlinResponseEncoder extends MessageToMessageEncoder<ResponseMess
                     objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(o, channelHandlerContext.alloc())));
                 else {
                     objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(o, channelHandlerContext.alloc())));
-                    final ResponseMessage terminator = ResponseMessage.create(o.getRequestId(), o.getContentType()).code(ResultCode.SUCCESS_TERMINATOR).build();
+                    final ResponseMessage terminator = ResponseMessage.create(o.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).build();
                     objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc())));
                 }
             } else {
@@ -38,7 +38,7 @@ public class GremlinResponseEncoder extends MessageToMessageEncoder<ResponseMess
                     objects.add(new TextWebSocketFrame(true, 0, serializer.serializeResponseAsString(o)));
                 else {
                     objects.add(new TextWebSocketFrame(true, 0, serializer.serializeResponseAsString(o)));
-                    final ResponseMessage terminator = ResponseMessage.create(o.getRequestId(), o.getContentType()).code(ResultCode.SUCCESS_TERMINATOR).build();
+                    final ResponseMessage terminator = ResponseMessage.create(o.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).build();
                     objects.add(new TextWebSocketFrame(true, 0, serializer.serializeResponseAsString(terminator)));
                 }
             }
@@ -46,11 +46,11 @@ public class GremlinResponseEncoder extends MessageToMessageEncoder<ResponseMess
             logger.warn("The result [{}] in the request {} could not be serialized and returned.", o.getResult(), o.getRequestId(), ex);
             final String errorMessage = String.format("Error during serialization: %s",
                     ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-            final ResponseMessage error = ResponseMessage.create(o.getRequestId(), o.getContentType())
+            final ResponseMessage error = ResponseMessage.create(o.getRequestId())
                     .result(errorMessage)
                     .code(ResultCode.SERVER_ERROR_SERIALIZATION).build();
             channelHandlerContext.write(new TextWebSocketFrame(serializer.serializeResponseAsString(error)));
-            final ResponseMessage terminator = ResponseMessage.create(o.getRequestId(), o.getContentType()).code(ResultCode.SUCCESS_TERMINATOR).build();
+            final ResponseMessage terminator = ResponseMessage.create(o.getRequestId()).code(ResultCode.SUCCESS_TERMINATOR).build();
             channelHandlerContext.writeAndFlush(new TextWebSocketFrame(serializer.serializeResponseAsString(terminator)));
         }
     }

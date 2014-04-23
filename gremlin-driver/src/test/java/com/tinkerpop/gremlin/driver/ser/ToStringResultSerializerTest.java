@@ -26,7 +26,7 @@ public class ToStringResultSerializerTest {
 
     @Test
     public void serializeResponseContainingNull() throws Exception {
-        final ResponseMessage msg = ResponseMessage.create(testId, "text/plain").build();
+        final ResponseMessage msg = ResponseMessage.create(testId).build();
         final String results = serializer.serializeResponseAsString(msg);
         assertEquals(testIdString + ">>200>>text/plain>>null", results);
     }
@@ -35,7 +35,7 @@ public class ToStringResultSerializerTest {
     public void serializeResponseContainingVertex() throws Exception {
         final TinkerGraph g = TinkerFactory.createClassic();
         final Vertex v = (Vertex) g.V().has("name", Compare.EQUAL, "marko").next();
-        final ResponseMessage msg = ResponseMessage.create(testId, "text/plain")
+        final ResponseMessage msg = ResponseMessage.create(testId)
                 .result(v)
                 .build();
         final String results = serializer.serializeResponseAsString(msg);
@@ -44,7 +44,7 @@ public class ToStringResultSerializerTest {
 
     @Test
     public void deserializeResponse() throws Exception {
-        final Optional<ResponseMessage> responseMessage = serializer.deserializeResponse(testIdString + ">>200>>text/plain>>test");
+        final Optional<ResponseMessage> responseMessage = serializer.deserializeResponse(testIdString + ">>200>>test");
         assertTrue(responseMessage.isPresent());
         assertEquals(testId, responseMessage.get().getRequestId());
         assertEquals(ResultCode.SUCCESS, responseMessage.get().getCode());

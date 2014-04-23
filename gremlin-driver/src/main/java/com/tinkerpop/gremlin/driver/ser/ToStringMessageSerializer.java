@@ -22,8 +22,8 @@ import java.util.regex.Pattern;
 public class ToStringMessageSerializer implements MessageSerializer {
 
     // todo: better up this regex
-    private static final Pattern patternResponse = Pattern.compile("^(.+)>>(\\d+)>>(.+)>>(.+)");
-    private static final String TEXT_RESPONSE_FORMAT_WITH_RESULT = "%s>>%s>>%s>>%s";
+    private static final Pattern patternResponse = Pattern.compile("^(.+)>>(\\d+)>>(.+)");
+    private static final String TEXT_RESPONSE_FORMAT_WITH_RESULT = "%s>>%s>>%s";
 
     @Override
     public String serializeRequestAsString(final RequestMessage requestMessage) {
@@ -43,7 +43,7 @@ public class ToStringMessageSerializer implements MessageSerializer {
     public String serializeResponseAsString(final ResponseMessage responseMessage) {
         final String requestId = responseMessage.getRequestId() != null ? responseMessage.getRequestId().toString() : "";
         final String result = responseMessage.getResult() != null ? responseMessage.getResult().toString() : "null";
-        return String.format(TEXT_RESPONSE_FORMAT_WITH_RESULT, requestId, responseMessage.getCode().getValue(), responseMessage.getContentType(), result);
+        return String.format(TEXT_RESPONSE_FORMAT_WITH_RESULT, requestId, responseMessage.getCode().getValue(), result);
     }
 
     @Override
@@ -51,9 +51,9 @@ public class ToStringMessageSerializer implements MessageSerializer {
         final Matcher matcher = patternResponse.matcher(msg);
         if (matcher.matches()) {
             // todo: error handling
-            return Optional.of(ResponseMessage.create(UUID.fromString(matcher.group(1)), matcher.group(3))
+            return Optional.of(ResponseMessage.create(UUID.fromString(matcher.group(1)))
                     .code(ResultCode.getFromValue(Integer.parseInt(matcher.group(2))))
-                    .result(matcher.group(4))
+                    .result(matcher.group(3))
                     .build());
         } else {
             // todo: for now

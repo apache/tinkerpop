@@ -45,7 +45,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final Map<String,Object> responseData = (Map<String,Object>) kryo.readClassAndObject(input);
-                return Optional.ofNullable(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()), "")
+                return Optional.ofNullable(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                         .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                         .result(responseData.get(SerTokens.TOKEN_RESULT))
                         .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))

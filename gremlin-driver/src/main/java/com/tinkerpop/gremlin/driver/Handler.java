@@ -121,7 +121,7 @@ class Handler {
                             final List<Object> listToUnroll = (List<Object>) response.getResult();
                             final ResponseQueue queue = pending.get(response.getRequestId());
                             listToUnroll.forEach(item -> queue.add(
-                                    ResponseMessage.create(response.getRequestId(), response.getContentType())
+                                    ResponseMessage.create(response.getRequestId())
                                             .result(item).build()));
                         } else {
                             // todo: error situation
@@ -141,7 +141,7 @@ class Handler {
                             final List<Object> listToUnroll = (List<Object>) response.getResult();
                             final ResponseQueue queue = pending.get(response.getRequestId());
                             listToUnroll.forEach(item -> queue.add(
-                                    ResponseMessage.create(response.getRequestId(), response.getContentType())
+                                    ResponseMessage.create(response.getRequestId())
                                         .result(item).build()));
                         } else {
                             // todo: error situation

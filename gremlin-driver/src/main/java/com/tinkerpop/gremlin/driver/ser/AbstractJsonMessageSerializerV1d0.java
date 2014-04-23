@@ -110,8 +110,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
     public Optional<ResponseMessage> deserializeResponse(final String msg) {
         try {
             final Map<String,Object> responseData = obtainMapper().readValue(msg, mapTypeReference);
-            // todo: content types in response?   this is a mess in terms of deserialization ....................
-            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()), "")
+            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                     .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                     .result(responseData.get(SerTokens.TOKEN_RESULT))
                     .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
@@ -150,8 +149,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             final Map<String,Object> responseData = obtainMapper().readValue(payload, mapTypeReference);
-            // todo: content types in response?   this is a mess in terms of deserialization ....................
-            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()), "")
+            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                     .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                     .result(responseData.get(SerTokens.TOKEN_RESULT))
                     .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
