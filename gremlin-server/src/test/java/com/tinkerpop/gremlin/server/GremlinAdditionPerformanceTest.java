@@ -9,6 +9,7 @@ import com.carrotsearch.junitbenchmarks.annotation.LabelType;
 import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
+import com.tinkerpop.gremlin.driver.ser.Serializers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -58,8 +59,8 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
     @BenchmarkOptions(benchmarkRounds = 20, warmupRounds = 1, concurrency = BenchmarkOptions.CONCURRENCY_AVAILABLE_CORES)
     @Test
     public void webSocketsGremlinConcurrentAlternateSerialization() throws Exception {
-        final String[] mimes = new String[] {"application/json", "application/vnd.gremlin-v1.0+json","application/vnd.gremlin-v1.0+kryo"};
-        String mimeType = mimes[rand.nextInt(3)];
+        final Serializers[] mimes = new Serializers[] {Serializers.JSON, Serializers.JSON_V1D0, Serializers.KRYO_V1D0};
+        final Serializers mimeType = mimes[rand.nextInt(3)];
         System.out.println(mimeType);
         final Cluster cluster = Cluster.create("localhost")
                 .serializer(mimeType)

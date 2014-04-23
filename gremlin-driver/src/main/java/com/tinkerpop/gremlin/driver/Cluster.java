@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.driver;
 
+import com.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -116,6 +117,11 @@ public class Cluster {
         public Builder serializer(final String mimeType) {
             serializer = Optional.ofNullable(MessageSerializer.select(mimeType, null))
                     .orElseThrow(() -> new IllegalStateException(String.format("Could not find serializer for %s", mimeType)));
+            return this;
+        }
+
+        public Builder serializer(final Serializers mimeType) {
+            serializer(mimeType.getValue());
             return this;
         }
 

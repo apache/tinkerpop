@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
+import com.tinkerpop.gremlin.driver.ser.Serializers;
 import com.tinkerpop.gremlin.driver.ser.ToStringMessageSerializer;
 import org.junit.Test;
 
@@ -22,11 +23,11 @@ public class MessageSerializerTest {
 
     @Test
     public void shouldGetJsonSerializer() {
-        final MessageSerializer serializerGremlinV1 = MessageSerializer.select("application/vnd.gremlin-v1.0+json", MessageSerializer.DEFAULT_RESULT_SERIALIZER);
+        final MessageSerializer serializerGremlinV1 = MessageSerializer.select(Serializers.JSON_V1D0.getValue(), MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         assertNotNull(serializerGremlinV1);
         assertTrue(JsonMessageSerializerGremlinV1d0.class.isAssignableFrom(serializerGremlinV1.getClass()));
 
-        final MessageSerializer serializerJson = MessageSerializer.select("application/json", MessageSerializer.DEFAULT_RESULT_SERIALIZER);
+        final MessageSerializer serializerJson = MessageSerializer.select(Serializers.JSON.getValue(), MessageSerializer.DEFAULT_RESULT_SERIALIZER);
         assertNotNull(serializerJson);
         assertTrue(JsonMessageSerializerV1d0.class.isAssignableFrom(serializerJson.getClass()));
     }

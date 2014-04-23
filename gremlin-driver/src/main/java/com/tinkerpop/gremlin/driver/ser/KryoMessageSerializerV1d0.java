@@ -30,7 +30,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     private static final GremlinKryo gremlinKryo = GremlinKryo.create(GremlinKryo.Version.V_1_0_0).build();
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-    private static final String MIME_TYPE = "application/vnd.gremlin-v1.0+kryo";
+    private static final String MIME_TYPE = Serializers.KRYO_V1D0.getValue();
 
     @Override
     public String[] mimeTypesSupported() {

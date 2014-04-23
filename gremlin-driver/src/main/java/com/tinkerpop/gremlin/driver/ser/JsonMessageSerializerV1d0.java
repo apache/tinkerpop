@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0 {
-    private static final String MIME_TYPE = "application/json";
+    private static final String MIME_TYPE = Serializers.JSON.getValue();
 
     /**
      * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write

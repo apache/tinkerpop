@@ -29,7 +29,6 @@ public class Client {
 
         // todo: connection pooling
 
-        final Cluster.Factory factory = cluster.getFactory();
         cluster.getClusterInfo().allHosts().forEach(host -> connections.put(host, new Connection(host.getWebSocketUri(), cluster)));
         initialized = true;
         return this;
