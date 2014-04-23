@@ -24,7 +24,7 @@ public class RequestMessageTest {
 
     @Test
     public void shouldSetProcessor() {
-        final RequestMessage msg = RequestMessage.create("op").setProcessor("ppp").build();
+        final RequestMessage msg = RequestMessage.create("op").processor("ppp").build();
         assertEquals("ppp", msg.getProcessor());
     }
 

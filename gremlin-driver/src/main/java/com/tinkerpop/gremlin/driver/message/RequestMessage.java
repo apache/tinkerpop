@@ -101,7 +101,7 @@ public class RequestMessage {
          *
          * @param processor the name of the processor
          */
-        public Builder setProcessor(final String processor) {
+        public Builder processor(final String processor) {
             this.processor = processor;
             return this;
         }
