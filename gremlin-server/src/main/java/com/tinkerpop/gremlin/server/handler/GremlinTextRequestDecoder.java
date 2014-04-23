@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server.handler;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -19,8 +20,11 @@ public class GremlinTextRequestDecoder extends MessageToMessageDecoder<TextWebSo
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
         // todo: use the channel to store the serializer until this is proven wrong
-        channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(MessageSerializer.DEFAULT_REQUEST_SERIALIZER);
+        // the default serializer must be a MessageTextSerializer instance to be compatible with this decoder
+        final MessageTextSerializer serializer = (MessageTextSerializer) MessageSerializer.DEFAULT_REQUEST_SERIALIZER;
+        channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(serializer);
         channelHandlerContext.channel().attr(StateKey.USE_BINARY).set(false);
-        objects.add(MessageSerializer.DEFAULT_REQUEST_SERIALIZER.deserializeRequest(frame.text()).orElse(RequestMessage.INVALID));
+
+        objects.add(serializer.deserializeRequest(frame.text()).orElse(RequestMessage.INVALID));
     }
 }

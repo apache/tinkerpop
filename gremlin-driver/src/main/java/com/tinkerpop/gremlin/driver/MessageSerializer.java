@@ -43,33 +43,30 @@ public interface MessageSerializer {
     }};
 
     /**
-     * Default serializer for results returned from Gremlin Server.
+     * Default serializer for results returned from Gremlin Server. This implementation must be of type
+     * {@link com.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
+     * websocket messages.
      */
     static final MessageSerializer DEFAULT_RESULT_SERIALIZER = new JsonMessageSerializerV1d0();
 
     /**
-     * Default serializer for requests received by Gremlin Server.
+     * Default serializer for requests received by Gremlin Server. This implementation must be of type
+     * {@link com.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
+     * websocket messages.
      */
     static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new JsonMessageSerializerV1d0();
 
     /**
      * Serialize a result message.
      */
-    public String serializeResponseAsString(final ResponseMessage responseMessage);
-
     public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator);
 
-    public String serializeRequestAsString(final RequestMessage requestMessage);
 
     public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator);
 
     /**
      * Deserialize a {@link RequestMessage} into an object.
      */
-    public Optional<RequestMessage> deserializeRequest(final String msg);
-
-    public Optional<ResponseMessage> deserializeResponse(final String msg);
-
     public Optional<RequestMessage> deserializeRequest(final ByteBuf msg);
 
     public Optional<ResponseMessage> deserializeResponse(final ByteBuf msg);

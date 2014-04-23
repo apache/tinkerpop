@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.message.ResultType;
+import com.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -132,7 +133,8 @@ class Handler {
                         pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
                 } else if (webSocketFrame instanceof TextWebSocketFrame) {
                     final TextWebSocketFrame tf = (TextWebSocketFrame) webSocketFrame;
-                    final ResponseMessage response = serializer.deserializeResponse(tf.text()).get();
+                    final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+                    final ResponseMessage response = textSerializer.deserializeResponse(tf.text()).get();
                     if (response.getCode() == ResultCode.SUCCESS) {
                         if (response.getResultType() == ResultType.OBJECT)
                             pending.get(response.getRequestId()).add(response);
@@ -174,7 +176,8 @@ class Handler {
                 final ByteBuf encodedMessage = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
                 objects.add(new BinaryWebSocketFrame(encodedMessage));
             } else {
-                objects.add(new TextWebSocketFrame(serializer.serializeRequestAsString(requestMessage)));
+                final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+                objects.add(new TextWebSocketFrame(textSerializer.serializeRequestAsString(requestMessage)));
             }
         }
     }

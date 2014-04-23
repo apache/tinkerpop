@@ -136,24 +136,4 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             throw new RuntimeException("Error during serialization.", ex);
         }
     }
-
-    @Override
-    public String serializeResponseAsString(final ResponseMessage responseMessage) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String serializeRequestAsString(final RequestMessage requestMessage) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Optional<ResponseMessage> deserializeResponse(final String msg) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Optional<RequestMessage> deserializeRequest(final String msg) {
-        throw new UnsupportedOperationException();
-    }
 }

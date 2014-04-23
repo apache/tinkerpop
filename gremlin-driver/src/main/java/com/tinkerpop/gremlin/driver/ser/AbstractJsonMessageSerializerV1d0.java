@@ -38,22 +38,6 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
     abstract byte[] obtainHeader();
 
     @Override
-    public String serializeResponseAsString(final ResponseMessage responseMessage) {
-        try {
-            final Map<String, Object> result = new HashMap<>();
-            result.put(SerTokens.TOKEN_CODE, responseMessage.getCode().getValue());
-            result.put(SerTokens.TOKEN_RESULT, responseMessage.getResult());
-            result.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
-            result.put(SerTokens.TOKEN_TYPE, responseMessage.getResultType().getValue());
-
-            return obtainMapper().writeValueAsString(result);
-        } catch (Exception ex) {
-            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
-            throw new RuntimeException("Error during serialization.", ex);
-        }
-    }
-
-    @Override
     public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) {
         ByteBuf encodedMessage = null;
         try {
@@ -77,16 +61,6 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
     }
 
     @Override
-    public String serializeRequestAsString(final RequestMessage requestMessage) {
-        try {
-            return obtainMapper().writeValueAsString(requestMessage);
-        } catch (Exception ex) {
-            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
-            throw new RuntimeException("Error during serialization.", ex);
-        }
-    }
-
-    @Override
     public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) {
         ByteBuf encodedMessage = null;
         try {
@@ -103,31 +77,6 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
 
             logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);
-        }
-    }
-
-    @Override
-    public Optional<ResponseMessage> deserializeResponse(final String msg) {
-        try {
-            final Map<String,Object> responseData = obtainMapper().readValue(msg, mapTypeReference);
-            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
-                    .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
-                    .result(responseData.get(SerTokens.TOKEN_RESULT))
-                    .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
-                    .build());
-        } catch (Exception ex) {
-            logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
-            return Optional.empty();
-        }
-    }
-
-    @Override
-    public Optional<RequestMessage> deserializeRequest(final String msg) {
-        try {
-            return Optional.of(obtainMapper().readValue(msg, RequestMessage.class));
-        } catch (Exception ex) {
-            logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
-            return Optional.empty();
         }
     }
 
