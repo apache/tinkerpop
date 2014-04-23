@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.driver;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0;
-import com.tinkerpop.gremlin.driver.ser.ToStringMessageSerializer;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -23,7 +22,7 @@ import java.util.stream.Stream;
  * {@link MessageSerializer} instances are instantiated to a cache via {@link ServiceLoader} and indexed based on
  * the mime types they support.  If a mime type is supported more than once, the last {@link MessageSerializer}
  * instance loaded for that mime type is assigned. If a mime type is not found the default
- * {@link com.tinkerpop.gremlin.driver.ser.ToStringMessageSerializer} is used to return the results.
+ * {@link com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0} is used to return the results.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -46,7 +45,7 @@ public interface MessageSerializer {
     /**
      * Default serializer for results returned from Gremlin Server.
      */
-    static final MessageSerializer DEFAULT_RESULT_SERIALIZER = new ToStringMessageSerializer();
+    static final MessageSerializer DEFAULT_RESULT_SERIALIZER = new JsonMessageSerializerV1d0();
 
     /**
      * Default serializer for requests received by Gremlin Server.
@@ -69,12 +68,10 @@ public interface MessageSerializer {
      */
     public Optional<RequestMessage> deserializeRequest(final String msg);
 
-    // todo: determine if "Optional" is right here - probably not....
     public Optional<ResponseMessage> deserializeResponse(final String msg);
 
     public Optional<RequestMessage> deserializeRequest(final ByteBuf msg);
 
-    // todo: determine if "Optional" is right here - probably not....
     public Optional<ResponseMessage> deserializeResponse(final ByteBuf msg);
 
     /**

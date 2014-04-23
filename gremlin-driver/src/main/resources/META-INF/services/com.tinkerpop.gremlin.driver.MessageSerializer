@@ -1,4 +1,3 @@
-com.tinkerpop.gremlin.driver.ser.ToStringMessageSerializer
 com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0
 com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0
 com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
