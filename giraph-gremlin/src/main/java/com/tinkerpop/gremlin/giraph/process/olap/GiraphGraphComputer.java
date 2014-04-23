@@ -10,6 +10,7 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.util.Arrays;
@@ -24,6 +25,7 @@ public class GiraphGraphComputer implements GraphComputer {
 
     private static final String GIRAPH_GREMLIN_HOME = "GIRAPH_GREMLIN_HOME";
     private static final String DOT_JAR = ".jar";
+    private static final Logger LOGGER = Logger.getLogger(GiraphGraphComputer.class);
 
     private org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
 
@@ -47,16 +49,18 @@ public class GiraphGraphComputer implements GraphComputer {
     public Future<Graph> submit() {
         try {
             final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
-            fs.delete(new Path("output"), true);
+            fs.delete(new Path(hadoopConfiguration.get("mapred.output.dir")), true);
             final FileSystem local = FileSystem.getLocal(this.hadoopConfiguration);
             final String giraphGremlinHome = System.getenv(GIRAPH_GREMLIN_HOME);
             if (null == giraphGremlinHome)
                 throw new RuntimeException("Please set $GIRAPH_GREMLIN_HOME to the location of giraph-gremlin");
-            Arrays.asList(new File(giraphGremlinHome + "/lib")).stream().filter(f -> f.getName().endsWith(DOT_JAR)).forEach(f -> {
+            final File file = new File(giraphGremlinHome + "/lib");
+            Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(DOT_JAR)).forEach(f -> {
+                LOGGER.debug("Loading: " + f.getPath());
                 try {
                     DistributedCache.addArchiveToClassPath(new Path(f.getPath()), this.hadoopConfiguration, local);
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    throw new RuntimeException(e.getMessage(), e);
                 }
             });
             ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration), new String[]{});
