@@ -20,7 +20,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.0.18.Final</version>
+            <version>${netty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
