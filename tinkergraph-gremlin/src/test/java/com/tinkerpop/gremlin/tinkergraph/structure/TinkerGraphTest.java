@@ -16,10 +16,13 @@ import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import com.tinkerpop.gremlin.structure.util.EmptyGraph;
+import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -28,8 +31,10 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
@@ -38,7 +43,26 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphTest {
+public class TinkerGraphTest implements Serializable {
+
+    /*public static class Marko implements Serializable {
+        public static Function<Integer, Integer> function;
+    }
+
+    @Test
+    public void testLambdaSerialization() throws Exception {
+
+        byte[] bytes = Serializer.serializeObject(EmptyGraph.instance().V().out());
+        FileOutputStream outputStream = new FileOutputStream("/tmp/function.bin");
+        outputStream.write(bytes);
+        outputStream.flush();
+        outputStream.close();
+
+        bytes = new byte[(int) new File("/tmp/function.bin").length()];
+        FileInputStream inputStream = new FileInputStream("/tmp/function.bin");
+        new DataInputStream(inputStream).readFully(bytes);
+        System.out.println(Serializer.deserializeObject(bytes));
+    }*/
 
     @Test
     public void testTraversalDSL() {
