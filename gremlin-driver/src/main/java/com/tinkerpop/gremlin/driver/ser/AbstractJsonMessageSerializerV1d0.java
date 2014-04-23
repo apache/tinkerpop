@@ -31,13 +31,6 @@ import java.util.UUID;
 public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerializer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractJsonMessageSerializerV1d0.class);
 
-    // todo: move tokens
-    public static final String TOKEN_RESULT = "result";
-    public static final String TOKEN_CODE = "code";
-    public static final String TOKEN_CONTENT_TYPE = "contentType";
-    public static final String TOKEN_REQUEST = "requestId";
-    public static final String TOKEN_TYPE = "type";
-
     protected final TypeReference<Map<String,Object>> mapTypeReference = new TypeReference<Map<String,Object>>(){};
 
     abstract ObjectMapper obtainMapper();
@@ -48,10 +41,10 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
     public String serializeResponseAsString(final ResponseMessage responseMessage) {
         try {
             final Map<String, Object> result = new HashMap<>();
-            result.put(TOKEN_CODE, responseMessage.getCode().getValue());
-            result.put(TOKEN_RESULT, responseMessage.getResult());
-            result.put(TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
-            result.put(TOKEN_TYPE, responseMessage.getResultType().getValue());
+            result.put(SerTokens.TOKEN_CODE, responseMessage.getCode().getValue());
+            result.put(SerTokens.TOKEN_RESULT, responseMessage.getResult());
+            result.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
+            result.put(SerTokens.TOKEN_TYPE, responseMessage.getResultType().getValue());
 
             return obtainMapper().writeValueAsString(result);
         } catch (Exception ex) {
@@ -65,10 +58,10 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
         ByteBuf encodedMessage = null;
         try {
             final Map<String, Object> result = new HashMap<>();
-            result.put(TOKEN_CODE, responseMessage.getCode().getValue());
-            result.put(TOKEN_RESULT, responseMessage.getResult());
-            result.put(TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
-            result.put(TOKEN_TYPE, responseMessage.getResultType().getValue());
+            result.put(SerTokens.TOKEN_CODE, responseMessage.getCode().getValue());
+            result.put(SerTokens.TOKEN_RESULT, responseMessage.getResult());
+            result.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
+            result.put(SerTokens.TOKEN_TYPE, responseMessage.getResultType().getValue());
 
             final byte[] payload = obtainMapper().writeValueAsBytes(result);
             encodedMessage = allocator.buffer(payload.length);
@@ -118,10 +111,10 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
         try {
             final Map<String,Object> responseData = obtainMapper().readValue(msg, mapTypeReference);
             // todo: content types in response?   this is a mess in terms of deserialization ....................
-            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(TOKEN_REQUEST).toString()), "")
-                    .code(ResultCode.getFromValue((Integer) responseData.get(TOKEN_CODE)))
-                    .result(responseData.get(TOKEN_RESULT))
-                    .contents(ResultType.getFromValue((Integer) responseData.get(TOKEN_TYPE)))
+            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()), "")
+                    .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
+                    .result(responseData.get(SerTokens.TOKEN_RESULT))
+                    .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
                     .build());
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
@@ -158,10 +151,10 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
             msg.readBytes(payload);
             final Map<String,Object> responseData = obtainMapper().readValue(payload, mapTypeReference);
             // todo: content types in response?   this is a mess in terms of deserialization ....................
-            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(TOKEN_REQUEST).toString()), "")
-                    .code(ResultCode.getFromValue((Integer) responseData.get(TOKEN_CODE)))
-                    .result(responseData.get(TOKEN_RESULT))
-                    .contents(ResultType.getFromValue((Integer) responseData.get(TOKEN_TYPE)))
+            return Optional.of(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()), "")
+                    .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
+                    .result(responseData.get(SerTokens.TOKEN_RESULT))
+                    .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
                     .build());
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());

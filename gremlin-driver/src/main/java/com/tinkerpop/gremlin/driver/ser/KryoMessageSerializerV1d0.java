@@ -26,18 +26,11 @@ import java.util.UUID;
  */
 public class KryoMessageSerializerV1d0 implements MessageSerializer {
     // todo: maybe need a special interface for MessageSerializer because implementers can only binary serializers
+    // todo: how will client and server side users of kryo configure custom classes
     private static final GremlinKryo gremlinKryo = GremlinKryo.create(GremlinKryo.Version.V_1_0_0).build();
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     private static final String MIME_TYPE = "application/vnd.gremlin-v1.0+kryo";
-
-    public static final String TOKEN_RESULT = "result";
-    public static final String TOKEN_CODE = "code";
-    public static final String TOKEN_REQUEST = "requestId";
-    public static final String TOKEN_TYPE = "type";
-    public static final String TOKEN_PROCESSOR = "processor";
-    public static final String TOKEN_OP = "op";
-    public static final String TOKEN_ARGS = "args";
 
     @Override
     public String[] mimeTypesSupported() {
@@ -52,10 +45,10 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final Map<String,Object> responseData = (Map<String,Object>) kryo.readClassAndObject(input);
-                return Optional.ofNullable(ResponseMessage.create(UUID.fromString(responseData.get(TOKEN_REQUEST).toString()), "")
-                        .code(ResultCode.getFromValue((Integer) responseData.get(TOKEN_CODE)))
-                        .result(responseData.get(TOKEN_RESULT))
-                        .contents(ResultType.getFromValue((Integer) responseData.get(TOKEN_TYPE)))
+                return Optional.ofNullable(ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()), "")
+                        .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
+                        .result(responseData.get(SerTokens.TOKEN_RESULT))
+                        .contents(ResultType.getFromValue((Integer) responseData.get(SerTokens.TOKEN_TYPE)))
                         .build());
             }
         } catch (Exception ex) {
@@ -69,10 +62,10 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         ByteBuf encodedMessage = null;
         try {
             final Map<String, Object> result = new HashMap<>();
-            result.put(TOKEN_CODE, responseMessage.getCode().getValue());
-            result.put(TOKEN_RESULT, responseMessage.getResult());
-            result.put(TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
-            result.put(TOKEN_TYPE, responseMessage.getResultType().getValue());
+            result.put(SerTokens.TOKEN_CODE, responseMessage.getCode().getValue());
+            result.put(SerTokens.TOKEN_RESULT, responseMessage.getResult());
+            result.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
+            result.put(SerTokens.TOKEN_TYPE, responseMessage.getResultType().getValue());
 
             final Kryo kryo = gremlinKryo.createKryo();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
@@ -101,10 +94,10 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final Map<String,Object> requestData = (Map<String,Object>) kryo.readClassAndObject(input);
-                final RequestMessage.Builder builder = RequestMessage.create((String) requestData.get(TOKEN_OP))
-                        .overrideRequestId((UUID) requestData.get(TOKEN_REQUEST))
-                        .processor((String) requestData.get(TOKEN_PROCESSOR));
-                final Map<String,Object> args = (Map<String,Object>) requestData.get(TOKEN_ARGS);
+                final RequestMessage.Builder builder = RequestMessage.create((String) requestData.get(SerTokens.TOKEN_OP))
+                        .overrideRequestId((UUID) requestData.get(SerTokens.TOKEN_REQUEST))
+                        .processor((String) requestData.get(SerTokens.TOKEN_PROCESSOR));
+                final Map<String,Object> args = (Map<String,Object>) requestData.get(SerTokens.TOKEN_ARGS);
                 args.forEach(builder::addArg);
                 return Optional.ofNullable(builder.build());
             }
@@ -125,10 +118,10 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                 output.write(MIME_TYPE.getBytes(UTF8));
 
                 final Map<String, Object> request = new HashMap<>();
-                request.put(TOKEN_REQUEST, requestMessage.getRequestId());
-                request.put(TOKEN_PROCESSOR, requestMessage.getProcessor());
-                request.put(TOKEN_OP, requestMessage.getOp());
-                request.put(TOKEN_ARGS, requestMessage.getArgs());
+                request.put(SerTokens.TOKEN_REQUEST, requestMessage.getRequestId());
+                request.put(SerTokens.TOKEN_PROCESSOR, requestMessage.getProcessor());
+                request.put(SerTokens.TOKEN_OP, requestMessage.getOp());
+                request.put(SerTokens.TOKEN_ARGS, requestMessage.getArgs());
 
                 kryo.writeClassAndObject(output, request);
                 encodedMessage = allocator.buffer((int) output.total());
