@@ -1,9 +1,10 @@
 package com.tinkerpop.gremlin.giraph.process.olap;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
@@ -19,18 +20,19 @@ import java.io.File;
 public class GiraphGraphRunner extends Configured implements Tool {
 
     private static final String GIRAPH_VERTEX_CLASS = "giraph.vertexClass";
+    private static final String GIRAPH_GREMLIN_TRAVERSAL_SUPPLIER = "giraph.gremlin.traversalSupplier";
 
     private final GiraphConfiguration giraphConfiguration;
 
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         this.giraphConfiguration = new GiraphConfiguration(hadoopConfiguration);
         this.giraphConfiguration.setMasterComputeClass(GiraphComputerMemory.class);
-        this.giraphConfiguration.setWorkerConfiguration(1, 1, 100.0f);
     }
 
     public int run(final String[] args) {
         try {
-            final GiraphJob job = new GiraphJob(this.giraphConfiguration, "GiraphGraph");
+            final GiraphJob job = new GiraphJob(this.giraphConfiguration,
+                    "GiraphGremlin: " + createTraversalSupplier(this.giraphConfiguration.get(GIRAPH_GREMLIN_TRAVERSAL_SUPPLIER)).get());
             job.getInternalJob().setJarByClass(GiraphJob.class);
             job.run(true);
         } catch (Exception e) {
@@ -44,13 +46,19 @@ public class GiraphGraphRunner extends Configured implements Tool {
             FileConfiguration configuration = new PropertiesConfiguration();
             configuration.load(new File(args[0]));
             configuration.setProperty(GIRAPH_VERTEX_CLASS, GiraphVertex.class.getName());
-
+            final SSupplier<Traversal> traversalSupplier = createTraversalSupplier(configuration.getProperty(GIRAPH_GREMLIN_TRAVERSAL_SUPPLIER).toString());
             GraphComputer g = new GiraphGraphComputer();
             //g.program(new PageRankVertexProgram.Builder(configuration).build()).configuration(configuration).submit();
-            g.program(new TraversalVertexProgram.Builder().traversal(() -> TinkerGraph.open().V().as("x").out().jump("x", h -> h.getLoops() < 2).value("name"))).configuration(configuration).submit();
+            g.program(new TraversalVertexProgram.Builder().traversal(traversalSupplier)).configuration(configuration).submit();
         } catch (Exception e) {
             System.out.println(e);
             throw e;
         }
+    }
+
+    private static SSupplier<Traversal> createTraversalSupplier(final String giraphGremlinTraversalSupplierClass) throws Exception {
+        return (SSupplier<Traversal>) Class.forName(giraphGremlinTraversalSupplierClass)
+                .getConstructor()
+                .newInstance();
     }
 }

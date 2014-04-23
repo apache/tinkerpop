@@ -59,21 +59,6 @@ public class TinkerGraphTest implements Serializable {
         public static SSupplier<Traversal> traversalSupplier = () -> TinkerGraph.open().V().out();
     }
 
-    @Ignore
-    public void testLambdaSerialization() throws Exception {
-
-        byte[] bytes = Serializer.serializeObject(TraversalHolder.traversalSupplier);
-        FileOutputStream outputStream = new FileOutputStream("/tmp/function.bin");
-        outputStream.write(bytes);
-        outputStream.flush();
-        outputStream.close();
-
-        byte[] bytes2 = new byte[(int) new File("/tmp/function.bin").length()];
-        FileInputStream inputStream = new FileInputStream("/tmp/function.bin");
-        new DataInputStream(inputStream).readFully(bytes2);
-        System.out.println(((Supplier) Serializer.deserializeObject(bytes2)).get());
-    }
-
     @Test
     public void testTraversalDSL() {
         final Graph g = TinkerFactory.createClassic();
