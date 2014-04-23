@@ -72,7 +72,10 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                 final Output output = new Output(baos);
                 kryo.writeClassAndObject(output, result);
 
-                // todo: could feasibly write a request bigger than an int?
+                final long size = output.total();
+                if (size > Integer.MAX_VALUE)
+                    throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
+
                 encodedMessage = allocator.buffer((int) output.total());
                 encodedMessage.writeBytes(output.toBytes());
             }
@@ -124,6 +127,11 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                 request.put(SerTokens.TOKEN_ARGS, requestMessage.getArgs());
 
                 kryo.writeClassAndObject(output, request);
+
+                final long size = output.total();
+                if (size > Integer.MAX_VALUE)
+                    throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
+
                 encodedMessage = allocator.buffer((int) output.total());
                 encodedMessage.writeBytes(output.toBytes());
             }
