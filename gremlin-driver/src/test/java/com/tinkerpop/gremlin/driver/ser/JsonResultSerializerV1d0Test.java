@@ -12,21 +12,20 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
+ * These tests focus on message serialization and not "result" serialization as test specific to results (e.g.
+ * vertices, edges, annotated values, etc.) are handled in the IO packages.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class JsonResultSerializerV1d0Test {
@@ -43,41 +42,6 @@ public class JsonResultSerializerV1d0Test {
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
         assertEquals(JSONObject.NULL, json.get(SerTokens.TOKEN_RESULT));
-    }
-
-    @Test
-    @Ignore("until we get Table/Row into pipes again.")
-    public void serializeToJsonTableNotPaged() throws Exception {
-        /*
-        Table table = new Table("col1", "col2");
-        table.addRow("x1", "x2");
-        table.addRow("y1", "y2");
-
-        JSONArray results = this.converterNotPaged.convert(table);
-
-        Assert.assertNotNull(results);
-        Assert.assertEquals(2, results.length());
-
-        boolean rowMatchX = false;
-        boolean rowMatchY = false;
-        for (int ix = 0; ix < results.length(); ix++) {
-            JSONObject row = results.optJSONObject(ix);
-
-            Assert.assertNotNull(row);
-            Assert.assertTrue(row.has("col1"));
-            Assert.assertTrue(row.has("col2"));
-
-            if (row.optString("col1").equals("x1") && row.optString("col2").equals("x2")) {
-                rowMatchX = true;
-            }
-
-            if (row.optString("col1").equals("y1") && row.optString("col2").equals("y2")) {
-                rowMatchY = true;
-            }
-        }
-
-        Assert.assertTrue(rowMatchX && rowMatchY);
-        */
     }
 
     @Test
@@ -167,46 +131,6 @@ public class JsonResultSerializerV1d0Test {
     }
 
     @Test
-    public void serializePropertiesOnProperties() throws Exception {
-        final Graph g = TinkerGraph.open();
-        final Vertex v = g.addVertex();
-        v.setProperty("abc", 123);
-        ////// final Vertex.Property withMetaProperties = v.setProperty("xyz", 321);
-        ///// withMetaProperties.setProperty("audit", "stephen");
-
-        final Iterable iterable = g.V().toList();
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(iterable).build());
-        final JSONObject json = new JSONObject(results);
-
-        assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONArray(SerTokens.TOKEN_RESULT);
-
-        assertNotNull(converted);
-        assertEquals(1, converted.length());
-
-        final JSONObject vertexAsJson = converted.optJSONObject(0);
-        assertNotNull(vertexAsJson);
-
-        assertEquals(v.getId(), vertexAsJson.get(GraphSONTokens.ID));
-        assertEquals(GraphSONTokens.VERTEX, vertexAsJson.get(GraphSONTokens.TYPE));
-
-        final JSONObject properties = vertexAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
-        assertNotNull(properties);
-        assertEquals(123, properties.getInt("abc"));
-
-        /*
-        final JSONObject valXyzProperty = properties.optJSONObject("xyz");
-        assertNotNull(valXyzProperty);
-        assertEquals(321, valXyzProperty.getInt(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_VALUE));
-
-        final JSONObject metaProperties = valXyzProperty.getJSONObject(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_META);
-        assertNotNull(metaProperties);
-        assertEquals("stephen", metaProperties.getString("audit"));
-        */
-    }
-
-    @Test
     public void serializeHiddenProperties() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex("abc", 123);
@@ -235,46 +159,6 @@ public class JsonResultSerializerV1d0Test {
         assertEquals(123, properties.getInt("abc"));
         assertEquals("stephen", properties.getString(Property.Key.hidden("hidden")));
     }
-
-    /*
-    @Test
-    @Ignore("How do we recognize multi-properties programmatically?")
-    public void serializeMultiProperties() throws Exception {
-        final Graph g = TinkerGraph.open();
-        final Vertex v = g.addVertex("abc", 123);
-        v.addProperty("multi", 1);
-        v.addProperty("multi", 3);
-        v.addProperty("multi", 2);
-
-        final Iterator iterable = g.query().vertices().iterator();
-        final String results = SERIALIZER.serializeResponseAsString(iterable, new Context(msg, null, null, null, null));
-        final JSONObject json = new JSONObject(results);
-
-        assertNotNull(json);
-        assertEquals(msg.requestId.toString(), json.getString(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONArray(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_RESULT);
-
-        assertNotNull(converted);
-        assertEquals(1, converted.length());
-
-        final JSONObject vertexAsJson = converted.optJSONObject(0);
-        assertNotNull(vertexAsJson);
-
-        assertEquals(v.getId(), vertexAsJson.get(MessageSerializer.JsonMessageSerializerV1d0.ID));
-        assertEquals(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_VERTEX, vertexAsJson.get(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_TYPE));
-
-        final JSONObject properties = vertexAsJson.optJSONObject(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_PROPERTIES);
-        assertNotNull(properties);
-
-        final JSONObject valAbcProperty = properties.optJSONObject("abc");
-        assertNotNull(valAbcProperty);
-        assertEquals(123, valAbcProperty.getInt(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_VALUE));
-
-        final JSONObject valHiddenProperty = properties.optJSONObject(Property.Key.hidden("multi"));
-        assertNotNull(valHiddenProperty);
-        assertEquals("stephen", valHiddenProperty.getString(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_VALUE));
-    }
-    */
 
     @Test
     public void serializeEdge() throws Exception {
@@ -373,19 +257,10 @@ public class JsonResultSerializerV1d0Test {
 
         assertNotNull(converted);
 
-        // TODO: come back to fix this once we figure out how to nicely handle maps
-        /*
-        final JSONObject mapValue = converted.optJSONObject("1");
-        assertEquals(1000, mapValue.optInt(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_VALUE));
-
-        final JSONObject element = mapValue.optJSONObject(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_KEY);
-        assertNotNull(element);
-        assertEquals("1", element.optString("id"));
-        assertEquals(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_VERTEX, element.optString(MessageSerializer.JsonMessageSerializerV1d0.TOKEN_TYPE));
-        */
+        // with no embedded types the key (which is a vertex) simply serializes out to an id
+        // {"result":{"1":1000},"code":200,"requestId":"2d62161b-9544-4f39-af44-62ec49f9a595","type":0}
+        assertEquals(1000, converted.optInt("1"));
     }
-
-    // todo: more TESTS!!
 
     @Test
     public void deserializeRequestNicelyWithNoArgs() throws Exception {
