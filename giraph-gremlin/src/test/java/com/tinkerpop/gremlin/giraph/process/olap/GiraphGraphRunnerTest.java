@@ -28,7 +28,7 @@ public class GiraphGraphRunnerTest {
     public void testTraversalSupplierSerialization() throws Exception {
 
         final File tempFile = File.createTempFile("traversalSupplier-" + UUID.randomUUID(), ".bin");
-        System.out.println(tempFile.getPath());
+        //System.out.println(tempFile.getPath());
 
         byte[] bytes = Serializer.serializeObject(new TraversalHolder());
         FileOutputStream outputStream = new FileOutputStream(tempFile);
@@ -40,5 +40,7 @@ public class GiraphGraphRunnerTest {
         FileInputStream inputStream = new FileInputStream(tempFile);
         new DataInputStream(inputStream).readFully(bytes2);
         System.out.println(((Supplier) Serializer.deserializeObject(bytes2)).get());
+
+        tempFile.delete();
     }
 }

@@ -46,14 +46,18 @@ public class GiraphGraphRunner extends Configured implements Tool {
             FileConfiguration configuration = new PropertiesConfiguration();
             configuration.load(new File(args[0]));
             configuration.setProperty(GIRAPH_VERTEX_CLASS, GiraphVertex.class.getName());
-            final SSupplier<Traversal> traversalSupplier = createTraversalSupplier(configuration.getProperty(GIRAPH_GREMLIN_TRAVERSAL_SUPPLIER).toString());
-            GraphComputer g = new GiraphGraphComputer();
-            //g.program(new PageRankVertexProgram.Builder(configuration).build()).configuration(configuration).submit();
-            g.program(new TraversalVertexProgram.Builder().traversal(traversalSupplier)).configuration(configuration).submit();
+            if (configuration.containsKey(GIRAPH_GREMLIN_TRAVERSAL_SUPPLIER)) {
+                final SSupplier<Traversal> traversalSupplier = createTraversalSupplier(configuration.getProperty(GIRAPH_GREMLIN_TRAVERSAL_SUPPLIER).toString());
+                GraphComputer g = new GiraphGraphComputer();
+                g.program(new TraversalVertexProgram.Builder().traversal(traversalSupplier)).configuration(configuration).submit();
+            } else {
+                throw new RuntimeException("Only Gremlin traversals are currently supported");
+            }
         } catch (Exception e) {
             System.out.println(e);
             throw e;
         }
+        //g.program(new PageRankVertexProgram.Builder(configuration).build()).configuration(configuration).submit();
     }
 
     private static SSupplier<Traversal> createTraversalSupplier(final String giraphGremlinTraversalSupplierClass) throws Exception {

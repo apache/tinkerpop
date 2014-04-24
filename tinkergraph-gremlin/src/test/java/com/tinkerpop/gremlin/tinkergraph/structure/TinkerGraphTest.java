@@ -16,13 +16,10 @@ import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,7 +32,6 @@ import java.io.Serializable;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
@@ -47,16 +43,13 @@ import static org.junit.Assert.assertTrue;
 public class TinkerGraphTest implements Serializable {
 
     private static String tempPath;
+
     static {
         final String temp = System.getProperty("java.io.tmpdir", File.separator + "tmp").trim();
         if (!temp.endsWith(File.separator))
             tempPath = temp + File.separator;
         else
             tempPath = temp;
-    }
-
-    public static class TraversalHolder implements Serializable {
-        public static SSupplier<Traversal> traversalSupplier = () -> TinkerGraph.open().V().out();
     }
 
     @Test
@@ -109,7 +102,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteClassicGraphAsKryoAsKryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath +  "graph-example-1.gio");
+        final OutputStream os = new FileOutputStream(tempPath + "graph-example-1.gio");
         KryoWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -119,7 +112,7 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteClassicGraphAsGraphML() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath +  "graph-example-1.xml");
+        final OutputStream os = new FileOutputStream(tempPath + "graph-example-1.xml");
         GraphMLWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }

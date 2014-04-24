@@ -27,6 +27,8 @@ public class GiraphGraphComputer implements GraphComputer {
     private static final String DOT_JAR = ".jar";
     private static final Logger LOGGER = Logger.getLogger(GiraphGraphComputer.class);
 
+    public static final String GIRAPH_GREMLIN_INPUT_LOCATION = "giraph.gremlin.input.location";
+
     private org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
 
     public GraphComputer isolation(final Isolation isolation) {
