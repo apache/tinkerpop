@@ -7,6 +7,8 @@ import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
 import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
+import com.tinkerpop.gremlin.structure.io.util.IOEdge;
+import com.tinkerpop.gremlin.structure.io.util.IOVertex;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
@@ -150,6 +152,8 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedList.class, null, 15));
             add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedValue.class, null, 16));
             add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
+            add(Triplet.<Class, Serializer, Integer>with(IOVertex.class, null, 18));
+            add(Triplet.<Class, Serializer, Integer>with(IOEdge.class, null, 19));
         }};
 
         private static final byte major = 1;
