@@ -26,11 +26,11 @@ public @interface LoadGraphWith {
         public String location() {
             switch (this) {
                 case CLASSIC:
-                    return RESOURCE_PATH_PREFIX + "graph-example-1.gio";
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-classic.gio";
                 case GRATEFUL:
-                    return RESOURCE_PATH_PREFIX + "graph-example-2.gio";
+                    return RESOURCE_PATH_PREFIX + "grateful-dead.gio";
                 case MODERN:
-                    return RESOURCE_PATH_PREFIX + "graph-example-5.gio";
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-modern.gio";
             }
 
             throw new RuntimeException("No file for this GraphData type");

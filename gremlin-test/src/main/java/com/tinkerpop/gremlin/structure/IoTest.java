@@ -100,7 +100,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadGraphMLAnAllSupportedDataTypes() throws IOException {
         final GraphReader reader = GraphMLReader.create().build();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-3.xml")) {
+        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-types.xml")) {
             reader.readGraph(stream, g);
         }
 
@@ -128,7 +128,7 @@ public class IoTest extends AbstractGremlinTest {
             final GraphMLWriter w = GraphMLWriter.create().normalize(true).build();
             w.writeGraph(bos, g);
 
-            final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1-normalized.xml"));
+            final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "tinkerpop-classic-normalized.xml"));
             assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
         }
     }
@@ -147,7 +147,7 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONWriter w = GraphSONWriter.create().normalize(true).build();
             w.writeGraph(bos, g);
 
-            final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "graph-example-1-normalized.json"));
+            final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "tinkerpop-classic-normalized.json"));
             assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
         }
     }
@@ -1703,14 +1703,14 @@ public class IoTest extends AbstractGremlinTest {
 
     private static void readGraphMLIntoGraph(final Graph g) throws IOException {
         final GraphReader reader = GraphMLReader.create().build();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-example-1.xml")) {
+        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "tinkerpop-classic.xml")) {
             reader.readGraph(stream, g);
         }
     }
 
     private static void readGraphSONIntoGraph(final Graph g) throws IOException {
         final GraphReader reader = GraphSONReader.create().embedTypes(true).build();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "graph-example-1-typed.json")) {
+        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "tinkerpop-classic-typed.json")) {
             reader.readGraph(stream, g);
         }
     }
