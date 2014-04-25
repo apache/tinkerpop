@@ -22,10 +22,7 @@ import java.util.concurrent.Future;
  */
 public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
-    public static final String EXECUTION_TYPE = "tinkergraph.computer.execution-type";
     public static final String CLONE_GRAPH = "tinkergraph.computer.clone-graph";
-    public static final String PARALLEL = "parallel";
-    public static final String SERIAL = "serial";
 
     private Isolation isolation = Isolation.BSP;
     private Configuration configuration = new BaseConfiguration();
@@ -71,22 +68,12 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             final VertexProgram vertexProgram = VertexProgram.createVertexProgram(this.configuration);
             g.usesElementMemory = true;
             g.elementMemory = new TinkerElementMemory(this.isolation, vertexProgram.getComputeKeys());
-            final boolean parallel;
-            if (this.configuration.getString(EXECUTION_TYPE, PARALLEL).equals(PARALLEL))
-                parallel = true;
-            else if (this.configuration.getString(EXECUTION_TYPE, SERIAL).equals(SERIAL))
-                parallel = false;
-            else
-                throw new IllegalArgumentException("The provided execution type is not supported: " + this.configuration.getString(EXECUTION_TYPE));
+
 
             // execute the vertex program
             vertexProgram.setup(g.memory());
             while (true) {
-                if (parallel)
-                    StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, g.memory()));
-                else
-                    StreamFactory.stream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, g.memory()));
-
+                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, g.memory()));
                 g.<Graph.Memory.Computer.Administrative>memory().incrIteration();
                 g.elementMemory.completeIteration();
                 this.messenger.completeIteration();

@@ -19,8 +19,6 @@ import java.util.Objects;
  */
 public interface VertexProgram<M extends Serializable> extends Serializable {
 
-    public static final String VERTEX_PROGRAM = "gremlin.vertexProgram";
-
     public enum KeyType {
         VARIABLE,
         CONSTANT
@@ -70,7 +68,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
 
     public static <V extends VertexProgram> V createVertexProgram(final Configuration configuration) {
         try {
-            final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(VERTEX_PROGRAM));
+            final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(GraphComputer.VERTEX_PROGRAM));
             final V vertexProgram = vertexProgramClass.getConstructor().newInstance();
             vertexProgram.initialize(configuration);
             return vertexProgram;

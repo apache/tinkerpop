@@ -1,9 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.olap;
 
-import com.tinkerpop.gremlin.giraph.process.olap.util.ConfUtil;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -51,17 +49,22 @@ public class GiraphGraphComputer implements GraphComputer {
             if (null == giraphGremlinHome)
                 throw new RuntimeException("Please set $GIRAPH_GREMLIN_HOME to the location of giraph-gremlin");
             final File file = new File(giraphGremlinHome + "/lib");
-            Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(DOT_JAR)).forEach(f -> {
-                LOGGER.debug("Loading: " + f.getPath());
-                try {
-                    DistributedCache.addArchiveToClassPath(new Path(f.getPath()), this.hadoopConfiguration, local);
-                } catch (Exception e) {
-                    throw new RuntimeException(e.getMessage(), e);
-                }
-            });
+            if (file.exists()) {
+                Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(DOT_JAR)).forEach(f -> {
+                    LOGGER.debug("Loading: " + f.getPath());
+                    try {
+                        DistributedCache.addArchiveToClassPath(new Path(f.getPath()), this.hadoopConfiguration, local);
+                    } catch (final Exception e) {
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                });
+            } else {
+                LOGGER.warn("No jars loaded from $GIRAPH_GREMLIN_HOME as there is no /lib directory. Attempting to proceed regardless.");
+            }
             ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration), new String[]{});
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
+            throw new IllegalStateException(e.getMessage(), e);
         }
         return null;
     }

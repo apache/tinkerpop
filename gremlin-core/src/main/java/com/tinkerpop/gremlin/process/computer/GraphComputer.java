@@ -10,12 +10,15 @@ import java.util.concurrent.Future;
  * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} against the vertices in the
  * Graph. It is up to the {@link GraphComputer} implementation to determine the
  * appropriate memory structures given the computing substrate. All {@link GraphComputer} implementations also
- * maintains levels of memory isolation: Bulk Synchronous Parallel and Dirty Bulk Synchronous Parallel.
+ * maintains levels of memory isolation: Bulk Synchronous and Dirty Bulk Synchronous.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface GraphComputer extends TraversalEngine {
+
+    String VERTEX_PROGRAM = "gremlin.vertexProgram";
+    String MUTATE_ORIGINAL_GRAPH = "gremlin.mutateOriginalGraph";
 
     public enum Isolation {
         /**

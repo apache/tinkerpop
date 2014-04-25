@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.ranking;
 
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
@@ -20,13 +21,13 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     private MessageType.Local messageType = MessageType.Local.of(new VertexQueryBuilder().direction(Direction.OUT));
 
-    public static final String PAGE_RANK = PageRankVertexProgram.class.getName() + ".pageRank";
-    public static final String EDGE_COUNT = PageRankVertexProgram.class.getName() + ".edgeCount";
+    public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank";
+    public static final String EDGE_COUNT = "gremlin.pageRankVertexProgram.edgeCount";
 
-    private static final String VERTEX_COUNT = PageRankVertexProgram.class.getName() + ".vertexCount";
-    private static final String ALPHA = PageRankVertexProgram.class.getName() + ".alpha";
-    private static final String TOTAL_ITERATIONS = PageRankVertexProgram.class.getName() + ".totalIterations";
-    private static final String WEIGHTED = PageRankVertexProgram.class.getName() + ".weighted";
+    private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
+    private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
+    private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
+    private static final String WEIGHTED = "gremlin.pageRankVertexProgram.weighted";
 
     private double vertexCountAsDouble = 1;
     private double alpha = 0.85d;
@@ -92,7 +93,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         private final Configuration configuration = new BaseConfiguration();
 
         private Builder() {
-            this.configuration.setProperty(VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
+            this.configuration.setProperty(GraphComputer.VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
         }
 
         public Builder iterations(final int iterations) {

@@ -1,5 +1,8 @@
 package com.tinkerpop.gremlin.giraph.process.olap;
 
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
+import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 /**
@@ -9,18 +12,16 @@ public class GiraphGraphComputerTest {
 
     @Test
     public void testPlay() {
-        /*Configuration configuration = new BaseConfiguration();
-        configuration.setProperty("giraph.vertexClass", GiraphVertex.class.getName());
-        configuration.setProperty("giraph.vertexInputFormatClass", TinkerGraphInputFormat.class.getName());
-        configuration.setProperty("giraph.vertexOutputFormatClass", IdWithValueTextOutputFormat.class.getName());
-        configuration.setProperty("giraph.maxWorkers", "1");
-        //configuration.setProperty("giraph.zkList", "127.0.0.1:2181");
-        configuration.setProperty("giraph.SplitMasterWorker", "false");
-        //configuration.setProperty("mapred.job.tracker", "localhost:9001");
-        //configuration.setProperty("giraph.vertex.input.dir", "tiny_graph.txt");
-        configuration.setProperty("mapred.output.dir", "output");
-
         GraphComputer g = new GiraphGraphComputer();
-        g.program(new PageRankVertexProgram.Builder().build()).configuration(configuration).submit(); */
+        /*final Configuration configuration = PageRankVertexProgram.create().getConfiguration();
+        configuration.setProperty("mapred.output.dir", "output");
+        configuration.setProperty("giraph.vertexInputFormatClass", "com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphInputFormat");
+        configuration.setProperty("giraph.vertexOutputFormatClass", "com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphOutputFormat");
+        configuration.setProperty("giraph.minWorkers", 1);
+        configuration.setProperty("giraph.maxWorkers", 1);
+        configuration.setProperty("gremlin.input.location", "../data/grateful-dead.xml");
+        configuration.setProperty("giraph.SplitMasterWorker", false);
+        //configuration.setProperty("giraph.localTestMode",true);
+        g.program(configuration).submit();*/
     }
 }
