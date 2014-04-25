@@ -46,13 +46,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         return this;
     }
 
-    public GraphComputer program(final VertexProgram.Builder vertexProgramBuilder) {
-        final Configuration configuration = vertexProgramBuilder.configure();
-        configuration.getKeys().forEachRemaining(key -> this.configuration.setProperty(key, configuration.getProperty(key)));
-        return this;
-    }
-
-    public GraphComputer configuration(final Configuration configuration) {
+    public GraphComputer program(final Configuration configuration) {
         configuration.getKeys().forEachRemaining(key -> this.configuration.setProperty(key, configuration.getProperty(key)));
         return this;
     }

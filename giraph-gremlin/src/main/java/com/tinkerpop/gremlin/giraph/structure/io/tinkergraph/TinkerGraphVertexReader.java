@@ -25,7 +25,7 @@ public class TinkerGraphVertexReader extends VertexReader {
     public void initialize(final InputSplit inputSplit, final TaskAttemptContext context) throws IOException, InterruptedException {
         final FileSystem fileSystem = FileSystem.get(context.getConfiguration());
         final TinkerGraph g = TinkerGraph.open();
-        GraphMLReader.create().build().readGraph(fileSystem.open(new Path(context.getConfiguration().get(GiraphGraphComputer.GIRAPH_GREMLIN_INPUT_LOCATION))), g);
+        GraphMLReader.create().build().readGraph(fileSystem.open(new Path(context.getConfiguration().get(GiraphGraphComputer.GREMLIN_INPUT_LOCATION))), g);
         this.vertices = g.V();
     }
 
