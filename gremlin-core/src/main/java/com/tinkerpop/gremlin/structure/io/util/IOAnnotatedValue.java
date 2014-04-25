@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Serializable form of an {@link AnnotatedValue}.
+ * Serializable form of an {@link AnnotatedValue} for IO purposes.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

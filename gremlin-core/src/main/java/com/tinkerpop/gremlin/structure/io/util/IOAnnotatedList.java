@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Serializable form of an {@link AnnotatedList}.
+ * Serializable form of an {@link AnnotatedList} for IO purposes.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -156,8 +155,8 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedList.class, null, 15));
             add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedValue.class, null, 16));
             add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
-            add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new IOVertex.VertexSerializer(), 18));
-            add(Triplet.<Class, Serializer, Integer>with(Edge.class, new IOEdge.EdgeSerializer(), 19));
+            add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new VertexSerializer(), 18));
+            add(Triplet.<Class, Serializer, Integer>with(Edge.class, new EdgeSerializer(), 19));
             add(Triplet.<Class, Serializer, Integer>with(IOVertex.class, null, 20));
             add(Triplet.<Class, Serializer, Integer>with(IOEdge.class, null, 21));
         }};

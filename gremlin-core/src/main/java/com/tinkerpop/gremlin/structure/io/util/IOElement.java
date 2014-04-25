@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Serializable form of an {@link Element} for IO purposes.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class IOElement {

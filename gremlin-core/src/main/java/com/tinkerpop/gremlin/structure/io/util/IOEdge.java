@@ -12,6 +12,8 @@ import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
 import org.javatuples.Pair;
 
 /**
+ * Serializable form of {@link Edge} for IO purposes.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class IOEdge extends IOElement {
@@ -29,19 +31,5 @@ public class IOEdge extends IOElement {
         ioe.inVLabel = in.getLabel();
         ioe.outVLabel = out.getLabel();
         return from(edge, ioe);
-    }
-
-    public static class EdgeSerializer extends Serializer<Edge> {
-        @Override
-        public void write(final Kryo kryo, final Output output, final Edge edge) {
-            kryo.writeClassAndObject(output, IOEdge.from(edge));
-        }
-
-        @Override
-        public Edge read(final Kryo kryo, final Input input, final Class<Edge> edgeClass) {
-            final IOEdge ioe = (IOEdge) kryo.readClassAndObject(input);
-            return new CachedEdge(ioe.id, ioe.label, ioe.properties,
-                    Pair.with(ioe.outV, ioe.outVLabel), Pair.with(ioe.inV, ioe.inVLabel));
-        }
     }
 }
