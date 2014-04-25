@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.message.ResultType;
+import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -12,10 +13,12 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.cached.CachedEdge;
 import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -25,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -161,6 +165,28 @@ public class KryoSerializationV1d0Test {
         assertEquals(2, deserializedInnerInnerMap.size());
         assertEquals(500, deserializedInnerInnerMap.get("x"));
         assertEquals("some", deserializedInnerInnerMap.get("y"));
+    }
+
+    @Test
+    public void serializeToJsonMapWithElementForKey() throws Exception {
+        final TinkerGraph g = TinkerFactory.createClassic();
+        final Map<Vertex, Integer> map = new HashMap<>();
+        map.put(g.V().<Vertex>has("name", Compare.EQUAL, "marko").next(), 1000);
+
+        final ResponseMessage response = convert(map);
+        assertCommon(response);
+
+        final Map<Vertex, Integer> deserializedMap = (Map<Vertex,Integer>) response.getResult();
+        assertEquals(1, deserializedMap.size());
+
+        final Vertex deserializedMarko = deserializedMap.keySet().iterator().next();
+        assertEquals("marko", deserializedMarko.getValue("name").toString());
+        assertEquals(1, deserializedMarko.getId());
+        assertEquals(Element.DEFAULT_LABEL, deserializedMarko.getLabel());
+        assertEquals(new Integer(29), (Integer) deserializedMarko.getValue("age"));
+        assertEquals(2, deserializedMarko.getProperties().size());
+
+        assertEquals(new Integer(1000), deserializedMap.values().iterator().next());
     }
 
     private void assertCommon(final ResponseMessage response) {
