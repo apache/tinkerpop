@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.structure.util.cached;
 
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
@@ -19,8 +18,8 @@ public class CachedEdge extends CachedElement implements Edge {
     public CachedEdge(final Object id, final String label, final Map<String,Object> properties,
                       final Pair<Object, String> outV, final Pair<Object, String> inV) {
         super(id, label, properties);
-        this.outVertex = new CachedVertex(inV.getValue0(), inV.getValue1());
         this.outVertex = new CachedVertex(outV.getValue0(), outV.getValue1());
+        this.inVertex = new CachedVertex(inV.getValue0(), inV.getValue1());
     }
 
     public CachedEdge(final Edge edge) {

@@ -21,7 +21,7 @@ import static com.esotericsoftware.kryo.util.Util.getWrapperClass;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinClassResolver implements ClassResolver {
+class GremlinClassResolver implements ClassResolver {
     static public final byte NAME = -1;
 
     protected Kryo kryo;
