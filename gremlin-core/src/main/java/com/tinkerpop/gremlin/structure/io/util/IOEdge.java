@@ -1,15 +1,8 @@
 package com.tinkerpop.gremlin.structure.io.util;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.Serializer;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.cached.CachedEdge;
-import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
-import org.javatuples.Pair;
 
 /**
  * Serializable form of {@link Edge} for IO purposes.
