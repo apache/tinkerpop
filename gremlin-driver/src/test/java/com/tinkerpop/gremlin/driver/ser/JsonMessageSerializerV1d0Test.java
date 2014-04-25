@@ -28,7 +28,7 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class JsonResultSerializerV1d0Test {
+public class JsonMessageSerializerV1d0Test {
 
     public static final JsonMessageSerializerV1d0 SERIALIZER = new JsonMessageSerializerV1d0();
     private static final RequestMessage msg = RequestMessage.create("op")

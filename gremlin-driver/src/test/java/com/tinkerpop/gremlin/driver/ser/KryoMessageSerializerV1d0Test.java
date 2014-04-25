@@ -36,7 +36,7 @@ import static org.junit.Assert.assertNull;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class KryoSerializationV1d0Test {
+public class KryoMessageSerializerV1d0Test {
     private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.create(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
