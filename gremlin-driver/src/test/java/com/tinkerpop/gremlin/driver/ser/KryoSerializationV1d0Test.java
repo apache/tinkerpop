@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.driver.ser;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.message.ResultType;
@@ -14,19 +13,16 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Serializer tests that cover non-lossy serialization/deserialization methods.
@@ -56,6 +52,23 @@ public class KryoSerializationV1d0Test {
     }
 
     @Test
+    public void serializeIterableWithNull() throws Exception {
+        final ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(null);
+        list.add(100);
+
+        final ResponseMessage response = convert(list);
+        assertCommon(response);
+
+        final List<Integer> deserializedFunList = (List<Integer>) response.getResult();
+        assertEquals(3, deserializedFunList.size());
+        assertEquals(new Integer(1), deserializedFunList.get(0));
+        assertNull(deserializedFunList.get(1));
+        assertEquals(new Integer(100), deserializedFunList.get(2));
+    }
+
+    @Test
     public void serializeMap() throws Exception {
         final Map<String, Object> map = new HashMap<>();
         final Map<String, String> innerMap = new HashMap<>();
@@ -77,8 +90,6 @@ public class KryoSerializationV1d0Test {
         assertEquals(1, deserializedInnerMap.size());
         assertEquals("b", deserializedInnerMap.get("a"));
     }
-
-    // todo: get the test below to pass then add more tests
 
     @Test
     public void serializeVertexWithEmbeddedMap() throws Exception {
