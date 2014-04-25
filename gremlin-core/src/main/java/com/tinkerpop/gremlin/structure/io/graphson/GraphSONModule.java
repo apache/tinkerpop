@@ -39,6 +39,7 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
 
+        // todo: serialize as IOVertex/Edge and deserialize to CachedVertex when types are embedded..add tests
         addDeserializer(Edge.class, new EdgeJacksonDeserializer());
         addDeserializer(Vertex.class, new VertexJacksonDeserializer());
     }
