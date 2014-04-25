@@ -43,21 +43,21 @@ public class GremlinClassResolver implements ClassResolver {
         this.kryo = kryo;
     }
 
-    public Registration register (Registration registration) {
-        if (registration == null) throw new IllegalArgumentException("registration cannot be null.");
-        if (registration.getId() != NAME) {
-            idToRegistration.put(registration.getId(), registration);
-        }
+    public Registration register(final Registration registration) {
+        if (null == registration) throw new IllegalArgumentException("registration cannot be null.");
+        if (registration.getId() != NAME) idToRegistration.put(registration.getId(), registration);
+
         classToRegistration.put(registration.getType(), registration);
         if (registration.getType().isPrimitive()) classToRegistration.put(getWrapperClass(registration.getType()), registration);
         return registration;
     }
 
-    public Registration registerImplicit (Class type) {
+    public Registration registerImplicit(final Class type) {
         return register(new Registration(type, kryo.getDefaultSerializer(type), NAME));
     }
 
-    public Registration getRegistration (Class clazz) {
+    public Registration getRegistration(final Class clazz) {
+        // force all instances of Vertex and Edge to that respective interface
         final Class type;
         if (Vertex.class.isAssignableFrom(clazz))
             type = Vertex.class;
@@ -67,72 +67,75 @@ public class GremlinClassResolver implements ClassResolver {
             type = clazz;
 
         if (type == memoizedClass) return memoizedClassValue;
-        Registration registration = classToRegistration.get(type);
+        final Registration registration = classToRegistration.get(type);
         if (registration != null) {
             memoizedClass = type;
             memoizedClassValue = registration;
         }
+
         return registration;
     }
 
-    public Registration getRegistration (int classID) {
+    public Registration getRegistration(final int classID) {
         return idToRegistration.get(classID);
     }
 
-    public Registration writeClass (Output output, Class type) {
-        if (type == null) {
+    public Registration writeClass(final Output output, final Class type) {
+        if (null == type) {
             output.writeVarInt(Kryo.NULL, true);
             return null;
         }
-        Registration registration = kryo.getRegistration(type);
+
+        final Registration registration = kryo.getRegistration(type);
         if (registration.getId() == NAME)
             writeName(output, type, registration);
-        else {
+        else
             output.writeVarInt(registration.getId() + 2, true);
-        }
+
         return registration;
     }
 
-    protected void writeName (Output output, Class type, Registration registration) {
+    protected void writeName(final Output output, final Class type, final Registration registration) {
         output.writeVarInt(NAME + 2, true);
         if (classToNameId != null) {
-            int nameId = classToNameId.get(type, -1);
+            final int nameId = classToNameId.get(type, -1);
             if (nameId != -1) {
                 output.writeVarInt(nameId, true);
                 return;
             }
         }
         // Only write the class name the first time encountered in object graph.
-        int nameId = nextNameId++;
+        final int nameId = nextNameId++;
         if (classToNameId == null) classToNameId = new IdentityObjectIntMap();
         classToNameId.put(type, nameId);
         output.writeVarInt(nameId, true);
         output.writeString(type.getName());
     }
 
-    public Registration readClass (Input input) {
-        int classID = input.readVarInt(true);
+    public Registration readClass(final Input input) {
+        final int classID = input.readVarInt(true);
         switch (classID) {
             case Kryo.NULL:
                 return null;
             case NAME + 2: // Offset for NAME and NULL.
                 return readName(input);
         }
+
         if (classID == memoizedClassId) return memoizedClassIdValue;
-        Registration registration = idToRegistration.get(classID - 2);
+        final Registration registration = idToRegistration.get(classID - 2);
         if (registration == null) throw new KryoException("Encountered unregistered class ID: " + (classID - 2));
         memoizedClassId = classID;
         memoizedClassIdValue = registration;
         return registration;
     }
 
-    protected Registration readName (Input input) {
-        int nameId = input.readVarInt(true);
+    protected Registration readName (final Input input) {
+        final int nameId = input.readVarInt(true);
         if (nameIdToClass == null) nameIdToClass = new IntMap();
         Class type = nameIdToClass.get(nameId);
         if (type == null) {
             // Only read the class name the first time encountered in object graph.
-            String className = input.readString();
+            final String className = input.readString();
             type = getTypeByName(className);
             if (type == null) {
                 try {
