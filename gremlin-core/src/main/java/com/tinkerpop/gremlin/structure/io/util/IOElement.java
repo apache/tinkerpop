@@ -2,8 +2,12 @@ package com.tinkerpop.gremlin.structure.io.util;
 
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.util.cached.CachedElement;
+import com.tinkerpop.gremlin.structure.util.cached.CachedProperty;
 import org.javatuples.Pair;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 

@@ -1,9 +1,15 @@
 package com.tinkerpop.gremlin.structure.io.graphson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
@@ -13,6 +19,8 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
+import com.tinkerpop.gremlin.structure.util.cached.CachedEdge;
+import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,6 +38,25 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(Vertex.class, new VertexJacksonSerializer());
         addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
+
+        addDeserializer(Edge.class, new EdgeJacksonDeserializer());
+        addDeserializer(Vertex.class, new VertexJacksonDeserializer());
+    }
+
+    static class EdgeJacksonDeserializer extends StdDeserializer<Edge> {
+
+        public EdgeJacksonDeserializer() {
+            super(Edge.class);
+        }
+
+        @Override
+        public Edge deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final ObjectMapper mapper = (ObjectMapper) jsonParser.getCodec();
+            final ObjectNode root = mapper.readTree(jsonParser);
+
+            return new CachedEdge("1", "test", null, null, null);
+
+        }
     }
 
     static class EdgeJacksonSerializer extends StdSerializer<Edge> {
@@ -96,6 +123,22 @@ public class GraphSONModule extends SimpleModule {
             jsonGenerator.writeObject(m);
         }
 
+    }
+
+    static class VertexJacksonDeserializer extends StdDeserializer<Vertex> {
+
+        public VertexJacksonDeserializer() {
+            super(Vertex.class);
+        }
+
+        @Override
+        public Vertex deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final ObjectMapper mapper = (ObjectMapper) jsonParser.getCodec();
+            final ObjectNode root = mapper.readTree(jsonParser);
+
+            return new CachedVertex("1", "test");
+
+        }
     }
 
     /**

@@ -4,7 +4,11 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.util.DefaultStreamFactory;
+import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
 import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
 import com.tinkerpop.gremlin.structure.io.util.IOEdge;
@@ -42,7 +46,7 @@ public final class GremlinKryo {
     }
 
     public Kryo createKryo() {
-        final Kryo kryo = new Kryo();
+        final Kryo kryo = new Kryo(new GremlinClassResolver(), new MapReferenceResolver(), new DefaultStreamFactory());
         kryo.setRegistrationRequired(true);
         serializationList.forEach(p -> {
             final Serializer serializer = Optional.ofNullable(p.getValue1()).orElse(kryo.getDefaultSerializer(p.getValue0()));
@@ -152,8 +156,10 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedList.class, null, 15));
             add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedValue.class, null, 16));
             add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
-            add(Triplet.<Class, Serializer, Integer>with(IOVertex.class, null, 18));
-            add(Triplet.<Class, Serializer, Integer>with(IOEdge.class, null, 19));
+            add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new IOVertex.VertexSerializer(), 18));
+            add(Triplet.<Class, Serializer, Integer>with(Edge.class, new IOEdge.EdgeSerializer(), 19));
+            add(Triplet.<Class, Serializer, Integer>with(IOVertex.class, null, 20));
+            add(Triplet.<Class, Serializer, Integer>with(IOEdge.class, null, 21));
         }};
 
         private static final byte major = 1;

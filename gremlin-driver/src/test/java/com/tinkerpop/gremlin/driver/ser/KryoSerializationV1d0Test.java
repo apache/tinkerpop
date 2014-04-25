@@ -7,7 +7,9 @@ import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.message.ResultType;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -31,22 +33,12 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(Parameterized.class)
-public class LosslessSerializationV1d0Test {
+public class KryoSerializationV1d0Test {
     private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.create(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    @Parameterized.Parameters(name = "{index}: serializeAs{0})")
-    public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                {new JsonMessageSerializerGremlinV1d0()},
-                {new KryoMessageSerializerV1d0()}
-        });
-    }
-
-    @Parameterized.Parameter(value = 0)
-    public MessageSerializer serializer;
+    public MessageSerializer serializer = new KryoMessageSerializerV1d0();
 
     @Test
     public void serializeIterable() throws Exception {
@@ -88,7 +80,6 @@ public class LosslessSerializationV1d0Test {
 
     // todo: get the test below to pass then add more tests
 
-    @Ignore("busted until i figure out how kryo can serialize a vertex with GremlinKryo")
     @Test
     public void serializeVertexWithEmbeddedMap() throws Exception {
         final Graph g = TinkerGraph.open();
@@ -112,15 +103,14 @@ public class LosslessSerializationV1d0Test {
         final List<Map<String, Object>> vertexList = (List<Map<String, Object>>) response.getResult();
         assertEquals(1, vertexList.size());
 
-        final Map<String,Object> deserializedVertex = vertexList.get(0);
-        assertEquals(0, deserializedVertex.get(Element.ID));
-        assertEquals(Element.DEFAULT_LABEL, deserializedVertex.get(Element.LABEL));
-        assertEquals("vertex", deserializedVertex.get("type"));
+        final CachedVertex deserializedVertex = (CachedVertex) vertexList.get(0);
+        assertEquals(0l, deserializedVertex.getId());
+        assertEquals(Element.DEFAULT_LABEL, deserializedVertex.getLabel());
 
-        final Map<String,Object> properties = (Map<String,Object>) deserializedVertex.get("properties");
+        final Map<String,Property> properties = deserializedVertex.getProperties();
         assertEquals(1, properties.size());
 
-        final List<Object> deserializedInnerList = (List<Object>) properties.get("friends");
+        final List<Object> deserializedInnerList = (List<Object>) properties.get("friends").get();
         assertEquals(3, deserializedInnerList.size());
         assertEquals("x", deserializedInnerList.get(0));
         assertEquals(5, deserializedInnerList.get(1));
