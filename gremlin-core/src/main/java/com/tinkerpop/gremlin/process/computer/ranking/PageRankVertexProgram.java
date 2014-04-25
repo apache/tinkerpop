@@ -92,7 +92,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         private final Configuration configuration = new BaseConfiguration();
 
         private Builder() {
-            this.configuration.setProperty(VERTEX_PROGRAM_CLASS, PageRankVertexProgram.class.getName());
+            this.configuration.setProperty(VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
         }
 
         public Builder iterations(final int iterations) {
@@ -120,7 +120,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             return this;
         }
 
-        public Configuration configure() {
+        public Configuration getConfiguration() {
             return this.configuration;
         }
     }

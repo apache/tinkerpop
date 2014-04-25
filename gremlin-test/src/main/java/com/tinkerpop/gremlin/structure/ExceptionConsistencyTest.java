@@ -753,7 +753,7 @@ public class ExceptionConsistencyTest {
 
     private static class MockVertexProgramBuilder implements VertexProgram.Builder {
         @Override
-        public Configuration configure() {
+        public Configuration getConfiguration() {
             return new BaseConfiguration();
         }
     }

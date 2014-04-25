@@ -27,7 +27,7 @@ public class GiraphGraphComputer implements GraphComputer {
     private static final String DOT_JAR = ".jar";
     private static final Logger LOGGER = Logger.getLogger(GiraphGraphComputer.class);
 
-    public static final String GIRAPH_GREMLIN_INPUT_LOCATION = "giraph.gremlin.input.location";
+    public static final String GREMLIN_INPUT_LOCATION = "gremlin.input.location";
 
     private org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
 
@@ -37,21 +37,15 @@ public class GiraphGraphComputer implements GraphComputer {
         return this;
     }
 
-    public GraphComputer program(final VertexProgram.Builder vertexProgramBuilder) {
-        final Configuration configuration = vertexProgramBuilder.configure();
+    public GraphComputer program(final Configuration configuration) {
         configuration.getKeys().forEachRemaining(key -> this.hadoopConfiguration.set(key, configuration.getProperty(key).toString()));
-        return this;
-    }
-
-    public GraphComputer configuration(final Configuration configuration) {
-        ConfUtil.hadoopConfiguration(configuration).forEach(entry -> this.hadoopConfiguration.set(entry.getKey(), entry.getValue()));
         return this;
     }
 
     public Future<Graph> submit() {
         try {
             final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
-            fs.delete(new Path(hadoopConfiguration.get("mapred.output.dir")), true);
+            fs.delete(new Path(this.hadoopConfiguration.get("mapred.output.dir")), true);
             final FileSystem local = FileSystem.getLocal(this.hadoopConfiguration);
             final String giraphGremlinHome = System.getenv(GIRAPH_GREMLIN_HOME);
             if (null == giraphGremlinHome)

@@ -32,9 +32,7 @@ public interface GraphComputer extends TraversalEngine {
 
     public GraphComputer isolation(final Isolation isolation);
 
-    public GraphComputer program(final VertexProgram.Builder vertexProgramBuilder);
-
-    public GraphComputer configuration(final Configuration configuration);
+    public GraphComputer program(final Configuration configuration);
 
     public Future<Graph> submit();
 
