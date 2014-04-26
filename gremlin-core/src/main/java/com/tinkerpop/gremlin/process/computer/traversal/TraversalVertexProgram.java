@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.PathHolder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
@@ -23,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 
 /**
@@ -33,8 +33,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private MessageType.Global global = MessageType.Global.of();
 
-    public static final String GREMLIN_TRAVERSAL_SUPPLIER = "gremlin.traversalSupplier";
-    public static final String GREMLIN_TRAVERSAL_SUPPLIER_CLASS = "gremlin.traversalSupplierClass";
+    public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalSupplier";
+    public static final String TRAVERSAL_SUPPLIER_CLASS = "gremlin.traversalSupplierClass";
 
     private static final String TRACK_PATHS = "gremlin.traversalVertexProgram.trackPaths";
     private static final String VOTE_TO_HALT = "voteToHalt";
@@ -50,12 +50,12 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     public void initialize(final Configuration configuration) {
         try {
             this.trackPaths = configuration.getBoolean(TRACK_PATHS, false);
-            if (configuration.containsKey(GREMLIN_TRAVERSAL_SUPPLIER_CLASS)) {
+            if (configuration.containsKey(TRAVERSAL_SUPPLIER_CLASS)) {
                 final Class<SSupplier<Traversal>> traversalSupplierClass =
-                        (Class) Class.forName(configuration.getProperty(GREMLIN_TRAVERSAL_SUPPLIER_CLASS).toString());
+                        (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
                 this.traversalSupplier = traversalSupplierClass.getConstructor().newInstance();
             } else {
-                final List byteList = configuration.getList(GREMLIN_TRAVERSAL_SUPPLIER);
+                final List byteList = configuration.getList(TRAVERSAL_SUPPLIER);
                 byte[] bytes = new byte[byteList.size()];
                 for (int i = 0; i < byteList.size(); i++) {
                     bytes[i] = Byte.valueOf(byteList.get(i).toString().replace("[", "").replace("]", ""));
@@ -156,7 +156,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         private final Configuration configuration = new BaseConfiguration();
 
         public Builder() {
-            this.configuration.setProperty(VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
+            this.configuration.setProperty(GraphComputer.VERTEX_PROGRAM, TraversalVertexProgram.class.getName());
         }
 
         public Builder traversal(final SSupplier<Traversal> traversalSupplier) {
@@ -166,7 +166,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 for (byte b : bytes) {
                     byteList.add(b);
                 }
-                this.configuration.setProperty(GREMLIN_TRAVERSAL_SUPPLIER, byteList);
+                this.configuration.setProperty(TRAVERSAL_SUPPLIER, byteList);
             } catch (IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -174,7 +174,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
 
         public Builder traversal(final Class<SSupplier<Traversal>> traversalSupplierClass) {
-            this.configuration.setProperty(GREMLIN_TRAVERSAL_SUPPLIER_CLASS, traversalSupplierClass);
+            this.configuration.setProperty(TRAVERSAL_SUPPLIER_CLASS, traversalSupplierClass);
             return this;
         }
 

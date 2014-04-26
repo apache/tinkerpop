@@ -85,6 +85,10 @@ public interface Vertex extends Element {
         return (GraphTraversal) this.start().property(propertyKey);
     }
 
+    /**public default <E2> GraphTraversal<Vertex, Property<E2>> properties() {
+        return (GraphTraversal) this.start().values;
+    }**/
+
     public default <E2> GraphTraversal<Vertex, E2> value(final String propertyKey) {
         return (GraphTraversal) this.start().value(propertyKey);
     }

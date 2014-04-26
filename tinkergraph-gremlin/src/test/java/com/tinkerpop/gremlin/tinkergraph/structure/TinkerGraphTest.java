@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
@@ -53,9 +54,11 @@ public class TinkerGraphTest implements Serializable {
     }
 
     @Test
-    public void testTraversalDSL() {
-        final Graph g = TinkerFactory.createClassic();
+    public void testTraversalDSL() throws Exception {
+        Graph g = TinkerFactory.createClassic();
         g.traversal(TinkerFactory.SocialTraversal.class).people(g).knows().knows().forEach(System.out::println);
+        g = g.compute().program(PageRankVertexProgram.create().getConfiguration()).submit().get();
+        System.out.println(g.v(1).getValue(PageRankVertexProgram.PAGE_RANK).toString());
     }
 
     @Test

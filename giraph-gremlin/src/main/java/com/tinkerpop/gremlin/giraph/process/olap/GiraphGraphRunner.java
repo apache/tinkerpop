@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.util.Tool;
@@ -25,6 +26,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         this.giraphConfiguration = new GiraphConfiguration(hadoopConfiguration);
         this.giraphConfiguration.setMasterComputeClass(GiraphComputerMemory.class);
+        this.giraphConfiguration.setClass(GIRAPH_VERTEX_CLASS, GiraphVertex.class, Vertex.class);
     }
 
     public int run(final String[] args) {
@@ -34,6 +36,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
             job.getInternalJob().setJarByClass(GiraphJob.class);
             job.run(true);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e.getMessage(), e);
         }
         return 0;
@@ -43,7 +46,6 @@ public class GiraphGraphRunner extends Configured implements Tool {
         try {
             final FileConfiguration configuration = new PropertiesConfiguration();
             configuration.load(new File(args[0]));
-            configuration.setProperty(GIRAPH_VERTEX_CLASS, GiraphVertex.class.getName());
             GraphComputer computer = new GiraphGraphComputer();
             computer.program(configuration).submit();
         } catch (Exception e) {

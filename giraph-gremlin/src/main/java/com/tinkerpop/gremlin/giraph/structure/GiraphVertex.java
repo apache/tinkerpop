@@ -36,9 +36,6 @@ public class GiraphVertex extends Vertex<LongWritable, NullWritable, NullWritabl
     }
 
     public void compute(final Iterable<KryoWritable> messages) {
-        //System.out.println(this.gremlinVertex + ": " + this.gremlinVertex.<TraversalPaths>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(new TraversalPaths(this.gremlinVertex)).getDoneObjectTracks());
-        //System.out.println(this.gremlinVertex + ": " + this.gremlinVertex.<TraversalCounters>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(new TraversalCounters(this.gremlinVertex)).getDoneObjectTracks());
-        //System.out.println(this.gremlinVertex + ": " + this.gremlinVertex.<Double>getProperty(PageRankVertexProgram.PAGE_RANK).orElse(0.0d));
         this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.computerMemory);
     }
 
