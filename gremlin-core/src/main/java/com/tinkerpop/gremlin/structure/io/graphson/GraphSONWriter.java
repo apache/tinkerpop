@@ -14,6 +14,10 @@ import java.io.OutputStream;
 /**
  * A @{link GraphWriter} that writes a graph and its elements to a JSON-based representation. This implementation
  * only supports JSON data types and is therefore lossy with respect to data types (e.g. a float will become a double).
+ * Further note that serialized {@code Map} objects do not support complex types for keys.  {@link Edge} and
+ * {@link Vertex} objects are serialized to {@code Map} instances. If an
+ * {@link com.tinkerpop.gremlin.structure.Element} is used as a key, it is coerced to its identifier.  Other complex
+ * objects are converted via {@link Object#toString()}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

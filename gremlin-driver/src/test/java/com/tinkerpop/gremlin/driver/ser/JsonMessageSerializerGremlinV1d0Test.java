@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.structure.util.cached.CachedEdge;
 import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -18,6 +19,8 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -27,6 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -34,14 +38,12 @@ import static org.junit.Assert.assertNull;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class KryoMessageSerializerV1d0Test {
+public class JsonMessageSerializerGremlinV1d0Test {
     private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.create(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public MessageSerializer serializer = new KryoMessageSerializerV1d0();
-
-    // todo: test annotatedlist/value
+    public MessageSerializer serializer = new JsonMessageSerializerGremlinV1d0();
 
     @Test
     public void serializeIterable() throws Exception {
@@ -111,19 +113,22 @@ public class KryoMessageSerializerV1d0Test {
         final ResponseMessage response = convert(iterable);
         assertCommon(response);
 
-        final List<CachedEdge> edgeList = (List<CachedEdge>) response.getResult();
+        final List<Map<String,Object>> edgeList = (List<Map<String,Object>>) response.getResult();
         assertEquals(1, edgeList.size());
 
-        final CachedEdge deserialiedEdge = edgeList.get(0);
-        assertEquals(2l, deserialiedEdge.getId());
-        assertEquals("test", deserialiedEdge.getLabel());
+        final Map<String,Object> deserializedEdge = edgeList.get(0);
+        assertEquals(e.getId(), deserializedEdge.get(GraphSONTokens.ID));
+        assertEquals(v1.getId(), deserializedEdge.get(GraphSONTokens.OUT));
+        assertEquals(v2.getId(), deserializedEdge.get(GraphSONTokens.IN));
+        assertEquals(v1.getLabel(), deserializedEdge.get(GraphSONTokens.OUT_LABEL));
+        assertEquals(v2.getLabel(), deserializedEdge.get(GraphSONTokens.IN_LABEL));
+        assertEquals(e.getLabel(), deserializedEdge.get(GraphSONTokens.LABEL));
+        assertEquals(GraphSONTokens.EDGE, deserializedEdge.get(GraphSONTokens.TYPE));
 
-        assertEquals(new Integer(123), (Integer) deserialiedEdge.getValue("abc"));
-        assertEquals(1, deserialiedEdge.getProperties().size());
-        assertEquals(0l, deserialiedEdge.getVertex(Direction.OUT).getId());
-        assertEquals(Element.DEFAULT_LABEL, deserialiedEdge.getVertex(Direction.OUT).getLabel());
-        assertEquals(1l, deserialiedEdge.getVertex(Direction.IN).getId());
-        assertEquals(Element.DEFAULT_LABEL, deserialiedEdge.getVertex(Direction.IN).getLabel());
+        final Map<String,Object> properties = (Map<String,Object>) deserializedEdge.get(GraphSONTokens.PROPERTIES);
+        assertNotNull(properties);
+        assertEquals(123, properties.get("abc"));
+
     }
 
     @Test
@@ -146,17 +151,17 @@ public class KryoMessageSerializerV1d0Test {
         final ResponseMessage response = convert(list);
         assertCommon(response);
 
-        final List<CachedVertex> vertexList = (List<CachedVertex>) response.getResult();
+        final List<Map<String,Object>> vertexList = (List<Map<String,Object>>) response.getResult();
         assertEquals(1, vertexList.size());
 
-        final CachedVertex deserializedVertex = vertexList.get(0);
-        assertEquals(0l, deserializedVertex.getId());
-        assertEquals(Element.DEFAULT_LABEL, deserializedVertex.getLabel());
+        final Map<String,Object> deserializedVertex = vertexList.get(0);
+        assertEquals(0l, deserializedVertex.get(GraphSONTokens.ID));
+        assertEquals(Element.DEFAULT_LABEL, deserializedVertex.get(GraphSONTokens.LABEL));
 
-        final Map<String,Property> properties = deserializedVertex.getProperties();
+        final Map<String,Object> properties = (Map<String,Object>) deserializedVertex.get(GraphSONTokens.PROPERTIES);
         assertEquals(1, properties.size());
 
-        final List<Object> deserializedInnerList = (List<Object>) properties.get("friends").get();
+        final List<Object> deserializedInnerList = (List<Object>) properties.get("friends");
         assertEquals(3, deserializedInnerList.size());
         assertEquals("x", deserializedInnerList.get(0));
         assertEquals(5, deserializedInnerList.get(1));
@@ -176,17 +181,12 @@ public class KryoMessageSerializerV1d0Test {
         final ResponseMessage response = convert(map);
         assertCommon(response);
 
-        final Map<Vertex, Integer> deserializedMap = (Map<Vertex,Integer>) response.getResult();
+        final Map<String, Integer> deserializedMap = (Map<String,Integer>) response.getResult();
         assertEquals(1, deserializedMap.size());
 
-        final Vertex deserializedMarko = deserializedMap.keySet().iterator().next();
-        assertEquals("marko", deserializedMarko.getValue("name").toString());
-        assertEquals(1, deserializedMarko.getId());
-        assertEquals(Element.DEFAULT_LABEL, deserializedMarko.getLabel());
-        assertEquals(new Integer(29), (Integer) deserializedMarko.getValue("age"));
-        assertEquals(2, deserializedMarko.getProperties().size());
-
-        assertEquals(new Integer(1000), deserializedMap.values().iterator().next());
+        // with no embedded types the key (which is a vertex) simply serializes out to an id
+        // {"result":{"1":1000},"code":200,"requestId":"2d62161b-9544-4f39-af44-62ec49f9a595","type":0}
+        assertEquals(new Integer(1000), deserializedMap.get("1"));
     }
 
     private void assertCommon(final ResponseMessage response) {
