@@ -29,26 +29,26 @@ public class MatchStep<S, E> extends AbstractStep<S, E> implements PathConsumer 
         super(traversal);
         this.inAs = inAs;
         this.outAs = outAs;
-        for (final Traversal p1 : traversals) {
-            final String start = TraversalHelper.getStart(p1).getAs();
-            final String end = TraversalHelper.getEnd(p1).getAs();
+        for (final Traversal tl : traversals) {
+            final String start = TraversalHelper.getStart(tl).getAs();
+            final String end = TraversalHelper.getEnd(tl).getAs();
             if (!TraversalHelper.isLabeled(start)) {
                 throw new IllegalArgumentException("All match traversals must have their start pipe labeled");
             }
             if (!TraversalHelper.isLabeled(end)) {
                 final List<Traversal> list = this.predicateTraversals.getOrDefault(start, new ArrayList<>());
                 this.predicateTraversals.put(start, list);
-                list.add(p1);
+                list.add(tl);
             } else {
                 if (end.equals(this.outAs)) {
                     if (null != this.endTraversal)
                         throw new IllegalArgumentException("There can only be one outAs labeled end traversal");
-                    this.endTraversal = p1;
-                    this.endTraversalStartAs = TraversalHelper.getStart(p1).getAs();
+                    this.endTraversal = tl;
+                    this.endTraversalStartAs = TraversalHelper.getStart(tl).getAs();
                 } else {
                     final List<Traversal> list = this.internalTraversals.getOrDefault(start, new ArrayList<>());
                     this.internalTraversals.put(start, list);
-                    list.add(p1);
+                    list.add(tl);
                 }
             }
         }

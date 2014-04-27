@@ -195,9 +195,13 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.16</version>
+                    <version>2.17</version>
                     <configuration>
                         <runOrder>random</runOrder>
+                        <includes>
+                            <include>**/*.class</include>
+                        </includes>
+                        <excludedGroups>com.tinkerpop.gremlin.IntegrationTest</excludedGroups>
                     </configuration>
                 </plugin>
             </plugins>
@@ -311,4 +315,38 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <!-- activate this profile in order to run integration tests, e.g. `mvn integration-test -Pintegration-test` -->
+        <profile>
+            <id>integration-test</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>2.17</version>
+                        <configuration>
+                            <groups>com.tinkerpop.gremlin.IntegrationTest</groups>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>**/*.class</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
