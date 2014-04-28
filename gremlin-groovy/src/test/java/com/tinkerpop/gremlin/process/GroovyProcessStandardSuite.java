@@ -1,6 +1,16 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.graph.filter.GroovyCyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.filter.GroovyDedupTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyExceptTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyFilterTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyHasTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyIntervalTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyRandomTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyRangeTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyRetainTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovySimplePathTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyAnnotatedValuesTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -16,7 +26,17 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            GroovyDedupTest.class
+            GroovyCyclicPathTest.class,
+            GroovyDedupTest.class,
+            GroovyExceptTest.class,
+            GroovyFilterTest.class,
+            GroovyHasTest.class,
+            GroovyIntervalTest.class,
+            GroovyRandomTest.class,
+            GroovyRangeTest.class,
+            GroovyRetainTest.class,
+            GroovySimplePathTest.class,
+            GroovyAnnotatedValuesTest.class
     };
 
 

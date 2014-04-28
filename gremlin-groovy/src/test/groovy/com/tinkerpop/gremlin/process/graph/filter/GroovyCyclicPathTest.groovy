@@ -7,17 +7,13 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyDedupTest extends DedupTest {
+class GroovyCyclicPathTest extends CyclicPathTest {
 
     static {
         GremlinLoader.load();
     }
 
-    public Traversal<Vertex, String> get_g_V_both_dedup_name() {
-        g.V.both.dedup.value("name")
-    }
-
-    public Traversal<Vertex, String> get_g_V_both_dedupXlangX_name() {
-        g.V.both.dedup{it.getProperty("lang").orElse(null)}.value("name")
+    public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
+        g.v(v1Id).out("created").in("created").cyclicPath
     }
 }

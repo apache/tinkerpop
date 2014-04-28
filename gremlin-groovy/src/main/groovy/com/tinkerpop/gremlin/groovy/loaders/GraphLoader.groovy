@@ -32,6 +32,10 @@ class GraphLoader {
             return ((Element) delegate).getValue(property);
         }
 
+        Element.metaClass.getAt = { final String property, final Object orElse ->
+            return ((Element) delegate).getProperty(property).orElse(orElse);
+        }
+
         Vertex.metaClass.propertyMissing = { final String name ->
             if (GremlinLoader.isStep(name)) {
                 return delegate."$name"();
