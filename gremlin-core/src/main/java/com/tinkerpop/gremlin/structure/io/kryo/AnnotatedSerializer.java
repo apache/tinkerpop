@@ -35,7 +35,7 @@ class AnnotatedSerializer {
             final List<CachedAnnotatedValue> values = new ArrayList<>();
             annotatedList.getAnnotatedValueList().stream().map(av -> {
                 final IOAnnotatedList.IOListValue lv = (IOAnnotatedList.IOListValue) av;
-                return new CachedAnnotatedValue<>(lv.getValue(), lv.getAnnotations());
+                return new CachedAnnotatedValue<>(lv.value, lv.annotations);
             }).forEach(cav -> values.add((CachedAnnotatedValue) cav));
             return new CachedAnnotatedList(values);
         }
@@ -51,7 +51,7 @@ class AnnotatedSerializer {
         @Override
         public AnnotatedValue read(final Kryo kryo, final Input input, final Class<AnnotatedValue> annotatedValueClass) {
             final IOAnnotatedValue annotatedValue = (IOAnnotatedValue) kryo.readClassAndObject(input);
-            return new CachedAnnotatedValue(annotatedValue.getValue(), annotatedValue.getAnnotations());
+            return new CachedAnnotatedValue(annotatedValue.value, annotatedValue.annotations);
         }
     }
 }

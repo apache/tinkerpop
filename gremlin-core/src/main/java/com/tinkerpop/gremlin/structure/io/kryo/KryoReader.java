@@ -261,7 +261,7 @@ public class KryoReader implements GraphReader {
             final AnnotatedList al = v.getValue(kal.getValue0());
             final List<IOAnnotatedValue> valuesForAnnotation = kal.getValue1().getAnnotatedValueList();
             for (IOAnnotatedValue kav : valuesForAnnotation) {
-                al.addValue(kav.getValue(), kav.toAnnotationsArray());
+                al.addValue(kav.value, kav.toAnnotationsArray());
             }
         });
     }

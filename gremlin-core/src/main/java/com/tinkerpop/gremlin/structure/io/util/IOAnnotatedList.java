@@ -35,14 +35,12 @@ public class IOAnnotatedList<V> {
     public static class IOListValue<V> extends IOAnnotatedValue<V> {
         public static <V> IOListValue from(final AnnotatedValue<V> av) {
             final IOListValue<V> kav = new IOListValue<>();
-            kav.setValue(av.getValue());
-
-            final Map<String, Object> map = av.getAnnotationKeys().stream()
+            kav.value =av.getValue();
+            kav.annotations = av.getAnnotationKeys().stream()
                     .map(key -> Pair.<String, Optional>with(key, av.getAnnotation(key)))
                     .filter(kv -> kv.getValue1().isPresent())
                     .map(kv -> Pair.<String, Object>with(kv.getValue0(), kv.getValue1().get()))
                     .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
-            kav.setAnnotations(map);
 
             return kav;
         }
