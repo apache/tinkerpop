@@ -9,10 +9,6 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyDedupTest extends DedupTest {
 
-    static {
-        GremlinLoader.load();
-    }
-
     public Traversal<Vertex, String> get_g_V_both_dedup_name() {
         g.V.both.dedup.value("name")
     }

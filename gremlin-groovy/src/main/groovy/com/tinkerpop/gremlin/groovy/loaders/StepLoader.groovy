@@ -50,6 +50,11 @@ class StepLoader {
             return ((GraphTraversal) delegate).path(GFunction.make(pathClosures));
         }
 
+        // necessary so there is not an ambiguous method call
+        GraphTraversal.metaClass.select = { final List<String> asLabels ->
+            return ((GraphTraversal) delegate).select(asLabels,  new SFunction[0]);
+        }
+
         GraphTraversal.metaClass.select = { final List<String> asLabels, final Closure... stepClosures ->
             return ((GraphTraversal) delegate).select(asLabels, GFunction.make(stepClosures));
         }

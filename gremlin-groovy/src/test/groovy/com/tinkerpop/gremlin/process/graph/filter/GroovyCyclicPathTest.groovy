@@ -9,10 +9,6 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyCyclicPathTest extends CyclicPathTest {
 
-    static {
-        GremlinLoader.load();
-    }
-
     public Traversal<Vertex, Vertex> get_g_v1_outXcreatedX_inXcreatedX_cyclicPath(final Object v1Id) {
         g.v(v1Id).out("created").in("created").cyclicPath
     }

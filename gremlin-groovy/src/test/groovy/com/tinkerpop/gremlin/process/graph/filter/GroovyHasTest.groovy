@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.filter
 
+import com.tinkerpop.gremlin.groovy.GremlinLoader
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Edge

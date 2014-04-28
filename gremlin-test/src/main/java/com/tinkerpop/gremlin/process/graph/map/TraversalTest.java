@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -26,59 +27,59 @@ import static org.junit.Assert.*;
  */
 public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
-    public abstract Iterator<Vertex> get_g_V();
+    public abstract Traversal<Vertex, Vertex> get_g_V();
 
-    public abstract Iterator<Vertex> get_g_v1_out(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v2_in(final Object v2Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v2_in(final Object v2Id);
 
-    public abstract Iterator<Vertex> get_g_v4_both(final Object v4Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v4_both(final Object v4Id);
 
-    public abstract Iterator<String> get_g_v1_outX1_knowsX_name(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_v1_outX1_knowsX_name(final Object v1Id);
 
-    public abstract Iterator<String> get_g_V_bothX1_createdX_name();
+    public abstract Traversal<Vertex, String> get_g_V_bothX1_createdX_name();
 
-    public abstract Iterator<Edge> get_g_E();
+    public abstract Traversal<Edge, Edge> get_g_E();
 
-    public abstract Iterator<Edge> get_g_v1_outE(final Object v1Id);
+    public abstract Traversal<Vertex, Edge> get_g_v1_outE(final Object v1Id);
 
-    public abstract Iterator<Edge> get_g_v2_inE(final Object v2Id);
+    public abstract Traversal<Vertex, Edge> get_g_v2_inE(final Object v2Id);
 
-    public abstract Iterator<Edge> get_g_v4_bothE(final Object v4Id);
+    public abstract Traversal<Vertex, Edge> get_g_v4_bothE(final Object v4Id);
 
-    public abstract Iterator<Edge> get_g_v4_bothEX1_createdX(final Object v4Id);
+    public abstract Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX(final Object v4Id);
 
-    public abstract Iterator<String> get_g_V_inEX2_knowsX_outV_name();
+    public abstract Traversal<Vertex, String> get_g_V_inEX2_knowsX_outV_name();
 
-    public abstract Iterator<Vertex> get_g_v1_outE_inV(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outE_inV(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v2_inE_outV(final Object v2Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v2_inE_outV(final Object v2Id);
 
-    public abstract Iterator<Vertex> get_g_V_outE_hasXweight_1X_outV();
+    public abstract Traversal<Vertex, Vertex> get_g_V_outE_hasXweight_1X_outV();
 
-    public abstract Iterator<String> get_g_V_out_outE_inV_inE_inV_both_name();
+    public abstract Traversal<Vertex, String> get_g_V_out_outE_inV_inE_inV_both_name();
 
-    public abstract Iterator<String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v1_outXknowsX(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outXknowsX(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v1_outXknows_createdX(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outXknows_createdX(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v1_outEXknowsX_inV(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outEXknowsX_inV(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v1_outEXknows_createdX_inV(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outEXknows_createdX_inV(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_V_out_out();
+    public abstract Traversal<Vertex, Vertex> get_g_V_out_out();
 
-    public abstract Iterator<Vertex> get_g_v1_out_out_out(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_out_out(final Object v1Id);
 
-    public abstract Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_v1_out_propertyXnameX(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v1_outE_otherV(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outE_otherV(final Object v1Id);
 
-    public abstract Iterator<Vertex> get_g_v4_bothE_otherV(final Object v4Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v4_bothE_otherV(final Object v4Id);
 
-    public abstract Iterator<Vertex> get_g_v4_bothE_hasXweight_LT_1X_otherV(final Object v4Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_LT_1X_otherV(final Object v4Id);
 
     // VERTEX ADJACENCY
 
@@ -487,111 +488,111 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
-        public Iterator<Vertex> get_g_V() {
+        public Traversal<Vertex, Vertex> get_g_V() {
             return g.V();
         }
 
-        public Iterator<Vertex> get_g_v1_out(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_out(final Object v1Id) {
             return g.v(v1Id).out();
         }
 
-        public Iterator<Vertex> get_g_v2_in(final Object v2Id) {
+        public Traversal<Vertex, Vertex> get_g_v2_in(final Object v2Id) {
             return g.v(v2Id).in();
         }
 
-        public Iterator<Vertex> get_g_v4_both(final Object v4Id) {
+        public Traversal<Vertex, Vertex> get_g_v4_both(final Object v4Id) {
             return g.v(v4Id).both();
         }
 
-        public Iterator<String> get_g_v1_outX1_knowsX_name(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_outX1_knowsX_name(final Object v1Id) {
             return g.v(v1Id).out(1, "knows").value("name");
         }
 
-        public Iterator<String> get_g_V_bothX1_createdX_name() {
+        public Traversal<Vertex, String> get_g_V_bothX1_createdX_name() {
             return g.V().both(1, "created").value("name");
         }
 
-        public Iterator<Edge> get_g_E() {
+        public Traversal<Edge, Edge> get_g_E() {
             return g.E();
         }
 
-        public Iterator<Edge> get_g_v1_outE(final Object v1Id) {
+        public Traversal<Vertex, Edge> get_g_v1_outE(final Object v1Id) {
             return g.v(v1Id).outE();
         }
 
-        public Iterator<Edge> get_g_v2_inE(final Object v2Id) {
+        public Traversal<Vertex, Edge> get_g_v2_inE(final Object v2Id) {
             return g.v(v2Id).inE();
         }
 
-        public Iterator<Edge> get_g_v4_bothE(final Object v4Id) {
+        public Traversal<Vertex, Edge> get_g_v4_bothE(final Object v4Id) {
             return g.v(v4Id).bothE();
         }
 
-        public Iterator<Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {
+        public Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {
             return g.v(v4Id).bothE(1, "created");
         }
 
-        public Iterator<String> get_g_V_inEX2_knowsX_outV_name() {
+        public Traversal<Vertex, String> get_g_V_inEX2_knowsX_outV_name() {
             return g.V().inE(2, "knows").outV().value("name");
         }
 
-        public Iterator<Vertex> get_g_v1_outE_inV(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outE_inV(final Object v1Id) {
             return g.v(v1Id).outE().inV();
         }
 
-        public Iterator<Vertex> get_g_v2_inE_outV(final Object v2Id) {
+        public Traversal<Vertex, Vertex> get_g_v2_inE_outV(final Object v2Id) {
             return g.v(v2Id).inE().outV();
         }
 
-        public Iterator<Vertex> get_g_V_outE_hasXweight_1X_outV() {
+        public Traversal<Vertex, Vertex> get_g_V_outE_hasXweight_1X_outV() {
             return g.V().outE().has("weight", 1.0f).outV();
         }
 
-        public Iterator<String> get_g_V_out_outE_inV_inE_inV_both_name() {
+        public Traversal<Vertex, String> get_g_V_out_outE_inV_inE_inV_both_name() {
             return g.V().out().outE().inV().inE().inV().both().value("name");
         }
 
-        public Iterator<String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id) {
             return g.v(v1Id).outE("knows").bothV().value("name");
         }
 
-        public Iterator<Vertex> get_g_v1_outXknowsX(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outXknowsX(final Object v1Id) {
             return g.v(v1Id).out("knows");
         }
 
-        public Iterator<Vertex> get_g_v1_outXknows_createdX(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outXknows_createdX(final Object v1Id) {
             return g.v(v1Id).out("knows", "created");
         }
 
-        public Iterator<Vertex> get_g_v1_outEXknowsX_inV(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outEXknowsX_inV(final Object v1Id) {
             return g.v(v1Id).outE("knows").inV();
         }
 
-        public Iterator<Vertex> get_g_v1_outEXknows_createdX_inV(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outEXknows_createdX_inV(final Object v1Id) {
             return g.v(v1Id).outE("knows", "created").inV();
         }
 
-        public Iterator<Vertex> get_g_v1_outE_otherV(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outE_otherV(final Object v1Id) {
             return g.v(v1Id).outE().otherV();
         }
 
-        public Iterator<Vertex> get_g_v4_bothE_otherV(final Object v4Id) {
+        public Traversal<Vertex, Vertex> get_g_v4_bothE_otherV(final Object v4Id) {
             return g.v(v4Id).bothE().otherV();
         }
 
-        public Iterator<Vertex> get_g_v4_bothE_hasXweight_LT_1X_otherV(Object v4Id) {
+        public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_LT_1X_otherV(Object v4Id) {
             return g.v(v4Id).bothE().has("weight", T.lt, 1f).otherV();
         }
 
-        public Iterator<Vertex> get_g_V_out_out() {
+        public Traversal<Vertex, Vertex> get_g_V_out_out() {
             return g.V().out().out();
         }
 
-        public Iterator<Vertex> get_g_v1_out_out_out(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_out_out_out(final Object v1Id) {
             return g.v(v1Id).out().out().out();
         }
 
-        public Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_out_propertyXnameX(final Object v1Id) {
             return g.v(v1Id).out().value("name");
         }
     }
@@ -603,111 +604,111 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
-        public Iterator<Vertex> get_g_V() {
+        public Traversal<Vertex, Vertex> get_g_V() {
             return g.V().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v1_out(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_out(final Object v1Id) {
             return g.v(v1Id).out().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v2_in(final Object v2Id) {
+        public Traversal<Vertex, Vertex> get_g_v2_in(final Object v2Id) {
             return g.v(v2Id).in().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v4_both(final Object v4Id) {
+        public Traversal<Vertex, Vertex> get_g_v4_both(final Object v4Id) {
             return g.v(v4Id).both().submit(g.compute());
         }
 
-        public Iterator<String> get_g_v1_outX1_knowsX_name(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_outX1_knowsX_name(final Object v1Id) {
             return g.v(v1Id).out(1, "knows").<String>value("name").submit(g.compute());
         }
 
-        public Iterator<String> get_g_V_bothX1_createdX_name() {
+        public Traversal<Vertex, String> get_g_V_bothX1_createdX_name() {
             return g.V().both(1, "created").<String>value("name").submit(g.compute());
         }
 
-        public Iterator<Edge> get_g_E() {
+        public Traversal<Edge, Edge> get_g_E() {
             return g.E().submit(g.compute());
         }
 
-        public Iterator<Edge> get_g_v1_outE(final Object v1Id) {
+        public Traversal<Vertex, Edge> get_g_v1_outE(final Object v1Id) {
             return g.v(v1Id).outE().submit(g.compute());
         }
 
-        public Iterator<Edge> get_g_v2_inE(final Object v2Id) {
+        public Traversal<Vertex, Edge> get_g_v2_inE(final Object v2Id) {
             return g.v(v2Id).inE().submit(g.compute());
         }
 
-        public Iterator<Edge> get_g_v4_bothE(final Object v4Id) {
+        public Traversal<Vertex, Edge> get_g_v4_bothE(final Object v4Id) {
             return g.v(v4Id).bothE().submit(g.compute());
         }
 
-        public Iterator<Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {
+        public Traversal<Vertex, Edge> get_g_v4_bothEX1_createdX(final Object v4Id) {
             return g.v(v4Id).bothE(1, "created").submit(g.compute());
         }
 
-        public Iterator<String> get_g_V_inEX2_knowsX_outV_name() {
+        public Traversal<Vertex, String> get_g_V_inEX2_knowsX_outV_name() {
             return g.V().inE(2, "knows").outV().<String>value("name").submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v1_outE_inV(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outE_inV(final Object v1Id) {
             return g.v(v1Id).outE().inV().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v2_inE_outV(final Object v2Id) {
+        public Traversal<Vertex, Vertex> get_g_v2_inE_outV(final Object v2Id) {
             return g.v(v2Id).inE().outV().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_V_outE_hasXweight_1X_outV() {
+        public Traversal<Vertex, Vertex> get_g_V_outE_hasXweight_1X_outV() {
             return g.V().outE().has("weight", 1.0f).outV().submit(g.compute());
         }
 
-        public Iterator<String> get_g_V_out_outE_inV_inE_inV_both_name() {
+        public Traversal<Vertex, String> get_g_V_out_outE_inV_inE_inV_both_name() {
             return g.V().out().outE().inV().inE().inV().both().<String>value("name").submit(g.compute());
         }
 
-        public Iterator<String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_outEXknowsX_bothV_name(final Object v1Id) {
             return g.v(v1Id).outE("knows").bothV().<String>value("name").submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v1_outXknowsX(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outXknowsX(final Object v1Id) {
             return g.v(v1Id).out("knows").submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v1_outXknows_createdX(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outXknows_createdX(final Object v1Id) {
             return g.v(v1Id).out("knows", "created").submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v1_outEXknowsX_inV(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outEXknowsX_inV(final Object v1Id) {
             return g.v(v1Id).outE("knows").inV().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v1_outEXknows_createdX_inV(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outEXknows_createdX_inV(final Object v1Id) {
             return g.v(v1Id).outE("knows", "created").inV().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v1_outE_otherV(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outE_otherV(final Object v1Id) {
             return g.v(v1Id).outE().otherV().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v4_bothE_otherV(final Object v4Id) {
+        public Traversal<Vertex, Vertex> get_g_v4_bothE_otherV(final Object v4Id) {
             return g.v(v4Id).bothE().otherV().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v4_bothE_hasXweight_LT_1X_otherV(Object v4Id) {
+        public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_LT_1X_otherV(Object v4Id) {
             return g.v(v4Id).bothE().has("weight", T.lt, 1f).otherV().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_V_out_out() {
+        public Traversal<Vertex, Vertex> get_g_V_out_out() {
             return g.V().out().out().submit(g.compute());
         }
 
-        public Iterator<Vertex> get_g_v1_out_out_out(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_out_out_out(final Object v1Id) {
             return g.v(v1Id).out().out().out().submit(g.compute());
         }
 
-        public Iterator<String> get_g_v1_out_propertyXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_out_propertyXnameX(final Object v1Id) {
             return g.v(v1Id).out().<String>value("name").submit(g.compute());
         }
     }

@@ -9,10 +9,6 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyFilterTest extends FilterTest {
 
-    static {
-        GremlinLoader.load();
-    }
-
     public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
         g.V.filter { false }
     }

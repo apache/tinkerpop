@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.groovy.GremlinLoader;
 import com.tinkerpop.gremlin.process.graph.filter.GroovyCyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.filter.GroovyDedupTest;
 import com.tinkerpop.gremlin.process.graph.filter.GroovyExceptTest;
@@ -11,6 +12,11 @@ import com.tinkerpop.gremlin.process.graph.filter.GroovyRangeTest;
 import com.tinkerpop.gremlin.process.graph.filter.GroovyRetainTest;
 import com.tinkerpop.gremlin.process.graph.filter.GroovySimplePathTest;
 import com.tinkerpop.gremlin.process.graph.map.GroovyAnnotatedValuesTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyBackTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyJumpTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyOrderTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyPathTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovySelectTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -20,6 +26,10 @@ import org.junit.runners.model.RunnerBuilder;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GroovyProcessStandardSuite extends ProcessStandardSuite {
+
+    static {
+        GremlinLoader.load();
+    }
 
     /**
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
@@ -36,7 +46,12 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyRangeTest.class,
             GroovyRetainTest.class,
             GroovySimplePathTest.class,
-            GroovyAnnotatedValuesTest.class
+            GroovyAnnotatedValuesTest.class,
+            GroovyBackTest.class,
+            GroovyJumpTest.class,
+            GroovyOrderTest.class,
+            GroovyPathTest.class,
+            GroovySelectTest.class
     };
 
 

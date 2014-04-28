@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Path;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.util.As;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -19,13 +20,13 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class SelectTest extends AbstractGremlinProcessTest {
 
-    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id);
+    public abstract Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id);
 
-    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id);
+    public abstract Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id);
 
-    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id);
+    public abstract Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id);
 
-    public abstract Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id);
+    public abstract Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -97,19 +98,19 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
+        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select();
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
+        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).getValue("name"));
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
+        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"));
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
+        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));
         }
     }
@@ -119,20 +120,20 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
+        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select().submit(g.compute());
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
+        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
             // TODO: Micro elements do not store properties
             return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).getValue("name")); //.submit(g.compute());
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
+        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a")).submit(g.compute());
         }
 
-        public Iterator<Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
+        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
             // TODO: Micro elements do not store properties
             return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));  // .submit(g.compute());
         }

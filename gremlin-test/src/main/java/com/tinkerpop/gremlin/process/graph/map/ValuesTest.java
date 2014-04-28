@@ -2,6 +2,9 @@ package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -16,13 +19,13 @@ import static org.junit.Assert.*;
  */
 public abstract class ValuesTest extends AbstractGremlinProcessTest {
 
-    public abstract Iterator<Map<String, Object>> get_g_V_values();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_values();
 
-    public abstract Iterator<Map<String, Object>> get_g_V_valuesXname_ageX();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX();
 
-    public abstract Iterator<Map<String, Object>> get_g_E_valuesXid_label_weightX();
+    public abstract Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX();
 
-    public abstract Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id);
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -135,19 +138,19 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
-        public Iterator<Map<String, Object>> get_g_V_values() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_values() {
             return g.V().values();
         }
 
-        public Iterator<Map<String, Object>> get_g_V_valuesXname_ageX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX() {
             return g.V().values("name", "age");
         }
 
-        public Iterator<Map<String, Object>> get_g_E_valuesXid_label_weightX() {
+        public Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX() {
             return g.E().values("id", "label", "weight");
         }
 
-        public Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
+        public Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
             return g.v(v1Id).out("created").values();
         }
     }
@@ -158,19 +161,19 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
-        public Iterator<Map<String, Object>> get_g_V_values() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_values() {
             return g.V().values().submit(g.compute());
         }
 
-        public Iterator<Map<String, Object>> get_g_V_valuesXname_ageX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valuesXname_ageX() {
             return g.V().values("name", "age").submit(g.compute());
         }
 
-        public Iterator<Map<String, Object>> get_g_E_valuesXid_label_weightX() {
+        public Traversal<Edge, Map<String, Object>> get_g_E_valuesXid_label_weightX() {
             return g.E().values("id", "label", "weight").submit(g.compute());
         }
 
-        public Iterator<Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
+        public Traversal<Vertex, Map<String, Object>> get_g_v1_outXcreatedX_values(final Object v1Id) {
             return g.v(v1Id).out("created").values().submit(g.compute());
         }
     }

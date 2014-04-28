@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
@@ -18,11 +20,11 @@ import static org.junit.Assert.assertEquals;
  */
 public abstract class OrderTest extends AbstractGremlinTest {
 
-    public abstract Iterator<String> get_g_V_name_order();
+    public abstract Traversal<Vertex, String> get_g_V_name_order();
 
-    public abstract Iterator<String> get_g_V_name_orderXabX();
+    public abstract Traversal<Vertex, String> get_g_V_name_orderXabX();
 
-    public abstract Iterator<String> get_g_V_orderXa_nameXb_nameX_name();
+    public abstract Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name();
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -71,15 +73,15 @@ public abstract class OrderTest extends AbstractGremlinTest {
 
     public static class JavaOrderTest extends OrderTest {
 
-        public Iterator<String> get_g_V_name_order() {
+        public Traversal<Vertex, String> get_g_V_name_order() {
             return g.V().<String>value("name").order();
         }
 
-        public Iterator<String> get_g_V_name_orderXabX() {
+        public Traversal<Vertex, String> get_g_V_name_orderXabX() {
             return g.V().<String>value("name").order((a, b) -> b.get().compareTo(a.get()));
         }
 
-        public Iterator<String> get_g_V_orderXa_nameXb_nameX_name() {
+        public Traversal<Vertex, String> get_g_V_orderXa_nameXb_nameX_name() {
             return g.V().order((a, b) -> a.get().<String>getValue("name").compareTo(b.get().getValue("name"))).value("name");
         }
     }
