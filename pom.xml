@@ -195,14 +195,80 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.17</version>
+                    <version>2.16</version>
                     <configuration>
-                        <runOrder>random</runOrder>
-                        <includes>
-                            <include>**/*.class</include>
-                        </includes>
-                        <excludedGroups>com.tinkerpop.gremlin.IntegrationTest</excludedGroups>
+                        <argLine>-Dlog4j.configuration=file:../gremlin-server/config/log4j.properties
+                        </argLine>
+                        <excludes>
+                            <exclude>**/*IntegrateTest.java</exclude>
+                            <exclude>**/*PerformanceTest.java</exclude>
+                        </excludes>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>2.17</version>
+                    <executions>
+                        <execution>
+                            <id>integration-test</id>
+                            <goals>
+                                <goal>integration-test</goal>
+                            </goals>
+                            <configuration>
+                                <includes>
+                                    <include>**/*IntegrateTest.java</include>
+                                </includes>
+                                <skipTests>${skipIntegrationTests}</skipTests>
+                                <argLine>-Dlog4j.configuration=file:../gremlin-server/config/log4j.properties -Dhost=localhost -Dport=8182
+                                    -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
+                                    -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                                </argLine>
+                                <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>performance-test</id>
+                            <goals>
+                                <goal>integration-test</goal>
+                            </goals>
+                            <configuration>
+                                <includes>
+                                    <include>**/*PerformanceTest.java</include>
+                                </includes>
+                                <skipTests>${skipPerformanceTests}</skipTests>
+                                <argLine>-Dlog4j.configuration=file:config/log4j.properties -Dhost=localhost -Dport=8182
+                                    -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
+                                    -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                                </argLine>
+                                <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>verify-integration-test</id>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                            <configuration>
+                                <skipTests>${skipIntegrationTests}</skipTests>
+                                <summaryFiles>
+                                    <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
+                                </summaryFiles>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>verify-performance-test</id>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                            <configuration>
+                                <skipTests>${skipPerformanceTests}</skipTests>
+                                <summaryFiles>
+                                    <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
+                                </summaryFiles>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -315,38 +381,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <profiles>
-        <!-- activate this profile in order to run integration tests, e.g. `mvn integration-test -Pintegration-test` -->
-        <profile>
-            <id>integration-test</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>2.17</version>
-                        <configuration>
-                            <groups>com.tinkerpop.gremlin.IntegrationTest</groups>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                </goals>
-                                <configuration>
-                                    <includes>
-                                        <include>**/*.class</include>
-                                    </includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 </project>

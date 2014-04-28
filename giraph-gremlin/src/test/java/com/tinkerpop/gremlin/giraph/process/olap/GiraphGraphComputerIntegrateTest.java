@@ -1,21 +1,17 @@
 package com.tinkerpop.gremlin.giraph.process.olap;
 
-import com.tinkerpop.gremlin.IntegrationTest;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import java.io.File;
 import java.io.IOException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@Category(IntegrationTest.class)
-public class GiraphGraphComputerTest {
+public class GiraphGraphComputerIntegrateTest {
 
     @Test
     public void testPlay() throws IOException {
