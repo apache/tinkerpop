@@ -24,7 +24,6 @@ import java.util.UUID;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoMessageSerializerV1d0 implements MessageSerializer {
-    // todo: maybe need a special interface for MessageSerializer because implementers can only binary serializers
     // todo: how will client and server side users of kryo configure custom classes
     private static final GremlinKryo gremlinKryo = GremlinKryo.create(GremlinKryo.Version.V_1_0_0).build();
     private static final Charset UTF8 = Charset.forName("UTF-8");
