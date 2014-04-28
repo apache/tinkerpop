@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.graph.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.filter.FilterTest;
@@ -67,7 +68,7 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             SelectTest.JavaComputerSelectTest.class,
             TraversalTest.JavaComputerTraversalTest.class,
             ValuesTest.JavaComputerValuesTest.class,
-            TreeTest.JavaComputerTreeTest.class
+            TreeTest.JavaComputerTreeTest.class,
 
           /*
             // TODO: Be sure to XXComputerXX then class names
@@ -78,6 +79,8 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             SideEffectTest.JavaSideEffectTest.class,
             TreeTest.JavaTreeTest.class
           */
+
+            PageRankVertexProgramTest.class
     };
 
     /**
