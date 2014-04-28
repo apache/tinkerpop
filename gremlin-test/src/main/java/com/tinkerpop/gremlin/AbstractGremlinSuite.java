@@ -65,7 +65,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         return testsToExecute;
     }
 
-    private static Class<? extends GraphProvider> getGraphProviderClass(Class<?> klass) throws InitializationError {
+    private static Class<? extends GraphProvider> getGraphProviderClass(final Class<?> klass) throws InitializationError {
         GraphProviderClass annotation = klass.getAnnotation(GraphProviderClass.class);
         if (annotation == null) {
             throw new InitializationError(String.format("class '%s' must have a GraphProviderClass annotation", klass.getName()));
