@@ -20,16 +20,16 @@ import static org.junit.Assert.*;
  */
 public abstract class PathTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex,Path> get_g_v1_propertyXnameX_path(final Object v1Id);
+    public abstract Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id);
 
-    public abstract Traversal<Vertex,Path> get_g_v1_out_pathXage_nameX(final Object v1Id);
+    public abstract Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id);
 
-    public abstract Traversal<Vertex,Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX();
+    public abstract Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX();
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_propertyXnameX_path() {
-        final Iterator<Path> step = get_g_v1_propertyXnameX_path(convertToId("marko"));
+        final Iterator<Path> step = get_g_v1_valueXnameX_path(convertToId("marko"));
         System.out.println("Testing: " + step);
         final Path path = step.next();
         assertFalse(step.hasNext());
@@ -79,15 +79,15 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
-        public Traversal<Vertex,Path> get_g_v1_propertyXnameX_path(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {
             return g.v(v1Id).value("name").path();
         }
 
-        public Traversal<Vertex,Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
             return g.v(v1Id).out().path(v -> ((Vertex) v).getValue("age"), v -> ((Vertex) v).getValue("name"));
         }
 
-        public Traversal<Vertex,Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
             return g.V().as("x").out()
                     .jump("x", o -> o.getLoops() < 2)
                     .path(v -> v, v -> ((Vertex) v).getValue("name"), v -> ((Vertex) v).getValue("lang"));
@@ -99,16 +99,16 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
-        public Traversal<Vertex,Path> get_g_v1_propertyXnameX_path(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {
             return g.v(v1Id).value("name").path().submit(g.compute());
         }
 
-        public Traversal<Vertex,Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
             // TODO: Micro elements do not store properties (inflate)
             return g.v(v1Id).out().path(v -> ((Vertex) v).getValue("age"), v -> ((Vertex) v).getValue("name")); // .submit(g.compute())
         }
 
-        public Traversal<Vertex,Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
             // TODO: Micro elements do not store properties (inflate)
             return g.V().as("x").out()
                     .jump("x", o -> o.getLoops() < 2)

@@ -114,7 +114,7 @@ class GroovyTraversalTest extends TraversalTest {
         g.v(v4Id).bothE.otherV
     }
 
-    public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_LT_1X_otherV(final Object v4Id) {
+    public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(final Object v4Id) {
         g.v(v4Id).bothE.has('weight', T.lt, 1.0f).otherV
     }
 }

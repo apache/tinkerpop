@@ -79,7 +79,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v4_bothE_otherV(final Object v4Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_LT_1X_otherV(final Object v4Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(final Object v4Id);
 
     // VERTEX ADJACENCY
 
@@ -384,7 +384,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v4_bothE_hasXweight_LT_1X_otherV() {
-        final Iterator<Vertex> traversal = get_g_v4_bothE_hasXweight_LT_1X_otherV(convertToId("josh"));
+        final Iterator<Vertex> traversal = get_g_v4_bothE_hasXweight_lt_1X_otherV(convertToId("josh"));
         System.out.println("Testing: " + traversal);
         final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(1, vertices.size());
@@ -580,7 +580,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             return g.v(v4Id).bothE().otherV();
         }
 
-        public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_LT_1X_otherV(Object v4Id) {
+        public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(Object v4Id) {
             return g.v(v4Id).bothE().has("weight", T.lt, 1f).otherV();
         }
 
@@ -696,7 +696,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             return g.v(v4Id).bothE().otherV().submit(g.compute());
         }
 
-        public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_LT_1X_otherV(Object v4Id) {
+        public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(Object v4Id) {
             return g.v(v4Id).bothE().has("weight", T.lt, 1f).otherV().submit(g.compute());
         }
 
