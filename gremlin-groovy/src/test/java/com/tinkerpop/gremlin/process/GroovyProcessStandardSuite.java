@@ -17,6 +17,8 @@ import com.tinkerpop.gremlin.process.graph.map.GroovyJumpTest;
 import com.tinkerpop.gremlin.process.graph.map.GroovyOrderTest;
 import com.tinkerpop.gremlin.process.graph.map.GroovyPathTest;
 import com.tinkerpop.gremlin.process.graph.map.GroovySelectTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyTraversalTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyValuesTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -51,7 +53,9 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyJumpTest.class,
             GroovyOrderTest.class,
             GroovyPathTest.class,
-            GroovySelectTest.class
+            GroovySelectTest.class,
+            GroovyTraversalTest.class,
+            GroovyValuesTest.class
     };
 
 

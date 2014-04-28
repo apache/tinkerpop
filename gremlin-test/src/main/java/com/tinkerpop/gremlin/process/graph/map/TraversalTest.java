@@ -73,7 +73,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_out_out_out(final Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_v1_out_propertyXnameX(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_outE_otherV(final Object v1Id);
 
@@ -467,7 +467,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_propertyXnameX() {
-        final Iterator<String> step = get_g_v1_out_propertyXnameX(convertToId("marko"));
+        final Iterator<String> step = get_g_v1_out_valueXnameX(convertToId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         Set<String> names = new HashSet<>();
@@ -592,7 +592,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             return g.v(v1Id).out().out().out();
         }
 
-        public Traversal<Vertex, String> get_g_v1_out_propertyXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id) {
             return g.v(v1Id).out().value("name");
         }
     }
@@ -708,7 +708,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             return g.v(v1Id).out().out().out().submit(g.compute());
         }
 
-        public Traversal<Vertex, String> get_g_v1_out_propertyXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id) {
             return g.v(v1Id).out().<String>value("name").submit(g.compute());
         }
     }
