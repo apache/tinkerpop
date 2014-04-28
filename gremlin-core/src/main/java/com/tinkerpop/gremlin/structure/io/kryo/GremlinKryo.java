@@ -6,6 +6,8 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.DefaultStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -159,6 +161,9 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Edge.class, new EdgeSerializer(), 19));
             add(Triplet.<Class, Serializer, Integer>with(IOVertex.class, null, 20));
             add(Triplet.<Class, Serializer, Integer>with(IOEdge.class, null, 21));
+            add(Triplet.<Class, Serializer, Integer>with(AnnotatedList.class, new AnnotatedSerializer.AnnotatedListSerializer(), 22));
+            add(Triplet.<Class, Serializer, Integer>with(AnnotatedValue.class, new AnnotatedSerializer.AnnotatedValueSerializer(), 23));
+            add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedList.IOListValue.class, null, 24));
         }};
 
         private static final byte major = 1;

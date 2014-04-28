@@ -20,12 +20,9 @@ public abstract class IOElement {
     protected static <T extends IOElement, E extends Element> T from(final E element, final T ioe) {
         ioe.id = element.getId();
         ioe.label = element.getLabel();
-        ioe.properties = element.getProperties().entrySet().stream()
-                .map(entry-> entry.getValue().get() instanceof AnnotatedList ?
-                        Pair.<String,Object>with(entry.getKey(), IOAnnotatedList.from((AnnotatedList) entry.getValue().get())) :
-                        Pair.<String,Object>with(entry.getKey(), entry.getValue().get()))
-                .collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
 
+        // get the value out of a Property.
+        ioe.properties = element.getProperties().entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e-> e.getValue().get()));
         return ioe;
     }
 }

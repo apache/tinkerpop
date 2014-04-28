@@ -15,7 +15,7 @@ import org.javatuples.Pair;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class EdgeSerializer extends Serializer<Edge> {
+class EdgeSerializer extends Serializer<Edge> {
     @Override
     public void write(final Kryo kryo, final Output output, final Edge edge) {
         kryo.writeClassAndObject(output, IOEdge.from(edge));
