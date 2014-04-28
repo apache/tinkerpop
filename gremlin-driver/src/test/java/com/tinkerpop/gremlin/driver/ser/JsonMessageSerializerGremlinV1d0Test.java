@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.message.ResultType;
+import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -12,6 +14,10 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
+import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
+import com.tinkerpop.gremlin.structure.util.cached.CachedAnnotatedList;
+import com.tinkerpop.gremlin.structure.util.cached.CachedAnnotatedValue;
 import com.tinkerpop.gremlin.structure.util.cached.CachedEdge;
 import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -187,6 +193,92 @@ public class JsonMessageSerializerGremlinV1d0Test {
         // with no embedded types the key (which is a vertex) simply serializes out to an id
         // {"result":{"1":1000},"code":200,"requestId":"2d62161b-9544-4f39-af44-62ec49f9a595","type":0}
         assertEquals(new Integer(1000), deserializedMap.get("1"));
+    }
+
+
+    @Test
+    public void serializeVertexWithAnnotatedList() throws Exception {
+        final Graph g = TinkerFactory.createModern();
+        final Vertex v = g.v(1);
+
+        final ResponseMessage response = convert(v);
+        assertCommon(response);
+
+        final Map<String,Object> deserializedVertex = (Map<String,Object>) response.getResult();
+        assertEquals(1, deserializedVertex.get(GraphSONTokens.ID));
+        assertEquals("person", deserializedVertex.get(GraphSONTokens.LABEL));
+
+        final Map<String,Object> properties = (Map<String,Object>) deserializedVertex.get(GraphSONTokens.PROPERTIES);
+        assertEquals(2, properties.size());
+        assertEquals("marko", properties.get("name"));
+
+        final IOAnnotatedList<String> list = (IOAnnotatedList<String>) properties.get("locations");
+        assertEquals(4, list.getAnnotatedValueList().size());
+
+        list.getAnnotatedValueList().forEach(av -> {
+            if (av.value.equals("san diego")) {
+                assertEquals(1997, av.annotations.get("startTime"));
+                assertEquals(2001, av.annotations.get("endTime"));
+            } else if (av.value.equals("santa cruz")) {
+                assertEquals(2001, av.annotations.get("startTime"));
+                assertEquals(2004, av.annotations.get("endTime"));
+            } else if (av.value.equals("brussels")) {
+                assertEquals(2004, av.annotations.get("startTime"));
+                assertEquals(2005, av.annotations.get("endTime"));
+            } else if (av.value.equals("santa fe")) {
+                assertEquals(2005, av.annotations.get("startTime"));
+                assertEquals(2014, av.annotations.get("endTime"));
+            }
+
+            assertEquals(2, av.annotations.size());
+        });
+    }
+
+    @Test
+    public void serializeAnnotatedList() throws Exception {
+        final Graph g = TinkerFactory.createModern();
+        final AnnotatedList<String> al = g.v(1).getValue("locations");
+
+        final ResponseMessage response = convert(al);
+        assertCommon(response);
+
+        final IOAnnotatedList<String> list = (IOAnnotatedList<String>) response.getResult();
+        assertEquals(4, list.getAnnotatedValueList().size());
+
+        list.getAnnotatedValueList().forEach(av -> {
+            if (av.value.equals("san diego")) {
+                assertEquals(1997, av.annotations.get("startTime"));
+                assertEquals(2001, av.annotations.get("endTime"));
+            } else if (av.value.equals("santa cruz")) {
+                assertEquals(2001, av.annotations.get("startTime"));
+                assertEquals(2004, av.annotations.get("endTime"));
+            } else if (av.value.equals("brussels")) {
+                assertEquals(2004, av.annotations.get("startTime"));
+                assertEquals(2005, av.annotations.get("endTime"));
+            } else if (av.value.equals("santa fe")) {
+                assertEquals(2005, av.annotations.get("startTime"));
+                assertEquals(2014, av.annotations.get("endTime"));
+            }
+
+            assertEquals(2, av.annotations.size());
+        });
+    }
+
+    @Test
+    public void serializeAnnotatedValue() throws Exception {
+        final Graph g = TinkerFactory.createModern();
+        final AnnotatedList<String> al = g.v(1).getValue("locations");
+        final AnnotatedValue<String> annotatedValue = al.annotatedValues().next();
+
+        final ResponseMessage response = convert(annotatedValue);
+        assertCommon(response);
+
+        final IOAnnotatedValue<String> av = (IOAnnotatedValue<String>) response.getResult();
+
+        assertEquals("san diego", av.value);
+        assertEquals(1997, av.annotations.get("startTime"));
+        assertEquals(2001, av.annotations.get("endTime"));
+        assertEquals(2, av.annotations.size());
     }
 
     private void assertCommon(final ResponseMessage response) {

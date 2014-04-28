@@ -7,12 +7,14 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
+import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,6 +30,8 @@ public class GraphSONModule extends SimpleModule {
         super("graphson");
         addSerializer(Edge.class, new EdgeJacksonSerializer());
         addSerializer(Vertex.class, new VertexJacksonSerializer());
+        addSerializer(AnnotatedList.class, new AnnotatedListSerializer());
+        addSerializer(AnnotatedValue.class, new AnnotatedValueSerializer());
         addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
     }
@@ -103,6 +107,54 @@ public class GraphSONModule extends SimpleModule {
             jsonGenerator.writeObject(m);
         }
 
+    }
+
+    static class AnnotatedListSerializer extends StdSerializer<AnnotatedList> {
+        public AnnotatedListSerializer() {
+            super(AnnotatedList.class);
+        }
+
+        @Override
+        public void serialize(final AnnotatedList annotatedList, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            ser(annotatedList, jsonGenerator);
+        }
+
+        @Override
+        public void serializeWithType(final AnnotatedList annotatedList, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            ser(annotatedList, jsonGenerator);
+
+        }
+
+        private void ser(final AnnotatedList annotatedList, final JsonGenerator jsonGenerator)
+                throws IOException {
+            jsonGenerator.writeObject(IOAnnotatedList.from(annotatedList));
+        }
+    }
+
+    static class AnnotatedValueSerializer extends StdSerializer<AnnotatedValue> {
+        public AnnotatedValueSerializer() {
+            super(AnnotatedValue.class);
+        }
+
+        @Override
+        public void serialize(final AnnotatedValue annotatedValue, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            ser(annotatedValue, jsonGenerator);
+        }
+
+        @Override
+        public void serializeWithType(final AnnotatedValue annotatedValue, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            ser(annotatedValue, jsonGenerator);
+
+        }
+
+        private void ser(final AnnotatedValue annotatedValue, final JsonGenerator jsonGenerator)
+                throws IOException {
+            jsonGenerator.writeObject(IOAnnotatedValue.from(annotatedValue));
+        }
     }
 
     /**
