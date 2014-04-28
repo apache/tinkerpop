@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin.structure.io.util;
 
-import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Element;
-import org.javatuples.Pair;
 
 import java.util.Map;
 import java.util.stream.Collectors;

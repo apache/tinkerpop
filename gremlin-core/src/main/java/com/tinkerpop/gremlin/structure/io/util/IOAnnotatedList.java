@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import org.javatuples.Pair;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 

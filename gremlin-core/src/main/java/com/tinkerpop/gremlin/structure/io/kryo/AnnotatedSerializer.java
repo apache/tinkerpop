@@ -6,13 +6,10 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
-import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
 import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
-import com.tinkerpop.gremlin.structure.io.util.IOVertex;
 import com.tinkerpop.gremlin.structure.util.cached.CachedAnnotatedList;
 import com.tinkerpop.gremlin.structure.util.cached.CachedAnnotatedValue;
-import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
 
 import java.util.ArrayList;
 import java.util.List;
