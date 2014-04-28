@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
+import com.tinkerpop.gremlin.groovy.GFunction
 import com.tinkerpop.gremlin.groovy.GremlinLoader
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 
@@ -40,6 +41,36 @@ class StepLoader {
 
         GraphTraversal.metaClass.getAt = { final Range range ->
             return ((GraphTraversal) delegate).range(range.getFrom() as Integer, range.getTo() as Integer);
+        }
+
+        // THE CODE BELOW IS REQUIRED UNTIL GROOVY 2.3+ FIXES VAR ARG CONVERSION OF CLOSURES TO LAMBDAS
+
+        GraphTraversal.metaClass.path = { final Closure... pathClosures ->
+            return ((GraphTraversal) delegate).path(GFunction.make(pathClosures));
+        }
+
+        GraphTraversal.metaClass.select = { final List<String> asLabels, final Closure... stepClosures ->
+            return ((GraphTraversal) delegate).select(asLabels, GFunction.make(stepClosures));
+        }
+
+        GraphTraversal.metaClass.select = { final Closure... stepClosures ->
+            return ((GraphTraversal) delegate).select(GFunction.make(stepClosures));
+        }
+
+        GraphTraversal.metaClass.aggregate = { final String variable, final Closure... preAggregateClosures ->
+            return ((GraphTraversal) delegate).aggregate(variable, GFunction.make(preAggregateClosures));
+        }
+
+        GraphTraversal.metaClass.groupCount = { final String variable, final Closure... preGroupClosures ->
+            return ((GraphTraversal) delegate).groupCount(variable, GFunction.make(preGroupClosures));
+        }
+
+        GraphTraversal.metaClass.groupCount = { final Closure... preGroupClosures ->
+            return ((GraphTraversal) delegate).groupCount(GFunction.make(preGroupClosures));
+        }
+
+        GraphTraversal.metaClass.tree = { final Closure... branchClosures ->
+            return ((GraphTraversal) delegate).tree(GFunction.make(branchClosures));
         }
     }
 }
