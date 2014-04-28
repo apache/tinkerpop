@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.structure.util.cached;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.javatuples.Pair;
 

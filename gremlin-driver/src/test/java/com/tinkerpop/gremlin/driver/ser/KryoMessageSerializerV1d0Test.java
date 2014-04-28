@@ -45,8 +45,6 @@ public class KryoMessageSerializerV1d0Test {
 
     public MessageSerializer serializer = new KryoMessageSerializerV1d0();
 
-    // todo: test annotatedlist/value
-
     @Test
     public void serializeIterable() throws Exception {
         final ArrayList<Integer> list = new ArrayList<>();

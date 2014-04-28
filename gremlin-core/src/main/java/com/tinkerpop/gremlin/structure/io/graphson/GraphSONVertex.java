@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -61,7 +61,7 @@ class GraphSONVertex {
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
             m.put(GraphSONTokens.PROPERTIES,
                     vertex.getProperties().values().stream().collect(
-                            Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IOAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
+                            Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IoAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
                 m.put(GraphSONTokens.OUT, vertex.outE().toList());

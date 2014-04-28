@@ -7,26 +7,18 @@ import com.tinkerpop.gremlin.driver.message.ResultType;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
-import com.tinkerpop.gremlin.structure.util.cached.CachedAnnotatedList;
-import com.tinkerpop.gremlin.structure.util.cached.CachedAnnotatedValue;
-import com.tinkerpop.gremlin.structure.util.cached.CachedEdge;
-import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedValue;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -212,7 +204,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         assertEquals(2, properties.size());
         assertEquals("marko", properties.get("name"));
 
-        final IOAnnotatedList<String> list = (IOAnnotatedList<String>) properties.get("locations");
+        final IoAnnotatedList<String> list = (IoAnnotatedList<String>) properties.get("locations");
         assertEquals(4, list.annotatedValueList.size());
 
         list.annotatedValueList.forEach(av -> {
@@ -242,7 +234,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(al);
         assertCommon(response);
 
-        final IOAnnotatedList<String> list = (IOAnnotatedList<String>) response.getResult();
+        final IoAnnotatedList<String> list = (IoAnnotatedList<String>) response.getResult();
         assertEquals(4, list.annotatedValueList.size());
 
         list.annotatedValueList.forEach(av -> {
@@ -273,7 +265,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(annotatedValue);
         assertCommon(response);
 
-        final IOAnnotatedValue<String> av = (IOAnnotatedValue<String>) response.getResult();
+        final IoAnnotatedValue<String> av = (IoAnnotatedValue<String>) response.getResult();
 
         assertEquals("san diego", av.value);
         assertEquals(1997, av.annotations.get("startTime"));

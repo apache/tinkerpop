@@ -13,8 +13,8 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedValue;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -102,7 +102,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
             m.put(GraphSONTokens.PROPERTIES,
                     vertex.getProperties().values().stream().collect(
-                            Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IOAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
+                            Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IoAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
 
             jsonGenerator.writeObject(m);
         }
@@ -129,7 +129,7 @@ public class GraphSONModule extends SimpleModule {
 
         private void ser(final AnnotatedList annotatedList, final JsonGenerator jsonGenerator)
                 throws IOException {
-            jsonGenerator.writeObject(IOAnnotatedList.from(annotatedList));
+            jsonGenerator.writeObject(IoAnnotatedList.from(annotatedList));
         }
     }
 
@@ -153,7 +153,7 @@ public class GraphSONModule extends SimpleModule {
 
         private void ser(final AnnotatedValue annotatedValue, final JsonGenerator jsonGenerator)
                 throws IOException {
-            jsonGenerator.writeObject(IOAnnotatedValue.from(annotatedValue));
+            jsonGenerator.writeObject(IoAnnotatedValue.from(annotatedValue));
         }
     }
 

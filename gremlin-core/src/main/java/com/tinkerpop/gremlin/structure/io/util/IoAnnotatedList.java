@@ -13,23 +13,23 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IOAnnotatedList<V> {
-    public List<IOListValue<V>> annotatedValueList;
+public class IoAnnotatedList<V> {
+    public List<IoListValue<V>> annotatedValueList;
 
-    public static <V> IOAnnotatedList<V> from(final AnnotatedList<V> annotatedList) {
-        final IOAnnotatedList<V> kal = new IOAnnotatedList<>();
+    public static <V> IoAnnotatedList<V> from(final AnnotatedList<V> annotatedList) {
+        final IoAnnotatedList<V> kal = new IoAnnotatedList<>();
         kal.annotatedValueList = annotatedList.annotatedValues().toList().stream()
-                .map(IOListValue::from).collect(Collectors.toList());
+                .map(IoListValue::from).collect(Collectors.toList());
         return kal;
     }
 
     /**
-     * An extension to the {@link IOAnnotatedValue} that is specifically used when serializing a
-     * {@link IOAnnotatedValue} as part of a {@link AnnotatedList}.
+     * An extension to the {@link IoAnnotatedValue} that is specifically used when serializing a
+     * {@link IoAnnotatedValue} as part of a {@link AnnotatedList}.
      */
-    public static class IOListValue<V> extends IOAnnotatedValue<V> {
-        public static <V> IOListValue<V> from(final AnnotatedValue<V> av) {
-            final IOListValue<V> kav = new IOListValue<>();
+    public static class IoListValue<V> extends IoAnnotatedValue<V> {
+        public static <V> IoListValue<V> from(final AnnotatedValue<V> av) {
+            final IoListValue<V> kav = new IoListValue<>();
             kav.value =av.getValue();
             kav.annotations = av.getAnnotationKeys().stream()
                     .map(key -> Pair.<String, Optional>with(key, av.getAnnotation(key)))

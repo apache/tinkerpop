@@ -13,8 +13,8 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedValue;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import com.tinkerpop.gremlin.util.function.TriFunction;
@@ -154,11 +154,11 @@ public class GraphSONReader implements GraphReader {
 
     private static Vertex readVertexData(final Map<String,Object> vertexData, final TriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
         final Map<String, Object> properties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
-        final List<Pair<String, IOAnnotatedList>> annotatedLists = new ArrayList<>();
+        final List<Pair<String, IoAnnotatedList>> annotatedLists = new ArrayList<>();
         final Object[] propsAsArray = properties.entrySet().stream().flatMap(e -> {
             final Object o = e.getValue();
-            if (o instanceof IOAnnotatedList) {
-                annotatedLists.add(Pair.with(e.getKey(), (IOAnnotatedList) o));
+            if (o instanceof IoAnnotatedList) {
+                annotatedLists.add(Pair.with(e.getKey(), (IoAnnotatedList) o));
                 return Stream.of(e.getKey(), AnnotatedList.make());
             } else {
                 return Stream.of(e.getKey(), e.getValue());
@@ -170,11 +170,11 @@ public class GraphSONReader implements GraphReader {
         return newVertex;
     }
 
-    private static void setAnnotatedListValues(final List<Pair<String, IOAnnotatedList>> annotatedLists, final Vertex v) {
+    private static void setAnnotatedListValues(final List<Pair<String, IoAnnotatedList>> annotatedLists, final Vertex v) {
         annotatedLists.forEach(kal -> {
             final AnnotatedList al = v.getValue(kal.getValue0());
-            final List<IOAnnotatedValue> valuesForAnnotation = kal.getValue1().annotatedValueList;
-            for (IOAnnotatedValue kav : valuesForAnnotation) {
+            final List<IoAnnotatedValue> valuesForAnnotation = kal.getValue1().annotatedValueList;
+            for (IoAnnotatedValue kav : valuesForAnnotation) {
                 al.addValue(kav.value, kav.toAnnotationsArray());
             }
         });

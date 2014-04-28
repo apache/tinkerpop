@@ -11,10 +11,10 @@ import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
-import com.tinkerpop.gremlin.structure.io.util.IOEdge;
-import com.tinkerpop.gremlin.structure.io.util.IOVertex;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedValue;
+import com.tinkerpop.gremlin.structure.io.util.IoEdge;
+import com.tinkerpop.gremlin.structure.io.util.IoVertex;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
@@ -154,16 +154,16 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Direction.class, null, 12));
             add(Triplet.<Class, Serializer, Integer>with(VertexTerminator.class, null, 13));
             add(Triplet.<Class, Serializer, Integer>with(EdgeTerminator.class, null, 14));
-            add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedList.class, null, 15));
-            add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedValue.class, null, 16));
+            add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedList.class, null, 15));
+            add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedValue.class, null, 16));
             add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
             add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 18));
             add(Triplet.<Class, Serializer, Integer>with(Edge.class, new ElementSerializer.EdgeSerializer(), 19));
-            add(Triplet.<Class, Serializer, Integer>with(IOVertex.class, null, 20));
-            add(Triplet.<Class, Serializer, Integer>with(IOEdge.class, null, 21));
+            add(Triplet.<Class, Serializer, Integer>with(IoVertex.class, null, 20));
+            add(Triplet.<Class, Serializer, Integer>with(IoEdge.class, null, 21));
             add(Triplet.<Class, Serializer, Integer>with(AnnotatedList.class, new AnnotatedSerializer.AnnotatedListSerializer(), 22));
             add(Triplet.<Class, Serializer, Integer>with(AnnotatedValue.class, new AnnotatedSerializer.AnnotatedValueSerializer(), 23));
-            add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedList.IOListValue.class, null, 24));
+            add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedList.IoListValue.class, null, 24));
         }};
 
         private static final byte major = 1;

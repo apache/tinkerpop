@@ -10,8 +10,8 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedValue;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedValue;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuadConsumer;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
@@ -80,7 +80,7 @@ public class KryoReader implements GraphReader {
         final Object vertexId = kryo.readClassAndObject(input);
         final String label = input.readString();
 
-        final List<Pair<String, IOAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
+        final List<Pair<String, IoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
         final Vertex v = vertexMaker.apply(vertexId, label, vertexArgs.toArray());
         setAnnotatedListValues(annotatedLists, v);
 
@@ -173,7 +173,7 @@ public class KryoReader implements GraphReader {
                     vertexArgs.addAll(Arrays.asList(Element.ID, current));
 
                     vertexArgs.addAll(Arrays.asList(Element.LABEL, input.readString()));
-                    final List<Pair<String, IOAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
+                    final List<Pair<String, IoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
 
@@ -256,11 +256,11 @@ public class KryoReader implements GraphReader {
         }
     }
 
-    private void setAnnotatedListValues(final List<Pair<String, IOAnnotatedList>> annotatedLists, final Vertex v) {
+    private void setAnnotatedListValues(final List<Pair<String, IoAnnotatedList>> annotatedLists, final Vertex v) {
         annotatedLists.forEach(kal -> {
             final AnnotatedList al = v.getValue(kal.getValue0());
-            final List<IOAnnotatedValue> valuesForAnnotation = kal.getValue1().annotatedValueList;
-            for (IOAnnotatedValue kav : valuesForAnnotation) {
+            final List<IoAnnotatedValue> valuesForAnnotation = kal.getValue1().annotatedValueList;
+            for (IoAnnotatedValue kav : valuesForAnnotation) {
                 al.addValue(kav.value, kav.toAnnotationsArray());
             }
         });
@@ -336,17 +336,17 @@ public class KryoReader implements GraphReader {
      * @return a list of keys that are {@link AnnotatedList} values which must be set after the property is added
      * to the vertex
      */
-    private List<Pair<String, IOAnnotatedList>> readElementProperties(final Input input, final List<Object> elementArgs) {
+    private List<Pair<String, IoAnnotatedList>> readElementProperties(final Input input, final List<Object> elementArgs) {
         // todo: do we just let this fail or do we check features for supported property types
-        final List<Pair<String, IOAnnotatedList>> list = new ArrayList<>();
+        final List<Pair<String, IoAnnotatedList>> list = new ArrayList<>();
         final int numberOfProperties = input.readInt();
         IntStream.range(0, numberOfProperties).forEach(i -> {
             final String key = input.readString();
             elementArgs.add(key);
             final Object val = kryo.readClassAndObject(input);
-            if (val instanceof IOAnnotatedList) {
+            if (val instanceof IoAnnotatedList) {
                 elementArgs.add(AnnotatedList.make());
-                list.add(Pair.with(key, (IOAnnotatedList) val));
+                list.add(Pair.with(key, (IoAnnotatedList) val));
             } else
                 elementArgs.add(val);
         });

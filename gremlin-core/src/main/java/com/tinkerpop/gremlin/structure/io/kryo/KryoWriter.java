@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
-import com.tinkerpop.gremlin.structure.io.util.IOAnnotatedList;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -147,7 +147,7 @@ public class KryoWriter implements GraphWriter {
 
     private void writePropertyValue(final Output output, final Property val) {
         if (val.get() instanceof AnnotatedList)
-            kryo.writeClassAndObject(output, IOAnnotatedList.from((AnnotatedList) val.get()));
+            kryo.writeClassAndObject(output, IoAnnotatedList.from((AnnotatedList) val.get()));
         else
             kryo.writeClassAndObject(output, val.get());
     }

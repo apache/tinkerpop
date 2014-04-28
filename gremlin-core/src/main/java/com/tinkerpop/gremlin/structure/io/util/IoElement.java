@@ -10,12 +10,12 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class IOElement {
+public abstract class IoElement {
     public Object id;
     public String label;
     public Map properties;
 
-    protected static <T extends IOElement, E extends Element> T from(final E element, final T ioe) {
+    protected static <T extends IoElement, E extends Element> T from(final E element, final T ioe) {
         ioe.id = element.getId();
         ioe.label = element.getLabel();
 

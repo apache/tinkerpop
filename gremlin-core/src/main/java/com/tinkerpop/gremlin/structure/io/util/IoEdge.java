@@ -9,14 +9,14 @@ import com.tinkerpop.gremlin.structure.Vertex;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IOEdge extends IOElement {
+public class IoEdge extends IoElement {
     public Object inV;
     public Object outV;
     public String inVLabel;
     public String outVLabel;
 
-    public static IOEdge from(final Edge edge) {
-        final IOEdge ioe = new IOEdge();
+    public static IoEdge from(final Edge edge) {
+        final IoEdge ioe = new IoEdge();
         final Vertex in = edge.getVertex(Direction.IN);
         final Vertex out = edge.getVertex(Direction.OUT);
         ioe.inV = in.getId();
