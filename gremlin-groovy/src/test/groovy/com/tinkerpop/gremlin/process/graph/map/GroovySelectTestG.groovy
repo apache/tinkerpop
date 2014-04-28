@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovySelectTest extends SelectTest {
+class GroovySelectTestG extends SelectTest {
 
     public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
         g.v(v1Id).as('a').out('knows').as('b').select

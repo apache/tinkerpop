@@ -1,12 +1,11 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.graph.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.map.StartStep;
 import com.tinkerpop.gremlin.util.function.SConsumer;
-
-import java.util.function.Consumer;
+import com.tinkerpop.gremlin.util.function.SFunction;
 
 /**
  * A {@link Vertex} maintains pointers to both a set of incoming and outgoing {@link Edge} objects. The outgoing edges
@@ -69,6 +68,10 @@ public interface Vertex extends Element {
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
+    public default GraphTraversal<Vertex, Vertex> aggregate(final String variable, final SFunction... preAggregateFunctions) {
+        return (GraphTraversal) this.start().aggregate(variable, preAggregateFunctions);
+    }
+
     public default GraphTraversal<Vertex, Vertex> as(final String as) {
         return (GraphTraversal) this.start().as(as);
     }
@@ -85,9 +88,11 @@ public interface Vertex extends Element {
         return (GraphTraversal) this.start().property(propertyKey);
     }
 
-    /**public default <E2> GraphTraversal<Vertex, Property<E2>> properties() {
-        return (GraphTraversal) this.start().values;
-    }**/
+    /**
+     * public default <E2> GraphTraversal<Vertex, Property<E2>> properties() {
+     * return (GraphTraversal) this.start().values;
+     * }*
+     */
 
     public default <E2> GraphTraversal<Vertex, E2> value(final String propertyKey) {
         return (GraphTraversal) this.start().value(propertyKey);

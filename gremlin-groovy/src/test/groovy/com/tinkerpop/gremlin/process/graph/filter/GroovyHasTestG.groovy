@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyHasTest extends HasTest {
+class GroovyHasTestG extends HasTest {
 
     public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX() {
         g.V.has('name', 'marko')

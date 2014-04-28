@@ -20,16 +20,16 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class GroupByTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXa_nameX();
+    public abstract Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX();
 
     public abstract Map<String, List<String>> get_g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX();
 
-    public abstract Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXa_lang_1_countX();
+    public abstract Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX();
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_groupByXa_nameX() {
-        final Traversal<Vertex, Map<String, List<Vertex>>> traversal = get_g_V_groupByXa_nameX();
+        final Traversal<Vertex, Map<String, List<Vertex>>> traversal = get_g_V_groupByXnameX();
         System.out.println("Testing: " + traversal);
         final Map<String, List<Vertex>> map = traversal.next();
         assertEquals(6, map.size());
@@ -53,7 +53,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_hasXlangX_groupByXa_lang_1_countX() {
-        final Traversal<Vertex, Map<String, Integer>> traversal = get_g_V_hasXlangX_groupByXa_lang_1_countX();
+        final Traversal<Vertex, Map<String, Integer>> traversal = get_g_V_hasXlangX_groupByXlang_1_sizeX();
         System.out.println("Testing: " + traversal);
         final Map<String, Integer> map = traversal.next();
         assertEquals(1, map.size());
@@ -62,7 +62,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     }
 
     public static class JavaGroupByTest extends GroupByTest {
-        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXa_nameX() {
+        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
             return (Traversal) g.V().groupBy(v -> v.getValue("name"));
         }
 
@@ -73,7 +73,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
                             v -> v.getValue("name")).iterate().memory().get("a");
         }
 
-        public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXa_lang_1_countX() {
+        public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX() {
             return (Traversal) g.V().<Vertex>has("lang")
                     .groupBy(v -> v.getValue("lang"),
                             v -> 1,
