@@ -31,6 +31,10 @@ public class IOAnnotatedList<V> {
         return kal;
     }
 
+    /**
+     * An extension to the {@link IOAnnotatedValue} that is specifically used when serializing a
+     * {@link IOAnnotatedValue} as part of a {@link AnnotatedList}.
+     */
     public static class IOListValue<V> extends IOAnnotatedValue<V> {
         public static <V> IOListValue from(final AnnotatedValue<V> av) {
             final IOListValue<V> kav = new IOListValue<>();

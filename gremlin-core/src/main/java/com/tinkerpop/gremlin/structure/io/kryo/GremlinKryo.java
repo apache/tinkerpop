@@ -157,8 +157,8 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedList.class, null, 15));
             add(Triplet.<Class, Serializer, Integer>with(IOAnnotatedValue.class, null, 16));
             add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
-            add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new VertexSerializer(), 18));
-            add(Triplet.<Class, Serializer, Integer>with(Edge.class, new EdgeSerializer(), 19));
+            add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 18));
+            add(Triplet.<Class, Serializer, Integer>with(Edge.class, new ElementSerializer.EdgeSerializer(), 19));
             add(Triplet.<Class, Serializer, Integer>with(IOVertex.class, null, 20));
             add(Triplet.<Class, Serializer, Integer>with(IOEdge.class, null, 21));
             add(Triplet.<Class, Serializer, Integer>with(AnnotatedList.class, new AnnotatedSerializer.AnnotatedListSerializer(), 22));

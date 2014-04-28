@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Serializers for {@link AnnotatedList} and {@link AnnotatedValue}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class AnnotatedSerializer {
