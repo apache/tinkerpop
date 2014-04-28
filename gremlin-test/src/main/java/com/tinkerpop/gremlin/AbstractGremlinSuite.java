@@ -42,6 +42,8 @@ public abstract class AbstractGremlinSuite extends Suite {
         super(builder, klass, enforce(testsToExecute, testsToEnforce));
 
         // figures out what the implementer assigned as the GraphProvider class and make it available to tests.
+        // the klass is the Suite that implements this suite (e.g. GroovyTinkerGraphProcessStandardTest).
+        // this class should be annotated with GraphProviderClass.  Failure to do so will toss an InitializationError
         final Class graphProviderClass = getGraphProviderClass(klass);
         try {
             GraphManager.set((GraphProvider) graphProviderClass.newInstance());
@@ -67,9 +69,7 @@ public abstract class AbstractGremlinSuite extends Suite {
 
     private static Class<? extends GraphProvider> getGraphProviderClass(final Class<?> klass) throws InitializationError {
         GraphProviderClass annotation = klass.getAnnotation(GraphProviderClass.class);
-        if (annotation == null) {
-            throw new InitializationError(String.format("class '%s' must have a GraphProviderClass annotation", klass.getName()));
-        }
+        if (annotation == null)  throw new InitializationError(String.format("class '%s' must have a GraphProviderClass annotation", klass.getName()));
         return annotation.value();
     }
 
