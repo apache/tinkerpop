@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.steps.filter.GroovyDedupTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -15,7 +16,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-           // GroovyDedupTest.class
+           GroovyDedupTest.class
     };
 
 
