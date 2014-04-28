@@ -1,10 +1,8 @@
 package com.tinkerpop.gremlin.structure.util.cached;
 
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
-import com.tinkerpop.gremlin.structure.util.AnnotatedValueHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;

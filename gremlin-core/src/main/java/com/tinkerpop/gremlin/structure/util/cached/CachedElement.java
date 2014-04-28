@@ -24,7 +24,9 @@ public abstract class CachedElement implements Element {
     }
 
     protected CachedElement(final Object id, final String label, final Map<String,Object> properties) {
-        // todo: validate
+        if (null == id) throw Graph.Exceptions.argumentCanNotBeNull("id");
+        if (null == label) throw Graph.Exceptions.argumentCanNotBeNull("label");
+
         this.id = id;
         this.label = label;
         if (null == properties)
@@ -42,8 +44,7 @@ public abstract class CachedElement implements Element {
     }
 
     protected CachedElement(final Element element) {
-        if (null == element)
-            throw Graph.Exceptions.argumentCanNotBeNull("element");
+        if (null == element) throw Graph.Exceptions.argumentCanNotBeNull("element");
 
         this.id = element.getId();
         this.label = element.getLabel();
