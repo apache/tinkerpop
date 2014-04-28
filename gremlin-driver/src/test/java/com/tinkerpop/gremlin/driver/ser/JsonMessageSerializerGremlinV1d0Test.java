@@ -213,9 +213,9 @@ public class JsonMessageSerializerGremlinV1d0Test {
         assertEquals("marko", properties.get("name"));
 
         final IOAnnotatedList<String> list = (IOAnnotatedList<String>) properties.get("locations");
-        assertEquals(4, list.getAnnotatedValueList().size());
+        assertEquals(4, list.annotatedValueList.size());
 
-        list.getAnnotatedValueList().forEach(av -> {
+        list.annotatedValueList.forEach(av -> {
             if (av.value.equals("san diego")) {
                 assertEquals(1997, av.annotations.get("startTime"));
                 assertEquals(2001, av.annotations.get("endTime"));
@@ -243,9 +243,9 @@ public class JsonMessageSerializerGremlinV1d0Test {
         assertCommon(response);
 
         final IOAnnotatedList<String> list = (IOAnnotatedList<String>) response.getResult();
-        assertEquals(4, list.getAnnotatedValueList().size());
+        assertEquals(4, list.annotatedValueList.size());
 
-        list.getAnnotatedValueList().forEach(av -> {
+        list.annotatedValueList.forEach(av -> {
             if (av.value.equals("san diego")) {
                 assertEquals(1997, av.annotations.get("startTime"));
                 assertEquals(2001, av.annotations.get("endTime"));

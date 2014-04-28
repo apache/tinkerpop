@@ -14,20 +14,12 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class IOAnnotatedList<V> {
-    private List<IOListValue<V>> annotatedValueList;
-
-    public List<IOListValue<V>> getAnnotatedValueList() {
-        return annotatedValueList;
-    }
-
-    public void setAnnotatedValueList(final List<IOListValue<V>> annotatedValueList) {
-        this.annotatedValueList = annotatedValueList;
-    }
+    public List<IOListValue<V>> annotatedValueList;
 
     public static <V> IOAnnotatedList<V> from(final AnnotatedList<V> annotatedList) {
         final IOAnnotatedList<V> kal = new IOAnnotatedList<>();
-        kal.setAnnotatedValueList(annotatedList.annotatedValues().toList().stream()
-                .map(IOListValue::from).collect(Collectors.toList()));
+        kal.annotatedValueList = annotatedList.annotatedValues().toList().stream()
+                .map(IOListValue::from).collect(Collectors.toList());
         return kal;
     }
 

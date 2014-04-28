@@ -173,7 +173,7 @@ public class GraphSONReader implements GraphReader {
     private static void setAnnotatedListValues(final List<Pair<String, IOAnnotatedList>> annotatedLists, final Vertex v) {
         annotatedLists.forEach(kal -> {
             final AnnotatedList al = v.getValue(kal.getValue0());
-            final List<IOAnnotatedValue> valuesForAnnotation = kal.getValue1().getAnnotatedValueList();
+            final List<IOAnnotatedValue> valuesForAnnotation = kal.getValue1().annotatedValueList;
             for (IOAnnotatedValue kav : valuesForAnnotation) {
                 al.addValue(kav.value, kav.toAnnotationsArray());
             }
