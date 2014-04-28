@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.driver.Item;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
