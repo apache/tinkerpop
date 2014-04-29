@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Optimizer;
 import com.tinkerpop.gremlin.process.PathHolder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Step;
@@ -11,6 +12,7 @@ import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
 import com.tinkerpop.gremlin.process.util.HolderOptimizer;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -82,6 +84,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
         final Traversal traversal = this.traversalSupplier.get();
+        traversal.optimizers().doFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         startStep.clear();
         final String future = (traversal.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
@@ -110,6 +113,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
         final Traversal traversal = this.traversalSupplier.get();
+        traversal.optimizers().doFinalOptimizers(traversal);
         ((GraphStep) traversal.getSteps().get(0)).clear();
         if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);

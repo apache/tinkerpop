@@ -35,8 +35,6 @@ public class GiraphMessenger implements Messenger<Serializable> {
             final MessageType.Global globalMessageType = (MessageType.Global) messageType;
             globalMessageType.vertices().forEach(v ->
                     this.giraphVertex.sendMessage(new LongWritable(Long.valueOf(v.getId().toString())), new KryoWritable(message)));
-
         }
-
     }
 }

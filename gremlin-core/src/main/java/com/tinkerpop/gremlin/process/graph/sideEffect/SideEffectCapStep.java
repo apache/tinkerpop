@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Holder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 
 import java.util.NoSuchElementException;
 
@@ -12,18 +13,25 @@ import java.util.NoSuchElementException;
  */
 public class SideEffectCapStep<S, E> extends AbstractStep<S, E> {
 
+    private boolean done = false;
+
     public SideEffectCapStep(final Traversal traversal) {
         super(traversal);
     }
 
     public Holder<E> processNextStart() {
-        Holder<E> holder = new SimpleHolder<>((E) NO_OBJECT);
-        try {
-            while (true) {
-                holder = (Holder<E>) this.starts.next();
+        if (!this.done) {
+            Holder<E> holder = new SimpleHolder<>((E) NO_OBJECT);
+            try {
+                while (true) {
+                    holder = (Holder<E>) this.starts.next();
+                }
+            } catch (final NoSuchElementException e) {
             }
-        } catch (final NoSuchElementException e) {
+            this.done = true;
+            return holder.makeChild(this.getAs(), this.traversal.memory().get(SideEffectCapable.CAP_VARIABLE));
+        } else {
+            throw FastNoSuchElementException.instance();
         }
-        return holder.makeChild(this.getAs(), this.traversal.memory().get(SideEffectCapable.CAP_VARIABLE));
     }
 }

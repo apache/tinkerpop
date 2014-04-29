@@ -17,6 +17,8 @@ import com.tinkerpop.gremlin.process.graph.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.map.TraversalTest;
 import com.tinkerpop.gremlin.process.graph.map.ValuesTest;
+import com.tinkerpop.gremlin.process.graph.sideEffect.GroupByTest;
+import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.sideEffect.TreeTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -70,11 +72,14 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             ValuesTest.JavaComputerValuesTest.class,
             TreeTest.JavaComputerTreeTest.class,
 
+            GroupCountTest.JavaComputerGroupCountTest.class,
+            GroupByTest.JavaComputerGroupByTest.class,
+
           /*
             // TODO: Be sure to XXComputerXX then class names
             AggregateTest.JavaAggregateTest.class,
             GroupByTest.JavaGroupByTest.class,
-            GroupCountTest.JavaGroupCountTest.class,
+
             LinkTest.JavaLinkTest.class,
             SideEffectTest.JavaSideEffectTest.class,
             TreeTest.JavaTreeTest.class

@@ -10,6 +10,7 @@ import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -32,6 +33,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         assertEquals(map.size(), 2);
         assertEquals(map.get("lop"), Long.valueOf(3l));
         assertEquals(map.get("ripple"), Long.valueOf(1l));
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -43,6 +45,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         assertEquals(map.size(), 2);
         assertEquals(map.get("lop").longValue(), 3l);
         assertEquals(map.get("ripple").longValue(), 1l);
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -66,6 +69,23 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         }
 
         public Map<Object, Long> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_iterate_getXaX() {
+            return g.V().as("x").out()
+                    .groupCount("a", v -> v.getValue("name"))
+                    .jump("x", h -> h.getLoops() < 2).iterate().memory().get("a");
+        }
+    }
+
+    public static class JavaComputerGroupCountTest extends GroupCountTest {
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX() {
+            return (Traversal) g.V().out("created").groupCount(v -> v.getValue("name")).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount() {
+            return (Traversal) g.V().out("created").value("name").groupCount().submit(g.compute());
+        }
+
+        public Map<Object, Long> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_iterate_getXaX() {
+            // TODO: Make legit
             return g.V().as("x").out()
                     .groupCount("a", v -> v.getValue("name"))
                     .jump("x", h -> h.getLoops() < 2).iterate().memory().get("a");

@@ -33,7 +33,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
         try {
             final GiraphJob job = new GiraphJob(this.giraphConfiguration,
                     "GiraphGremlin: " + VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(this.giraphConfiguration)));
-            job.getInternalJob().setJarByClass(GiraphJob.class);
+            job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
             job.run(true);
         } catch (Exception e) {
             e.printStackTrace();

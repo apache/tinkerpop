@@ -69,10 +69,8 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                 g = this.graph;
             }
 
-
             g.usesElementMemory = true;
             g.elementMemory = new TinkerElementMemory(this.isolation, vertexProgram.getComputeKeys());
-
 
             // execute the vertex program
             vertexProgram.setup(g.memory());

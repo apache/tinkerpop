@@ -27,7 +27,7 @@ public class TraversalResult<T> implements Iterator<T> {
     public TraversalResult(final Graph graph, final SSupplier<Traversal> traversalSupplier) {
         this.traversalSupplier = traversalSupplier;
         this.graph = graph;
-        final GraphComputer computer = graph.compute();
+        final GraphComputer computer = this.graph.compute();
         computer.program(TraversalVertexProgram.create().traversal(traversalSupplier).getConfiguration());
         try {
             this.result = computer.submit().get();
