@@ -16,7 +16,6 @@ public class TinkerGraphGraphProvider extends AbstractGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName) {
-        // todo: when tinkergraph has persistence this will need to change to ensure unique graphs are generated...now it's all in memory
         return new HashMap<String, Object>() {{
             put("gremlin.graph", TinkerGraph.class.getName());
         }};
@@ -26,11 +25,5 @@ public class TinkerGraphGraphProvider extends AbstractGraphProvider {
     public void clear(final Graph g, final Configuration configuration) throws Exception {
         if (g != null)
             g.close();
-
-        if (configuration.containsKey("gremlin.tg.directory")) {
-            // this is a non-in-memory configuration so blow away the directory
-            final File graphDirectory = new File(configuration.getString("gremlin.tg.directory"));
-            graphDirectory.delete();
-        }
     }
 }
