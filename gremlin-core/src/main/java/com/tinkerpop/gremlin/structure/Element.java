@@ -50,6 +50,11 @@ public abstract interface Element {
         else throw Property.Exceptions.propertyDoesNotExist();
     }
 
+    /*public default <V> V getValue(final String key, final V orElse) {
+        final Property<V> property = this.getProperty(key);
+        return property.orElse(orElse);
+    }*/
+
     public static class Exceptions {
         public static IllegalArgumentException bothIsNotSupported() {
             return new IllegalArgumentException("A direction of BOTH is not supported");

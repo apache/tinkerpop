@@ -83,4 +83,55 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
 
     }
 
+    public default Features getFeatures() {
+        return new Features() {
+        };
+    }
+
+    public interface Features {
+        public default boolean requiresGlobalMessageTypes() {
+            return false;
+        }
+
+        public default boolean requiresLocalMessageTypes() {
+            return false;
+        }
+
+        public default boolean requiresVertexAddition() {
+            return false;
+        }
+
+        public default boolean requiresVertexRemoval() {
+            return false;
+        }
+
+        public default boolean requiresVertexPropertyAddition() {
+            return false;
+        }
+
+        public default boolean requiresVertexPropertyRemoval() {
+            return false;
+        }
+
+        public default boolean requiresEdgeAddition() {
+            return false;
+        }
+
+        public default boolean requiresEdgeRemoval() {
+            return false;
+        }
+
+        public default boolean requiresEdgePropertyAddition() {
+            return false;
+        }
+
+        public default boolean requiresEdgePropertyRemoval() {
+            return false;
+        }
+
+        public default boolean requiresAdjacentVertexDeepReference() {
+            return false;
+        }
+    }
+
 }

@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
+import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.GraphMigrator;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
@@ -49,6 +50,9 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     }
 
     public Future<Graph> submit() {
+        final VertexProgram vertexProgram = VertexProgram.createVertexProgram(this.configuration);
+        GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
+
         return CompletableFuture.<Graph>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
 
@@ -65,7 +69,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
                 g = this.graph;
             }
 
-            final VertexProgram vertexProgram = VertexProgram.createVertexProgram(this.configuration);
+
             g.usesElementMemory = true;
             g.elementMemory = new TinkerElementMemory(this.isolation, vertexProgram.getComputeKeys());
 

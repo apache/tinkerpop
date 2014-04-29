@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 public interface GraphComputer extends TraversalEngine {
 
     String VERTEX_PROGRAM = "gremlin.vertexProgram";
-    String MUTATE_ORIGINAL_GRAPH = "gremlin.mutateOriginalGraph";
+    String MUTATE_ORIGINAL_GRAPH = "gremlin.graphComputer.operateOnOriginal";
 
     public enum Isolation {
         /**
@@ -35,11 +35,13 @@ public interface GraphComputer extends TraversalEngine {
 
     public GraphComputer isolation(final Isolation isolation);
 
+    // TODO: operation(onOriginal, clone, ??)
+
     public GraphComputer program(final Configuration configuration);
 
     public Future<Graph> submit();
 
-    public static Features getFeatures() {
+    public default Features getFeatures() {
         return new Features() {
         };
     }

@@ -126,4 +126,19 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         }
     }
 
+    ////////////////////////////
+
+    public Features getFeatures() {
+        return new Features() {
+
+            public boolean requiresLocalMessageTypes() {
+                return true;
+            }
+
+            public boolean requiresVertexPropertyAddition() {
+                return true;
+            }
+        };
+    }
+
 }
