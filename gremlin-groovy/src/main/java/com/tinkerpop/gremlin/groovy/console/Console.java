@@ -1,12 +1,14 @@
 package com.tinkerpop.gremlin.groovy.console;
 
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
+import com.tinkerpop.gremlin.groovy.console.commands.GremlinImportCommand;
 import com.tinkerpop.gremlin.groovy.console.commands.UseCommand;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import groovy.grape.Grape;
 import jline.console.history.FileHistory;
+import org.codehaus.groovy.tools.shell.Command;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.codehaus.groovy.tools.shell.InteractiveShellRunner;
@@ -50,6 +52,10 @@ public class Console {
         STANDARD_IO.out.println("         \\,,,/");
         STANDARD_IO.out.println("         (o o)");
         STANDARD_IO.out.println("-----oOOo-(3)-oOOo-----");
+
+        final Command cmd = GROOVYSH.getRegistry().find("import");
+        GROOVYSH.getRegistry().remove(cmd);
+        GROOVYSH.register(new GremlinImportCommand(GROOVYSH));
 
         GROOVYSH.register(new UseCommand(GROOVYSH, loadedPlugins));
         GROOVYSH.setResultHook(new NullResultHookClosure(GROOVYSH));
