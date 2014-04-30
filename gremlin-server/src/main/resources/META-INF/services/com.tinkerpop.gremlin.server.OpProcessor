@@ -1,1 +1,2 @@
 com.tinkerpop.gremlin.server.op.standard.StandardOpProcessor
+com.tinkerpop.gremlin.server.op.control.ControlOpProcessor

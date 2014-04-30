@@ -35,31 +35,12 @@ public class StandardOpProcessor implements OpProcessor {
     @Override
     public ThrowingConsumer<Context> select(final Context ctx) throws OpProcessorException {
         final RequestMessage message = ctx.getRequestMessage();
-        if (logger.isDebugEnabled())
-            logger.debug("Selecting processor for RequestMessage {}", message);
-
-        final MessageSerializer serializer = ctx.getChannelHandlerContext().channel().attr(StateKey.SERIALIZER).get();
+        if (logger.isDebugEnabled()) logger.debug("Selecting processor for RequestMessage {}", message);
 
         final ThrowingConsumer<Context> op;
         switch (message.getOp()) {
-            case Tokens.OPS_VERSION:
-                // todo: rework this op for sessionless
-                op = null;
-                break;
             case Tokens.OPS_EVAL:
-                op = validateEvalMessage(message, serializer, ctx).orElse(StandardOps::evalOp);
-                break;
-            case Tokens.OPS_IMPORT:
-                op = validateImportMessage(message, serializer, ctx).orElse(StandardOps::importOp);
-                break;
-            case Tokens.OPS_RESET:
-                op = StandardOps::resetOp;
-                break;
-            case Tokens.OPS_SHOW:
-                op = validateShowMessage(message, serializer, ctx).orElse(StandardOps::showOp);
-                break;
-            case Tokens.OPS_USE:
-                op = validateUseMessage(message, serializer, ctx).orElse(StandardOps::useOp);
+                op = validateEvalMessage(message).orElse(StandardOps::evalOp);
                 break;
             case Tokens.OPS_INVALID:
                 final String msgInvalid = String.format("Message could not be parsed.  Check the format of the request. [%s]", message);
@@ -72,85 +53,13 @@ public class StandardOpProcessor implements OpProcessor {
         return op;
     }
 
-    private static Optional<ThrowingConsumer<Context>> validateEvalMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
+    private static Optional<ThrowingConsumer<Context>> validateEvalMessage(final RequestMessage message) throws OpProcessorException {
         if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_EVAL, Tokens.ARGS_GREMLIN);
             throw new OpProcessorException(msg, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).build());
         }
 
         return Optional.empty();
-    }
-
-    private static Optional<ThrowingConsumer<Context>> validateImportMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
-        final Optional<List> l = message.optionalArgs(Tokens.ARGS_IMPORTS);
-        if (!l.isPresent()) {
-            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_IMPORT, Tokens.ARGS_IMPORTS);
-            throw new OpProcessorException(msg, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).build());
-        }
-
-        if (l.orElse(new ArrayList()).size() == 0) {
-            final String msg = String.format(
-                    "A message with an [%s] op code requires that the [%s] argument has at least one import string specified.",
-                    Tokens.OPS_IMPORT, Tokens.ARGS_IMPORTS);
-            throw new OpProcessorException(msg, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).build());
-        }
-
-        return Optional.empty();
-    }
-
-    private static Optional<ThrowingConsumer<Context>> validateShowMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
-        final Optional<String> infoType = message.optionalArgs(Tokens.ARGS_INFO_TYPE);
-        if (!infoType.isPresent()) {
-            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.",
-                    Tokens.OPS_SHOW, Tokens.ARGS_INFO_TYPE);
-            throw new OpProcessorException(msg, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).build());
-        }
-
-        if (!Tokens.INFO_TYPES.contains(infoType.get())) {
-            final String msg = String.format("A message with an [%s] op code requires a [%s] argument with one of the following values [%s].",
-                    Tokens.OPS_SHOW, Tokens.ARGS_INFO_TYPE, Tokens.INFO_TYPES);
-            throw new OpProcessorException(msg, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).build());
-        }
-
-
-        return Optional.empty();
-
-    }
-
-    private static Optional<ThrowingConsumer<Context>> validateUseMessage(final RequestMessage message, final MessageSerializer serializer, final Context ctx) throws OpProcessorException {
-        final Optional<List> l = message.optionalArgs(Tokens.ARGS_COORDINATES);
-        if (!l.isPresent()) {
-            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.",
-                    Tokens.OPS_USE, Tokens.ARGS_COORDINATES);
-            throw new OpProcessorException(msg, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).build());
-        }
-
-        final List coordinates = l.orElse(new ArrayList());
-        if (coordinates.size() == 0) {
-            final String msg = String.format(
-                    "A message with an [%s] op code requires that the [%s] argument has at least one set of valid maven coordinates specified.",
-                    Tokens.OPS_USE, Tokens.ARGS_COORDINATES);
-            throw new OpProcessorException(msg, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).build());
-        }
-
-        if (!coordinates.stream().allMatch(StandardOpProcessor::validateCoordinates)) {
-            final String msg = String.format(
-                    "A message with an [%s] op code requires that all [%s] specified are valid maven coordinates with a group, artifact, and version.",
-                    Tokens.OPS_USE, Tokens.ARGS_COORDINATES);
-            throw new OpProcessorException(msg, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).build());
-        }
-
-        return Optional.empty();
-    }
-
-    private static boolean validateCoordinates(final Object coordinates) {
-        if (!(coordinates instanceof Map))
-            return false;
-
-        final Map m = (Map) coordinates;
-        return m.containsKey(Tokens.ARGS_COORDINATES_GROUP)
-                && m.containsKey(Tokens.ARGS_COORDINATES_ARTIFACT)
-                && m.containsKey(Tokens.ARGS_COORDINATES_VERSION);
     }
 
 }

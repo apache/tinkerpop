@@ -12,7 +12,8 @@ import java.util.stream.Stream;
  */
 public enum ResultType {
     OBJECT(0),
-    COLLECTION(1);
+    COLLECTION(1),
+    EMPTY(2);
 
     private final int value;
     private static Map<Integer, ResultType> codeValueMap = new HashMap<>();
