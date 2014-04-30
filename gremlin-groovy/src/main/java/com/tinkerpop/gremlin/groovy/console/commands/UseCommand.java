@@ -1,20 +1,28 @@
 package com.tinkerpop.gremlin.groovy.console.commands;
 
+import com.tinkerpop.gremlin.groovy.console.ConsolePluginAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import groovy.grape.Grape;
 import org.codehaus.groovy.tools.shell.CommandSupport;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class UseCommand extends CommandSupport {
 
-    public UseCommand(Groovysh shell) {
+    private final Set<String> loadedPlugins;
+
+    public UseCommand(final Groovysh shell, final Set<String> loadedPlugins) {
         super(shell, ":use", ":u");
+        this.loadedPlugins = loadedPlugins;
     }
 
     public Object execute(final List<String> arguments) {
@@ -38,17 +46,16 @@ public class UseCommand extends CommandSupport {
         map.put("version", version);
         map.put("changing", false);
         Grape.grab(map);
-        return "loaded: " + map;
 
-        // TODO: Stephen, I have no idea what this is all about.
         // note that the service loader utilized the classloader from the groovy shell as shell class are available
         // from within there given loading through Grape.
-        /*ServiceLoader.load(ConsolePlugin.class, Console.groovysh.interp.classLoader).each {
-            if (!Gremlin.plugins().contains(it.name)) {
-                it.pluginTo(new ConsoleGroovy(Console.groovysh), new ConsoleIO(it, Console.standardIo), dependency.args);
-                Gremlin.plugins().add(it.name)
-                Console.standardIo.out.println(Console.STANDARD_RESULT_PROMPT + "Plugin Loaded: " + it.name)
+        ServiceLoader.load(GremlinPlugin.class, shell.getInterp().getClassLoader()).forEach(plugin -> {
+            if (!loadedPlugins.contains(plugin.getName())) {
+                plugin.pluginTo(new ConsolePluginAcceptor(shell));
+                loadedPlugins.add(plugin.getName());
             }
-        }*/
+        });
+
+        return "loaded: " + map;
     }
 }

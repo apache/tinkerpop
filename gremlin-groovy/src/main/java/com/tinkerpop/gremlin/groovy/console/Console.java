@@ -18,7 +18,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,6 +32,9 @@ public class Console {
         // this is necessary so that terminal doesn't lose focus to AWT
         System.setProperty("java.awt.headless", "true");
     }
+
+
+    private static final Set<String> loadedPlugins = new HashSet<>();
 
     private static final String HISTORY_FILE = ".gremlin_groovy_history";
     private static final String STANDARD_INPUT_PROMPT = "gremlin> ";
@@ -46,7 +51,7 @@ public class Console {
         STANDARD_IO.out.println("         (o o)");
         STANDARD_IO.out.println("-----oOOo-(3)-oOOo-----");
 
-        GROOVYSH.register(new UseCommand(GROOVYSH));
+        GROOVYSH.register(new UseCommand(GROOVYSH, loadedPlugins));
         GROOVYSH.setResultHook(new NullResultHookClosure(GROOVYSH));
         // TODO: use import manager?
         GROOVYSH.execute(IMPORT_SPACE + Graph.class.getPackage().getName() + DOT_STAR);
