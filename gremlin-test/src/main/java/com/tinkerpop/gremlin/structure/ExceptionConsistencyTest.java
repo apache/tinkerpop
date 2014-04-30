@@ -20,7 +20,7 @@ import java.util.concurrent.Future;
 import static com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures.FEATURE_ANNOTATIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures.FEATURE_MEMORY;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.*;
@@ -256,21 +256,21 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Test exceptions around {@link com.tinkerpop.gremlin.structure.Graph.Memory}.
+     * Test exceptions around {@link com.tinkerpop.gremlin.structure.Graph.Variables}.
      */
     @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Graph.Memory.Exceptions.class, methods = {
-            "memoryValueCanNotBeNull",
-            "memoryKeyCanNotBeNull",
-            "memoryKeyCanNotBeEmpty"
+    @ExceptionCoverage(exceptionClass = Graph.Variables.Exceptions.class, methods = {
+            "variableValueCanNotBeNull",
+            "variableKeyCanNotBeNull",
+            "variableKeyCanNotBeEmpty"
     })
     public static class MemoryTest extends AbstractGremlinTest {
         @Parameterized.Parameters(name = "{index}: expect - {2}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {"k", null, Graph.Memory.Exceptions.memoryValueCanNotBeNull()},
-                    {null, "v", Graph.Memory.Exceptions.memoryKeyCanNotBeNull()},
-                    {"", "v", Graph.Memory.Exceptions.memoryKeyCanNotBeEmpty()}});
+                    {"k", null, Graph.Variables.Exceptions.variableValueCanNotBeNull()},
+                    {null, "v", Graph.Variables.Exceptions.variableKeyCanNotBeNull()},
+                    {"", "v", Graph.Variables.Exceptions.variableKeyCanNotBeEmpty()}});
         }
 
         @Parameterized.Parameter(value = 0)
@@ -283,10 +283,10 @@ public class ExceptionConsistencyTest {
         public Exception expectedException;
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.MemoryFeatures.class, feature = FEATURE_MEMORY)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
         public void testGraphAnnotationsSet() throws Exception {
             try {
-                g.memory().set(key, val);
+                g.variables().set(key, val);
                 fail(String.format("Setting an annotation with these arguments [key: %s value: %s] should throw an exception", key, val));
             } catch (Exception ex) {
                 assertEquals(expectedException.getClass(), ex.getClass());
@@ -781,16 +781,16 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final Graph.Memory.Computer graphMemory) {
+        public void setup(final GraphComputer.Memory graphComputerMemory) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final Graph.Memory.Computer graphMemory) {
+        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Memory graphComputerMemory) {
             vertex.setProperty(this.key, this.val);
         }
 
         @Override
-        public boolean terminate(Graph.Memory.Computer graphMemory) {
+        public boolean terminate(GraphComputer.Memory graphComputerMemory) {
             return true;
         }
 
@@ -823,16 +823,16 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final Graph.Memory.Computer graphMemory) {
+        public void setup(final GraphComputer.Memory graphComputerMemory) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final Graph.Memory.Computer graphMemory) {
+        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Memory graphComputerMemory) {
             vertex.bothE().forEach(e -> e.setProperty(this.key, this.val));
         }
 
         @Override
-        public boolean terminate(Graph.Memory.Computer graphMemory) {
+        public boolean terminate(GraphComputer.Memory graphComputerMemory) {
             return true;
         }
 

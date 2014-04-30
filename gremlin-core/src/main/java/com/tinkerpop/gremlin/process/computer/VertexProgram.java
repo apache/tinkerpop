@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.computer;
 
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
@@ -30,27 +29,27 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      * The method is called at the beginning of the computation. The method is global to the {@link GraphComputer}
      * and as such, is not called for each vertex.
      *
-     * @param graphMemory The global GraphMemory of the GraphComputer
+     * @param graphComputerMemory The global GraphMemory of the GraphComputer
      */
-    public void setup(final Graph.Memory.Computer graphMemory);
+    public void setup(final GraphComputer.Memory graphComputerMemory);
 
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
      *
-     * @param vertex      the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
-     * @param messenger   the messenger that moves data between vertices
-     * @param graphMemory the shared state between all vertices in the computation
+     * @param vertex              the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
+     * @param messenger           the messenger that moves data between vertices
+     * @param graphComputerMemory the shared state between all vertices in the computation
      */
-    public void execute(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.Memory graphComputerMemory);
 
     /**
      * The method is called at the end of a round to determine if the computation is complete. The method is global
      * to the {@link GraphComputer} and as such, is not called for each {@link com.tinkerpop.gremlin.structure.Vertex}.
      *
-     * @param graphMemory The global {@link Graph.Memory} of the {@link GraphComputer}
+     * @param graphComputerMemory The global {@link com.tinkerpop.gremlin.structure.Graph.Variables} of the {@link GraphComputer}
      * @return whether or not to halt the computation
      */
-    public boolean terminate(final Graph.Memory.Computer graphMemory);
+    public boolean terminate(final GraphComputer.Memory graphComputerMemory);
 
     public Map<String, KeyType> getComputeKeys();
 

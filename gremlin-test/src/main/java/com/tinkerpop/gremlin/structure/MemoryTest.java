@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.structure.Graph.Features.MemoryFeatures;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -22,7 +21,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Blueprints Test Suite for {@link com.tinkerpop.gremlin.structure.Graph.Memory} operations.
+ * Blueprints Test Suite for {@link com.tinkerpop.gremlin.structure.Graph.Variables} operations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -30,52 +29,52 @@ import static org.junit.Assume.assumeThat;
 public class MemoryTest {
 
     /**
-     * Basic tests to ensure that {@link com.tinkerpop.gremlin.structure.Graph.Memory} have
+     * Basic tests to ensure that {@link com.tinkerpop.gremlin.structure.Graph.Variables} have
      * appropriate {@link String} representations.
      */
     public static class StringRepresentationTest extends AbstractGremlinTest {
         @Test
-        @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         public void testMemory() {
-            final Graph.Memory memory = g.memory();
-            memory.set("xo", "test1");
-            memory.set("yo", "test2");
-            memory.set("zo", "test3");
+            final Graph.Variables variables = g.variables();
+            variables.set("xo", "test1");
+            variables.set("yo", "test2");
+            variables.set("zo", "test3");
 
-            tryCommit(g, graph -> assertEquals(StringFactory.memoryString(memory), memory.toString()));
+            tryCommit(g, graph -> assertEquals(StringFactory.memoryString(variables), variables.toString()));
         }
     }
 
     /**
-     * Ensure that the {@link com.tinkerpop.gremlin.structure.Graph.Memory#asMap()} method returns some basics.
-     * Other tests will enforce that all types are properly covered in {@link com.tinkerpop.gremlin.structure.Graph.Memory}.
+     * Ensure that the {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()} method returns some basics.
+     * Other tests will enforce that all types are properly covered in {@link com.tinkerpop.gremlin.structure.Graph.Variables}.
      */
     public static class MemoryAsMapTest extends AbstractGremlinTest {
         @Test
-        @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         public void testNone() {
-            final Graph.Memory memory = g.memory();
-            final Map<String,Object> mapOfAnnotations = memory.asMap();
+            final Graph.Variables variables = g.variables();
+            final Map<String,Object> mapOfAnnotations = variables.asMap();
             assertNotNull(mapOfAnnotations);
             assertEquals(0, mapOfAnnotations.size());
             try {
                 mapOfAnnotations.put("something", "can't do this");
-                fail("Should not be able to mutate the Map returned from Graph.memory.getAnnotations()");
+                fail("Should not be able to mutate the Map returned from Graph.variables.getAnnotations()");
             } catch (UnsupportedOperationException uoe) {
 
             }
         }
 
         @Test
-        @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         public void testMemoryString() {
-            final Graph.Memory memory = g.memory();
-            memory.set("test1", "1");
-            memory.set("test2", "2");
-            memory.set("test3", "3");
+            final Graph.Variables variables = g.variables();
+            variables.set("test1", "1");
+            variables.set("test2", "2");
+            variables.set("test3", "3");
 
             tryCommit(g, graph -> {
-                final Map<String, Object> m = memory.asMap();
+                final Map<String, Object> m = variables.asMap();
                 assertEquals("1", m.get("test1"));
                 assertEquals("2", m.get("test2"));
                 assertEquals("3", m.get("test3"));
@@ -83,15 +82,15 @@ public class MemoryTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES)
         public void testMemoryInteger() {
-            final Graph.Memory memory = g.memory();
-            memory.set("test1", 1);
-            memory.set("test2", 2);
-            memory.set("test3", 3);
+            final Graph.Variables variables = g.variables();
+            variables.set("test1", 1);
+            variables.set("test2", 2);
+            variables.set("test3", 3);
 
             tryCommit(g, graph -> {
-                final Map<String, Object> m = memory.asMap();
+                final Map<String, Object> m = variables.asMap();
                 assertEquals(1, m.get("test1"));
                 assertEquals(2, m.get("test2"));
                 assertEquals(3, m.get("test3"));
@@ -99,15 +98,15 @@ public class MemoryTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_LONG_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_LONG_VALUES)
         public void testMemoryLong() {
-            final Graph.Memory memory = g.memory();
-            memory.set("test1", 1l);
-            memory.set("test2", 2l);
-            memory.set("test3", 3l);
+            final Graph.Variables variables = g.variables();
+            variables.set("test1", 1l);
+            variables.set("test2", 2l);
+            variables.set("test3", 3l);
 
             tryCommit(g, graph -> {
-                final Map<String, Object> m = memory.asMap();
+                final Map<String, Object> m = variables.asMap();
                 assertEquals(1l, m.get("test1"));
                 assertEquals(2l, m.get("test2"));
                 assertEquals(3l, m.get("test3"));
@@ -115,17 +114,17 @@ public class MemoryTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_STRING_VALUES)
-        @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_INTEGER_VALUES)
-        @FeatureRequirement(featureClass = MemoryFeatures.class, feature = MemoryFeatures.FEATURE_LONG_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_LONG_VALUES)
         public void testMemoryMixed() {
-            final Graph.Memory memory = g.memory();
-            memory.set("test1", "1");
-            memory.set("test2", 2);
-            memory.set("test3", 3l);
+            final Graph.Variables variables = g.variables();
+            variables.set("test1", "1");
+            variables.set("test2", 2);
+            variables.set("test3", 3l);
 
             tryCommit(g, graph -> {
-                final Map<String, Object> m = memory.asMap();
+                final Map<String, Object> m = variables.asMap();
                 assertEquals("1", m.get("test1"));
                 assertEquals(2, m.get("test2"));
                 assertEquals(3l, m.get("test3"));
@@ -134,7 +133,7 @@ public class MemoryTest {
     }
 
     /**
-     * Tests for feature support on {@link com.tinkerpop.gremlin.structure.Graph.Memory}.  The tests validate if
+     * Tests for feature support on {@link com.tinkerpop.gremlin.structure.Graph.Variables}.  The tests validate if
      * {@link com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures} should be turned on or off and if the
      * enabled features are properly supported by the implementation.  Note that these tests are run in a separate
      * test class as they are "parameterized" tests.
@@ -165,41 +164,41 @@ public class MemoryTest {
         @Parameterized.Parameters(name = "{index}: supports{0}({1})")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
-                    {MemoryFeatures.FEATURE_BOOLEAN_VALUES, true},
-                    {MemoryFeatures.FEATURE_BOOLEAN_VALUES, false},
-                    {MemoryFeatures.FEATURE_DOUBLE_VALUES, Double.MIN_VALUE},
-                    {MemoryFeatures.FEATURE_DOUBLE_VALUES, Double.MAX_VALUE},
-                    {MemoryFeatures.FEATURE_DOUBLE_VALUES, 0.0d},
-                    {MemoryFeatures.FEATURE_DOUBLE_VALUES, 0.5d},
-                    {MemoryFeatures.FEATURE_DOUBLE_VALUES, -0.5d},
-                    {MemoryFeatures.FEATURE_FLOAT_VALUES, Float.MIN_VALUE},
-                    {MemoryFeatures.FEATURE_FLOAT_VALUES, Float.MAX_VALUE},
-                    {MemoryFeatures.FEATURE_FLOAT_VALUES, 0.0f},
-                    {MemoryFeatures.FEATURE_FLOAT_VALUES, 0.5f},
-                    {MemoryFeatures.FEATURE_FLOAT_VALUES, -0.5f},
-                    {MemoryFeatures.FEATURE_INTEGER_VALUES, Integer.MIN_VALUE},
-                    {MemoryFeatures.FEATURE_INTEGER_VALUES, Integer.MAX_VALUE},
-                    {MemoryFeatures.FEATURE_INTEGER_VALUES, 0},
-                    {MemoryFeatures.FEATURE_INTEGER_VALUES, 10000},
-                    {MemoryFeatures.FEATURE_INTEGER_VALUES, -10000},
-                    {MemoryFeatures.FEATURE_LONG_VALUES, Long.MIN_VALUE},
-                    {MemoryFeatures.FEATURE_LONG_VALUES, Long.MAX_VALUE},
-                    {MemoryFeatures.FEATURE_LONG_VALUES, 0l},
-                    {MemoryFeatures.FEATURE_LONG_VALUES, 10000l},
-                    {MemoryFeatures.FEATURE_LONG_VALUES, -10000l},
-                    {MemoryFeatures.FEATURE_MAP_VALUES, testMap},
-                    {MemoryFeatures.FEATURE_MIXED_LIST_VALUES, mixedList},
-                    {MemoryFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new boolean[]{true, false}},
-                    {MemoryFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new double[]{1d, 2d}},
-                    {MemoryFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new float[]{1f, 2f}},
-                    {MemoryFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[]{1, 2}},
-                    {MemoryFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new long[]{1l, 2l}},
-                    {MemoryFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new String[]{"try1", "try2"}},
-                    {MemoryFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[1]},
-                    {MemoryFeatures.FEATURE_SERIALIZABLE_VALUES, new MockSerializable("testing")},
-                    {MemoryFeatures.FEATURE_STRING_VALUES, "short string"},
-                    {MemoryFeatures.FEATURE_UNIFORM_LIST_VALUES, uniformIntegerList},
-                    {MemoryFeatures.FEATURE_UNIFORM_LIST_VALUES, uniformStringList}
+                    {Graph.Features.VariableFeatures.FEATURE_BOOLEAN_VALUES, true},
+                    {Graph.Features.VariableFeatures.FEATURE_BOOLEAN_VALUES, false},
+                    {Graph.Features.VariableFeatures.FEATURE_DOUBLE_VALUES, Double.MIN_VALUE},
+                    {Graph.Features.VariableFeatures.FEATURE_DOUBLE_VALUES, Double.MAX_VALUE},
+                    {Graph.Features.VariableFeatures.FEATURE_DOUBLE_VALUES, 0.0d},
+                    {Graph.Features.VariableFeatures.FEATURE_DOUBLE_VALUES, 0.5d},
+                    {Graph.Features.VariableFeatures.FEATURE_DOUBLE_VALUES, -0.5d},
+                    {Graph.Features.VariableFeatures.FEATURE_FLOAT_VALUES, Float.MIN_VALUE},
+                    {Graph.Features.VariableFeatures.FEATURE_FLOAT_VALUES, Float.MAX_VALUE},
+                    {Graph.Features.VariableFeatures.FEATURE_FLOAT_VALUES, 0.0f},
+                    {Graph.Features.VariableFeatures.FEATURE_FLOAT_VALUES, 0.5f},
+                    {Graph.Features.VariableFeatures.FEATURE_FLOAT_VALUES, -0.5f},
+                    {Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES, Integer.MIN_VALUE},
+                    {Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES, Integer.MAX_VALUE},
+                    {Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES, 0},
+                    {Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES, 10000},
+                    {Graph.Features.VariableFeatures.FEATURE_INTEGER_VALUES, -10000},
+                    {Graph.Features.VariableFeatures.FEATURE_LONG_VALUES, Long.MIN_VALUE},
+                    {Graph.Features.VariableFeatures.FEATURE_LONG_VALUES, Long.MAX_VALUE},
+                    {Graph.Features.VariableFeatures.FEATURE_LONG_VALUES, 0l},
+                    {Graph.Features.VariableFeatures.FEATURE_LONG_VALUES, 10000l},
+                    {Graph.Features.VariableFeatures.FEATURE_LONG_VALUES, -10000l},
+                    {Graph.Features.VariableFeatures.FEATURE_MAP_VALUES, testMap},
+                    {Graph.Features.VariableFeatures.FEATURE_MIXED_LIST_VALUES, mixedList},
+                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new boolean[]{true, false}},
+                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new double[]{1d, 2d}},
+                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new float[]{1f, 2f}},
+                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[]{1, 2}},
+                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new long[]{1l, 2l}},
+                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new String[]{"try1", "try2"}},
+                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[1]},
+                    {Graph.Features.VariableFeatures.FEATURE_SERIALIZABLE_VALUES, new MockSerializable("testing")},
+                    {Graph.Features.VariableFeatures.FEATURE_STRING_VALUES, "short string"},
+                    {Graph.Features.VariableFeatures.FEATURE_UNIFORM_LIST_VALUES, uniformIntegerList},
+                    {Graph.Features.VariableFeatures.FEATURE_UNIFORM_LIST_VALUES, uniformStringList}
             });
         }
 
@@ -211,19 +210,19 @@ public class MemoryTest {
 
         @Test
         public void shouldSetValueOnGraph() throws Exception {
-            assumeThat(g.getFeatures().supports(MemoryFeatures.class, featureName), is(true));
-            final Graph.Memory memory = g.memory();
-            memory.set("key", value);
+            assumeThat(g.getFeatures().supports(Graph.Features.VariableFeatures.class, featureName), is(true));
+            final Graph.Variables variables = g.variables();
+            variables.set("key", value);
 
             if (value instanceof Map)
                 tryCommit(g, graph -> {
-                    final Map map = memory.<Map>get("key");
+                    final Map map = variables.<Map>get("key");
                     assertEquals(((Map) value).size(), map.size());
                     ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
                 });
             else if (value instanceof List)
                 tryCommit(g, graph -> {
-                    final List l = memory.<List>get("key");
+                    final List l = variables.<List>get("key");
                     assertEquals(((List) value).size(), l.size());
                     for (int ix = 0; ix < ((List) value).size(); ix++) {
                         assertEquals(((List) value).get(ix), l.get(ix));
@@ -231,12 +230,12 @@ public class MemoryTest {
                 });
             else if (value instanceof MockSerializable)
                 tryCommit(g, graph -> {
-                    final MockSerializable mock = memory.<MockSerializable>get("key");
+                    final MockSerializable mock = variables.<MockSerializable>get("key");
                     assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
                 });
             else if (value instanceof boolean[])
                 tryCommit(g, graph -> {
-                    final boolean[] l = memory.<boolean[]>get("key");
+                    final boolean[] l = variables.<boolean[]>get("key");
                     assertEquals(((boolean[]) value).length, l.length);
                     for (int ix = 0; ix < ((boolean[]) value).length; ix++) {
                         assertEquals(((boolean[]) value)[ix], l[ix]);
@@ -244,7 +243,7 @@ public class MemoryTest {
                 });
             else if (value instanceof double[])
                 tryCommit(g, graph -> {
-                    final double[] l = memory.<double[]>get("key");
+                    final double[] l = variables.<double[]>get("key");
                     assertEquals(((double[]) value).length, l.length);
                     for (int ix = 0; ix < ((double[]) value).length; ix++) {
                         assertEquals(((double[]) value)[ix], l[ix], 0.0d);
@@ -252,7 +251,7 @@ public class MemoryTest {
                 });
             else if (value instanceof float[])
                 tryCommit(g, graph -> {
-                    final float[] l = memory.<float[]>get("key");
+                    final float[] l = variables.<float[]>get("key");
                     assertEquals(((float[]) value).length, l.length);
                     for (int ix = 0; ix < ((float[]) value).length; ix++) {
                         assertEquals(((float[]) value)[ix], l[ix], 0.0f);
@@ -260,7 +259,7 @@ public class MemoryTest {
                 });
             else if (value instanceof int[])
                 tryCommit(g, graph -> {
-                    final int[] l = memory.<int[]>get("key");
+                    final int[] l = variables.<int[]>get("key");
                     assertEquals(((int[]) value).length, l.length);
                     for (int ix = 0; ix < ((int[]) value).length; ix++) {
                         assertEquals(((int[]) value)[ix], l[ix]);
@@ -268,7 +267,7 @@ public class MemoryTest {
                 });
             else if (value instanceof long[])
                 tryCommit(g, graph -> {
-                    final long[] l = memory.<long[]>get("key");
+                    final long[] l = variables.<long[]>get("key");
                     assertEquals(((long[]) value).length, l.length);
                     for (int ix = 0; ix < ((long[]) value).length; ix++) {
                         assertEquals(((long[]) value)[ix], l[ix]);
@@ -276,14 +275,14 @@ public class MemoryTest {
                 });
             else if (value instanceof String[])
                 tryCommit(g, graph -> {
-                    final String[] l = memory.<String[]>get("key");
+                    final String[] l = variables.<String[]>get("key");
                     assertEquals(((String[]) value).length, l.length);
                     for (int ix = 0; ix < ((String[]) value).length; ix++) {
                         assertEquals(((String[]) value)[ix], l[ix]);
                     }
                 });
             else
-                tryCommit(g, graph -> assertEquals(value, memory.get("key")));
+                tryCommit(g, graph -> assertEquals(value, variables.get("key")));
         }
     }
 

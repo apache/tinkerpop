@@ -1,9 +1,8 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.util.MemoryHelper;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,19 +12,17 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphMemory implements Graph.Memory.Computer.Administrative, Serializable {
+public class TinkerGraphComputerMemory implements GraphComputer.Memory.Administrative {
 
-    private final Graph graph;
     private final Map<String, Object> memory;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
 
-    public TinkerGraphMemory(final Graph graph) {
-        this(graph, new ConcurrentHashMap<>());
+    public TinkerGraphComputerMemory() {
+        this(new ConcurrentHashMap<>());
     }
 
-    public TinkerGraphMemory(final Graph graph, final Map<String, Object> state) {
-        this.graph = graph;
+    public TinkerGraphComputerMemory(final Map<String, Object> state) {
         this.memory = state;
     }
 
@@ -85,15 +82,7 @@ public class TinkerGraphMemory implements Graph.Memory.Computer.Administrative, 
     }
 
     public void set(final String variable, final Object value) {
-        MemoryHelper.validateMemory(variable, value);
+        GraphVariableHelper.validateVariable(variable, value);
         this.memory.put(variable, value);
-    }
-
-    public Graph getGraph() {
-        return this.graph;
-    }
-
-    protected void addAll(final TinkerGraphMemory otherMemory) {
-        otherMemory.memory.forEach(this.memory::put);
     }
 }

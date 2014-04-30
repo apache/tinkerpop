@@ -193,7 +193,7 @@ public class Neo4jGraph implements Graph {
     }
 
     @Override
-    public <M extends Memory> M memory() {
+    public <V extends Variables> V variables() {
         throw Graph.Exceptions.memoryNotSupported(); // todo: fix later
     }
 
@@ -345,8 +345,8 @@ public class Neo4jGraph implements Graph {
                 }
 
                 @Override
-                public MemoryFeatures memory() {
-                    return new Neo4jMemoryFeatures();  // todo: temporary
+                public VariableFeatures memory() {
+                    return new Neo4jVariableFeatures();  // todo: temporary
                 }
 
                 @Override
@@ -454,7 +454,7 @@ public class Neo4jGraph implements Graph {
             }
         }
 
-        public static class Neo4jMemoryFeatures implements MemoryFeatures {
+        public static class Neo4jVariableFeatures implements VariableFeatures {
             @Override
             public boolean supportsBooleanValues() {
                 return false;

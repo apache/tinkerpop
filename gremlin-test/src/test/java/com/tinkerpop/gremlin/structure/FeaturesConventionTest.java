@@ -35,7 +35,7 @@ public class FeaturesConventionTest {
                 {Graph.Features.EdgeFeatures.class},
                 {Graph.Features.EdgePropertyFeatures.class},
                 {Graph.Features.GraphFeatures.class},
-                {Graph.Features.MemoryFeatures.class},
+                {Graph.Features.VariableFeatures.class},
                 {Graph.Features.PropertyFeatures.class},
                 {Graph.Features.VertexFeatures.class},
                 {Graph.Features.VertexAnnotationFeatures.class}

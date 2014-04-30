@@ -110,15 +110,15 @@ class BatchFeatures implements Graph.Features {
         }
 
         @Override
-        public MemoryFeatures memory() {
-            return new BatchMemoryFeatures();
+        public VariableFeatures memory() {
+            return new BatchVariableFeatures();
         }
     }
 
-    class BatchMemoryFeatures extends BatchDataTypeFeature implements MemoryFeatures {
+    class BatchVariableFeatures extends BatchDataTypeFeature implements VariableFeatures {
         @Override
-        public boolean supportsMemory() {
-            return baseFeatures.graph().memory().supportsMemory();
+        public boolean supportsVariables() {
+            return baseFeatures.graph().memory().supportsVariables();
         }
     }
 

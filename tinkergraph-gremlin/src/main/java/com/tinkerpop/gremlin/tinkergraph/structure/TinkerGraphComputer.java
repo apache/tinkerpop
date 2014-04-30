@@ -29,6 +29,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     private Configuration configuration = new BaseConfiguration();
     private final TinkerGraph graph;
     private final TinkerMessenger messenger = new TinkerMessenger();
+    private final TinkerGraphComputerMemory memory = new TinkerGraphComputerMemory();
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -73,17 +74,17 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             g.elementMemory = new TinkerElementMemory(this.isolation, vertexProgram.getComputeKeys());
 
             // execute the vertex program
-            vertexProgram.setup(g.memory());
+            vertexProgram.setup(this.memory);
             while (true) {
-                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, g.memory()));
-                g.<Graph.Memory.Computer.Administrative>memory().incrIteration();
+                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, this.memory));
+                this.memory.incrIteration();
                 g.elementMemory.completeIteration();
                 this.messenger.completeIteration();
-                if (vertexProgram.terminate(g.memory())) break;
+                if (vertexProgram.terminate(this.memory)) break;
             }
 
             // update runtime and return the newly computed graph
-            g.<Graph.Memory.Computer.Administrative>memory().setRuntime(System.currentTimeMillis() - time);
+            this.memory.setRuntime(System.currentTimeMillis() - time);
             return g;
         });
     }

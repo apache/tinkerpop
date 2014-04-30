@@ -27,7 +27,7 @@ public class ExceptionCoverageTest {
                 Element.Exceptions.class,
                 Graph.Exceptions.class,
                 GraphComputer.Exceptions.class,
-                Graph.Memory.Exceptions.class,
+                Graph.Variables.Exceptions.class,
                 Property.Exceptions.class,
                 Transaction.Exceptions.class,
                 Vertex.Exceptions.class
@@ -40,7 +40,7 @@ public class ExceptionCoverageTest {
             // these exceptions is not used directly...they are called by other exception methods.
             add("com.tinkerpop.gremlin.structure.AnnotatedValue$Exceptions#annotationKeyIsReserved");
             add("com.tinkerpop.gremlin.structure.Property$Exceptions#propertyKeyIsReserved");
-            add("com.tinkerpop.gremlin.structure.Graph$Memory$Exceptions#memoryKeyIsReserved");
+            add("com.tinkerpop.gremlin.structure.Graph$Variables$Exceptions#memoryKeyIsReserved");
 
             // this is a general exception to be used as needed.  it is not explicitly tested:
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#argumentCanNotBeNull");

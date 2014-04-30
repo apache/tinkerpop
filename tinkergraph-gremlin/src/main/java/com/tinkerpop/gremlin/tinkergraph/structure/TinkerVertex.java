@@ -80,7 +80,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         final TinkerVertex vertex = this;
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
             public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
-                //System.out.println("here!!!!" + this);
                 if (engine instanceof GraphComputer) {
                     this.optimizers().unregister(TinkerGraphStepOptimizer.class);
                     final String label = this.getSteps().get(0).getAs();
@@ -92,13 +91,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
                     TraversalHelper.insertStep(identityStep, 0, this);
                     TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, vertex.getId())), 0, this);
                     TraversalHelper.insertStep(new TinkerGraphStep<>(this, Vertex.class, vertex.graph), 0, this);
-                    //System.out.println(this);
-                    //System.out.println(this.getSteps().stream().map(step -> step.getAs()).collect(Collectors.toList()));
-                    /*System.out.println(this.getSteps().get(0));
-                    System.out.println(this.getSteps().get(0).getNextStep());
-                    System.out.println(this.getSteps().get(0).getNextStep().getNextStep());
-                    System.out.println(this.getSteps().get(0).getNextStep().getNextStep().getNextStep());
-                    System.out.println(this.getSteps().get(0).getNextStep().getNextStep().getNextStep().getNextStep());*/
                 }
                 return super.submit(engine);
             }

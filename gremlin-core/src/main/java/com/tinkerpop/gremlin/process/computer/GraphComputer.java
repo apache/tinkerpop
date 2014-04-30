@@ -3,8 +3,13 @@ package com.tinkerpop.gremlin.process.computer;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
+import org.javatuples.Pair;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} against the vertices in the
@@ -40,6 +45,67 @@ public interface GraphComputer extends TraversalEngine {
     public GraphComputer program(final Configuration configuration);
 
     public Future<Graph> submit();
+
+    public interface Memory {
+
+        public Set<String> getVariables();
+
+        public <R> R get(final String variable);
+
+        public void set(final String variable, Object value);
+
+
+        public default Map<String, Object> asMap() {
+            final Map<String, Object> map = getVariables().stream()
+                    .map(key -> Pair.<String, Object>with(key, get(key)))
+                    .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
+            return Collections.unmodifiableMap(map);
+        }
+
+        public int getIteration();
+
+        public long getRuntime();
+
+        public void setIfAbsent(final String variable, final Object value);
+
+        public long incr(final String variable, final long delta);
+
+        public boolean and(final String variable, final boolean bool);
+
+        public boolean or(final String variable, final boolean bool);
+
+        public default boolean isInitialIteration() {
+            return this.getIteration() == 0;
+        }
+
+        public interface Administrative extends Memory {
+
+            public void incrIteration();
+
+            public void setRuntime(final long runtime);
+        }
+
+
+        public static class Exceptions {
+
+            public static IllegalArgumentException memoryKeyCanNotBeEmpty() {
+                return new IllegalArgumentException("Graph computer memory keys can not be the empty string");
+            }
+
+            public static IllegalArgumentException memoryKeyCanNotBeNull() {
+                return new IllegalArgumentException("Graph computer memory key can not be null");
+            }
+
+            public static IllegalArgumentException memoryValueCanNotBeNull() {
+                return new IllegalArgumentException("Graph computer memory value can not be null");
+            }
+
+            public static UnsupportedOperationException dataTypeOfMemoryValueNotSupported(final Object val) {
+                return new UnsupportedOperationException(String.format("Graph computer memory value [%s] is of type %s is not supported", val, val.getClass()));
+            }
+        }
+
+    }
 
     public default Features getFeatures() {
         return new Features() {

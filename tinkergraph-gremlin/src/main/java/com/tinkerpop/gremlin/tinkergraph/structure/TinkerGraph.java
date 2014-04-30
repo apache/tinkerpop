@@ -32,7 +32,7 @@ public class TinkerGraph implements Graph, Serializable {
     protected Long currentId = -1l;
     protected Map<Object, Vertex> vertices = new HashMap<>();
     protected Map<Object, Edge> edges = new HashMap<>();
-    protected TinkerGraphMemory graphMemory = new TinkerGraphMemory(this);
+    protected TinkerGraphVariables variables = new TinkerGraphVariables(this);
     protected TinkerElementMemory elementMemory;
 
     protected boolean usesElementMemory = false;
@@ -107,7 +107,7 @@ public class TinkerGraph implements Graph, Serializable {
                 return super.submit(engine);
             }
         };
-        //traversal.memory().set(Traversal.Memory.Variable.hidden("g"), this);    // TODO: is this good?
+        //traversal.memory().set(Traversal.Variables.Variable.hidden("g"), this);    // TODO: is this good?
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
         traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         return traversal;
@@ -157,8 +157,8 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
 
-    public <M extends Memory> M memory() {
-        return (M) this.graphMemory;
+    public <V extends Variables> V variables() {
+        return (V) this.variables;
     }
 
     public String toString() {
@@ -168,7 +168,7 @@ public class TinkerGraph implements Graph, Serializable {
     public void clear() {
         this.vertices.clear();
         this.edges.clear();
-        this.graphMemory = new TinkerGraphMemory(this);
+        this.variables = new TinkerGraphVariables(this);
         this.currentId = 0l;
         this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
         this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);

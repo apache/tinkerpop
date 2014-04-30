@@ -70,19 +70,19 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
     }
 
-    public void setup(final Graph.Memory.Computer graphMemory) {
-        graphMemory.setIfAbsent(VOTE_TO_HALT, true);
+    public void setup(final GraphComputer.Memory graphComputerMemory) {
+        graphComputerMemory.setIfAbsent(VOTE_TO_HALT, true);
     }
 
-    public void execute(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
-        if (graphMemory.isInitialIteration()) {
-            executeFirstIteration(vertex, messenger, graphMemory);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, GraphComputer.Memory graphComputerMemory) {
+        if (graphComputerMemory.isInitialIteration()) {
+            executeFirstIteration(vertex, messenger, graphComputerMemory);
         } else {
-            executeOtherIterations(vertex, messenger, graphMemory);
+            executeOtherIterations(vertex, messenger, graphComputerMemory);
         }
     }
 
-    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
+    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.Memory graphComputerMemory) {
         final Traversal traversal = this.traversalSupplier.get();
         traversal.optimizers().doFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
@@ -108,32 +108,32 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 voteToHalt.set(false);
             });
         }
-        graphMemory.and(VOTE_TO_HALT, voteToHalt.get());
+        graphComputerMemory.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
-    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final Graph.Memory.Computer graphMemory) {
+    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.Memory graphComputerMemory) {
         final Traversal traversal = this.traversalSupplier.get();
         traversal.optimizers().doFinalOptimizers(traversal);
         ((GraphStep) traversal.getSteps().get(0)).clear();
         if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
-            graphMemory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
+            graphComputerMemory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
             vertex.setProperty(TRAVERSAL_TRACKER, tracker);
         } else {
             final TraversalCounters tracker = new TraversalCounters(vertex);
-            graphMemory.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
+            graphComputerMemory.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
             vertex.setProperty(TRAVERSAL_TRACKER, tracker);
         }
     }
 
     ////////// GRAPH COMPUTER METHODS
 
-    public boolean terminate(final Graph.Memory.Computer graphMemory) {
-        final boolean voteToHalt = graphMemory.get(VOTE_TO_HALT);
+    public boolean terminate(final GraphComputer.Memory graphComputerMemory) {
+        final boolean voteToHalt = graphComputerMemory.get(VOTE_TO_HALT);
         if (voteToHalt) {
             return true;
         } else {
-            graphMemory.or(VOTE_TO_HALT, true);
+            graphComputerMemory.or(VOTE_TO_HALT, true);
             return false;
         }
     }

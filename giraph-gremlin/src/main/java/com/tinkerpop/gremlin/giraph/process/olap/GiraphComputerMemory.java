@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.giraph.process.olap.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.olap.util.MemoryAggregator;
 import com.tinkerpop.gremlin.giraph.process.olap.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.EmptyGraph;
@@ -18,7 +19,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphComputerMemory extends MasterCompute implements Graph.Memory.Computer {
+public class GiraphComputerMemory extends MasterCompute implements GraphComputer.Memory {
 
     // TODO: vertex program needs to have ComputeKeys but for master as well.
 

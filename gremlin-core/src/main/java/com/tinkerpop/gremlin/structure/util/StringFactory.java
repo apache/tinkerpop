@@ -12,9 +12,7 @@ import org.javatuples.Pair;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -98,11 +96,11 @@ public class StringFactory {
     }
 
     /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Graph.Memory}.
+     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Graph.Variables}.
      */
-    public static String memoryString(final Graph.Memory memory) {
+    public static String memoryString(final Graph.Variables variables) {
         // todo: should this be owned by the implementation...it won't be consistent
-        return memory.toString();
+        return variables.toString();
     }
 
     public static String featureString(final Graph.Features features) {
@@ -111,7 +109,7 @@ public class StringFactory {
         sb.append(LINE_SEPARATOR);
 
         Stream.of(Pair.with(Graph.Features.GraphFeatures.class, features.graph()),
-                Pair.with(Graph.Features.MemoryFeatures.class, features.graph().memory()),
+                Pair.with(Graph.Features.VariableFeatures.class, features.graph().memory()),
                 Pair.with(Graph.Features.VertexFeatures.class, features.vertex()),
                 Pair.with(Graph.Features.VertexAnnotationFeatures.class, features.vertex().annotations()),
                 Pair.with(Graph.Features.VertexPropertyFeatures.class, features.vertex().properties()),

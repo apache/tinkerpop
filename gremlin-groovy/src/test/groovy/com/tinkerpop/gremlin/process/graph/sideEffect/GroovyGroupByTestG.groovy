@@ -13,7 +13,7 @@ class GroovyGroupByTestG extends GroupByTest {
     }
 
     public Map<String, List<String>> get_g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX() {
-       g.V.has('lang').groupBy('a'){it['name']}.iterate().memory().get('a')
+       g.V.has('lang').groupBy('a'){it['name']}.iterate().variables().get('a')
     }
 
     public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX(){

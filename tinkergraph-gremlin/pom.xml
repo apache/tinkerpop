@@ -10,7 +10,7 @@
     </parent>
     <artifactId>tinkergraph-gremlin</artifactId>
     <name>TinkerGraph</name>
-    <description>TinkerGraph is an in-memory graph database.</description>
+    <description>TinkerGraph is an in-variables graph database.</description>
     <dependencies>
         <dependency>
             <groupId>com.tinkerpop.tinkerpop3</groupId>

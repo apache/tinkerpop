@@ -49,8 +49,8 @@ class GraphSONGraph {
             final Graph g = graphSONGraph.getGraphToSerialize();
             jsonGenerator.writeStartObject();
 
-            if (g.getFeatures().graph().memory().supportsMemory())
-                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, new HashMap<>(g.memory().asMap()));
+            if (g.getFeatures().graph().memory().supportsVariables())
+                jsonGenerator.writeObjectField(GraphSONTokens.PROPERTIES, new HashMap<>(g.variables().asMap()));
 
             jsonGenerator.writeArrayFieldStart(GraphSONTokens.VERTICES);
             if (normalize)

@@ -63,13 +63,13 @@ public interface Graph extends AutoCloseable {
 
     public Transaction tx();
 
-    public <M extends Memory> M memory();
+    public <V extends Variables> V variables();
 
-    public interface Memory {
+    public interface Variables {
 
-        public class Key {
+        public class Variable {
 
-            private Key() {
+            private Variable() {
 
             }
 
@@ -93,48 +93,22 @@ public interface Graph extends AutoCloseable {
             return Collections.unmodifiableMap(map);
         }
 
-        public interface Computer extends Memory {
-
-            public int getIteration();
-
-            public long getRuntime();
-
-            public void setIfAbsent(final String variable, final Object value);
-
-            public long incr(final String variable, final long delta);
-
-            public boolean and(final String variable, final boolean bool);
-
-            public boolean or(final String variable, final boolean bool);
-
-            public default boolean isInitialIteration() {
-                return this.getIteration() == 0;
-            }
-
-            public interface Administrative extends Computer {
-
-                public void incrIteration();
-
-                public void setRuntime(final long runtime);
-            }
-        }
-
         public static class Exceptions {
 
-            public static IllegalArgumentException memoryKeyCanNotBeEmpty() {
-                return new IllegalArgumentException("Graph annotation key can not be the empty string");
+            public static IllegalArgumentException variableKeyCanNotBeEmpty() {
+                return new IllegalArgumentException("Graph variable key can not be the empty string");
             }
 
-            public static IllegalArgumentException memoryKeyCanNotBeNull() {
-                return new IllegalArgumentException("Graph annotation key can not be null");
+            public static IllegalArgumentException variableKeyCanNotBeNull() {
+                return new IllegalArgumentException("Graph variable key can not be null");
             }
 
-            public static IllegalArgumentException memoryValueCanNotBeNull() {
-                return new IllegalArgumentException("Graph annotation value can not be null");
+            public static IllegalArgumentException variableValueCanNotBeNull() {
+                return new IllegalArgumentException("Graph variable value can not be null");
             }
 
-            public static UnsupportedOperationException dataTypeOfMemoryValueNotSupported(final Object val) {
-                return new UnsupportedOperationException(String.format("Graph annotation value [%s] is of type %s is not supported", val, val.getClass()));
+            public static UnsupportedOperationException dataTypeOfVariableValueNotSupported(final Object val) {
+                return new UnsupportedOperationException(String.format("Graph variable value [%s] is of type %s is not supported", val, val.getClass()));
             }
         }
 
@@ -203,8 +177,8 @@ public interface Graph extends AutoCloseable {
                 return true;
             }
 
-            public default MemoryFeatures memory() {
-                return new MemoryFeatures() {
+            public default VariableFeatures memory() {
+                return new VariableFeatures() {
                 };
             }
         }
@@ -266,14 +240,14 @@ public interface Graph extends AutoCloseable {
             }
         }
 
-        public interface MemoryFeatures extends DataTypeFeatures {
-            public static final String FEATURE_MEMORY = "Memory";
+        public interface VariableFeatures extends DataTypeFeatures {
+            public static final String FEATURE_VARIABLES = "Variables";
 
             /**
-             * If any of the features on {@link MemoryFeatures} is true then this value must be true.
+             * If any of the features on {@link com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures} is true then this value must be true.
              */
-            @FeatureDescriptor(name = FEATURE_MEMORY)
-            public default boolean supportsMemory() {
+            @FeatureDescriptor(name = FEATURE_VARIABLES)
+            public default boolean supportsVariables() {
                 return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
                         || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
                         || supportsMixedListValues() || supportsPrimitiveArrayValues()
@@ -386,7 +360,7 @@ public interface Graph extends AutoCloseable {
             final Object instance;
             if (featureClass.equals(GraphFeatures.class))
                 instance = this.graph();
-            else if (featureClass.equals(MemoryFeatures.class))
+            else if (featureClass.equals(VariableFeatures.class))
                 instance = this.graph().memory();
             else if (featureClass.equals(VertexFeatures.class))
                 instance = this.vertex();
@@ -405,7 +379,7 @@ public interface Graph extends AutoCloseable {
             else if (featureClass.equals(AnnotationFeatures.class))
                 throw new IllegalArgumentException(String.format(
                         "Do not reference AnnotationFeatures directly in tests, utilize a specific instance: %s, %s",
-                        VertexAnnotationFeatures.class, MemoryFeatures.class));
+                        VertexAnnotationFeatures.class, VariableFeatures.class));
             else
                 throw new IllegalArgumentException(String.format(
                         "Expecting featureClass to be a valid Feature instance and not %s", featureClass));
@@ -448,7 +422,7 @@ public interface Graph extends AutoCloseable {
             if (debug)
                 return new NoSuchElementException();
             else
-                return  FastNoSuchElementException.instance();
+                return FastNoSuchElementException.instance();
         }
 
         public static IllegalArgumentException onlyOneOrNoGraphComputerClass() {
