@@ -17,7 +17,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public static final String OF = "of";
 
-    public Memory memory();
+    public Variables memory();
 
     public Optimizers optimizers();
 
@@ -35,7 +35,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         return traversal;
     }*/
 
-    public interface Memory extends Serializable {
+    public interface Variables extends Serializable {
 
         public static class Variable {
 

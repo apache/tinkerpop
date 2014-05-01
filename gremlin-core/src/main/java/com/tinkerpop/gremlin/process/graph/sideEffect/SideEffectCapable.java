@@ -7,5 +7,5 @@ import com.tinkerpop.gremlin.process.Traversal;
  */
 public interface SideEffectCapable {
 
-    public static final String CAP_VARIABLE = Traversal.Memory.Variable.hidden("cap");
+    public static final String CAP_VARIABLE = Traversal.Variables.Variable.hidden("cap");
 }

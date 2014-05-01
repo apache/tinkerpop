@@ -19,7 +19,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
 
     public PageRankStep(final Traversal traversal, final double alpha) {
         super(traversal);
-        this.graph = traversal.memory().get(Traversal.Memory.Variable.hidden("g"));
+        this.graph = traversal.memory().get(Traversal.Variables.Variable.hidden("g"));
         this.alpha = alpha;
     }
 
