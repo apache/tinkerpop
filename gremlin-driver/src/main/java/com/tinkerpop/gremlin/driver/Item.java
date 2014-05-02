@@ -19,4 +19,11 @@ public class Item {
     public <T> T get(final Class<? extends T> clazz) {
         return clazz.cast(this.resultItem);
     }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "resultItem=" + resultItem +
+                '}';
+    }
 }

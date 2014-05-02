@@ -11,6 +11,10 @@ import org.slf4j.LoggerFactory;
 import javax.script.Bindings;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,10 +46,10 @@ public class GremlinExecutor {
      *
      * @param settings the Gremlin Server configuration
      */
-    public GremlinExecutor(final Settings settings) {
+    public GremlinExecutor(final Settings settings, final Graphs graphs) {
         if (logger.isDebugEnabled())
             logger.debug("Initializing GremlinExecutor.  This should not happen more than once.");
-        sharedScriptEngines = createScriptEngine(settings);
+        sharedScriptEngines = createScriptEngines(settings, graphs);
 
         this.settings = settings;
     }
@@ -66,10 +70,15 @@ public class GremlinExecutor {
         final String language = message.<String>optionalArgs(Tokens.ARGS_LANGUAGE).orElse("gremlin-groovy");
         bindings.putAll(graphs.getGraphs());
 
-        final EventExecutorGroup executorService = ctx.getChannelHandlerContext().channel().eventLoop().next();
+        if (logger.isDebugEnabled()) logger.debug("Preparing to evaluate script - {} - in thread [{}]", message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), Thread.currentThread().getName());
+
+        // select the gremlin threadpool to execute the script evaluation in
+        final EventExecutorGroup executorService = ctx.getChannelHandlerContext().executor().next();
         final AtomicBoolean abort = new AtomicBoolean(false);
         final CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
             try {
+                if (logger.isDebugEnabled()) logger.debug("Evaluating script - {} - in thread [{}]", message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), Thread.currentThread().getName());
+
                 graphs.rollbackAll();
                 final Object o = sharedScriptEngines.eval(message.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), bindings, language);
 
@@ -83,7 +92,7 @@ public class GremlinExecutor {
                 return o;
             } catch (Exception ex) {
                 graphs.rollbackAll();
-                return null;
+                throw new RuntimeException(ex);
             }
         }, executorService);
 
@@ -92,26 +101,29 @@ public class GremlinExecutor {
         return future;
     }
 
-    private void scheduleTimeout(final ChannelHandlerContext ctx, final CompletableFuture<Object> future,
+    private void scheduleTimeout(final ChannelHandlerContext ctx, final CompletableFuture<Object> evaluationFuture,
                                  final RequestMessage requestMessage, final AtomicBoolean abort) {
         if (settings.scriptEvaluationTimeout > 0) {
-            // Schedule a timeout.
-            final ScheduledFuture<?> sf = ctx.executor().schedule(() -> {
-                if (!future.isDone()) {
+            // Schedule a timeout in the io threadpool for future execution - killing an eval is cheap
+            final ScheduledFuture<?> sf = ctx.channel().eventLoop().next().schedule(() -> {
+                if (logger.isDebugEnabled()) logger.info("Timing out script - {} - in thread [{}]", requestMessage.<String>optionalArgs(Tokens.ARGS_GREMLIN).get(), Thread.currentThread().getName());
+
+                if (!evaluationFuture.isDone()) {
                     abort.set(true);
-                    future.completeExceptionally(new TimeoutException(String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", settings.scriptEvaluationTimeout, requestMessage)));
+                    evaluationFuture.completeExceptionally(new TimeoutException(String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", settings.scriptEvaluationTimeout, requestMessage)));
                 }
             }, settings.scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
 
             // Cancel the scheduled timeout if the eval future is complete.
-            future.thenRun(() -> sf.cancel(false));
+            evaluationFuture.thenRun(() -> sf.cancel(false));
         }
     }
 
-    private synchronized static ScriptEngines createScriptEngine(final Settings settings) {
+    private synchronized static ScriptEngines createScriptEngines(final Settings settings, final Graphs graphs) {
         final ScriptEngines scriptEngines = new ScriptEngines();
         for (Map.Entry<String, Settings.ScriptEngineSettings> config : settings.scriptEngines.entrySet()) {
-            scriptEngines.reload(config.getKey(), new HashSet<>(config.getValue().imports),
+            final String language = config.getKey();
+            scriptEngines.reload(language, new HashSet<>(config.getValue().imports),
                     new HashSet<>(config.getValue().staticImports));
         }
 
@@ -123,6 +135,40 @@ public class GremlinExecutor {
                 scriptEngines.use(u.get(0), u.get(1), u.get(2));
             }
         });
+
+        // initialization script eval must occur after dependencies are set with "use"
+        for (Map.Entry<String, Settings.ScriptEngineSettings> config : settings.scriptEngines.entrySet()) {
+            final String language = config.getKey();
+
+            // script engine initialization files that fail will only log warnings - not fail server initialization
+            final AtomicBoolean hasErrors = new AtomicBoolean(false);
+            config.getValue().scripts.stream().map(File::new).filter(f -> {
+                if (!f.exists()) {
+                    logger.warn("Could not initialize {} ScriptEngine with {} as file does not exist", language, f);
+                    hasErrors.set(true);
+                }
+
+                return f.exists();
+            }).map(f -> {
+                try {
+                    return Optional.<FileReader>of(new FileReader(f));
+                } catch (IOException ioe) {
+                    logger.warn("Could not initialize {} ScriptEngine with {} as file could not be read - {}", language, f, ioe.getMessage());
+                    hasErrors.set(true);
+                    return Optional.<FileReader>empty();
+                }
+            }).map(Optional<FileReader>::get).forEachOrdered(reader -> {
+                try {
+                    final Bindings bindings = new SimpleBindings();
+                    bindings.putAll(graphs.getGraphs());
+                    scriptEngines.get(language).eval((Reader) reader, bindings);
+                } catch (ScriptException sx) {
+                    hasErrors.set(true);
+                    // todo: better print failing file - FileReader doesn't toString() nicely
+                    logger.warn("Could not initialize {} ScriptEngine with {} as script could not be evaluated - {}", language, reader, sx.getMessage());
+                }
+            });
+        }
 
         return scriptEngines;
     }

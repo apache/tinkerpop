@@ -16,6 +16,10 @@
             <outputDirectory>/config</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>scripts</directory>
+            <outputDirectory>/scripts</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>target/*.jar</directory>
             <outputDirectory>/lib</outputDirectory>
         </fileSet>

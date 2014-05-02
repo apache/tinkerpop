@@ -22,6 +22,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A single connection to a Gremlin Server instance.
@@ -33,10 +35,19 @@ class Connection {
     private final URI uri;
     private final ConcurrentMap<UUID, ResponseQueue> pending = new ConcurrentHashMap<>();
     private final Cluster cluster;
+    private final ConnectionPool pool;
 
-    public Connection(final URI uri, final Cluster cluster)  {
+    // todo: configuration
+    private static final int MAX_IN_PROCESS = 4;
+
+    public final AtomicInteger inFlight = new AtomicInteger(0);
+    private volatile boolean isDead = false;
+
+    public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster)  {
         this.uri = uri;
         this.cluster = cluster;
+        this.pool = pool;
+
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
         final String protocol = uri.getScheme();
         if (!"ws".equals(protocol))
@@ -55,13 +66,28 @@ class Connection {
         }
     }
 
+    /**
+     * A connection can only have so many things in process happening on it at once, where "in process" refers to
+     * the number of in flight requests plus the number of pending responses.
+     */
+    public int availableInProcess() {
+        return MAX_IN_PROCESS - pending.size();
+    }
+
+    public boolean isDead() {
+        return isDead;
+    }
+
     public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> future) {
         // once there is a completed write, then create a holder for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
+        final Connection thisConnection = this;
         final ChannelPromise promise = channel.newPromise()
                 .addListener(f -> {
                     final LinkedBlockingQueue<ResponseMessage> responseQueue = new LinkedBlockingQueue<>();
-                    final ResponseQueue handler = new ResponseQueue(responseQueue);
+                    final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
+                    readCompleted.thenAcceptAsync(v -> thisConnection.returnToPool());
+                    final ResponseQueue handler = new ResponseQueue(responseQueue, readCompleted);
                     pending.put(requestMessage.getRequestId(), handler);
                     final ResultSet resultSet = new ResultSet(handler);
                     future.complete(resultSet);
@@ -70,11 +96,27 @@ class Connection {
         return promise;
     }
 
-    public void close() throws InterruptedException {
-        //System.out.println("WebSocket Client sending close");
-        channel.writeAndFlush(new CloseWebSocketFrame());
-        channel.closeFuture().sync();
-        //group.shutdownGracefully();
+    public void returnToPool() {
+        if (pool != null) pool.returnConnection(this);
+    }
+
+    public CompletableFuture<Void> close() {
+        return CompletableFuture.runAsync(() ->  {
+            channel.writeAndFlush(new CloseWebSocketFrame());
+            try {
+                channel.closeFuture().sync().get(120000, TimeUnit.MILLISECONDS);
+            } catch (Exception ie) {
+                throw new RuntimeException(ie);
+            }
+        });
+    }
+
+    @Override
+    public String toString() {
+        return "Connection{" +
+                "inFlight=" + inFlight + "," +
+                "pending=" + pending.size() +
+                '}';
     }
 
     class ClientPipelineInitializer extends ChannelInitializer<SocketChannel> {

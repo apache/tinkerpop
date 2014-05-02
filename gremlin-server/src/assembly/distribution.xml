@@ -17,6 +17,9 @@
             <directory>config</directory>
         </fileSet>
         <fileSet>
+            <directory>scripts</directory>
+        </fileSet>
+        <fileSet>
             <directory>src</directory>
         </fileSet>
         <fileSet>

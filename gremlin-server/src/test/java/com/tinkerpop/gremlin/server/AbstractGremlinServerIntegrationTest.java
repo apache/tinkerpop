@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Starts and stops an instance for each executed test.
@@ -31,11 +33,12 @@ public abstract class AbstractGremlinServerIntegrationTest {
     public void setUp() throws Exception {
         final InputStream stream = getSettingsInputStream();
         final Settings settings = Settings.read(stream);
+        final CompletableFuture<Void> serverReadyFuture = new CompletableFuture<>();
 
         thread = new Thread(() -> {
             try {
                 final Settings overridenSettings = overrideSettings(settings);
-                new GremlinServer(overridenSettings).run();
+                new GremlinServer(overridenSettings, serverReadyFuture).run();
             } catch (InterruptedException ie) {
                 logger.info("Shutting down Gremlin Server");
             } catch (Exception ex) {
@@ -44,8 +47,13 @@ public abstract class AbstractGremlinServerIntegrationTest {
         });
         thread.start();
 
-        // make sure gremlin server gets off the ground
-        Thread.sleep(1500);
+        // make sure gremlin server gets off the ground - longer than 30 seconds means that this didn't work somehow
+        try {
+            serverReadyFuture.get(30000, TimeUnit.SECONDS);
+        } catch (Exception ex) {
+            logger.error("Server did not start in the expected time or was otherwise interrupted.", ex);
+            return;
+        }
 
         host = System.getProperty("host", "localhost");
         port = System.getProperty("port", "8182");

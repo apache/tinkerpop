@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -98,11 +100,15 @@ public class Cluster {
     }
 
     Factory getFactory() {
-        return manager.getFactory();
+        return manager.factory;
     }
 
     MessageSerializer getSerializer() {
-        return manager.getSerializer();
+        return manager.serializer;
+    }
+
+    ExecutorService executor() {
+        return manager.executor;
     }
 
     public static class Builder {
@@ -183,6 +189,9 @@ public class Cluster {
         private Factory factory;
         private MessageSerializer serializer;
 
+        // todo: configurable pool size
+        private  final ExecutorService executor = Executors.newCachedThreadPool();
+
         private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer) {
             this.clusterInfo = new ClusterInfo(this);
             this.contactPoints = contactPoints;
@@ -203,16 +212,8 @@ public class Cluster {
             });
         }
 
-        MessageSerializer getSerializer() {
-            return serializer;
-        }
-
-        Factory getFactory() {
-            return factory;
-        }
-
         CompletableFuture<Void> close() {
-            // this method is exposed publically in both blocking and non-blocking forms.
+            // this method is exposed publicly in both blocking and non-blocking forms.
             return CompletableFuture.supplyAsync(() -> {
                 this.factory.shutdown();
                 return null;

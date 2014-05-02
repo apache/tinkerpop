@@ -8,6 +8,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -197,6 +198,7 @@ public class Settings {
         final TypeDescription scriptEngineSettingsDescription = new TypeDescription(ScriptEngineSettings.class);
         scriptEngineSettingsDescription.putListPropertyType("imports", String.class);
         scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
+        scriptEngineSettingsDescription.putListPropertyType("scripts", String.class);
         constructor.addTypeDescription(scriptEngineSettingsDescription);
 
         final TypeDescription sslSettings = new TypeDescription(SslSettings.class);
@@ -231,8 +233,9 @@ public class Settings {
      * Settings for the {@code ScriptEngine}.
      */
     public static class ScriptEngineSettings {
-        public List<String> imports;
-        public List<String> staticImports;
+        public List<String> imports = new ArrayList<>();
+        public List<String> staticImports = new ArrayList<>();
+        public List<String> scripts = new ArrayList<>();
     }
 
     /**

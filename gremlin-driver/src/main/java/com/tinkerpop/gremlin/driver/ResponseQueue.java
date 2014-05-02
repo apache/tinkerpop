@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -25,8 +26,11 @@ class ResponseQueue {
 
     private final AtomicReference<RuntimeException> error = new AtomicReference<>();
 
-    public ResponseQueue(final LinkedBlockingQueue<ResponseMessage> responseQueue) {
+    private final CompletableFuture<Void> readComplete;
+
+    public ResponseQueue(final LinkedBlockingQueue<ResponseMessage> responseQueue, final CompletableFuture<Void> readComplete) {
         this.responseQueue = responseQueue;
+        this.readComplete = readComplete;
     }
 
     public void add(final ResponseMessage msg) {
@@ -67,9 +71,11 @@ class ResponseQueue {
 
     void markComplete() {
         this.status = Status.COMPLETE;
+        this.readComplete.complete(null);
     }
 
     void markError(final RuntimeException throwable) {
         error.set(throwable);
+        this.readComplete.complete(null);
     }
 }

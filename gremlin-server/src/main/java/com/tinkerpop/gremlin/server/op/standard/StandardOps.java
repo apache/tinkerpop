@@ -49,7 +49,7 @@ final class StandardOps {
             }).thenRun(timerContext::stop);
 
             future.exceptionally(se -> {
-                logger.debug("Exception from ScriptException error.", se);
+                logger.warn("Exception from ScriptException error.", se);
                 ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).build());
                 return null;
             }).thenRun(timerContext::stop);

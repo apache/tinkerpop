@@ -40,6 +40,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
  * Start and stop Gremlin Server.  Adapted from
@@ -53,7 +55,14 @@ public class GremlinServer {
     private Optional<Graphs> graphs = Optional.empty();
     private Channel ch;
 
+    private final Optional<CompletableFuture<Void>> serverReady;
+
     public GremlinServer(final Settings settings) {
+        this(settings, null);
+    }
+
+    public GremlinServer(final Settings settings, final CompletableFuture<Void> serverReady) {
+        this.serverReady = Optional.ofNullable(serverReady);
         this.settings = settings;
     }
 
@@ -80,6 +89,8 @@ public class GremlinServer {
             logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
                     settings.threadPoolWorker, settings.threadPoolBoss);
             logger.info("Websocket channel started at port {}.", settings.port);
+
+            serverReady.ifPresent(future -> future.complete(null));
 
             ch.closeFuture().sync();
         } finally {
@@ -157,7 +168,7 @@ public class GremlinServer {
             this.settings = settings;
             synchronized (this) {
                 if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
-                gremlinExecutor = new GremlinExecutor(this.settings);
+                gremlinExecutor = new GremlinExecutor(this.settings, graphs.get());
             }
 
             logger.info("Initialized GremlinExecutor and configured ScriptEngines.");

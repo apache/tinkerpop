@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 /**
@@ -14,6 +16,9 @@ import java.util.stream.Stream;
  */
 public class ResultSet implements Iterable<Item> {
     private final ResponseQueue responseQueue;
+
+    // todo: where do we set this executor from...grrr
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     public ResultSet(final ResponseQueue responseQueue) {
         this.responseQueue = responseQueue;
@@ -42,7 +47,7 @@ public class ResultSet implements Iterable<Item> {
         if (msg != null)
             return new Item(msg);
 
-        awaitItems(1);
+        awaitItems(1).join();
 
         msg = responseQueue.poll();
         if (msg != null)
@@ -65,7 +70,7 @@ public class ResultSet implements Iterable<Item> {
             }
 
             return null;
-        });
+        }, executor);
     }
 
     public CompletableFuture<List<Item>> all() {
@@ -77,7 +82,7 @@ public class ResultSet implements Iterable<Item> {
                     list.add(new Item(msg));
             }
             return list;
-        });
+        }, executor);
     }
 
     public Stream<Item> stream() {

@@ -4,11 +4,19 @@ import com.tinkerpop.gremlin.groovy.jsr223.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -25,6 +34,8 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ScriptEngines {
+    private static final Logger logger = LoggerFactory.getLogger(ScriptEngines.class);
+
     /**
      * {@code ScriptEngine} objects configured for the server keyed on the language name.
      */
@@ -44,18 +55,31 @@ public class ScriptEngines {
     }
 
     /**
+     * Evaluate a script with {@code Bindings} for a particular language.
+     */
+    public Object eval(final Reader reader, final Bindings bindings, final String language)
+            throws ScriptException, TimeoutException {
+        if (!scriptEngines.containsKey(language))
+            throw new IllegalArgumentException("Language [%s] not configured on this server.");
+
+        return scriptEngines.get(language).eval(reader, bindings);
+    }
+
+    /**
      * Reload a {@code ScriptEngine} with fresh imports.
      */
     public void reload(final String language, final Set<String> imports, final Set<String> staticImports) {
         // TODO: request a block on eval when reloading a language script engine.
 
-        final Optional<ScriptEngine> scriptEngine;
         if (scriptEngines.containsKey(language))
             scriptEngines.remove(language);
 
-        scriptEngine = createScriptEngine(language, imports, staticImports);
-        scriptEngines.put(language,
-                scriptEngine.orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported.")));
+        final ScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports).orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported."));
+        scriptEngines.put(language, scriptEngine);
+    }
+
+    public ScriptEngine get(final String language) {
+        return scriptEngines.get(language);
     }
 
     /**
@@ -75,6 +99,7 @@ public class ScriptEngines {
         getDependencyManagers().forEach(dm -> dm.use(group, artifact, version));
     }
 
+    // todo: does reset kill init script work...probably need to re-init
     public void reset() {
         getDependencyManagers().forEach(dm -> dm.reset());
     }
@@ -111,7 +136,6 @@ public class ScriptEngines {
 
     private static Optional<ScriptEngine> createScriptEngine(final String language, final Set<String> imports,
                                                              final Set<String> staticImports) {
-        // todo: log names of scriptengines crated.
         if (language.equals(gremlinGroovyScriptEngineFactory.getLanguageName())) {
             // gremlin-groovy gets special initialization for custom imports and such.  could implement this more
             // generically with the DependencyManager interface, but going to wait to see how other ScriptEngines

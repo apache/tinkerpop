@@ -4,15 +4,20 @@ import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
 import com.tinkerpop.gremlin.driver.ResultSet;
+import com.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -81,7 +86,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("Thread.sleep(300);'some-stuff-that-should not return'").all().join();
+            client.submit("Thread.sleep(3000);'some-stuff-that-should not return'").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getMessage().startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
@@ -180,6 +185,34 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getMessage().endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldProcessOutOfOrder() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        try {
+            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
+            final ResultSet rsZero = client.submit("'zero'");
+
+            final CompletableFuture<List<Item>> futureFive = rsFive.all();
+            final CompletableFuture<List<Item>> futureZero = rsZero.all();
+
+            final long start = System.nanoTime();
+            assertFalse(futureFive.isDone());
+            assertEquals("zero", futureZero.get().get(0).getString());
+
+            System.out.println("Eval of 'zero' complete: "  + TimeUtil.millisSince(start));
+
+            assertFalse(futureFive.isDone());
+            assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
+
+            System.out.println("Eval of 'five' complete: "  + TimeUtil.millisSince(start));
+
         } finally {
             cluster.close();
         }

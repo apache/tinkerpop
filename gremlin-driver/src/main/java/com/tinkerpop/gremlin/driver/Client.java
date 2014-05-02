@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -13,8 +14,7 @@ public class Client {
     private final Cluster cluster;
     private volatile boolean initialized;
 
-    // todo: each host gets a connection pool?
-    private ConcurrentMap<Host, Connection> connections = new ConcurrentHashMap<>();
+    private ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
 
     Client(final Cluster cluster) {
         this.cluster = cluster;
@@ -26,10 +26,8 @@ public class Client {
             return this;
 
         cluster.init();
+        cluster.getClusterInfo().allHosts().forEach(host -> hostConnectionPools.put(host, new ConnectionPool(host, cluster)));
 
-        // todo: connection pooling
-
-        cluster.getClusterInfo().allHosts().forEach(host -> connections.put(host, new Connection(host.getWebSocketUri(), cluster)));
         initialized = true;
         return this;
     }
@@ -48,12 +46,20 @@ public class Client {
 
         final CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-        // todo: choose a connection smartly.
-        final Connection connection  = connections.values().iterator().next();
-        final RequestMessage request = RequestMessage.create("eval")
-                .add(Tokens.ARGS_GREMLIN, gremlin).build();
-        connection.write(request, future);
-
-        return future;
+        // todo: choose a host with some smarts - this is pretty whatever atm
+        final ConnectionPool pool = hostConnectionPools.values().iterator().next();
+        System.out.println("before submit: " + pool);
+        try {
+            // the connection is returned to the pool once the response has been completed...see Connection.write()
+            final Connection connection = pool.borrowConnection(300, TimeUnit.SECONDS);
+            final RequestMessage request = RequestMessage.create("eval")
+                    .add(Tokens.ARGS_GREMLIN, gremlin).build();
+            connection.write(request, future);
+            return future;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            System.out.println("after submit: " + pool);
+        }
     }
 }
