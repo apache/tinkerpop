@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
@@ -24,6 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A single connection to a Gremlin Server instance.
@@ -42,6 +45,7 @@ class Connection {
 
     public final AtomicInteger inFlight = new AtomicInteger(0);
     private volatile boolean isDead = false;
+    private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
     public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster)  {
         this.uri = uri;
@@ -78,6 +82,38 @@ class Connection {
         return isDead;
     }
 
+    public boolean isClosed() {
+        return closeFuture.get() != null;
+    }
+
+    public CompletableFuture<Void> closeAsync() {
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+        if (!closeFuture.compareAndSet(null, future))
+            return closeFuture.get();
+
+        // todo: requests that never come back ???
+        // make sure all requests in the queue are fully processed before killing.  if they are then shutdown
+        // can be immediate.  if not this method will signal the readCompleted future defined in the write()
+        // operation to check if it can close.  in this way the connection no longer receives writes, but
+        // can continue to read
+        if (pending.isEmpty()) {
+            if (null == channel)
+                future.complete(null);
+            else
+                shutdown(future);
+        }
+
+        return future;
+    }
+
+    public void close() {
+        try {
+            closeAsync().get();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> future) {
         // once there is a completed write, then create a holder for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
@@ -86,7 +122,11 @@ class Connection {
                 .addListener(f -> {
                     final LinkedBlockingQueue<ResponseMessage> responseQueue = new LinkedBlockingQueue<>();
                     final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
-                    readCompleted.thenAcceptAsync(v -> thisConnection.returnToPool());
+                    readCompleted.thenAcceptAsync(v -> {
+                        thisConnection.returnToPool();
+                        if (isClosed() && pending.isEmpty())
+                            shutdown(closeFuture.get());
+                    });
                     final ResponseQueue handler = new ResponseQueue(responseQueue, readCompleted);
                     pending.put(requestMessage.getRequestId(), handler);
                     final ResultSet resultSet = new ResultSet(handler);
@@ -97,18 +137,25 @@ class Connection {
     }
 
     public void returnToPool() {
-        if (pool != null) pool.returnConnection(this);
+        try {
+            if (pool != null) pool.returnConnection(this);
+        } catch (ConnectionException ce) {
+            // todo: logging
+        }
     }
 
-    public CompletableFuture<Void> close() {
-        return CompletableFuture.runAsync(() ->  {
-            channel.writeAndFlush(new CloseWebSocketFrame());
-            try {
-                channel.closeFuture().sync().get(120000, TimeUnit.MILLISECONDS);
-            } catch (Exception ie) {
-                throw new RuntimeException(ie);
-            }
+    private void shutdown(final CompletableFuture<Void> future) {
+        // todo: await client side close confirmation?
+        channel.writeAndFlush(new CloseWebSocketFrame());
+        final ChannelPromise promise = channel.newPromise();
+        promise.addListener(f -> {
+            if (f.cause() != null)
+                future.completeExceptionally(f.cause());
+            else
+                future.complete(null);
         });
+
+        channel.close(promise);
     }
 
     @Override

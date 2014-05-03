@@ -7,16 +7,16 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -38,6 +38,8 @@ public class ConnectionPool {
 
     private final AtomicInteger scheduledForCreation = new AtomicInteger();
 
+    private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
+
     private volatile int waiter = 0;
     private final Lock waitLock = new ReentrantLock(true);
     private final Condition hasAvailableConnection = waitLock.newCondition();
@@ -55,8 +57,9 @@ public class ConnectionPool {
         this.open = new AtomicInteger(connections.size());
     }
 
-    public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException {
-        // todo: check if pool is closed or not before allowing a borrow
+    public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
+        if (isClosed()) throw new ConnectionException(host, "Pool is shutdown");
+
         final Connection leastUsedConn = selectLeastUsed();
 
         if (connections.isEmpty()) {
@@ -74,7 +77,7 @@ public class ConnectionPool {
             considerNewConnection();
 
         if (leastUsedConn == null) {
-            // todo: check close status
+            if (isClosed()) throw new ConnectionException(host, "Pool is shutdown");
             return waitForConnection(timeout, unit);
         } else {
             while (true) {
@@ -93,17 +96,16 @@ public class ConnectionPool {
         }
     }
 
-    public void returnConnection(final Connection connection) {
-        // todo: check if pool is closed....
+    public void returnConnection(final Connection connection) throws ConnectionException {
+        if (isClosed()) throw new ConnectionException(host, "Pool is shutdown");
 
         int inFlight = connection.inFlight.decrementAndGet();
-
         if (connection.isDead()) {
             // todo: probably need to signal that the host is hurting - maybe try to reopen?
         } else {
             if (bin.contains(connection) && inFlight == 0) {
                 if (bin.remove(connection))
-                    close(connection);
+                    connection.closeAsync();
                 return;
             }
 
@@ -118,11 +120,33 @@ public class ConnectionPool {
         }
     }
 
-    private void close(final Connection connection) {
-        connection.close().exceptionally(t -> {
-            logger.warn("Connection did not close properly", t);
-            return null;
-        });
+    public boolean isClosed() {
+        return closeFuture.get() != null;
+    }
+
+    public CompletableFuture<Void> closeAsync() {
+        CompletableFuture<Void> future = closeFuture.get();
+        if (future != null)
+            return future;
+
+        announceAllAvailableConnection();
+        future = CompletableFuture.allOf(killAvailableConnections());
+
+        return closeFuture.compareAndSet(null, future) ? future : closeFuture.get();
+    }
+
+    public int opened() {
+        return open.get();
+    }
+
+    private CompletableFuture[] killAvailableConnections() {
+        final List<CompletableFuture<Void>> futures = new ArrayList<>(connections.size());
+        for (Connection connection : connections) {
+            final CompletableFuture<Void> future = connection.closeAsync();
+            future.thenRunAsync(open::decrementAndGet);
+            futures.add(future);
+        }
+        return futures.toArray(new CompletableFuture[futures.size()]);
     }
 
     // todo: need a replace in this case?  do we properly cleanup in-process requests on failure
@@ -143,7 +167,6 @@ public class ConnectionPool {
                 break;
         }
 
-        logger.debug("Creating new connection on busy pool to {}", host);
         newConnection();
     }
 
@@ -165,7 +188,10 @@ public class ConnectionPool {
                 break;
         }
 
-        // todo: check closed
+        if (isClosed()) {
+            open.decrementAndGet();
+            return false;
+        }
 
         connections.add(new Connection(host.getWebSocketUri(), this, cluster));
         announceAvailableConnection();
@@ -192,10 +218,10 @@ public class ConnectionPool {
         connections.remove(connection);
 
         if (connection.inFlight.get() == 0 && bin.remove(connection))
-            close(connection);
+            connection.closeAsync();
     }
 
-    private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException {
+    private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
         long start = System.nanoTime();
         long remaining = timeout;
         long to = timeout;
@@ -207,7 +233,7 @@ public class ConnectionPool {
                 to = 0;
             }
 
-            // todo: check pool closed
+            if (isClosed()) throw new ConnectionException(host, "Pool is shutdown");
 
             final Connection leastUsed = selectLeastUsed();
             if (leastUsed != null) {
