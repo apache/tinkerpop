@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,6 +13,8 @@ import java.util.concurrent.TimeUnit;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Client {
+    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+
     private final Cluster cluster;
     private volatile boolean initialized;
 
@@ -18,7 +22,6 @@ public class Client {
 
     Client(final Cluster cluster) {
         this.cluster = cluster;
-
     }
 
     public synchronized Client init() {
@@ -48,7 +51,6 @@ public class Client {
 
         // todo: choose a host with some smarts - this is pretty whatever atm
         final ConnectionPool pool = hostConnectionPools.values().iterator().next();
-        System.out.println("before submit: " + pool);
         try {
             // the connection is returned to the pool once the response has been completed...see Connection.write()
             final Connection connection = pool.borrowConnection(300, TimeUnit.SECONDS);
@@ -59,7 +61,7 @@ public class Client {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {
-            System.out.println("after submit: " + pool);
+            if (logger.isDebugEnabled()) logger.debug("Submitted {} to - {}", gremlin, pool);
         }
     }
 }

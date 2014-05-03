@@ -21,7 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ConnectionPool {
+class ConnectionPool {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
     // todo: configuration
@@ -55,6 +55,8 @@ public class ConnectionPool {
 
         this.connections = new CopyOnWriteArrayList<>(l);
         this.open = new AtomicInteger(connections.size());
+
+        logger.info("Opening connection pool on {} with core size of {}", host, MIN_POOL_SIZE);
     }
 
     public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
@@ -110,13 +112,10 @@ public class ConnectionPool {
             }
 
             // a connection that exceeds the minimum pool size does not have the right to live if it isn't busy
-            if (connections.size() > MIN_POOL_SIZE && inFlight <= MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION) {
-                //logger.info("destroy");
+            if (connections.size() > MIN_POOL_SIZE && inFlight <= MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION)
                 destroyConnection(connection);
-            }  else {
-                //logger.info("available");
+            else
                 announceAvailableConnection();
-            }
         }
     }
 
@@ -125,6 +124,7 @@ public class ConnectionPool {
     }
 
     public CompletableFuture<Void> closeAsync() {
+        logger.info("Signalled closing of connection pool on {} with core size of {}", host, MIN_POOL_SIZE);
         CompletableFuture<Void> future = closeFuture.get();
         if (future != null)
             return future;
@@ -254,7 +254,6 @@ public class ConnectionPool {
     }
 
     private void announceAvailableConnection() {
-        // Quick check if it's worth signaling to avoid locking
         if (waiter == 0)
             return;
 
@@ -304,7 +303,9 @@ public class ConnectionPool {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ConnectionPool - ");
+        final StringBuilder sb = new StringBuilder("ConnectionPool (");
+        sb.append(host);
+        sb.append(") - ");
         connections.forEach(c-> {
             sb.append(c);
             sb.append(",");

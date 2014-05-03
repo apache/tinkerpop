@@ -41,4 +41,12 @@ class Host {
             throw new RuntimeException(String.format("URI for host could not be constructed from: %s", addy), use);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Host{" +
+                "address=" + address +
+                ", webSocketUri=" + webSocketUri +
+                '}';
+    }
 }

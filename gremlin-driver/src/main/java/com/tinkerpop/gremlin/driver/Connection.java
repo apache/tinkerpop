@@ -17,6 +17,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.UUID;
@@ -34,6 +36,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class Connection {
+    private static final Logger logger = LoggerFactory.getLogger(Connection.class);
+
     private final Channel channel;
     private final URI uri;
     private final ConcurrentMap<UUID, ResponseQueue> pending = new ConcurrentHashMap<>();
@@ -64,6 +68,8 @@ class Connection {
         try {
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
             initializer.handler.handshakeFuture().sync();
+
+            logger.info("Created new connection for {}", uri);
         } catch (InterruptedException ie) {
             ie.printStackTrace();
             throw new RuntimeException(ie);
@@ -79,6 +85,7 @@ class Connection {
     }
 
     public boolean isDead() {
+        // todo: what is being signalled here?
         return isDead;
     }
 
