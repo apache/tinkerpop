@@ -11,3 +11,4 @@ build_output.txt
 .project
 .settings
 _bsp/
+doc/out

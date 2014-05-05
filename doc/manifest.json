@@ -1,0 +1,9 @@
+{
+    "title": "TinkerPop3",
+    "rootDir": ".",
+    "files": ["Home.md", "GremlinServer.md"],
+    "links": [
+        ["View on Github", "http://github.com/tinkerpop/tinkerpop3"],
+        ["Report an issue", "http://github.com/tinkerpop/tinkerpop3/issues"]
+    ]
+}
