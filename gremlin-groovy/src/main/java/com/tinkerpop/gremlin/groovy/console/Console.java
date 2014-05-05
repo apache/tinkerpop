@@ -45,7 +45,7 @@ public class Console {
     private static final String DOT_STAR = ".*";
 
     private static final IO STANDARD_IO = new IO(System.in, System.out, System.err);
-    private static final Groovysh GROOVYSH = new Groovysh(); // TODO: Is static. Is that okay?
+    private static final Groovysh GROOVYSH = new Groovysh();
 
     public Console(final Optional<String> initScriptFile) {
         STANDARD_IO.out.println();
@@ -64,7 +64,7 @@ public class Console {
         GROOVYSH.execute(IMPORT_SPACE + Traversal.class.getPackage().getName() + DOT_STAR);
         GROOVYSH.execute(IMPORT_SPACE + TinkerGraph.class.getPackage().getName() + DOT_STAR);
         GROOVYSH.execute(IMPORT_SPACE + Grape.class.getCanonicalName());
-        GROOVYSH.setResultHook(new ResultHookClosure(GROOVYSH, STANDARD_IO, STANDARD_RESULT_PROMPT));
+        GROOVYSH.setResultHook(new ResultHookClosure(GROOVYSH, STANDARD_IO, buildResultPrompt()));
 
         final InteractiveShellRunner runner = new InteractiveShellRunner(GROOVYSH, new PromptClosure(GROOVYSH, STANDARD_INPUT_PROMPT));
         runner.setErrorHandler(new ErrorHookClosure(runner, STANDARD_IO));
@@ -99,6 +99,18 @@ public class Console {
      */
     public static IO getStandardIo() {
         return STANDARD_IO;
+    }
+
+    private static String buildResultPrompt() {
+        final String groovyshellProperty = System.getProperty("gremlin.prompt");
+        if (groovyshellProperty != null)
+            return groovyshellProperty;
+
+        final String groovyshellEnv = System.getenv("GREMLIN_PROMPT");
+        if (groovyshellEnv  != null)
+            return  groovyshellEnv;
+
+        return STANDARD_RESULT_PROMPT;
     }
 
     private void initializeShellWithScript(final IO io, final String initScriptFile) {
