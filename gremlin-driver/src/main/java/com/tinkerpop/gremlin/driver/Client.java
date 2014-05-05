@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -36,14 +38,22 @@ public class Client {
     }
 
     public ResultSet submit(final String gremlin) {
+        return submit(gremlin, null);
+    }
+
+    public ResultSet submit(final String gremlin, final Map<String, Object> parameters) {
         try {
-            return submitAsync(gremlin).get();
+            return submitAsync(gremlin, parameters).get();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin) {
+        return submitAsync(gremlin, null);
+    }
+
+    public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
         if (!initialized)
             init();
 
@@ -54,9 +64,9 @@ public class Client {
         try {
             // the connection is returned to the pool once the response has been completed...see Connection.write()
             final Connection connection = pool.borrowConnection(300, TimeUnit.SECONDS);
-            final RequestMessage request = RequestMessage.create("eval")
-                    .add(Tokens.ARGS_GREMLIN, gremlin).build();
-            connection.write(request, future);
+            final RequestMessage.Builder request = RequestMessage.create("eval").add(Tokens.ARGS_GREMLIN, gremlin);
+            Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
+            connection.write(request.build(), future);
             return future;
         } catch (Exception ex) {
             throw new RuntimeException(ex);

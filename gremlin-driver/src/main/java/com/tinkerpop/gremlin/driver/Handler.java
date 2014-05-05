@@ -162,7 +162,6 @@ class Handler {
     static class GremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
         private boolean binaryEncoding = false;
 
-        // todo: serializer configuration
         private final MessageSerializer serializer;
 
         public GremlinRequestEncoder(final boolean binaryEncoding, final MessageSerializer serializer) {
@@ -172,12 +171,16 @@ class Handler {
 
         @Override
         protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessage requestMessage, final List<Object> objects) throws Exception {
-            if (binaryEncoding) {
-                final ByteBuf encodedMessage = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
-                objects.add(new BinaryWebSocketFrame(encodedMessage));
-            } else {
-                final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                objects.add(new TextWebSocketFrame(textSerializer.serializeRequestAsString(requestMessage)));
+            try {
+                if (binaryEncoding) {
+                    final ByteBuf encodedMessage = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
+                    objects.add(new BinaryWebSocketFrame(encodedMessage));
+                } else {
+                    final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+                    objects.add(new TextWebSocketFrame(textSerializer.serializeRequestAsString(requestMessage)));
+                }
+            } catch (Exception ex) {
+                // todo: catch serialization exceptions
             }
         }
     }

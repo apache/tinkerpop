@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.driver;
 
+import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
@@ -114,7 +115,7 @@ public class Cluster {
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
-        private MessageSerializer serializer = MessageSerializer.DEFAULT_REQUEST_SERIALIZER;
+        private MessageSerializer serializer = new KryoMessageSerializerV1d0();
 
         public Builder(final String address) {
             addContactPoint(address);

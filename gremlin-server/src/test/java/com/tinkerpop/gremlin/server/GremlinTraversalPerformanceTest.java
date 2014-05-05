@@ -17,6 +17,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -70,11 +72,14 @@ public class GremlinTraversalPerformanceTest extends AbstractGremlinServerPerfor
     }
 
     private void tryWebSocketGremlin() throws Exception {
-        final CompletableFuture<ResultSet> future1 =client.get().submitAsync("g.v(2389l).out().out().next(512)");
-        final CompletableFuture<ResultSet> future2 =client.get().submitAsync("g.v(2389l).out().next(16)");
-        final CompletableFuture<ResultSet> future3 =client.get().submitAsync("g.v(1234l).out().out().next(32)");
-        final CompletableFuture<ResultSet> future4 =client.get().submitAsync("g.v(4321l).out().out().next(32)");
-        final CompletableFuture<ResultSet> future5 =client.get().submitAsync("g.v(2390l).out().next(8)");
+        final Map<String, Object> params = new HashMap<>();
+        params.put("id", 2389l);
+
+        final CompletableFuture<ResultSet> future1 = client.get().submitAsync("g.v(id).out().out().next(512)", params);
+        final CompletableFuture<ResultSet> future2 = client.get().submitAsync("g.v(id).out().next(16)", params);
+        final CompletableFuture<ResultSet> future3 = client.get().submitAsync("g.v(1234l).out().out().next(32)");
+        final CompletableFuture<ResultSet> future4 = client.get().submitAsync("g.v(4321l).out().out().next(32)");
+        final CompletableFuture<ResultSet> future5 = client.get().submitAsync("g.v(2390l).out().next(8)");
 
         assertEquals(512, future1.get().stream().count());
         assertEquals(16, future2.get().stream().count());
