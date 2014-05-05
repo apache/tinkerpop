@@ -15,7 +15,8 @@ import org.codehaus.groovy.tools.shell.util.PackageHelper
 
 
 /**
- * Temporary import command until bug is fixed in groovy-core.
+ * Temporary import command until bug is fixed in groovy-core - Pull request issued here:
+ * https://github.com/groovy/groovy-core/pull/401.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
