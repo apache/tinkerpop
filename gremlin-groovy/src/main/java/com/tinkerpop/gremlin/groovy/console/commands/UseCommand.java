@@ -14,7 +14,10 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 /**
+ * Loads dependencies via Grape and triggers plugins actions if they are present.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class UseCommand extends CommandSupport {
 
