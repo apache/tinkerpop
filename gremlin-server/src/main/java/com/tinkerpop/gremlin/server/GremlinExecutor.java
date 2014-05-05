@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.concurrent.ScheduledFuture;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,21 +152,21 @@ public class GremlinExecutor {
                 return f.exists();
             }).map(f -> {
                 try {
-                    return Optional.<FileReader>of(new FileReader(f));
+                    return Pair.with(f, Optional.<FileReader>of(new FileReader(f)));
                 } catch (IOException ioe) {
                     logger.warn("Could not initialize {} ScriptEngine with {} as file could not be read - {}", language, f, ioe.getMessage());
                     hasErrors.set(true);
-                    return Optional.<FileReader>empty();
+                    return Pair.with(f, Optional.<FileReader>empty());
                 }
-            }).map(Optional<FileReader>::get).forEachOrdered(reader -> {
+            }).filter(p -> p.getValue1().isPresent()).map(p -> Pair.with(p.getValue0(), p.getValue1().get())).forEachOrdered(p -> {
                 try {
                     final Bindings bindings = new SimpleBindings();
                     bindings.putAll(graphs.getGraphs());
-                    scriptEngines.get(language).eval((Reader) reader, bindings);
+                    scriptEngines.get(language).eval(p.getValue1(), bindings);
+                    logger.info("Initialized {} ScriptEngine with {}", language, p.getValue0());
                 } catch (ScriptException sx) {
                     hasErrors.set(true);
-                    // todo: better print failing file - FileReader doesn't toString() nicely
-                    logger.warn("Could not initialize {} ScriptEngine with {} as script could not be evaluated - {}", language, reader, sx.getMessage());
+                    logger.warn("Could not initialize {} ScriptEngine with {} as script could not be evaluated - {}", language, p.getValue0(), sx.getMessage());
                 }
             });
         }
