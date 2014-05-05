@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 /**
@@ -16,11 +15,10 @@ import java.util.stream.Stream;
  */
 public class ResultSet implements Iterable<Item> {
     private final ResponseQueue responseQueue;
+    private final ExecutorService executor;
 
-    // todo: where do we set this executor from...grrr
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
-
-    public ResultSet(final ResponseQueue responseQueue) {
+    public ResultSet(final ResponseQueue responseQueue, final ExecutorService executor) {
+        this.executor = executor;
         this.responseQueue = responseQueue;
     }
 

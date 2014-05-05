@@ -136,7 +136,7 @@ class Connection {
                     });
                     final ResponseQueue handler = new ResponseQueue(responseQueue, readCompleted);
                     pending.put(requestMessage.getRequestId(), handler);
-                    final ResultSet resultSet = new ResultSet(handler);
+                    final ResultSet resultSet = new ResultSet(handler, cluster.executor());
                     future.complete(resultSet);
                 });
         channel.writeAndFlush(requestMessage, promise);
