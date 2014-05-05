@@ -1,6 +1,9 @@
 # TinkerPop
 
-TinkerPop is a open source technology stack for the graph space.
+TinkerPop is a open source technology stack for the graph space. Just testing to see how this works. Wonder why this is all busted and stuff.
+
+<!-- possible bug somewhere preventing local reference to this??? -->
+![TinkerPop3](https://raw.githubusercontent.com/tinkerpop/tinkerpop3/master/doc/theme/assets/images/tinkerpop3-splash.png)
 
 ## Overview
 
@@ -11,6 +14,10 @@ Integer ultricies tempus arcu. Nunc quis vestibulum nulla, vitae laoreet nisi. S
 ## Getting Started
 
 Aliquam non augue mattis, pellentesque enim a, aliquam arcu. Sed nibh erat, hendrerit non nulla eget, scelerisque gravida turpis. Pellentesque euismod bibendum massa nec ultrices. Mauris blandit consectetur erat vitae mollis. Integer pharetra luctus commodo. Sed lobortis est et odio tristique, in vulputate arcu pellentesque. Pellentesque vestibulum blandit mauris vitae malesuada. Sed blandit euismod augue, ac blandit nulla faucibus blandit.
+
+<div class="tip">
+You can do cool stuff with TinkerPop3!
+</div>
 
 Etiam metus urna, pellentesque nec ligula vitae, laoreet varius ligula. Ut et elementum lorem. Pellentesque accumsan massa felis, quis ultrices ante interdum venenatis. Integer semper posuere sapien. Fusce non posuere felis. Etiam nec mattis turpis. Quisque venenatis tempor diam, non sollicitudin nisi. Nunc at lacus quis mi tempor viverra. Curabitur ut enim elit. Donec sit amet libero et urna rhoncus molestie sed sit amet turpis. Curabitur adipiscing metus pretium quam fermentum auctor. Nam tincidunt sollicitudin arcu quis hendrerit.
 
