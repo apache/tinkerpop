@@ -39,7 +39,6 @@ public class GremlinBinaryRequestDecoder extends MessageToMessageDecoder<BinaryW
             final String contentType = contentTypeBytes.toString(UTF8);
             final MessageSerializer serializer = MessageSerializer.select(contentType, MessageSerializer.DEFAULT_REQUEST_SERIALIZER);
 
-            // todo: use the channel to store the serializer until this is proven wrong
             channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(serializer);
             channelHandlerContext.channel().attr(StateKey.USE_BINARY).set(true);
             try {

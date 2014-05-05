@@ -20,7 +20,6 @@ import java.util.List;
 public class GremlinTextRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
-        // todo: use the channel to store the serializer until this is proven wrong
         // the default serializer must be a MessageTextSerializer instance to be compatible with this decoder
         final MessageTextSerializer serializer = (MessageTextSerializer) MessageSerializer.DEFAULT_REQUEST_SERIALIZER;
         channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(serializer);
