@@ -49,7 +49,7 @@ public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
 
     @Override
     public int size() {
-        return 1;
+        return 0;
     }
 
     @Override
@@ -59,10 +59,11 @@ public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
 
     @Override
     public void write(DataOutput dataOutput) throws IOException {
-
+        dataOutput.write('e');
     }
 
     @Override
     public void readFields(DataInput dataInput) throws IOException {
+        dataInput.readByte();
     }
 }
