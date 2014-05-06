@@ -974,6 +974,47 @@ public class IoTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldReadWriteVertexWithBOTHBOTHEdgesToKryoSkipProperties() throws Exception {
+        final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
+        final AnnotatedList<String> locations = v1.getValue("locations");
+        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
+        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+
+        final Vertex v2 = g.addVertex();
+        v2.addEdge("friends", v1, "weight", 0.5f);
+        v1.addEdge("friends", v2, "weight", 1.0f);
+
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = KryoWriter.create().build();
+            writer.writeVertex(os, v1, Direction.BOTH);
+
+            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+
+            final KryoReader reader = KryoReader.create()
+                    .setWorkingDirectory(File.separator + "tmp").build();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertex(bais,
+                        (vertexId, label, properties) -> {
+                            if (g.getFeatures().vertex().supportsUserSuppliedIds())
+                                assertEquals(v1.getId(), vertexId);
+
+                            assertEquals(v1.getLabel(), label);
+
+                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
+                            // set after the fact.
+                            final Vertex vsub1 = mock(Vertex.class);
+                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.getId()).thenReturn(v1.getId());
+                            return vsub1;
+                        });
+            }
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
     public void shouldReadWriteVertexWithBOTHBOTHEdgesToGraphSON() throws Exception {
