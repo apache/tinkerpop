@@ -22,11 +22,6 @@ public class TinkerGraphVertexWriter extends VertexWriter {
     }
 
     public void writeVertex(final Vertex giraphVertex) throws IOException {
-        /*final Vertex gremlinVertex = ((GiraphVertex) giraphVertex).getGremlinVertex();
-        giraphVertex.getPropertyKeys().forEach(key -> {
-
-        });*/
-
         //System.out.println(((GiraphVertex) giraphVertex).getGremlinVertex() + ":" + ((GiraphVertex) giraphVertex).getGremlinVertex().<TraversalCounters>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).get().getDoneObjectTracks());
         System.out.println(((GiraphVertex) giraphVertex).getGremlinVertex() + ":" + ((GiraphVertex) giraphVertex).getGremlinVertex().<Double>getValue(PageRankVertexProgram.PAGE_RANK));
     }

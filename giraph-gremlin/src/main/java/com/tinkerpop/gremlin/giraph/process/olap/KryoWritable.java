@@ -52,6 +52,7 @@ public class KryoWritable<T> implements Writable {
         try {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             Output out = new Output(outputStream);
+            //System.out.println(this.t.getClass() + "!!!!!!!!");
             KRYO.writeClassAndObject(out, this.t);
             out.flush();
             output.writeInt(outputStream.toByteArray().length);
