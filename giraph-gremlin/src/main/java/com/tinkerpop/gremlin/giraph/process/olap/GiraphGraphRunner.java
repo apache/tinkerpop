@@ -24,7 +24,8 @@ public class GiraphGraphRunner extends Configured implements Tool {
     private final GiraphConfiguration giraphConfiguration;
 
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
-        this.giraphConfiguration = new GiraphConfiguration(hadoopConfiguration);
+        this.giraphConfiguration = new GiraphConfiguration();
+        hadoopConfiguration.forEach(entry -> this.giraphConfiguration.set(entry.getKey(), entry.getValue()));
         this.giraphConfiguration.setMasterComputeClass(GiraphComputerMemory.class);
         this.giraphConfiguration.setClass(GIRAPH_VERTEX_CLASS, GiraphVertex.class, Vertex.class);
     }
@@ -33,7 +34,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
         try {
             final GiraphJob job = new GiraphJob(this.giraphConfiguration,
                     "GiraphGremlin: " + VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(this.giraphConfiguration)));
-            job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
+            //job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
             job.run(true);
         } catch (Exception e) {
             e.printStackTrace();

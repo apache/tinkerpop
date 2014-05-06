@@ -35,7 +35,7 @@ public class TinkerGraphVertexReader extends VertexReader {
     }
 
     public Vertex getCurrentVertex() throws IOException, InterruptedException {
-        return new GiraphVertex(this.getConf(), this.vertices.next());
+        return new GiraphVertex(this.vertices.next());
     }
 
     public void close() throws IOException {
