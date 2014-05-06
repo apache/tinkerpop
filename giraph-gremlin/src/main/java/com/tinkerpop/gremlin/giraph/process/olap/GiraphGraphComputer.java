@@ -44,6 +44,7 @@ public class GiraphGraphComputer implements GraphComputer {
         try {
             final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
             fs.delete(new Path(this.hadoopConfiguration.get("mapred.output.dir")), true);
+            fs.delete(new Path("_temp"), true);
             final FileSystem local = FileSystem.getLocal(this.hadoopConfiguration);
             final String giraphGremlinHome = System.getenv(GIRAPH_GREMLIN_HOME);
             if (null == giraphGremlinHome)
@@ -51,11 +52,16 @@ public class GiraphGraphComputer implements GraphComputer {
             final File file = new File(giraphGremlinHome + "/lib");
             if (file.exists()) {
                 Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(DOT_JAR)).forEach(f -> {
-                    LOGGER.debug("Loading: " + f.getPath());
                     try {
-                        DistributedCache.addArchiveToClassPath(new Path(f.getPath()), this.hadoopConfiguration, local);
-                    } catch (final Exception e) {
-                        throw new RuntimeException(e.getMessage(), e);
+                        fs.copyFromLocalFile(new Path(f.getPath()), new Path("_temp/" + f.getName()));
+                        LOGGER.debug("Loading: " + f.getPath());
+                        try {
+                            DistributedCache.addFileToClassPath(new Path("_temp/" + f.getName()), this.hadoopConfiguration, fs);
+                        } catch (final Exception e) {
+                            throw new RuntimeException(e.getMessage(), e);
+                        }
+                    } catch (Exception e) {
+                        throw new IllegalStateException(e.getMessage(), e);
                     }
                 });
             } else {
