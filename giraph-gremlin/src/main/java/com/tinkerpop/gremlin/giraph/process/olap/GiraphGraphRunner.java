@@ -2,14 +2,16 @@ package com.tinkerpop.gremlin.giraph.process.olap;
 
 import com.tinkerpop.gremlin.giraph.process.olap.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
-import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.Tool;
 
 import java.io.File;
@@ -19,15 +21,16 @@ import java.io.File;
  */
 public class GiraphGraphRunner extends Configured implements Tool {
 
-    private static final String GIRAPH_VERTEX_CLASS = "giraph.vertexClass";
-
     private final GiraphConfiguration giraphConfiguration;
 
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         this.giraphConfiguration = new GiraphConfiguration();
         hadoopConfiguration.forEach(entry -> this.giraphConfiguration.set(entry.getKey(), entry.getValue()));
         this.giraphConfiguration.setMasterComputeClass(GiraphComputerMemory.class);
-        this.giraphConfiguration.setClass(GIRAPH_VERTEX_CLASS, GiraphVertex.class, Vertex.class);
+        this.giraphConfiguration.setVertexClass(GiraphVertex.class);
+        this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
+        this.giraphConfiguration.setClass("giraph.vertexIdClass", LongWritable.class, LongWritable.class);
+        this.giraphConfiguration.setClass("giraph.vertexValueClass", BytesWritable.class, BytesWritable.class);
     }
 
     public int run(final String[] args) {
