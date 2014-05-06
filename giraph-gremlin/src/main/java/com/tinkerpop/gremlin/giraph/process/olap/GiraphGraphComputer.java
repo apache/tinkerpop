@@ -53,10 +53,10 @@ public class GiraphGraphComputer implements GraphComputer {
             if (file.exists()) {
                 Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(DOT_JAR)).forEach(f -> {
                     try {
-                        fs.copyFromLocalFile(new Path(f.getPath()), new Path("_temp/" + f.getName()));
+                        fs.copyFromLocalFile(new Path(f.getPath()), new Path(fs.getHomeDirectory() + "/_temp/" + f.getName()));
                         LOGGER.debug("Loading: " + f.getPath());
                         try {
-                            DistributedCache.addFileToClassPath(new Path("_temp/" + f.getName()), this.hadoopConfiguration, fs);
+                            DistributedCache.addArchiveToClassPath(new Path(fs.getHomeDirectory() + "/_temp/" + f.getName()), this.hadoopConfiguration, fs);
                         } catch (final Exception e) {
                             throw new RuntimeException(e.getMessage(), e);
                         }
