@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +26,14 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ElementHelper {
+
+    public static Vertex getOrAddVertex(final Graph graph, final Object id, final String label) {
+        try {
+            return graph.v(id);
+        } catch (final NoSuchElementException e) {
+            return graph.addVertex(Element.ID, id, Element.LABEL, label);
+        }
+    }
 
     /**
      * Determines whether the property key/value for the specified thing can be legally set. This is typically used as
@@ -87,11 +96,11 @@ public class ElementHelper {
     public static Optional<Object[]> remove(final String keyToRemove, final Object... keyValues) {
         final List list = Arrays.asList(keyValues);
         final List revised = IntStream.range(0, list.size())
-                                      .filter(i -> i % 2 == 0)
-                                      .filter(i -> !keyToRemove.equals(list.get(i)))
-                                      .flatMap(i -> IntStream.of(i, i + 1))
-                                      .mapToObj(list::get)
-                                      .collect(Collectors.toList());
+                .filter(i -> i % 2 == 0)
+                .filter(i -> !keyToRemove.equals(list.get(i)))
+                .flatMap(i -> IntStream.of(i, i + 1))
+                .mapToObj(list::get)
+                .collect(Collectors.toList());
         return revised.size() > 0 ? Optional.of(revised.toArray()) : Optional.empty();
     }
 
@@ -107,9 +116,9 @@ public class ElementHelper {
             for (int i = 0; i < keyValues.length; i = i + 2) {
                 kvs[i] = keyValues[i];
                 if (keyValues[i].equals(key))
-                    kvs[i+1] = val;
+                    kvs[i + 1] = val;
                 else
-                    kvs[i+1] = keyValues[i+1];
+                    kvs[i + 1] = keyValues[i + 1];
             }
 
             return kvs;
@@ -121,19 +130,19 @@ public class ElementHelper {
      * assure that key positions contain strings and that there are an even number of elements.
      */
     public static Map<String, Object> asMap(final Object... keyValues) {
-        return asPairs(keyValues).stream().collect(Collectors.toMap(p->p.getValue0(), p->p.getValue1()));
+        return asPairs(keyValues).stream().collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
     }
 
     /**
      * Convert a set of key values to a list of Pair objects.  Assumes that validations have already taken place to
      * assure that key positions contain strings and that there are an even number of elements.
      */
-    public static List<Pair<String,Object>> asPairs(final Object... keyValues) {
+    public static List<Pair<String, Object>> asPairs(final Object... keyValues) {
         final List list = Arrays.asList(keyValues);
         return IntStream.range(1, list.size())
-                        .filter(i -> i % 2 != 0)
-                        .mapToObj(i -> Pair.<String, Object>with(list.get(i - 1).toString(), list.get(i)))
-                        .collect(Collectors.toList());
+                .filter(i -> i % 2 != 0)
+                .mapToObj(i -> Pair.<String, Object>with(list.get(i - 1).toString(), list.get(i)))
+                .collect(Collectors.toList());
     }
 
     /**
