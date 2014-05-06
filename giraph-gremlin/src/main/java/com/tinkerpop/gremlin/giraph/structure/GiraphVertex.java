@@ -7,10 +7,12 @@ import com.tinkerpop.gremlin.giraph.process.olap.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
@@ -31,18 +33,30 @@ public class GiraphVertex extends Vertex<LongWritable, BytesWritable, NullWritab
     private static final Logger LOGGER = Logger.getLogger(GiraphVertex.class);
 
     private VertexProgram vertexProgram;
+    private Graph gremlinGraph;
     private com.tinkerpop.gremlin.structure.Vertex gremlinVertex;
     private GiraphComputerMemory computerMemory;
-    private final Graph graph = TinkerGraph.open();
 
     public GiraphVertex() {
         this.computerMemory = new GiraphComputerMemory(this);
     }
 
-    public GiraphVertex(final com.tinkerpop.gremlin.structure.Vertex gremlinVertex) {
+    public GiraphVertex(final com.tinkerpop.gremlin.structure.Vertex vertex) {
         this();
-        this.gremlinVertex = gremlinVertex;
-        this.initialize(new LongWritable(Long.valueOf(this.gremlinVertex.getId().toString())), this.getBytesWritable(), EmptyOutEdges.instance());
+        this.gremlinGraph = TinkerGraph.open();
+        this.gremlinVertex = this.gremlinGraph.addVertex(Element.ID, Long.valueOf(vertex.getId().toString()), Element.LABEL, vertex.getLabel());
+        vertex.getProperties().forEach((k, v) -> this.gremlinVertex.setProperty(k, v.get()));
+        vertex.outE().forEach(edge -> {
+            final com.tinkerpop.gremlin.structure.Vertex otherVertex = ElementHelper.getOrAddVertex(this.gremlinGraph, edge.getVertex(Direction.IN).getId(), edge.getVertex(Direction.IN).getLabel());
+            final Edge gremlinEdge = this.gremlinVertex.addEdge(edge.getLabel(), otherVertex);
+            edge.getProperties().forEach((k, v) -> gremlinEdge.setProperty(k, v.get()));
+        });
+        vertex.inE().forEach(edge -> {
+            final com.tinkerpop.gremlin.structure.Vertex otherVertex = ElementHelper.getOrAddVertex(this.gremlinGraph, edge.getVertex(Direction.OUT).getId(), edge.getVertex(Direction.OUT).getLabel());
+            final Edge gremlinEdge = otherVertex.addEdge(edge.getLabel(), this.gremlinVertex);
+            edge.getProperties().forEach((k, v) -> gremlinEdge.setProperty(k, v.get()));
+        });
+        super.initialize(new LongWritable((long) this.gremlinVertex.getId()), this.getBytesWritable(), EmptyOutEdges.instance());
     }
 
     @Override
@@ -57,18 +71,14 @@ public class GiraphVertex extends Vertex<LongWritable, BytesWritable, NullWritab
     }
 
     @Override
-    public void initialize(final LongWritable id, final BytesWritable value, Iterable<org.apache.giraph.edge.Edge<LongWritable, NullWritable>> edges) {
+    public void initialize(final LongWritable id, final BytesWritable value, final Iterable<org.apache.giraph.edge.Edge<LongWritable, NullWritable>> edges) {
         try {
             final ByteArrayInputStream bis = new ByteArrayInputStream(value.getBytes());
             final KryoReader reader = KryoReader.create().build();
-            this.gremlinVertex = reader.readVertex(bis, (id1, label1, properties1) -> {
-                final com.tinkerpop.gremlin.structure.Vertex vertex = this.graph.addVertex(Element.ID, id1, Element.LABEL, label1);
-                for (int i = 0; i < properties1.length; i = i + 2) {
-                    vertex.setProperty((String) properties1[i], properties1[i + 1]);
-                }
-                return vertex;
-            });
+            this.gremlinGraph = TinkerGraph.open();
+            reader.readGraph(bis, this.gremlinGraph);
             bis.close();
+            this.gremlinVertex = this.gremlinGraph.v(id.get());
             super.initialize(id, value, edges);
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -87,7 +97,7 @@ public class GiraphVertex extends Vertex<LongWritable, BytesWritable, NullWritab
         try {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final KryoWriter writer = KryoWriter.create().build();
-            writer.writeVertex(bos, this.gremlinVertex, Direction.BOTH);
+            writer.writeGraph(bos, this.gremlinGraph);
             bos.flush();
             bos.close();
             return new BytesWritable(bos.toByteArray());
