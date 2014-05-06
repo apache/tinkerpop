@@ -10,8 +10,8 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.giraph.graph.Vertex;
@@ -60,7 +60,6 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
     @Override
     public void setConf(final org.apache.giraph.conf.ImmutableClassesGiraphConfiguration configuration) {
         this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(configuration));
-        KryoWritable.tClass = this.vertexProgram.getMessageClass();
     }
 
     public com.tinkerpop.gremlin.structure.Vertex getGremlinVertex() {
@@ -72,28 +71,13 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
         this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.computerMemory);
     }
 
-    /*private BytesWritable getBytesWritableOfSubGraph() {
+    private Text getTextOfSubGraph() {
         try {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeGraph(bos, this.gremlinGraph);
             bos.flush();
             bos.close();
-            System.out.println("WRITING:" + gremlinVertex.getId() + "!!!!!" + bos.toByteArray().length + "!!!!!" + new String(bos.toByteArray()));
-            return new BytesWritable(bos.toByteArray());
-        } catch (IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }*/
-
-    private Text getTextOfSubGraph() {
-        try {
-            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            final GraphMLWriter writer = GraphMLWriter.create().build();
-            writer.writeGraph(bos, this.gremlinGraph);
-            bos.flush();
-            bos.close();
-            System.out.println("WRITING:" + gremlinVertex.getId() + "!!!!!" + bos.toByteArray().length + "!!!!!" + new String(bos.toByteArray()));
             return new Text(bos.toByteArray());
         } catch (IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -103,13 +87,12 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
     private void inflateGiraphVertex() {
         if (null == this.gremlinVertex) {
             try {
-                System.out.println("READING:" + this.getId().get() + "!!!!!" + this.getValue().getLength() + "!!!!" + this.getValue().toString());
                 final ByteArrayInputStream bis = new ByteArrayInputStream(this.getValue().getBytes());
-                final GraphMLReader reader = GraphMLReader.create().build();
+                final KryoReader reader = KryoReader.create().build();
                 this.gremlinGraph = TinkerGraph.open();
                 reader.readGraph(bis, this.gremlinGraph);
                 bis.close();
-                this.gremlinVertex = this.gremlinGraph.v(this.getId().toString());
+                this.gremlinVertex = this.gremlinGraph.v(this.getId().get());
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

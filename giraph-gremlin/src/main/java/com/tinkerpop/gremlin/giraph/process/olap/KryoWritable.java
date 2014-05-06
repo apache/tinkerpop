@@ -18,7 +18,6 @@ import java.io.DataOutput;
 public class KryoWritable<T> implements Writable {
 
     public static final Kryo KRYO = new Kryo();
-    public static Class tClass;
 
     T t;
 
@@ -42,7 +41,7 @@ public class KryoWritable<T> implements Writable {
             for (int i = 0; i < objectLength; i++) {
                 objectBytes[i] = input.readByte();
             }
-            this.t = (T) KRYO.readObject(new Input(new ByteArrayInputStream(objectBytes)), tClass);
+            this.t = (T) KRYO.readClassAndObject(new Input(new ByteArrayInputStream(objectBytes)));
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -53,7 +52,7 @@ public class KryoWritable<T> implements Writable {
         try {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             Output out = new Output(outputStream);
-            KRYO.writeObject(out, this.t);
+            KRYO.writeClassAndObject(out, this.t);
             out.flush();
             output.writeInt(outputStream.toByteArray().length);
             output.write(outputStream.toByteArray());
