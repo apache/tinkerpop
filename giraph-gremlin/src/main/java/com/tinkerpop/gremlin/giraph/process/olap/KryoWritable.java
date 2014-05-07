@@ -22,11 +22,13 @@ public class KryoWritable<T> implements Writable {
     T t;
 
     public KryoWritable() {
-        KRYO.register(SimpleHolder.class, 1000);
-        KRYO.register(PathHolder.class, 1001);
+        KRYO.register(SimpleHolder.class);
+        KRYO.register(PathHolder.class);
+        // TODO: We may need to create concrete ID numbers in cross JVM situations.
     }
 
     public KryoWritable(final T t) {
+        this();
         this.t = t;
     }
 
