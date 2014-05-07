@@ -29,8 +29,8 @@ public class Cluster {
     private Manager manager;
 
     private Cluster(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
-                    final int nioPoolSize, final int workerPoolSize) {
-        this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize);
+                    final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings) {
+        this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize, connectionPoolSettings);
     }
 
     public synchronized void init() {
@@ -53,7 +53,14 @@ public class Cluster {
             throw new IllegalStateException("At least one value must be specified to the hosts setting");
 
         final Builder builder = new Builder(settings.hosts.get(0))
-                .port(settings.port);
+                .port(settings.port)
+                .nioPoolSize(settings.nioPoolSize)
+                .workerPoolSize(settings.workerPoolSize)
+                .maxInProcessPerConnection(settings.connectionPool.maxInProcessPerConnection)
+                .maxSimultaneousRequestsPerConnection(settings.connectionPool.maxSimultaneousRequestsPerConnection)
+                .minSimultaneousRequestsPerConnection(settings.connectionPool.minSimultaneousRequestsPerConnection)
+                .maxConnectionPoolSize(settings.connectionPool.maxSize)
+                .minConnectionPoolSize(settings.connectionPool.minSize);
 
         // the first address was added above in the constructor, so skip it if there are more
         if (addresses.size() > 1)
@@ -106,12 +113,21 @@ public class Cluster {
         return manager.executor;
     }
 
+    Settings.ConnectionPoolSettings connectionPoolSettings() {
+        return manager.connectionPoolSettings;
+    }
+
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private MessageSerializer serializer = Serializers.KRYO_V1D0.simpleInstance();
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
+        private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;
+        private int maxConnectionPoolSize = ConnectionPool.MAX_POOL_SIZE;
+        private int minSimultaneousRequestsPerConnection = ConnectionPool.MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
+        private int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
+        private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
 
         public Builder(final String address) {
             addContactPoint(address);
@@ -151,6 +167,31 @@ public class Cluster {
             return this;
         }
 
+        public Builder maxInProcessPerConnection(final int maxInProcessPerConnection) {
+            this.maxInProcessPerConnection = maxInProcessPerConnection;
+            return this;
+        }
+
+        public Builder maxSimultaneousRequestsPerConnection(final int maxSimultaneousRequestsPerConnection) {
+            this.maxSimultaneousRequestsPerConnection = maxSimultaneousRequestsPerConnection;
+            return this;
+        }
+
+        public Builder minSimultaneousRequestsPerConnection(final int minSimultaneousRequestsPerConnection) {
+            this.minSimultaneousRequestsPerConnection = minSimultaneousRequestsPerConnection;
+            return this;
+        }
+
+        public Builder maxConnectionPoolSize(final int maxSize) {
+            this.maxConnectionPoolSize = maxSize;
+            return this;
+        }
+
+        public Builder minConnectionPoolSize(final int minSize) {
+            this.minConnectionPoolSize = minSize;
+            return this;
+        }
+
         public Builder addContactPoint(final String address) {
             try {
                 this.addresses.add(InetAddress.getByName(address));
@@ -176,7 +217,13 @@ public class Cluster {
         }
 
         public Cluster build() {
-            return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize);
+            final Settings.ConnectionPoolSettings connectionPoolSettings = new Settings.ConnectionPoolSettings();
+            connectionPoolSettings.maxInProcessPerConnection = this.maxInProcessPerConnection;
+            connectionPoolSettings.maxSimultaneousRequestsPerConnection = this.maxSimultaneousRequestsPerConnection;
+            connectionPoolSettings.minSimultaneousRequestsPerConnection = this.minSimultaneousRequestsPerConnection;
+            connectionPoolSettings.maxSize = this.maxConnectionPoolSize;
+            connectionPoolSettings.minSize = this.minConnectionPoolSize;
+            return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize, connectionPoolSettings);
         }
     }
 
@@ -201,15 +248,17 @@ public class Cluster {
         private ClusterInfo clusterInfo;
         private boolean initialized;
         private final List<InetSocketAddress> contactPoints;
-        private Factory factory;
-        private MessageSerializer serializer;
+        private final Factory factory;
+        private final MessageSerializer serializer;
+        private final Settings.ConnectionPoolSettings connectionPoolSettings;
 
         private final ExecutorService executor;
 
         private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
-                        final int nioPoolSize, final int workerPoolSize) {
+                        final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings) {
             this.clusterInfo = new ClusterInfo(this);
             this.contactPoints = contactPoints;
+            this.connectionPoolSettings = connectionPoolSettings;
             this.factory = new Factory(nioPoolSize);
             this.serializer = serializer;
             this.executor =  Executors.newFixedThreadPool(workerPoolSize,
