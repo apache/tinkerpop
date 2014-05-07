@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
 import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.util.TimeUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -72,6 +73,30 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
         final AtomicInteger counter = new AtomicInteger(0);
         results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldCloseWithServerDown() throws Exception {
+        final Cluster cluster = Cluster.open();
+        cluster.connect();
+
+        stopServer();
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldHandleRequestSentThatNeverReturns() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("'should-not-ever-get-back-coz-we-killed-the-server'");
+
+        stopServer();
+
+        assertEquals(0, results.getAvailableItemCount());
 
         cluster.close();
     }
