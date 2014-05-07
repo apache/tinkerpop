@@ -28,8 +28,10 @@ public class MicroVertex extends MicroElement implements Vertex {
     }
 
     public Vertex inflate(final Vertex hostVertex) {
-        if (!hostVertex.getId().equals(this.id))
-            throw new IllegalStateException("The host vertex must be the vertex trying to be inflated: " + hostVertex.getId() + "!=" + this.getId());
+        if (!hostVertex.getId().toString().equals(this.id.toString())) // TODO: Why is this bad?
+            throw new IllegalStateException("The host vertex must be the vertex trying to be inflated: " +
+                    hostVertex.getId() + "!=" + this.getId() + " or " +
+                    hostVertex.getId().getClass() + "!=" + this.getId().getClass());
         return hostVertex;
     }
 
