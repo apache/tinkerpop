@@ -17,13 +17,13 @@ import java.io.DataOutput;
  */
 public class KryoWritable<T> implements Writable {
 
-    public static final Kryo KRYO = new Kryo();
+    public final Kryo KRYO = new Kryo();
 
     T t;
 
     public KryoWritable() {
-        KRYO.register(SimpleHolder.class);
-        KRYO.register(PathHolder.class);
+        KRYO.register(SimpleHolder.class, 1000);
+        KRYO.register(PathHolder.class, 1001);
     }
 
     public KryoWritable(final T t) {
@@ -51,8 +51,7 @@ public class KryoWritable<T> implements Writable {
     public void write(final DataOutput output) {
         try {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            Output out = new Output(outputStream);
-            //System.out.println(this.t.getClass() + "!!!!!!!!");
+            final Output out = new Output(outputStream);
             KRYO.writeClassAndObject(out, this.t);
             out.flush();
             output.writeInt(outputStream.toByteArray().length);
