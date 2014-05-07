@@ -8,7 +8,8 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
@@ -23,7 +24,7 @@ public class GiraphGraphComputer implements GraphComputer {
 
     private static final String GIRAPH_GREMLIN_HOME = "GIRAPH_GREMLIN_HOME";
     private static final String DOT_JAR = ".jar";
-    private static final Logger LOGGER = Logger.getLogger(GiraphGraphComputer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
 
     public static final String GREMLIN_INPUT_LOCATION = "gremlin.input.location";
 

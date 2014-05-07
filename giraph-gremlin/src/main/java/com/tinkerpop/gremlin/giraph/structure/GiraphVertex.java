@@ -19,7 +19,8 @@ import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,7 +31,7 @@ import java.io.IOException;
  */
 public class GiraphVertex extends Vertex<LongWritable, BytesWritable, NullWritable, KryoWritable> {
 
-    private static final Logger LOGGER = Logger.getLogger(GiraphVertex.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GiraphVertex.class);
 
     private VertexProgram vertexProgram;
     private Graph gremlinGraph;

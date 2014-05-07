@@ -9,7 +9,8 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.EmptyGraph;
 import org.apache.giraph.master.MasterCompute;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -23,7 +24,7 @@ public class GiraphComputerMemory extends MasterCompute implements GraphComputer
 
     // TODO: vertex program needs to have ComputeKeys but for master as well.
 
-    private final Logger LOGGER = Logger.getLogger(GiraphComputerMemory.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(GiraphComputerMemory.class);
     private VertexProgram vertexProgram;
     private GiraphVertex giraphVertex;
     private long runtime = System.currentTimeMillis();
