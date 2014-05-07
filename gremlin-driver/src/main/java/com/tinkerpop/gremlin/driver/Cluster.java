@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.driver;
 
-import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
@@ -15,7 +14,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,8 +28,9 @@ public class Cluster {
 
     private Manager manager;
 
-    private Cluster(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer) {
-        this.manager = new Manager(contactPoints, serializer);
+    private Cluster(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
+                    final int nioPoolSize, final int workerPoolSize) {
+        this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize);
     }
 
     public synchronized void init() {
@@ -111,9 +110,30 @@ public class Cluster {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private MessageSerializer serializer = Serializers.KRYO_V1D0.simpleInstance();
+        private int nioPoolSize = Runtime.getRuntime().availableProcessors();
+        private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
 
         public Builder(final String address) {
             addContactPoint(address);
+        }
+
+        /**
+         * Size of the pool for handling request/response operations.  Defaults to the number of available processors.
+         */
+        public Builder nioPoolSize(int nioPoolSize) {
+            if (nioPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
+            this.nioPoolSize = nioPoolSize;
+            return this;
+        }
+
+        /**
+         * Size of the pool for handling background work.  Defaults to the number of available processors multiplied
+         * by 2
+         */
+        public Builder workerPoolSize(int workerPoolSize) {
+            if (workerPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
+            this.workerPoolSize = workerPoolSize;
+            return this;
         }
 
         public Builder serializer(final String mimeType) {
@@ -156,16 +176,16 @@ public class Cluster {
         }
 
         public Cluster build() {
-            return new Cluster(getContactPoints(), serializer);
+            return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize);
         }
     }
 
     static class Factory {
         private final EventLoopGroup group;
 
-        public Factory() {
-            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-%d").build();
-            group = new NioEventLoopGroup(4, threadFactory);
+        public Factory(final int nioPoolSize) {
+            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-nio-%d").build();
+            group = new NioEventLoopGroup(nioPoolSize, threadFactory);
         }
 
         Bootstrap createBootstrap() {
@@ -184,14 +204,16 @@ public class Cluster {
         private Factory factory;
         private MessageSerializer serializer;
 
-        // todo: configurable pool size
-        private  final ExecutorService executor = Executors.newCachedThreadPool();
+        private final ExecutorService executor;
 
-        private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer) {
+        private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
+                        final int nioPoolSize, final int workerPoolSize) {
             this.clusterInfo = new ClusterInfo(this);
             this.contactPoints = contactPoints;
-            this.factory = new Factory();
+            this.factory = new Factory(nioPoolSize);
             this.serializer = serializer;
+            this.executor =  Executors.newFixedThreadPool(workerPoolSize,
+                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
         }
 
         synchronized void init() {
