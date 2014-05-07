@@ -43,11 +43,6 @@ public class Cluster {
         return new Client(this);
     }
 
-    public Client connect(final String graph) {
-        // todo: need to support this like it was in rexpro.
-        return null;
-    }
-
     public static Builder create(final String address) {
         return new Builder(address);
     }
