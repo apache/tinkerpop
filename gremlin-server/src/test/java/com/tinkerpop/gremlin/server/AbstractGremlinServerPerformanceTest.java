@@ -52,9 +52,13 @@ public abstract class AbstractGremlinServerPerformanceTest {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        Thread.sleep(1000);
+        stopServer();
+    }
 
-        thread.interrupt();
+    public static void stopServer() throws Exception {
+        if (!thread.isInterrupted())
+            thread.interrupt();
+
         while (thread.isAlive()) {
             Thread.sleep(250);
         }

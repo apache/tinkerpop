@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
 import com.tinkerpop.gremlin.driver.ResultSet;
+import com.tinkerpop.gremlin.driver.ser.Serializers;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -22,6 +23,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
+ * Integration tests for server-side settings and processing.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
@@ -51,33 +54,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
-    }
-
-    @Test
-    public void basicTesting() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        System.out.println("iterable --- ");
-        ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        while (!results.allItemsAvailable()) {
-            System.out.println("waiting for all...");
-            Thread.sleep(1000);
-        }
-
-        for (Item result : results) {
-            System.out.println(result.get(Integer.class));
-        }
-
-        System.out.println("all --- ");
-        results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        results.all().get(5000, TimeUnit.MILLISECONDS).stream().map(i -> i.get(Integer.class) * 2).forEach(System.out::println);
-
-        System.out.println("stream them --- ");
-        results = client.submit("[1,2,3,4,5,6,7,8,9]");
-        results.stream().map(i -> i.get(Integer.class) * 3).forEach(System.out::println);
-
-        cluster.close();
     }
 
     @Test
@@ -144,7 +120,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadSerialization() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = Cluster.create("localhost").serializer(Serializers.JSON_V1D0).build();
         final Client client = cluster.connect();
 
         try {
@@ -185,34 +161,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getMessage().endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldProcessOutOfOrder() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        try {
-            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
-            final ResultSet rsZero = client.submit("'zero'");
-
-            final CompletableFuture<List<Item>> futureFive = rsFive.all();
-            final CompletableFuture<List<Item>> futureZero = rsZero.all();
-
-            final long start = System.nanoTime();
-            assertFalse(futureFive.isDone());
-            assertEquals("zero", futureZero.get().get(0).getString());
-
-            System.out.println("Eval of 'zero' complete: "  + TimeUtil.millisSince(start));
-
-            assertFalse(futureFive.isDone());
-            assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
-
-            System.out.println("Eval of 'five' complete: "  + TimeUtil.millisSince(start));
-
         } finally {
             cluster.close();
         }

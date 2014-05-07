@@ -31,32 +31,6 @@ public interface MessageSerializer {
     static final Logger logger = LoggerFactory.getLogger(MessageSerializer.class);
 
     /**
-     * Map of serializers to mime types. Initialize {@link MessageSerializer} instances with {@link ServiceLoader}
-     * invoking {@link #mimeTypesSupported()} and mapping each mime type returned in that array back to the associated
-     * {@link MessageSerializer} in the @{link Map},
-     */
-    static final Map<String, MessageSerializer> serializers = new HashMap<String, MessageSerializer>() {{
-        final ServiceLoader<MessageSerializer> serviceLoader = ServiceLoader.load(MessageSerializer.class);
-        StreamFactory.stream(serviceLoader.iterator()).flatMap(serializer ->
-                Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Arrays.asList(mimeType, serializer))
-        ).forEach(l -> put(l.get(0).toString(), (MessageSerializer) l.get(1)));
-    }};
-
-    /**
-     * Default serializer for results returned from Gremlin Server. This implementation must be of type
-     * {@link com.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
-     * websocket messages.
-     */
-    static final MessageSerializer DEFAULT_RESULT_SERIALIZER = new JsonMessageSerializerV1d0();
-
-    /**
-     * Default serializer for requests received by Gremlin Server. This implementation must be of type
-     * {@link com.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
-     * websocket messages.
-     */
-    static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new JsonMessageSerializerV1d0();
-
-    /**
      * Serialize a {@link ResponseMessage} to a Netty {@code ByteBuf}.
      *
      * @param responseMessage The response message to serialize to bytes.
@@ -88,13 +62,9 @@ public interface MessageSerializer {
     public String[] mimeTypesSupported();
 
     /**
-     * Choose a serializer based on the mimetype.
+     * Configure the serializer with custom settings as required.  The default implementation does not perform any
+     * function and it is up to the interface implementation to determine how the configuration will be executed
+     * and what its requirements are.
      */
-    public static MessageSerializer select(final String mimeType, final MessageSerializer defaultSerializer) {
-        if (logger.isWarnEnabled() && !serializers.containsKey(mimeType))
-            logger.warn("Gremlin Server is not configured with a serializer for the requested mime type [{}] - using {} by default",
-                    mimeType, defaultSerializer.getClass().getName());
-
-        return serializers.getOrDefault(mimeType, defaultSerializer);
-    }
+    public default void configure(final Map<String, Object> config) {}
 }

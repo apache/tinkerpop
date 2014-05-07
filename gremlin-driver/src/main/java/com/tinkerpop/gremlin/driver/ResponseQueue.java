@@ -56,7 +56,7 @@ class ResponseQueue {
             try {
                 msg = responseQueue.poll(10, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ie) {
-
+                error.set(new RuntimeException(ie));
             }
         } while (null == msg && status == Status.FETCHING);
 

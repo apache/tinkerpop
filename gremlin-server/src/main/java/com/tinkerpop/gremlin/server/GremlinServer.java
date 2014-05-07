@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.server.handler.GremlinBinaryRequestDecoder;
 import com.tinkerpop.gremlin.server.handler.GremlinTextRequestDecoder;
 import com.tinkerpop.gremlin.server.handler.GremlinResponseEncoder;
@@ -7,6 +8,7 @@ import com.tinkerpop.gremlin.server.handler.IteratorHandler;
 import com.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import com.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import com.tinkerpop.gremlin.server.util.MetricManager;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -27,6 +29,7 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +42,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Start and stop Gremlin Server.  Adapted from
@@ -162,10 +170,19 @@ public class GremlinServer {
         private final Settings settings;
         private final GremlinExecutor gremlinExecutor;
         private final Optional<SSLEngine> sslEngine;
+
+        private final Map<String, MessageSerializer> serializers = new HashMap<>();
+
         final EventExecutorGroup gremlinGroup;
 
         public WebSocketServerInitializer(final Settings settings) {
             this.settings = settings;
+
+            // instantiate and configure the serializers that gremlin server will use - could error out here
+            // and fail the server startup
+            configureSerializers();
+
+            // todo: does this need to be synch'd - don't think so as is executed once at startup
             synchronized (this) {
                 if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
                 gremlinExecutor = new GremlinExecutor(this.settings, graphs.get());
@@ -217,7 +234,7 @@ public class GremlinServer {
 
             pipeline.addLast("response-encoder", new GremlinResponseEncoder());
             pipeline.addLast("request-text-decoder", new GremlinTextRequestDecoder());
-            pipeline.addLast("request-binary-decoder", new GremlinBinaryRequestDecoder());
+            pipeline.addLast("request-binary-decoder", new GremlinBinaryRequestDecoder(serializers));
 
             if (logger.isDebugEnabled())
                 pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
@@ -226,6 +243,40 @@ public class GremlinServer {
 
             pipeline.addLast(gremlinGroup, "result-iterator-handler", new IteratorHandler(settings));
             pipeline.addLast(gremlinGroup, "op-executor", new OpExecutorHandler(settings, graphs.get(), gremlinExecutor));
+        }
+
+        private void configureSerializers() {
+            this.settings.serializers.stream().map(config -> {
+                try {
+                    final Class clazz = Class.forName(config.className);
+                    if (!MessageSerializer.class.isAssignableFrom(clazz)) {
+                        logger.warn("The {} serialization class does not implement {} - it will not be available.", config.className, MessageSerializer.class.getCanonicalName());
+                        return Optional.<MessageSerializer>empty();
+                    }
+
+                    final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
+                    if (config.config != null)
+                        serializer.configure(config.config);
+
+                    return Optional.ofNullable(serializer);
+                } catch (ClassNotFoundException cnfe) {
+                    logger.warn("Could not find configured serializer class - {} - it will not be available", config.className);
+                    return Optional.<MessageSerializer>empty();
+                }  catch (Exception ex) {
+                    logger.warn("Cound not instantiate configured serializer class - {} - it will not be available.", config.className);
+                    return Optional.<MessageSerializer>empty();
+                }
+            }).filter(Optional::isPresent).map(o->o.get()).flatMap(serializer ->
+                    Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Pair.with(mimeType, serializer))
+            ).forEach(pair -> {
+                logger.info("Configured {} with {}", pair.getValue0(), pair.getValue1().getClass().getName());
+                serializers.put(pair.getValue0(), pair.<MessageSerializer>getValue1());
+            });
+
+            if (serializers.size() == 0) {
+                logger.error("No serializers were successfully configured - server will not start.");
+                throw new RuntimeException("Serialization configuration error.");
+            }
         }
 
         private SSLEngine createSslEngine() {

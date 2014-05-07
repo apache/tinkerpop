@@ -111,8 +111,6 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
     public static class GremlinServerModule extends SimpleModule {
         public GremlinServerModule() {
             super("graphson-gremlin-server");
-
-            // todo: avoid this dependency ?
             addSerializer(JsonBuilder.class, new JsonBuilderJacksonSerializer());
         }
     }

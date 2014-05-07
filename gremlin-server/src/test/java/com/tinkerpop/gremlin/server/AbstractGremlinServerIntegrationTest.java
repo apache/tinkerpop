@@ -61,7 +61,13 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
     @After
     public void tearDown() throws Exception {
-        thread.interrupt();
+        stopServer();
+    }
+
+    public void stopServer() throws Exception {
+        if (!thread.isInterrupted())
+            thread.interrupt();
+
         while (thread.isAlive()) {
             Thread.sleep(250);
         }

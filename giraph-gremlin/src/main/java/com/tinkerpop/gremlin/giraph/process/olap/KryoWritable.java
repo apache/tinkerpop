@@ -17,17 +17,18 @@ import java.io.DataOutput;
  */
 public class KryoWritable<T> implements Writable {
 
-    public static final Kryo KRYO = new Kryo();
-    public static Class tClass;
+    public final Kryo KRYO = new Kryo();
 
     T t;
 
     public KryoWritable() {
         KRYO.register(SimpleHolder.class);
         KRYO.register(PathHolder.class);
+        // TODO: We may need to create concrete ID numbers in cross JVM situations.
     }
 
     public KryoWritable(final T t) {
+        this();
         this.t = t;
     }
 
@@ -42,7 +43,7 @@ public class KryoWritable<T> implements Writable {
             for (int i = 0; i < objectLength; i++) {
                 objectBytes[i] = input.readByte();
             }
-            this.t = (T) KRYO.readObject(new Input(new ByteArrayInputStream(objectBytes)), tClass);
+            this.t = (T) KRYO.readClassAndObject(new Input(new ByteArrayInputStream(objectBytes)));
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -52,8 +53,8 @@ public class KryoWritable<T> implements Writable {
     public void write(final DataOutput output) {
         try {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            Output out = new Output(outputStream);
-            KRYO.writeObject(out, this.t);
+            final Output out = new Output(outputStream);
+            KRYO.writeClassAndObject(out, this.t);
             out.flush();
             output.writeInt(outputStream.toByteArray().length);
             output.write(outputStream.toByteArray());

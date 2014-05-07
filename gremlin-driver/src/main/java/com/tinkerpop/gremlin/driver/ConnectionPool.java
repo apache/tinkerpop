@@ -24,17 +24,21 @@ import java.util.concurrent.locks.ReentrantLock;
 class ConnectionPool {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
-    // todo: configuration
-    private static final int MIN_POOL_SIZE = 2;
-    private static final int MAX_POOL_SIZE = 8;
-    private static final int MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION = 8;
-    private static final int MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION = 16;
+    public static final int MIN_POOL_SIZE = 2;
+    public static final int MAX_POOL_SIZE = 8;
+    public static final int MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION = 8;
+    public static final int MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION = 16;
 
     public final Host host;
     private final Cluster cluster;
     private final List<Connection> connections;
     private final AtomicInteger open;
     private final Set<Connection> bin = new CopyOnWriteArraySet<>();
+    private final int minPoolSize;
+    private final int maxPoolSize;
+    private final int minSimultaneousRequestsPerConnection;
+    private final int maxSimultaneousRequestsPerConnection;
+    private final int minInProcess;
 
     private final AtomicInteger scheduledForCreation = new AtomicInteger();
 
@@ -44,19 +48,29 @@ class ConnectionPool {
     private final Lock waitLock = new ReentrantLock(true);
     private final Condition hasAvailableConnection = waitLock.newCondition();
 
-
     public ConnectionPool(final Host host, final Cluster cluster) {
         this.host = host;
         this.cluster = cluster;
 
-        final List<Connection> l = new ArrayList<>(MIN_POOL_SIZE);
-        for (int i = 0; i < MIN_POOL_SIZE; i++)
-            l.add(new Connection(host.getWebSocketUri(), this, cluster));
+        final Settings.ConnectionPoolSettings settings = settings();
+        this.minPoolSize = settings.minSize;
+        this.maxPoolSize = settings.maxSize;
+        this.minSimultaneousRequestsPerConnection = settings.minSimultaneousRequestsPerConnection;
+        this.maxSimultaneousRequestsPerConnection = settings.maxSimultaneousRequestsPerConnection;
+        this.minInProcess = settings.minInProcessPerConnection;
+
+        final List<Connection> l = new ArrayList<>(minPoolSize);
+        for (int i = 0; i < minPoolSize; i++)
+            l.add(new Connection(host.getWebSocketUri(), this, cluster, settings.maxInProcessPerConnection));
 
         this.connections = new CopyOnWriteArrayList<>(l);
         this.open = new AtomicInteger(connections.size());
 
-        logger.info("Opening connection pool on {} with core size of {}", host, MIN_POOL_SIZE);
+        logger.info("Opening connection pool on {} with core size of {}", host, minPoolSize);
+    }
+
+    public Settings.ConnectionPoolSettings settings() {
+        return cluster.connectionPoolSettings();
     }
 
     public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
@@ -65,7 +79,7 @@ class ConnectionPool {
         final Connection leastUsedConn = selectLeastUsed();
 
         if (connections.isEmpty()) {
-            for (int i = 0; i < MIN_POOL_SIZE; i++) {
+            for (int i = 0; i < minPoolSize; i++) {
                 scheduledForCreation.incrementAndGet();
                 newConnection();
             }
@@ -75,7 +89,7 @@ class ConnectionPool {
 
         // if the number in flight on the least used connection exceeds the max allowed and the pool size is
         // not at maximum then consider opening a connection
-        if (leastUsedConn.inFlight.get() >= MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION && connections.size() < MAX_POOL_SIZE)
+        if (leastUsedConn.inFlight.get() >= maxSimultaneousRequestsPerConnection && connections.size() < maxPoolSize)
             considerNewConnection();
 
         if (leastUsedConn == null) {
@@ -111,9 +125,14 @@ class ConnectionPool {
                 return;
             }
 
-            // a connection that exceeds the minimum pool size does not have the right to live if it isn't busy
-            if (connections.size() > MIN_POOL_SIZE && inFlight <= MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION)
+            // destroy a connection that exceeds the minimum pool size - it does not have the right to live if it
+            // isn't busy. replace a connection that has a low available in process count which likely means that
+            // it's backing up with requests that might never have returned. if neither of these scenarios are met
+            // then let the world know the connection is available.
+            if (connections.size() > minPoolSize && inFlight <= minSimultaneousRequestsPerConnection)
                 destroyConnection(connection);
+            else if (connection.availableInProcess() < minInProcess)
+                replaceConnection(connection);
             else
                 announceAvailableConnection();
         }
@@ -124,7 +143,7 @@ class ConnectionPool {
     }
 
     public CompletableFuture<Void> closeAsync() {
-        logger.info("Signalled closing of connection pool on {} with core size of {}", host, MIN_POOL_SIZE);
+        logger.info("Signalled closing of connection pool on {} with core size of {}", host, minPoolSize);
         CompletableFuture<Void> future = closeFuture.get();
         if (future != null)
             return future;
@@ -149,7 +168,6 @@ class ConnectionPool {
         return futures.toArray(new CompletableFuture[futures.size()]);
     }
 
-    // todo: need a replace in this case?  do we properly cleanup in-process requests on failure
     private void replaceConnection(final Connection connection) {
         open.decrementAndGet();
         considerNewConnection();
@@ -181,7 +199,7 @@ class ConnectionPool {
     private boolean addConnectionIfUnderMaximum() {
         while(true) {
             int opened = open.get();
-            if (opened >= MAX_POOL_SIZE)
+            if (opened >= maxPoolSize)
                 return false;
 
             if (open.compareAndSet(opened, opened + 1))
@@ -193,7 +211,7 @@ class ConnectionPool {
             return false;
         }
 
-        connections.add(new Connection(host.getWebSocketUri(), this, cluster));
+        connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
         announceAvailableConnection();
         return true;
     }
@@ -202,7 +220,7 @@ class ConnectionPool {
     private boolean destroyConnection(final Connection connection) {
         while(true) {
             int opened = open.get();
-            if (opened <= MIN_POOL_SIZE)
+            if (opened <= minPoolSize)
                 return false;
 
             if (open.compareAndSet(opened, opened - 1))

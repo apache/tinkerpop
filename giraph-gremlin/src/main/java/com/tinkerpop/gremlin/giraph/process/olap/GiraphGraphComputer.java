@@ -43,26 +43,32 @@ public class GiraphGraphComputer implements GraphComputer {
 
     public Future<Graph> submit() {
         try {
+            final String bspDirectory = "_bsp"; //"temp-" + UUID.randomUUID().toString();
             final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
             fs.delete(new Path(this.hadoopConfiguration.get("mapred.output.dir")), true);
-            final FileSystem local = FileSystem.getLocal(this.hadoopConfiguration);
             final String giraphGremlinHome = System.getenv(GIRAPH_GREMLIN_HOME);
             if (null == giraphGremlinHome)
                 throw new RuntimeException("Please set $GIRAPH_GREMLIN_HOME to the location of giraph-gremlin");
             final File file = new File(giraphGremlinHome + "/lib");
             if (file.exists()) {
                 Arrays.asList(file.listFiles()).stream().filter(f -> f.getName().endsWith(DOT_JAR)).forEach(f -> {
-                    LOGGER.debug("Loading: " + f.getPath());
                     try {
-                        DistributedCache.addArchiveToClassPath(new Path(f.getPath()), this.hadoopConfiguration, local);
-                    } catch (final Exception e) {
-                        throw new RuntimeException(e.getMessage(), e);
+                        fs.copyFromLocalFile(new Path(f.getPath()), new Path(fs.getHomeDirectory() + "/" + bspDirectory + "/" + f.getName()));
+                        LOGGER.debug("Loading: " + f.getPath());
+                        try {
+                            DistributedCache.addArchiveToClassPath(new Path(fs.getHomeDirectory() + "/" + bspDirectory + "/" + f.getName()), this.hadoopConfiguration, fs);
+                        } catch (final Exception e) {
+                            throw new RuntimeException(e.getMessage(), e);
+                        }
+                    } catch (Exception e) {
+                        throw new IllegalStateException(e.getMessage(), e);
                     }
                 });
             } else {
                 LOGGER.warn("No jars loaded from $GIRAPH_GREMLIN_HOME as there is no /lib directory. Attempting to proceed regardless.");
             }
             ToolRunner.run(new GiraphGraphRunner(this.hadoopConfiguration), new String[]{});
+            fs.delete(new Path(bspDirectory), true);
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalStateException(e.getMessage(), e);

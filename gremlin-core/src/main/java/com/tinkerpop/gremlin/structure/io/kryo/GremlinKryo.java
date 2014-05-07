@@ -38,6 +38,8 @@ public final class GremlinKryo {
     private final HeaderWriter headerWriter;
     private final HeaderReader headerReader;
 
+    public static final byte DEFAULT_EXTENDED_VERSION = Byte.MIN_VALUE;
+
     private GremlinKryo(final List<Triplet<Class, Serializer, Integer>> serializationList,
                         final HeaderWriter headerWriter,
                         final HeaderReader headerReader){
@@ -170,7 +172,7 @@ public final class GremlinKryo {
         private static final byte minor = 0;
         private static final byte patchLevel = 0;
 
-        private byte extendedVersion = Byte.MIN_VALUE;
+        private byte extendedVersion = DEFAULT_EXTENDED_VERSION;
         private BiPredicate<Byte, Byte> compliant = (readExt, serExt) -> readExt.equals(serExt);
 
         /**

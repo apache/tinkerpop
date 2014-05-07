@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
@@ -258,10 +259,13 @@ public class KryoReader implements GraphReader {
 
     private void setAnnotatedListValues(final List<Pair<String, IoAnnotatedList>> annotatedLists, final Vertex v) {
         annotatedLists.forEach(kal -> {
+            // check for existence of the property in case the calling client filtered the property out.
             final AnnotatedList al = v.getValue(kal.getValue0());
-            final List<IoAnnotatedValue> valuesForAnnotation = kal.getValue1().annotatedValueList;
-            for (IoAnnotatedValue kav : valuesForAnnotation) {
-                al.addValue(kav.value, kav.toAnnotationsArray());
+            if (al != null) {
+                final List<IoAnnotatedValue> valuesForAnnotation = kal.getValue1().annotatedValueList;
+                for (IoAnnotatedValue kav : valuesForAnnotation) {
+                    al.addValue(kav.value, kav.toAnnotationsArray());
+                }
             }
         });
     }
