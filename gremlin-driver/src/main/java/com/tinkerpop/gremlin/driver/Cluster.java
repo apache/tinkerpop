@@ -115,20 +115,19 @@ public class Cluster {
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
-        private MessageSerializer serializer = new KryoMessageSerializerV1d0();
+        private MessageSerializer serializer = Serializers.KRYO_V1D0.simpleInstance();
 
         public Builder(final String address) {
             addContactPoint(address);
         }
 
         public Builder serializer(final String mimeType) {
-            serializer = Optional.ofNullable(MessageSerializer.select(mimeType, null))
-                    .orElseThrow(() -> new IllegalStateException(String.format("Could not find serializer for %s", mimeType)));
+            serializer = Serializers.valueOf(mimeType).simpleInstance();
             return this;
         }
 
         public Builder serializer(final Serializers mimeType) {
-            serializer(mimeType.getValue());
+            serializer = mimeType.simpleInstance();
             return this;
         }
 

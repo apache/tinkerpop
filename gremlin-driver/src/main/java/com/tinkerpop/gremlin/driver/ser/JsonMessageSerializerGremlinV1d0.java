@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
  */
 public class JsonMessageSerializerGremlinV1d0 extends AbstractJsonMessageSerializerV1d0 {
 
-    private static final String MIME_TYPE = Serializers.JSON_V1D0.getValue();
+    private static final String MIME_TYPE = SerTokens.MIME_JSON_V1D0;
 
     private static final ObjectMapper mapper = GraphSONObjectMapper.create()
             .customModule(new JsonMessageSerializerV1d0.GremlinServerModule())

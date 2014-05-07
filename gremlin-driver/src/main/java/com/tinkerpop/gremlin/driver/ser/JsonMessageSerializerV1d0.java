@@ -21,7 +21,7 @@ import java.util.UUID;
  */
 public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0 implements MessageTextSerializer {
     private static final Logger logger = LoggerFactory.getLogger(JsonMessageSerializerV1d0.class);
-    private static final String MIME_TYPE = Serializers.JSON.getValue();
+    private static final String MIME_TYPE = SerTokens.MIME_JSON;
 
     /**
      * ObjectMapper instance for JSON serialization via Jackson databind.  Uses custom serializers to write

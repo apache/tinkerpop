@@ -148,6 +148,11 @@ public class Settings {
     public Map<String, ScriptEngineSettings> scriptEngines;
 
     /**
+     * List of {@link com.tinkerpop.gremlin.driver.MessageSerializer} to configure.
+     */
+    public List<SerializerSettings> serializers;
+
+    /**
      * Configures settings for SSL.
      */
     public SslSettings ssl = null;
@@ -192,8 +197,13 @@ public class Settings {
         final TypeDescription settingsDescription = new TypeDescription(Settings.class);
         settingsDescription.putMapPropertyType("graphs", String.class, String.class);
         settingsDescription.putMapPropertyType("scriptEngines", String.class, ScriptEngineSettings.class);
+        settingsDescription.putListPropertyType("serializers", SerializerSettings.class);
         settingsDescription.putListPropertyType("use", List.class);
         constructor.addTypeDescription(settingsDescription);
+
+        final TypeDescription serializerSettingsDescription = new TypeDescription(SerializerSettings.class);
+        serializerSettingsDescription.putMapPropertyType("config", String.class, String.class);
+        constructor.addTypeDescription(serializerSettingsDescription);
 
         final TypeDescription scriptEngineSettingsDescription = new TypeDescription(ScriptEngineSettings.class);
         scriptEngineSettingsDescription.putListPropertyType("imports", String.class);
@@ -236,6 +246,11 @@ public class Settings {
         public List<String> imports = new ArrayList<>();
         public List<String> staticImports = new ArrayList<>();
         public List<String> scripts = new ArrayList<>();
+    }
+
+    public static class SerializerSettings {
+        public String className;
+        public Map<String, String> config;
     }
 
     /**

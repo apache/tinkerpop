@@ -25,10 +25,21 @@ import java.util.UUID;
  */
 public class KryoMessageSerializerV1d0 implements MessageSerializer {
     // todo: how will client and server side users of kryo configure custom classes
-    private static final GremlinKryo gremlinKryo = GremlinKryo.create(GremlinKryo.Version.V_1_0_0).build();
+    private final GremlinKryo gremlinKryo;
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-    private static final String MIME_TYPE = Serializers.KRYO_V1D0.getValue();
+    private static final String MIME_TYPE = SerTokens.MIME_KRYO_V1D0;
+
+    /**
+     * Creates with a standard
+     */
+    public KryoMessageSerializerV1d0() {
+        gremlinKryo = GremlinKryo.create(GremlinKryo.Version.V_1_0_0).build();
+    }
+
+    public KryoMessageSerializerV1d0(final GremlinKryo kryo) {
+        this.gremlinKryo = kryo;
+    }
 
     @Override
     public String[] mimeTypesSupported() {
