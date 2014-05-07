@@ -254,7 +254,11 @@ public class GremlinServer {
                         return Optional.<MessageSerializer>empty();
                     }
 
-                    return Optional.ofNullable((MessageSerializer) clazz.newInstance());
+                    final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
+                    if (config.config != null)
+                        serializer.configure(config.config);
+
+                    return Optional.ofNullable(serializer);
                 } catch (ClassNotFoundException cnfe) {
                     logger.warn("Could not find configured serializer class - {} - it will not be available", config.className);
                     return Optional.<MessageSerializer>empty();
@@ -264,9 +268,9 @@ public class GremlinServer {
                 }
             }).filter(Optional::isPresent).map(o->o.get()).flatMap(serializer ->
                     Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Pair.with(mimeType, serializer))
-            ).<Pair<String,MessageSerializer>>forEach(pair -> {
+            ).forEach(pair -> {
                 logger.info("Configured {} with {}", pair.getValue0(), pair.getValue1().getClass().getName());
-                serializers.put(pair.getValue0(), pair.getValue1());
+                serializers.put(pair.getValue0(), pair.<MessageSerializer>getValue1());
             });
 
             if (serializers.size() == 0) {

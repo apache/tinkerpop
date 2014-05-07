@@ -202,7 +202,7 @@ public class Settings {
         constructor.addTypeDescription(settingsDescription);
 
         final TypeDescription serializerSettingsDescription = new TypeDescription(SerializerSettings.class);
-        serializerSettingsDescription.putMapPropertyType("config", String.class, String.class);
+        serializerSettingsDescription.putMapPropertyType("config", String.class, Object.class);
         constructor.addTypeDescription(serializerSettingsDescription);
 
         final TypeDescription scriptEngineSettingsDescription = new TypeDescription(ScriptEngineSettings.class);
@@ -250,7 +250,7 @@ public class Settings {
 
     public static class SerializerSettings {
         public String className;
-        public Map<String, String> config;
+        public Map<String, Object> config = null;
     }
 
     /**

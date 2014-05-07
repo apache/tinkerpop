@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
 import com.tinkerpop.gremlin.driver.ResultSet;
+import com.tinkerpop.gremlin.driver.ser.Serializers;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -144,7 +145,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadSerialization() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = Cluster.create("localhost").serializer(Serializers.JSON_V1D0).build();
         final Client client = cluster.connect();
 
         try {

@@ -16,29 +16,77 @@ import io.netty.util.ReferenceCountUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class KryoMessageSerializerV1d0 implements MessageSerializer {
-    // todo: how will client and server side users of kryo configure custom classes
-    private final GremlinKryo gremlinKryo;
+    private GremlinKryo gremlinKryo;
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     private static final String MIME_TYPE = SerTokens.MIME_KRYO_V1D0;
 
+    private static final String TOKEN_EXTENDED_VERSION = "extendedVersion";
+    private static final String TOKEN_CUSTOM = "custom";
+
     /**
-     * Creates with a standard
+     * Creates an instance with a standard {@link GremlinKryo} instance. Note that this instance
+     * will be overriden by {@link #configure} is called.
      */
     public KryoMessageSerializerV1d0() {
         gremlinKryo = GremlinKryo.create(GremlinKryo.Version.V_1_0_0).build();
     }
 
+    /**
+     * Creates an instance with a provided custom configured {@link GremlinKryo} instance. Note that this instance
+     * will be overriden by {@link #configure} is called.
+     */
     public KryoMessageSerializerV1d0(final GremlinKryo kryo) {
         this.gremlinKryo = kryo;
+    }
+
+    @Override
+    public void configure(final Map<String, Object> config) {
+        final byte extendedVersion;
+        try {
+            extendedVersion = Byte.parseByte(config.getOrDefault(TOKEN_EXTENDED_VERSION, GremlinKryo.DEFAULT_EXTENDED_VERSION).toString());
+        } catch (Exception ex) {
+            throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
+                    config.getOrDefault(TOKEN_EXTENDED_VERSION, ""), TOKEN_EXTENDED_VERSION, this.getClass().getName()), ex);
+        }
+
+        final GremlinKryo.Builder builder = GremlinKryo.create(GremlinKryo.Version.V_1_0_0).extendedVersion(extendedVersion);
+
+        final List<String> classNameList;
+        try {
+            classNameList = (List<String>) config.getOrDefault(TOKEN_CUSTOM, new ArrayList<String>());
+        } catch (Exception ex) {
+            throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
+                    config.getOrDefault(TOKEN_CUSTOM, ""), TOKEN_CUSTOM, this.getClass().getName()), ex);
+        }
+
+        if (!classNameList.isEmpty()) {
+            final List<Class> classList = classNameList.stream().map(className -> {
+                try {
+                    return Class.forName(className);
+                } catch (ClassNotFoundException ex) {
+                    throw new IllegalStateException("Class could not be found", ex);
+                }
+            }).collect(Collectors.toList());
+
+            final Class[] clazzes = new Class[classList.size()];
+            classList.toArray(clazzes);
+
+            builder.addCustom(clazzes);
+        }
+
+        this.gremlinKryo = builder.build();
     }
 
     @Override
