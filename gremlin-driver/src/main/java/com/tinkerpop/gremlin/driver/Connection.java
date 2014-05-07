@@ -45,10 +45,12 @@ class Connection {
     private final ConnectionPool pool;
 
     public static final int MAX_IN_PROCESS = 4;
+    public static final int MIN_IN_PROCESS = 1;
 
     public final AtomicInteger inFlight = new AtomicInteger(0);
     private volatile boolean isDead = false;
     private final int maxInProcess;
+
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
     public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster, final int maxInProcess)  {
@@ -79,7 +81,7 @@ class Connection {
 
     /**
      * A connection can only have so many things in process happening on it at once, where "in process" refers to
-     * the number of in flight requests plus the number of pending responses.
+     * the maximum number of in-process requests less the number of pending responses.
      */
     public int availableInProcess() {
         return maxInProcess - pending.size();

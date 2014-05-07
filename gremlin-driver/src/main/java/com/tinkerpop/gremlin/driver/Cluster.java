@@ -128,6 +128,7 @@ public class Cluster {
         private int minSimultaneousRequestsPerConnection = ConnectionPool.MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
         private int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
         private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
+        private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
 
         public Builder(final String address) {
             addContactPoint(address);
@@ -164,6 +165,11 @@ public class Cluster {
 
         public Builder serializer(final MessageSerializer serializer) {
             this.serializer = serializer;
+            return this;
+        }
+
+        public Builder minInProcessPerConnection(final int minInProcessPerConnection) {
+            this.minInProcessPerConnection = minInProcessPerConnection;
             return this;
         }
 
@@ -219,6 +225,7 @@ public class Cluster {
         public Cluster build() {
             final Settings.ConnectionPoolSettings connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxInProcessPerConnection = this.maxInProcessPerConnection;
+            connectionPoolSettings.minInProcessPerConnection = this.minInProcessPerConnection;
             connectionPoolSettings.maxSimultaneousRequestsPerConnection = this.maxSimultaneousRequestsPerConnection;
             connectionPoolSettings.minSimultaneousRequestsPerConnection = this.minSimultaneousRequestsPerConnection;
             connectionPoolSettings.maxSize = this.maxConnectionPoolSize;

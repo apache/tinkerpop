@@ -38,6 +38,7 @@ class ConnectionPool {
     private final int maxPoolSize;
     private final int minSimultaneousRequestsPerConnection;
     private final int maxSimultaneousRequestsPerConnection;
+    private final int minInProcess;
 
     private final AtomicInteger scheduledForCreation = new AtomicInteger();
 
@@ -56,6 +57,7 @@ class ConnectionPool {
         this.maxPoolSize = settings.maxSize;
         this.minSimultaneousRequestsPerConnection = settings.minSimultaneousRequestsPerConnection;
         this.maxSimultaneousRequestsPerConnection = settings.maxSimultaneousRequestsPerConnection;
+        this.minInProcess = settings.minInProcessPerConnection;
 
         final List<Connection> l = new ArrayList<>(minPoolSize);
         for (int i = 0; i < minPoolSize; i++)
@@ -123,9 +125,14 @@ class ConnectionPool {
                 return;
             }
 
-            // a connection that exceeds the minimum pool size does not have the right to live if it isn't busy
+            // destroy a connection that exceeds the minimum pool size - it does not have the right to live if it
+            // isn't busy. replace a connection that has a low available in process count which likely means that
+            // it's backing up with requests that might never have returned. if neither of these scenarios are met
+            // then let the world know the connection is available.
             if (connections.size() > minPoolSize && inFlight <= minSimultaneousRequestsPerConnection)
                 destroyConnection(connection);
+            else if (connection.availableInProcess() < minInProcess)
+                replaceConnection(connection);
             else
                 announceAvailableConnection();
         }
@@ -161,7 +168,6 @@ class ConnectionPool {
         return futures.toArray(new CompletableFuture[futures.size()]);
     }
 
-    // todo: need a replace in this case?  do we properly cleanup in-process requests on failure
     private void replaceConnection(final Connection connection) {
         open.decrementAndGet();
         considerNewConnection();
