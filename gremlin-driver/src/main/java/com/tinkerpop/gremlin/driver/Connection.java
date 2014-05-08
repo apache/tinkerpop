@@ -101,11 +101,12 @@ class Connection {
         if (!closeFuture.compareAndSet(null, future))
             return closeFuture.get();
 
-        // todo: requests that never come back ???
         // make sure all requests in the queue are fully processed before killing.  if they are then shutdown
         // can be immediate.  if not this method will signal the readCompleted future defined in the write()
         // operation to check if it can close.  in this way the connection no longer receives writes, but
-        // can continue to read
+        // can continue to read. If a request never comes back the future won't get fulfilled and the connection
+        // will maintain a "pending" request, that won't quite ever go away.  The build up of such a dead requests
+        // on a connection in the connection pool will force the pool to replace the connection for a fresh one
         if (pending.isEmpty()) {
             if (null == channel)
                 future.complete(null);
