@@ -4,9 +4,14 @@ import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
 import com.tinkerpop.gremlin.driver.ResultSet;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.TimeUtil;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -23,6 +28,40 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegrationTest {
+
+    @Rule
+    public TestName name = new TestName();
+
+    public static class RemoteTraversal implements SFunction<Graph, Traversal> {
+        public Traversal apply(final Graph g) {
+            return g.V().out().range(0,9);
+        }
+    }
+
+    /**
+     * Configure specific Gremlin Server settings for specific tests.
+     */
+    @Override
+    public Settings overrideSettings(final Settings settings) {
+        final String nameOfTest = name.getMethodName();
+        switch (nameOfTest) {
+            case "shouldSendTraversal":
+                settings.scriptEngines.get("gremlin-groovy").scripts.add("scripts/generate-sample.groovy");
+                break;
+        }
+
+        return settings;
+    }
+
+    @Test
+    public void shouldSendTraversal() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final List<Item> results = client.submit(new RemoteTraversal()).all().get();
+        assertEquals(10, results.size());
+        cluster.close();
+    }
 
     @Test
     public void shouldProcessRequestsOutOfOrder() throws Exception {

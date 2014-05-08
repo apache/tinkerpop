@@ -1,9 +1,14 @@
 package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.util.Serializer;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -15,6 +20,7 @@ import java.util.concurrent.TimeUnit;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Client {
+
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
     private final Cluster cluster;
@@ -49,11 +55,36 @@ public class Client {
         }
     }
 
+    public ResultSet submit(final SFunction<Graph, Traversal> traversal) {
+        try {
+            return submitAsync(traversal).get();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public CompletableFuture<ResultSet> submitAsync(final SFunction<Graph, Traversal> traversal) {
+        try {
+            byte[] bytes = Serializer.serializeObject(traversal);
+            final RequestMessage.Builder request = RequestMessage.create("traverse").add(Tokens.ARGS_GREMLIN, bytes);
+            return submitAsync(request.build());
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            throw new RuntimeException(ioe);
+        }
+    }
+
     public CompletableFuture<ResultSet> submitAsync(final String gremlin) {
         return submitAsync(gremlin, null);
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
+        final RequestMessage.Builder request = RequestMessage.create("eval").add(Tokens.ARGS_GREMLIN, gremlin);
+        Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
+        return submitAsync(request.build());
+    }
+
+    public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
         if (!initialized)
             init();
 
@@ -64,14 +95,12 @@ public class Client {
         try {
             // the connection is returned to the pool once the response has been completed...see Connection.write()
             final Connection connection = pool.borrowConnection(300, TimeUnit.SECONDS);
-            final RequestMessage.Builder request = RequestMessage.create("eval").add(Tokens.ARGS_GREMLIN, gremlin);
-            Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
-            connection.write(request.build(), future);
+            connection.write(msg, future);
             return future;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {
-            if (logger.isDebugEnabled()) logger.debug("Submitted {} to - {}", gremlin, pool);
+            if (logger.isDebugEnabled()) logger.debug("Submitted {} to - {}", msg, pool);
         }
     }
 }

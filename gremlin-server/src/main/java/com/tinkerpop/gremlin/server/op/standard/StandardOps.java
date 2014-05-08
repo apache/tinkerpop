@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server.op.standard;
 
 import com.codahale.metrics.Timer;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.GremlinExecutor;
@@ -12,6 +13,9 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.server.util.MetricManager;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.util.Serializer;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.collections.iterators.ArrayIterator;
 import org.javatuples.Pair;
@@ -49,6 +53,42 @@ final class StandardOps {
             }).thenRun(timerContext::stop);
 
             future.exceptionally(se -> {
+                logger.warn("Exception from ScriptException error.", se);
+                ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).build());
+                return null;
+            }).thenRun(timerContext::stop);
+
+        } catch (Exception ex) {
+            // todo: necessary?
+            throw new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
+                    ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(ex.getMessage()).build());
+        }
+    }
+
+    public static void traverseOp(final Context context) throws OpProcessorException {
+        // need different timer instance
+        final Timer.Context timerContext = evalOpTimer.time();
+        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
+        final RequestMessage msg = context.getRequestMessage();
+        try {
+            final CompletableFuture<Traversal> future = CompletableFuture.supplyAsync(() -> {
+                try {
+                    final SFunction<Graph, Traversal> traversal = (SFunction<Graph, Traversal>) Serializer.deserializeObject((byte[]) msg.getArgs().get(Tokens.ARGS_GREMLIN));
+
+                    // todo: can't leave this as "g" hardcoded
+                    return traversal.apply(context.getGraphs().getGraphs().get("g"));
+                } catch (Exception ex) {
+                    // todo: yeah - what do we do here?
+                    throw new RuntimeException(ex);
+                }
+            });
+
+            future.thenAccept(o -> {
+                ctx.write(Pair.with(msg, convertToIterator(o)));
+            }).thenRun(timerContext::stop);
+
+            future.exceptionally(se -> {
+                // todo: this is something else - not processed by scriptengine
                 logger.warn("Exception from ScriptException error.", se);
                 ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).build());
                 return null;

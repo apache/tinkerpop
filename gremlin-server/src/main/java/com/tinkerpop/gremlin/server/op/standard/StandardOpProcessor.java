@@ -42,6 +42,9 @@ public class StandardOpProcessor implements OpProcessor {
             case Tokens.OPS_EVAL:
                 op = validateEvalMessage(message).orElse(StandardOps::evalOp);
                 break;
+            case Tokens.OPS_TRAVERSE:
+                op = validateEvalMessage(message).orElse(StandardOps::traverseOp);
+                break;
             case Tokens.OPS_INVALID:
                 final String msgInvalid = String.format("Message could not be parsed.  Check the format of the request. [%s]", message);
                 throw new OpProcessorException(msgInvalid, ResponseMessage.create(message).code(ResultCode.REQUEST_ERROR_MALFORMED_REQUEST).result(msgInvalid).build());

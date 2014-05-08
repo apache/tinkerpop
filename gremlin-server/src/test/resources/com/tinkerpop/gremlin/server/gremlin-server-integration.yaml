@@ -11,7 +11,7 @@ use:
   - [org.apache.commons, commons-math3, "3.2"]
 scriptEngines: {
   gremlin-groovy: {
-    imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
+    imports: [java.lang.Math, org.apache.commons.math3.util.FastMath, com.tinkerpop.gremlin.algorithm.generator.PowerLawDistribution, com.tinkerpop.gremlin.algorithm.generator.DistributionGenerator],
     staticImports: [java.lang.Math.PI]},
   nashorn: {
       imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],

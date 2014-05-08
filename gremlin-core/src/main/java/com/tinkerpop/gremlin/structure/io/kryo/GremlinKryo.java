@@ -166,6 +166,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(AnnotatedList.class, new AnnotatedSerializer.AnnotatedListSerializer(), 22));
             add(Triplet.<Class, Serializer, Integer>with(AnnotatedValue.class, new AnnotatedSerializer.AnnotatedValueSerializer(), 23));
             add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedList.IoListValue.class, null, 24));
+            add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
         }};
 
         private static final byte major = 1;
