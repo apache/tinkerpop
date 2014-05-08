@@ -57,7 +57,7 @@ public class TinkerGraphTest implements Serializable {
     public void testTraversalDSL() throws Exception {
         Graph g = TinkerFactory.createClassic();
         g.traversal(TinkerFactory.SocialTraversal.class).people(g).knows().knows().forEach(System.out::println);
-        g = g.compute().program(PageRankVertexProgram.create().getConfiguration()).submit().get();
+        g = g.compute().program(PageRankVertexProgram.create().getConfiguration()).submit().get().getValue0();
         System.out.println(g.v(1).getValue(PageRankVertexProgram.PAGE_RANK).toString());
     }
 

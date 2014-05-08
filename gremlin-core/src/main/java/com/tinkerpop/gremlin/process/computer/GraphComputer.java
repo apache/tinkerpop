@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 /**
  * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} against the vertices in the
  * Graph. It is up to the {@link GraphComputer} implementation to determine the
- * appropriate memory structures given the computing substrate. All {@link GraphComputer} implementations also
+ * appropriate memory structures given the computing substrate. {@link GraphComputer} implementations also
  * maintains levels of memory isolation: Bulk Synchronous and Dirty Bulk Synchronous.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,16 +44,15 @@ public interface GraphComputer extends TraversalEngine {
 
     public GraphComputer program(final Configuration configuration);
 
-    public Future<Graph> submit();
+    public Future<Pair<Graph, SideEffects>> submit();
 
-    public interface Memory {
+    public interface SideEffects {
 
         public Set<String> getVariables();
 
         public <R> R get(final String variable);
 
         public void set(final String variable, Object value);
-
 
         public default Map<String, Object> asMap() {
             final Map<String, Object> map = getVariables().stream()
@@ -78,7 +77,7 @@ public interface GraphComputer extends TraversalEngine {
             return this.getIteration() == 0;
         }
 
-        public interface Administrative extends Memory {
+        public interface Administrative extends SideEffects {
 
             public void incrIteration();
 
@@ -88,20 +87,20 @@ public interface GraphComputer extends TraversalEngine {
 
         public static class Exceptions {
 
-            public static IllegalArgumentException memoryKeyCanNotBeEmpty() {
-                return new IllegalArgumentException("Graph computer memory keys can not be the empty string");
+            public static IllegalArgumentException sideEffectVariableCanNotBeEmpty() {
+                return new IllegalArgumentException("Graph computer side-effect variables can not be the empty string");
             }
 
-            public static IllegalArgumentException memoryKeyCanNotBeNull() {
-                return new IllegalArgumentException("Graph computer memory key can not be null");
+            public static IllegalArgumentException sideEffectVariableCanNotBeNull() {
+                return new IllegalArgumentException("Graph computer side-effect variables can not be null");
             }
 
-            public static IllegalArgumentException memoryValueCanNotBeNull() {
-                return new IllegalArgumentException("Graph computer memory value can not be null");
+            public static IllegalArgumentException sideEffectValueCanNotBeNull() {
+                return new IllegalArgumentException("Graph computer side-effect value can not be null");
             }
 
-            public static UnsupportedOperationException dataTypeOfMemoryValueNotSupported(final Object val) {
-                return new UnsupportedOperationException(String.format("Graph computer memory value [%s] is of type %s is not supported", val, val.getClass()));
+            public static UnsupportedOperationException dataTypeOfSideEffectValueNotSupported(final Object val) {
+                return new UnsupportedOperationException(String.format("Graph computer side-effect value [%s] is of type %s is not supported", val, val.getClass()));
             }
         }
 
@@ -186,6 +185,10 @@ public interface GraphComputer extends TraversalEngine {
 
         public static IllegalArgumentException isolationNotSupported(final Isolation isolation) {
             return new IllegalArgumentException("The provided isolation is not supported by this graph computer: " + isolation);
+        }
+
+        public static IllegalStateException computerHasAlreadyBeenSubmittedAVertexProgram() {
+            return new IllegalStateException("This computer has already had a vertex program submitted to it");
         }
     }
 

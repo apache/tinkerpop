@@ -20,22 +20,22 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphComputerMemory extends MasterCompute implements GraphComputer.Memory {
+public class GiraphGraphComputerSideEffects extends MasterCompute implements GraphComputer.SideEffects {
 
     // TODO: vertex program needs to have ComputeKeys but for master as well.
 
-    private final Logger LOGGER = LoggerFactory.getLogger(GiraphComputerMemory.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputerSideEffects.class);
     private VertexProgram vertexProgram;
     private GiraphVertex giraphVertex;
     private long runtime = System.currentTimeMillis();
 
-    public GiraphComputerMemory() {
+    public GiraphGraphComputerSideEffects() {
         this.giraphVertex = null;
         this.vertexProgram = null;
         this.initialize();
     }
 
-    public GiraphComputerMemory(final GiraphVertex giraphVertex) {
+    public GiraphGraphComputerSideEffects(final GiraphVertex giraphVertex) {
         this.giraphVertex = giraphVertex;
         this.initialize();
 

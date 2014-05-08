@@ -30,7 +30,7 @@ public class TraversalResult<T> implements Iterator<T> {
         final GraphComputer computer = this.graph.compute();
         computer.program(TraversalVertexProgram.create().traversal(traversalSupplier).getConfiguration());
         try {
-            this.result = computer.submit().get();
+            this.result = computer.submit().get().getValue0();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }

@@ -29,27 +29,27 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      * The method is called at the beginning of the computation. The method is global to the {@link GraphComputer}
      * and as such, is not called for each vertex.
      *
-     * @param graphComputerMemory The global GraphMemory of the GraphComputer
+     * @param sideEffects The global GraphMemory of the GraphComputer
      */
-    public void setup(final GraphComputer.Memory graphComputerMemory);
+    public void setup(final GraphComputer.SideEffects sideEffects);
 
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
      *
      * @param vertex              the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
      * @param messenger           the messenger that moves data between vertices
-     * @param graphComputerMemory the shared state between all vertices in the computation
+     * @param sideEffects the shared state between all vertices in the computation
      */
-    public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.Memory graphComputerMemory);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.SideEffects sideEffects);
 
     /**
      * The method is called at the end of a round to determine if the computation is complete. The method is global
      * to the {@link GraphComputer} and as such, is not called for each {@link com.tinkerpop.gremlin.structure.Vertex}.
      *
-     * @param graphComputerMemory The global {@link com.tinkerpop.gremlin.structure.Graph.Variables} of the {@link GraphComputer}
+     * @param sideEffects The global {@link com.tinkerpop.gremlin.structure.Graph.Variables} of the {@link GraphComputer}
      * @return whether or not to halt the computation
      */
-    public boolean terminate(final GraphComputer.Memory graphComputerMemory);
+    public boolean terminate(final GraphComputer.SideEffects sideEffects);
 
     public Map<String, KeyType> getComputeKeys();
 

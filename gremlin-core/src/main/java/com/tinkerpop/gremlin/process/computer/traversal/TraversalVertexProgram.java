@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.Optimizer;
 import com.tinkerpop.gremlin.process.PathHolder;
 import com.tinkerpop.gremlin.process.SimpleHolder;
 import com.tinkerpop.gremlin.process.Step;
@@ -12,9 +11,7 @@ import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
 import com.tinkerpop.gremlin.process.util.HolderOptimizer;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.function.SSupplier;
@@ -70,19 +67,19 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
     }
 
-    public void setup(final GraphComputer.Memory graphComputerMemory) {
-        graphComputerMemory.setIfAbsent(VOTE_TO_HALT, true);
+    public void setup(final GraphComputer.SideEffects sideEffects) {
+        sideEffects.setIfAbsent(VOTE_TO_HALT, true);
     }
 
-    public void execute(final Vertex vertex, final Messenger<M> messenger, GraphComputer.Memory graphComputerMemory) {
-        if (graphComputerMemory.isInitialIteration()) {
-            executeFirstIteration(vertex, messenger, graphComputerMemory);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, GraphComputer.SideEffects sideEffects) {
+        if (sideEffects.isInitialIteration()) {
+            executeFirstIteration(vertex, messenger, sideEffects);
         } else {
-            executeOtherIterations(vertex, messenger, graphComputerMemory);
+            executeOtherIterations(vertex, messenger, sideEffects);
         }
     }
 
-    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.Memory graphComputerMemory) {
+    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.SideEffects sideEffects) {
         final Traversal traversal = this.traversalSupplier.get();
         traversal.optimizers().doFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
@@ -108,32 +105,32 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 voteToHalt.set(false);
             });
         }
-        graphComputerMemory.and(VOTE_TO_HALT, voteToHalt.get());
+        sideEffects.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
-    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.Memory graphComputerMemory) {
+    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.SideEffects sideEffects) {
         final Traversal traversal = this.traversalSupplier.get();
         traversal.optimizers().doFinalOptimizers(traversal);
         ((GraphStep) traversal.getSteps().get(0)).clear();
         if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
-            graphComputerMemory.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
+            sideEffects.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
             vertex.setProperty(TRAVERSAL_TRACKER, tracker);
         } else {
             final TraversalCounters tracker = new TraversalCounters(vertex);
-            graphComputerMemory.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
+            sideEffects.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
             vertex.setProperty(TRAVERSAL_TRACKER, tracker);
         }
     }
 
     ////////// GRAPH COMPUTER METHODS
 
-    public boolean terminate(final GraphComputer.Memory graphComputerMemory) {
-        final boolean voteToHalt = graphComputerMemory.get(VOTE_TO_HALT);
+    public boolean terminate(final GraphComputer.SideEffects sideEffects) {
+        final boolean voteToHalt = sideEffects.get(VOTE_TO_HALT);
         if (voteToHalt) {
             return true;
         } else {
-            graphComputerMemory.or(VOTE_TO_HALT, true);
+            sideEffects.or(VOTE_TO_HALT, true);
             return false;
         }
     }

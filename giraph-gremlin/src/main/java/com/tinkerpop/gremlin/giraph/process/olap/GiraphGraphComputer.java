@@ -8,6 +8,7 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ToolRunner;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class GiraphGraphComputer implements GraphComputer {
         return this;
     }
 
-    public Future<Graph> submit() {
+    public Future<Pair<Graph, SideEffects>> submit() {
         try {
             final String bspDirectory = "_bsp"; //"temp-" + UUID.randomUUID().toString();
             final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
@@ -74,7 +75,7 @@ public class GiraphGraphComputer implements GraphComputer {
             e.printStackTrace();
             throw new IllegalStateException(e.getMessage(), e);
         }
-        return null;
+        return null; // TODO: What does this mean in Giraph?
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {

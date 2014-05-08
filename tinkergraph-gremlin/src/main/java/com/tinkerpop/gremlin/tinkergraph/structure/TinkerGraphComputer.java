@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -29,7 +30,8 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     private Configuration configuration = new BaseConfiguration();
     private final TinkerGraph graph;
     private final TinkerMessenger messenger = new TinkerMessenger();
-    private final TinkerGraphComputerMemory memory = new TinkerGraphComputerMemory();
+    private final TinkerGraphComputerSideEffects sideEffects = new TinkerGraphComputerSideEffects();
+    private boolean executed = false;
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -50,11 +52,16 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         return this;
     }
 
-    public Future<Graph> submit() {
+    public Future<Pair<Graph, SideEffects>> submit() {
+        if (this.executed)
+            throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();
+        else
+            this.executed = true;
+
         final VertexProgram vertexProgram = VertexProgram.createVertexProgram(this.configuration);
         GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
 
-        return CompletableFuture.<Graph>supplyAsync(() -> {
+        return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
 
             // clone the graph or operate directly on the existing graph
@@ -74,18 +81,18 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             g.elementMemory = new TinkerElementMemory(this.isolation, vertexProgram.getComputeKeys());
 
             // execute the vertex program
-            vertexProgram.setup(this.memory);
+            vertexProgram.setup(this.sideEffects);
             while (true) {
-                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, this.memory));
-                this.memory.incrIteration();
+                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, this.sideEffects));
+                this.sideEffects.incrIteration();
                 g.elementMemory.completeIteration();
                 this.messenger.completeIteration();
-                if (vertexProgram.terminate(this.memory)) break;
+                if (vertexProgram.terminate(this.sideEffects)) break;
             }
 
             // update runtime and return the newly computed graph
-            this.memory.setRuntime(System.currentTimeMillis() - time);
-            return g;
+            this.sideEffects.setRuntime(System.currentTimeMillis() - time);
+            return new Pair<Graph, SideEffects>(g, this.sideEffects);
         });
     }
 

@@ -20,8 +20,8 @@ import java.util.concurrent.Future;
 import static com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures.FEATURE_ANNOTATIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.junit.Assert.*;
 
@@ -572,7 +572,7 @@ public class ExceptionConsistencyTest {
                 v.getValue("does-not-exist");
                 fail("Call to Element.getValue() with a key that is not present should throw an exception");
             } catch (Exception ex) {
-                final Exception expectedException = Property.Exceptions.propertyDoesNotExist();
+                final Exception expectedException = Property.Exceptions.propertyDoesNotExist("does-not-exist");
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
@@ -588,7 +588,7 @@ public class ExceptionConsistencyTest {
                 e.getValue("does-not-exist");
                 fail("Call to Element.getValue() with a key that is not present should throw an exception");
             } catch (Exception ex) {
-                final Exception expectedException = Property.Exceptions.propertyDoesNotExist();
+                final Exception expectedException = Property.Exceptions.propertyDoesNotExist("does-not-exist");
                 assertEquals(expectedException.getClass(), ex.getClass());
                 assertEquals(expectedException.getMessage(), ex.getMessage());
             }
@@ -781,16 +781,16 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final GraphComputer.Memory graphComputerMemory) {
+        public void setup(final GraphComputer.SideEffects sideEffects) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Memory graphComputerMemory) {
+        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.SideEffects sideEffects) {
             vertex.setProperty(this.key, this.val);
         }
 
         @Override
-        public boolean terminate(GraphComputer.Memory graphComputerMemory) {
+        public boolean terminate(GraphComputer.SideEffects sideEffects) {
             return true;
         }
 
@@ -823,16 +823,16 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final GraphComputer.Memory graphComputerMemory) {
+        public void setup(final GraphComputer.SideEffects sideEffects) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Memory graphComputerMemory) {
+        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.SideEffects sideEffects) {
             vertex.bothE().forEach(e -> e.setProperty(this.key, this.val));
         }
 
         @Override
-        public boolean terminate(GraphComputer.Memory graphComputerMemory) {
+        public boolean terminate(GraphComputer.SideEffects sideEffects) {
             return true;
         }
 
