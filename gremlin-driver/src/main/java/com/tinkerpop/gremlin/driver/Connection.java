@@ -151,7 +151,7 @@ class Connection {
         try {
             if (pool != null) pool.returnConnection(this);
         } catch (ConnectionException ce) {
-            // todo: logging
+            logger.debug("Returned {} connection to {} but an error occurred - {}", this, pool, ce.getMessage());
         }
     }
 
