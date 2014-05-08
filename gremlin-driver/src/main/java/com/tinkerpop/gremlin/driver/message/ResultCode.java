@@ -41,6 +41,12 @@ public enum ResultCode {
     SERVER_ERROR(500),
 
     /**
+     * The remote {@link com.tinkerpop.gremlin.process.Traversal} submitted for processing evaluated in on the
+     * server with errors and could not be processed.
+     */
+    SERVER_ERROR_TRAVERSAL_EVALUATION(596),
+
+    /**
      * The script submitted for processing evaluated in the {@code ScriptEngine} with errors and could not be
      * processed.  Check the script submitted for syntax errors or other problems and then resubmit.
      */

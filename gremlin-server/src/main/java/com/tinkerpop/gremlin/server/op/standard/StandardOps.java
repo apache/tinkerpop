@@ -22,6 +22,7 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,6 +42,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 final class StandardOps {
     private static final Logger logger = LoggerFactory.getLogger(StandardOps.class);
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
+    private static final Timer traverseOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traverse"));
 
     public static void evalOp(final Context context) throws OpProcessorException {
         final Timer.Context timerContext = evalOpTimer.time();
@@ -59,46 +61,38 @@ final class StandardOps {
             }).thenRun(timerContext::stop);
 
         } catch (Exception ex) {
-            // todo: necessary?
+            // todo: necessary? - exceptionally above may already be handling this
             throw new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
                     ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(ex.getMessage()).build());
         }
     }
 
     public static void traverseOp(final Context context) throws OpProcessorException {
-        // need different timer instance
-        final Timer.Context timerContext = evalOpTimer.time();
+        final Timer.Context timerContext = traverseOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
-        try {
-            final CompletableFuture<Traversal> future = CompletableFuture.supplyAsync(() -> {
-                try {
-                    final SFunction<Graph, Traversal> traversal = (SFunction<Graph, Traversal>) Serializer.deserializeObject((byte[]) msg.getArgs().get(Tokens.ARGS_GREMLIN));
+        final CompletableFuture<Traversal> future = CompletableFuture.supplyAsync(() -> {
+            try {
+                // todo: maybe this should always eval out in the scriptengine - basically a sandbox
+                final Map<String,Object> args = msg.getArgs();
+                final SFunction<Graph, Traversal> traversal = (SFunction<Graph, Traversal>) Serializer.deserializeObject((byte[]) args.get(Tokens.ARGS_GREMLIN));
 
-                    // todo: can't leave this as "g" hardcoded
-                    return traversal.apply(context.getGraphs().getGraphs().get("g"));
-                } catch (Exception ex) {
-                    // todo: yeah - what do we do here?
-                    throw new RuntimeException(ex);
-                }
-            });
+                // previously validated that the graph was present
+                return traversal.apply(context.getGraphs().getGraphs().get(args.get(Tokens.ARGS_GRAPH_NAME)));
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
 
-            future.thenAccept(o -> {
-                ctx.write(Pair.with(msg, convertToIterator(o)));
-            }).thenRun(timerContext::stop);
+        future.thenAccept(o -> {
+            ctx.write(Pair.with(msg, convertToIterator(o)));
+        }).thenRun(timerContext::stop);
 
-            future.exceptionally(se -> {
-                // todo: this is something else - not processed by scriptengine
-                logger.warn("Exception from ScriptException error.", se);
-                ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).build());
-                return null;
-            }).thenRun(timerContext::stop);
-
-        } catch (Exception ex) {
-            // todo: necessary?
-            throw new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
-                    ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(ex.getMessage()).build());
-        }
+        future.exceptionally(se -> {
+            logger.warn(String.format("Exception processing a traversal on request [%s].", msg), se);
+            ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_TRAVERSAL_EVALUATION).result(se.getMessage()).build());
+            return null;
+        }).thenRun(timerContext::stop);
     }
 
     private static Iterator convertToIterator(final Object o) {

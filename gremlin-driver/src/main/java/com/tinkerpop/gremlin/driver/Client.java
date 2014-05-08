@@ -44,7 +44,7 @@ public class Client {
     }
 
     public ResultSet submit(final String gremlin) {
-        return submit(gremlin, null);
+        return submit(gremlin, (Map<String,Object>) null);
     }
 
     public ResultSet submit(final String gremlin, final Map<String, Object> parameters) {
@@ -56,17 +56,27 @@ public class Client {
     }
 
     public ResultSet submit(final SFunction<Graph, Traversal> traversal) {
+        return submit("g", traversal);
+    }
+
+    public ResultSet submit(final String graph, final SFunction<Graph, Traversal> traversal) {
         try {
-            return submitAsync(traversal).get();
+            return submitAsync(graph, traversal).get();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
     public CompletableFuture<ResultSet> submitAsync(final SFunction<Graph, Traversal> traversal) {
+        return submitAsync("g", traversal);
+    }
+
+    public CompletableFuture<ResultSet> submitAsync(final String graph, final SFunction<Graph, Traversal> traversal) {
         try {
             byte[] bytes = Serializer.serializeObject(traversal);
-            final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_TRAVERSE).add(Tokens.ARGS_GREMLIN, bytes);
+            final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_TRAVERSE)
+                    .add(Tokens.ARGS_GREMLIN, bytes)
+                    .add(Tokens.ARGS_GRAPH_NAME, graph);
             return submitAsync(request.build());
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -75,7 +85,7 @@ public class Client {
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin) {
-        return submitAsync(gremlin, null);
+        return submitAsync(gremlin, (Map<String,Object>) null);
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
