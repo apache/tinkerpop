@@ -79,7 +79,7 @@ public class TinkerGraph implements Graph, Serializable {
         return (G) new TinkerGraph();
     }
 
-    ////////////// BLUEPRINTS API METHODS //////////////////
+    ////////////// STRUCTURE API METHODS //////////////////
 
     public Vertex v(final Object id) {
         if (null == id) throw Graph.Exceptions.elementNotFound();
