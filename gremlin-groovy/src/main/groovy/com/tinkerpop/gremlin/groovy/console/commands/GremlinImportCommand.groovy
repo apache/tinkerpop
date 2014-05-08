@@ -53,12 +53,12 @@ class GremlinImportCommand extends CommandSupport {
         assert args != null
 
         if (args.isEmpty()) {
-            fail("Command 'import' requires one or more arguments") // TODO: i18n
+            fail("Command 'import' requires one or more arguments")
         }
 
         def importSpec = args.join(' ')
         if (! (importSpec ==~ '[\\da-zA-Z_. *]+;?$')) {
-            def msg = "Invalid import definition: '${importSpec}'" // TODO: i18n
+            def msg = "Invalid import definition: '${importSpec}'"
             log.debug(msg)
             fail(msg)
         }
@@ -85,7 +85,7 @@ class GremlinImportCommand extends CommandSupport {
             return imports.join(', ')
         }
         catch (CompilationFailedException e) {
-            def msg = "Invalid import definition: '${importSpec}'; reason: $e.message" // TODO: i18n
+            def msg = "Invalid import definition: '${importSpec}'; reason: $e.message"
             log.debug(msg, e)
             fail(msg)
         }
