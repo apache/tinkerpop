@@ -21,6 +21,8 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -100,6 +102,8 @@ class Handler {
     }
 
     static class GremlinResponseDecoder extends SimpleChannelInboundHandler<WebSocketFrame> {
+        private static final Logger logger = LoggerFactory.getLogger(GremlinResponseDecoder.class);
+
         private final MessageSerializer serializer;
         private final ConcurrentMap<UUID, ResponseQueue> pending;
 
@@ -114,6 +118,7 @@ class Handler {
                 if (webSocketFrame instanceof BinaryWebSocketFrame) {
                     final BinaryWebSocketFrame tf = (BinaryWebSocketFrame) webSocketFrame;
                     final ResponseMessage response = serializer.deserializeResponse(tf.content());
+
                     if (response.getCode() == ResultCode.SUCCESS) {
                         if (response.getResultType() == ResultType.OBJECT)
                             pending.get(response.getRequestId()).add(response);
@@ -124,8 +129,12 @@ class Handler {
                             listToUnroll.forEach(item -> queue.add(
                                     ResponseMessage.create(response.getRequestId())
                                             .result(item).build()));
+                        } else if (response.getResultType() == ResultType.EMPTY) {
+                            // there is nothing to do with ResultType.EMPTY - it will simply be marked complete with
+                            // a success terminator
                         } else {
-                            // todo: error situation
+                            logger.warn("Received an invalid ResultType of [{}] - marking request {} as being in error. Please report as this issue.", response.getResultType(), response.getRequestId());
+                            pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
                         }
                     } else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
                         pending.remove(response.getRequestId()).markComplete();
@@ -145,8 +154,12 @@ class Handler {
                             listToUnroll.forEach(item -> queue.add(
                                     ResponseMessage.create(response.getRequestId())
                                         .result(item).build()));
+                        } else if (response.getResultType() == ResultType.EMPTY) {
+                            // there is nothing to do with ResultType.EMPTY - it will simply be marked complete with
+                            // a success terminator
                         } else {
-                            // todo: error situation
+                            logger.warn("Received an invalid ResultType of [{}] - marking request {} as being in error. Please report as this issue.", response.getResultType(), response.getRequestId());
+                            pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
                         }
                     } else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
                         pending.remove(response.getRequestId()).markComplete();
@@ -160,6 +173,7 @@ class Handler {
     }
 
     static class GremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
+        private static final Logger logger = LoggerFactory.getLogger(GremlinRequestEncoder.class);
         private boolean binaryEncoding = false;
 
         private final MessageSerializer serializer;
@@ -180,7 +194,7 @@ class Handler {
                     objects.add(new TextWebSocketFrame(textSerializer.serializeRequestAsString(requestMessage)));
                 }
             } catch (Exception ex) {
-                // todo: catch serialization exceptions
+                logger.warn(String.format("An error occurred during serialization of this request [%s] - it could not be sent to the server.", requestMessage), ex);
             }
         }
     }
