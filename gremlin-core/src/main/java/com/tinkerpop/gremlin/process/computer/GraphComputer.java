@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 public interface GraphComputer extends TraversalEngine {
 
     String VERTEX_PROGRAM = "gremlin.vertexProgram";
-    String MUTATE_ORIGINAL_GRAPH = "gremlin.graphComputer.operateOnOriginal";
 
     public enum Isolation {
         /**
@@ -45,6 +44,10 @@ public interface GraphComputer extends TraversalEngine {
     public GraphComputer program(final Configuration configuration);
 
     public Future<Pair<Graph, SideEffects>> submit();
+
+    public static void mergeComputedView(final Graph original, final Graph computed, Map<String, String> keyMapping) {
+        throw new IllegalStateException("The mergeComputedView method must be defined by the implementing GraphComputer class");
+    }
 
     public interface SideEffects {
 

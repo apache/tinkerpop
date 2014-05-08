@@ -7,15 +7,15 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.io.GraphMigrator;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
-import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -64,36 +64,44 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
 
-            // clone the graph or operate directly on the existing graph
-            final TinkerGraph g;
-            if (this.configuration.getBoolean(CLONE_GRAPH, false)) {
-                try {
-                    g = TinkerGraph.open();
-                    GraphMigrator.migrateGraph(this.graph, g);
-                } catch (IOException e) {
-                    throw new RuntimeException(e.getMessage(), e);
-                }
-            } else {
-                g = this.graph;
-            }
 
-            g.usesElementMemory = true;
-            g.elementMemory = new TinkerElementMemory(this.isolation, vertexProgram.getComputeKeys());
-
+            final TinkerGraph g = this.graph;
+            g.graphView = new TinkerGraphView(this.isolation, vertexProgram.getComputeKeys());
+            g.useGraphView = true;
             // execute the vertex program
             vertexProgram.setup(this.sideEffects);
             while (true) {
                 StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, this.sideEffects));
                 this.sideEffects.incrIteration();
-                g.elementMemory.completeIteration();
+                g.graphView.completeIteration();
                 this.messenger.completeIteration();
                 if (vertexProgram.terminate(this.sideEffects)) break;
             }
 
             // update runtime and return the newly computed graph
             this.sideEffects.setRuntime(System.currentTimeMillis() - time);
-            return new Pair<Graph, SideEffects>(g, this.sideEffects);
+            return new Pair<Graph, SideEffects>(this.graph, this.sideEffects);
         });
+    }
+
+    public static void mergeComputedView(final Graph original, final Graph computed, final Map<String, String> keyMapping) {
+        if (original.getClass() != TinkerGraph.class)
+            throw new IllegalArgumentException("The original graph provided is not a TinkerGraph: " + original.getClass());
+        if (computed.getClass() != TinkerGraph.class)
+            throw new IllegalArgumentException("The computed graph provided is not a TinkerGraph: " + computed.getClass());
+
+        StreamFactory.parallelStream(computed.V()).forEach(v1 -> {
+            Vertex v2 = original.v(v1.getId());
+            keyMapping.forEach((key1, key2) -> {
+                if (v1.getProperty(key1).isPresent()) {
+                    final Object value = v1.getProperty(key1).get();
+                    ((TinkerGraph) original).useGraphView = false;
+                    v2.setProperty(key2, value);
+                    ((TinkerGraph) original).useGraphView = true;
+                }
+            });
+        });
+        TinkerHelper.dropView((TinkerGraph) original);
     }
 
 }

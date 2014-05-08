@@ -68,6 +68,11 @@ public class TinkerHelper {
         edges.add(edge);
     }
 
+    public static void dropView(final TinkerGraph graph) {
+        graph.useGraphView = false;
+        graph.graphView = null;
+    }
+
     public static Collection<Vertex> getVertices(final TinkerGraph graph) {
         return graph.vertices.values();
     }

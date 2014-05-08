@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
@@ -41,6 +42,10 @@ public class GiraphGraphComputer implements GraphComputer {
     public GraphComputer program(final Configuration configuration) {
         configuration.getKeys().forEachRemaining(key -> this.hadoopConfiguration.set(key, configuration.getProperty(key).toString()));
         return this;
+    }
+
+    public static void mergeComputedView(final Graph original, final Graph computed, Map<String, String> keyMapping) {
+        throw new IllegalStateException("Do something here...");
     }
 
     public Future<Pair<Graph, SideEffects>> submit() {
