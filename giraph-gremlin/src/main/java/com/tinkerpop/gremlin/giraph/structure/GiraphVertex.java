@@ -17,9 +17,8 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.io.Text;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
