@@ -18,6 +18,7 @@ public class Tokens {
 
     public static final String ARGS_BINDINGS = "bindings";
     public static final String ARGS_COORDINATES = "coordinates";
+    public static final String ARGS_GRAPH_NAME = "graphName";
     public static final String ARGS_GREMLIN = "gremlin";
     public static final String ARGS_IMPORTS = "imports";
     public static final String ARGS_INFO_TYPE = "infoType";
