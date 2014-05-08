@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
+import com.tinkerpop.gremlin.groovy.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import groovy.grape.Grape;
 import groovy.lang.Binding;
@@ -81,8 +82,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     public GremlinGroovyScriptEngine(final int cacheResetSize, final ImportCustomizerProvider importCustomizerProvider) {
-        // todo: initialize here as we build out gremlin-groovy
-        // Gremlin.load();
+        GremlinLoader.load();
 
         this.importCustomizerProvider = importCustomizerProvider;
         this.cacheResetSize = cacheResetSize;

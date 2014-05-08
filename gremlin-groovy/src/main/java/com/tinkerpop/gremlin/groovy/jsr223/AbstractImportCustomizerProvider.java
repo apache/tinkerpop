@@ -1,7 +1,15 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Compare;
+import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import groovy.grape.Grape;
+import groovy.json.JsonBuilder;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,40 +27,38 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     protected final Set<String> extraImports = new HashSet<>();
     protected final Set<String> extraStaticImports = new HashSet<>();
 
-    private static final List<String> imports = new ArrayList<>();
+    private static final Set<String> imports = new HashSet<>();
+    private static final Set<String> staticImports = new HashSet<>();
 
     static {
-        imports.add("com.tinkerpop.blueprints.*");
-        imports.add("com.tinkerpop.blueprints.computer.*");
-        imports.add("com.tinkerpop.blueprints.computer.util.*");
-        imports.add("com.tinkerpop.blueprints.io.*");
-        imports.add("com.tinkerpop.blueprints.io.graphml.*");
-        imports.add("com.tinkerpop.blueprints.query.*");
-        imports.add("com.tinkerpop.blueprints.query.util.*");
-        imports.add("com.tinkerpop.blueprints.util.*");
-        imports.add("com.tinkerpop.blueprints.tinkergraph.*");
-        imports.add("groovy.json.*");
+        imports.add(Graph.class.getPackage().getName() + DOT_STAR);
+        imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
+        imports.add(TinkerGraph.class.getPackage().getName() + DOT_STAR);
+        imports.add(Grape.class.getCanonicalName());
+        imports.add(JsonBuilder.class.getPackage().getName() + DOT_STAR);
+
+        staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);
     }
 
     @Override
     public ImportCustomizer getImportCustomizer() {
         final ImportCustomizer ic = new ImportCustomizer();
-        for (final String imp : imports) {
-            ic.addStarImports(imp.replace(DOT_STAR, EMPTY_STRING));
-        }
 
-        ic.addStaticImport(Direction.class.getName(), Direction.OUT.toString());
-        ic.addStaticImport(Direction.class.getName(), Direction.IN.toString());
-        ic.addStaticImport(Direction.class.getName(), Direction.BOTH.toString());
-
-        importExtras(ic);
-        importExtraStatics(ic);
+        processImports(ic, imports);
+        processStaticImports(ic, staticImports);
+        processImports(ic, extraImports);
+        processStaticImports(ic, extraStaticImports);
 
         return ic;
     }
 
     public Set<String> getImports() {
-        return new HashSet<>(imports);
+        return imports;
+    }
+
+    public Set<String> getStaticImports() {
+        return staticImports;
     }
 
     public Set<String> getExtraImports() {
@@ -66,29 +72,30 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     public Set<String> getAllImports() {
         final Set<String> allImports = new HashSet<>();
         allImports.addAll(imports);
+        allImports.addAll(staticImports);
         allImports.addAll(extraImports);
         allImports.addAll(extraStaticImports);
 
         return allImports;
     }
 
-    private void importExtraStatics(final ImportCustomizer ic) {
-        for (final String extraStaticImport : extraStaticImports) {
-            if (extraStaticImport.endsWith(DOT_STAR)) {
-                ic.addStaticStars(extraStaticImport.replace(DOT_STAR, EMPTY_STRING));
+    private static void processStaticImports(final ImportCustomizer ic, final Set<String> staticImports) {
+        for (final String staticImport : staticImports) {
+            if (staticImport.endsWith(DOT_STAR)) {
+                ic.addStaticStars(staticImport.replace(DOT_STAR, EMPTY_STRING));
             } else {
-                final int place = extraStaticImport.lastIndexOf(PERIOD);
-                ic.addStaticImport(extraStaticImport.substring(0, place), extraStaticImport.substring(place + 1));
+                final int place = staticImport.lastIndexOf(PERIOD);
+                ic.addStaticImport(staticImport.substring(0, place), staticImport.substring(place + 1));
             }
         }
     }
 
-    private void importExtras(final ImportCustomizer ic) {
-        for (final String extraImport : extraImports) {
-            if (extraImport.endsWith(DOT_STAR)) {
-                ic.addStarImports(extraImport.replace(DOT_STAR, EMPTY_STRING));
+    private static void processImports(final ImportCustomizer ic, final Set<String> imports) {
+        for (final String imp : imports) {
+            if (imp.endsWith(DOT_STAR)) {
+                ic.addStarImports(imp.replace(DOT_STAR, EMPTY_STRING));
             } else {
-                ic.addImports(extraImport);
+                ic.addImports(imp);
             }
         }
     }
