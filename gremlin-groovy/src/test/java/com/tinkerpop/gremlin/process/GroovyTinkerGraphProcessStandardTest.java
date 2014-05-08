@@ -24,7 +24,6 @@ public class GroovyTinkerGraphProcessStandardTest extends AbstractGraphProvider 
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName) {
-        // todo: when tinkergraph has persistence this will need to change to ensure unique graphs are generated...now it's all in memory
         return new HashMap<String, Object>() {{
             put("gremlin.graph", TinkerGraph.class.getName());
         }};
