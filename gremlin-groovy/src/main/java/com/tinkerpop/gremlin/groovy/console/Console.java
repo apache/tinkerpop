@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.groovy.console;
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.console.commands.GremlinImportCommand;
 import com.tinkerpop.gremlin.groovy.console.commands.UseCommand;
+import com.tinkerpop.gremlin.groovy.jsr223.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -42,7 +43,6 @@ public class Console {
     private static final String STANDARD_INPUT_PROMPT = "gremlin> ";
     public static final String STANDARD_RESULT_PROMPT = "==>";
     private static final String IMPORT_SPACE = "import ";
-    private static final String DOT_STAR = ".*";
 
     private static final IO STANDARD_IO = new IO(System.in, System.out, System.err);
     private static final Groovysh GROOVYSH = new Groovysh();
@@ -53,17 +53,19 @@ public class Console {
         STANDARD_IO.out.println("         (o o)");
         STANDARD_IO.out.println("-----oOOo-(3)-oOOo-----");
 
+        // temporarily remove the import command that comes with groovy.  see the GremlinImportCommand for more info
         final Command cmd = GROOVYSH.getRegistry().find("import");
         GROOVYSH.getRegistry().remove(cmd);
         GROOVYSH.register(new GremlinImportCommand(GROOVYSH));
 
         GROOVYSH.register(new UseCommand(GROOVYSH, loadedPlugins));
+
+        // hide output temporarily while imports execute
         GROOVYSH.setResultHook(new NullResultHookClosure(GROOVYSH));
 
-        GROOVYSH.execute(IMPORT_SPACE + Graph.class.getPackage().getName() + DOT_STAR);
-        GROOVYSH.execute(IMPORT_SPACE + Traversal.class.getPackage().getName() + DOT_STAR);
-        GROOVYSH.execute(IMPORT_SPACE + TinkerGraph.class.getPackage().getName() + DOT_STAR);
-        GROOVYSH.execute(IMPORT_SPACE + Grape.class.getCanonicalName());
+        // add the default imports
+        new DefaultImportCustomizerProvider().getAllImports().stream().map(i -> IMPORT_SPACE + i).forEach(GROOVYSH::execute);
+
         GROOVYSH.setResultHook(new ResultHookClosure(GROOVYSH, STANDARD_IO, buildResultPrompt()));
 
         final InteractiveShellRunner runner = new InteractiveShellRunner(GROOVYSH, new PromptClosure(GROOVYSH, STANDARD_INPUT_PROMPT));

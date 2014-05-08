@@ -5,6 +5,11 @@ import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.io.GraphReader;
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
@@ -31,9 +36,21 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     private static final Set<String> staticImports = new HashSet<>();
 
     static {
+        // graph structure and process
         imports.add(Graph.class.getPackage().getName() + DOT_STAR);
         imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
+
+        // tinkergraph
         imports.add(TinkerGraph.class.getPackage().getName() + DOT_STAR);
+
+        // IO packages
+        imports.add(GraphReader.class.getPackage().getName() + DOT_STAR);
+        imports.add(GraphMLReader.class.getPackage().getName() + DOT_STAR);
+        imports.add(GraphSONReader.class.getPackage().getName() + DOT_STAR);
+        imports.add(KryoReader.class.getPackage().getName() + DOT_STAR);
+        imports.add(IoAnnotatedList.class.getPackage().getName() + DOT_STAR);
+
+        // groovy extras
         imports.add(Grape.class.getCanonicalName());
         imports.add(JsonBuilder.class.getPackage().getName() + DOT_STAR);
 
