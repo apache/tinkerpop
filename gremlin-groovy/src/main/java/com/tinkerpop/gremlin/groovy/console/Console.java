@@ -3,11 +3,7 @@ package com.tinkerpop.gremlin.groovy.console;
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.console.commands.GremlinImportCommand;
 import com.tinkerpop.gremlin.groovy.console.commands.UseCommand;
-import com.tinkerpop.gremlin.groovy.jsr223.DefaultImportCustomizerProvider;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import groovy.grape.Grape;
+import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import jline.console.history.FileHistory;
 import org.codehaus.groovy.tools.shell.Command;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -35,7 +31,6 @@ public class Console {
         // this is necessary so that terminal doesn't lose focus to AWT
         System.setProperty("java.awt.headless", "true");
     }
-
 
     private static final Set<String> loadedPlugins = new HashSet<>();
 

@@ -1,8 +1,7 @@
-package com.tinkerpop.gremlin.groovy.jsr223;
+package com.tinkerpop.gremlin.groovy;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
@@ -14,11 +13,8 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.javatuples.Pair;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**

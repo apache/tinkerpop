@@ -1,5 +1,6 @@
-package com.tinkerpop.gremlin.groovy.jsr223;
+package com.tinkerpop.gremlin.groovy;
 
+import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.junit.Test;
 
 import java.util.HashSet;

@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.groovy.jsr223;
+package com.tinkerpop.gremlin.groovy;
 
 import java.util.HashSet;
 import java.util.Set;
