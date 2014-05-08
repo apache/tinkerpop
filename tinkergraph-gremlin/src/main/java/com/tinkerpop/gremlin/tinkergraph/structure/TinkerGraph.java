@@ -207,7 +207,6 @@ public class TinkerGraph implements Graph, Serializable {
 
         @Override
         public boolean supportsPersistence() {
-            // todo: temporary.........
             return false;
         }
 
