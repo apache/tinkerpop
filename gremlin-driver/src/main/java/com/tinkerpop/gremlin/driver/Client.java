@@ -66,7 +66,7 @@ public class Client {
     public CompletableFuture<ResultSet> submitAsync(final SFunction<Graph, Traversal> traversal) {
         try {
             byte[] bytes = Serializer.serializeObject(traversal);
-            final RequestMessage.Builder request = RequestMessage.create("traverse").add(Tokens.ARGS_GREMLIN, bytes);
+            final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_TRAVERSE).add(Tokens.ARGS_GREMLIN, bytes);
             return submitAsync(request.build());
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -79,7 +79,7 @@ public class Client {
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
-        final RequestMessage.Builder request = RequestMessage.create("eval").add(Tokens.ARGS_GREMLIN, gremlin);
+        final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, gremlin);
         Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
         return submitAsync(request.build());
     }
