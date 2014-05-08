@@ -59,7 +59,7 @@ public class Console {
 
         GROOVYSH.register(new UseCommand(GROOVYSH, loadedPlugins));
         GROOVYSH.setResultHook(new NullResultHookClosure(GROOVYSH));
-        // TODO: use import manager?
+
         GROOVYSH.execute(IMPORT_SPACE + Graph.class.getPackage().getName() + DOT_STAR);
         GROOVYSH.execute(IMPORT_SPACE + Traversal.class.getPackage().getName() + DOT_STAR);
         GROOVYSH.execute(IMPORT_SPACE + TinkerGraph.class.getPackage().getName() + DOT_STAR);
