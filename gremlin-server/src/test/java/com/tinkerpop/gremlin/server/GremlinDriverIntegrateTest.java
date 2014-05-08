@@ -33,6 +33,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public TestName name = new TestName();
 
     public static class RemoteTraversal implements SFunction<Graph, Traversal> {
+
+        // todo: consider how to parameterize traversals - is it best done client side during construction or through bindings as a SBiFunction<Graph, Map, Traversal>
+
         public Traversal apply(final Graph g) {
             return g.V().out().range(0,9);
         }
