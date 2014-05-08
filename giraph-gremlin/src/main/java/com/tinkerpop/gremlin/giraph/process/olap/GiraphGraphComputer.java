@@ -27,6 +27,7 @@ public class GiraphGraphComputer implements GraphComputer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
 
     public static final String GREMLIN_INPUT_LOCATION = "gremlin.input.location";
+    public static final String GREMLIN_OUTPUT_LOCATION = "gremlin.output.location";
 
     private org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
 
@@ -45,7 +46,7 @@ public class GiraphGraphComputer implements GraphComputer {
         try {
             final String bspDirectory = "_bsp"; //"temp-" + UUID.randomUUID().toString();
             final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
-            fs.delete(new Path(this.hadoopConfiguration.get("mapred.output.dir")), true);
+            fs.delete(new Path(this.hadoopConfiguration.get(GREMLIN_OUTPUT_LOCATION)), true);
             final String giraphGremlinHome = System.getenv(GIRAPH_GREMLIN_HOME);
             if (null == giraphGremlinHome)
                 throw new RuntimeException("Please set $GIRAPH_GREMLIN_HOME to the location of giraph-gremlin");

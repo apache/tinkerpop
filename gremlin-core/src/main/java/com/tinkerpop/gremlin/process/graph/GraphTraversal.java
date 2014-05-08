@@ -445,43 +445,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     }
 
-    /*public default <K> Map<K, Long> groupCount(final Function<E, ?>... preGroupFunctions) {
-        final Map<Object, Long> map = new HashMap<>();
-        final FunctionRing functionRing = new FunctionRing(preGroupFunctions);
-        try {
-            while (true) {
-                MapHelper.incr(map, functionRing.next().apply(this.next()), 1l);
-            }
-        } catch (final NoSuchElementException e) {
-        }
-        return (Map<K, Long>) map;
-    }*/
-
-    /*public default <K, V> Map<K, V> groupBy(final Function<E, ?> keyFunction) {
-        return (Map<K, V>) groupBy(keyFunction, s -> s, null);
-    }
-
-    public default <K, V> Map<K, V> groupBy(final Function<E, ?> keyFunction, final Function<E, ?> valueFunction) {
-        return this.groupBy(keyFunction, valueFunction, null);
-    }
-
-    public default <K, V> Map<K, V> groupBy(final Function<E, ?> keyFunction, final Function<E, ?> valueFunction, final Function<Collection, ?> reduceFunction) {
-        final Map<Object, Collection<Object>> groupMap = new HashMap<>();
-        final Map<Object, Object> reduceMap = new HashMap<>();
-        try {
-            while (true) {
-                GroupByStep.doGroup(this.next(), groupMap, (Function) keyFunction, (Function) valueFunction);
-            }
-        } catch (final NoSuchElementException e) {
-        }
-        if (null != reduceFunction) {
-            GroupByStep.doReduce(groupMap, reduceMap, (Function) reduceFunction);
-            return (Map<K, V>) reduceMap;
-        } else {
-            return (Map<K, V>) groupMap;
-        }
-    }*/
-
+    // TODO: this should be side effect capable.
     public default <T> Tree<T> tree(final SFunction... branchFunctions) {
         final Tree<Object> tree = new Tree<>();
         Tree<Object> depth = tree;
