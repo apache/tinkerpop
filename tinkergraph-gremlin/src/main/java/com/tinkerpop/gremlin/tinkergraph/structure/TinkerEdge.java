@@ -26,8 +26,8 @@ class TinkerEdge extends TinkerElement implements Edge {
     }
 
     public <V> void setProperty(final String key, final V value) {
-        if (this.graph.usesElementMemory) {
-            this.graph.elementMemory.setProperty(this, key, value);
+        if (this.graph.useGraphView) {
+            this.graph.graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);
             final Property oldProperty = super.getProperty(key);

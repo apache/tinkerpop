@@ -11,15 +11,15 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerElementMemory {
+public class TinkerGraphView {
 
-    private final Map<String, VertexProgram.KeyType> computeKeys;
+    protected final Map<String, VertexProgram.KeyType> computeKeys;
     protected final GraphComputer.Isolation isolation;
     private Map<Object, Map<String, Object>> getMap;
     private Map<Object, Map<String, Object>> setMap;
     private Map<Object, Map<String, Object>> constantMap;
 
-    public TinkerElementMemory(final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
+    public TinkerGraphView(final GraphComputer.Isolation isolation, final Map<String, VertexProgram.KeyType> computeKeys) {
         this.isolation = isolation;
         this.constantMap = new HashMap<>();
         this.computeKeys = computeKeys;

@@ -26,7 +26,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         this.giraphConfiguration = new GiraphConfiguration();
         hadoopConfiguration.forEach(entry -> this.giraphConfiguration.set(entry.getKey(), entry.getValue()));
-        this.giraphConfiguration.setMasterComputeClass(GiraphComputerMemory.class);
+        this.giraphConfiguration.setMasterComputeClass(GiraphGraphComputerSideEffects.class);
         this.giraphConfiguration.setVertexClass(GiraphVertex.class);
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
         this.giraphConfiguration.setClass("giraph.vertexIdClass", LongWritable.class, LongWritable.class);

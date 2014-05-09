@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
-import com.tinkerpop.gremlin.giraph.process.olap.GiraphComputerMemory;
+import com.tinkerpop.gremlin.giraph.process.olap.GiraphGraphComputerSideEffects;
 import com.tinkerpop.gremlin.giraph.process.olap.GiraphMessenger;
 import com.tinkerpop.gremlin.giraph.process.olap.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.olap.util.ConfUtil;
@@ -31,7 +31,7 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
     private VertexProgram vertexProgram;
     private Graph gremlinGraph;
     private com.tinkerpop.gremlin.structure.Vertex gremlinVertex;
-    private GiraphComputerMemory computerMemory = new GiraphComputerMemory(this);
+    private GiraphGraphComputerSideEffects computerMemory = new GiraphGraphComputerSideEffects(this);
 
     public GiraphVertex() {
     }
@@ -67,6 +67,8 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
         inflateGiraphVertex();
         this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.computerMemory);
     }
+
+    ///////////////////////////////////////////////
 
     private Text getTextOfSubGraph() {
         try {

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
@@ -33,9 +34,8 @@ public class TinkerGraph implements Graph, Serializable {
     protected Map<Object, Vertex> vertices = new HashMap<>();
     protected Map<Object, Edge> edges = new HashMap<>();
     protected TinkerGraphVariables variables = new TinkerGraphVariables(this);
-    protected TinkerElementMemory elementMemory;
-
-    protected boolean usesElementMemory = false;
+    protected TinkerGraphView graphView = null;
+    protected boolean useGraphView = false;
 
     protected TinkerIndex<TinkerVertex> vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
     protected TinkerIndex<TinkerEdge> edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
@@ -107,7 +107,7 @@ public class TinkerGraph implements Graph, Serializable {
                 return super.submit(engine);
             }
         };
-        //traversal.memory().set(Traversal.Variables.Variable.hidden("g"), this);    // TODO: is this good?
+        traversal.memory().set(Traversal.Variables.Variable.hidden("g"), this);    // TODO: is this good?
         traversal.optimizers().register(new TinkerGraphStepOptimizer());
         traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         return traversal;

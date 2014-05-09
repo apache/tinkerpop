@@ -37,13 +37,21 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public Map<String, Property> getProperties() {
-        // TODO: Make this work with GraphComputer
+        /*if (this.graph.useGraphView) {
+            final HashMap<String, Property> viewProperties = new HashMap<>(this.properties);
+            this.graph.graphView.computeKeys.forEach((key, keyType) -> {
+                if (this.graph.graphView.getProperty(this, key).isPresent())
+                    viewProperties.put(key, this.graph.graphView.getProperty(this, key));
+            });
+            return viewProperties;
+        } else {*/
         return new HashMap<>(this.properties);
+        //}
     }
 
     public <V> Property<V> getProperty(final String key) {
-        if (this.graph.usesElementMemory) {
-            return this.graph.elementMemory.getProperty(this, key);
+        if (this.graph.useGraphView) {
+            return this.graph.graphView.getProperty(this, key);
         } else {
             return this.properties.getOrDefault(key, Property.empty());
         }

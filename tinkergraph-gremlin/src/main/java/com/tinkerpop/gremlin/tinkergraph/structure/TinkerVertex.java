@@ -26,7 +26,6 @@ import com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers.TinkerGra
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,8 +40,8 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public <V> void setProperty(final String key, final V value) {
-        if (this.graph.usesElementMemory) {
-            this.graph.elementMemory.setProperty(this, key, value);
+        if (this.graph.useGraphView) {
+            this.graph.graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);
             final Property oldProperty = super.getProperty(key);

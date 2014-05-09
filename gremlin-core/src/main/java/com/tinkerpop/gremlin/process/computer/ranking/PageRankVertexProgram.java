@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -27,12 +26,10 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
-    private static final String WEIGHTED = "gremlin.pageRankVertexProgram.weighted";
 
     private double vertexCountAsDouble = 1;
     private double alpha = 0.85d;
     private int totalIterations = 30;
-    private boolean weighted = false;
 
     public PageRankVertexProgram() {
 
@@ -42,7 +39,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
-        this.weighted = configuration.getBoolean(WEIGHTED, false);
     }
 
     public Map<String, KeyType> getComputeKeys() {
@@ -53,33 +49,27 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         return Double.class;
     }
 
-    public void setup(final GraphComputer.Memory graphComputerMemory) {
+    public void setup(final GraphComputer.SideEffects sideEffects) {
 
     }
 
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.Memory graphComputerMemory) {
-        if (graphComputerMemory.isInitialIteration()) {
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.SideEffects sideEffects) {
+        if (sideEffects.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(this.messageType.getQuery().build(vertex).count()).doubleValue();
             vertex.setProperty(PAGE_RANK, initialPageRank);
             vertex.setProperty(EDGE_COUNT, edgeCount);
-            if (this.weighted)
-                messenger.sendMessage(vertex, this.messageType, initialPageRank);
-            else
-                messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
+            messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
         } else {
             double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.messageType)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.setProperty(PAGE_RANK, newPageRank);
-            if (this.weighted)
-                messenger.sendMessage(vertex, this.messageType, newPageRank);
-            else
-                messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getProperty(EDGE_COUNT).orElse(0.0d));
+            messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getProperty(EDGE_COUNT).orElse(0.0d));
         }
     }
 
-    public boolean terminate(final GraphComputer.Memory graphComputerMemory) {
-        return graphComputerMemory.getIteration() >= this.totalIterations;
+    public boolean terminate(final GraphComputer.SideEffects sideEffects) {
+        return sideEffects.getIteration() >= this.totalIterations;
     }
 
     //////////////////////////////
@@ -108,11 +98,6 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
         public Builder messageType(final MessageType.Local messageType) {
             //this.vertexProgram.messageType = messageType;
-            return this;
-        }
-
-        public Builder weighted(final boolean weighted) {
-            this.configuration.setProperty(WEIGHTED, weighted);
             return this;
         }
 

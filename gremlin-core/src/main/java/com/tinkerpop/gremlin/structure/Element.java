@@ -47,10 +47,12 @@ public abstract interface Element {
         final Property<V> property = this.getProperty(key);
         if (property.isPresent())
             return property.get();
-        else throw Property.Exceptions.propertyDoesNotExist();
+        else throw Property.Exceptions.propertyDoesNotExist(key);
     }
 
-    /*public default <V> V getValue(final String key, final V orElse) {
+    /*
+    // TODO: Are we going down the right road with property as a first-class citizen?
+    public default <V> V getValue(final String key, final V orElse) {
         final Property<V> property = this.getProperty(key);
         return property.orElse(orElse);
     }*/
