@@ -36,7 +36,7 @@ public abstract interface Element {
 
     public <V> Property<V> getProperty(final String key);
 
-    public <V> void setProperty(final String key, final V value);
+    public <V> Property<V> setProperty(final String key, final V value);
 
     public default void setProperties(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
@@ -51,7 +51,7 @@ public abstract interface Element {
     }
 
     /*
-    // TODO: Are we going down the right road with property as a first-class citizen?
+    // TODO: Think on this....
     public default <V> V getValue(final String key, final V orElse) {
         final Property<V> property = this.getProperty(key);
         return property.orElse(orElse);

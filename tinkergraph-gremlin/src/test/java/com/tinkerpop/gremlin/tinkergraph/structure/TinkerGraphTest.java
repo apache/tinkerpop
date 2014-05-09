@@ -68,31 +68,6 @@ public class TinkerGraphTest implements Serializable {
     }
 
     @Test
-    public void shouldPerformBasicTinkerGraphIntegrationTest() {
-        final TinkerGraph g = TinkerGraph.open();
-        g.createIndex("name", Vertex.class);
-        final Vertex marko = g.addVertex("name", "marko", "age", 33, "blah", "bloop");
-        final Vertex stephen = g.addVertex("name", "stephen", "id", 12, "blah", "bloop");
-        stephen.setProperty(Property.Key.hidden("name"), "stephen");
-        assertEquals("stephen", stephen.getProperty(Property.Key.hidden("name")).get());
-        final Random r = new Random();
-        Stream.generate(() -> g.addVertex(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt())).limit(100000).count();
-        assertEquals(100002, g.vertices.size());
-        final Edge edge = marko.addEdge("knows", stephen);
-        //System.out.println(g.V().has("name", Compare.EQUAL, "marko"));
-        //System.out.println(marko.out("knows", "workedWith").toString());
-        g.createIndex("blah", Vertex.class);
-
-        edge.setProperty("weight", 1.0f);
-        edge.setProperty("creator", "stephen");
-        assertEquals(edge.getValue("weight"), Float.valueOf(1.0f));
-        assertEquals(edge.getProperty("creator").get(), "stephen");
-
-        //g.V().out().value("name").path().map(p -> p.get().getAsLabels()).forEach(System.out::println);
-        //marko.out().path().map(p -> p.get().getAsLabels()).forEach(System.out::println);
-    }
-
-    @Test
     public void testPlay() {
         final TinkerGraph g = TinkerFactory.createClassic();
         //System.out.println(g.v(1).outE().as("here").inV().has("name","vadas").back("here").toList());

@@ -15,6 +15,10 @@ import java.util.stream.Collectors;
  */
 public abstract class CachedElement implements Element {
 
+    // TODO: Get rid of MicroXXX for Cached with a boolean to have properties populated or not.
+    // TODO: Make sure to include inflate and deflate() methods.
+    // TODO: We will need to store hidden boolean too!
+
     protected final Object id;
     protected final String label;
     protected final Optional<Map<String,Property>> properties;
@@ -59,7 +63,7 @@ public abstract class CachedElement implements Element {
         return this.label;
     }
 
-    public void setProperty(final String key, final Object value) {
+    public Property setProperty(final String key, final Object value) {
         throw new UnsupportedOperationException("Cached elements are read-only: " + this.toString());
     }
 

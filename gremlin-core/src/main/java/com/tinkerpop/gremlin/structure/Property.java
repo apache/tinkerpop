@@ -12,19 +12,6 @@ import java.util.function.Supplier;
  */
 public abstract interface Property<V> {
 
-    public class Key {
-
-        /**
-         * A property key can not be constructed.
-         */
-        private Key() {
-        }
-
-        public static String hidden(final String key) {
-            return Graph.HIDDEN_PREFIX.concat(key);
-        }
-    }
-
     public String getKey();
 
     public V get() throws NoSuchElementException;
@@ -54,6 +41,10 @@ public abstract interface Property<V> {
 
     public void remove();
 
+    public void hidden(final boolean makeHidden);
+
+    public boolean isHidden();
+
     public static <V> Property<V> empty() {
         return new Property<V>() {
             @Override
@@ -78,6 +69,16 @@ public abstract interface Property<V> {
 
             @Override
             public void remove() {
+                throw Exceptions.propertyDoesNotExist();
+            }
+
+            @Override
+            public void hidden(final boolean makeHidden) {
+                throw Exceptions.propertyDoesNotExist();
+            }
+
+            @Override
+            public boolean isHidden() {
                 throw Exceptions.propertyDoesNotExist();
             }
 

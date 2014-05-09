@@ -53,6 +53,14 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
         return this.key.hashCode() + this.value.hashCode() + this.element.hashCode();
     }
 
+    public boolean isHidden() {
+        return false;
+    }
+
+    public void hidden(final boolean makeHidden) {
+
+    }
+
     public void remove() {
         final PropertyContainer rawElement = ((Neo4jElement) element).getRawElement();
         if (rawElement.hasProperty(key)) {

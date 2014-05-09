@@ -62,6 +62,16 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
     }
 
     @Override
+    public boolean isHidden() {
+        return this.baseProperty.isHidden();
+    }
+
+    @Override
+    public void hidden(final boolean makeHidden) {
+        this.baseProperty.hidden(makeHidden);
+    }
+
+    @Override
     public void remove() {
         this.strategyWrappedGraph.strategy().compose(
                 s -> s.getRemovePropertyStrategy(strategyContext),

@@ -63,6 +63,14 @@ public class CachedProperty<V> implements Property, Serializable {
         throw new UnsupportedOperationException("Cached properties are readonly: " + this.toString());
     }
 
+    public boolean isHidden() {
+        return false; //TODO:
+    }
+
+    public void hidden(final boolean makeHidden) {
+
+    }
+
     public String toString() {
         return StringFactory.propertyString(this);
     }
