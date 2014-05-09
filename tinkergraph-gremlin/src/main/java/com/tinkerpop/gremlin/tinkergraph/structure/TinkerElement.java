@@ -14,6 +14,7 @@ import java.util.Map;
 abstract class TinkerElement implements Element, Serializable {
 
     protected Map<String, Property> properties = new HashMap<>();
+    protected Map<String, Property> hiddenProperties = new HashMap<>();
     protected final Object id;
     protected final String label;
     protected final TinkerGraph graph;

@@ -24,8 +24,6 @@ import java.util.concurrent.Future;
  */
 public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
-    public static final String CLONE_GRAPH = "tinkergraph.computer.clone-graph";
-
     private Isolation isolation = Isolation.BSP;
     private Configuration configuration = new BaseConfiguration();
     private final TinkerGraph graph;
@@ -64,7 +62,6 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
 
-
             final TinkerGraph g = this.graph;
             g.graphView = new TinkerGraphView(this.isolation, vertexProgram.getComputeKeys());
             g.useGraphView = true;
@@ -84,24 +81,24 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         });
     }
 
-    public static void mergeComputedView(final Graph original, final Graph computed, final Map<String, String> keyMapping) {
-        if (original.getClass() != TinkerGraph.class)
-            throw new IllegalArgumentException("The original graph provided is not a TinkerGraph: " + original.getClass());
-        if (computed.getClass() != TinkerGraph.class)
-            throw new IllegalArgumentException("The computed graph provided is not a TinkerGraph: " + computed.getClass());
+    public static void mergeComputedView(final Graph originalGraph, final Graph viewGraph, final Map<String, String> keyMapping) {
+        if (originalGraph.getClass() != TinkerGraph.class)
+            throw new IllegalArgumentException("The original graph provided is not a TinkerGraph: " + originalGraph.getClass());
+        if (viewGraph.getClass() != TinkerGraph.class)
+            throw new IllegalArgumentException("The computed graph provided is not a TinkerGraph: " + viewGraph.getClass());
 
-        StreamFactory.parallelStream(computed.V()).forEach(v1 -> {
-            Vertex v2 = original.v(v1.getId());
+        StreamFactory.parallelStream(viewGraph.V()).forEach(v1 -> {
+            Vertex v2 = originalGraph.v(v1.getId());
             keyMapping.forEach((key1, key2) -> {
                 if (v1.getProperty(key1).isPresent()) {
                     final Object value = v1.getProperty(key1).get();
-                    ((TinkerGraph) original).useGraphView = false;
+                    ((TinkerGraph) originalGraph).useGraphView = false;
                     v2.setProperty(key2, value);
-                    ((TinkerGraph) original).useGraphView = true;
+                    ((TinkerGraph) originalGraph).useGraphView = true;
                 }
             });
         });
-        TinkerHelper.dropView((TinkerGraph) original);
+        TinkerHelper.dropView((TinkerGraph) originalGraph);
     }
 
 }
