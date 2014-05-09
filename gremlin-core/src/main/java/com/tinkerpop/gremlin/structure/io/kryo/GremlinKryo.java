@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.io.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.KryoSerializable;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -18,11 +19,21 @@ import com.tinkerpop.gremlin.structure.io.util.IoVertex;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Currency;
+import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
@@ -150,6 +161,13 @@ public final class GremlinKryo {
     }
 
     public static class BuilderV1d0 implements Builder {
+
+        // note that the following are pre-registered
+        // boolean, Boolean, byte, Byte, char, Character, double, Double, int, Integer, float, Float, long
+        // Long, short, Short, String
+
+        // todo: ordered properly?
+
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class,Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(ArrayList.class, null, 10));
             add(Triplet.<Class, Serializer, Integer>with(HashMap.class, null, 11));
@@ -167,6 +185,28 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(AnnotatedValue.class, new AnnotatedSerializer.AnnotatedValueSerializer(), 23));
             add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedList.IoListValue.class, null, 24));
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
+            add(Triplet.<Class, Serializer, Integer>with(char[].class, null, 26));
+            add(Triplet.<Class, Serializer, Integer>with(short[].class, null, 27));
+            add(Triplet.<Class, Serializer, Integer>with(int[].class, null, 28));
+            add(Triplet.<Class, Serializer, Integer>with(long[].class, null, 29));
+            add(Triplet.<Class, Serializer, Integer>with(float[].class, null, 30));
+            add(Triplet.<Class, Serializer, Integer>with(double[].class, null, 31));
+            add(Triplet.<Class, Serializer, Integer>with(String[].class, null, 32));
+            add(Triplet.<Class, Serializer, Integer>with(Object[].class, null, 33));
+            add(Triplet.<Class, Serializer, Integer>with(BigInteger.class, null, 34));
+            add(Triplet.<Class, Serializer, Integer>with(BigDecimal.class, null, 35));
+            add(Triplet.<Class, Serializer, Integer>with(KryoSerializable.class, null, 36));
+            add(Triplet.<Class, Serializer, Integer>with(Collection.class, null, 37));
+            add(Triplet.<Class, Serializer, Integer>with(Date.class, null, 38));
+            add(Triplet.<Class, Serializer, Integer>with(Calendar.class, null, 39));
+            add(Triplet.<Class, Serializer, Integer>with(Currency.class, null, 40));
+            add(Triplet.<Class, Serializer, Integer>with(Class.class, null, 41));
+            add(Triplet.<Class, Serializer, Integer>with(TimeZone.class, null, 42));
+            add(Triplet.<Class, Serializer, Integer>with(StringBuffer.class, null, 43));
+            add(Triplet.<Class, Serializer, Integer>with(StringBuilder.class, null, 44));
+            add(Triplet.<Class, Serializer, Integer>with(TreeMap.class, null, 45));
+            add(Triplet.<Class, Serializer, Integer>with(EnumSet.class, null, 46));
+            add(Triplet.<Class, Serializer, Integer>with(Map.class, null, 47));
         }};
 
         private static final byte major = 1;

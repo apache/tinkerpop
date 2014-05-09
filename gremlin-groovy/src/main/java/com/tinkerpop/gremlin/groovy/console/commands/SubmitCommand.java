@@ -30,7 +30,7 @@ public class SubmitCommand extends CommandSupport {
             shell.getInterp().getContext().setProperty("_l", resultSet);
             return resultSet;
         } catch (Exception ex) {
-            return ex.getMessage();
+            return ex.getCause().getMessage();
         }
     }
 }
