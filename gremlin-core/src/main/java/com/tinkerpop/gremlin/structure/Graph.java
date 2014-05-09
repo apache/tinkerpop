@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
  */
 public interface Graph extends AutoCloseable {
 
+    public static final String HIDDEN_PREFIX = "%&%";
+
     /**
      * Creates a new {@link Graph} instance.  All graphs require that this method be overridden.  It is enforced by the
      * Blueprints test suite.
@@ -65,6 +67,17 @@ public interface Graph extends AutoCloseable {
 
     public interface Variables {
 
+        public class Variable {
+
+            private Variable() {
+
+            }
+
+            public static String hidden(final String key) {
+                return HIDDEN_PREFIX.concat(key);
+            }
+        }
+
         public Set<String> getVariables();
 
         public <R> R get(final String variable);
@@ -98,6 +111,7 @@ public interface Graph extends AutoCloseable {
                 return new UnsupportedOperationException(String.format("Graph variable value [%s] is of type %s is not supported", val, val.getClass()));
             }
         }
+
     }
 
     public default Features getFeatures() {

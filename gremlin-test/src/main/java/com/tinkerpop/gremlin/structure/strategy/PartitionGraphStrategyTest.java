@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class PartitionGraphStrategyTest extends AbstractGremlinTest {
-    private static final String partition = "partition";
+    private static final String partition = Property.Key.hidden("partition");
 
     public PartitionGraphStrategyTest() {
         super(Optional.of(new PartitionGraphStrategy(partition, "A")));

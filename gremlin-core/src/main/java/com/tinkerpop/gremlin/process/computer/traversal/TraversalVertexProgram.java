@@ -115,11 +115,11 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
             sideEffects.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
-            vertex.setProperty(TRAVERSAL_TRACKER, tracker).hidden(true);
+            vertex.setProperty(TRAVERSAL_TRACKER, tracker);
         } else {
             final TraversalCounters tracker = new TraversalCounters(vertex);
             sideEffects.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
-            vertex.setProperty(TRAVERSAL_TRACKER, tracker).hidden(true);
+            vertex.setProperty(TRAVERSAL_TRACKER, tracker);
         }
     }
 

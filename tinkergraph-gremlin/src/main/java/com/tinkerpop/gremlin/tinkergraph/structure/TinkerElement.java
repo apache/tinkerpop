@@ -14,6 +14,7 @@ import java.util.Map;
 abstract class TinkerElement implements Element, Serializable {
 
     protected Map<String, Property> properties = new HashMap<>();
+    protected Map<String, Property> hiddenProperties = new HashMap<>();
     protected final Object id;
     protected final String label;
     protected final TinkerGraph graph;
@@ -37,13 +38,16 @@ abstract class TinkerElement implements Element, Serializable {
     }
 
     public Map<String, Property> getProperties() {
-        final Map<String, Property> tempProperties = new HashMap<String, Property>();
-
-        this.properties.forEach((key, property) -> {
-            if (!property.isHidden())
-                tempProperties.put(key, property);
-        });
-        return tempProperties;
+        /*if (this.graph.useGraphView) {
+            final HashMap<String, Property> viewProperties = new HashMap<>(this.properties);
+            this.graph.graphView.computeKeys.forEach((key, keyType) -> {
+                if (this.graph.graphView.getProperty(this, key).isPresent())
+                    viewProperties.put(key, this.graph.graphView.getProperty(this, key));
+            });
+            return viewProperties;
+        } else {*/
+        return new HashMap<>(this.properties);
+        //}
     }
 
     public <V> Property<V> getProperty(final String key) {

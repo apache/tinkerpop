@@ -105,7 +105,7 @@ public class ElementHelperTest {
 
     @Test
     public void shouldAllowEvenNumberOfKeyValuesAndValidKeys() {
-        ElementHelper.legalPropertyKeyValueArray("key", "test", "value-for-this-one", 1, "1", "none");
+        ElementHelper.legalPropertyKeyValueArray("key", "test", "value-for-this-one", 1, Property.Key.hidden("1"), "none");
     }
 
     @Test

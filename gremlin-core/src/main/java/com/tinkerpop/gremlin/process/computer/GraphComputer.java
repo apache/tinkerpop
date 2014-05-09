@@ -45,7 +45,7 @@ public interface GraphComputer extends TraversalEngine {
 
     public Future<Pair<Graph, SideEffects>> submit();
 
-    public static void mergeComputedView(final Graph originalGraph, final Graph computedViewGraph, Map<String, String> keyMapping) {
+    public static void mergeComputedView(final Graph original, final Graph computed, Map<String, String> keyMapping) {
         throw new IllegalStateException("The mergeComputedView method must be defined by the implementing GraphComputer class");
     }
 

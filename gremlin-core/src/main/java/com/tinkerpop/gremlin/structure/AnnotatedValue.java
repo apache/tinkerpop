@@ -12,6 +12,16 @@ public interface AnnotatedValue<V> {
 
     public static final String VALUE = "value";
 
+    public class Key {
+
+        private Key() {
+        }
+
+        public static String hidden(final String key) {
+            return Graph.HIDDEN_PREFIX.concat(key);
+        }
+    }
+
     public void remove();
 
     public V getValue();

@@ -12,7 +12,7 @@ import java.util.Map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TinkerGraphView {
-    // TODO: Make these properties and support hidden
+
     protected final Map<String, VertexProgram.KeyType> computeKeys;
     protected final GraphComputer.Isolation isolation;
     private Map<Object, Map<String, Object>> getMap;
@@ -39,7 +39,7 @@ public class TinkerGraphView {
         }
     }
 
-    public <V> Property<V> setProperty(final TinkerElement element, final String key, final V value) {
+    public <V> void setProperty(final TinkerElement element, final String key, final V value) {
         ElementHelper.validateProperty(key, value);
         if (isComputeKey(key)) {
             final TinkerProperty<V> property = new TinkerProperty<V>(element, key, value) {
@@ -48,7 +48,6 @@ public class TinkerGraphView {
                 }
             };
             this.setValue(element.getId(), key, property);
-            return property;
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
             //element.properties.put(key, new TinkerProperty<>(element, key, value));
@@ -63,6 +62,7 @@ public class TinkerGraphView {
             return element.properties.getOrDefault(key, Property.empty());
         }
     }
+
 
     public void removeProperty(final TinkerElement element, final String key) {
         if (isComputeKey(key)) {

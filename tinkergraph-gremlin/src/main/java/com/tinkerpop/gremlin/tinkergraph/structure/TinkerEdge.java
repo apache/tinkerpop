@@ -25,16 +25,14 @@ class TinkerEdge extends TinkerElement implements Edge {
         this.graph.edgeIndex.autoUpdate(Element.LABEL, this.label, null, this);
     }
 
-    public <V> Property<V> setProperty(final String key, final V value) {
+    public <V> void setProperty(final String key, final V value) {
         if (this.graph.useGraphView) {
-            return this.graph.graphView.setProperty(this, key, value);
+            this.graph.graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);
             final Property oldProperty = super.getProperty(key);
-            final Property<V> newProperty;
-            this.properties.put(key, newProperty = new TinkerProperty<>(this, key, value));
+            this.properties.put(key, new TinkerProperty<>(this, key, value));
             this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
-            return newProperty;
         }
     }
 

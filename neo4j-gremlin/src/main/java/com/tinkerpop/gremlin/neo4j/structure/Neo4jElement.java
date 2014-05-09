@@ -73,7 +73,7 @@ abstract class Neo4jElement implements Element {
     }
 
     @Override
-    public <V> Property<V> setProperty(final String key, final V value) {
+    public <V> void setProperty(final String key, final V value) {
         ElementHelper.validateProperty(key, value);
         this.graph.tx().readWrite();
 
@@ -82,7 +82,6 @@ abstract class Neo4jElement implements Element {
 
         try {
             this.rawElement.setProperty(key, value);
-            return new Neo4jProperty<>(this, key, value);
         } catch (IllegalArgumentException iae) {
             throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
         }

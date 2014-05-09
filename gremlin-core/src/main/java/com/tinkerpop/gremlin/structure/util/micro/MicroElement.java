@@ -36,7 +36,7 @@ public abstract class MicroElement implements Element, Serializable {
         return this.label;
     }
 
-    public Property setProperty(final String key, final Object value) {
+    public void setProperty(final String key, final Object value) {
         throw new UnsupportedOperationException("Micro elements do not store properties (inflate): " + this.toString());
     }
 

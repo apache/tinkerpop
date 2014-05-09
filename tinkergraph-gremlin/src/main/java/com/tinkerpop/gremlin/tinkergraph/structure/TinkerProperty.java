@@ -17,7 +17,6 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
     private final String key;
     private final TinkerGraph graph;
     private V value;
-    private boolean hidden = false;
 
     public TinkerProperty(final Element element, final String key, final V value) {
         this.element = element;
@@ -60,13 +59,5 @@ public class TinkerProperty<V> implements Property<V>, Serializable {
             this.graph.vertexIndex.remove(key, value, (TinkerVertex) this.element);
         else
             this.graph.edgeIndex.remove(key, value, (TinkerEdge) this.element);
-    }
-
-    public void hidden(final boolean makeHidden) {
-        this.hidden = makeHidden;
-    }
-
-    public boolean isHidden() {
-        return this.hidden;
     }
 }

@@ -59,14 +59,6 @@ public class MicroProperty<V> implements Property, Serializable {
         throw new UnsupportedOperationException("Micro properties can not be removed (inflate): " + this.toString());
     }
 
-    public boolean isHidden() {
-        return false; // TODO!!
-    }
-
-    public void hidden(final boolean makeHidden) {
-
-    }
-
     public String toString() {
         return StringFactory.propertyString(this);
     }

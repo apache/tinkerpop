@@ -132,10 +132,9 @@ public class JsonMessageSerializerV1d0Test {
 
     @Test
     public void serializeHiddenProperties() throws Exception {
-        // TODO: NOT REALLY SERIALIZING HIDDEN PROPERTITES
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex("abc", 123);
-        v.setProperty("hidden", "stephen");
+        v.setProperty(Property.Key.hidden("hidden"), "stephen");
 
         final Iterable iterable = g.V().toList();
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(iterable).build());
@@ -158,7 +157,7 @@ public class JsonMessageSerializerV1d0Test {
         assertNotNull(properties);
 
         assertEquals(123, properties.getInt("abc"));
-        assertEquals("stephen", properties.getString("hidden"));
+        assertEquals("stephen", properties.getString(Property.Key.hidden("hidden")));
     }
 
     @Test
