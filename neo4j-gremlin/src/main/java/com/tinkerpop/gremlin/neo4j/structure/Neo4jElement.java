@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.javatuples.Pair;
@@ -47,6 +48,16 @@ abstract class Neo4jElement implements Element {
     public Map<String, Property> getProperties() {
         this.graph.tx().readWrite();
         return getPropertyKeys().stream()
+                .filter(key -> !key.startsWith(Graph.HIDDEN_PREFIX))
+                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.rawElement.getProperty(key))))
+                .collect(Collectors.toMap(kv -> kv.getValue0(), kv -> kv.getValue1()));
+    }
+
+    @Override
+    public Map<String, Property> getHiddens() {
+        this.graph.tx().readWrite();
+        return getPropertyKeys().stream()
+                .filter(key -> key.startsWith(Graph.HIDDEN_PREFIX))
                 .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.rawElement.getProperty(key))))
                 .collect(Collectors.toMap(kv -> kv.getValue0(), kv -> kv.getValue1()));
     }
@@ -56,7 +67,19 @@ abstract class Neo4jElement implements Element {
         this.graph.tx().readWrite();
         final Set<String> keys = new HashSet<>();
         for (final String key : this.rawElement.getPropertyKeys()) {
-            keys.add(key);
+            if (!key.startsWith(Graph.HIDDEN_PREFIX))
+                keys.add(key);
+        }
+        return keys;
+    }
+
+    @Override
+    public Set<String> getHiddenKeys() {
+        this.graph.tx().readWrite();
+        final Set<String> keys = new HashSet<>();
+        for (final String key : this.rawElement.getPropertyKeys()) {
+            if (key.startsWith(Graph.HIDDEN_PREFIX))
+                keys.add(key);
         }
         return keys;
     }

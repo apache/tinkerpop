@@ -141,7 +141,8 @@ public class BatchGraph<T extends Graph> implements Graph {
     @Override
     public Vertex addVertex(final Object... keyValues) {
         final Object id = ElementHelper.getIdValue(keyValues).orElseThrow(() -> new IllegalArgumentException("Vertex id value cannot be null"));
-        if (!incrementalLoading && retrieveFromCache(id) != null) throw new IllegalArgumentException("Vertex id already exists");
+        if (!incrementalLoading && retrieveFromCache(id) != null)
+            throw new IllegalArgumentException("Vertex id already exists");
         nextElement();
 
         // if the vertexIdKey is not the Element.ID then append it as a name/value pair.  this will overwrite what
@@ -158,13 +159,14 @@ public class BatchGraph<T extends Graph> implements Graph {
         if (!incrementalLoading)
             currentVertex = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
         else {
-            final Traversal<Vertex,Vertex> traversal = baseGraph.V().has(vertexIdKey, id);
+            final Traversal<Vertex, Vertex> traversal = baseGraph.V().has(vertexIdKey, id);
             if (traversal.hasNext()) {
                 final Vertex v = traversal.next();
-                if (traversal.hasNext()) throw new IllegalStateException(String.format("There is more than one vertex identified by %s=%s", vertexIdKey, id));
+                if (traversal.hasNext())
+                    throw new IllegalStateException(String.format("There is more than one vertex identified by %s=%s", vertexIdKey, id));
 
                 // let the caller decide how to handle conflict
-                kvs.ifPresent(keyvals->existingVertexStrategy.accept(v, keyvals));
+                kvs.ifPresent(keyvals -> existingVertexStrategy.accept(v, keyvals));
                 currentVertex = v;
             } else
                 currentVertex = kvs.isPresent() ? baseGraph.addVertex(kvs.get()) : baseGraph.addVertex();
@@ -368,7 +370,7 @@ public class BatchGraph<T extends Graph> implements Graph {
                     if (traversal.hasNext()) {
                         final Edge e = traversal.next();
                         // let the user decide how to handle conflict
-                        kvs.ifPresent(keyvals->existingEdgeStrategy.accept(e, keyvals));
+                        kvs.ifPresent(keyvals -> existingEdgeStrategy.accept(e, keyvals));
                         currentEdgeCached = e;
                     } else
                         currentEdgeCached = kvs.isPresent() ? ov.addEdge(label, iv, kvs.get()) : ov.addEdge(label, iv);
@@ -405,6 +407,11 @@ public class BatchGraph<T extends Graph> implements Graph {
         @Override
         public Map<String, Property> getProperties() {
             return getCachedVertex(externalID).getProperties();
+        }
+
+        @Override
+        public Map<String, Property> getHiddens() {
+            return getCachedVertex(externalID).getHiddens();
         }
 
         @Override
@@ -553,6 +560,11 @@ public class BatchGraph<T extends Graph> implements Graph {
         @Override
         public Map<String, Property> getProperties() {
             return getWrappedEdge().getProperties();
+        }
+
+        @Override
+        public Map<String, Property> getHiddens() {
+            return getWrappedEdge().getHiddens();
         }
 
         @Override

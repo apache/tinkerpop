@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.javatuples.Pair;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,13 +18,13 @@ public abstract class CachedElement implements Element {
 
     protected final Object id;
     protected final String label;
-    protected final Optional<Map<String,Property>> properties;
+    protected final Optional<Map<String, Property>> properties;
 
     protected CachedElement(final Object id, final String label) {
         this(id, label, null);
     }
 
-    protected CachedElement(final Object id, final String label, final Map<String,Object> properties) {
+    protected CachedElement(final Object id, final String label, final Map<String, Object> properties) {
         if (null == id) throw Graph.Exceptions.argumentCanNotBeNull("id");
         if (null == label) throw Graph.Exceptions.argumentCanNotBeNull("label");
 
@@ -64,12 +65,28 @@ public abstract class CachedElement implements Element {
     }
 
     public <V> Property<V> getProperty(final String key) {
-        return this.properties.orElseThrow(()->new IllegalStateException("Properties not assigned to this element which means it is likely a CachedVertex on a CachedEdge"))
+        return this.properties.orElseThrow(() -> new IllegalStateException("Properties not assigned to this element which means it is likely a CachedVertex on a CachedEdge"))
                 .getOrDefault(key, Property.empty());
     }
 
     public Map<String, Property> getProperties() {
-        return properties.orElseThrow(()->new IllegalStateException("Properties not assigned to this element which means it is likely a CachedVertex on a CachedEdge"));
+        final Map<String, Property> temp = new HashMap<>();
+        this.properties.orElseThrow(() -> new IllegalStateException("Properties not assigned to this element which means it is likely a CachedVertex on a CachedEdge"));
+        this.properties.get().forEach((key, property) -> {
+            if (!key.startsWith(Graph.HIDDEN_PREFIX))
+                temp.put(key, property);
+        });
+        return temp;
+    }
+
+    public Map<String, Property> getHiddens() {
+        final Map<String, Property> temp = new HashMap<>();
+        this.properties.orElseThrow(() -> new IllegalStateException("Properties not assigned to this element which means it is likely a CachedVertex on a CachedEdge"));
+        this.properties.get().forEach((key, property) -> {
+            if (key.startsWith(Graph.HIDDEN_PREFIX))
+                temp.put(key, property);
+        });
+        return temp;
     }
 
     public void remove() {

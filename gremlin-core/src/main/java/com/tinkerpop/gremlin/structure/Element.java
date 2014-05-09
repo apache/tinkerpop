@@ -32,7 +32,13 @@ public abstract interface Element {
         return this.getProperties().keySet();
     }
 
+    public default Set<String> getHiddenKeys() {
+        return this.getHiddens().keySet();
+    }
+
     public Map<String, Property> getProperties();
+
+    public Map<String, Property> getHiddens();
 
     public <V> Property<V> getProperty(final String key);
 

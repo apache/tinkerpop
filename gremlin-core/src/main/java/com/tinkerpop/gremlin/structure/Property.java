@@ -23,6 +23,7 @@ public abstract interface Property<V> {
         public static String hidden(final String key) {
             return Graph.HIDDEN_PREFIX.concat(key);
         }
+
     }
 
     public String getKey();
@@ -48,6 +49,10 @@ public abstract interface Property<V> {
         if (this.isPresent()) return this.get();
         else
             throw exceptionSupplier.get();
+    }
+
+    public default boolean isHidden() {
+        return this.getKey().startsWith(Graph.HIDDEN_PREFIX);
     }
 
     public <E extends Element> E getElement();

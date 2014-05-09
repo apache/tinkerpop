@@ -48,6 +48,10 @@ public abstract class MicroElement implements Element, Serializable {
         throw new UnsupportedOperationException("Micro elements do not store properties (inflate): " + this.toString());
     }
 
+    public Map<String, Property> getHiddens() {
+        throw new UnsupportedOperationException("Micro elements do not store properties (inflate): " + this.toString());
+    }
+
     public void remove() {
         throw new UnsupportedOperationException("Micro elements can not be removed (inflate): " + this.toString());
     }

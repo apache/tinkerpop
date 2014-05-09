@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
@@ -36,18 +37,24 @@ abstract class TinkerElement implements Element, Serializable {
         return this.label;
     }
 
-    public Map<String, Property> getProperties() {
-        /*if (this.graph.useGraphView) {
-            final HashMap<String, Property> viewProperties = new HashMap<>(this.properties);
-            this.graph.graphView.computeKeys.forEach((key, keyType) -> {
-                if (this.graph.graphView.getProperty(this, key).isPresent())
-                    viewProperties.put(key, this.graph.graphView.getProperty(this, key));
-            });
-            return viewProperties;
-        } else {*/
-        return new HashMap<>(this.properties);
-        //}
+    public Map<String, Property> getHiddens() {
+        final Map<String, Property> temp = new HashMap<>();
+        this.properties.forEach((key, property) -> {
+            if (key.startsWith(Graph.HIDDEN_PREFIX))
+                temp.put(key, property);
+        });
+        return temp;
     }
+
+    public Map<String, Property> getProperties() {
+        final Map<String, Property> temp = new HashMap<>();
+        this.properties.forEach((key, property) -> {
+            if (!key.startsWith(Graph.HIDDEN_PREFIX))
+                temp.put(key, property);
+        });
+        return temp;
+    }
+
 
     public <V> Property<V> getProperty(final String key) {
         if (this.graph.useGraphView) {

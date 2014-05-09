@@ -48,6 +48,11 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     }
 
     @Override
+    public Map<String, Property> getHiddens() {
+        return this.baseElement.getHiddens();
+    }
+
+    @Override
     public Set<String> getPropertyKeys() {
         return this.baseElement.getPropertyKeys();
     }
