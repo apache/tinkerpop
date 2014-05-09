@@ -124,6 +124,8 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             result.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
             result.put(SerTokens.TOKEN_TYPE, responseMessage.getResultType().getValue());
 
+            // todo: detect object that isn't registered with kryo and toString it
+
             final Kryo kryo = gremlinKryo.createKryo();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
                 final Output output = new Output(baos);

@@ -42,6 +42,15 @@ public class Cluster {
         return new Client(this);
     }
 
+    @Override
+    public String toString() {
+        return manager.toString();
+    }
+
+    public static Builder create() {
+        return new Builder();
+    }
+
     public static Builder create(final String address) {
         return new Builder(address);
     }
@@ -130,7 +139,11 @@ public class Cluster {
         private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
 
-        public Builder(final String address) {
+        private Builder() {
+            // empty to prevent direct instantiation
+        }
+
+        private Builder(final String address) {
             addContactPoint(address);
         }
 
@@ -292,7 +305,10 @@ public class Cluster {
                 return null;
             });
         }
+
+        @Override
+        public String toString() {
+            return String.join(", ", contactPoints.stream().map(InetSocketAddress::toString).collect(Collectors.<String>toList()));
+        }
     }
-
-
 }

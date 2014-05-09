@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.groovy.console;
 
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.console.commands.GremlinImportCommand;
+import com.tinkerpop.gremlin.groovy.console.commands.RemoteCommand;
+import com.tinkerpop.gremlin.groovy.console.commands.SubmitCommand;
 import com.tinkerpop.gremlin.groovy.console.commands.UseCommand;
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import jline.console.history.FileHistory;
@@ -9,6 +11,7 @@ import org.codehaus.groovy.tools.shell.Command;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.codehaus.groovy.tools.shell.InteractiveShellRunner;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,6 +23,7 @@ import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -53,7 +57,10 @@ public class Console {
         GROOVYSH.getRegistry().remove(cmd);
         GROOVYSH.register(new GremlinImportCommand(GROOVYSH));
 
+        final Mediator mediator = new Mediator();
         GROOVYSH.register(new UseCommand(GROOVYSH, loadedPlugins));
+        GROOVYSH.register(new RemoteCommand(GROOVYSH, mediator));
+        GROOVYSH.register(new SubmitCommand(GROOVYSH, mediator));
 
         // hide output temporarily while imports execute
         GROOVYSH.setResultHook(new NullResultHookClosure(GROOVYSH));
@@ -81,6 +88,14 @@ public class Console {
             runner.run();
         } catch (final Throwable e) {
             // System.err.println(e.getMessage());
+        } finally {
+            try {
+                mediator.close().get(3, TimeUnit.SECONDS);
+            } catch (Exception ex) {
+                // ok if this timesout - just trying to be polite on shutdown
+            } finally {
+                System.exit(0);
+            }
         }
     }
 

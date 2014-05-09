@@ -23,6 +23,11 @@
         </dependency>
         <dependency>
             <groupId>com.tinkerpop.tinkerpop3</groupId>
+            <artifactId>gremlin-driver</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tinkerpop.tinkerpop3</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${project.version}</version>
         </dependency>
