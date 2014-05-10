@@ -31,6 +31,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXblahX();
 
+    public abstract Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id);
+
     public abstract Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X();
@@ -66,6 +68,17 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         for (final Element v : list) {
             assertTrue(v.<Integer>getValue("age") > 30);
         }
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v1_hasXid_2X() {
+        Iterator<Vertex> traversal = get_g_v1_hasXage_gt_30X(convertToId("marko"));
+        System.out.println("Testing: " + traversal);
+        assertFalse(traversal.hasNext());
+        traversal = get_g_v1_hasXage_gt_30X(convertToId("josh"));
+        System.out.println("Testing: " + traversal);
+        assertTrue(traversal.hasNext());
     }
 
     @Test
@@ -130,6 +143,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
             return g.V().has("blah");
         }
 
+        public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
+            return g.v(v1Id).has("age", T.gt, 30);
+        }
+
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
             return g.v(v1Id).out().has(Element.ID, v2Id);
         }
@@ -162,6 +179,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Vertex> get_g_V_hasXblahX() {
             return g.V().<Vertex>has("blah").submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
+            return g.v(v1Id).<Vertex>has("age", T.gt, 30).submit(g.compute());
         }
 
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {

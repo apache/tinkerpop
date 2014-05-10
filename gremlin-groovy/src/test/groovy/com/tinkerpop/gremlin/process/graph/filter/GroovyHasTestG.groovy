@@ -23,6 +23,10 @@ class GroovyHasTestG extends HasTest {
         g.V.has('blah')
     }
 
+    public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
+        g.v(v1Id).has('age', T.gt, 30)
+    }
+
     public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
         g.v(v1Id).out.has('id', v2Id)
     }
