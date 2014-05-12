@@ -24,7 +24,7 @@ class ResponseQueue {
 
     private volatile Status status = Status.FETCHING;
 
-    private final AtomicReference<RuntimeException> error = new AtomicReference<>();
+    private final AtomicReference<Throwable> error = new AtomicReference<>();
 
     private final CompletableFuture<Void> readComplete;
 
@@ -38,12 +38,12 @@ class ResponseQueue {
     }
 
     public int size() {
-        if (error.get() != null) throw error.get();
+        if (error.get() != null) throw new RuntimeException(error.get());
         return this.responseQueue.size();
     }
 
     public boolean isEmpty() {
-        if (error.get() != null) throw error.get();
+        if (error.get() != null) throw new RuntimeException(error.get());
         return this.size() == 0;
     }
 
@@ -52,7 +52,7 @@ class ResponseQueue {
 
         ResponseMessage msg = null;
         do {
-            if (error.get() != null) throw error.get();
+            if (error.get() != null) throw new RuntimeException(error.get());
             try {
                 msg = responseQueue.poll(10, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ie) {
@@ -60,7 +60,7 @@ class ResponseQueue {
             }
         } while (null == msg && status == Status.FETCHING);
 
-        if (error.get() != null) throw error.get();
+        if (error.get() != null) throw new RuntimeException(error.get());
 
         return msg;
     }
@@ -74,7 +74,7 @@ class ResponseQueue {
         this.readComplete.complete(null);
     }
 
-    void markError(final RuntimeException throwable) {
+    void markError(final Throwable throwable) {
         error.set(throwable);
         this.readComplete.complete(null);
     }
