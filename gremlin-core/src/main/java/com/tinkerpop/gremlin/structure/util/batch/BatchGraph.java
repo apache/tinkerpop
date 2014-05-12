@@ -420,8 +420,8 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public <V> void setProperty(final String key, final V value) {
-            getCachedVertex(externalID).setProperty(key, value);
+        public <V> Property<V> setProperty(final String key, final V value) {
+            return getCachedVertex(externalID).setProperty(key, value);
         }
 
         @Override
@@ -573,8 +573,8 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public <V> void setProperty(final String key, final V value) {
-            getWrappedEdge().setProperty(key, value);
+        public <V> Property<V> setProperty(final String key, final V value) {
+            return getWrappedEdge().setProperty(key, value);
         }
 
         @Override

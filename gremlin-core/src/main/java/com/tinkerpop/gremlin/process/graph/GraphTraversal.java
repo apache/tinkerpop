@@ -293,12 +293,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.has(key, T.convert(t), value);
     }
 
-    public default <E2> GraphTraversal<S, E2> hasNot(final String key) {
-        return (GraphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Contains.NOT_IN)));
-    }
-
     public default <E2> GraphTraversal<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
         return (GraphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
+    }
+
+    public default <E2> GraphTraversal<S, E2> hasNot(final String key) {
+        return (GraphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Contains.NOT_IN)));
     }
 
     ///////////

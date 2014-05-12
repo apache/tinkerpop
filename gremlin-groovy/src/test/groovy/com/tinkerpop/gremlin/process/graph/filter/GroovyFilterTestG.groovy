@@ -21,6 +21,10 @@ class GroovyFilterTestG extends FilterTest {
          g.V.filter { it.get()['lang',null] == 'java' }
     }
 
+    public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(Object v1Id) {
+        g.v(v1Id).filter { it.get()['age',0] > 30 }
+    }
+
     public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id) {
          g.v(v1Id).out.filter { it.get()['age',0] > 30 }
     }
@@ -28,5 +32,4 @@ class GroovyFilterTestG extends FilterTest {
     public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
          g.V.filter { it.get()['name'].startsWith('m') || it.get()['name'].startsWith('p') }
     }
-
 }

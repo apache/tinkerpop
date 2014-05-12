@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -25,19 +26,49 @@ import static org.junit.Assume.assumeTrue;
  */
 public abstract class HasTest extends AbstractGremlinProcessTest {
 
+    public abstract Traversal<Vertex, Vertex> get_g_v1_hasXprop(Object v1Id, String prop);
+
+    public abstract Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(Object v1Id);
+
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_markoX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_blahX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXblahX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(Object v1Id, Object v2Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X();
 
     public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX();
 
     public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX();
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void get_g_v1_hasXprop() {
+        Iterator<Vertex> traversal = get_g_v1_hasXprop(convertToId("marko"), "name");
+        System.out.println("Testing: " + traversal);
+        assertEquals("marko", traversal.next().<String>getValue("name"));
+        assertFalse(traversal.hasNext());
+        traversal = get_g_v1_hasXprop(convertToId("marko"), "circumference");
+        System.out.println("Testing: " + traversal);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v1_hasXname_markoX() {
+        Iterator<Vertex> traversal = get_g_v1_hasXname_markoX(convertToId("marko"));
+        System.out.println("Testing: " + traversal);
+        assertEquals("marko", traversal.next().<String>getValue("name"));
+        assertFalse(traversal.hasNext());
+        traversal = get_g_v1_hasXname_markoX(convertToId("vadas"));
+        System.out.println("Testing: " + traversal);
+        assertFalse(traversal.hasNext());
+    }
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -66,6 +97,17 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         for (final Element v : list) {
             assertTrue(v.<Integer>getValue("age") > 30);
         }
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v1_hasXage_gt_30X() {
+        Iterator<Vertex> traversal = get_g_v1_hasXage_gt_30X(convertToId("marko"));
+        System.out.println("Testing: " + traversal);
+        assertFalse(traversal.hasNext());
+        traversal = get_g_v1_hasXage_gt_30X(convertToId("josh"));
+        System.out.println("Testing: " + traversal);
+        assertTrue(traversal.hasNext());
     }
 
     @Test
@@ -118,6 +160,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
+        public Traversal<Vertex, Vertex> get_g_v1_hasXprop(final Object v1Id, final String prop) {
+            return g.v(v1Id).has(prop);
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(final Object v1Id) {
+            return g.v(v1Id).has("name", "marko");
+        }
+
         public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX() {
             return g.V().has("name", "marko");
         }
@@ -128,6 +178,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Vertex> get_g_V_hasXblahX() {
             return g.V().has("blah");
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
+            return g.v(v1Id).has("age", T.gt, 30);
         }
 
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {
@@ -152,6 +206,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
+        public Traversal<Vertex, Vertex> get_g_v1_hasXprop(final Object v1Id, final String prop) {
+            return g.v(v1Id).<Vertex>has(prop).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(final Object v1Id) {
+            return g.v(v1Id).<Vertex>has("name", "marko").submit(g.compute());
+        }
+
         public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX() {
             return g.V().<Vertex>has("name", "marko").submit(g.compute());
         }
@@ -162,6 +224,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Vertex> get_g_V_hasXblahX() {
             return g.V().<Vertex>has("blah").submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id) {
+            return g.v(v1Id).<Vertex>has("age", T.gt, 30).submit(g.compute());
         }
 
         public Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id) {

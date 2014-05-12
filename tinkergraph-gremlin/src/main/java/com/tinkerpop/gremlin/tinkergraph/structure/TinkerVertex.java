@@ -39,18 +39,26 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         super(id, label, graph);
     }
 
-    public <V> void setProperty(final String key, final V value) {
+    public <V> Property<V> setProperty(final String key, final V value) {
         if (this.graph.useGraphView) {
-            this.graph.graphView.setProperty(this, key, value);
+            return this.graph.graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);
             final Property oldProperty = super.getProperty(key);
+            Property newProperty;
             if (value == AnnotatedList.make()) {
-                if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList))
-                    this.properties.put(key, new TinkerProperty<>(this, key, new TinkerAnnotatedList<>()));
-            } else
-                this.properties.put(key, new TinkerProperty<>(this, key, value));
+                if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList)) {
+                    newProperty = new TinkerProperty<>(this, key, new TinkerAnnotatedList<>());
+                    this.properties.put(key, newProperty);
+                } else {
+                    return this.properties.get(key);
+                }
+            } else {
+                newProperty = new TinkerProperty<>(this, key, value);
+                this.properties.put(key, newProperty);
+            }
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
+            return newProperty;
         }
     }
 

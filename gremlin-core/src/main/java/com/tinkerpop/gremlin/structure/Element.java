@@ -42,7 +42,7 @@ public abstract interface Element {
 
     public <V> Property<V> getProperty(final String key);
 
-    public <V> void setProperty(final String key, final V value);
+    public <V> Property<V> setProperty(final String key, final V value);
 
     public default void setProperties(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);

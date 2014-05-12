@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.graph.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
@@ -82,20 +83,29 @@ public class TinkerFactory {
 
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
 
-        public default SocialTraversal<S, E> people(final Graph g) {
-            return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, g.V().has("age")));
+        public default SocialTraversal<S, Vertex> people() {
+            return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("age")));
         }
 
-        public default SocialTraversal<S, E> knows() {
+        public default SocialTraversal<S, Vertex> people(String name) {
+            return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("name", name)));
+        }
+
+        public default SocialTraversal<S, Vertex> knows() {
             final FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
             flatMapStep.setFunction(v -> v.get().out("knows"));
             return (SocialTraversal) this.addStep(flatMapStep);
         }
 
+        public default SocialTraversal<S, String> name() {
+            MapStep<Vertex, String> mapStep = new MapStep<>(this);
+            mapStep.setFunction(v -> v.get().<String>getValue("name"));
+            return (SocialTraversal) this.addStep(mapStep);
+        }
+
         public static SocialTraversal of() {
             return new DefaultSocialTraversal();
         }
-
 
         public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {
 
