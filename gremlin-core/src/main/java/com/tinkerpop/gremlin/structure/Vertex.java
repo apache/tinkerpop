@@ -135,7 +135,6 @@ public interface Vertex extends Element {
         return this.start().annotations(annotationKeys);
     }
 
-    // TODO: test
     public default GraphTraversal<Vertex, Vertex> filter(final SPredicate<Holder<Vertex>> predicate) {
         return this.start().filter(predicate);
     }
@@ -145,17 +144,14 @@ public interface Vertex extends Element {
         return this.start().flatMap(function);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> has(final String key) {
         return this.start().has(key);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> has(final String key, final Object value) {
         return this.start().has(key, value);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> has(final String key, final T t, final Object value) {
         return this.start().has(key, t, value);
     }
@@ -180,7 +176,6 @@ public interface Vertex extends Element {
         return this.start().has(propertyKey, annotationKey, annotationValue);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> hasNot(final String key) {
         return this.start().hasNot(key);
     }

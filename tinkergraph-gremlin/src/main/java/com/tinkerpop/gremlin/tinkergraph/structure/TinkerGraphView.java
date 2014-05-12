@@ -5,13 +5,14 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphView {
+public class TinkerGraphView implements Serializable {
 
     protected final Map<String, VertexProgram.KeyType> computeKeys;
     protected final GraphComputer.Isolation isolation;

@@ -74,7 +74,6 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         assertEquals(2, vertices.size());
     }
 
-    /*
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_filterXage_gt_30X() {
@@ -86,7 +85,6 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         assertTrue(traversal.hasNext());
         assertEquals(Integer.valueOf(32), traversal.next().<Integer>getValue("age"));
     }
-    */
 
     @Test
     @LoadGraphWith(CLASSIC)

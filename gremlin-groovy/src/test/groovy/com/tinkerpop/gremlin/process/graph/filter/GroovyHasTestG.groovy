@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.process.graph.filter
 
-import com.tinkerpop.gremlin.groovy.GremlinLoader
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Edge
@@ -10,6 +9,14 @@ import com.tinkerpop.gremlin.structure.Vertex
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 class GroovyHasTestG extends HasTest {
+
+    public Traversal<Vertex, Vertex> get_g_v1_hasXprop(final Object v1Id, final String prop) {
+        g.v(v1Id).has(prop)
+    }
+
+    public Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(final Object v1Id) {
+        g.v(v1Id).has('name', 'marko')
+    }
 
     public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX() {
         g.V.has('name', 'marko')
