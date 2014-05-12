@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
@@ -30,8 +29,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -58,13 +56,14 @@ public class TinkerGraphTest implements Serializable {
     @Test
     public void testTraversalDSL() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        // g.traversal(TinkerFactory.SocialTraversal.class).people(g).knows().knows().forEach(System.out::println);
-        Graph h = g.compute().program(PageRankVertexProgram.create().getConfiguration()).submit().get().getValue0();
+        g.traversal(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEach(System.out::println);
+
+        /*Graph h = g.compute().program(PageRankVertexProgram.create().getConfiguration()).submit().get().getValue0();
         System.out.println(h.v(1).getValue(PageRankVertexProgram.PAGE_RANK).toString());
         Map<String, String> map = new HashMap<>();
         map.put(PageRankVertexProgram.PAGE_RANK, "pageRank");
         TinkerGraphComputer.mergeComputedView(g, h, map);
-        System.out.println(g.v(1).getValue("pageRank").toString());
+        System.out.println(g.v(1).getValue("pageRank").toString());*/
     }
 
     @Test
