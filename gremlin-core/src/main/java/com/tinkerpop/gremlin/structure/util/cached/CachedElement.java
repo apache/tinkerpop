@@ -60,7 +60,7 @@ public abstract class CachedElement implements Element {
         return this.label;
     }
 
-    public void setProperty(final String key, final Object value) {
+    public Property setProperty(final String key, final Object value) {
         throw new UnsupportedOperationException("Cached elements are read-only: " + this.toString());
     }
 

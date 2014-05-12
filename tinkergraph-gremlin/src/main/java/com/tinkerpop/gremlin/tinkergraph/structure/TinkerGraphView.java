@@ -40,7 +40,7 @@ public class TinkerGraphView implements Serializable {
         }
     }
 
-    public <V> void setProperty(final TinkerElement element, final String key, final V value) {
+    public <V> Property<V> setProperty(final TinkerElement element, final String key, final V value) {
         ElementHelper.validateProperty(key, value);
         if (isComputeKey(key)) {
             final TinkerProperty<V> property = new TinkerProperty<V>(element, key, value) {
@@ -49,6 +49,7 @@ public class TinkerGraphView implements Serializable {
                 }
             };
             this.setValue(element.getId(), key, property);
+            return property;
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
             //element.properties.put(key, new TinkerProperty<>(element, key, value));
