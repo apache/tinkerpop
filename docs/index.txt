@@ -1,0 +1,278 @@
+Tinkerpop3 Documentation
+========================
+
+////
+Based on revision 1e2078fac4dae8abb1312d1a18cda8609e8c3ce1 of
+https://github.com/tinkerpop/tinkerpop3/wiki/TinkerPop3-Documentation
+
+The only change between the wiki revision cited and this file is that
+I changed the image URLs to be relative paths instead of absolute
+paths to raw.github.com (and I addded this comment).
+////
+
+image::tinkerpop-logo.png[width=500]
+
+The TinkerPop Saga Continues
+----------------------------
+
+The TinkerPop is the reality that begot Gremlin and all that Gremlin has ever known -- as well as that which is no knowledge. In *TinkerPop0*, Gremlin found himself alone in a world of reference as he moved about trying to understand why this structure existed and for what reason. Far is far and near is near for Gremlin. For The TinkerPop, this is true as well, but also west is right, down is forward, and Gremlin is The TinkerPop, as well as not. When will he realize this?
+
+image::gremlin-logo.png[width=400]
+
+Confused by his wanders, for *TinkerPop1* Gremlin machined his friends Blueprints, Pipes, Frames, Furnace, and Rexster. However, The TinkerPop is elusive and difficult to realize through mechanical means. Gremlin thought that perhaps if the machines were more precise, they will allow him to more quickly, move through The TinkerPop and ultimately, understand it completely. With a little help from his friends, Gremlin traverses and traverses but when he is here, he is not there and thus, not fully with The TinkerPop which is everywhere.
+
+image::gremlin-and-friends.png[width=600]
+
+Perhaps if he faster then he can be at all vertices at "once." In *TinkerPop2*, Gremlin created various optimizations to his machines. However, regardless of his haste, he is always stuck within his reference structure, patterned by his graph of associations that move him about ---- ping, pong, ping, pong (a mere sliver of that which is The TinkerPop). Unsatisfied with his approach to The TinkerPop, he contemplated what TinkerPop3 would be. Gremlin reviewed the situation with his friends -- long discussions ensued.
+
+image::tinkerpop-reading.png[width=500]
+
+His final push, his final emphatic expression of himself made him rethink his approach. For his third attempt he gathered his friends...
+
+image::tinkerpop3-splash.png[width=500]
+
+...and united them in such a way that their very nature became his. For *TinkerPop3* is the Gremlin and all the world will realize that it is all the world.
+
+image::gremlintron.png[width=500]
+
+Graph Computing with TinkerPop3
+-------------------------------
+
+A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data structure composed of vertices (nodes, dots) and edges (arcs, lines). When modeling a graph in a computer and applying it to modern data sets and practices, the generic mathematically-oriented, binary graph is extended to support both labels and key/value properties. This structure is known as a property graph. More formally, it is a directed, binary, attributed multi-graph. An example property graph is diagrammed below. This graph example will be used extensively throughout the documentation and is called "TinkerPop Classic" as it is the original demo graph since TinkerPop0 in 2009.
+
+.TinkerPop Classic
+image::tinkerpop-classic.png[width=500]
+
+TinkerPop3 is the third incarnation of a graph computing framework. This framework is poised to be implemented by vendors. Like computing in general, graph computing is makes a distinction between *structure* (graph) and *process* (traversal). The structure of the graph is the data model defined by a vertex/edge/property topology. The process of the graph is the means by which the structure is analyzed.
+
+.Primary components of the TinkerPop3 *structure* API 
+* `Graph`: maintains a set of vertices and access to administrative functions and transactions.
+* `Element`: maintains a collection of properties and a string label. 
+** `Vertex`: extends Element and maintains a set of incoming and outgoing edges.
+** `Edge`: extends Element and maintains an incoming and outgoing vertex.
+* `Property<V>`: a string key and a V value.
+
+.Primary components of the TinkerPop3 *process* API
+* `Traversal`: a functional data flow process.
+** `GraphTraversal`: a traversal that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.)
+* `VertexProgram`: an body of code to be executed by all vertices in a logically parallel fashion.
+
+The purpose of this documentation is to describe this dichotomy at depth and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing.
+
+The Graph Structure
+~~~~~~~~~~~~~~~~~~~
+
+The classic TinkerPop graph can be created with the following Java code.
+
+[source,java]
+Graph g = TinkerGraph.open();
+Vertex marko = g.addVertex(Element.ID, 1, "name", "marko", "age", 29);
+Vertex vadas = g.addVertex(Element.ID, 2, "name", "vadas", "age", 27);
+Vertex lop = g.addVertex(Element.ID, 3, "name", "lop", "lang", "java");
+Vertex josh = g.addVertex(Element.ID, 4, "name", "josh", "age", 32);
+Vertex ripple = g.addVertex(Element.ID, 5, "name", "ripple", "lang", "java");
+Vertex peter = g.addVertex(Element.ID, 6, "name", "peter", "age", 35);
+marko.addEdge("knows", vadas, Element.ID, 7, "weight", 0.5f);
+marko.addEdge("knows", josh, Element.ID, 8, "weight", 1.0f);
+marko.addEdge("created", lop, Element.ID, 9, "weight", 0.4f);
+josh.addEdge("created", ripple, Element.ID, 10, "weight", 1.0f);
+josh.addEdge("created", lop, Element.ID, 11, "weight", 0.4f);
+peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2f);
+
+In the above code all the vertices are created first and then their respective edges. There are two reserved keys: id (`Element.ID`) and label (`Element.LABEL`). When any of these, along with a set of other key value pairs is provided to `Graph.addVertex(Object...)` or `Graph.addEdge(String,Vertex,Object...)`, the respective element is created along with the provided key/value pair properties amended. 
+
+CAUTION: Many graph vendors do not allow the user to specify an element ID and in such cases, the element ID key/value is ignored.
+
+Annotated Lists
+^^^^^^^^^^^^^^^
+
+The values of a property can be any arbitrary `Object` as long as the object type is supported by the underlying graph vendor. One particular special object that has been introduced into TinkerPop3 is the `AnnotatedList`. In many instances, a key will want a list of values. For example, a vertex can have many names. This can be represented solely using a `List<String>`, but in many instances, other metadata (i.e. annotations) may be desired. For example:
+
+* "When was that particular name declared?"
+* "Who said that that person had that particular name?"
+
+In TinkerPop3, an annotated list is created as follows.
+
+[source,java]
+Graph g = TinkerGraph.open()
+Vertex marko = g.addVertex()
+AnnotatedList names = marko.setProperty("names",AnnotatedList.make()).get()
+names.addValue("marko","timestamp",2009)
+names.addValue("marko rodriguez","timestamp",2009,"author","stephen")
+System.out.println(names);
+// p[names->[marko, marko rodriguez, ...]]
+names.annotatedValues().forEach(System.out::println)
+// marko:{timestamp=2009}]
+// marko rodriguez:{author=stephen, timestamp=2009}]
+
+The Graph Process
+~~~~~~~~~~~~~~~~~
+
+The primary way in which graphs are processed are by means of graph traversals. A graph traversal can be spawed from a Graph, Vertex, or Edge. For example, Graph provides two traversal methods.
+
+. `Graph.V()`: generates a traversal starting at all vertices in the graph. 
+. `Graph.E()`: generates a traversal starting at all edges in the graph.
+
+The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition and implements Iterator and Iterable. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of three ways.
+
+. `map`: transform the incoming object to another object
+. `flatMap`: transform the incoming object to an iterator of other objects
+. `filter`: allow or disallow the object from proceeding to the next step
+
+Given the classic TinkerPop graph, the following query will return the names of all the people that Marko's knows.
+
+[source,java]
+g.V().has("name","marko").out("knows").value("name")
+==>vadas
+==>josh
+
+Or, if the vertex marko is already realized with a direct reference pointer, then the traversal can be spawed off that vertex.
+
+[source,java]
+marko.out("knows").value("name")
+
+.The Name of The People That Marko Knows
+image::tinkerpop-classic-ex1.png[width=500]
+
+Again, all steps extend either map, flatMap, or filter. Thus, the traversal above can be written in its generic form as:
+
+[source,java]
+marko
+  .filter(v -> v.get().getValue("name").equals("marko"))
+  .flatMap(v -> v.get().out("knows"))
+  .map(v -> v.get().getValue("name"))
+==>vadas
+==>josh
+
+The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. Java8 introduced lambdas and is supported in TinkerPop3.
+
+NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than it ever was before. In TinkerPop0 through TinkerPop2, Gremlin-Java was extremely verbose due to the simulation of lambdas via anonymous inner classes.  
+
+Traversal Mechanics
+^^^^^^^^^^^^^^^^^^^
+
+When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps are the middle of the traversal (e.g. `out("knows")` and `value("name")`), and the result is "traversal.next()'d" out of the right of the traversal (e.g. "vadas" and "josh").
+
+image::traversal-mechanics.png[width=500]
+
+In TinkerPop3, the objects propagating through the traversal are wrapped in a `Holder<T>`. The holder concept is new to TinkerPop3 and provides the means by which steps remain stateless. A holder maintains all the metadata about the traversal -- e.g., how many times the object has gone through a loop, the path history of the object, etc. This data can be accessed by a step:
+
+[source,java]
+marko.out("knows").value("name").path
+==>[v[1], v[2], vadas]
+==>[v[1], v[4], josh]
+
+In the general form of the expression, the input to the functions map, flatMap, and filter are a `Holder<T>`. Hence, the reason, the general form lambdas start with a `v.get()` (i.e. "get the raw object of the holder containing a vertex"). The general form of path-step demonstrates how the metadata of the holder is accessed without accessing the raw object. 
+
+[source,java]
+marko
+  .filter(v -> v.get().getValue("name").equals("marko"))
+  .flatMap(v -> v.get().out("knows"))
+  .map(v -> v.get().getValue("name"))
+  .map(v -> v.getPath())
+==>[v[1], v[2], vadas]
+==>[v[1], v[4], josh]
+
+CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective holder. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
+
+Creating a Domain Specific Language
+-----------------------------------
+
+The super interface of GraphTraversal is `Traversal`. It is possible for developers to create domains specific traversals by extending Traversal. For example, a `SocialTraversal` example is provided below.
+
+[source,java]
+----
+public interface SocialTraversal<S, E> extends Traversal<S, E> {
+   public default SocialTraversal<S, Vertex> people() {
+     return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("age")));
+   }
+
+   public default SocialTraversal<S, Vertex> people(String name) {
+     return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("name", name)));
+   }
+
+  public default SocialTraversal<S, Vertex> knows() {
+    FlatMapStep<Vertex, Vertex> flatMapStep = new FlatMapStep<>(this);
+    flatMapStep.setFunction(v -> v.get().out("knows"));
+    return (SocialTraversal) this.addStep(flatMapStep);
+  }
+
+  public default SocialTraversal<S,String> name() {
+    MapStep<Vertex,String> mapStep = new MapStep<>(this);
+    mapStep.setFunction(v -> v.get().<String>getValue("name"));
+    return (SocialTraversal) this.addStep(mapStep);
+  }
+
+  public static SocialTraversal of() {
+    return new DefaultSocialTraversal();
+  }
+
+  public class DefaultSocialTraversal extends DefaultTraversal implements SocialTraversal {}
+}
+----
+
+This traversal definition can now be used as follows.
+
+[source,java]
+g.traversal(SocialTraversal.class).people(Optional.of("marko")).knows().name()
+
+By extending Traversal, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
+
+
+OLTP and OLAP Graph Processing
+------------------------------
+
+TinkerPop3 provides two primary means of interacting with a graph: online transaction processing and online analytical processing. OTLP-based graph systems allow the user to interact with local areas of the graph for real-time results. By local interaction, a particular vertex (or small set of vertices) is analyzed along with their local neighborhood. Due to the fact that only a small subgraph of the larger graph is being interacted with, the results can be effectively retrieved on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, typically the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (e.g. represented across a cluster of machines), results can take on the order of minutes or hours.
+
+_INSERT A PICTURE OF OLTP vs. OLAP_
+
+A Single Unified Graph Query Language
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Regardless of whether the user requires OLTP or OLAP processing, there exists a single graph query language for both modes of interaction. This language is called Gremlin. Gremlin is a functional, path-based language that allows users to express traversals over the graph. A simple OLTP-type query is provided below.
+
+[source,groovy]
+g.v(1).out('knows').name
+
+The traversal above returns the names of the vertices that vertex 1 knows. In other words, "who are Marko's friends?". In Gremlin there are numerous steps (i.e. functions), that can be composed to form a longer traversal (i.e. a chain of functions). The functional aspect of Gremlin is the statelessness and compose-ability of its steps. These same steps can be used to perform OLAP-type computations. For example, for all vertices in the graph, what is the distribution of their ages.
+
+[source,groovy]
+g.V.age.groupCount
+
+The above query is OLAP in nature due to the fact that it touches every vertex in the graph. If the graph is small, this query may return in milliseconds. If its large, then it may take minutes. Moreover, the execution speed of an OLAP query (like an OLTP query) is ultimately determined by execution engine -- i.e. the graph system.
+
+TinkerGraph as the Reference Implementation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TinkerGraph is a single machine, in-memory, non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph is presented below.
+
+[source,java]
+Graph g = TinkerGraph.open();
+Vertex marko = g.addVertex("name","marko","age",29);
+Vertex lop = g.addVertex("name","lop","lang","java");
+marko.addEdge("created",lop,"weight",0.6d);
+
+The above graph creates two vertices named "marko" and "lop" and connects them via a "created" edge. Next, the graph can be queried as such.
+
+[source,java]
+g.V().has("name","marko").out("created").value("name")
+
+The `g.V().has("name","marko")` part of the query can be executed in two ways.
+. A linear scan of all vertices filtering out those vertices that don't have the name "marko"
+. A `O(log(|V|))` index lookup for all vertices with the name "marko"
+
+Given the initial graph construction in the first code block, no index was defined and thus, a linear scan is executed. However, if the graph was constructed as such, then an index lookup would be used.
+
+[source,java]
+Graph g = TinkerGraph.open();
+g.createIndex("name",Vertex.class)
+
+The OLAP execution of TinkerGraph is called `TinkerGraphComputer` as it implements the `GraphComputer` interface. This interface logically interprets every vertex as a thread of communication and vertices can communicate with each other (though they originally only have knowledge of their direct, adjacent neighbors). To execute the above query on TinkerGraph's OLAP engine, the following code is used.
+
+[source,java]
+g.V().has("name","marko").out("created").value("name").submit(g.compute())
+
+GraphComputer and VertexProgram
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Any graph engine can implement the `GraphComputer` interface and provide users OLAP functionality.
