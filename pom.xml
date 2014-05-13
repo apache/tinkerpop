@@ -498,6 +498,7 @@
                                         <imagesdir>images</imagesdir>
                                         <encoding>UTF-8</encoding>
                                         <toc>true</toc>
+                                        <!--<iconsdir>images/icons</iconsdir>-->
                                         <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>readthedocs.css</stylesheet>

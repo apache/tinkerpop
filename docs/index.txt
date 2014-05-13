@@ -1,15 +1,15 @@
-Tinkerpop3 Documentation
-========================
-:toc-position: right
+image::tinkerpop3-logo.png[width=500]
+
+
+:toc-position: left
 
 // This directive does nothing.
 // Seems the highlighter must be configured in the pom (?)
 // :source-highlighter: coderay
 
-image::tinkerpop-logo.png[width=500]
 
-The TinkerPop Saga Continues
-----------------------------
+The Third Incarnation of The TinkerPop
+--------------------------------------
 
 The TinkerPop is the reality that begot Gremlin and all that Gremlin has ever known -- as well as that which is no knowledge. In *TinkerPop0*, Gremlin found himself alone in a world of reference as he moved about trying to understand why this structure existed and for what reason. Far is far and near is near for Gremlin. For The TinkerPop, this is true as well, but also west is right, down is forward, and Gremlin is The TinkerPop, as well as not. When will he realize this?
 
@@ -19,7 +19,7 @@ Confused by his wanders, for *TinkerPop1* Gremlin machined his friends Blueprint
 
 image::gremlin-and-friends.png[width=600]
 
-Perhaps if he faster then he can be at all vertices at "once." In *TinkerPop2*, Gremlin created various optimizations to his machines. However, regardless of his haste, he is always stuck within his reference structure, patterned by his graph of associations that move him about ---- ping, pong, ping, pong (a mere sliver of that which is The TinkerPop). Unsatisfied with his approach to The TinkerPop, he contemplated what TinkerPop3 would be. Gremlin reviewed the situation with his friends -- long discussions ensued.
+Perhaps if he faster then he can be at all vertices at "once." In *TinkerPop2*, Gremlin created various optimizations to his machines. However, regardless of his haste, he is always stuck within his reference structure, patterned by his graph of associations that move him about --- ping, pong, ping, pong (a mere sliver of that which is The TinkerPop). Unsatisfied with his approach to The TinkerPop, he contemplated what TinkerPop3 would be. Gremlin reviewed the situation with his friends -- long discussions ensued.
 
 image::tinkerpop-reading.png[width=500]
 
@@ -39,26 +39,26 @@ A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data stru
 .TinkerPop Classic
 image::tinkerpop-classic.png[width=500]
 
-TinkerPop3 is the third incarnation of a graph computing framework. This framework is poised to be implemented by vendors. Like computing in general, graph computing is makes a distinction between *structure* (graph) and *process* (traversal). The structure of the graph is the data model defined by a vertex/edge/property topology. The process of the graph is the means by which the structure is analyzed.
+TinkerPop3 is the third incarnation of a graph computing framework now built atop Java8. In graph computing, like computing in general, a distinction is made between *structure* (graph) and *process* (traversal). The structure of the graph is the data model defined by a vertex/edge/property topology. The process of the graph is the means by which the structure is analyzed.
 
 .Primary components of the TinkerPop3 *structure* API 
-* `Graph`: maintains a set of vertices and access to administrative functions and transactions.
-* `Element`: maintains a collection of properties and a string label. 
-** `Vertex`: extends Element and maintains a set of incoming and outgoing edges.
-** `Edge`: extends Element and maintains an incoming and outgoing vertex.
-* `Property<V>`: a string key and a V value.
+ * `Graph`: maintains a set of vertices and access to administrative functions and transactions.
+ * `Element`: maintains a collection of properties and a string label. 
+  ** `Vertex`: extends Element and maintains a set of incoming and outgoing edges.
+  ** `Edge`: extends Element and maintains an incoming and outgoing vertex.
+ * `Property<V>`: a string key and a V value.
 
 .Primary components of the TinkerPop3 *process* API
-* `Traversal`: a functional data flow process.
-** `GraphTraversal`: a traversal that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.)
-* `VertexProgram`: an body of code to be executed by all vertices in a logically parallel fashion.
+ * `Traversal`: a functional data flow process.
+  ** `GraphTraversal`: a traversal that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.)
+ * `VertexProgram`: an body of code to be executed by all vertices in a logically parallel fashion.
 
 The purpose of this documentation is to describe this dichotomy at depth and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing.
 
 The Graph Structure
 ~~~~~~~~~~~~~~~~~~~
 
-The classic TinkerPop graph can be created with the following Java code.
+The classic TinkerPop graph can be created with the following Java8 code.
 
 [source,java]
 Graph g = TinkerGraph.open();
@@ -82,24 +82,35 @@ CAUTION: Many graph vendors do not allow the user to specify an element ID and i
 Annotated Lists
 ^^^^^^^^^^^^^^^
 
-The values of a property can be any arbitrary `Object` as long as the object type is supported by the underlying graph vendor. One particular special object that has been introduced into TinkerPop3 is the `AnnotatedList`. In many instances, a key will want a list of values. For example, a vertex can have many names. This can be represented solely using a `List<String>`, but in many instances, other metadata (i.e. annotations) may be desired. For example:
+The values of a property can be any arbitrary `Object` as long as the object type is supported by the underlying graph vendor. One particular special object that has been introduced into TinkerPop3 is the `AnnotatedList`. AnnotatedLists are useful in systems that support auditing and provenance. In such instances, a particular property key will want to be associated with a list of values. For example, assume that the locations of a person is a property on a vertex. This can be represented solely using a `List<String>`, but in many instances, other metadata (i.e. annotations) may be desired because a person could have lived in various locations over time.
 
-* "When was that particular name declared?"
-* "Who said that that person had that particular name?"
+image::annotated-list.png[width=600]
 
-In TinkerPop3, an annotated list is created as follows.
+In TinkerPop3, an annotated list is created as follows in Java8.
 
 [source,java]
 Graph g = TinkerGraph.open()
-Vertex marko = g.addVertex()
-AnnotatedList names = marko.setProperty("names",AnnotatedList.make()).get()
-names.addValue("marko","timestamp",2009)
-names.addValue("marko rodriguez","timestamp",2009,"author","stephen")
-System.out.println(names);
-// p[names->[marko, marko rodriguez, ...]]
+Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person")
+AnnotatedList locations = marko.setProperty("locations",AnnotatedList.make()).get()
+locations.addValue("san diego","startTime",1997,"endTime",2001)
+locations.addValue("santa cruz","startTime",2001,"endTime",2004)
+locations.addValue("brussels","startTime",2004,"endTime",2005)
+locations.addValue("santa fe","startTime",2005,"endTime",2014)
+System.out.println(locations)
+// [san diego, santa cruz, ...]
 names.annotatedValues().forEach(System.out::println)
-// marko:{timestamp=2009}]
-// marko rodriguez:{author=stephen, timestamp=2009}]
+// [san diego:{startTime=1997, endTime=2001}]
+// [santa cruz:{startTime=2001, endTime=2004}]
+// [brussels:{startTime=2004, endTime=2005}]
+// [santa fe:{startTime=2005, endTime=2014}]
+locations.annotatedValues().has('startTime',T.gt,2002).value().forEach(System.out::println)
+// brussels
+// santa fe
+
+The TinkerPop Modern graph is available via `TinkerFactory.createModern()` and provides a new demonstration graph. This graph provides examples of an annotated list.
+
+.TinkerPop Modern
+image::tinkerpop-modern.png[width=600]
 
 
 The Graph Process
@@ -107,37 +118,48 @@ The Graph Process
 
 The primary way in which graphs are processed are by means of graph traversals. A graph traversal can be spawed from a Graph, Vertex, or Edge. For example, Graph provides two traversal methods.
 
-. `Graph.V()`: generates a traversal starting at all vertices in the graph. 
-. `Graph.E()`: generates a traversal starting at all edges in the graph.
+ . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
+ . `Graph.E()`: generates a traversal starting at all edges in the graph.
 
-The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition and implements Iterator and Iterable. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of three ways.
+The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition and implements `Iterator` and `Iterable`. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of three ways.
 
-. `map`: transform the incoming object to another object
-. `flatMap`: transform the incoming object to an iterator of other objects
-. `filter`: allow or disallow the object from proceeding to the next step
+ . `map`: transform the incoming object to another object
+ . `flatMap`: transform the incoming object to an iterator of other objects
+ . `filter`: allow or disallow the object from proceeding to the next step
 
-Given the classic TinkerPop graph, the following query will return the names of all the people that Marko's knows.
+NOTE: Both map and filter can be represented as flatMap. Map can return an iterator with a single object in it. Filter can return an iterator with a single object in it or no object at all. Thus, flatMap is the most general construct -- "turn the incoming object into an iterator of objects."
 
-[source,java]
-g.V().has("name","marko").out("knows").value("name")
+Given the classic TinkerPop graph, the following query will return the names of all the people that Marko's knows. The following query is demonstrated using the Gremlin-Groovy REPL. This is accessible via `bin/gremlin.sh` (or `bin/gremlin.bat` for Windows users).
+
+TIP: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
+
+[source,groovy]
+----
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+gremlin> g.V().has('name','marko').out('knows').name
 ==>vadas
 ==>josh
+----
 
 Or, if the vertex marko is already realized with a direct reference pointer, then the traversal can be spawed off that vertex.
 
-[source,java]
-marko.out("knows").value("name")
+[source,groovy]
+marko.out('knows').name
 
 .The Name of The People That Marko Knows
 image::tinkerpop-classic-ex1.png[width=500]
 
 Again, all steps extend either map, flatMap, or filter. Thus, the traversal above can be written in its generic form as:
 
-[source,java]
+[source,groovy]
 marko
-  .filter(v -> v.get().getValue("name").equals("marko"))
-  .flatMap(v -> v.get().out("knows"))
-  .map(v -> v.get().getValue("name"))
+  .filter{it.get()['name'] == 'marko'}
+  .flatMap{it.get().out('knows')}
+  .map{it.get()['name']}
 ==>vadas
 ==>josh
 
@@ -154,19 +176,19 @@ image::traversal-mechanics.png[width=500]
 
 In TinkerPop3, the objects propagating through the traversal are wrapped in a `Holder<T>`. The holder concept is new to TinkerPop3 and provides the means by which steps remain stateless. A holder maintains all the metadata about the traversal -- e.g., how many times the object has gone through a loop, the path history of the object, etc. This data can be accessed by a step:
 
-[source,java]
-marko.out("knows").value("name").path
+[source,groovy]
+marko.out('knows').name.path
 ==>[v[1], v[2], vadas]
 ==>[v[1], v[4], josh]
 
 In the general form of the expression, the input to the functions map, flatMap, and filter are a `Holder<T>`. Hence, the reason, the general form lambdas start with a `v.get()` (i.e. "get the raw object of the holder containing a vertex"). The general form of path-step demonstrates how the metadata of the holder is accessed without accessing the raw object. 
 
-[source,java]
+[source,groovy]
 marko
-  .filter(v -> v.get().getValue("name").equals("marko"))
-  .flatMap(v -> v.get().out("knows"))
-  .map(v -> v.get().getValue("name"))
-  .map(v -> v.getPath())
+  .filter{it.get()['name'] == 'marko'}
+  .flatMap{it.get().out('knows')}
+  .map{it.get()['name']}
+  .map{it.getPath()}
 ==>[v[1], v[2], vadas]
 ==>[v[1], v[4], josh]
 
