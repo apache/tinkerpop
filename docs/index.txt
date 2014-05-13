@@ -44,7 +44,7 @@ image::tinkerpop-classic.png[width=500]
 TinkerPop3 is the third incarnation of a graph computing framework now built atop Java8. In graph computing, like computing in general, a distinction is made between *structure* (graph) and *process* (traversal). The structure of the graph is the data model defined by a vertex/edge/property topology. The process of the graph is the means by which the structure is analyzed.
 
 .Primary components of the TinkerPop3 *structure* API 
- * `Graph`: maintains a set of vertices and access to administrative functions and transactions.
+ * `Graph`: maintains a set of vertices and edges, and access to administrative functions and transactions.
  * `Element`: maintains a collection of properties and a string label. 
   ** `Vertex`: extends Element and maintains a set of incoming and outgoing edges.
   ** `Edge`: extends Element and maintains an incoming and outgoing vertex.
@@ -84,7 +84,7 @@ CAUTION: Many graph vendors do not allow the user to specify an element ID and i
 Annotated Lists
 ^^^^^^^^^^^^^^^
 
-The values of a property can be any arbitrary `Object` as long as the object type is supported by the underlying graph vendor. One particular special object that has been introduced into TinkerPop3 is the `AnnotatedList`. AnnotatedLists are useful in systems that support auditing and provenance. In such instances, a particular property key will want to be associated with a list of values. For example, assume that the locations of a person is a property on a vertex. This can be represented solely using a `List<String>`, but in many instances, other metadata (i.e. annotations) may be desired because a person could have lived in various locations over time.
+The values of a property can be any arbitrary `Object` as long as the object type is supported by the underlying graph vendor. One particular special object that has been introduced into TinkerPop3 is the `AnnotatedList`. AnnotatedLists are useful in systems that support auditing and provenance. In such instances, a particular property key will want to be associated with a list of values. For example, assume that the locations of a person are a property on a vertex. This can be represented solely using a `List<String>`, but in many instances, other metadata (i.e. annotations) may be desired, because a person could have lived in various locations over time.
 
 image::annotated-list.png[width=600]
 
@@ -118,7 +118,7 @@ image::tinkerpop-modern.png[width=600]
 The Graph Process
 ~~~~~~~~~~~~~~~~~
 
-The primary way in which graphs are processed are by means of graph traversals. A graph traversal can be spawed from a Graph, Vertex, or Edge. For example, Graph provides two traversal methods.
+The primary way in which graphs are processed is by means of graph traversals. A graph traversal can be spawed from a Graph, Vertex, or Edge. For example, Graph provides two traversal methods.
 
  . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
  . `Graph.E()`: generates a traversal starting at all edges in the graph.
@@ -131,7 +131,7 @@ The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintai
 
 NOTE: Both map and filter can be represented as flatMap. Map can return an iterator with a single object in it. Filter can return an iterator with a single object in it or no object at all. Thus, flatMap is the most general construct -- "turn the incoming object into an iterator of objects."
 
-Given the classic TinkerPop graph, the following query will return the names of all the people that Marko's knows. The following query is demonstrated using the Gremlin-Groovy REPL. This is accessible via `bin/gremlin.sh` (or `bin/gremlin.bat` for Windows users).
+Given the classic TinkerPop graph, the following query will return the names of all the people that Marko knows. The following query is demonstrated using the Gremlin-Groovy REPL. This is accessible via `bin/gremlin.sh` (or `bin/gremlin.bat` for Windows users).
 
 TIP: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
 
@@ -168,7 +168,7 @@ marko
 ==>vadas
 ==>josh
 
-The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. Java8 introduced lambdas and is supported in TinkerPop3.
+The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. The lambdas introduced by Java8 are supported in TinkerPop3.
 
 NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than it ever was before. In TinkerPop0 through TinkerPop2, Gremlin-Java was extremely verbose due to the simulation of lambdas via anonymous inner classes.  
 
@@ -179,7 +179,7 @@ When a traversal is executed, the source of the traversal is on the left of the 
 
 image::traversal-mechanics.png[width=500]
 
-In TinkerPop3, the objects propagating through the traversal are wrapped in a `Holder<T>`. The holder concept is new to TinkerPop3 and provides the means by which steps remain stateless. A holder maintains all the metadata about the traversal -- e.g., how many times the object has gone through a loop, the path history of the object, etc. This data can be accessed by a step:
+In TinkerPop3, the objects propagating through the traversal are wrapped in a `Holder<T>`. The holder concept is new as of TinkerPop3 and provides the means by which steps remain stateless. A holder maintains all the metadata about the traversal -- e.g., how many times the object has gone through a loop, the path history of the object, etc. This data can be accessed by a step:
 
 [source,groovy]
 marko.out('knows').name.path
@@ -217,8 +217,9 @@ The above graph creates two vertices named "marko" and "lop" and connects them v
 g.V().has("name","marko").out("created").value("name")
 
 The `g.V().has("name","marko")` part of the query can be executed in two ways.
- . A linear scan of all vertices filtering out those vertices that don't have the name "marko"
- . A `O(log(|V|))` index lookup for all vertices with the name "marko"
+
+ * A linear scan of all vertices filtering out those vertices that don't have the name "marko"
+ * A `O(log(|V|))` index lookup for all vertices with the name "marko"
 
 Given the initial graph construction in the first code block, no index was defined and thus, a linear scan is executed. However, if the graph was constructed as such, then an index lookup would be used.
 
@@ -235,7 +236,7 @@ The Traversal API
 Graph Traversal Steps
 ~~~~~~~~~~~~~~~~~~~~~
 
-The primary Traversal is `GraphTraversal` and graph traversals can be spawned off of Graph, Vertex, and Edge. A list of all the steps are provided below along with a description. Note that a Traversal is defined as `Traversal<S,E>` where the `S` stands for start and the `E` stands for end. Likewise, each `Step<S,E>` maintains the same convention.
+The primary Traversal is `GraphTraversal`, and graph traversals can be spawned off of Graph, Vertex, and Edge. A list of all the steps are provided below along with a description. Note that a Traversal is defined as `Traversal<S,E>` where the `S` stands for start and the `E` stands for end. Likewise, each `Step<S,E>` maintains the same convention.
 
 . Transform: S &rarr; E
  * `map(function)`: apply the provided function to S and emit the result as E.
@@ -259,15 +260,18 @@ Traversal Optimizers
 ~~~~~~~~~~~~~~~~~~~~
 
 An `Optimizer` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in two primary situations:
+
  * There is a more efficient way to express the traversal at the TinkerPop level.
  * There is a more efficient way to express the traversal at the graph vendor level.
+
 An extremely simply Optimizer is the `IdentityOptimizer` and it is a type-1 optimizer defined as follows:
 
 [source,java]
 public class IdentityOptimizer implements Optimizer.FinalOptimizer {
     public void optimize(final Traversal traversal) {
         ((List<Step>) traversal.getSteps()).stream()
-                .filter(step -> step instanceof IdentityStep && !TraversalHelper.isLabeled(step))
+                .filter(step -> step instanceof IdentityStep
+                    && !TraversalHelper.isLabeled(step))
                 .collect(Collectors.<Step>toList())
                 .forEach(step -> TraversalHelper.removeStep(step, traversal));
     }
@@ -284,17 +288,22 @@ This expression can be executed in a `O(|V|)` or `O(log(|V|)` fashion in TinkerG
 public class TinkerGraphStepOptimizer implements Optimizer.FinalOptimizer {
     public void optimize(final Traversal traversal) {
         if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {
-            final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
+            final TinkerGraphStep tinkerGraphStep
+                = (TinkerGraphStep) traversal.getSteps().get(0);
             Step currentStep = tinkerGraphStep.getNextStep();
             while (true) {
-                if (currentStep == EmptyStep.instance() || TraversalHelper.isLabeled(currentStep)) 
+                if (currentStep == EmptyStep.instance()
+                    || TraversalHelper.isLabeled(currentStep)) 
                     break;
                 if (currentStep instanceof HasStep) {
-                    tinkerGraphStep.hasContainers.add(((HasStep) currentStep).hasContainer);
+                    tinkerGraphStep.hasContainers.add(
+                        ((HasStep) currentStep).hasContainer);
                     TraversalHelper.removeStep(currentStep, traversal);
                 } else if (currentStep instanceof IntervalStep) {
-                    tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).startContainer);
-                    tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).endContainer);
+                    tinkerGraphStep.hasContainers.add(
+                        ((IntervalStep) currentStep).startContainer);
+                    tinkerGraphStep.hasContainers.add(
+                        ((IntervalStep) currentStep).endContainer);
                     TraversalHelper.removeStep(currentStep, traversal);
                 } else if (currentStep instanceof IdentityStep) {
                     // do nothing
@@ -317,7 +326,9 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     private TinkerGraph graph;
     public List<HasContainer> hasContainers = new ArrayList<>();
 
-    public TinkerGraphStep(Traversal traversal, Class<E> returnClass, TinkerGraph graph) {
+    public TinkerGraphStep(Traversal traversal,
+                           Class<E> returnClass,
+                           TinkerGraph graph) {
         super(traversal, returnClass);
         this.graph = graph;
         this.generateHolderIterator(false);
@@ -349,7 +360,8 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     private HasContainer getIndexKey(Class<? extends Element> indexedClass) {
         Set<String> indexedKeys = this.graph.getIndexedKeys(indexedClass);
         return this.hasContainers.stream()
-                .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
+                .filter(c -> indexedKeys.contains(c.key)
+                    && c.predicate.equals(Compare.EQUAL))
                 .findFirst()
                 .orElseGet(() -> null);
     }
@@ -360,7 +372,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 Creating a Domain Specific Language
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The super interface of GraphTraversal is `Traversal`. It is possible for developers to create domains specific traversals by extending Traversal. For example, a `SocialTraversal` example is provided below.
+The super interface of GraphTraversal is `Traversal`. It is possible for developers to create domain specific traversals by extending Traversal. For example, a `SocialTraversal` example is provided below.
 
 [source,java]
 ----
@@ -406,14 +418,14 @@ The GraphComputer API
 TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and only touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries touch a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
 
  * *OLTP*: real-time, limited data accessed, random data access, sequential processing, querying
- * *OLAP*: long running, entire data set accessed, sequential data access, parallel processing, bath processing
+ * *OLAP*: long running, entire data set accessed, sequential data access, parallel processing, batch processing
 
 image::oltp-vs-olap.png[width=600]
 
 GraphComputer and VertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In Gremlin it is possible to express to have the same traversal executed either using the standard OTLP-engine or have it executed using the OLAP-engine. The difference being where the query is submitted.
+In Gremlin, it is possible to express to have the same traversal executed either using the standard OTLP-engine or have it executed using the OLAP-engine. The difference being where the query is submitted.
 
 [source,groovy]
 g = TinkerFactory.createClassic()
