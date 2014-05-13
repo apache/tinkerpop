@@ -73,7 +73,7 @@ public class Item {
     public String toString() {
         final String c = resultItem != null ? resultItem.getClass().getCanonicalName() : "null";
         return "Item{" +
-                "resultItem=" + resultItem +
+                "resultItem=" + resultItem + " " +
                 "class=" + c +
                 '}';
     }
