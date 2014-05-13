@@ -18,6 +18,9 @@ class RemoteCommand extends ComplexCommandSupport {
     private boolean toStringResults = true
     private Cluster.Builder lastBuilder
 
+    private static final String TOKEN_TEXT = "text"
+    private static final String TOKEN_OBJECTS = "objects"
+
     private static final MessageSerializer AS_OBJECTS = new KryoMessageSerializerV1d0()
     private static final MessageSerializer AS_TEXT = new KryoMessageSerializerV1d0()
 
@@ -59,10 +62,10 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     def Object do_as = { List<String> arguments ->
-        if (!(arguments.contains("text") || arguments.contains("objects")))
-            return "the 'as' option expects 'text' or 'objects' as an argument"
+        if (!(arguments.contains(TOKEN_TEXT) || arguments.contains(TOKEN_OBJECTS)))
+            return "the 'as' option expects '$TOKEN_TEXT' or '$TOKEN_OBJECTS' as an argument"
 
-        this.toStringResults = arguments.contains("text")
+        this.toStringResults = arguments.contains(TOKEN_TEXT)
         makeCluster()
 
         return resultsAsMessage()
@@ -82,7 +85,7 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     private def String resultsAsMessage() {
-        final resultsAs = toStringResults ? "text" : "objects"
+        final resultsAs = toStringResults ? TOKEN_TEXT : TOKEN_OBJECTS
         return "results as $resultsAs"
     }
 
