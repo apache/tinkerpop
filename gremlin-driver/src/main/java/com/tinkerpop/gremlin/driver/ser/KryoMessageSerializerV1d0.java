@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.driver.ser;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
@@ -12,6 +13,7 @@ import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
+import org.javatuples.Pair;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -22,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -78,15 +81,37 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         }
 
         if (!classNameList.isEmpty()) {
-            final List<Class> classList = classNameList.stream().map(className -> {
+            final List<Pair> classList = classNameList.stream().map(serializerDefinition -> {
+                String className;
+                Optional<String> serializerName;
+                if (serializerDefinition.contains(";")) {
+                    final String[] split = serializerDefinition.split(";");
+                    if (split.length != 2)
+                        throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>:<serializer-class>", serializerDefinition));
+
+                    className= split[0];
+                    serializerName = Optional.of(split[1]);
+                } else {
+                    serializerName = Optional.empty();
+                    className = serializerDefinition;
+                }
+
                 try {
-                    return Class.forName(className);
-                } catch (ClassNotFoundException ex) {
+                    final Class clazz = Class.forName(className);
+                    final Serializer serializer;
+                    if (serializerName.isPresent()) {
+                        final Class serializerClazz = Class.forName(serializerName.get());
+                        serializer = (Serializer) serializerClazz.newInstance();
+                    } else
+                        serializer = null;
+
+                    return Pair.with(clazz, serializer);
+                } catch (Exception ex) {
                     throw new IllegalStateException("Class could not be found", ex);
                 }
             }).collect(Collectors.toList());
 
-            final Class[] clazzes = new Class[classList.size()];
+            final Pair[] clazzes = new Pair[classList.size()];
             classList.toArray(clazzes);
 
             builder.addCustom(clazzes);
@@ -159,7 +184,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         if (msg.getResultType() == ResultType.OBJECT) return msg.getResult().toString();
         if (msg.getResultType() == ResultType.EMPTY) return "";
 
-        // the IterartorHandler should return a collection so kep it as such
+        // the IteratorHandler should return a collection so kep it as such
         final Object o = msg.getResult();
         if (o instanceof Collection) {
             return ((Collection) o).stream().map(Object::toString).collect(Collectors.toList());

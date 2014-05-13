@@ -16,6 +16,7 @@ import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
 import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedValue;
 import com.tinkerpop.gremlin.structure.io.util.IoEdge;
 import com.tinkerpop.gremlin.structure.io.util.IoVertex;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ import java.util.Currency;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -116,9 +118,14 @@ public final class GremlinKryo {
 
     public static interface Builder {
         /**
-         * Add custom classes to serializes with kryo using standard serialization
+         * Add custom classes to serializes with kryo using standard serialization.
          */
         public Builder addCustom(final Class... custom);
+
+        /**
+         * Add custom classes to serializes with custom serialization.
+         */
+        public Builder addCustom(final Pair<Class, Serializer>... custom);
 
         /**
          * If using custom classes it might be useful to tag the version stamped to the serialization with a custom
@@ -207,6 +214,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(TreeMap.class, null, 45));
             add(Triplet.<Class, Serializer, Integer>with(EnumSet.class, null, 46));
             add(Triplet.<Class, Serializer, Integer>with(Map.class, null, 47));
+            add(Triplet.<Class, Serializer, Integer>with(LinkedHashMap.class, null, 48));
         }};
 
         private static final byte major = 1;
@@ -230,6 +238,20 @@ public final class GremlinKryo {
                 serializationList.addAll(Arrays.asList(custom).stream()
                         .map(c->Triplet.<Class, Serializer, Integer>with(c, null, currentSerializationId.getAndIncrement()))
                         .collect(Collectors.<Triplet<Class, Serializer, Integer>>toList()));
+            return this;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Builder addCustom(final Pair<Class, Serializer>... custom) {
+            if (custom != null && custom.length > 0) {
+                serializationList.addAll(Arrays.asList(custom).stream()
+                        .map(c-> Triplet.<Class, Serializer, Integer>with(c.getValue0(), c.getValue1(), currentSerializationId.getAndIncrement()))
+                        .collect(Collectors.<Triplet<Class, Serializer, Integer>>toList()));
+            }
+
             return this;
         }
 
