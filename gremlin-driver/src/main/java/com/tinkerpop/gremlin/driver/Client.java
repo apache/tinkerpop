@@ -9,12 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -112,5 +114,15 @@ public class Client {
         } finally {
             if (logger.isDebugEnabled()) logger.debug("Submitted {} to - {}", msg, pool);
         }
+    }
+
+    public void close() {
+        closeAsync().join();
+    }
+
+    public CompletableFuture<Void> closeAsync() {
+        final CompletableFuture[] poolCloseFutures = new CompletableFuture[hostConnectionPools.size()];
+        hostConnectionPools.values().stream().map(ConnectionPool::closeAsync).collect(Collectors.toList()).toArray(poolCloseFutures);
+        return CompletableFuture.allOf(poolCloseFutures);
     }
 }

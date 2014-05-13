@@ -35,7 +35,11 @@ public class Mediator {
         } catch (TimeoutException toe) {
             throw new RuntimeException("request timed out while processing - increase the timeout with the :remote command");
         } finally {
-            // todo: close client?
+            try {
+                client.close();
+            } catch (Exception ex) {
+                // empty
+            }
         }
     }
 
