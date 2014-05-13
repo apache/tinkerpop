@@ -45,9 +45,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldReceiveFailureTimeOutOnTotalSerialization":
                 settings.serializedResponseTimeout = 1;
                 break;
-            case "shouldReceiveFailureForTimeoutOfIndividualSerialization":
-                settings.serializeResultTimeout = 1;
-                break;
             case "shouldBlockRequestWhenTooBig":
                 settings.maxContentLength = 1;    // todo: get this to work properly
                 break;

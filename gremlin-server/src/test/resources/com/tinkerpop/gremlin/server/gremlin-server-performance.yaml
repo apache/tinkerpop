@@ -4,7 +4,6 @@ threadPoolWorker: 4
 gremlinPool: 8
 scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
-serializeResultTimeout: 200
 graphs: {
   g: config/tinkergraph-empty.properties}
 use:

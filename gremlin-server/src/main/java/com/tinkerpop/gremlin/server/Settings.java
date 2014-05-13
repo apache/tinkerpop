@@ -64,13 +64,6 @@ public class Settings {
     public long serializedResponseTimeout = 30000l;
 
     /**
-     * Time in milliseconds to wait while an individual item in a result set is serialized.  Defaults to 200.  If
-     * this value is exceeded then the iteration of the result set is aborted with error and no additional results
-     * are returned for that request.
-     */
-    public long serializeResultTimeout = 200l;
-
-    /**
      * Number of items in a particular resultset to iterate and serialize prior to pushing the data down the wire
      * to the client.
      */
