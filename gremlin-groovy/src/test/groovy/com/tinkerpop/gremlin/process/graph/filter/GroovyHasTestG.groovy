@@ -42,6 +42,10 @@ class GroovyHasTestG extends HasTest {
         g.V.has('age', T.gt, 30)
     }
 
+    public Traversal<Edge, Edge> get_g_e1_hasXlabelXknowsX(final Object e1Id) {
+        g.e(e1Id).has('label', 'knows')
+    }
+
     public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
         g.E.has('label', 'knows')
     }

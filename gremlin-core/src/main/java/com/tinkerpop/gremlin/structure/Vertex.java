@@ -35,6 +35,7 @@ import java.util.function.BiPredicate;
  * </pre>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Joshua Shinavier (http://fortytwo.net)
  */
 public interface Vertex extends Element {
 
@@ -52,7 +53,7 @@ public interface Vertex extends Element {
 
     public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels);
 
-    ///////////////
+    // vertex-specific steps ///////////////////////////////////////////////////
 
     public default GraphTraversal<Vertex, Vertex> out(final String... labels) {
         return this.out(Integer.MAX_VALUE, labels);
@@ -78,52 +79,15 @@ public interface Vertex extends Element {
         return this.bothE(Integer.MAX_VALUE, labels);
     }
 
-    ///////////////
-
-    public default GraphTraversal<Vertex, Vertex> start() {
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
-        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
-    }
+    // element steps ///////////////////////////////////////////////////////////
 
     public default GraphTraversal<Vertex, Vertex> aggregate(final String variable, final SFunction... preAggregateFunctions) {
-        return (GraphTraversal) this.start().aggregate(variable, preAggregateFunctions);
-    }
-
-    public default GraphTraversal<Vertex, Vertex> as(final String as) {
-        return (GraphTraversal) this.start().as(as);
-    }
-
-    public default GraphTraversal<Vertex, Vertex> identity() {
-        return (GraphTraversal) this.start().identity();
+        return this.start().aggregate(variable, preAggregateFunctions);
     }
 
     public default <E2> GraphTraversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-        return (GraphTraversal) this.start().annotatedValues(propertyKey);
+        return this.start().<E2>annotatedValues(propertyKey);
     }
-
-    public default <E2> GraphTraversal<Vertex, Property<E2>> property(final String propertyKey) {
-        return (GraphTraversal) this.start().property(propertyKey);
-    }
-
-    /**
-     * public default <E2> GraphTraversal<Vertex, Property<E2>> properties() {
-     * return (GraphTraversal) this.start().values;
-     * }*
-     */
-
-    public default <E2> GraphTraversal<Vertex, E2> value(final String propertyKey) {
-        return (GraphTraversal) this.start().value(propertyKey);
-    }
-
-    public default GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
-        return (GraphTraversal) this.start().with(variableValues);
-    }
-
-    public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Holder<Vertex>> consumer) {
-        return (GraphTraversal) this.start().sideEffect(consumer);
-    }
-
-    ///////////////
 
     // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> annotation(final String annotationKey) {
@@ -133,6 +97,10 @@ public interface Vertex extends Element {
     // TODO: test
     public default GraphTraversal<Vertex, Map<String, Object>> annotations(final String... annotationKeys) {
         return this.start().annotations(annotationKeys);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> as(final String as) {
+        return this.start().as(as);
     }
 
     public default GraphTraversal<Vertex, Vertex> filter(final SPredicate<Holder<Vertex>> predicate) {
@@ -187,6 +155,10 @@ public interface Vertex extends Element {
         return this.start().interval(key, startValue, endValue);
     }
 
+    public default GraphTraversal<Vertex, Vertex> identity() {
+        return this.start().identity();
+    }
+
     // TODO: test
     public default GraphTraversal<Vertex, Vertex> jump(final String as) {
         return this.start().jump(as);
@@ -214,16 +186,43 @@ public interface Vertex extends Element {
 
     // TODO: pageRank
 
+    /**
+     * public default <E2> GraphTraversal<Vertex, Property<E2>> properties() {
+     * return (GraphTraversal) this.start().values;
+     * }*
+     */
+
+    public default <E2> GraphTraversal<Vertex, Property<E2>> property(final String propertyKey) {
+        return this.start().<E2>property(propertyKey);
+    }
+
     // TODO: test
     public default void remove() {
         this.start().remove();
     }
 
+    public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Holder<Vertex>> consumer) {
+        return this.start().sideEffect(consumer);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> start() {
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
+        return (GraphTraversal) traversal.addStep(new StartStep<Vertex>(traversal, this));
+    }
+
     // TODO: union
+
+    public default <E2> GraphTraversal<Vertex, E2> value(final String propertyKey) {
+        return this.start().value(propertyKey);
+    }
 
     // TODO: test
     public default GraphTraversal<Vertex, Map<String, Object>> values(final String... propertyKeys) {
         return this.start().values(propertyKeys);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
+        return this.start().with(variableValues);
     }
 
     ///////////////

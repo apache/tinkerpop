@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import com.tinkerpop.gremlin.process.util.HolderSource;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
@@ -36,7 +37,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        ((TinkerGraphStep) traversal.getSteps().get(0)).clear();
+        ((HolderSource) traversal.getSteps().get(0)).clear();
         return new TraversalResult<>(this.graph, () -> traversal);
     }
 

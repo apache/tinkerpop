@@ -42,6 +42,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X();
 
+    public abstract Traversal<Edge, Edge> get_g_e1_hasXlabelXknowsX(Object e1Id);
+
     public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX();
 
     public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX();
@@ -128,6 +130,23 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    /*
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_e1_hasXlabelXknowsX() {
+        Iterator<Edge> traversal = get_g_e1_hasXlabelXknowsX(7);
+        System.out.println("Testing: " + traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            assertEquals("knows", traversal.next().getLabel());
+        }
+        assertEquals(1, counter);
+        traversal = get_g_e1_hasXlabelXknowsX(11);
+        System.out.println("Testing: " + traversal);
+        assertFalse(traversal.hasNext());
+    }*/
+
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_E_hasXlabelXknowsX() {
@@ -192,6 +211,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
             return g.V().has("age", T.gt, 30);
         }
 
+        public Traversal<Edge, Edge> get_g_e1_hasXlabelXknowsX(final Object e1Id) {
+            return g.e(e1Id).has("label", "knows");
+        }
+
         public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
             return g.E().has("label", "knows");
         }
@@ -236,6 +259,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {
             return g.V().<Vertex>has("age", T.gt, 30).submit(g.compute());
+        }
+
+        public Traversal<Edge, Edge> get_g_e1_hasXlabelXknowsX(final Object e1Id) {
+            return g.e(e1Id).<Edge>has("label", "knows").submit(g.compute());
         }
 
         public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {
