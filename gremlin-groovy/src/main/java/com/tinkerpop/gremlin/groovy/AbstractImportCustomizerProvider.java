@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy;
 
+import com.tinkerpop.gremlin.algorithm.generator.AbstractGenerator;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -45,6 +46,9 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GraphSONReader.class.getPackage().getName() + DOT_STAR);
         imports.add(KryoReader.class.getPackage().getName() + DOT_STAR);
         imports.add(IoAnnotatedList.class.getPackage().getName() + DOT_STAR);
+
+        // algorithms
+        imports.add(AbstractGenerator.class.getPackage().getName() + DOT_STAR);
 
         // groovy extras
         imports.add(Grape.class.getCanonicalName());
