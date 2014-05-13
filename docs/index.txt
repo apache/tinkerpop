@@ -6,15 +6,6 @@ Tinkerpop3 Documentation
 // Seems the highlighter must be configured in the pom (?)
 // :source-highlighter: coderay
 
-////
-Based on revision 1e2078fac4dae8abb1312d1a18cda8609e8c3ce1 of
-https://github.com/tinkerpop/tinkerpop3/wiki/TinkerPop3-Documentation
-
-The only change between the wiki revision cited and this file is that
-I changed the image URLs to be relative paths instead of absolute
-paths to raw.github.com (and I addded this comment).
-////
-
 image::tinkerpop-logo.png[width=500]
 
 The TinkerPop Saga Continues
@@ -109,6 +100,7 @@ System.out.println(names);
 names.annotatedValues().forEach(System.out::println)
 // marko:{timestamp=2009}]
 // marko rodriguez:{author=stephen, timestamp=2009}]
+
 
 The Graph Process
 ~~~~~~~~~~~~~~~~~

@@ -17,7 +17,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,9 +33,13 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     private static final String MIME_TYPE = SerTokens.MIME_KRYO_V1D0;
+    private static final String MIME_TYPE_STRINGD = SerTokens.MIME_KRYO_V1D0 + "-stringd";
 
     private static final String TOKEN_EXTENDED_VERSION = "extendedVersion";
     private static final String TOKEN_CUSTOM = "custom";
+    private static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
+
+    private boolean serializeToString;
 
     /**
      * Creates an instance with a standard {@link GremlinKryo} instance. Note that this instance
@@ -86,12 +92,14 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             builder.addCustom(clazzes);
         }
 
+        this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
+
         this.gremlinKryo = builder.build();
     }
 
     @Override
     public String[] mimeTypesSupported() {
-        return new String[]{MIME_TYPE};
+        return new String[]{this.serializeToString ? MIME_TYPE_STRINGD : MIME_TYPE};
     }
 
     @Override
@@ -120,7 +128,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         try {
             final Map<String, Object> result = new HashMap<>();
             result.put(SerTokens.TOKEN_CODE, responseMessage.getCode().getValue());
-            result.put(SerTokens.TOKEN_RESULT, responseMessage.getResult());
+            result.put(SerTokens.TOKEN_RESULT, serializeToString ? serializeResultToString(responseMessage) : responseMessage.getResult());
             result.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
             result.put(SerTokens.TOKEN_TYPE, responseMessage.getResultType().getValue());
 
@@ -143,6 +151,20 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
 
             logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), KryoMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
+        }
+    }
+
+    private Object serializeResultToString(final ResponseMessage msg) {
+        if (msg.getResult() == null) return "null";
+        if (msg.getResultType() == ResultType.OBJECT) return msg.getResult().toString();
+        if (msg.getResultType() == ResultType.EMPTY) return "";
+
+        // the IterartorHandler should return a collection so kep it as such
+        final Object o = msg.getResult();
+        if (o instanceof Collection) {
+            return ((Collection) o).stream().map(Object::toString).collect(Collectors.toList());
+        } else {
+            return o.toString();
         }
     }
 
@@ -174,8 +196,9 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             final Kryo kryo = gremlinKryo.createKryo();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
                 final Output output = new Output(baos);
-                output.writeByte(MIME_TYPE.length());
-                output.write(MIME_TYPE.getBytes(UTF8));
+                final String mimeType = serializeToString ? MIME_TYPE_STRINGD : MIME_TYPE;
+                output.writeByte(mimeType.length());
+                output.write(mimeType.getBytes(UTF8));
 
                 final Map<String, Object> request = new HashMap<>();
                 request.put(SerTokens.TOKEN_REQUEST, requestMessage.getRequestId());

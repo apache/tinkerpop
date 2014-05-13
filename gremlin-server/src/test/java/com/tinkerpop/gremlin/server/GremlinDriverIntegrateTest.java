@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
 import com.tinkerpop.gremlin.driver.ResultSet;
+import com.tinkerpop.gremlin.driver.exception.ResponseException;
+import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.TimeUtil;
@@ -21,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Integration tests for gremlin-driver configurations and settings.
@@ -139,6 +142,26 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         stopServer();
 
         assertEquals(0, results.getAvailableItemCount());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldFailWithBadServerSideSerialization() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("TinkerFactory.createClassic()");
+
+        try {
+            final CompletableFuture<List<Item>> all = results.all();
+            all.join();
+            fail();
+        } catch (Exception ex) {
+            final Throwable inner = ex.getCause().getCause();
+            assertTrue(inner instanceof ResponseException);
+            assertEquals(ResultCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResultCode());
+        }
 
         cluster.close();
     }

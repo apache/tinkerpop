@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.groovy.console.commands
 
 import com.tinkerpop.gremlin.driver.Cluster
+import com.tinkerpop.gremlin.driver.MessageSerializer
+import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
 import com.tinkerpop.gremlin.groovy.console.Mediator
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
@@ -13,13 +15,21 @@ import org.codehaus.groovy.tools.shell.Groovysh
 class RemoteCommand extends ComplexCommandSupport {
     private final Mediator mediator
     private Cluster currentCluster
+    private boolean toStringResults = false
+    private Cluster.Builder lastBuilder
 
     public RemoteCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":remote", ":rem", ["current", "connect"], "current")
+        super(shell, ":remote", ":rem", ["current", "connect", "as"], "current")
         this.mediator = mediator
 
+        // uses toString serialization by default which lets everything come back over the wire which is easy/nice
+        // for beginners
+        final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0()
+        serializer.configure([serializeResultToString: "true"])
+
         // initialize with a localhost connection
-        currentCluster = Cluster.open()
+        lastBuilder = Cluster.create().addContactPoint("localhost").serializer(serializer)
+        currentCluster = lastBuilder.build()
         currentCluster.init()
         this.mediator.clusterSelected(currentCluster)
     }
@@ -40,10 +50,44 @@ class RemoteCommand extends ComplexCommandSupport {
             }
         }
 
+        final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0()
+        serializer.configure([serializeResultToString: toStringResults.toString()])
+        builder.serializer(serializer)
+
+        currentCluster.close()
         currentCluster = builder.build();
+        currentCluster.init()
+
+        lastBuilder = builder;
+
         this.mediator.clusterSelected(currentCluster);
 
         return String.format("connected - " + currentCluster)
+    }
+
+    def Object do_as = { List<String> arguments ->
+        if (!(arguments.contains("text") || arguments.contains("objects")))
+            return "the 'as' option expects 'text' or 'objects' as an argument"
+
+        def msg;
+        if (arguments.contains("text")) {
+            this.toStringResults = true
+            msg = "results as text"
+        } else {
+            this.toStringResults = false
+            msg = "results as objects"
+        }
+
+        final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0()
+        serializer.configure([serializeResultToString: toStringResults.toString()])
+        lastBuilder.serializer(serializer)
+
+        currentCluster.close()
+        currentCluster = lastBuilder.build();
+        currentCluster.init()
+        this.mediator.clusterSelected(currentCluster);
+
+        return msg
     }
 
     def Object do_current = {

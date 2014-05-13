@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.driver;
 
+import com.tinkerpop.gremlin.driver.exception.ConnectionException;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +75,7 @@ class ConnectionPool {
     }
 
     public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
-        if (isClosed()) throw new ConnectionException(host, "Pool is shutdown");
+        if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
 
         final Connection leastUsedConn = selectLeastUsed();
 
@@ -93,7 +94,7 @@ class ConnectionPool {
             considerNewConnection();
 
         if (leastUsedConn == null) {
-            if (isClosed()) throw new ConnectionException(host, "Pool is shutdown");
+            if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
             return waitForConnection(timeout, unit);
         } else {
             while (true) {
@@ -113,7 +114,7 @@ class ConnectionPool {
     }
 
     public void returnConnection(final Connection connection) throws ConnectionException {
-        if (isClosed()) throw new ConnectionException(host, "Pool is shutdown");
+        if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
 
         int inFlight = connection.inFlight.decrementAndGet();
         if (connection.isDead()) {
@@ -251,7 +252,7 @@ class ConnectionPool {
                 to = 0;
             }
 
-            if (isClosed()) throw new ConnectionException(host, "Pool is shutdown");
+            if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
 
             final Connection leastUsed = selectLeastUsed();
             if (leastUsed != null) {

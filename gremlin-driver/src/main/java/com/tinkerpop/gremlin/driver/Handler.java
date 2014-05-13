@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.driver;
 
+import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
@@ -139,7 +140,7 @@ class Handler {
                     } else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
                         pending.remove(response.getRequestId()).markComplete();
                     else
-                        pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
+                        pending.get(response.getRequestId()).markError(new ResponseException(response.getCode(), response.getResult().toString()));
                 } else if (webSocketFrame instanceof TextWebSocketFrame) {
                     final TextWebSocketFrame tf = (TextWebSocketFrame) webSocketFrame;
                     final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
@@ -164,7 +165,7 @@ class Handler {
                     } else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
                         pending.remove(response.getRequestId()).markComplete();
                     else
-                        pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
+                        pending.get(response.getRequestId()).markError(new ResponseException(response.getCode(), response.getResult().toString()));
                 }
             } finally {
                 ReferenceCountUtil.release(webSocketFrame);

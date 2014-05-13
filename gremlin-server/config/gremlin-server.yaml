@@ -18,6 +18,7 @@ scriptEngines: {
       staticImports: [java.lang.Math.PI]}}
 serializers:
   - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0 }
+  - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { serializeResultToString: true }}
   - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
 metrics: {
   consoleReporter: {enabled: true, interval: 180000},

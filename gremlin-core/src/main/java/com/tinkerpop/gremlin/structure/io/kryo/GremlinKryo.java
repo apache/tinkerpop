@@ -238,7 +238,7 @@ public final class GremlinKryo {
          */
         @Override
         public Builder extendedVersion(final byte extendedVersion) {
-            if (extendedVersion < 0)
+            if (extendedVersion > DEFAULT_EXTENDED_VERSION && extendedVersion < 0)
                 throw new IllegalArgumentException("The extendedVersion must be greater than zero");
 
             this.extendedVersion = extendedVersion;
