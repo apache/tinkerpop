@@ -36,6 +36,8 @@ Graph Computing with TinkerPop3
 
 A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data structure composed of vertices (nodes, dots) and edges (arcs, lines). When modeling a graph in a computer and applying it to modern data sets and practices, the generic mathematically-oriented, binary graph is extended to support both labels and key/value properties. This structure is known as a property graph. More formally, it is a directed, binary, attributed multi-graph. An example property graph is diagrammed below. This graph example will be used extensively throughout the documentation and is called "TinkerPop Classic" as it is the original demo graph since TinkerPop0 in 2009.
 
+TIP: The TinkerPop classic graph is available with <<tinkergraph-reference-implementation,TinkerGraph>> via `TinkerFactory.createClassic()`. TinkerGraph is the reference implementation of TinkerPop3 and is used throughout the documentation.
+
 .TinkerPop Classic
 image::tinkerpop-classic.png[width=500]
 
@@ -133,6 +135,9 @@ Given the classic TinkerPop graph, the following query will return the names of 
 
 TIP: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
 
+CAUTION: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used. Usually which derivative of Gremlin is being used is made explicit in the text, however, if not, a simple mouse over on the code block will state the language as either "JAVA" or "GROOVY."
+
+
 [source,groovy]
 ----
 $ bin/gremlin.sh
@@ -194,8 +199,83 @@ marko
 
 CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective holder. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
 
+[[tinkergraph-reference-implementation]]
+TinkerGraph Reference Implementation
+------------------------------------
+
+TinkerGraph is a single machine, in-memory, non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
+
+[source,java]
+Graph g = TinkerGraph.open();
+Vertex marko = g.addVertex("name","marko","age",29);
+Vertex lop = g.addVertex("name","lop","lang","java");
+marko.addEdge("created",lop,"weight",0.6d);
+
+The above graph creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6 property. Next, the graph can be queried as such.
+
+[source,java]
+g.V().has("name","marko").out("created").value("name")
+
+The `g.V().has("name","marko")` part of the query can be executed in two ways.
+. A linear scan of all vertices filtering out those vertices that don't have the name "marko"
+. A `O(log(|V|))` index lookup for all vertices with the name "marko"
+
+Given the initial graph construction in the first code block, no index was defined and thus, a linear scan is executed. However, if the graph was constructed as such, then an index lookup would be used.
+
+[source,java]
+Graph g = TinkerGraph.open();
+g.createIndex("name",Vertex.class)
+
+Each graph vendor will have different mechanism by which indices and schemas are defined. TinkerPop3 does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other vendors, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding data to the graph.
+
+OLTP and OLAP Graph Processing
+------------------------------
+
+TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and only touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries touch a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
+
+ * *OLTP*: real-time, limited data accessed, random data access, sequential processing, querying
+ * *OLAP*: long running, entire data set accessed, sequential data access, parallel processing, bath processing
+
+image::oltp-vs-olap.png[width=600]
+
+Example OLTP and OLAP Queries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Regardless of whether the user requires OLTP or OLAP processing, the Gremlin language is used. A simple OLTP-type query is provided below over the TinkerPop classic graph.
+
+[source,groovy]
+g.v(1).out('knows').name
+==>vadas
+==>josh
+
+This same query can be executed on the underlying graph's (i.e. `g`) `GraphComputer` which is accessed via `g.compute()`. 
+
+[source,groovy]
+g.v(1).out('knows').name.submit(g.compute())
+==>vadas
+==>josh
+
+
+[source,groovy]
+g.V.age.groupCount
+
+The above query is OLAP in nature due to the fact that it touches every vertex in the graph. If the graph is small, this query may return in milliseconds. If its large, then it may take minutes. Moreover, the execution speed of an OLAP query (like an OLTP query) is ultimately determined by execution engine -- i.e. the graph system.
+
+
+GraphComputer and VertexProgram
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Any graph engine can implement the `GraphComputer` interface and provide users OLAP functionality.
+
+
+The Traversal API
+-----------------
+
+Traversal Optimizers
+~~~~~~~~~~~~~~~~~~~~
+
 Creating a Domain Specific Language
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The super interface of GraphTraversal is `Traversal`. It is possible for developers to create domains specific traversals by extending Traversal. For example, a `SocialTraversal` example is provided below.
 
@@ -236,62 +316,3 @@ This traversal definition can now be used as follows.
 g.traversal(SocialTraversal.class).people(Optional.of("marko")).knows().name()
 
 By extending Traversal, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
-
-
-OLTP and OLAP Graph Processing
-------------------------------
-
-TinkerPop3 provides two primary means of interacting with a graph: online transaction processing and online analytical processing. OTLP-based graph systems allow the user to interact with local areas of the graph for real-time results. By local interaction, a particular vertex (or small set of vertices) is analyzed along with their local neighborhood. Due to the fact that only a small subgraph of the larger graph is being interacted with, the results can be effectively retrieved on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, typically the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (e.g. represented across a cluster of machines), results can take on the order of minutes or hours.
-
-_INSERT A PICTURE OF OLTP vs. OLAP_
-
-A Single Unified Graph Query Language
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Regardless of whether the user requires OLTP or OLAP processing, there exists a single graph query language for both modes of interaction. This language is called Gremlin. Gremlin is a functional, path-based language that allows users to express traversals over the graph. A simple OLTP-type query is provided below.
-
-[source,groovy]
-g.v(1).out('knows').name
-
-The traversal above returns the names of the vertices that vertex 1 knows. In other words, "who are Marko's friends?". In Gremlin there are numerous steps (i.e. functions), that can be composed to form a longer traversal (i.e. a chain of functions). The functional aspect of Gremlin is the statelessness and compose-ability of its steps. These same steps can be used to perform OLAP-type computations. For example, for all vertices in the graph, what is the distribution of their ages.
-
-[source,groovy]
-g.V.age.groupCount
-
-The above query is OLAP in nature due to the fact that it touches every vertex in the graph. If the graph is small, this query may return in milliseconds. If its large, then it may take minutes. Moreover, the execution speed of an OLAP query (like an OLTP query) is ultimately determined by execution engine -- i.e. the graph system.
-
-TinkerGraph as the Reference Implementation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-TinkerGraph is a single machine, in-memory, non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph is presented below.
-
-[source,java]
-Graph g = TinkerGraph.open();
-Vertex marko = g.addVertex("name","marko","age",29);
-Vertex lop = g.addVertex("name","lop","lang","java");
-marko.addEdge("created",lop,"weight",0.6d);
-
-The above graph creates two vertices named "marko" and "lop" and connects them via a "created" edge. Next, the graph can be queried as such.
-
-[source,java]
-g.V().has("name","marko").out("created").value("name")
-
-The `g.V().has("name","marko")` part of the query can be executed in two ways.
-. A linear scan of all vertices filtering out those vertices that don't have the name "marko"
-. A `O(log(|V|))` index lookup for all vertices with the name "marko"
-
-Given the initial graph construction in the first code block, no index was defined and thus, a linear scan is executed. However, if the graph was constructed as such, then an index lookup would be used.
-
-[source,java]
-Graph g = TinkerGraph.open();
-g.createIndex("name",Vertex.class)
-
-The OLAP execution of TinkerGraph is called `TinkerGraphComputer` as it implements the `GraphComputer` interface. This interface logically interprets every vertex as a thread of communication and vertices can communicate with each other (though they originally only have knowledge of their direct, adjacent neighbors). To execute the above query on TinkerGraph's OLAP engine, the following code is used.
-
-[source,java]
-g.V().has("name","marko").out("created").value("name").submit(g.compute())
-
-GraphComputer and VertexProgram
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Any graph engine can implement the `GraphComputer` interface and provide users OLAP functionality.
