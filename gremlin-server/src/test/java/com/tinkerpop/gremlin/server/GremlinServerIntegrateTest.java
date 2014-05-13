@@ -102,22 +102,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    @Ignore("not working yet")
-    @Test
-    public void shouldReceiveFailureForTimeoutOfIndividualSerialization() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("[(0..<100000),'x']").all().join();
-            fail("Should throw an exception.");
-        } catch (RuntimeException re) {
-            assertTrue(re.getCause().getMessage().endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
-        } finally {
-            cluster.close();
-        }
-    }
-
     @Test
     public void shouldReceiveFailureOnBadSerialization() throws Exception {
         final Cluster cluster = Cluster.create("localhost").serializer(Serializers.JSON_V1D0).build();
