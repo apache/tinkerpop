@@ -15,23 +15,25 @@ import org.codehaus.groovy.tools.shell.Groovysh
 class RemoteCommand extends ComplexCommandSupport {
     private final Mediator mediator
     private Cluster currentCluster
-    private boolean toStringResults = false
+    private boolean toStringResults = true
     private Cluster.Builder lastBuilder
+
+    private static final MessageSerializer AS_OBJECTS = new KryoMessageSerializerV1d0()
+    private static final MessageSerializer AS_TEXT = new KryoMessageSerializerV1d0()
+
+    static {
+        AS_OBJECTS.configure([serializeResultToString: "false"])
+        AS_TEXT.configure([serializeResultToString: "true"])
+    }
 
     public RemoteCommand(final Groovysh shell, final Mediator mediator) {
         super(shell, ":remote", ":rem", ["current", "connect", "as"], "current")
         this.mediator = mediator
 
-        // uses toString serialization by default which lets everything come back over the wire which is easy/nice
-        // for beginners
-        final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0()
-        serializer.configure([serializeResultToString: "true"])
-
-        // initialize with a localhost connection
-        lastBuilder = Cluster.create().addContactPoint("localhost").serializer(serializer)
-        currentCluster = lastBuilder.build()
-        currentCluster.init()
-        this.mediator.clusterSelected(currentCluster)
+        // initialize with a localhost connection. uses toString serialization by default which lets everything
+        // come back over the wire which is easy/nice for beginners
+        lastBuilder = Cluster.create().addContactPoint("localhost").serializer(AS_TEXT)
+        makeCluster()
     }
 
     def Object do_connect = { List<String> arguments ->
@@ -50,17 +52,8 @@ class RemoteCommand extends ComplexCommandSupport {
             }
         }
 
-        final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0()
-        serializer.configure([serializeResultToString: toStringResults.toString()])
-        builder.serializer(serializer)
-
-        currentCluster.close()
-        currentCluster = builder.build();
-        currentCluster.init()
-
-        lastBuilder = builder;
-
-        this.mediator.clusterSelected(currentCluster);
+        lastBuilder = builder
+        makeCluster()
 
         return String.format("connected - " + currentCluster)
     }
@@ -69,28 +62,31 @@ class RemoteCommand extends ComplexCommandSupport {
         if (!(arguments.contains("text") || arguments.contains("objects")))
             return "the 'as' option expects 'text' or 'objects' as an argument"
 
-        def msg;
-        if (arguments.contains("text")) {
-            this.toStringResults = true
-            msg = "results as text"
-        } else {
-            this.toStringResults = false
-            msg = "results as objects"
-        }
+        this.toStringResults = arguments.contains("text")
+        makeCluster()
 
-        final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0()
-        serializer.configure([serializeResultToString: toStringResults.toString()])
-        lastBuilder.serializer(serializer)
-
-        currentCluster.close()
-        currentCluster = lastBuilder.build();
-        currentCluster.init()
-        this.mediator.clusterSelected(currentCluster);
-
-        return msg
+        return resultsAsMessage()
     }
 
     def Object do_current = {
-        return String.format("remote - " + currentCluster)
+        final resultsAs = resultsAsMessage()
+        return "remote - $resultsAs [${currentCluster}]"
+    }
+
+    private def makeCluster() {
+        lastBuilder.serializer(chooseSerializer())
+        if (currentCluster != null) currentCluster.close()
+        currentCluster = lastBuilder.build();
+        currentCluster.init()
+        this.mediator.clusterSelected(currentCluster);
+    }
+
+    private def String resultsAsMessage() {
+        final resultsAs = toStringResults ? "text" : "objects"
+        return "results as $resultsAs"
+    }
+
+    private def MessageSerializer chooseSerializer() {
+        return toStringResults ? AS_TEXT : AS_OBJECTS
     }
 }
