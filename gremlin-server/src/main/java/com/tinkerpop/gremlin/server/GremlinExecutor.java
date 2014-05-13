@@ -15,13 +15,11 @@ import javax.script.SimpleBindings;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,8 +60,7 @@ public class GremlinExecutor {
      * @param ctx the server context
      * @return the result from the evaluation
      */
-    public CompletableFuture<Object> eval(final RequestMessage message, final Context ctx)
-            throws ScriptException, InterruptedException, ExecutionException, TimeoutException {
+    public CompletableFuture<Object> eval(final RequestMessage message, final Context ctx) {
         final Graphs graphs = ctx.getGraphs();
         final Bindings bindings = new SimpleBindings();
         bindings.putAll(extractBindingsFromMessage(message));

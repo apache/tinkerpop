@@ -1,14 +1,11 @@
 package com.tinkerpop.gremlin.server.handler;
 
-import com.codahale.metrics.Meter;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.Graphs;
 import com.tinkerpop.gremlin.server.GremlinExecutor;
-import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.Settings;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
-import com.tinkerpop.gremlin.server.util.MetricManager;
 import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -17,14 +14,11 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.codahale.metrics.MetricRegistry.name;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestMessage, ThrowingConsumer<Context>>> {
     private static final Logger logger = LoggerFactory.getLogger(OpExecutorHandler.class);
-    static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     private final Settings settings;
     private final Graphs graphs;
@@ -46,7 +40,8 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
         try {
             op.accept(gremlinServerContext);
         } catch (OpProcessorException ope) {
-            errorMeter.mark();
+            // Ops may choose to throw OpProcessorException or write the error ResponseMessage down the line
+            // themselves
             logger.warn(ope.getMessage(), ope);
             channelHandlerContext.writeAndFlush(ope.getResponseMessage());
         } finally {

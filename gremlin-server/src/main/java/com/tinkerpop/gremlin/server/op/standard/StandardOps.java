@@ -48,23 +48,19 @@ final class StandardOps {
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
-        try {
-            final CompletableFuture<Object> future = context.getGremlinExecutor().eval(msg, context);
-            future.thenAccept(o -> {
-                ctx.write(Pair.with(msg, convertToIterator(o)));
-            }).thenRun(timerContext::stop);
 
-            future.exceptionally(se -> {
-                logger.warn("Exception from ScriptException error.", se);
-                ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).build());
-                return null;
-            }).thenRun(timerContext::stop);
+        final CompletableFuture<Object> future = context.getGremlinExecutor().eval(msg, context);
+        future.handle((v,t) -> timerContext.stop());
 
-        } catch (Exception ex) {
-            // todo: necessary? - exceptionally above may already be handling this
-            throw new OpProcessorException(String.format("Error while evaluating a script on request [%s]", msg),
-                    ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(ex.getMessage()).build());
-        }
+        future.thenAccept(o -> {
+            ctx.write(Pair.with(msg, convertToIterator(o)));
+        });
+
+        future.exceptionally(se -> {
+            logger.warn(String.format("Exception processing a script on request [%s].", msg), se);
+            ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).build());
+            return null;
+        });
     }
 
     public static void traverseOp(final Context context) throws OpProcessorException {
