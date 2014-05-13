@@ -1,5 +1,10 @@
 Tinkerpop3 Documentation
 ========================
+:toc-position: right
+
+// This directive does nothing.
+// Seems the highlighter must be configured in the pom (?)
+// :source-highlighter: coderay
 
 ////
 Based on revision 1e2078fac4dae8abb1312d1a18cda8609e8c3ce1 of
