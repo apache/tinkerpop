@@ -228,45 +228,6 @@ g.createIndex("name",Vertex.class)
 
 Each graph vendor will have different mechanism by which indices and schemas are defined. TinkerPop3 does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other vendors, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding data to the graph.
 
-OLTP and OLAP Graph Processing
-------------------------------
-
-TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and only touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries touch a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
-
- * *OLTP*: real-time, limited data accessed, random data access, sequential processing, querying
- * *OLAP*: long running, entire data set accessed, sequential data access, parallel processing, bath processing
-
-image::oltp-vs-olap.png[width=600]
-
-Example OLTP and OLAP Queries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Regardless of whether the user requires OLTP or OLAP processing, the Gremlin language is used. A simple OLTP-type query is provided below over the TinkerPop classic graph.
-
-[source,groovy]
-g.v(1).out('knows').name
-==>vadas
-==>josh
-
-This same query can be executed on the underlying graph's (i.e. `g`) `GraphComputer` which is accessed via `g.compute()`. 
-
-[source,groovy]
-g.v(1).out('knows').name.submit(g.compute())
-==>vadas
-==>josh
-
-
-[source,groovy]
-g.V.age.groupCount
-
-The above query is OLAP in nature due to the fact that it touches every vertex in the graph. If the graph is small, this query may return in milliseconds. If its large, then it may take minutes. Moreover, the execution speed of an OLAP query (like an OLTP query) is ultimately determined by execution engine -- i.e. the graph system.
-
-
-GraphComputer and VertexProgram
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Any graph engine can implement the `GraphComputer` interface and provide users OLAP functionality.
-
 
 The Traversal API
 -----------------
@@ -316,3 +277,72 @@ This traversal definition can now be used as follows.
 g.traversal(SocialTraversal.class).people(Optional.of("marko")).knows().name()
 
 By extending Traversal, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
+
+The GraphComputer API
+---------------------
+
+TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and only touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries touch a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
+
+ * *OLTP*: real-time, limited data accessed, random data access, sequential processing, querying
+ * *OLAP*: long running, entire data set accessed, sequential data access, parallel processing, bath processing
+
+image::oltp-vs-olap.png[width=600]
+
+Example OLTP and OLAP Queries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Regardless of whether the user requires OLTP or OLAP processing, the Gremlin language is used. A simple OLTP-type query is provided below over the TinkerPop classic graph.
+
+[source,groovy]
+g.v(1).out('knows').name
+==>vadas
+==>josh
+
+This same query can be executed on the underlying graph's (i.e. `g`) `GraphComputer` which is accessed via `g.compute()`. 
+
+[source,groovy]
+g.v(1).out('knows').name.submit(g.compute())
+==>vadas
+==>josh
+
+
+[source,groovy]
+g.V.age.groupCount
+
+The above query is OLAP in nature due to the fact that it touches every vertex in the graph. If the graph is small, this query may return in milliseconds. If its large, then it may take minutes. Moreover, the execution speed of an OLAP query (like an OLTP query) is ultimately determined by execution engine -- i.e. the graph system.
+
+
+GraphComputer and VertexProgram
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Any graph engine can implement the `GraphComputer` interface and provide users OLAP functionality.
+
+
+Gremlin Utilities
+=================
+
+Gremlin I/O
+----------
+
+GraphML Reader/Writer
+~~~~~~~~~~~~~~~~~~~~~
+
+Kryo Reader/Writer
+~~~~~~~~~~~~~~~~~~
+
+Gremlin Server
+--------------
+
+Graph Strategy
+--------------
+
+
+
+Implementations
+===============
+
+Neo4j-Gremlin
+-------------
+
+Giraph-Gremlin
+--------------
