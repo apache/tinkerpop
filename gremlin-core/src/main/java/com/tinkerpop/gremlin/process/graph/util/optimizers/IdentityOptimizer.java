@@ -16,8 +16,8 @@ public class IdentityOptimizer implements Optimizer.FinalOptimizer {
 
     public void optimize(final Traversal traversal) {
         ((List<Step>) traversal.getSteps()).stream()
-                .filter(pipe -> pipe instanceof IdentityStep && !TraversalHelper.isLabeled(pipe))
+                .filter(step -> step instanceof IdentityStep && !TraversalHelper.isLabeled(step))
                 .collect(Collectors.<Step>toList())
-                .forEach(pipe -> TraversalHelper.removeStep(pipe, traversal));
+                .forEach(step -> TraversalHelper.removeStep(step, traversal));
     }
 }
