@@ -6,6 +6,8 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 /**
+ * An {@code Item} represents an result value from the server.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Item {
@@ -69,8 +71,10 @@ public class Item {
 
     @Override
     public String toString() {
+        final String c = resultItem != null ? resultItem.getClass().getCanonicalName() : "null";
         return "Item{" +
                 "resultItem=" + resultItem +
+                "class=" + c +
                 '}';
     }
 }
