@@ -71,10 +71,9 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     @Override
     public <V> Property<V> setProperty(final String key, final V value) {
-        this.strategyWrappedGraph.strategy().compose(
+        return this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getElementSetProperty(elementStrategyContext),
-                this.baseElement::setProperty).accept(key, value);
-        return null; // TODO: Stephen, help please! This needs to return the created Property<V>
+                this.baseElement::setProperty).apply(key, value);
     }
 
     @Override

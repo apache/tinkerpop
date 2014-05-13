@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -89,10 +90,10 @@ public class IdGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiConsumer<String, V>> getElementSetProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementSetProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return (f) -> (k, v) -> {
             throwIfIdKeyIsSet(ctx.getCurrent().getClass(), k);
-            f.accept(k,v);
+            return f.apply(k,v);
         };
     }
 

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -49,7 +50,7 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiConsumer<String, V>> getElementSetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementSetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementSetProperty(ctx));
     }
 

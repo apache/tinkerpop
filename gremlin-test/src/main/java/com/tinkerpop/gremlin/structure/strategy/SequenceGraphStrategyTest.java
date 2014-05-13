@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -262,7 +261,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public <V> UnaryOperator<BiConsumer<String, V>> getElementSetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementSetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
         }
 
