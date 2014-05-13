@@ -182,11 +182,9 @@ public class GremlinServer {
             // and fail the server startup
             configureSerializers();
 
-            // todo: does this need to be synch'd - don't think so as is executed once at startup
-            synchronized (this) {
-                if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
-                gremlinExecutor = new GremlinExecutor(this.settings, graphs.get());
-            }
+            // initialize graphs from configuration
+            if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
+            gremlinExecutor = new GremlinExecutor(this.settings, graphs.get());
 
             logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
 
