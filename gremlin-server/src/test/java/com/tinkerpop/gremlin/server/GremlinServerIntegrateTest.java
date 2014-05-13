@@ -115,7 +115,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @Ignore("This test needs to be fixed feedback is retrieved from netty.")
+    @Ignore("Fix in netty 4.0.20.final.")
     public void shouldBlockRequestWhenTooBig() throws Exception {
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
