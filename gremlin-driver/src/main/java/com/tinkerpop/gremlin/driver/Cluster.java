@@ -236,6 +236,7 @@ public class Cluster {
         }
 
         public Cluster build() {
+            if (addresses.size() == 0) addContactPoint("localhost");
             final Settings.ConnectionPoolSettings connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxInProcessPerConnection = this.maxInProcessPerConnection;
             connectionPoolSettings.minInProcessPerConnection = this.minInProcessPerConnection;

@@ -3,9 +3,11 @@ package com.tinkerpop.gremlin.server;
 import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
+import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.driver.exception.ResponseException;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
+import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.TimeUtil;
@@ -15,7 +17,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -164,5 +168,39 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         cluster.close();
+    }
+
+    @Test
+    public void shouldSerializeToStringWhenRequested() throws Exception {
+        final Map<String,Object> m = new HashMap();
+        m.put("serializeResultToString", true);
+        final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
+        serializer.configure(m);
+
+        final Cluster cluster = Cluster.create().serializer(serializer).build();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("TinkerFactory.createClassic()");
+        final List<Item> items = results.all().join();
+        assertEquals(1, items.size());
+        assertEquals("tinkergraph[vertices:6 edges:6]", items.get(0).getString());
+
+        cluster.close();
+    }
+
+    @Test
+    @Ignore
+    public void shouldDeserializeJsonBuilder() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
+            fail("Should throw an exception.");
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getMessage().endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
+        } finally {
+            cluster.close();
+        }
     }
 }

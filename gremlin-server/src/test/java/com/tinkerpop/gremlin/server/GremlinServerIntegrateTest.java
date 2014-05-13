@@ -149,20 +149,4 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
-
-    @Test
-    @Ignore("This test needs to be fixed once we have a real client that can properly deserialize things other than String.")
-    public void shouldDeserializeJsonBuilder() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
-            fail("Should throw an exception.");
-        } catch (RuntimeException re) {
-            assertTrue(re.getCause().getMessage().endsWith("Serialization of an individual result exceeded the serializeResultTimeout setting"));
-        } finally {
-            cluster.close();
-        }
-    }
 }
