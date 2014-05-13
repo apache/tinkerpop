@@ -9,6 +9,7 @@ import org.codehaus.groovy.tools.shell.Groovysh;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Submit a script to a Gremlin Server instance.
@@ -40,8 +41,10 @@ public class SubmitCommand extends CommandSupport {
                     return String.format("Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage());
                 else
                     return responseException.getMessage();
-            } else
+            } else if (ex.getCause() != null)
                 return ex.getCause().getMessage();
+            else
+                return ex.getMessage();
         }
     }
 

@@ -30,13 +30,27 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     public RemoteCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":remote", ":rem", ["current", "connect", "as"], "current")
+        super(shell, ":remote", ":rem", ["current", "connect", "as", "timeout"], "current")
         this.mediator = mediator
 
         // initialize with a localhost connection. uses toString serialization by default which lets everything
         // come back over the wire which is easy/nice for beginners
         lastBuilder = Cluster.create().addContactPoint("localhost").serializer(AS_TEXT)
         makeCluster()
+    }
+
+    def Object do_timeout = { List<String> arguments ->
+        final String errorMessage = "the timeout option expects a positive integer representing milliseconds or 'max' as an argument"
+        if (arguments.size() != 1) return errorMessage
+        try {
+            final int to = arguments.get(0).equals("max") ? Integer.MAX_VALUE : Integer.parseInt(arguments.get(0))
+            if (to <= 0) return errorMessage
+
+            mediator.remoteTimeout = to
+            return "set remote timeout to ${to}ms"
+        } catch (Exception ex) {
+            return errorMessage
+        }
     }
 
     def Object do_connect = { List<String> arguments ->
@@ -51,7 +65,7 @@ class RemoteCommand extends ComplexCommandSupport {
             try {
                 builder = Cluster.create(new File(line))
             } catch (FileNotFoundException fnfe) {
-                return "could not configure remote - arguments must be a resolvable host or a configuration file";
+                return "the 'connect' option must be a resolvable host or a configuration file";
             }
         }
 
