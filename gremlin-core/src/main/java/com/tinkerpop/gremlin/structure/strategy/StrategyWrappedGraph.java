@@ -55,7 +55,8 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        return this.baseGraph.V();
+        // todo: do we need to StrategyWrappedGraphTraversal - ugh
+        return strategy().compose(s -> s.getVStrategy(graphContext), this.baseGraph::V).get();
     }
 
     @Override

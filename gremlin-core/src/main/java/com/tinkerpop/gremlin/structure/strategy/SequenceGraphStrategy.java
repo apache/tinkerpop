@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -32,6 +33,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getAddEdgeStrategy(ctx));
+    }
+
+    @Override
+    public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getVStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getVStrategy(ctx));
     }
 
     @Override

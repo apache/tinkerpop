@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -51,7 +52,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("A", e.getProperty(partition).get());
     }
 
-    @Ignore
+    @Test
     public void shouldWriteVerticesToMultiplePartitions() {
         final Vertex vA = g.addVertex("any", "a");
         final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -45,6 +46,10 @@ public interface GraphStrategy {
      *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
     public default UnaryOperator<Function<Object[],Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    public default UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
 
