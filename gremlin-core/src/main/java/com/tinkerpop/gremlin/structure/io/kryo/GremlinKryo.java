@@ -236,9 +236,9 @@ public final class GremlinKryo {
         private BiPredicate<Byte, Byte> compliant = (readExt, serExt) -> readExt.equals(serExt);
 
         /**
-         * Starts numbering classes for Kryo serialization at 8192 to leave room for future usage by TinkerPop.
+         * Starts numbering classes for Kryo serialization at 65536 to leave room for future usage by TinkerPop.
          */
-        private final AtomicInteger currentSerializationId = new AtomicInteger(8192);
+        private final AtomicInteger currentSerializationId = new AtomicInteger(65536);
 
         /**
          * {@inheritDoc}
