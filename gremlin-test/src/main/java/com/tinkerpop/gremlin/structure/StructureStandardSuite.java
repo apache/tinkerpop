@@ -66,6 +66,12 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
         VertexTest.class
     };
 
+    /*
+    private static final Class<?>[] allTests = new Class<?>[]{
+        PartitionGraphStrategyTest.class
+    };
+    */
+
     /**
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
      * as needed to enforce tests upon implementations.

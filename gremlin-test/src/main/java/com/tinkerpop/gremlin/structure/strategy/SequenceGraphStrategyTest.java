@@ -285,5 +285,10 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getVStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
             return spy();
         }
+
+        @Override
+        public UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getEStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
+            return spy();
+        }
     }
 }

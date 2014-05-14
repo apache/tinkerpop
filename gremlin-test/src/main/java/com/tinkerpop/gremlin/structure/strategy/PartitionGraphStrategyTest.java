@@ -12,6 +12,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -67,11 +68,20 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("b", vB.getProperty("any").get());
         assertEquals("B", vB.getProperty(partition).get());
 
-        g.V().forEach(v -> assertEquals("a", v.getProperty("any").get()));
+        final GraphTraversal t = g.V();
+        assertTrue(t.optimizers().get().stream().anyMatch(o -> o.getClass().equals(PartitionGraphStrategy.PartitionGraphTraversalOptimizer.class)));
+
+        g.V().forEach(v -> {
+            assertTrue(v instanceof StrategyWrappedVertex);
+            assertEquals("a", v.getProperty("any").get());
+        });
 
         strategy.removeReadPartition("A");
         strategy.addReadPartition("B");
 
-        g.V().forEach(v -> assertEquals("b", v.getProperty("any").get()));
+        g.V().forEach(v -> {
+            assertTrue(v instanceof StrategyWrappedVertex);
+            assertEquals("b", v.getProperty("any").get());
+        });
     }
 }

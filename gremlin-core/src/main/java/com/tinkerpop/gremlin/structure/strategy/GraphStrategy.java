@@ -61,6 +61,17 @@ public interface GraphStrategy {
     }
 
     /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#E()}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with {@link com.tinkerpop.gremlin.structure.Graph#E()} signature
+     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
+     */
+    public default UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return UnaryOperator.identity();
+    }
+
+    /**
      * Construct a {@link com.tinkerpop.gremlin.util.function.TriFunction} that enhances the features of
      * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)}.
      *
