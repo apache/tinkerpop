@@ -137,6 +137,7 @@ public class PartitionGraphStrategy implements GraphStrategy {
             for (int pos : positions) {
                 final MapStep<Object, Object> transformToStrategy = new MapStep<>(traversal);
                 transformToStrategy.setFunction((Holder<Object> t) -> {
+                    // todo: need to make sure we're not re-wrapping in strategy over and over again.
                     final Object o = t.get();
                     if (o instanceof Vertex)
                         return new StrategyWrappedVertex((Vertex) o, graph);
