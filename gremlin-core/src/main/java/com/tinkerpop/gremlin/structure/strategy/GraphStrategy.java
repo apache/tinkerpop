@@ -49,6 +49,13 @@ public interface GraphStrategy {
         return UnaryOperator.identity();
     }
 
+    /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#V()}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with {@link com.tinkerpop.gremlin.structure.Graph#V()} signature
+     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
+     */
     public default UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
