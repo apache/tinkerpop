@@ -1,12 +1,25 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.process.Step;
+import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.map.StartStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers.TinkerGraphStepOptimizer;
 
 import java.util.Set;
 
@@ -72,5 +85,29 @@ class TinkerEdge extends TinkerElement implements Edge {
     public String toString() {
         return StringFactory.edgeString(this);
 
+    }
+
+    //////
+
+    public GraphTraversal<Edge, Edge> start() {
+        final TinkerEdge edge = this;
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<Edge, Edge>() {
+            public GraphTraversal<Edge, Edge> submit(final TraversalEngine engine) {
+                if (engine instanceof GraphComputer) {
+                    this.optimizers().unregister(TinkerGraphStepOptimizer.class);
+                    final String label = this.getSteps().get(0).getAs();
+                    TraversalHelper.removeStep(0, this);
+                    final Step identityStep = new IdentityStep(this);
+                    if (TraversalHelper.isLabeled(label))
+                        identityStep.setAs(label);
+
+                    TraversalHelper.insertStep(identityStep, 0, this);
+                    TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, edge.getId())), 0, this);
+                    TraversalHelper.insertStep(new TinkerGraphStep<>(this, Edge.class, edge.graph), 0, this);
+                }
+                return super.submit(engine);
+            }
+        };
+        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 }

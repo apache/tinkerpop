@@ -32,7 +32,7 @@ public abstract class SubGraphTest extends AbstractGremlinTest {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph");
         graphProvider.clear(config);
         final Graph subgraph = graphProvider.openTestGraph(config);
-        get_g_v1_outE_subgraphXknowsX(convertToId("marko"), subgraph).iterate();
+        get_g_v1_outE_subgraphXknowsX(convertToVertexId("marko"), subgraph).iterate();
 
         AbstractGremlinSuite.assertVertexEdgeCounts(3, 2).accept(subgraph);
         subgraph.E().forEach(e -> {

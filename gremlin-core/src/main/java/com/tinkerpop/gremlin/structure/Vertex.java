@@ -196,11 +196,6 @@ public interface Vertex extends Element {
         return this.start().<E2>property(propertyKey);
     }
 
-    // TODO: test
-    public default void remove() {
-        this.start().remove();
-    }
-
     public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Holder<Vertex>> consumer) {
         return this.start().sideEffect(consumer);
     }

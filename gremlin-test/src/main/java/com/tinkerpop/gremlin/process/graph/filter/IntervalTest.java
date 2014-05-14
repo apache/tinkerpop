@@ -23,7 +23,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outE_intervalXweight_0_06X_inV() {
-        final Iterator<Vertex> traversal = get_g_v1_outE_intervalXweight_0_06X_inV(convertToId("marko"));
+        final Iterator<Vertex> traversal = get_g_v1_outE_intervalXweight_0_06X_inV(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
         while (traversal.hasNext()) {
             Vertex vertex = traversal.next();

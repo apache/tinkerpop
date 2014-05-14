@@ -32,7 +32,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_exceptXg_v2X() {
-        final Iterator<Vertex> traversal = get_g_v1_out_exceptXg_v2X(convertToId("marko"), convertToId("vadas"));
+        final Iterator<Vertex> traversal = get_g_v1_out_exceptXg_v2X(convertToVertexId("marko"), convertToVertexId("vadas"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         Set<Vertex> vertices = new HashSet<>();
@@ -49,7 +49,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_aggregateXxX_out_exceptXxX() {
-        Iterator<Vertex> traversal = get_g_v1_out_aggregateXxX_out_exceptXxX(convertToId("marko"));
+        Iterator<Vertex> traversal = get_g_v1_out_aggregateXxX_out_exceptXxX(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
         assertEquals("ripple", traversal.next().<String>getValue("name"));
         assertFalse(traversal.hasNext());
@@ -58,7 +58,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX() {
-        Iterator<String> traversal = get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(convertToId("marko"));
+        Iterator<String> traversal = get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
         List<String> names = Arrays.asList(traversal.next(), traversal.next());
         assertFalse(traversal.hasNext());

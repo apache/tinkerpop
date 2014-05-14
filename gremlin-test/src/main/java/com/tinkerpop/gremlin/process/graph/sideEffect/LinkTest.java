@@ -23,7 +23,7 @@ public abstract class LinkTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX() {
-        final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(convertToId("marko"));
+        final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         final List<Vertex> cocreators = new ArrayList<>();
         final List<Object> ids = new ArrayList<>();
@@ -33,12 +33,12 @@ public abstract class LinkTest extends AbstractGremlinTest {
             ids.add(vertex.getId());
         }
         assertEquals(cocreators.size(), 3);
-        assertTrue(ids.contains(convertToId("marko")));
-        assertTrue(ids.contains(convertToId("peter")));
-        assertTrue(ids.contains(convertToId("josh")));
+        assertTrue(ids.contains(convertToVertexId("marko")));
+        assertTrue(ids.contains(convertToVertexId("peter")));
+        assertTrue(ids.contains(convertToVertexId("josh")));
 
         for (Vertex vertex : cocreators) {
-            if (vertex.getId().equals(convertToId("marko"))) {
+            if (vertex.getId().equals(convertToVertexId("marko"))) {
                 assertEquals(vertex.outE("cocreator").count(), 4);
                 assertEquals(vertex.inE("cocreator").count(), 4);
             } else {

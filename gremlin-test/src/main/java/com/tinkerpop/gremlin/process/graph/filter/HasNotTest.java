@@ -2,15 +2,12 @@ package com.tinkerpop.gremlin.process.graph.filter;
 
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,11 +30,11 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void get_g_v1_hasNotXprop() {
-        Iterator<Vertex> traversal = get_g_v1_hasNotXprop(convertToId("marko"), "circumference");
+        Iterator<Vertex> traversal = get_g_v1_hasNotXprop(convertToVertexId("marko"), "circumference");
         System.out.println("Testing: " + traversal);
         assertEquals("marko", traversal.next().<String>getValue("name"));
         assertFalse(traversal.hasNext());
-        traversal = get_g_v1_hasNotXprop(convertToId("marko"), "name");
+        traversal = get_g_v1_hasNotXprop(convertToVertexId("marko"), "name");
         System.out.println("Testing: " + traversal);
         assertFalse(traversal.hasNext());
     }
