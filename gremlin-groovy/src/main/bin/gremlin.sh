@@ -1,45 +1,69 @@
 #!/bin/bash
 
+set -e
+set -u
+
 case `uname` in
   CYGWIN*)
-    CP=$( echo `dirname $0`/../lib/*.jar . | sed 's/ /;/g')
+    CP="`dirname $0`"/../config
+    CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /;/g')
     ;;
   *)
-    CP=$( echo `dirname $0`/../lib/*.jar . | sed 's/ /:/g')
+    CP="`dirname $0`"/../config
+    CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /:/g')
 esac
-#echo $CP
+
+export CLASSPATH="${CLASSPATH:-}:$CP"
 
 # Find Java
-if [ "$JAVA_HOME" = "" ] ; then
+if [ -z "${JAVA_HOME:-}" ]; then
     JAVA="java -server"
 else
     JAVA="$JAVA_HOME/bin/java -server"
 fi
 
-# Set Java options
-if [ "$JAVA_OPTIONS" = "" ] ; then
-    JAVA_OPTIONS="-Xms32m -Xmx512m"
+# Set default message threshold for Log4j Gremlin's console appender
+if [ -z "${GREMLIN_LOG_LEVEL:-}" ]; then
+    GREMLIN_LOG_LEVEL=WARN
 fi
 
-# Launch the application
-if [ "$1" = "-e" ]; then
-  k=$2
-  if [ $# -gt 2 ]; then
-    for (( i=3 ; i < $# + 1 ; i++ ))
-    do
-      eval a=\$$i
-      k="$k \"$a\""
-    done
-  fi
-
-  eval $JAVA $JAVA_OPTIONS -cp $CP:$CLASSPATH com.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor $k
-else
-  if [ "$1" = "-v" ]; then
-    $JAVA $JAVA_OPTIONS -cp $CP:$CLASSPATH com.tinkerpop.gremlin.Version
-  else
-    $JAVA $JAVA_OPTIONS -Dlog4j.configuration=file:config/log4j.properties -cp $CP:$CLASSPATH com.tinkerpop.gremlin.groovy.console.Console $@
-  fi
+# Script debugging is disabled by default, but can be enabled with -l
+# TRACE or -l DEBUG or enabled by exporting
+# SCRIPT_DEBUG=nonemptystring to gremlin.sh's environment
+if [ -z "${SCRIPT_DEBUG:-}" ]; then
+    SCRIPT_DEBUG=
 fi
 
-# Return the program's exit code
-exit $?
+# Process options
+MAIN_CLASS=com.tinkerpop.gremlin.groovy.console.Console
+while getopts "elv" opt; do
+    case "$opt" in
+    e) MAIN_CLASS=com.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor
+       # For compatibility with behavior pre-Titan-0.5.0, stop
+       # processing gremlin.sh arguments as soon as the -e switch is
+       # seen; everything following -e becomes arguments to the
+       # ScriptExecutor main class
+       shift $(( $OPTIND - 1 ))
+       break;;
+    l) eval GREMLIN_LOG_LEVEL=\$$OPTIND
+       OPTIND="$(( $OPTIND + 1 ))"
+       if [ "$GREMLIN_LOG_LEVEL" = "TRACE" -o \
+            "$GREMLIN_LOG_LEVEL" = "DEBUG" ]; then
+	   SCRIPT_DEBUG=y
+       fi
+       ;;
+    v) MAIN_CLASS=com.tinkerpop.gremlin.Version
+    esac
+done
+
+if [ -z "${JAVA_OPTIONS:-}" ]; then
+    JAVA_OPTIONS="-Dlog4j.configuration=log4j-repl.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
+fi
+
+if [ -n "$SCRIPT_DEBUG" ]; then
+    echo "CLASSPATH: $CLASSPATH"
+    set -x
+fi
+
+# Start the JVM
+$JAVA $JAVA_OPTIONS $MAIN_CLASS "$@"
