@@ -5,8 +5,6 @@ import com.esotericsoftware.kryo.KryoSerializable;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers;
-import com.esotericsoftware.kryo.serializers.MapSerializer;
 import com.esotericsoftware.kryo.util.DefaultStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.tinkerpop.gremlin.process.T;
@@ -38,7 +36,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -94,19 +91,6 @@ public final class GremlinKryo {
     @FunctionalInterface
     public interface HeaderWriter {
         public void write(final Kryo kryo, final Output output) throws IOException;
-    }
-
-    public static class UUIDSerializer extends Serializer<UUID> {
-        @Override
-        public void write(final Kryo kryo, final Output output, final UUID uuid) {
-            output.writeLong(uuid.getMostSignificantBits());
-            output.writeLong(uuid.getLeastSignificantBits());
-        }
-
-        @Override
-        public UUID read(final Kryo kryo, final Input input, final Class<UUID> uuidClass) {
-            return new UUID(input.readLong(), input.readLong());
-        }
     }
 
     /**
