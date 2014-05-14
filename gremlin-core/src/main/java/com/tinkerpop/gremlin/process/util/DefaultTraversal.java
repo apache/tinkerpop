@@ -62,7 +62,8 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public String toString() {
-        this.doFinalOptimization();
+        // todo: optimizing on toString can cause weird stuff when debugging - can we have doPreflightFinalOptimization?
+        //this.doFinalOptimization();
         return this.getSteps().toString();
     }
 
