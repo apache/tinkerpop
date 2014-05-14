@@ -5,6 +5,7 @@ import com.esotericsoftware.kryo.KryoSerializable;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.MapSerializer;
 import com.esotericsoftware.kryo.util.DefaultStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
@@ -213,8 +214,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(StringBuilder.class, null, 44));
             add(Triplet.<Class, Serializer, Integer>with(TreeMap.class, null, 45));
             add(Triplet.<Class, Serializer, Integer>with(EnumSet.class, null, 46));
-            add(Triplet.<Class, Serializer, Integer>with(Map.class, null, 47));
-            add(Triplet.<Class, Serializer, Integer>with(LinkedHashMap.class, null, 48));
+            add(Triplet.<Class, Serializer, Integer>with(LinkedHashMap.class, new MapSerializer(), 47));
         }};
 
         private static final byte major = 1;
