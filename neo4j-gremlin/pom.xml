@@ -27,6 +27,13 @@
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-ha</artifactId>
             <scope>compile</scope>
+            <exclusions>
+                <!-- Prevent conflict with the slf4j-log4j12 binding -->
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.neo4j</groupId>

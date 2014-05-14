@@ -2,10 +2,12 @@
 
 case `uname` in
   CYGWIN*)
-    CP=$( echo `dirname $0`/../lib/*.jar . | sed 's/ /;/g')
+    CP="`dirname $0`"/../config/
+    CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /;/g')
     ;;
   *)
-    CP=$( echo `dirname $0`/../lib/*.jar . | sed 's/ /:/g')
+    CP="`dirname $0`"/../config/
+    CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /:/g')
 esac
 #echo $CP
 
@@ -22,7 +24,7 @@ if [ "$JAVA_OPTIONS" = "" ] ; then
 fi
 
 # Launch the application
-$JAVA -Dlog4j.configuration=file:config/log4j.properties $JAVA_OPTIONS -cp $CP:$CLASSPATH com.tinkerpop.gremlin.server.GremlinServer $@
+$JAVA -Dlog4j.configuration=log4j-server.properties $JAVA_OPTIONS -cp $CP:$CLASSPATH com.tinkerpop.gremlin.server.GremlinServer $@
 
 # Return the program's exit code
 exit $?
