@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -67,6 +68,7 @@ public final class GremlinKryo {
 
     public Kryo createKryo() {
         final Kryo kryo = new Kryo(new GremlinClassResolver(), new MapReferenceResolver(), new DefaultStreamFactory());
+        kryo.addDefaultSerializer(Map.Entry.class, new EntrySerializer());
         kryo.setRegistrationRequired(true);
         serializationList.forEach(p -> {
             final Serializer serializer = Optional.ofNullable(p.getValue1()).orElse(kryo.getDefaultSerializer(p.getValue0()));
@@ -161,8 +163,17 @@ public final class GremlinKryo {
     public static class BuilderV1d0 implements Builder {
 
         /**
+         * Map with one entry that is used so that it is possible to get the class of LinkedHashMap.Entry.
+         */
+        private static final LinkedHashMap m = new LinkedHashMap() {{
+            put("junk", "dummy");
+        }};
+
+        private static final Class linkedHashMapEntryClass = m.entrySet().iterator().next().getClass();
+
+        /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is Locale=56.
+         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is HashMap.Entry=58.
          */
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class,Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
@@ -196,6 +207,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(EdgeTerminator.class, null, 14));
             add(Triplet.<Class, Serializer, Integer>with(EnumSet.class, null, 46));
             add(Triplet.<Class, Serializer, Integer>with(HashMap.class, null, 11));
+            add(Triplet.<Class, Serializer, Integer>with(HashMap.Entry.class, null, 58));
             add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedList.class, null, 15));
             add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedList.IoListValue.class, null, 24));
             add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedValue.class, null, 16));
@@ -203,6 +215,7 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(IoVertex.class, null, 20));
             add(Triplet.<Class, Serializer, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Serializer, Integer>with(LinkedHashMap.class, null, 47));
+            add(Triplet.<Class, Serializer, Integer>with(linkedHashMapEntryClass, null, 59));
             add(Triplet.<Class, Serializer, Integer>with(Locale.class, null, 57));
             add(Triplet.<Class, Serializer, Integer>with(StringBuffer.class, null, 43));
             add(Triplet.<Class, Serializer, Integer>with(StringBuilder.class, null, 44));
