@@ -120,9 +120,9 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteClassicGraphAsGraphML() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.xml");
-        GraphMLWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
-        os.close();
+        try (final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.xml")) {
+        	GraphMLWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
+		}
     }
 
     /**
