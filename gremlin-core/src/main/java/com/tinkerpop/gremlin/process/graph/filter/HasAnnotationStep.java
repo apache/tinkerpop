@@ -22,7 +22,7 @@ public class HasAnnotationStep extends FilterStep<Element> {
         this.propertyKey = propertyKey;
         this.hasContainer = hasContainer;
         this.setPredicate(holder -> {
-            final Property<AnnotatedList> property = holder.get().getProperty(this.propertyKey);
+            final Property<AnnotatedList> property = holder.get().property(this.propertyKey);
             return property.isPresent() &&
                     StreamFactory.stream(property.get().values()).filter(av -> this.hasContainer.test((AnnotatedValue) av)).iterator().hasNext();
         });

@@ -170,7 +170,7 @@ public class ExceptionConsistencyTest {
         public void testGraphVertexSetPropertyStandard() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
-                v.setProperty(key, val);
+                v.property(key, val);
                 fail(String.format("Call to Vertex.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
             } catch (Exception ex) {
                 assertEquals(expectedException.getClass(), ex.getClass());
@@ -183,7 +183,7 @@ public class ExceptionConsistencyTest {
         public void testGraphEdgeSetPropertyStandard() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
-                v.addEdge("label", v).setProperty(key, val);
+                v.addEdge("label", v).property(key, val);
                 fail(String.format("Call to Edge.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
             } catch (Exception ex) {
                 assertEquals(expectedException.getClass(), ex.getClass());
@@ -338,8 +338,8 @@ public class ExceptionConsistencyTest {
         public void testAnnotatedListAddValue() throws Exception {
             try {
                 final Vertex v = this.g.addVertex();
-                v.setProperty("names", AnnotatedList.make());
-                final Property<AnnotatedList<String>> names = v.getProperty("names");
+                v.property("names", AnnotatedList.make());
+                final Property<AnnotatedList<String>> names = v.property("names");
                 names.get().addValue(annotatedValue, arguments);
                 fail(String.format("Call to addValue should have thrown an exception with these arguments [%s]", arguments));
             } catch (Exception ex) {
@@ -558,7 +558,7 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Test exceptions around use of {@link com.tinkerpop.gremlin.structure.Element#getValue(String)}.
+     * Test exceptions around use of {@link com.tinkerpop.gremlin.structure.Element#value(String)}.
      */
     @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "propertyDoesNotExist"
@@ -569,8 +569,8 @@ public class ExceptionConsistencyTest {
         public void testGetValueThatIsNotPresentOnVertex() {
             final Vertex v = g.addVertex();
             try {
-                v.getValue("does-not-exist");
-                fail("Call to Element.getValue() with a key that is not present should throw an exception");
+                v.value("does-not-exist");
+                fail("Call to Element.value() with a key that is not present should throw an exception");
             } catch (Exception ex) {
                 final Exception expectedException = Property.Exceptions.propertyDoesNotExist("does-not-exist");
                 assertEquals(expectedException.getClass(), ex.getClass());
@@ -585,8 +585,8 @@ public class ExceptionConsistencyTest {
             final Vertex v = g.addVertex();
             final Edge e = v.addEdge("label", v);
             try {
-                e.getValue("does-not-exist");
-                fail("Call to Element.getValue() with a key that is not present should throw an exception");
+                e.value("does-not-exist");
+                fail("Call to Element.value() with a key that is not present should throw an exception");
             } catch (Exception ex) {
                 final Exception expectedException = Property.Exceptions.propertyDoesNotExist("does-not-exist");
                 assertEquals(expectedException.getClass(), ex.getClass());
@@ -611,7 +611,7 @@ public class ExceptionConsistencyTest {
 
             assertNotNull(e);
 
-            final Object id = e.getId();
+            final Object id = e.id();
             e.remove();
             assertFalse(g.E().has(Element.ID, id).hasNext());
 
@@ -635,7 +635,7 @@ public class ExceptionConsistencyTest {
             final Edge e = v1.addEdge("knows", v2);
             assertNotNull(e);
 
-            final Object id = e.getId();
+            final Object id = e.id();
             e.remove();
 
             // try second remove with a commit and then a second remove.  both should return the same exception
@@ -658,7 +658,7 @@ public class ExceptionConsistencyTest {
             final Vertex v = g.addVertex();
             assertNotNull(v);
 
-            final Object id = v.getId();
+            final Object id = v.id();
             v.remove();
             assertFalse(g.V().has(Element.ID, id).hasNext());
 
@@ -680,7 +680,7 @@ public class ExceptionConsistencyTest {
             final Vertex v = g.addVertex();
             assertNotNull(v);
 
-            final Object id = v.getId();
+            final Object id = v.id();
             v.remove();
 
             tryCommit(g);
@@ -786,7 +786,7 @@ public class ExceptionConsistencyTest {
 
         @Override
         public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.SideEffects sideEffects) {
-            vertex.setProperty(this.key, this.val);
+            vertex.property(this.key, this.val);
         }
 
         @Override
@@ -828,7 +828,7 @@ public class ExceptionConsistencyTest {
 
         @Override
         public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.SideEffects sideEffects) {
-            vertex.bothE().forEach(e -> e.setProperty(this.key, this.val));
+            vertex.bothE().forEach(e -> e.property(this.key, this.val));
         }
 
         @Override

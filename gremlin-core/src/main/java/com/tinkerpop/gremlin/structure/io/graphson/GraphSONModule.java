@@ -55,20 +55,20 @@ public class GraphSONModule extends SimpleModule {
 
         private void ser(final Edge edge, final JsonGenerator jsonGenerator) throws IOException {
             final Map<String,Object> m = new HashMap<>();
-            m.put(GraphSONTokens.ID, edge.getId());
-            m.put(GraphSONTokens.LABEL, edge.getLabel());
+            m.put(GraphSONTokens.ID, edge.id());
+            m.put(GraphSONTokens.LABEL, edge.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
 
             final Vertex inV = edge.getVertex(Direction.IN);
-            m.put(GraphSONTokens.IN, inV.getId());
-            m.put(GraphSONTokens.IN_LABEL, inV.getLabel());
+            m.put(GraphSONTokens.IN, inV.id());
+            m.put(GraphSONTokens.IN_LABEL, inV.label());
 
             final Vertex outV = edge.getVertex(Direction.OUT);
-            m.put(GraphSONTokens.OUT, outV.getId());
-            m.put(GraphSONTokens.OUT_LABEL, outV.getLabel());
+            m.put(GraphSONTokens.OUT, outV.id());
+            m.put(GraphSONTokens.OUT_LABEL, outV.label());
 
             m.put(GraphSONTokens.PROPERTIES,
-                    edge.getProperties().values().stream().collect(
+                    edge.properties().values().stream().collect(
                             Collectors.toMap(Property::getKey, Property::get)));
 
             jsonGenerator.writeObject(m);
@@ -97,11 +97,11 @@ public class GraphSONModule extends SimpleModule {
         private void ser(final Vertex vertex, final JsonGenerator jsonGenerator)
                 throws IOException {
             final Map<String,Object> m = new HashMap<>();
-            m.put(GraphSONTokens.ID, vertex.getId());
-            m.put(GraphSONTokens.LABEL, vertex.getLabel());
+            m.put(GraphSONTokens.ID, vertex.id());
+            m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
             m.put(GraphSONTokens.PROPERTIES,
-                    vertex.getProperties().values().stream().collect(
+                    vertex.properties().values().stream().collect(
                             Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IoAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
 
             jsonGenerator.writeObject(m);
@@ -175,7 +175,7 @@ public class GraphSONModule extends SimpleModule {
         private void ser(final Object o, final JsonGenerator jsonGenerator,
                          final SerializerProvider serializerProvider) throws IOException {
             if (Element.class.isAssignableFrom(o.getClass()))
-                jsonGenerator.writeFieldName((((Element) o).getId()).toString());
+                jsonGenerator.writeFieldName((((Element) o).id()).toString());
             else
                 super.serialize(o, jsonGenerator, serializerProvider);
         }

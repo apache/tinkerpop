@@ -49,14 +49,14 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldNotAllowVertexSetProperties() {
         final Vertex v = g.addVertex();
-        assertException(()->v.setProperties("test", "test"));
+        assertException(()->v.properties("test", "test"));
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldNotAllowVertexSetProperty() {
         final Vertex v = g.addVertex();
-        assertException(()->v.setProperty("test", "test"));
+        assertException(()->v.property("test", "test"));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     public void shouldNotAllowEdgeSetProperties() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("friend", v);
-        assertException(()->e.setProperties("test", "test"));
+        assertException(()->e.properties("test", "test"));
     }
 
     @Test
@@ -72,15 +72,15 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     public void shouldNotAllowEdgeSetProperty() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("friend", v);
-        assertException(()->e.setProperty("test", "test"));
+        assertException(()->e.property("test", "test"));
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldNotAllowVertexPropertyRemoval() {
         final Vertex v = g.addVertex();
-        v.setProperty("test", "test");
-        final Property<String> p = v.getProperty("test");
+        v.property("test", "test");
+        final Property<String> p = v.property("test");
         assertEquals("test", p.get());
         assertException(p::remove);
     }
@@ -90,8 +90,8 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     public void shouldNotAllowEdgePropertyRemoval() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("friend", v);
-        e.setProperties("test", "test");
-        final Property<String> p = e.getProperty("test");
+        e.properties("test", "test");
+        final Property<String> p = e.property("test");
         assertEquals("test", p.get());
         assertException(p::remove);
     }

@@ -42,7 +42,7 @@ public class MicroEdge extends MicroElement implements Edge {
 
     public Edge inflate(final Vertex hostVertex) {
         return StreamFactory.stream((Iterator<Edge>) hostVertex.outE(this.label))
-                .filter(e -> e.getId().equals(this.id))
+                .filter(e -> e.id().equals(this.id))
                 .findFirst().orElseThrow(() -> new IllegalStateException("The micro edge could not be be found at the provided vertex"));
     }
 

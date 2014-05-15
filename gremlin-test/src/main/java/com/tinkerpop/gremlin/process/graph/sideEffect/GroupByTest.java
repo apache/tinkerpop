@@ -34,7 +34,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
         assertEquals(6, map.size());
         map.forEach((key, values) -> {
             assertEquals(1, values.size());
-            assertEquals(convertToVertexId(key), values.get(0).getId());
+            assertEquals(convertToVertexId(key), values.get(0).id());
         });
         assertFalse(traversal.hasNext());
     }
@@ -64,19 +64,19 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
     public static class JavaGroupByTest extends GroupByTest {
         public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
-            return (Traversal) g.V().groupBy(v -> v.getValue("name"));
+            return (Traversal) g.V().groupBy(v -> v.value("name"));
         }
 
         public Map<String, List<String>> get_g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX() {
             return g.V().<Vertex>has("lang")
                     .groupBy("a",
-                            v -> v.getValue("lang"),
-                            v -> v.getValue("name")).iterate().memory().get("a");
+                            v -> v.value("lang"),
+                            v -> v.value("name")).iterate().memory().get("a");
         }
 
         public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX() {
             return (Traversal) g.V().<Vertex>has("lang")
-                    .groupBy(v -> v.getValue("lang"),
+                    .groupBy(v -> v.value("lang"),
                             v -> 1,
                             vv -> vv.size());
         }
@@ -84,20 +84,20 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
     public static class JavaComputerGroupByTest extends GroupByTest {
         public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
-            return (Traversal) g.V().groupBy(v -> v.getValue("name")).submit(g.compute());
+            return (Traversal) g.V().groupBy(v -> v.value("name")).submit(g.compute());
         }
 
         public Map<String, List<String>> get_g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX() {
             // TODO: Make legit
             return g.V().<Vertex>has("lang")
                     .groupBy("a",
-                            v -> v.getValue("lang"),
-                            v -> v.getValue("name")).iterate().memory().get("a");
+                            v -> v.value("lang"),
+                            v -> v.value("name")).iterate().memory().get("a");
         }
 
         public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX() {
             return (Traversal) g.V().<Vertex>has("lang")
-                    .groupBy(v -> v.getValue("lang"),
+                    .groupBy(v -> v.value("lang"),
                             v -> 1,
                             vv -> vv.size()).submit(g.compute());
         }

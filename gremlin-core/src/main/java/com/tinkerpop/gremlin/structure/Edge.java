@@ -32,6 +32,10 @@ public interface Edge extends Element {
 
     public Vertex getVertex(final Direction direction) throws IllegalArgumentException;
 
+    // TODO: public Vertex inV()
+    // TODO: public Vertex outV()
+    // TODO: public Vertex bothV()
+
     // element steps ///////////////////////////////////////////////////////////
 
     // TODO: test
@@ -147,11 +151,6 @@ public interface Edge extends Element {
     }
 
     // TODO: test
-    public default <E2> GraphTraversal<Edge, Property<E2>> property(final String propertyKey) {
-        return this.start().<E2>property(propertyKey);
-    }
-
-    // TODO: test
     public default GraphTraversal<Edge, Edge> sideEffect(final SConsumer<Holder<Edge>> consumer) {
         return this.start().sideEffect(consumer);
     }
@@ -163,15 +162,6 @@ public interface Edge extends Element {
 
     // TODO: union
 
-    // TODO: test
-    public default <E2> GraphTraversal<Edge, E2> value(final String propertyKey) {
-        return this.start().value(propertyKey);
-    }
-
-    // TODO: test
-    public default GraphTraversal<Edge, Map<String, Object>> values(final String... propertyKeys) {
-        return this.start().values(propertyKeys);
-    }
 
     // TODO: test
     public default GraphTraversal<Edge, Edge> with(final Object... variableValues) {

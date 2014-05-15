@@ -36,7 +36,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         }
 
         public Map get_g_v1_out_out_treeXnameX(final Object v1Id) {
-            return g.v(v1Id).out().out().tree(v -> ((Vertex) v).getValue("name"));
+            return g.v(v1Id).out().out().tree(v -> ((Vertex) v).value("name"));
         }
     }
 
@@ -47,7 +47,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
         public Map get_g_v1_out_out_treeXnameX(final Object v1Id) {
             // todo: convert to graph computer
-            return g.v(v1Id).out().out().tree(v -> ((Vertex) v).getValue("name"));
+            return g.v(v1Id).out().out().tree(v -> ((Vertex) v).value("name"));
         }
     }
 }

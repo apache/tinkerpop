@@ -47,7 +47,7 @@ public class GraphReadPerformanceTest {
             final Random r = new Random(854939487556l);
             for (int i = 0; i < numVertices; i++) {
                 final Vertex v = g.addVertex("oid", i, "name", RandomStringUtils.randomAlphabetic(r.nextInt(1024)));
-                ids.add(v.getId());
+                ids.add(v.id());
             }
 
             final Distribution inDist = new PowerLawDistribution(2.3);
@@ -69,7 +69,7 @@ public class GraphReadPerformanceTest {
             // read the vertices 10 times over
             for (int ix = 0; ix < 10; ix++) {
                 ids.stream().map(g::v).forEach(v -> {
-                    assertNotNull(v.getValue("name"));
+                    assertNotNull(v.value("name"));
                     counter.incrementAndGet();
                 });
 

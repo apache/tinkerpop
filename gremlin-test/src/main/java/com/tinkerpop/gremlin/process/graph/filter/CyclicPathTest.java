@@ -26,7 +26,7 @@ public abstract class CyclicPathTest extends AbstractGremlinTest {
         while (traversal.hasNext()) {
             counter++;
             Vertex vertex = traversal.next();
-            assertEquals("marko", vertex.<String>getValue("name"));
+            assertEquals("marko", vertex.<String>value("name"));
         }
         assertEquals(1, counter);
         assertFalse(traversal.hasNext());

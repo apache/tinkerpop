@@ -37,8 +37,8 @@ public class AnnotationTest {
         @FeatureRequirement(featureClass = VertexAnnotationFeatures.class, feature = VertexAnnotationFeatures.FEATURE_STRING_VALUES)
         public void testAnnotatedList() {
             final Vertex v = g.addVertex();
-            v.setProperty("names", AnnotatedList.make());
-            final Property<AnnotatedList<String>> names = v.getProperty("names");
+            v.property("names", AnnotatedList.make());
+            final Property<AnnotatedList<String>> names = v.property("names");
             names.get().addValue("antonio", "time", 1);
             names.get().addValue("antonio", "time", 2);
             names.get().addValue("antonio", "time", 3);
@@ -51,8 +51,8 @@ public class AnnotationTest {
         @FeatureRequirement(featureClass = VertexAnnotationFeatures.class, feature = VertexAnnotationFeatures.FEATURE_STRING_VALUES)
         public void testAnnotatedValue() {
             final Vertex v = g.addVertex();
-            v.setProperty("names", AnnotatedList.make());
-            final Property<AnnotatedList<String>> names = v.getProperty("names");
+            v.property("names", AnnotatedList.make());
+            final Property<AnnotatedList<String>> names = v.property("names");
             final AnnotatedValue av = names.get().addValue("antonio", "time", 1);
 
             tryCommit(g, graph->assertEquals(StringFactory.annotatedValueString(av), av.toString()));
@@ -139,11 +139,11 @@ public class AnnotationTest {
         public void shouldSetValueOnVertex() throws Exception {
             assumeThat(g.getFeatures().supports(VertexAnnotationFeatures.class, featureName), is(true));
             final Vertex v = g.addVertex();
-            v.setProperty("key", AnnotatedList.make());
-            final Property<AnnotatedList<String>> keys = v.getProperty("key");
+            v.property("key", AnnotatedList.make());
+            final Property<AnnotatedList<String>> keys = v.property("key");
             keys.get().addValue("test", "k", value);
 
-            final AnnotatedList al = v.getValue("key");
+            final AnnotatedList al = v.value("key");
             if (value instanceof Map)
                 tryCommit(g, graph -> {
                     final Map map = (Map) al.annotatedValues().annotation("k").next();

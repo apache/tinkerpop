@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.tinkergraph.process.olap;
 
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Ignore;
@@ -50,7 +49,7 @@ public class TinkerGraphComputerTest {
         g.V().has("name")
                 .pageRank()
                 .order((a, b) -> a.get().getValue1().compareTo(b.get().getValue1()))
-                .map(p -> Arrays.asList(p.get().getValue0().<String>getValue("name"), p.get().getValue1()))
+                .map(p -> Arrays.asList(p.get().getValue0().<String>value("name"), p.get().getValue1()))
                 .forEachRemaining(System.out::println);
 
     }

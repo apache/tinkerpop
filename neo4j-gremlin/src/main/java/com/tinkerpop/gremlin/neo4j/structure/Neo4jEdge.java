@@ -36,10 +36,10 @@ public class Neo4jEdge extends Neo4jElement implements Edge {
             ((Relationship) rawElement).delete();
         } catch (NotFoundException nfe) {
             // this one happens if the edge is committed
-            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.getId());
+            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.id());
         } catch (IllegalStateException ise) {
             // this one happens if the edge is still chilling in the tx
-            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.getId());
+            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.id());
         }
     }
 

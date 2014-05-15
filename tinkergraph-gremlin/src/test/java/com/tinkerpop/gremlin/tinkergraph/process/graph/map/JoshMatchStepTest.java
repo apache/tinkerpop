@@ -21,7 +21,7 @@ public class JoshMatchStepTest {
                 GraphTraversal.of().as("b").in("created").as("c"),
                 GraphTraversal.of().as("c").has("age", 29),
                 GraphTraversal.of().as("c").out("knows").as("d"))
-                .select(As.of("a", "d"), v -> ((Vertex) v).getValue("name")).forEach(System.out::println);
+                .select(As.of("a", "d"), v -> ((Vertex) v).value("name")).forEach(System.out::println);
 
         System.out.println("--------------");
 

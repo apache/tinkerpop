@@ -43,7 +43,7 @@ public class TinkerHelper {
 
         edge = new TinkerEdge(idValue, outVertex, label, inVertex, graph);
         ElementHelper.attachProperties(edge, keyValues);
-        graph.edges.put(edge.getId(), edge);
+        graph.edges.put(edge.id(), edge);
         TinkerHelper.addOutEdge(outVertex, label, edge);
         TinkerHelper.addInEdge(inVertex, label, edge);
         return edge;

@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.util.HolderSource;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -89,12 +88,12 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             throw new IllegalArgumentException("The computed graph provided is not a TinkerGraph: " + viewGraph.getClass());
 
         StreamFactory.parallelStream(viewGraph.V()).forEach(v1 -> {
-            Vertex v2 = originalGraph.v(v1.getId());
+            Vertex v2 = originalGraph.v(v1.id());
             keyMapping.forEach((key1, key2) -> {
-                if (v1.getProperty(key1).isPresent()) {
-                    final Object value = v1.getProperty(key1).get();
+                if (v1.property(key1).isPresent()) {
+                    final Object value = v1.property(key1).get();
                     ((TinkerGraph) originalGraph).useGraphView = false;
-                    v2.setProperty(key2, value);
+                    v2.property(key2, value);
                     ((TinkerGraph) originalGraph).useGraphView = true;
                 }
             });

@@ -48,23 +48,23 @@ public class TinkerFactory {
         final Vertex gremlin = g.addVertex(Element.ID, 10, Element.LABEL, "software", "name", "gremlin");
         final Vertex blueprints = g.addVertex(Element.ID, 11, Element.LABEL, "software", "name", "blueprints");
 
-        AnnotatedList<String> locations = marko.getValue("locations");
+        AnnotatedList<String> locations = marko.value("locations");
         locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
         locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
         locations.addValue("brussels", "startTime", 2004, "endTime", 2005);
         locations.addValue("santa fe", "startTime", 2005, "endTime", 2014);
 
-        locations = stephen.getValue("locations");
+        locations = stephen.value("locations");
         locations.addValue("centreville", "startTime", 1990, "endTime", 2000);
         locations.addValue("dulles", "startTime", 2000, "endTime", 2006);
         locations.addValue("purcellville", "startTime", 2006, "endTime", 2014);
 
-        locations = matthias.getValue("locations");
+        locations = matthias.value("locations");
         locations.addValue("bremen", "startTime", 2004, "endTime", 2007);
         locations.addValue("baltimore", "startTime", 2007, "endTime", 2011);
         locations.addValue("oakland", "startTime", 2011, "endTime", 2014);
 
-        locations = daniel.getValue("locations");
+        locations = daniel.value("locations");
         locations.addValue("spremberg", "startTime", 1982, "endTime", 2005);
         locations.addValue("kaiserslautern", "startTime", 2005, "endTime", 2009);
         locations.addValue("aachen", "startTime", 2009, "endTime", 2014);
@@ -99,7 +99,7 @@ public class TinkerFactory {
 
         public default SocialTraversal<S, String> name() {
             MapStep<Vertex, String> mapStep = new MapStep<>(this);
-            mapStep.setFunction(v -> v.get().<String>getValue("name"));
+            mapStep.setFunction(v -> v.get().<String>value("name"));
             return (SocialTraversal) this.addStep(mapStep);
         }
 

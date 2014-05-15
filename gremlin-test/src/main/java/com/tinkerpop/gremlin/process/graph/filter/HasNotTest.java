@@ -32,7 +32,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
     public void get_g_v1_hasNotXprop() {
         Iterator<Vertex> traversal = get_g_v1_hasNotXprop(convertToVertexId("marko"), "circumference");
         System.out.println("Testing: " + traversal);
-        assertEquals("marko", traversal.next().<String>getValue("name"));
+        assertEquals("marko", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
         traversal = get_g_v1_hasNotXprop(convertToVertexId("marko"), "name");
         System.out.println("Testing: " + traversal);

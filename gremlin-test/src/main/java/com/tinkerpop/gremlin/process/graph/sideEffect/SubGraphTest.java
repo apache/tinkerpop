@@ -36,16 +36,16 @@ public abstract class SubGraphTest extends AbstractGremlinTest {
 
         AbstractGremlinSuite.assertVertexEdgeCounts(3, 2).accept(subgraph);
         subgraph.E().forEach(e -> {
-            assertEquals("knows", e.getLabel());
-            assertEquals("marko", e.getVertex(Direction.OUT).<String>getValue("name"));
-            assertEquals(new Integer(29), e.getVertex(Direction.OUT).<Integer>getValue("age"));
-            assertEquals(Element.DEFAULT_LABEL, e.getVertex(Direction.OUT).getLabel());
+            assertEquals("knows", e.label());
+            assertEquals("marko", e.getVertex(Direction.OUT).<String>value("name"));
+            assertEquals(new Integer(29), e.getVertex(Direction.OUT).<Integer>value("age"));
+            assertEquals(Element.DEFAULT_LABEL, e.getVertex(Direction.OUT).label());
 
-            final String name = e.getVertex(Direction.IN).<String>getValue("name");
+            final String name = e.getVertex(Direction.IN).<String>value("name");
             if (name.equals("vadas"))
-                assertEquals(0.5f, e.getValue("weight"), 0.0001f);
+                assertEquals(0.5f, e.value("weight"), 0.0001f);
             else if (name.equals("josh"))
-                assertEquals(1.0f, e.getValue("weight"), 0.0001f);
+                assertEquals(1.0f, e.value("weight"), 0.0001f);
             else
                 fail("There's a vertex present that should not be in the subgraph");
         });
@@ -68,11 +68,11 @@ public abstract class SubGraphTest extends AbstractGremlinTest {
 
     public static class JavaSideEffectTest extends SubGraphTest {
         public Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX(final Object v1Id, final Graph subGraph) {
-            return g.v(v1Id).outE().subGraph(subGraph, e -> e.getLabel().equals("knows")).value("name");
+            return g.v(v1Id).outE().subGraph(subGraph, e -> e.label().equals("knows")).value("name");
         }
 
         public Traversal<Vertex, String> get_g_E_subgraphXcreatedX(final Graph subGraph) {
-            return g.V().inE().subGraph(subGraph, e -> e.getLabel().equals("created")).value("name");
+            return g.V().inE().subGraph(subGraph, e -> e.label().equals("created")).value("name");
         }
     }
 }

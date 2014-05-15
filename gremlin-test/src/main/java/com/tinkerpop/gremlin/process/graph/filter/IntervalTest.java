@@ -27,7 +27,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
         System.out.println("Testing: " + traversal);
         while (traversal.hasNext()) {
             Vertex vertex = traversal.next();
-            assertTrue(vertex.getValue("name").equals("vadas") || vertex.getValue("name").equals("lop"));
+            assertTrue(vertex.value("name").equals("vadas") || vertex.value("name").equals("lop"));
         }
         assertFalse(traversal.hasNext());
     }

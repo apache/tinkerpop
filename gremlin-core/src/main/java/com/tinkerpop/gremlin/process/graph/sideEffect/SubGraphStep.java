@@ -43,14 +43,14 @@ public class SubGraphStep<S> extends FilterStep<S> implements SideEffectCapable,
             holder.getPath().stream().map(Pair::getValue1)
                     .filter(i -> i instanceof Edge)
                     .map(e -> (Edge) e)
-                    .filter(e -> !edgesAdded.contains(e.getId()))
+                    .filter(e -> !edgesAdded.contains(e.id()))
                     .filter(includeEdge::test)
                     .forEach(e -> {
                         final Vertex newVOut = getOrCreateVertex(e.getVertex(Direction.OUT));
                         final Vertex newVIn = getOrCreateVertex(e.getVertex(Direction.IN));
                         final Object[] edgeProps = getElementProperties(e);
-                        newVOut.addEdge(e.getLabel(), newVIn, edgeProps);
-                        edgesAdded.add(e.getId());
+                        newVOut.addEdge(e.label(), newVIn, edgeProps);
+                        edgesAdded.add(e.id());
                     });
             return true;
         });
@@ -58,21 +58,21 @@ public class SubGraphStep<S> extends FilterStep<S> implements SideEffectCapable,
 
     private Vertex getOrCreateVertex(final Vertex v) {
         final Vertex found;
-        if (idMap.containsKey(v.getId()))
-            found = idMap.get(v.getId());
+        if (idMap.containsKey(v.id()))
+            found = idMap.get(v.id());
         else {
             final Object[] vOutProps = getElementProperties(v);
             found = subgraph.addVertex(vOutProps);
-            idMap.put(v.getId(), found);
+            idMap.put(v.id(), found);
         }
 
         return found;
     }
 
     private Object[] getElementProperties(final Element e) {
-        final Stream propertyStream = e.getProperties().entrySet().stream().flatMap(entry -> Stream.of(entry.getKey(), entry.getValue().get()));
+        final Stream propertyStream = e.properties().entrySet().stream().flatMap(entry -> Stream.of(entry.getKey(), entry.getValue().get()));
         if (subgraph.getFeatures().vertex().supportsUserSuppliedIds())
-            return Stream.concat(propertyStream, Stream.of(Element.ID, e.getId())).toArray();
+            return Stream.concat(propertyStream, Stream.of(Element.ID, e.id())).toArray();
         else
             return propertyStream.toArray();
     }

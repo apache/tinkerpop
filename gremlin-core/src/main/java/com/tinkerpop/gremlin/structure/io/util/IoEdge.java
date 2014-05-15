@@ -19,10 +19,10 @@ public class IoEdge extends IoElement {
         final IoEdge ioe = new IoEdge();
         final Vertex in = edge.getVertex(Direction.IN);
         final Vertex out = edge.getVertex(Direction.OUT);
-        ioe.inV = in.getId();
-        ioe.outV = out.getId();
-        ioe.inVLabel = in.getLabel();
-        ioe.outVLabel = out.getLabel();
+        ioe.inV = in.id();
+        ioe.outV = out.id();
+        ioe.inVLabel = in.label();
+        ioe.outVLabel = out.label();
         return from(edge, ioe);
     }
 }

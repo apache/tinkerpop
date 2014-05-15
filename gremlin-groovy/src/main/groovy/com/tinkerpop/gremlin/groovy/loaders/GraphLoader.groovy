@@ -29,11 +29,11 @@ class GraphLoader {
         }
 
         Element.metaClass.getAt = { final String property ->
-            return ((Element) delegate).getValue(property);
+            return ((Element) delegate).value(property);
         }
 
         Element.metaClass.getAt = { final String property, final Object orElse ->
-            return ((Element) delegate).getProperty(property).orElse(orElse);
+            return ((Element) delegate).property(property).orElse(orElse);
         }
 
         Vertex.metaClass.propertyMissing = { final String name ->

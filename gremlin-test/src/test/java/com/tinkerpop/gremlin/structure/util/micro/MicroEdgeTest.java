@@ -22,15 +22,15 @@ public class MicroEdgeTest {
     @Before
     public void setup() {
         final Vertex v1 = mock(Vertex.class);
-        when(v1.getId()).thenReturn("1");
-        when(v1.getLabel()).thenReturn("l");
+        when(v1.id()).thenReturn("1");
+        when(v1.label()).thenReturn("l");
         final Vertex v2 = mock(Vertex.class);
-        when(v2.getId()).thenReturn("2");
-        when(v2.getLabel()).thenReturn("l");
+        when(v2.id()).thenReturn("2");
+        when(v2.label()).thenReturn("l");
 
         final Edge e = mock(Edge.class);
-        when(e.getId()).thenReturn("3");
-        when(e.getLabel()).thenReturn("knows");
+        when(e.id()).thenReturn("3");
+        when(e.label()).thenReturn("knows");
         when(e.getVertex(Direction.OUT)).thenReturn(v1);
         when(e.getVertex(Direction.IN)).thenReturn(v2);
 
@@ -44,26 +44,26 @@ public class MicroEdgeTest {
 
     @Test
     public void shouldConstructMicroEdge() {
-        assertEquals("3", this.me.getId());
-        assertEquals("knows", this.me.getLabel());
+        assertEquals("3", this.me.id());
+        assertEquals("knows", this.me.label());
         assertEquals(MicroVertex.class, this.me.getVertex(Direction.OUT).getClass());
-        assertEquals("1", this.me.getVertex(Direction.OUT).getId());
+        assertEquals("1", this.me.getVertex(Direction.OUT).id());
         assertEquals(MicroVertex.class, this.me.getVertex(Direction.IN).getClass());
-        assertEquals("2", this.me.getVertex(Direction.IN).getId());
+        assertEquals("2", this.me.getVertex(Direction.IN).id());
     }
 
     @Test
     public void shouldEvaluateToEqual() {
         final Vertex v1 = mock(Vertex.class);
-        when(v1.getId()).thenReturn("1");
-        when(v1.getLabel()).thenReturn("l");
+        when(v1.id()).thenReturn("1");
+        when(v1.label()).thenReturn("l");
         final Vertex v2 = mock(Vertex.class);
-        when(v2.getId()).thenReturn("2");
-        when(v2.getLabel()).thenReturn("l");
+        when(v2.id()).thenReturn("2");
+        when(v2.label()).thenReturn("l");
 
         final Edge e = mock(Edge.class);
-        when(e.getId()).thenReturn("3");
-        when(e.getLabel()).thenReturn("knows");
+        when(e.id()).thenReturn("3");
+        when(e.label()).thenReturn("knows");
         when(e.getVertex(Direction.OUT)).thenReturn(v1);
         when(e.getVertex(Direction.IN)).thenReturn(v2);
 
@@ -74,15 +74,15 @@ public class MicroEdgeTest {
     @Test
     public void shouldNotEvaluateToEqualDifferentId() {
         final Vertex v1 = mock(Vertex.class);
-        when(v1.getId()).thenReturn("1");
-        when(v1.getLabel()).thenReturn("l");
+        when(v1.id()).thenReturn("1");
+        when(v1.label()).thenReturn("l");
         final Vertex v2 = mock(Vertex.class);
-        when(v2.getId()).thenReturn("2");
-        when(v2.getLabel()).thenReturn("l");
+        when(v2.id()).thenReturn("2");
+        when(v2.label()).thenReturn("l");
 
         final Edge e = mock(Edge.class);
-        when(e.getId()).thenReturn("4");
-        when(e.getLabel()).thenReturn("knows");
+        when(e.id()).thenReturn("4");
+        when(e.label()).thenReturn("knows");
         when(e.getVertex(Direction.OUT)).thenReturn(v1);
         when(e.getVertex(Direction.IN)).thenReturn(v2);
 
@@ -92,12 +92,12 @@ public class MicroEdgeTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowSetProperty() {
-        this.me.setProperty("test", "test");
+        this.me.property("test", "test");
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowGetProperty() {
-        this.me.getProperty("test");
+        this.me.property("test");
     }
 
     @Test(expected = UnsupportedOperationException.class)

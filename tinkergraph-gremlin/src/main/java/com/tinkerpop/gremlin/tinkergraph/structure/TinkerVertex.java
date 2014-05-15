@@ -39,12 +39,12 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         super(id, label, graph);
     }
 
-    public <V> Property<V> setProperty(final String key, final V value) {
+    public <V> Property<V> property(final String key, final V value) {
         if (this.graph.useGraphView) {
             return this.graph.graphView.setProperty(this, key, value);
         } else {
             ElementHelper.validateProperty(key, value);
-            final Property oldProperty = super.getProperty(key);
+            final Property oldProperty = super.property(key);
             Property newProperty;
             if (value == AnnotatedList.make()) {
                 if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList)) {
@@ -75,7 +75,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
             throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
 
         this.bothE().forEach(Edge::remove);
-        this.getProperties().clear();
+        this.properties().clear();
         this.graph.vertexIndex.removeElement(this);
         this.graph.vertices.remove(this.id);
     }
@@ -96,7 +96,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
                         identityStep.setAs(label);
 
                     TraversalHelper.insertStep(identityStep, 0, this);
-                    TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, vertex.getId())), 0, this);
+                    TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, vertex.id())), 0, this);
                     TraversalHelper.insertStep(new TinkerGraphStep<>(this, Vertex.class, vertex.graph), 0, this);
                 }
                 return super.submit(engine);

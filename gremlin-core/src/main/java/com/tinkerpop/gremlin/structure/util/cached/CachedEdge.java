@@ -26,8 +26,8 @@ public class CachedEdge extends CachedElement implements Edge {
         super(edge);
         final Vertex ov = edge.getVertex(Direction.OUT);
         final Vertex iv = edge.getVertex(Direction.IN);
-        this.outVertex = new CachedVertex(ov.getId(), ov.getLabel());
-        this.inVertex = new CachedVertex(iv.getId(), iv.getLabel());
+        this.outVertex = new CachedVertex(ov.id(), ov.label());
+        this.inVertex = new CachedVertex(iv.id(), iv.label());
     }
 
     public Vertex getVertex(final Direction direction) {

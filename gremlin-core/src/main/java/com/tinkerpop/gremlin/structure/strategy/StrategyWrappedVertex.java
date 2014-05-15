@@ -1,15 +1,13 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 
 import java.util.NoSuchElementException;
-import java.util.function.Consumer;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -29,8 +27,8 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
-    public <V> V getValue(final String key) throws NoSuchElementException {
-        return baseVertex.getValue(key);
+    public <V> V value(final String key) throws NoSuchElementException {
+        return baseVertex.value(key);
     }
 
     @Override
@@ -115,16 +113,6 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     @Override
     public <E2> GraphTraversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
         return this.baseVertex.annotatedValues(propertyKey);
-    }
-
-    @Override
-    public <E2> GraphTraversal<Vertex, Property<E2>> property(final String propertyKey) {
-        return this.baseVertex.property(propertyKey);
-    }
-
-    @Override
-    public <E2> GraphTraversal<Vertex, E2> value(final String propertyKey) {
-        return this.baseVertex.value(propertyKey);
     }
 
     @Override
