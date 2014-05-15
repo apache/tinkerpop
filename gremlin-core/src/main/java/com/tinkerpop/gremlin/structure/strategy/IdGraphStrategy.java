@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -86,7 +85,7 @@ public class IdGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return supportsAnId(ctx.getCurrent().getClass()) ?
-                (f) -> () -> ctx.getCurrent().getBaseElement().getProperty(idKey).get() : UnaryOperator.identity();
+                (f) -> () -> ctx.getCurrent().getBaseElement().property(idKey).get() : UnaryOperator.identity();
     }
 
     @Override

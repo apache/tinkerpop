@@ -52,7 +52,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public void g_v1_hasXkeyX() {
         Iterator<Vertex> traversal = get_g_v1_hasXkeyX(convertToVertexId("marko"), "name");
         System.out.println("Testing: " + traversal);
-        assertEquals("marko", traversal.next().<String>getValue("name"));
+        assertEquals("marko", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
         traversal = get_g_v1_hasXkeyX(convertToVertexId("marko"), "circumference");
         System.out.println("Testing: " + traversal);
@@ -64,7 +64,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public void g_v1_hasXname_markoX() {
         Iterator<Vertex> traversal = get_g_v1_hasXname_markoX(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
-        assertEquals("marko", traversal.next().<String>getValue("name"));
+        assertEquals("marko", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
         traversal = get_g_v1_hasXname_markoX(convertToVertexId("vadas"));
         System.out.println("Testing: " + traversal);
@@ -76,7 +76,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public void g_V_hasXname_markoX() {
         final Iterator<Vertex> traversal = get_g_V_hasXname_markoX();
         System.out.println("Testing: " + traversal);
-        assertEquals("marko", traversal.next().<String>getValue("name"));
+        assertEquals("marko", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
     }
 
@@ -96,7 +96,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         final List<Element> list = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(2, list.size());
         for (final Element v : list) {
-            assertTrue(v.<Integer>getValue("age") > 30);
+            assertTrue(v.<Integer>value("age") > 30);
         }
     }
 
@@ -117,7 +117,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         final Iterator<Vertex> traversal = get_g_v1_out_hasXid_2X(convertToVertexId("marko"), convertToVertexId("vadas"));
         System.out.println("Testing: " + traversal);
         assertTrue(traversal.hasNext());
-        assertEquals(convertToVertexId("vadas"), traversal.next().getId());
+        assertEquals(convertToVertexId("vadas"), traversal.next().id());
     }
 
     @Test
@@ -139,7 +139,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            assertEquals("knows", traversal.next().getLabel());
+            assertEquals("knows", traversal.next().label());
         }
         assertEquals(1, counter);
     }
@@ -152,7 +152,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            assertEquals("knows", traversal.next().getLabel());
+            assertEquals("knows", traversal.next().label());
         }
         assertEquals(2, counter);
     }
@@ -165,7 +165,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            final String label = traversal.next().getLabel();
+            final String label = traversal.next().label();
             assertTrue(label.equals("knows") || label.equals("created"));
         }
         assertEquals(6, counter);

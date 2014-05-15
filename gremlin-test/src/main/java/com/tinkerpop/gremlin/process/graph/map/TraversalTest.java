@@ -113,9 +113,9 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             counter++;
             Vertex vertex = step.next();
             vertices.add(vertex);
-            assertTrue(vertex.getValue("name").equals("vadas") ||
-                    vertex.getValue("name").equals("josh") ||
-                    vertex.getValue("name").equals("lop"));
+            assertTrue(vertex.value("name").equals("vadas") ||
+                    vertex.value("name").equals("josh") ||
+                    vertex.value("name").equals("lop"));
         }
         assertEquals(3, counter);
         assertEquals(3, vertices.size());
@@ -133,7 +133,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (step.hasNext()) {
             counter++;
-            assertEquals(step.next().getValue("name"), "marko");
+            assertEquals(step.next().value("name"), "marko");
         }
         assertEquals(1, counter);
     }
@@ -149,9 +149,9 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             counter++;
             Vertex vertex = step.next();
             vertices.add(vertex);
-            assertTrue(vertex.getValue("name").equals("marko") ||
-                    vertex.getValue("name").equals("ripple") ||
-                    vertex.getValue("name").equals("lop"));
+            assertTrue(vertex.value("name").equals("marko") ||
+                    vertex.value("name").equals("ripple") ||
+                    vertex.value("name").equals("lop"));
         }
         assertEquals(3, counter);
         assertEquals(3, vertices.size());
@@ -209,7 +209,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             counter++;
             Edge edge = step.next();
             edges.add(edge);
-            assertTrue(edge.getLabel().equals("knows") || edge.getLabel().equals("created"));
+            assertTrue(edge.label().equals("knows") || edge.label().equals("created"));
         }
         assertEquals(3, counter);
         assertEquals(3, edges.size());
@@ -223,7 +223,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (step.hasNext()) {
             counter++;
-            assertEquals(step.next().getLabel(), "knows");
+            assertEquals(step.next().label(), "knows");
         }
         assertEquals(1, counter);
     }
@@ -239,7 +239,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             counter++;
             Edge edge = step.next();
             edges.add(edge);
-            assertTrue(edge.getLabel().equals("knows") || edge.getLabel().equals("created"));
+            assertTrue(edge.label().equals("knows") || edge.label().equals("created"));
         }
         assertEquals(3, counter);
         assertEquals(3, edges.size());
@@ -251,8 +251,8 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         final Iterator<Edge> step = get_g_v4_bothEX1_createdX(convertToVertexId("josh"));
         System.out.println("Testing: " + step);
         final Edge edge = step.next();
-        assertEquals("created", edge.getLabel());
-        assertTrue(edge.getValue("weight").equals(1.0f) || edge.getValue("weight").equals(0.4f));
+        assertEquals("created", edge.label());
+        assertTrue(edge.value("weight").equals(1.0f) || edge.value("weight").equals(0.4f));
         assertFalse(step.hasNext());
     }
 
@@ -294,7 +294,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         int counter = 0;
         Map<Object, Integer> counts = new HashMap<>();
         while (step.hasNext()) {
-            final Object id = step.next().getId();
+            final Object id = step.next().id();
             int previousCount = counts.getOrDefault(id, 0);
             counts.put(id, previousCount + 1);
             counter++;
@@ -360,9 +360,9 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             counter++;
             Vertex vertex = step.next();
             vertices.add(vertex);
-            assertTrue(vertex.getValue("name").equals("vadas") ||
-                    vertex.getValue("name").equals("josh") ||
-                    vertex.getValue("name").equals("lop"));
+            assertTrue(vertex.value("name").equals("vadas") ||
+                    vertex.value("name").equals("josh") ||
+                    vertex.value("name").equals("lop"));
         }
         assertEquals(3, counter);
         assertEquals(3, vertices.size());
@@ -375,9 +375,9 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         System.out.println("Testing: " + traversal);
         final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(3, vertices.size());
-        assertTrue(vertices.stream().anyMatch(v -> v.getValue("name").equals("marko")));
-        assertTrue(vertices.stream().anyMatch(v -> v.getValue("name").equals("ripple")));
-        assertTrue(vertices.stream().anyMatch(v -> v.getValue("name").equals("lop")));
+        assertTrue(vertices.stream().anyMatch(v -> v.value("name").equals("marko")));
+        assertTrue(vertices.stream().anyMatch(v -> v.value("name").equals("ripple")));
+        assertTrue(vertices.stream().anyMatch(v -> v.value("name").equals("lop")));
         assertFalse(traversal.hasNext());
     }
 
@@ -388,7 +388,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         System.out.println("Testing: " + traversal);
         final List<Vertex> vertices = StreamFactory.stream(traversal).collect(Collectors.toList());
         assertEquals(1, vertices.size());
-        assertEquals(vertices.get(0).getValue("name"), "lop");
+        assertEquals(vertices.get(0).value("name"), "lop");
         assertFalse(traversal.hasNext());
     }
 
@@ -409,8 +409,8 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             counter++;
             Vertex vertex = step.next();
             vertices.add(vertex);
-            assertTrue(vertex.getValue("name").equals("vadas") ||
-                    vertex.getValue("name").equals("josh"));
+            assertTrue(vertex.value("name").equals("vadas") ||
+                    vertex.value("name").equals("josh"));
         }
         assertEquals(2, counter);
         assertEquals(2, vertices.size());
@@ -448,8 +448,8 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             counter++;
             Vertex vertex = step.next();
             vertices.add(vertex);
-            assertTrue(vertex.getValue("name").equals("lop") ||
-                    vertex.getValue("name").equals("ripple"));
+            assertTrue(vertex.value("name").equals("lop") ||
+                    vertex.value("name").equals("ripple"));
         }
         assertEquals(2, counter);
         assertEquals(2, vertices.size());

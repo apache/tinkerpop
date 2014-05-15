@@ -23,7 +23,7 @@ public class MicroPropertyTest {
     @Before
     public void setup() {
         final Vertex v = mock(Vertex.class);
-        when(v.getId()).thenReturn("1");
+        when(v.id()).thenReturn("1");
 
         final Property p = mock(Property.class);
         when(p.getKey()).thenReturn("k");
@@ -72,7 +72,7 @@ public class MicroPropertyTest {
     @Test
     public void shouldBeEqualsProperties() {
         final Vertex v = mock(Vertex.class);
-        when(v.getId()).thenReturn("1");
+        when(v.id()).thenReturn("1");
         final Property p = mock(Property.class);
         when(p.getKey()).thenReturn("k");
         when(p.getElement()).thenReturn(v);
@@ -86,7 +86,7 @@ public class MicroPropertyTest {
     @Test
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentElement() {
         final Vertex v = mock(Vertex.class);
-        when(v.getId()).thenReturn("2");
+        when(v.id()).thenReturn("2");
         final Property p = mock(Property.class);
         when(p.getKey()).thenReturn("k");
         when(p.getElement()).thenReturn(v);
@@ -100,7 +100,7 @@ public class MicroPropertyTest {
     @Test
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentKey() {
         final Vertex v = mock(Vertex.class);
-        when(v.getId()).thenReturn("1");
+        when(v.id()).thenReturn("1");
         final Property p = mock(Property.class);
         when(p.getKey()).thenReturn("k1");
         when(p.getElement()).thenReturn(v);
@@ -114,7 +114,7 @@ public class MicroPropertyTest {
     @Test
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentValue() {
         final Vertex v = mock(Vertex.class);
-        when(v.getId()).thenReturn("1");
+        when(v.id()).thenReturn("1");
         final Property p = mock(Property.class);
         when(p.getKey()).thenReturn("k");
         when(p.getElement()).thenReturn(v);

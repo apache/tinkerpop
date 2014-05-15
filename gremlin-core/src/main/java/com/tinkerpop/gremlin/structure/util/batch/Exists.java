@@ -19,13 +19,13 @@ public enum Exists implements BiConsumer<Element, Object[]> {
         public void accept(final Element element, final Object[] objects) {
             throw new IllegalStateException(String.format(
                     "Element of type %s with id of [%s] was not expected to exist in target graph",
-                    element.getClass().getSimpleName(), element.getId()));
+                    element.getClass().getSimpleName(), element.id()));
         }
     },
     OVERWRITE {
         @Override
         public void accept(final Element element, final Object[] objects) {
-            element.setProperties(objects);
+            element.properties(objects);
         }
     }
 }

@@ -29,7 +29,7 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
             return StreamFactory.iterable(StreamFactory.stream(localMessageType.getQuery().build().reverse().build(vertex))
                     .map(e -> {
                         edge[0] = e;
-                        return receiveMessages.get(e.getVertex(localMessageType.getQuery().direction).getId());
+                        return receiveMessages.get(e.getVertex(localMessageType.getQuery().direction).id());
                     })
                     .filter(q -> null != q)
                     .flatMap(q -> q.stream())
@@ -37,7 +37,7 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
 
         } else {
             return StreamFactory.iterable(Arrays.asList(vertex).stream()
-                    .map(v -> this.receiveMessages.get(v.getId()))
+                    .map(v -> this.receiveMessages.get(v.id()))
                     .filter(q -> null != q)
                     .flatMap(q -> q.stream()));
         }
@@ -45,10 +45,10 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
 
     public void sendMessage(final Vertex vertex, final MessageType messageType, final M message) {
         if (messageType instanceof MessageType.Local) {
-            getMessageList(vertex.getId()).add(message);
+            getMessageList(vertex.id()).add(message);
         } else {
             ((MessageType.Global) messageType).vertices().forEach(v -> {
-                getMessageList(v.getId()).add(message);
+                getMessageList(v.id()).add(message);
             });
         }
     }

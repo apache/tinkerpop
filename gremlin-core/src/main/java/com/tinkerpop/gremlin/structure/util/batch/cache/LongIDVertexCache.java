@@ -65,7 +65,7 @@ public class LongIDVertexCache implements VertexCache {
         /**
          * Retrieve the Object associated with each long from {@code map}. If it
          * is an {@code instanceof Vertex}, then replace it in the map with
-         * {@link Vertex#getId()}. Otherwise, do nothing. Always returns true.
+         * {@link Vertex#id()}. Otherwise, do nothing. Always returns true.
          *
          * @param l
          *            Colt long list element
@@ -76,7 +76,7 @@ public class LongIDVertexCache implements VertexCache {
             final Object o = map.get(l);
             assert null != o;
             if (o instanceof Vertex) {
-                map.put(l, ((Vertex) o).getId());
+                map.put(l, ((Vertex) o).id());
             }
             return true; // tell forEach to apply us to next long
         }

@@ -16,11 +16,11 @@ public abstract class IoElement {
     public Map properties;
 
     protected static <T extends IoElement, E extends Element> T from(final E element, final T ioe) {
-        ioe.id = element.getId();
-        ioe.label = element.getLabel();
+        ioe.id = element.id();
+        ioe.label = element.label();
 
         // get the value out of a Property.
-        ioe.properties = element.getProperties().entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e-> e.getValue().get()));
+        ioe.properties = element.properties().entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e-> e.getValue().get()));
         return ioe;
     }
 }

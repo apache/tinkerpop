@@ -157,9 +157,9 @@ public class ElementHelperTest {
     public void shouldAttachKeyValuesButNotLabelsOrId() {
         final Element mockElement = mock(Element.class);
         ElementHelper.attachProperties(mockElement, "test", 123, Element.ID, 321, Element.LABEL, "friends");
-        verify(mockElement, times(1)).setProperty("test", 123);
-        verify(mockElement, times(0)).setProperty(Element.ID, 321);
-        verify(mockElement, times(0)).setProperty(Element.LABEL, "friends");
+        verify(mockElement, times(1)).property("test", 123);
+        verify(mockElement, times(0)).property(Element.ID, 321);
+        verify(mockElement, times(0)).property(Element.LABEL, "friends");
     }
 
     @Test(expected = ClassCastException.class)
@@ -223,8 +223,8 @@ public class ElementHelperTest {
     public void shouldDetermineVerticesAreEqual() {
         final Element mockVertexA = mock(Vertex.class);
         final Element mockVertexB = mock(Vertex.class);
-        when(mockVertexA.getId()).thenReturn("1");
-        when(mockVertexB.getId()).thenReturn("1");
+        when(mockVertexA.id()).thenReturn("1");
+        when(mockVertexB.id()).thenReturn("1");
         assertTrue(ElementHelper.areEqual(mockVertexA, mockVertexB));
     }
 
@@ -232,8 +232,8 @@ public class ElementHelperTest {
     public void shouldDetermineVerticesAreNotEqual() {
         final Element mockVertexA = mock(Vertex.class);
         final Element mockVertexB = mock(Vertex.class);
-        when(mockVertexA.getId()).thenReturn("1");
-        when(mockVertexB.getId()).thenReturn("2");
+        when(mockVertexA.id()).thenReturn("1");
+        when(mockVertexB.id()).thenReturn("2");
         assertFalse(ElementHelper.areEqual(mockVertexA, mockVertexB));
     }
 
@@ -241,8 +241,8 @@ public class ElementHelperTest {
     public void shouldDetermineEdgesAreEqual() {
         final Element mockEdgeA = mock(Edge.class);
         final Element mockEdgeB = mock(Edge.class);
-        when(mockEdgeA.getId()).thenReturn("1");
-        when(mockEdgeB.getId()).thenReturn("1");
+        when(mockEdgeA.id()).thenReturn("1");
+        when(mockEdgeB.id()).thenReturn("1");
         assertTrue(ElementHelper.areEqual(mockEdgeA, mockEdgeB));
     }
 
@@ -250,8 +250,8 @@ public class ElementHelperTest {
     public void shouldDetermineEdgesAreNotEqual() {
         final Element mockEdgeA = mock(Edge.class);
         final Element mockEdgeB = mock(Edge.class);
-        when(mockEdgeA.getId()).thenReturn("1");
-        when(mockEdgeB.getId()).thenReturn("2");
+        when(mockEdgeA.id()).thenReturn("1");
+        when(mockEdgeB.id()).thenReturn("2");
         assertFalse(ElementHelper.areEqual(mockEdgeA, mockEdgeB));
     }
 

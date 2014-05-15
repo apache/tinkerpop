@@ -30,7 +30,7 @@ public abstract class LinkTest extends AbstractGremlinTest {
         while (step.hasNext()) {
             final Vertex vertex = step.next();
             cocreators.add(vertex);
-            ids.add(vertex.getId());
+            ids.add(vertex.id());
         }
         assertEquals(cocreators.size(), 3);
         assertTrue(ids.contains(convertToVertexId("marko")));
@@ -38,7 +38,7 @@ public abstract class LinkTest extends AbstractGremlinTest {
         assertTrue(ids.contains(convertToVertexId("josh")));
 
         for (Vertex vertex : cocreators) {
-            if (vertex.getId().equals(convertToVertexId("marko"))) {
+            if (vertex.id().equals(convertToVertexId("marko"))) {
                 assertEquals(vertex.outE("cocreator").count(), 4);
                 assertEquals(vertex.inE("cocreator").count(), 4);
             } else {

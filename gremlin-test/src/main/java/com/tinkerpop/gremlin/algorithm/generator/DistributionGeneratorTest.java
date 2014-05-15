@@ -127,7 +127,7 @@ public class DistributionGeneratorTest {
             final Distribution dist = new NormalDistribution(2);
             final DistributionGenerator generator = DistributionGenerator.create(g)
                     .label("knows")
-                    .edgeProcessor(e -> e.setProperty("data", "test"))
+                    .edgeProcessor(e -> e.property("data", "test"))
                     .outDistribution(dist)
                     .inDistribution(dist)
                     .expectedNumEdges(100).build();
@@ -136,7 +136,7 @@ public class DistributionGeneratorTest {
             tryCommit(g, g -> {
                 assertEquals(edgesGenerated, g.E().count());
                 assertTrue(g.V().count() > 0);
-                assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test")));
+                assertTrue(g.E().toList().stream().allMatch(e -> e.value("data").equals("test")));
             });
         }
 

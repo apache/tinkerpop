@@ -21,7 +21,7 @@ public class TraversalCounters implements Serializable {
     protected final Map<Holder, Long> doneObjectTracks = new HashMap<>();
 
     public TraversalCounters(final Vertex vertex) {
-        final Property<TraversalCounters> tracker = vertex.getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER);
+        final Property<TraversalCounters> tracker = vertex.property(TraversalVertexProgram.TRAVERSAL_TRACKER);
         this.previousObjectTracks = tracker.isPresent() ? tracker.get().objectTracks : new HashMap<>();
     }
 

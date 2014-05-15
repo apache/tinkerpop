@@ -77,8 +77,8 @@ public class KryoWriter implements GraphWriter {
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
         this.headerWriter.write(kryo, output);
-        kryo.writeClassAndObject(output, e.getVertex(Direction.OUT).getId());
-        kryo.writeClassAndObject(output, e.getVertex(Direction.IN).getId());
+        kryo.writeClassAndObject(output, e.getVertex(Direction.OUT).id());
+        kryo.writeClassAndObject(output, e.getVertex(Direction.IN).id());
         writeEdgeToOutput(output, e);
         output.flush();
     }
@@ -96,8 +96,8 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writeElement(final Output output, final Element e, final Optional<Direction> direction) {
-        kryo.writeClassAndObject(output, e.getId());
-        output.writeString(e.getLabel());
+        kryo.writeClassAndObject(output, e.id());
+        output.writeString(e.label());
 
         writeProperties(output, e);
 
@@ -127,7 +127,7 @@ public class KryoWriter implements GraphWriter {
 
         while (vertexEdges.hasNext()) {
             final Edge edgeToWrite = vertexEdges.next();
-            kryo.writeClassAndObject(output, edgeToWrite.getVertex(d.opposite()).getId());
+            kryo.writeClassAndObject(output, edgeToWrite.getVertex(d.opposite()).id());
             writeEdgeToOutput(output, edgeToWrite);
         }
 
@@ -136,7 +136,7 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writeProperties(final Output output, final Element e) {
-        final Map<String, Property> properties = e.getProperties();
+        final Map<String, Property> properties = e.properties();
         final int propertyCount = properties.size();
         output.writeInt(propertyCount);
         properties.forEach((key,val) -> {

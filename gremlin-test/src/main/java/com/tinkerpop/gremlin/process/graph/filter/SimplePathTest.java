@@ -25,7 +25,7 @@ public abstract class SimplePathTest extends AbstractGremlinTest {
         while (traversal.hasNext()) {
             counter++;
             Vertex vertex = traversal.next();
-            assertTrue(vertex.getValue("name").equals("josh") || vertex.getValue("name").equals("peter"));
+            assertTrue(vertex.value("name").equals("josh") || vertex.value("name").equals("peter"));
         }
         assertEquals(2, counter);
         assertFalse(traversal.hasNext());

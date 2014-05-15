@@ -145,10 +145,10 @@ public class CommunityGeneratorTest {
             final Distribution dist = new NormalDistribution(2);
             final CommunityGenerator generator = CommunityGenerator.create(g)
                     .label("knows")
-                    .edgeProcessor(e -> e.setProperty("data", "test"))
+                    .edgeProcessor(e -> e.property("data", "test"))
                     .vertexProcessor((v, m) -> {
-                        m.forEach(v::setProperty);
-                        v.setProperty("test", "data");
+                        m.forEach(v::property);
+                        v.property("test", "data");
                     })
                     .communityDistribution(dist)
                     .degreeDistribution(dist)
@@ -160,9 +160,9 @@ public class CommunityGeneratorTest {
             tryCommit(g, g -> {
                 assertEquals(edgesGenerated, g.E().count());
                 assertTrue(g.V().count() > 0);
-                assertTrue(g.E().toList().stream().allMatch(e -> e.getValue("data").equals("test")));
+                assertTrue(g.E().toList().stream().allMatch(e -> e.value("data").equals("test")));
                 assertTrue(g.V().toList().stream().allMatch(
-                        v -> v.getValue("test").equals("data") && v.getProperty("communityIndex").isPresent()
+                        v -> v.value("test").equals("data") && v.property("communityIndex").isPresent()
                 ));
             });
         }

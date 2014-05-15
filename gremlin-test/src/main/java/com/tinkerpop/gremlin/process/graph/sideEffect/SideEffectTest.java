@@ -33,7 +33,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
         final Traversal<Vertex, String> traversal = get_g_v1_sideEffectXstore_aX_valueXnameX(convertToVertexId("marko"));
         assertEquals(traversal.next(), "marko");
         assertFalse(traversal.hasNext());
-        assertEquals(convertToVertexId("marko"), traversal.memory().<List<Vertex>>get("a").get(0).getId());
+        assertEquals(convertToVertexId("marko"), traversal.memory().<List<Vertex>>get("a").get(0).id());
     }
 
     @Test

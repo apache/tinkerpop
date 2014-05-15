@@ -20,7 +20,7 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
      */
     protected boolean same(final Graph g1, final Graph g2) {
         return g1.V().toList().stream()
-                .map(v -> Triplet.<Integer, List<Vertex>, List<Vertex>>with(v.getValue("oid"), v.in().toList(), v.out().toList()))
+                .map(v -> Triplet.<Integer, List<Vertex>, List<Vertex>>with(v.value("oid"), v.in().toList(), v.out().toList()))
                 .allMatch(p -> {
                     final Vertex v = (Vertex) g2.V().has("oid", p.getValue0()).next();
                     return sameInVertices(v, p.getValue1()) && sameOutVertices(v, p.getValue2());
@@ -29,11 +29,11 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
 
     private boolean sameInVertices(final Vertex v, final List<Vertex> inVertices) {
         return inVertices.stream()
-                .allMatch(inVertex -> v.in().filter(hv -> hv.get().getValue("oid") == inVertex.getValue("oid")).hasNext());
+                .allMatch(inVertex -> v.in().filter(hv -> hv.get().value("oid") == inVertex.value("oid")).hasNext());
     }
 
     private boolean sameOutVertices(final Vertex v, final List<Vertex> outVertices) {
         return outVertices.stream()
-                .allMatch(outVertex -> v.out().filter(hv -> hv.get().getValue("oid") == outVertex.getValue("oid")).hasNext());
+                .allMatch(outVertex -> v.out().filter(hv -> hv.get().value("oid") == outVertex.value("oid")).hasNext());
     }
 }

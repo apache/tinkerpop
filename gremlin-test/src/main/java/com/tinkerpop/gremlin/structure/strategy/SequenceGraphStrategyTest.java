@@ -74,9 +74,9 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         final Vertex v = swg.addVertex("any", "thing");
 
         assertNotNull(v);
-        assertEquals("thing", v.getProperty("any").get());
-        assertEquals("working3", v.getProperty("anonymous").get());
-        assertEquals("anything", v.getProperty("try").get());
+        assertEquals("thing", v.property("any").get());
+        assertEquals("working3", v.property("anonymous").get());
+        assertEquals("anything", v.property("try").get());
     }
 
     @Test(expected = RuntimeException.class)
@@ -174,10 +174,10 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
                             // this  means that the next strategy and those below it executed including
                             // the implementation
-                            assertEquals("working3", v.getProperty("anonymous").get());
+                            assertEquals("working3", v.property("anonymous").get());
 
                             // now do something with that vertex after the fact
-                            v.setProperty("anonymous", "working2");
+                            v.property("anonymous", "working2");
 
                             return v;
                         };
@@ -198,8 +198,8 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         final Vertex v = swg.addVertex("any", "thing");
 
         assertNotNull(v);
-        assertEquals("thing", v.getProperty("any").get());
-        assertEquals("working2", v.getProperty("anonymous").get());
+        assertEquals("thing", v.property("any").get());
+        assertEquals("working2", v.property("anonymous").get());
     }
 
     @Test

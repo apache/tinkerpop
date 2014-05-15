@@ -38,8 +38,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
             counter++;
             Path path = step.next();
             assertEquals(2, path.size());
-            assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).getId());
-            assertTrue(((Vertex) path.get(1)).getId().equals(convertToVertexId("vadas")) || ((Vertex) path.get(1)).getId().equals(convertToVertexId("josh")));
+            assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).id());
+            assertTrue(((Vertex) path.get(1)).id().equals(convertToVertexId("vadas")) || ((Vertex) path.get(1)).id().equals(convertToVertexId("josh")));
         }
         assertEquals(2, counter);
     }
@@ -71,8 +71,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
             counter++;
             Path path = step.next();
             assertEquals(1, path.size());
-            assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).getId());
-            assertEquals(convertToVertexId("marko"), ((Vertex) path.get("a")).getId());
+            assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).id());
+            assertEquals(convertToVertexId("marko"), ((Vertex) path.get("a")).id());
         }
         assertEquals(2, counter);
     }
@@ -103,7 +103,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).getValue("name"));
+            return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).value("name"));
         }
 
         public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
@@ -111,7 +111,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
-            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));
+            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).value("name"));
         }
     }
 
@@ -126,7 +126,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
             // TODO: Micro elements do not store properties
-            return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).getValue("name")); //.submit(g.compute());
+            return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).value("name")); //.submit(g.compute());
         }
 
         public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
@@ -135,7 +135,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
             // TODO: Micro elements do not store properties
-            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).getValue("name"));  // .submit(g.compute());
+            return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).value("name"));  // .submit(g.compute());
         }
     }
 }

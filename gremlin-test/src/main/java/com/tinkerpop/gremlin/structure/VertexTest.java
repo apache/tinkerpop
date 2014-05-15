@@ -30,7 +30,7 @@ public class VertexTest extends AbstractGremlinTest {
     @Test
     public void shouldUseDefaultLabelIfNotSpecified() {
         final Vertex v = g.addVertex("name", "marko");
-        assertEquals(Element.DEFAULT_LABEL, v.getLabel());
+        assertEquals(Element.DEFAULT_LABEL, v.label());
     }
 
     @Test
@@ -39,43 +39,43 @@ public class VertexTest extends AbstractGremlinTest {
     public void shouldSupportBasicVertexManipulation() {
         // test property mutation behaviors
         final Vertex v = g.addVertex("name", "marko", "age", 34);
-        assertEquals(34, (int) v.getValue("age"));
-        assertEquals("marko", v.<String>getValue("name"));
-        assertEquals(34, (int) v.getProperty("age").get());
-        assertEquals("marko", v.<String>getProperty("name").get());
-        assertEquals(2, v.getProperties().size());
-        assertEquals(2, v.getPropertyKeys().size());
-        assertTrue(v.getPropertyKeys().contains("name"));
-        assertTrue(v.getPropertyKeys().contains("age"));
-        assertFalse(v.getPropertyKeys().contains("location"));
+        assertEquals(34, (int) v.value("age"));
+        assertEquals("marko", v.<String>value("name"));
+        assertEquals(34, (int) v.property("age").get());
+        assertEquals("marko", v.<String>property("name").get());
+        assertEquals(2, v.properties().size());
+        assertEquals(2, v.keys().size());
+        assertTrue(v.keys().contains("name"));
+        assertTrue(v.keys().contains("age"));
+        assertFalse(v.keys().contains("location"));
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
 
-        v.setProperty("name", "marko rodriguez");
-        assertEquals(34, (int) v.getValue("age"));
-        assertEquals("marko rodriguez", v.<String>getValue("name"));
-        assertEquals(34, (int) v.getProperty("age").get());
-        assertEquals("marko rodriguez", v.<String>getProperty("name").get());
-        assertEquals(2, v.getProperties().size());
-        assertEquals(2, v.getPropertyKeys().size());
-        assertTrue(v.getPropertyKeys().contains("name"));
-        assertTrue(v.getPropertyKeys().contains("age"));
-        assertFalse(v.getPropertyKeys().contains("location"));
+        v.property("name", "marko rodriguez");
+        assertEquals(34, (int) v.value("age"));
+        assertEquals("marko rodriguez", v.<String>value("name"));
+        assertEquals(34, (int) v.property("age").get());
+        assertEquals("marko rodriguez", v.<String>property("name").get());
+        assertEquals(2, v.properties().size());
+        assertEquals(2, v.keys().size());
+        assertTrue(v.keys().contains("name"));
+        assertTrue(v.keys().contains("age"));
+        assertFalse(v.keys().contains("location"));
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
 
-        v.setProperty("location", "santa fe");
-        assertEquals(3, v.getProperties().size());
-        assertEquals(3, v.getPropertyKeys().size());
-        assertEquals("santa fe", v.getProperty("location").get());
-        assertEquals(v.getProperty("location"), v.getProperty("location"));
-        assertNotEquals(v.getProperty("location"), v.getProperty("name"));
-        assertTrue(v.getPropertyKeys().contains("name"));
-        assertTrue(v.getPropertyKeys().contains("age"));
-        assertTrue(v.getPropertyKeys().contains("location"));
-        v.getProperty("location").remove();
+        v.property("location", "santa fe");
+        assertEquals(3, v.properties().size());
+        assertEquals(3, v.keys().size());
+        assertEquals("santa fe", v.property("location").get());
+        assertEquals(v.property("location"), v.property("location"));
+        assertNotEquals(v.property("location"), v.property("name"));
+        assertTrue(v.keys().contains("name"));
+        assertTrue(v.keys().contains("age"));
+        assertTrue(v.keys().contains("location"));
+        v.property("location").remove();
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
-        assertEquals(2, v.getProperties().size());
-        v.getProperties().values().stream().forEach(Property::remove);
-        assertEquals(0, v.getProperties().size());
+        assertEquals(2, v.properties().size());
+        v.properties().values().stream().forEach(Property::remove);
+        assertEquals(0, v.properties().size());
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
     }
 
@@ -92,13 +92,13 @@ public class VertexTest extends AbstractGremlinTest {
         final Vertex v = g.addVertex();
         assertNotNull(v);
 
-        final Vertex u = g.v(v.getId());
+        final Vertex u = g.v(v.id());
         assertNotNull(u);
         assertEquals(v, u);
 
-        assertEquals(g.v(u.getId()), g.v(u.getId()));
-        assertEquals(g.v(v.getId()), g.v(u.getId()));
-        assertEquals(g.v(v.getId()), g.v(v.getId()));
+        assertEquals(g.v(u.id()), g.v(u.id()));
+        assertEquals(g.v(v.id()), g.v(u.id()));
+        assertEquals(g.v(v.id()), g.v(v.id()));
     }
 
     @Test
@@ -125,8 +125,8 @@ public class VertexTest extends AbstractGremlinTest {
     public void shouldAutotypeStringProperties() {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
-        v.setProperty("string", "marko");
-        final String name = v.getValue("string");
+        v.property("string", "marko");
+        final String name = v.value("string");
         assertEquals(name, "marko");
 
     }
@@ -136,8 +136,8 @@ public class VertexTest extends AbstractGremlinTest {
     public void shouldAutotypIntegerProperties() {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
-        v.setProperty("integer", 33);
-        final Integer age = v.getValue("integer");
+        v.property("integer", 33);
+        final Integer age = v.value("integer");
         assertEquals(Integer.valueOf(33), age);
     }
 
@@ -146,8 +146,8 @@ public class VertexTest extends AbstractGremlinTest {
     public void shouldAutotypeBooleanProperties() {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
-        v.setProperty("boolean", true);
-        final Boolean best = v.getValue("boolean");
+        v.property("boolean", true);
+        final Boolean best = v.value("boolean");
         assertEquals(best, Boolean.valueOf(true));
     }
 
@@ -156,8 +156,8 @@ public class VertexTest extends AbstractGremlinTest {
     public void shouldAutotypeDoubleProperties() {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
-        v.setProperty("double", 0.1d);
-        final Double best = v.getValue("double");
+        v.property("double", 0.1d);
+        final Double best = v.value("double");
         assertEquals(best, Double.valueOf(0.1d));
     }
 
@@ -166,8 +166,8 @@ public class VertexTest extends AbstractGremlinTest {
     public void shouldAutotypeLongProperties() {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
-        v.setProperty("long", 1l);
-        final Long best = v.getValue("long");
+        v.property("long", 1l);
+        final Long best = v.value("long");
         assertEquals(best, Long.valueOf(1l));
     }
 
@@ -176,8 +176,8 @@ public class VertexTest extends AbstractGremlinTest {
     public void shouldAutotypeFloatProperties() {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
-        v.setProperty("float", 0.1f);
-        final Float best = v.getValue("float");
+        v.property("float", 0.1f);
+        final Float best = v.value("float");
         assertEquals(best, Float.valueOf(0.1f));
     }
 
@@ -185,14 +185,14 @@ public class VertexTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     public void shouldGetPropertyKeysOnVertex() {
         final Vertex v = g.addVertex("name", "marko", "location", "desert", "status", "dope");
-        Set<String> keys = v.getPropertyKeys();
+        Set<String> keys = v.keys();
         assertEquals(3, keys.size());
 
         assertTrue(keys.contains("name"));
         assertTrue(keys.contains("location"));
         assertTrue(keys.contains("status"));
 
-        final Map<String, Property> m = v.getProperties();
+        final Map<String, Property> m = v.properties();
         assertEquals(3, m.size());
         assertEquals("name", m.get("name").getKey());
         assertEquals("location", m.get("location").getKey());
@@ -201,16 +201,16 @@ public class VertexTest extends AbstractGremlinTest {
         assertEquals("desert", m.get("location").orElse(""));
         assertEquals("dope", m.get("status").orElse(""));
 
-        v.getProperty("status").remove();
+        v.property("status").remove();
 
-        keys = v.getPropertyKeys();
+        keys = v.keys();
         assertEquals(2, keys.size());
         assertTrue(keys.contains("name"));
         assertTrue(keys.contains("location"));
 
-        v.getProperties().values().stream().forEach(p -> p.remove());
+        v.properties().values().stream().forEach(p -> p.remove());
 
-        keys = v.getPropertyKeys();
+        keys = v.keys();
         assertEquals(0, keys.size());
     }
 
@@ -233,7 +233,7 @@ public class VertexTest extends AbstractGremlinTest {
     @Test
     public void shouldReturnEmptyMapIfNoProperties() {
         final Vertex v = g.addVertex();
-        final Map<String,Property> m = v.getProperties();
+        final Map<String,Property> m = v.properties();
         assertNotNull(m);
         assertEquals(0, m.size());
     }

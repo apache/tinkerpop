@@ -105,13 +105,13 @@ public class IoTest extends AbstractGremlinTest {
         }
 
         final Vertex v = g.V().next();
-        assertEquals(123.45d, v.getValue("d"), 0.000001d);
-        assertEquals("some-string", v.<String>getValue("s"));
-        assertEquals(29, v.<Integer>getValue("i").intValue());
-        assertEquals(true, v.<Boolean>getValue("b"));
-        assertEquals(123.54f, v.getValue("f"), 0.000001f);
-        assertEquals(10000000l, v.<Long>getValue("l").longValue());
-        assertEquals("junk", v.<String>getValue("n"));
+        assertEquals(123.45d, v.value("d"), 0.000001d);
+        assertEquals("some-string", v.<String>value("s"));
+        assertEquals(29, v.<Integer>value("i").intValue());
+        assertEquals(true, v.<Boolean>value("b"));
+        assertEquals(123.54f, v.value("f"), 0.000001f);
+        assertEquals(10000000l, v.<Long>value("l").longValue());
+        assertEquals("junk", v.<String>value("n"));
     }
 
     /**
@@ -163,7 +163,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
     public void shouldProperlyEncodeWithGraphML() throws Exception {
         final Vertex v = g.addVertex(Element.ID, "1");
-        v.setProperty("text", "\u00E9");
+        v.property("text", "\u00E9");
 
         final GraphMLWriter w = GraphMLWriter.create().build();
 
@@ -185,7 +185,7 @@ public class IoTest extends AbstractGremlinTest {
         }
 
         final Vertex v2 = g2.v("1");
-        assertEquals("\u00E9", v2.getProperty("text").get());
+        assertEquals("\u00E9", v2.property("text").get());
 
         // need to manually close the "g2" instance
         graphProvider.clear(g2, configuration);
@@ -230,7 +230,7 @@ public class IoTest extends AbstractGremlinTest {
             }
 
             final Vertex v2 = g2.V().next();
-            final CustomId customId = (CustomId) v2.getId();
+            final CustomId customId = (CustomId) v2.id();
             assertEquals(id, customId.getElementId());
             assertEquals("vertex", customId.getCluster());
 
@@ -255,7 +255,7 @@ public class IoTest extends AbstractGremlinTest {
         GraphMigrator.migrateGraph(g, g1, reader, writer);
 
         final Vertex onlyVertex = g1.V().next();
-        final CustomId id = (CustomId) onlyVertex.getId();
+        final CustomId id = (CustomId) onlyVertex.id();
         assertEquals("vertex", id.getCluster());
         assertEquals(UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305"), id.getElementId());
 
@@ -405,11 +405,11 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais,
                         (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.getId(), edgeId);
-                            assertEquals(v1.getId(), outId);
-                            assertEquals(v2.getId(), inId);
-                            assertEquals(e.getLabel(), label);
-                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals(e.id(), edgeId);
+                            assertEquals(v1.id(), outId);
+                            assertEquals(v2.id(), inId);
+                            assertEquals(e.label(), label);
+                            assertEquals(e.keys().size(), properties.length / 2);
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5f, properties[1]);
 
@@ -440,11 +440,11 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais,
                         (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.getId().toString(), edgeId.toString()); // lossy
-                            assertEquals(v1.getId().toString(), outId.toString()); // lossy
-                            assertEquals(v2.getId().toString(), inId.toString());  // lossy
-                            assertEquals(e.getLabel(), label);
-                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals(e.id().toString(), edgeId.toString()); // lossy
+                            assertEquals(v1.id().toString(), outId.toString()); // lossy
+                            assertEquals(v2.id().toString(), inId.toString());  // lossy
+                            assertEquals(e.label(), label);
+                            assertEquals(e.keys().size(), properties.length / 2);
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5d, properties[1]);    // lossy
 
@@ -480,11 +480,11 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais,
                         (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.getId(), edgeId);
-                            assertEquals(v1.getId(), outId);
-                            assertEquals(v2.getId(), inId);
-                            assertEquals(e.getLabel(), label);
-                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals(e.id(), edgeId);
+                            assertEquals(v1.id(), outId);
+                            assertEquals(v2.id(), inId);
+                            assertEquals(e.label(), label);
+                            assertEquals(e.keys().size(), properties.length / 2);
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5f, properties[1]);
 
@@ -519,11 +519,11 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais,
                         (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.getId(), edgeId);
-                            assertEquals(v1.getId(), outId);
-                            assertEquals(v2.getId(), inId);
-                            assertEquals(e.getLabel(), label);
-                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals(e.id(), edgeId);
+                            assertEquals(v1.id(), outId);
+                            assertEquals(v2.id(), inId);
+                            assertEquals(e.label(), label);
+                            assertEquals(e.keys().size(), properties.length / 2);
                             assertEquals("uuid", properties[0]);
                             assertEquals(id, properties[1]);
 
@@ -555,11 +555,11 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readEdge(bais,
                         (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.getId(), edgeId);
-                            assertEquals(v1.getId(), outId);
-                            assertEquals(v2.getId(), inId);
-                            assertEquals(e.getLabel(), label);
-                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals(e.id(), edgeId);
+                            assertEquals(v1.id(), outId);
+                            assertEquals(v2.id(), inId);
+                            assertEquals(e.label(), label);
+                            assertEquals(e.keys().size(), properties.length / 2);
                             assertEquals("uuid", properties[0]);
                             assertEquals(id, properties[1]);
 
@@ -579,7 +579,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexNoEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.getValue("locations");
+        final AnnotatedList<String> locations = v1.value("locations");
         locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
         locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
 
@@ -597,8 +597,8 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId(), vertexId);
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id(), vertexId);
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -607,13 +607,13 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(2, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
                             assertEquals(AnnotatedList.make(), m.get("locations"));
 
                             // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
                             // set after the fact.
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
                             return vsub1;
                         });
             }
@@ -629,7 +629,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexNoEdgesToKryoAndDontSetAnnotatedListValues() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.getValue("locations");
+        final AnnotatedList<String> locations = v1.value("locations");
         locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
         locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
 
@@ -645,8 +645,8 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId(), vertexId);
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id(), vertexId);
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -655,14 +655,14 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(2, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
 
                             // purposely ignore the AnnotatedList property.
 
                             // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
                             // set after the fact.
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.getValue("locations")).thenReturn(null);
+                            when(vsub1.value("locations")).thenReturn(null);
                             return vsub1;
                         });
             }
@@ -688,8 +688,8 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id().toString(), vertexId.toString()); // lossy
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -698,7 +698,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
 
                             called.set(true);
                             return null;
@@ -715,7 +715,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithOUTOUTEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.getValue("locations");
+        final AnnotatedList<String> locations = v1.value("locations");
         locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
         locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
 
@@ -734,8 +734,8 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.OUT,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId(), vertexId);
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id(), vertexId);
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -744,22 +744,22 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(2, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
                             assertEquals(AnnotatedList.make(), m.get("locations"));
 
                             // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
                             // set after the fact.
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                            when(vsub1.getId()).thenReturn(v1.getId());
+                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.getId(), edgeId);
-                            assertEquals(v1.getId(), outId);
-                            assertEquals(v2.getId(), inId);
-                            assertEquals(e.getLabel(), label);
-                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals(e.id(), edgeId);
+                            assertEquals(v1.id(), outId);
+                            assertEquals(v2.id(), inId);
+                            assertEquals(e.label(), label);
+                            assertEquals(e.keys().size(), properties.length / 2);
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5f, properties[1]);
 
@@ -793,8 +793,8 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.OUT,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id().toString(), vertexId.toString());  // lossy
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -803,16 +803,16 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
                             calledVertex.set(true);
                             return null;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.getId().toString(), edgeId.toString());  // lossy
-                            assertEquals(v1.getId().toString(), outId.toString());  // lossy
-                            assertEquals(v2.getId().toString(), inId.toString());   // lossy
-                            assertEquals(e.getLabel(), label);
-                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals(e.id().toString(), edgeId.toString());  // lossy
+                            assertEquals(v1.id().toString(), outId.toString());  // lossy
+                            assertEquals(v2.id().toString(), inId.toString());   // lossy
+                            assertEquals(e.label(), label);
+                            assertEquals(e.keys().size(), properties.length / 2);
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5d, properties[1]);                      // lossy
 
@@ -832,7 +832,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithININEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.getValue("locations");
+        final AnnotatedList<String> locations = v1.value("locations");
         locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
         locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
 
@@ -851,8 +851,8 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.IN,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId(), vertexId);
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id(), vertexId);
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -861,22 +861,22 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(2, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
                             assertEquals(AnnotatedList.make(), m.get("locations"));
 
                             // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
                             // set after the fact.
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                            when(vsub1.getId()).thenReturn(v1.getId());
+                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.getId(), edgeId);
-                            assertEquals(v2.getId(), outId);
-                            assertEquals(v1.getId(), inId);
-                            assertEquals(e.getLabel(), label);
-                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals(e.id(), edgeId);
+                            assertEquals(v2.id(), outId);
+                            assertEquals(v1.id(), inId);
+                            assertEquals(e.label(), label);
+                            assertEquals(e.keys().size(), properties.length / 2);
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5f, properties[1]);
 
@@ -910,8 +910,8 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.IN,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id().toString(), vertexId.toString()); // lossy
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -920,16 +920,16 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
                             calledVertex.set(true);
                             return null;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            assertEquals(e.getId().toString(), edgeId.toString()); // lossy
-                            assertEquals(v1.getId().toString(), inId.toString());  // lossy
-                            assertEquals(v2.getId().toString(), outId.toString()); // lossy
-                            assertEquals(e.getLabel(), label);
-                            assertEquals(e.getPropertyKeys().size(), properties.length / 2);
+                            assertEquals(e.id().toString(), edgeId.toString()); // lossy
+                            assertEquals(v1.id().toString(), inId.toString());  // lossy
+                            assertEquals(v2.id().toString(), outId.toString()); // lossy
+                            assertEquals(e.label(), label);
+                            assertEquals(e.keys().size(), properties.length / 2);
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5d, properties[1]);                     // lossy
 
@@ -949,7 +949,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHBOTHEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.getValue("locations");
+        final AnnotatedList<String> locations = v1.value("locations");
         locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
         locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
 
@@ -970,9 +970,9 @@ public class IoTest extends AbstractGremlinTest {
                         Direction.BOTH,
                         (vertexId, label, properties) -> {
                             if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                                assertEquals(v1.getId(), vertexId);
+                                assertEquals(v1.id(), vertexId);
 
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -981,29 +981,29 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(2, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
                             assertEquals(AnnotatedList.make(), m.get("locations"));
 
                             // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
                             // set after the fact.
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                            when(vsub1.getId()).thenReturn(v1.getId());
+                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.equals(e1.getId())) {
-                                assertEquals(v2.getId(), outId);
-                                assertEquals(v1.getId(), inId);
-                                assertEquals(e1.getLabel(), label);
-                                assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                            if (edgeId.equals(e1.id())) {
+                                assertEquals(v2.id(), outId);
+                                assertEquals(v1.id(), inId);
+                                assertEquals(e1.label(), label);
+                                assertEquals(e1.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(0.5f, properties[1]);
-                            } else if (edgeId.equals(e2.getId())) {
-                                assertEquals(v1.getId(), outId);
-                                assertEquals(v2.getId(), inId);
-                                assertEquals(e2.getLabel(), label);
-                                assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                            } else if (edgeId.equals(e2.id())) {
+                                assertEquals(v1.id(), outId);
+                                assertEquals(v2.id(), inId);
+                                assertEquals(e2.label(), label);
+                                assertEquals(e2.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(1.0f, properties[1]);
                             } else {
@@ -1025,7 +1025,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHBOTHEdgesToKryoSkipProperties() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.getValue("locations");
+        final AnnotatedList<String> locations = v1.value("locations");
         locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
         locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
 
@@ -1045,15 +1045,15 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         (vertexId, label, properties) -> {
                             if (g.getFeatures().vertex().supportsUserSuppliedIds())
-                                assertEquals(v1.getId(), vertexId);
+                                assertEquals(v1.id(), vertexId);
 
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.label(), label);
 
                             // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
                             // set after the fact.
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                            when(vsub1.getId()).thenReturn(v1.getId());
+                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         });
             }
@@ -1083,8 +1083,8 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.BOTH,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id().toString(), vertexId.toString());  // lossy
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -1093,27 +1093,27 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
 
                             vertexCalled.set(true);
 
                             return null;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.toString().equals(e1.getId().toString())) {      // lossy
-                                assertEquals(v2.getId().toString(), outId.toString());  // lossy
-                                assertEquals(v1.getId().toString(), inId.toString());   // lossy
-                                assertEquals(e1.getLabel(), label);
-                                assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                            if (edgeId.toString().equals(e1.id().toString())) {      // lossy
+                                assertEquals(v2.id().toString(), outId.toString());  // lossy
+                                assertEquals(v1.id().toString(), inId.toString());   // lossy
+                                assertEquals(e1.label(), label);
+                                assertEquals(e1.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(0.5d, properties[1]);                      // lossy
 
                                 edge1Called.set(true);
-                            } else if (edgeId.toString().equals(e2.getId().toString())) { // lossy
-                                assertEquals(v1.getId().toString(), outId.toString());    // lossy
-                                assertEquals(v2.getId().toString(), inId.toString());     // lossy
-                                assertEquals(e2.getLabel(), label);
-                                assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                            } else if (edgeId.toString().equals(e2.id().toString())) { // lossy
+                                assertEquals(v1.id().toString(), outId.toString());    // lossy
+                                assertEquals(v2.id().toString(), inId.toString());     // lossy
+                                assertEquals(e2.label(), label);
+                                assertEquals(e2.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(1.0d, properties[1]);                        // lossy
 
@@ -1155,8 +1155,8 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.BOTH,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId(), vertexId);
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id(), vertexId);
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -1165,27 +1165,27 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
 
                             vertexCalled.set(true);
 
                             return null;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.equals(e1.getId())) {
-                                assertEquals(v2.getId(), outId);
-                                assertEquals(v1.getId(), inId);
-                                assertEquals(e1.getLabel(), label);
-                                assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                            if (edgeId.equals(e1.id())) {
+                                assertEquals(v2.id(), outId);
+                                assertEquals(v1.id(), inId);
+                                assertEquals(e1.label(), label);
+                                assertEquals(e1.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(0.5f, properties[1]);
 
                                 edge1Called.set(true);
-                            } else if (edgeId.equals(e2.getId())) {
-                                assertEquals(v1.getId(), outId);
-                                assertEquals(v2.getId(), inId);
-                                assertEquals(e2.getLabel(), label);
-                                assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                            } else if (edgeId.equals(e2.id())) {
+                                assertEquals(v1.id(), outId);
+                                assertEquals(v2.id(), inId);
+                                assertEquals(e2.label(), label);
+                                assertEquals(e2.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(1.0f, properties[1]);
 
@@ -1210,7 +1210,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHINEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.getValue("locations");
+        final AnnotatedList<String> locations = v1.value("locations");
         locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
         locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
 
@@ -1230,8 +1230,8 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.IN,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId(), vertexId);
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id(), vertexId);
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -1240,22 +1240,22 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(2, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
                             assertEquals(AnnotatedList.make(), m.get("locations"));
 
                             // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
                             // set after the fact.
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                            when(vsub1.getId()).thenReturn(v1.getId());
+                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.equals(e1.getId())) {
-                                assertEquals(v2.getId(), outId);
-                                assertEquals(v1.getId(), inId);
-                                assertEquals(e1.getLabel(), label);
-                                assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                            if (edgeId.equals(e1.id())) {
+                                assertEquals(v2.id(), outId);
+                                assertEquals(v1.id(), inId);
+                                assertEquals(e1.label(), label);
+                                assertEquals(e1.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(0.5f, properties[1]);
                             } else {
@@ -1293,8 +1293,8 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.IN,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId().toString(), vertexId.toString()); // lossy
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id().toString(), vertexId.toString()); // lossy
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -1303,18 +1303,18 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
 
                             vertexCalled.set(true);
 
                             return null;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.toString().equals(e1.getId().toString())) { // lossy
-                                assertEquals(v2.getId().toString(), outId.toString()); // lossy
-                                assertEquals(v1.getId().toString(), inId.toString()); // lossy
-                                assertEquals(e1.getLabel(), label);
-                                assertEquals(e1.getPropertyKeys().size(), properties.length / 2);
+                            if (edgeId.toString().equals(e1.id().toString())) { // lossy
+                                assertEquals(v2.id().toString(), outId.toString()); // lossy
+                                assertEquals(v1.id().toString(), inId.toString()); // lossy
+                                assertEquals(e1.label(), label);
+                                assertEquals(e1.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(0.5d, properties[1]);                    // lossy
 
@@ -1338,7 +1338,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHOUTEdgesToKryo() throws Exception {
         final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.getValue("locations");
+        final AnnotatedList<String> locations = v1.value("locations");
         locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
         locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
 
@@ -1358,8 +1358,8 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.OUT,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId(), vertexId);
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id(), vertexId);
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -1368,22 +1368,22 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(2, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
                             assertEquals(AnnotatedList.make(), m.get("locations"));
 
                             // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
                             // set after the fact.
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.getValue("locations")).thenReturn(locationAnnotatedList);
-                            when(vsub1.getId()).thenReturn(v1.getId());
+                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
+                            when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.equals(e2.getId())) {
-                                assertEquals(v1.getId(), outId);
-                                assertEquals(v2.getId(), inId);
-                                assertEquals(e2.getLabel(), label);
-                                assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                            if (edgeId.equals(e2.id())) {
+                                assertEquals(v1.id(), outId);
+                                assertEquals(v2.id(), inId);
+                                assertEquals(e2.label(), label);
+                                assertEquals(e2.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(1.0f, properties[1]);
                             } else {
@@ -1421,8 +1421,8 @@ public class IoTest extends AbstractGremlinTest {
                 reader.readVertex(bais,
                         Direction.OUT,
                         (vertexId, label, properties) -> {
-                            assertEquals(v1.getId().toString(), vertexId.toString());  // lossy
-                            assertEquals(v1.getLabel(), label);
+                            assertEquals(v1.id().toString(), vertexId.toString());  // lossy
+                            assertEquals(v1.label(), label);
 
                             final Map<String, Object> m = new HashMap<>();
                             for (int i = 0; i < properties.length; i = i + 2) {
@@ -1431,18 +1431,18 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             assertEquals(1, m.size());
-                            assertEquals(v1.getValue("name"), m.get("name").toString());
+                            assertEquals(v1.value("name"), m.get("name").toString());
 
                             vertexCalled.set(true);
 
                             return null;
                         },
                         (edgeId, outId, inId, label, properties) -> {
-                            if (edgeId.toString().equals(e2.getId().toString())) {     // lossy
-                                assertEquals(v1.getId().toString(), outId.toString()); // lossy
-                                assertEquals(v2.getId().toString(), inId.toString()); // lossy
-                                assertEquals(e2.getLabel(), label);
-                                assertEquals(e2.getPropertyKeys().size(), properties.length / 2);
+                            if (edgeId.toString().equals(e2.id().toString())) {     // lossy
+                                assertEquals(v1.id().toString(), outId.toString()); // lossy
+                                assertEquals(v2.id().toString(), inId.toString()); // lossy
+                                assertEquals(e2.label(), label);
+                                assertEquals(e2.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(1.0d, properties[1]);                 // lossy
 
@@ -1567,11 +1567,11 @@ public class IoTest extends AbstractGremlinTest {
         final Iterator<Vertex> itty1 = g1.V().has("name", "marko");
         final Vertex v1 = itty1.next();
         assertFalse(itty1.hasNext());
-        assertEquals("person", v1.getLabel());
-        assertEquals(2, v1.getPropertyKeys().size());
+        assertEquals("person", v1.label());
+        assertEquals(2, v1.keys().size());
         if (g1.getFeatures().vertex().supportsUserSuppliedIds())
-            assertEquals(1, v1.getId());
-        final AnnotatedList<String> v1location = v1.getValue("locations");
+            assertEquals(1, v1.id());
+        final AnnotatedList<String> v1location = v1.value("locations");
         assertEquals(4, v1location.annotatedValues().toList().size());
         v1location.annotatedValues().toList().forEach(av -> {
             if (av.getValue().equals("san diego")) {
@@ -1597,36 +1597,36 @@ public class IoTest extends AbstractGremlinTest {
         assertEquals(6, g1.E().count());
 
         final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
-        assertEquals(29, v1.<Integer>getValue("age").intValue());
-        assertEquals(2, v1.getPropertyKeys().size());
+        assertEquals(29, v1.<Integer>value("age").intValue());
+        assertEquals(2, v1.keys().size());
         assertClassicId(g1, lossyForId, v1, 1);
 
         final List<Edge> v1Edges = v1.bothE().toList();
         assertEquals(3, v1Edges.size());
         v1Edges.forEach(e -> {
-            if (e.getVertex(Direction.IN).getValue("name").equals("vadas")) {
-                assertEquals("knows", e.getLabel());
+            if (e.getVertex(Direction.IN).value("name").equals("vadas")) {
+                assertEquals("knows", e.label());
                 if (lossyForFloat)
-                    assertEquals(0.5d, e.getValue("weight"), 0.0001d);
+                    assertEquals(0.5d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(0.5f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(0.5f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 7);
-            } else if (e.getVertex(Direction.IN).getValue("name").equals("josh")) {
-                assertEquals("knows", e.getLabel());
+            } else if (e.getVertex(Direction.IN).value("name").equals("josh")) {
+                assertEquals("knows", e.label());
                 if (lossyForFloat)
-                    assertEquals(1.0, e.getValue("weight"), 0.0001d);
+                    assertEquals(1.0, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(1.0f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(1.0f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 8);
-            } else if (e.getVertex(Direction.IN).getValue("name").equals("lop")) {
-                assertEquals("created", e.getLabel());
+            } else if (e.getVertex(Direction.IN).value("name").equals("lop")) {
+                assertEquals("created", e.label());
                 if (lossyForFloat)
-                    assertEquals(0.4d, e.getValue("weight"), 0.0001d);
+                    assertEquals(0.4d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(0.4f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(0.4f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 9);
             } else {
                 fail("Edge not expected");
@@ -1634,20 +1634,20 @@ public class IoTest extends AbstractGremlinTest {
         });
 
         final Vertex v2 = (Vertex) g1.V().has("name", "vadas").next();
-        assertEquals(27, v2.<Integer>getValue("age").intValue());
-        assertEquals(2, v2.getPropertyKeys().size());
+        assertEquals(27, v2.<Integer>value("age").intValue());
+        assertEquals(2, v2.keys().size());
         assertClassicId(g1, lossyForId, v2, 2);
 
         final List<Edge> v2Edges = v2.bothE().toList();
         assertEquals(1, v2Edges.size());
         v2Edges.forEach(e -> {
-            if (e.getVertex(Direction.OUT).getValue("name").equals("marko")) {
-                assertEquals("knows", e.getLabel());
+            if (e.getVertex(Direction.OUT).value("name").equals("marko")) {
+                assertEquals("knows", e.label());
                 if (lossyForFloat)
-                    assertEquals(0.5d, e.getValue("weight"), 0.0001d);
+                    assertEquals(0.5d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(0.5f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(0.5f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 7);
             } else {
                 fail("Edge not expected");
@@ -1655,36 +1655,36 @@ public class IoTest extends AbstractGremlinTest {
         });
 
         final Vertex v3 = (Vertex) g1.V().has("name", "lop").next();
-        assertEquals("java", v3.<String>getValue("lang"));
-        assertEquals(2, v2.getPropertyKeys().size());
+        assertEquals("java", v3.<String>value("lang"));
+        assertEquals(2, v2.keys().size());
         assertClassicId(g1, lossyForId, v3, 3);
 
         final List<Edge> v3Edges = v3.bothE().toList();
         assertEquals(3, v3Edges.size());
         v3Edges.forEach(e -> {
-            if (e.getVertex(Direction.OUT).getValue("name").equals("peter")) {
-                assertEquals("created", e.getLabel());
+            if (e.getVertex(Direction.OUT).value("name").equals("peter")) {
+                assertEquals("created", e.label());
                 if (lossyForFloat)
-                    assertEquals(0.2d, e.getValue("weight"), 0.0001d);
+                    assertEquals(0.2d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(0.2f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(0.2f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 12);
-            } else if (e.getVertex(Direction.OUT).getValue("name").equals("josh")) {
-                assertEquals("created", e.getLabel());
+            } else if (e.getVertex(Direction.OUT).value("name").equals("josh")) {
+                assertEquals("created", e.label());
                 if (lossyForFloat)
-                    assertEquals(0.4d, e.getValue("weight"), 0.0001d);
+                    assertEquals(0.4d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(0.4f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(0.4f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 11);
-            } else if (e.getVertex(Direction.OUT).getValue("name").equals("marko")) {
-                assertEquals("created", e.getLabel());
+            } else if (e.getVertex(Direction.OUT).value("name").equals("marko")) {
+                assertEquals("created", e.label());
                 if (lossyForFloat)
-                    assertEquals(0.4d, e.getValue("weight"), 0.0001d);
+                    assertEquals(0.4d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(0.4f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(0.4f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 9);
             } else {
                 fail("Edge not expected");
@@ -1692,36 +1692,36 @@ public class IoTest extends AbstractGremlinTest {
         });
 
         final Vertex v4 = (Vertex) g1.V().has("name", "josh").next();
-        assertEquals(32, v4.<Integer>getValue("age").intValue());
-        assertEquals(2, v4.getPropertyKeys().size());
+        assertEquals(32, v4.<Integer>value("age").intValue());
+        assertEquals(2, v4.keys().size());
         assertClassicId(g1, lossyForId, v4, 4);
 
         final List<Edge> v4Edges = v4.bothE().toList();
         assertEquals(3, v4Edges.size());
         v4Edges.forEach(e -> {
-            if (e.getVertex(Direction.IN).getValue("name").equals("ripple")) {
-                assertEquals("created", e.getLabel());
+            if (e.getVertex(Direction.IN).value("name").equals("ripple")) {
+                assertEquals("created", e.label());
                 if (lossyForFloat)
-                    assertEquals(1.0d, e.getValue("weight"), 0.0001d);
+                    assertEquals(1.0d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(1.0f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(1.0f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 10);
-            } else if (e.getVertex(Direction.IN).getValue("name").equals("lop")) {
-                assertEquals("created", e.getLabel());
+            } else if (e.getVertex(Direction.IN).value("name").equals("lop")) {
+                assertEquals("created", e.label());
                 if (lossyForFloat)
-                    assertEquals(0.4d, e.getValue("weight"), 0.0001d);
+                    assertEquals(0.4d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(0.4f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(0.4f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 11);
-            } else if (e.getVertex(Direction.OUT).getValue("name").equals("marko")) {
-                assertEquals("knows", e.getLabel());
+            } else if (e.getVertex(Direction.OUT).value("name").equals("marko")) {
+                assertEquals("knows", e.label());
                 if (lossyForFloat)
-                    assertEquals(1.0d, e.getValue("weight"), 0.0001d);
+                    assertEquals(1.0d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(1.0f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(1.0f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 8);
             } else {
                 fail("Edge not expected");
@@ -1729,20 +1729,20 @@ public class IoTest extends AbstractGremlinTest {
         });
 
         final Vertex v5 = (Vertex) g1.V().has("name", "ripple").next();
-        assertEquals("java", v5.<String>getValue("lang"));
-        assertEquals(2, v5.getPropertyKeys().size());
+        assertEquals("java", v5.<String>value("lang"));
+        assertEquals(2, v5.keys().size());
         assertClassicId(g1, lossyForId, v5, 5);
 
         final List<Edge> v5Edges = v5.bothE().toList();
         assertEquals(1, v5Edges.size());
         v5Edges.forEach(e -> {
-            if (e.getVertex(Direction.OUT).getValue("name").equals("josh")) {
-                assertEquals("created", e.getLabel());
+            if (e.getVertex(Direction.OUT).value("name").equals("josh")) {
+                assertEquals("created", e.label());
                 if (lossyForFloat)
-                    assertEquals(1.0d, e.getValue("weight"), 0.0001d);
+                    assertEquals(1.0d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(1.0f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(1.0f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 10);
             } else {
                 fail("Edge not expected");
@@ -1750,20 +1750,20 @@ public class IoTest extends AbstractGremlinTest {
         });
 
         final Vertex v6 = (Vertex) g1.V().has("name", "peter").next();
-        assertEquals(35, v6.<Integer>getValue("age").intValue());
-        assertEquals(2, v6.getPropertyKeys().size());
+        assertEquals(35, v6.<Integer>value("age").intValue());
+        assertEquals(2, v6.keys().size());
         assertClassicId(g1, lossyForId, v6, 6);
 
         final List<Edge> v6Edges = v6.bothE().toList();
         assertEquals(1, v6Edges.size());
         v6Edges.forEach(e -> {
-            if (e.getVertex(Direction.IN).getValue("name").equals("lop")) {
-                assertEquals("created", e.getLabel());
+            if (e.getVertex(Direction.IN).value("name").equals("lop")) {
+                assertEquals("created", e.label());
                 if (lossyForFloat)
-                    assertEquals(0.2d, e.getValue("weight"), 0.0001d);
+                    assertEquals(0.2d, e.value("weight"), 0.0001d);
                 else
-                    assertEquals(0.2f, e.getValue("weight"), 0.0001f);
-                assertEquals(1, e.getPropertyKeys().size());
+                    assertEquals(0.2f, e.value("weight"), 0.0001f);
+                assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 12);
             } else {
                 fail("Edge not expected");
@@ -1774,9 +1774,9 @@ public class IoTest extends AbstractGremlinTest {
     private static void assertClassicId(final Graph g, final boolean lossyForId, final Element e, final Object expected) {
         if (g.getFeatures().edge().supportsUserSuppliedIds()) {
             if (lossyForId)
-                assertEquals(expected.toString(), e.getId().toString());
+                assertEquals(expected.toString(), e.id().toString());
             else
-                assertEquals(expected, e.getId());
+                assertEquals(expected, e.id());
         }
     }
 

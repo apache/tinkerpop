@@ -39,7 +39,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (step.hasNext()) {
             counter++;
-            assertEquals("marko", step.next().<String>getValue("name"));
+            assertEquals("marko", step.next().<String>value("name"));
         }
         assertEquals(3, counter);
     }
@@ -54,8 +54,8 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         while (step.hasNext()) {
             counter++;
             final Vertex vertex = step.next();
-            assertEquals("java", vertex.<String>getValue("lang"));
-            assertTrue(vertex.getValue("name").equals("ripple") || vertex.getValue("name").equals("lop"));
+            assertEquals("java", vertex.<String>value("lang"));
+            assertTrue(vertex.value("name").equals("ripple") || vertex.value("name").equals("lop"));
         }
         assertEquals(2, counter);
     }
@@ -66,10 +66,10 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         final Iterator<Edge> step = get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         final Edge edge = step.next();
-        assertEquals("knows", edge.getLabel());
-        assertEquals(convertToVertexId("vadas"), edge.getVertex(Direction.IN).getId());
-        assertEquals(convertToVertexId("marko"), edge.getVertex(Direction.OUT).getId());
-        assertEquals(0.5f, edge.<Float>getValue("weight"), 0.0001f);
+        assertEquals("knows", edge.label());
+        assertEquals(convertToVertexId("vadas"), edge.getVertex(Direction.IN).id());
+        assertEquals(convertToVertexId("marko"), edge.getVertex(Direction.OUT).id());
+        assertEquals(0.5f, edge.<Float>value("weight"), 0.0001f);
         assertFalse(step.hasNext());
     }
 
@@ -99,9 +99,9 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         assertTrue(step.hasNext());
         assertTrue(step.hasNext());
         Edge edge = step.next();
-        // assertEquals("8", edge.getId());
-        assertEquals("knows", edge.getLabel());
-        assertEquals(Float.valueOf(1.0f), edge.<Float>getValue("weight"));
+        // assertEquals("8", edge.id());
+        assertEquals("knows", edge.label());
+        assertEquals(Float.valueOf(1.0f), edge.<Float>value("weight"));
         assertFalse(step.hasNext());
         assertFalse(step.hasNext());
     }

@@ -61,7 +61,7 @@ public class StringIDVertexCache implements VertexCache {
             assert null != o;
             if (o instanceof Vertex) {
                 Vertex v = (Vertex)o;
-                map.put(id, v.getId());
+                map.put(id, v.id());
             }
         }
         mapKeysInCurrentTx.clear();

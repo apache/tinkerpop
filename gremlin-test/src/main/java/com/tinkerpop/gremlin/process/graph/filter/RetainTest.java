@@ -27,7 +27,7 @@ public abstract class RetainTest extends AbstractGremlinTest {
     public void g_v1_out_retainXg_v2X() {
         final Iterator<Vertex> traversal = get_g_v1_out_retainXg_v2X(convertToVertexId("marko"), convertToVertexId("vadas"));
         System.out.println("Testing: " + traversal);
-        assertEquals("vadas", traversal.next().<String>getValue("name"));
+        assertEquals("vadas", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
     }
 
@@ -36,7 +36,7 @@ public abstract class RetainTest extends AbstractGremlinTest {
     public void g_v1_out_aggregateXxX_out_retainXxX() {
         final Iterator<Vertex> traversal = get_g_v1_out_aggregateXxX_out_retainXxX(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
-        assertEquals("lop", traversal.next().<String>getValue("name"));
+        assertEquals("lop", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
     }
 

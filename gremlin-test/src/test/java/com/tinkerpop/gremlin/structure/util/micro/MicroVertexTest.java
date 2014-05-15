@@ -18,8 +18,8 @@ public class MicroVertexTest {
     @Before
     public void setup() {
         final Vertex v = mock(Vertex.class);
-        when(v.getId()).thenReturn("1");
-        when(v.getLabel()).thenReturn("l");
+        when(v.id()).thenReturn("1");
+        when(v.label()).thenReturn("l");
 
         this.mv = MicroVertex.deflate(v);
     }
@@ -31,15 +31,15 @@ public class MicroVertexTest {
 
     @Test
     public void shouldConstructMicroVertex() {
-        assertEquals("1", this.mv.getId());
-        assertEquals("l", this.mv.getLabel());
+        assertEquals("1", this.mv.id());
+        assertEquals("l", this.mv.label());
     }
 
     @Test
     public void shouldEvaluateToEqual() {
         final Vertex v = mock(Vertex.class);
-        when(v.getId()).thenReturn("1");
-        when(v.getLabel()).thenReturn("l");
+        when(v.id()).thenReturn("1");
+        when(v.label()).thenReturn("l");
 
         final MicroVertex mv1 = MicroVertex.deflate(v);
         assertTrue(mv1.equals(this.mv));
@@ -48,8 +48,8 @@ public class MicroVertexTest {
     @Test
     public void shouldNotEvaluateToEqualDifferentId() {
         final Vertex v = mock(Vertex.class);
-        when(v.getId()).thenReturn("2");
-        when(v.getLabel()).thenReturn("l");
+        when(v.id()).thenReturn("2");
+        when(v.label()).thenReturn("l");
 
         final MicroVertex mv1 = MicroVertex.deflate(v);
         assertFalse(mv1.equals(this.mv));
@@ -62,12 +62,12 @@ public class MicroVertexTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowSetProperty() {
-        this.mv.setProperty("test", "test");
+        this.mv.property("test", "test");
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowGetProperty() {
-        this.mv.getProperty("test");
+        this.mv.property("test");
     }
 
     @Test(expected = UnsupportedOperationException.class)

@@ -48,14 +48,14 @@ public class StringFactory {
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Vertex}.
      */
     public static String vertexString(final Vertex vertex) {
-        return V + L_BRACKET + vertex.getId() + R_BRACKET;
+        return V + L_BRACKET + vertex.id() + R_BRACKET;
     }
 
     /**
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Edge}.
      */
     public static String edgeString(final Edge edge) {
-        return E + L_BRACKET + edge.getId() + R_BRACKET + L_BRACKET + edge.getVertex(Direction.OUT).getId() + DASH + edge.getLabel() + ARROW + edge.getVertex(Direction.IN).getId() + R_BRACKET;
+        return E + L_BRACKET + edge.id() + R_BRACKET + L_BRACKET + edge.getVertex(Direction.OUT).id() + DASH + edge.label() + ARROW + edge.getVertex(Direction.IN).id() + R_BRACKET;
     }
 
     /**
