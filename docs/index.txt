@@ -570,7 +570,7 @@ GraphSON is a JSON-based format that developed from earlier versions of TinkerPo
 * A text format of the graph or its elements is desired (e.g. debugging, usage in source control, etc.)
 * The graph or its elements need to be consumed by code that is not JVM-based (e.g. Python, .NET, etc.)
 
-GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.xml` and then how to read that file back into a different instance:
+GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.json` and then how to read that file back into a different instance:
 
 [source,java]
 ----
@@ -745,6 +745,30 @@ The ambiguity of components of the GraphSON is now removed by the `@class` prope
 
 Kryo Reader/Writer
 ~~~~~~~~~~~~~~~~~~
+
+The link:https://github.com/EsotericSoftware/kryo[Kryo] format is a binary format Graph serialization format designed for usage by JVM languages.  It is designed to be an efficient, non-lossy and represents the standard format to use when working with data inside of the TinkerPop stack.  Common use cases include:
+
+* Migration from one Gremlin Structure implementation to another (e.g. `TinkerGraph` to `Neo4jGraph`)
+* Serialization of individual graph elements to be sent over the network to another JVM.
+
+CAUTION: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to consider the features of each `Graph` and whether or not the data types supported in one will be supported in the other.  Failure to do so, may result in errors.
+
+Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.gio` and then how to read that file back into a different instance:
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
+try (final OutputStream os = new FileOutputStream("tinkerpop-classic.gio")) {
+    KryoWriter.create().build().writeGraph(os, g);
+}
+
+final GraphReader reader = KryoReader.create().build();
+try (final InputStream stream = new FileInputStream("tinkerpop-classic.gio")) {
+    reader.readGraph(stream, g);
+}
+----
+
+NOTE: The preferred extension for files names produced by Kryo `.gio`.
 
 Gremlin Server
 --------------
