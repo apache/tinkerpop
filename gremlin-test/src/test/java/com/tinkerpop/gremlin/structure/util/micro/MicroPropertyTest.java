@@ -1,15 +1,13 @@
 package com.tinkerpop.gremlin.structure.util.micro;
 
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.SingleGraphTraversal;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,8 +48,8 @@ public class MicroPropertyTest {
         final Vertex v1 = mock(Vertex.class);
         final Vertex v2 = mock(Vertex.class);
         final Edge e = mock(Edge.class);
-        when(e.getVertex(Direction.OUT)).thenReturn(v1);
-        when(e.getVertex(Direction.IN)).thenReturn(v2);
+        when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
+        when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
         final Property p = mock(Property.class);
         when(p.getKey()).thenReturn("k");

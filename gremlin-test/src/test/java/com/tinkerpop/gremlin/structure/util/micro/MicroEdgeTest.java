@@ -1,20 +1,19 @@
 package com.tinkerpop.gremlin.structure.util.micro;
 
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.SingleGraphTraversal;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+
 public class MicroEdgeTest {
 
     private MicroEdge me;
@@ -31,8 +30,8 @@ public class MicroEdgeTest {
         final Edge e = mock(Edge.class);
         when(e.id()).thenReturn("3");
         when(e.label()).thenReturn("knows");
-        when(e.getVertex(Direction.OUT)).thenReturn(v1);
-        when(e.getVertex(Direction.IN)).thenReturn(v2);
+        when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
+        when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
         this.me = MicroEdge.deflate(e);
     }
@@ -46,10 +45,10 @@ public class MicroEdgeTest {
     public void shouldConstructMicroEdge() {
         assertEquals("3", this.me.id());
         assertEquals("knows", this.me.label());
-        assertEquals(MicroVertex.class, this.me.getVertex(Direction.OUT).getClass());
-        assertEquals("1", this.me.getVertex(Direction.OUT).id());
-        assertEquals(MicroVertex.class, this.me.getVertex(Direction.IN).getClass());
-        assertEquals("2", this.me.getVertex(Direction.IN).id());
+        assertEquals(MicroVertex.class, this.me.outV().next().getClass());
+        assertEquals("1", this.me.outV().id().next());
+        assertEquals(MicroVertex.class, this.me.inV().next().getClass());
+        assertEquals("2", this.me.inV().id().next());
     }
 
     @Test
@@ -64,8 +63,8 @@ public class MicroEdgeTest {
         final Edge e = mock(Edge.class);
         when(e.id()).thenReturn("3");
         when(e.label()).thenReturn("knows");
-        when(e.getVertex(Direction.OUT)).thenReturn(v1);
-        when(e.getVertex(Direction.IN)).thenReturn(v2);
+        when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
+        when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
         final MicroEdge me1 = MicroEdge.deflate(e);
         assertTrue(me1.equals(this.me));
@@ -83,8 +82,8 @@ public class MicroEdgeTest {
         final Edge e = mock(Edge.class);
         when(e.id()).thenReturn("4");
         when(e.label()).thenReturn("knows");
-        when(e.getVertex(Direction.OUT)).thenReturn(v1);
-        when(e.getVertex(Direction.IN)).thenReturn(v2);
+        when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
+        when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
         final MicroEdge me1 = MicroEdge.deflate(e);
         assertFalse(me1.equals(this.me));

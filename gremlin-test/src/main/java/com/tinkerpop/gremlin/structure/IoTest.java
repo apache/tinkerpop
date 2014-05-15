@@ -57,20 +57,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_LONG_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_DOUBLE_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_FLOAT_VALUES;
-import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_BOOLEAN_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -765,12 +755,12 @@ public class IoTest extends AbstractGremlinTest {
 
                             return null;
                         });
-                }
+            }
 
             verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
             verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
 
-            }
+        }
     }
 
     @Test
@@ -1472,8 +1462,8 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.OUT);
 
-        final KryoReader reader = KryoReader.create()
-                .setWorkingDirectory(File.separator + "tmp").build();
+            final KryoReader reader = KryoReader.create()
+                    .setWorkingDirectory(File.separator + "tmp").build();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.BOTH,
@@ -1496,7 +1486,7 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeVertex(os, v1, Direction.IN);
 
             final KryoReader reader = KryoReader.create()
-                .setWorkingDirectory(File.separator + "tmp").build();
+                    .setWorkingDirectory(File.separator + "tmp").build();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais,
                         Direction.BOTH,
@@ -1554,7 +1544,7 @@ public class IoTest extends AbstractGremlinTest {
 
     public static void assertModernGraph(final Graph g1) {
         if (g1.getFeatures().graph().memory().supportsVariables()) {
-            final Map<String,Object> m = g1.variables().asMap();
+            final Map<String, Object> m = g1.variables().asMap();
             if (g1.getFeatures().graph().memory().supportsStringValues())
                 assertEquals("modern", m.get("name"));
             if (g1.getFeatures().graph().memory().supportsIntegerValues())
@@ -1604,7 +1594,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v1Edges = v1.bothE().toList();
         assertEquals(3, v1Edges.size());
         v1Edges.forEach(e -> {
-            if (e.getVertex(Direction.IN).value("name").equals("vadas")) {
+            if (e.inV().value("name").next().equals("vadas")) {
                 assertEquals("knows", e.label());
                 if (lossyForFloat)
                     assertEquals(0.5d, e.value("weight"), 0.0001d);
@@ -1612,7 +1602,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.5f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 7);
-            } else if (e.getVertex(Direction.IN).value("name").equals("josh")) {
+            } else if (e.inV().value("name").next().equals("josh")) {
                 assertEquals("knows", e.label());
                 if (lossyForFloat)
                     assertEquals(1.0, e.value("weight"), 0.0001d);
@@ -1620,7 +1610,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(1.0f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 8);
-            } else if (e.getVertex(Direction.IN).value("name").equals("lop")) {
+            } else if (e.inV().value("name").next().equals("lop")) {
                 assertEquals("created", e.label());
                 if (lossyForFloat)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -1641,7 +1631,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v2Edges = v2.bothE().toList();
         assertEquals(1, v2Edges.size());
         v2Edges.forEach(e -> {
-            if (e.getVertex(Direction.OUT).value("name").equals("marko")) {
+            if (e.outV().value("name").next().equals("marko")) {
                 assertEquals("knows", e.label());
                 if (lossyForFloat)
                     assertEquals(0.5d, e.value("weight"), 0.0001d);
@@ -1662,7 +1652,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v3Edges = v3.bothE().toList();
         assertEquals(3, v3Edges.size());
         v3Edges.forEach(e -> {
-            if (e.getVertex(Direction.OUT).value("name").equals("peter")) {
+            if (e.outV().value("name").next().equals("peter")) {
                 assertEquals("created", e.label());
                 if (lossyForFloat)
                     assertEquals(0.2d, e.value("weight"), 0.0001d);
@@ -1670,7 +1660,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.2f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 12);
-            } else if (e.getVertex(Direction.OUT).value("name").equals("josh")) {
+            } else if (e.outV().next().value("name").equals("josh")) {
                 assertEquals("created", e.label());
                 if (lossyForFloat)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -1678,7 +1668,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.4f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 11);
-            } else if (e.getVertex(Direction.OUT).value("name").equals("marko")) {
+            } else if (e.outV().value("name").next().equals("marko")) {
                 assertEquals("created", e.label());
                 if (lossyForFloat)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -1699,7 +1689,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v4Edges = v4.bothE().toList();
         assertEquals(3, v4Edges.size());
         v4Edges.forEach(e -> {
-            if (e.getVertex(Direction.IN).value("name").equals("ripple")) {
+            if (e.inV().value("name").next().equals("ripple")) {
                 assertEquals("created", e.label());
                 if (lossyForFloat)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
@@ -1707,7 +1697,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(1.0f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 10);
-            } else if (e.getVertex(Direction.IN).value("name").equals("lop")) {
+            } else if (e.inV().value("name").next().equals("lop")) {
                 assertEquals("created", e.label());
                 if (lossyForFloat)
                     assertEquals(0.4d, e.value("weight"), 0.0001d);
@@ -1715,7 +1705,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals(0.4f, e.value("weight"), 0.0001f);
                 assertEquals(1, e.keys().size());
                 assertClassicId(g1, lossyForId, e, 11);
-            } else if (e.getVertex(Direction.OUT).value("name").equals("marko")) {
+            } else if (e.outV().value("name").next().equals("marko")) {
                 assertEquals("knows", e.label());
                 if (lossyForFloat)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
@@ -1736,7 +1726,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v5Edges = v5.bothE().toList();
         assertEquals(1, v5Edges.size());
         v5Edges.forEach(e -> {
-            if (e.getVertex(Direction.OUT).value("name").equals("josh")) {
+            if (e.outV().value("name").next().equals("josh")) {
                 assertEquals("created", e.label());
                 if (lossyForFloat)
                     assertEquals(1.0d, e.value("weight"), 0.0001d);
@@ -1757,7 +1747,7 @@ public class IoTest extends AbstractGremlinTest {
         final List<Edge> v6Edges = v6.bothE().toList();
         assertEquals(1, v6Edges.size());
         v6Edges.forEach(e -> {
-            if (e.getVertex(Direction.IN).value("name").equals("lop")) {
+            if (e.inV().value("name").next().equals("lop")) {
                 assertEquals("created", e.label());
                 if (lossyForFloat)
                     assertEquals(0.2d, e.value("weight"), 0.0001d);

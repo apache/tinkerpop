@@ -77,8 +77,8 @@ public class KryoWriter implements GraphWriter {
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
         this.headerWriter.write(kryo, output);
-        kryo.writeClassAndObject(output, e.getVertex(Direction.OUT).id());
-        kryo.writeClassAndObject(output, e.getVertex(Direction.IN).id());
+        kryo.writeClassAndObject(output, e.outV().id().next());
+        kryo.writeClassAndObject(output, e.inV().id().next());
         writeEdgeToOutput(output, e);
         output.flush();
     }
@@ -127,7 +127,10 @@ public class KryoWriter implements GraphWriter {
 
         while (vertexEdges.hasNext()) {
             final Edge edgeToWrite = vertexEdges.next();
-            kryo.writeClassAndObject(output, edgeToWrite.getVertex(d.opposite()).id());
+            if (d.equals(Direction.OUT))
+                kryo.writeClassAndObject(output, edgeToWrite.inV().id().next());
+            else if (d.equals(Direction.IN))
+                kryo.writeClassAndObject(output, edgeToWrite.outV().id().next());
             writeEdgeToOutput(output, edgeToWrite);
         }
 
@@ -139,7 +142,7 @@ public class KryoWriter implements GraphWriter {
         final Map<String, Property> properties = e.properties();
         final int propertyCount = properties.size();
         output.writeInt(propertyCount);
-        properties.forEach((key,val) -> {
+        properties.forEach((key, val) -> {
             output.writeString(key);
             writePropertyValue(output, val);
         });
@@ -162,7 +165,8 @@ public class KryoWriter implements GraphWriter {
          */
         private GremlinKryo gremlinKryo = GremlinKryo.create().build();
 
-        private Builder() {}
+        private Builder() {
+        }
 
         public Builder custom(final GremlinKryo gremlinKryo) {
             this.gremlinKryo = gremlinKryo;

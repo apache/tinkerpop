@@ -260,8 +260,8 @@ public class GraphTest extends AbstractGremlinTest {
             }
 
             assertEquals(graphProvider.convertId("hates"), i.label());
-            assertEquals(graphProvider.convertId("2"), i.getVertex(Direction.IN).id().toString());
-            assertEquals(graphProvider.convertId("1"), i.getVertex(Direction.OUT).id().toString());
+            assertEquals(graphProvider.convertId("2"), i.inV().id().next().toString());
+            assertEquals(graphProvider.convertId("1"), i.outV().id().next().toString());
         }
 
         final Set<Object> vertexIds = new HashSet<>();
@@ -385,16 +385,16 @@ public class GraphTest extends AbstractGremlinTest {
         assertEquals(branchSize, start.outE().count());
         for (Edge e : start.outE().toList()) {
             assertEquals(graphProvider.convertId("test1"), e.label());
-            assertEquals(branchSize, e.getVertex(Direction.IN).out().count());
-            assertEquals(1, e.getVertex(Direction.IN).inE().count());
-            for (Edge f : e.getVertex(Direction.IN).outE().toList()) {
+            assertEquals(branchSize, e.inV().out().count());
+            assertEquals(1, e.inV().inE().count());
+            for (Edge f : e.inV().outE().toList()) {
                 assertEquals(graphProvider.convertId("test2"), f.label());
-                assertEquals(branchSize, f.getVertex(Direction.IN).out().count());
-                assertEquals(1, f.getVertex(Direction.IN).in().count());
-                for (Edge g : f.getVertex(Direction.IN).outE().toList()) {
+                assertEquals(branchSize, f.inV().out().count());
+                assertEquals(1, f.inV().in().count());
+                for (Edge g : f.inV().outE().toList()) {
                     assertEquals(graphProvider.convertId("test3"), g.label());
-                    assertEquals(0, g.getVertex(Direction.IN).out().count());
-                    assertEquals(1, g.getVertex(Direction.IN).in().count());
+                    assertEquals(0, g.inV().out().count());
+                    assertEquals(1, g.inV().in().count());
                 }
             }
         }

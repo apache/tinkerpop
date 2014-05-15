@@ -118,13 +118,26 @@ public class TinkerHelper {
 
     public static Iterator<TinkerVertex> getVertices(final TinkerVertex vertex, final Direction direction, final String... labels) {
         if (direction != Direction.BOTH) {
-            return (Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, direction, labels)).map(e -> e.getVertex(direction.opposite())).iterator();
+            if (direction.equals(Direction.OUT))
+                return (Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, direction, labels)).map(e -> e.inV().next()).iterator();
+            else
+                return (Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, direction, labels)).map(e -> e.outV().next()).iterator();
+
         } else {
             final MultiIterator<TinkerVertex> vertices = new MultiIterator<>();
-            vertices.addIterator((Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, Direction.OUT, labels)).map(e -> e.getVertex(Direction.IN)).iterator());
-            vertices.addIterator((Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, Direction.IN, labels)).map(e -> e.getVertex(Direction.OUT)).iterator());
+            vertices.addIterator((Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, Direction.OUT, labels)).map(e -> e.inV().next()).iterator());
+            vertices.addIterator((Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, Direction.IN, labels)).map(e -> e.outV().next()).iterator());
             return vertices;
         }
+    }
+
+    public static Iterator<TinkerVertex> getVertices(final TinkerEdge edge, final Direction direction) {
+        final List<TinkerVertex> vertices = new ArrayList<>();
+        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
+            vertices.add((TinkerVertex) edge.outVertex);
+        if (direction.equals(Direction.IN) | direction.equals(Direction.BOTH))
+            vertices.add((TinkerVertex) edge.inVertex);
+        return vertices.iterator();
     }
 
     public static <V> Iterator<TinkerAnnotatedValue<V>> getAnnotatedValues(final TinkerAnnotatedList<V> annotatedList) {

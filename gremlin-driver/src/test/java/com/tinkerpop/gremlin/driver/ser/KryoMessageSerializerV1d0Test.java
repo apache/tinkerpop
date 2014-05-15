@@ -122,10 +122,10 @@ public class KryoMessageSerializerV1d0Test {
 
         assertEquals(new Integer(123), (Integer) deserialiedEdge.value("abc"));
         assertEquals(1, deserialiedEdge.properties().size());
-        assertEquals(0l, deserialiedEdge.getVertex(Direction.OUT).id());
-        assertEquals(Element.DEFAULT_LABEL, deserialiedEdge.getVertex(Direction.OUT).label());
-        assertEquals(1l, deserialiedEdge.getVertex(Direction.IN).id());
-        assertEquals(Element.DEFAULT_LABEL, deserialiedEdge.getVertex(Direction.IN).label());
+        assertEquals(0l, deserialiedEdge.outV().id().next());
+        assertEquals(Element.DEFAULT_LABEL, deserialiedEdge.outV().label().next());
+        assertEquals(1l, deserialiedEdge.inV().id().next());
+        assertEquals(Element.DEFAULT_LABEL, deserialiedEdge.inV().label().next());
     }
 
     @Test

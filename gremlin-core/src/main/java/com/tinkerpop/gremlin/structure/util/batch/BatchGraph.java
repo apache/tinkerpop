@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -528,8 +527,18 @@ public class BatchGraph<T extends Graph> implements Graph {
     private class BatchEdge implements Edge {
 
         @Override
-        public Vertex getVertex(final Direction direction) throws IllegalArgumentException {
-            return getWrappedEdge().getVertex(direction);
+        public GraphTraversal<Edge, Vertex> inV() {
+            return getWrappedEdge().inV();
+        }
+
+        @Override
+        public GraphTraversal<Edge, Vertex> outV() {
+            return getWrappedEdge().outV();
+        }
+
+        @Override
+        public GraphTraversal<Edge, Vertex> bothV() {
+            return getWrappedEdge().bothV();
         }
 
         @Override

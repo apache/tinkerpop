@@ -6,7 +6,6 @@ import com.tinkerpop.gremlin.giraph.process.olap.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.olap.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -42,12 +41,12 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
         final com.tinkerpop.gremlin.structure.Vertex vertex = this.gremlinGraph.addVertex(Element.ID, Long.valueOf(this.gremlinVertex.id().toString()), Element.LABEL, this.gremlinVertex.label());
         this.gremlinVertex.properties().forEach((k, v) -> vertex.property(k, v.get()));
         this.gremlinVertex.outE().forEach(edge -> {
-            final com.tinkerpop.gremlin.structure.Vertex otherVertex = ElementHelper.getOrAddVertex(this.gremlinGraph, edge.getVertex(Direction.IN).id(), edge.getVertex(Direction.IN).label());
+            final com.tinkerpop.gremlin.structure.Vertex otherVertex = ElementHelper.getOrAddVertex(this.gremlinGraph, edge.inV().id().next(), edge.inV().label().next());
             final Edge gremlinEdge = vertex.addEdge(edge.label(), otherVertex);
             edge.properties().forEach((k, v) -> gremlinEdge.property(k, v.get()));
         });
         this.gremlinVertex.inE().forEach(edge -> {
-            final com.tinkerpop.gremlin.structure.Vertex otherVertex = ElementHelper.getOrAddVertex(this.gremlinGraph, edge.getVertex(Direction.OUT).id(), edge.getVertex(Direction.OUT).label());
+            final com.tinkerpop.gremlin.structure.Vertex otherVertex = ElementHelper.getOrAddVertex(this.gremlinGraph, edge.outV().id().next(), edge.outV().label().next());
             final Edge gremlinEdge = otherVertex.addEdge(edge.label(), vertex);
             edge.properties().forEach((k, v) -> gremlinEdge.property(k, v.get()));
         });

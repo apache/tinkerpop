@@ -59,11 +59,11 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.LABEL, edge.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
 
-            final Vertex inV = edge.getVertex(Direction.IN);
+            final Vertex inV = edge.inV().next();
             m.put(GraphSONTokens.IN, inV.id());
             m.put(GraphSONTokens.IN_LABEL, inV.label());
 
-            final Vertex outV = edge.getVertex(Direction.OUT);
+            final Vertex outV = edge.outV().next();
             m.put(GraphSONTokens.OUT, outV.id());
             m.put(GraphSONTokens.OUT_LABEL, outV.label());
 

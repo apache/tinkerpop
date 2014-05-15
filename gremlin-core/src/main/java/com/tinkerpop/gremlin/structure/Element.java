@@ -71,9 +71,6 @@ public abstract interface Element {
     }*/
 
     public static class Exceptions {
-        public static IllegalArgumentException bothIsNotSupported() {
-            return new IllegalArgumentException("A direction of BOTH is not supported");
-        }
 
         public static IllegalArgumentException providedKeyValuesMustBeAMultipleOfTwo() {
             return new IllegalArgumentException("The provided key/value array must be a multiple of two");

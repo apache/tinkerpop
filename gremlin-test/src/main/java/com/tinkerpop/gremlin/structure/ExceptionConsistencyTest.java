@@ -234,28 +234,6 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Test exceptions around use of {@link com.tinkerpop.gremlin.structure.Direction} with the incorrect context.
-     */
-    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
-            "bothIsNotSupported"
-    })
-    public static class UseOfDirectionTest extends AbstractGremlinTest {
-        @Test
-        public void testGetVertexOnEdge() {
-            final Vertex v = g.addVertex();
-            try {
-                v.addEdge("label", v).getVertex(Direction.BOTH);
-                fail("Call to Edge.getVertex(BOTH) should throw an exception");
-            } catch (Exception ex) {
-                final Exception expectedException = Element.Exceptions.bothIsNotSupported();
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
-            }
-
-        }
-    }
-
-    /**
      * Test exceptions around {@link com.tinkerpop.gremlin.structure.Graph.Variables}.
      */
     @RunWith(Parameterized.class)

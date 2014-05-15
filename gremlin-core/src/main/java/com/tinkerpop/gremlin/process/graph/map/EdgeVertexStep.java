@@ -6,9 +6,6 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -20,15 +17,12 @@ public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> {
         super(traversal);
         this.direction = direction;
         this.setFunction(holder -> {
-            final List<Vertex> vertices = new ArrayList<>();
-            if (this.direction.equals(Direction.IN) || this.direction.equals(Direction.BOTH)) {
-                vertices.add(holder.get().getVertex(Direction.IN));
-            }
-
-            if (this.direction.equals(Direction.OUT) || this.direction.equals(Direction.BOTH)) {
-                vertices.add(holder.get().getVertex(Direction.OUT));
-            }
-            return vertices.iterator();
+            if (direction.equals(Direction.IN))
+                return holder.get().inV();
+            else if (direction.equals(Direction.OUT))
+                return holder.get().outV();
+            else
+                return holder.get().bothV();
         });
     }
 

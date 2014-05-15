@@ -46,8 +46,8 @@ public class SubGraphStep<S> extends FilterStep<S> implements SideEffectCapable,
                     .filter(e -> !edgesAdded.contains(e.id()))
                     .filter(includeEdge::test)
                     .forEach(e -> {
-                        final Vertex newVOut = getOrCreateVertex(e.getVertex(Direction.OUT));
-                        final Vertex newVIn = getOrCreateVertex(e.getVertex(Direction.IN));
+                        final Vertex newVOut = getOrCreateVertex(e.outV().next());
+                        final Vertex newVIn = getOrCreateVertex(e.inV().next());
                         final Object[] edgeProps = getElementProperties(e);
                         newVOut.addEdge(e.label(), newVIn, edgeProps);
                         edgesAdded.add(e.id());

@@ -30,11 +30,11 @@ import java.util.function.BiPredicate;
  */
 public interface Edge extends Element {
 
-    public Vertex getVertex(final Direction direction) throws IllegalArgumentException;
+    public GraphTraversal<Edge, Vertex> inV();
 
-    // TODO: public Vertex inV()
-    // TODO: public Vertex outV()
-    // TODO: public Vertex bothV()
+    public GraphTraversal<Edge, Vertex> outV();
+
+    public GraphTraversal<Edge, Vertex> bothV();
 
     // element steps ///////////////////////////////////////////////////////////
 

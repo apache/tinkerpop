@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -13,8 +12,6 @@ import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
@@ -24,6 +21,7 @@ import static org.junit.Assert.fail;
  */
 public abstract class SubGraphTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX(final Object v1Id, final Graph subGraph);
+
     public abstract Traversal<Vertex, String> get_g_E_subgraphXcreatedX(final Graph subGraph);
 
     @Test
@@ -37,11 +35,11 @@ public abstract class SubGraphTest extends AbstractGremlinTest {
         AbstractGremlinSuite.assertVertexEdgeCounts(3, 2).accept(subgraph);
         subgraph.E().forEach(e -> {
             assertEquals("knows", e.label());
-            assertEquals("marko", e.getVertex(Direction.OUT).<String>value("name"));
-            assertEquals(new Integer(29), e.getVertex(Direction.OUT).<Integer>value("age"));
-            assertEquals(Element.DEFAULT_LABEL, e.getVertex(Direction.OUT).label());
+            assertEquals("marko", e.outV().value("name").next());
+            assertEquals(new Integer(29), e.outV().<Integer>value("age").next());
+            assertEquals(Element.DEFAULT_LABEL, e.outV().label().next());
 
-            final String name = e.getVertex(Direction.IN).<String>value("name");
+            final String name = e.inV().<String>value("name").next();
             if (name.equals("vadas"))
                 assertEquals(0.5f, e.value("weight"), 0.0001f);
             else if (name.equals("josh"))

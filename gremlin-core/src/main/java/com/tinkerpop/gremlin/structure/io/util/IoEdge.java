@@ -17,8 +17,8 @@ public class IoEdge extends IoElement {
 
     public static IoEdge from(final Edge edge) {
         final IoEdge ioe = new IoEdge();
-        final Vertex in = edge.getVertex(Direction.IN);
-        final Vertex out = edge.getVertex(Direction.OUT);
+        final Vertex in = edge.inV().next();
+        final Vertex out = edge.outV().next();
         ioe.inV = in.id();
         ioe.outV = out.id();
         ioe.inVLabel = in.label();

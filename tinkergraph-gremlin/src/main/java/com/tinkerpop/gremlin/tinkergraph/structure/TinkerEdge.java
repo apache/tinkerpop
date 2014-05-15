@@ -18,6 +18,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerEdgeVertexStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers.TinkerGraphStepOptimizer;
 
@@ -26,10 +27,10 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class TinkerEdge extends TinkerElement implements Edge {
+public class TinkerEdge extends TinkerElement implements Edge {
 
-    private final Vertex inVertex;
-    private final Vertex outVertex;
+    protected final Vertex inVertex;
+    protected final Vertex outVertex;
 
     protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex, final TinkerGraph graph) {
         super(id, label, graph);
@@ -51,21 +52,31 @@ class TinkerEdge extends TinkerElement implements Edge {
         }
     }
 
-    public Vertex getVertex(final Direction direction) throws IllegalArgumentException {
-        if (direction.equals(Direction.IN))
-            return this.inVertex;
-        else if (direction.equals(Direction.OUT))
-            return this.outVertex;
-        else
-            throw Element.Exceptions.bothIsNotSupported();
+    public GraphTraversal<Edge, Vertex> inV() {
+        final GraphTraversal traversal = this.start();
+        traversal.addStep(new TinkerEdgeVertexStep(traversal, Direction.IN));
+        return traversal;
+    }
+
+    public GraphTraversal<Edge, Vertex> outV() {
+        final GraphTraversal traversal = this.start();
+        traversal.addStep(new TinkerEdgeVertexStep(traversal, Direction.OUT));
+        return traversal;
+    }
+
+    public GraphTraversal<Edge, Vertex> bothV() {
+        final GraphTraversal traversal = this.start();
+        traversal.addStep(new TinkerEdgeVertexStep(traversal, Direction.BOTH));
+        return traversal;
     }
 
     public void remove() {
         if (!this.graph.edges.containsKey(this.id()))
             throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.id());
 
-        final TinkerVertex outVertex = (TinkerVertex) this.getVertex(Direction.OUT);
-        final TinkerVertex inVertex = (TinkerVertex) this.getVertex(Direction.IN);
+        final TinkerVertex outVertex = (TinkerVertex) this.outVertex;
+        final TinkerVertex inVertex = (TinkerVertex) this.inVertex;
+
         if (null != outVertex && null != outVertex.outEdges) {
             final Set<Edge> edges = outVertex.outEdges.get(this.label());
             if (null != edges)
