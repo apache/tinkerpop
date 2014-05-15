@@ -94,22 +94,25 @@ Graph g = TinkerGraph.open();
 // add a software vertex with a name property
 Vertex gremlin = g.addVertex(Element.LABEL, "software", "name", "gremlin");
 // add a new property
-gremlin.setProperty("created",2009)
+gremlin.property("created",2009)
 // add a new software vertex to the graph
-Vertex blueprints = g.addVertex(Element.LABEL, "software", "name", "blueprints);
+Vertex blueprints = g.addVertex(Element.LABEL, "software", "name", "blueprints");
 // connect gremlin to blueprints via a dependsOn-edge
 Edge e = gremlin.addEdge("dependsOn",blueprints);
 // add a property to the edge
-e.setProperty("since",2010)
+e.property("since",2010)
 // remove that property
-e.getProperty("since").remove()
-// delete the edge
+e.property("since").remove()
+// remove the entire edge
 e.remove()
 // connect gremlin to blueprints via encapsulates
 gremlin.addEdge("encapsulates",blueprints)
-// delete both blueprints and gremlin vertices
+// remove both blueprints and gremlin vertices
 blueprints.remove()
 gremlin.remove()
+// the graph is empty
+assert(g.V().count == 0)
+assert(g.E().count == 0)
 
 The Graph Process
 -----------------
@@ -502,14 +505,14 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         if (sideEffects.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(this.messageType.getQuery().build(vertex).count()).doubleValue();
-            vertex.setProperty(PAGE_RANK, initialPageRank);
-            vertex.setProperty(EDGE_COUNT, edgeCount);
+            vertex.property(PAGE_RANK, initialPageRank);
+            vertex.property(EDGE_COUNT, edgeCount);
             messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
         } else {
             double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.messageType)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-            vertex.setProperty(PAGE_RANK, newPageRank);
-            messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getProperty(EDGE_COUNT).orElse(0.0d));
+            vertex.property(PAGE_RANK, newPageRank);
+            messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>property(EDGE_COUNT).orElse(0.0d));
         }
     }
 
