@@ -557,10 +557,191 @@ try (final OutputStream os = new FileOutputStream("tinkerpop-classic.xml")) {
 }
 
 final GraphReader reader = GraphMLReader.create().build();
-try (final InputStream stream = IoTest.class.getResourceAsStream("tinkerpop-classic.xml")) {
+try (final InputStream stream = new FileInputStream("tinkerpop-classic.xml")) {
     reader.readGraph(stream, g);
 }
 ----
+
+GraphSON Reader/Writer
+~~~~~~~~~~~~~~~~~~
+
+GraphSON is a JSON-based format that developed from earlier versions of TinkerPop.  It is not backward compatible to prior versions.  GraphSON has some support from graph-related application outside of TinkerPop, but it is generally best used in two cases:
+
+* A text format of the graph or its elements is desired (e.g. debugging, usage in source control, etc.)
+* The graph or its elements need to be consumed by code that is not JVM-based (e.g. Python, .NET, etc.)
+
+GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.xml` and then how to read that file back into a different instance:
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
+try (final OutputStream os = new FileOutputStream("tinkerpop-classic.json")) {
+    GraphSONWriter.create().build().writeGraph(os, g);
+}
+
+final GraphReader reader = GraphSONReader.create().build();
+try (final InputStream stream = new FileInputStream("tinkerpop-classic.json")) {
+    reader.readGraph(stream, g);
+}
+----
+
+The `GraphSONReader` and `GraphSONWriter` have a number of options that they can be configured with.  One of the important options is the ability to embed type information into the output.  By embedding the types, it becomes possible to serialize a graph without losing type information that might be important when being consumed by another source.  The importance of this concept is demonstrated in the following example where a single `Vertex` is written to GraphSON using the Gremlin Console:
+
+[source,groovy]
+----
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> w = GraphSONWriter.create().build()
+==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@1af146
+gremlin> f = new FileOutputStream('test.txt')
+==>java.io.FileOutputStream@5c8eee0f
+gremlin> w.writeVertex(f, g.v(1), Direction.BOTH)
+==>null
+gremlin> f.close()
+----
+
+The following GraphSON example shows the output of `GraphSonWriter.writeVertex()` with associated edges:
+
+[source,js]
+----
+{
+    "inV": [],
+    "id": 1,
+    "label": "default",
+    "type": "vertex",
+    "outV": [
+        {
+            "inV": 3,
+            "inVLabel": "default",
+            "outVLabel": "default",
+            "id": 9,
+            "label": "created",
+            "type": "edge",
+            "outV": 1,
+            "properties": {
+                "weight": 0.4
+            }
+        },
+        {
+            "inV": 2,
+            "inVLabel": "default",
+            "outVLabel": "default",
+            "id": 7,
+            "label": "knows",
+            "type": "edge",
+            "outV": 1,
+            "properties": {
+                "weight": 0.5
+            }
+        },
+        {
+            "inV": 4,
+            "inVLabel": "default",
+            "outVLabel": "default",
+            "id": 8,
+            "label": "knows",
+            "type": "edge",
+            "outV": 1,
+            "properties": {
+                "weight": 1
+            }
+        }
+    ],
+    "properties": {
+        "name": "marko",
+        "age": 29
+    }
+}
+----
+
+The vertex properly serializes to valid JSON but note that a consuming application will not automatically know how to interpret the numeric values.  In coercing those Java values to JSON, such information is lost.  For example, it is no longer clear if the `weight` value on the edges should be read as a `Double` or an `Float`.
+
+With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided:
+
+[source,groovy]
+----
+gremlin> w = GraphSONWriter.create().embedTypes(true).build()
+==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@350ec41e
+----
+
+In the above code, the `embedTypes` option is set to `true` and the output below shows the difference in the output:
+
+[source,js]
+----
+{
+    "@class": "java.util.HashMap",
+    "inV": [
+        "java.util.ArrayList",
+        []
+    ],
+    "id": 1,
+    "label": "default",
+    "type": "vertex",
+    "outV": [
+        "java.util.ArrayList",
+        [
+            {
+                "@class": "java.util.HashMap",
+                "inV": 3,
+                "inVLabel": "default",
+                "outVLabel": "default",
+                "id": 9,
+                "label": "created",
+                "type": "edge",
+                "outV": 1,
+                "properties": {
+                    "@class": "java.util.HashMap",
+                    "weight": [
+                        "java.lang.Float",
+                        0.4
+                    ]
+                }
+            },
+            {
+                "@class": "java.util.HashMap",
+                "inV": 2,
+                "inVLabel": "default",
+                "outVLabel": "default",
+                "id": 7,
+                "label": "knows",
+                "type": "edge",
+                "outV": 1,
+                "properties": {
+                    "@class": "java.util.HashMap",
+                    "weight": [
+                        "java.lang.Float",
+                        0.5
+                    ]
+                }
+            },
+            {
+                "@class": "java.util.HashMap",
+                "inV": 4,
+                "inVLabel": "default",
+                "outVLabel": "default",
+                "id": 8,
+                "label": "knows",
+                "type": "edge",
+                "outV": 1,
+                "properties": {
+                    "@class": "java.util.HashMap",
+                    "weight": [
+                        "java.lang.Float",
+                        1
+                    ]
+                }
+            }
+        ]
+    ],
+    "properties": {
+        "@class": "java.util.HashMap",
+        "name": "marko",
+        "age": 29
+    }
+}
+----
+
+The ambiguity of components of the GraphSON is now removed by the `@class` property, which contains Java class information for the data it is associated with.  While the output is more verbose, it comes with the security of not losing type information.  While non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the values should be coerced back into the correct types in the target language.
 
 Kryo Reader/Writer
 ~~~~~~~~~~~~~~~~~~
