@@ -750,6 +750,7 @@ The link:https://github.com/EsotericSoftware/kryo[Kryo] format is a binary forma
 
 * Migration from one Gremlin Structure implementation to another (e.g. `TinkerGraph` to `Neo4jGraph`)
 * Serialization of individual graph elements to be sent over the network to another JVM.
+* Backups of in-memory graphs or subgraphs.
 
 CAUTION: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to consider the features of each `Graph` and whether or not the data types supported in one will be supported in the other.  Failure to do so, may result in errors.
 
@@ -770,11 +771,57 @@ try (final InputStream stream = new FileInputStream("tinkerpop-classic.gio")) {
 
 NOTE: The preferred extension for files names produced by Kryo `.gio`.
 
+Graph Strategy
+--------------
+
+A Graph Strategy provides a way to expand, inspect or otherwise alter the behavior of a `Graph` implementation.  A Graph Strategy injects arbitrary functions into the `Graph` API, so that when a method call is made, the strategy functions can manipulate the default behavior of the underlying `Graph`.  TinkerPop3 is packaged with the following strategies:
+
+* `IdGraphStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
+* `PartitionGraphStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
+* `ReadOnlyGraphStrategy` - prevents writing to the `Graph`
+* `SequenceGraphStrategy` - apply multiple `GraphStrategy` implementations in sequenced ordered to a single `Graph` instance
+
+NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Graph` implementations with additional features.  A Graph strategy is generally analogous to that capability.
+
+To use a `GraphStrategy` instance, use the `GraphFactory` to instantiate the `Graph` as follows:
+
+[source,text]
+----
+gremlin> conf = new BaseConfiguration()
+==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
+gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
+==>null
+gremlin> g = GraphFactory.open(conf, Optional.of(new ReadOnlyGraphStrategy()))
+==>com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph@b968a76
+----
+
+The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyGraphStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a holder for the underlying `TinkerGraph` and the `ReadOnlyGraphStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
+
+[source,text]
+----
+gremlin> g.addVertex('name','stephen')
+Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy and is therefore unmodifiable
+----
+
+The above code tries to mutate the underlying `TinkerGraph`.  Note that `ReadOnlyGraphStrategy` prevents that and throws an exception.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
+
+[source,text]
+----
+gremlin> g.getBaseGraph()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> bg = g.getBaseGraph()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> bg.addVertex('name','stephen')
+==>v[0]
+gremlin> g.v(0l).value('name')
+==>stephen
+----
+
+By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex.
+
 Gremlin Server
 --------------
 
-Graph Strategy
---------------
 
 
 
