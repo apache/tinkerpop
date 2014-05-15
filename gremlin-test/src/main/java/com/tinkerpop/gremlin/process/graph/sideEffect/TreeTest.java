@@ -21,7 +21,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_out_treeXnameX() {
-        final Map map = get_g_v1_out_out_treeXnameX(convertToId("marko"));
+        final Map map = get_g_v1_out_out_treeXnameX(convertToVertexId("marko"));
         assertEquals(1, map.size());
         assertTrue(map.containsKey("marko"));
         assertEquals(1, ((Map) map.get("marko")).size());

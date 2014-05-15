@@ -33,7 +33,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_rangeX0_1X() {
-        final Iterator<Vertex> step = get_g_v1_out_rangeX0_1X(convertToId("marko"));
+        final Iterator<Vertex> step = get_g_v1_out_rangeX0_1X(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -59,7 +59,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV() {
-        final Iterator<Vertex> traversal = get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(convertToId("marko"));
+        final Iterator<Vertex> traversal = get_g_v1_outXknowsX_outEXcreatedX_rangeX0_0X_inV(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -73,7 +73,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXknowsX_outXcreatedX_rangeX0_0X() {
-        final Iterator<Vertex> traversal = get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(convertToId("marko"));
+        final Iterator<Vertex> traversal = get_g_v1_outXknowsX_outXcreatedX_rangeX0_0X(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -87,7 +87,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inXcreatedX_rangeX1_2X() {
-        final Iterator<Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(convertToId("marko"));
+        final Iterator<Vertex> traversal = get_g_v1_outXcreatedX_inXcreatedX_rangeX1_2X(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -101,7 +101,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV() {
-        final Iterator<Vertex> traversal = get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(convertToId("marko"));
+        final Iterator<Vertex> traversal = get_g_v1_outXcreatedX_inEXcreatedX_rangeX1_2X_outV(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
         int counter = 0;
         while (traversal.hasNext()) {

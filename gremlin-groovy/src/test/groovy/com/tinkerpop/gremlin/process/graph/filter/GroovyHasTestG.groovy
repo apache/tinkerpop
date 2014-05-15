@@ -10,8 +10,8 @@ import com.tinkerpop.gremlin.structure.Vertex
  */
 class GroovyHasTestG extends HasTest {
 
-    public Traversal<Vertex, Vertex> get_g_v1_hasXprop(final Object v1Id, final String prop) {
-        g.v(v1Id).has(prop)
+    public Traversal<Vertex, Vertex> get_g_v1_hasXkeyX(final Object v1Id, final String key) {
+        g.v(v1Id).has(key)
     }
 
     public Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(final Object v1Id) {
@@ -42,8 +42,8 @@ class GroovyHasTestG extends HasTest {
         g.V.has('age', T.gt, 30)
     }
 
-    public Traversal<Edge, Edge> get_g_e1_hasXlabelXknowsX(final Object e1Id) {
-        g.e(e1Id).has('label', 'knows')
+    public Traversal<Edge, Edge> get_g_e7_hasXlabelXknowsX(final Object e7Id) {
+        g.e(e7Id).has('label', 'knows')
     }
 
     public Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX() {

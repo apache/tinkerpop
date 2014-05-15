@@ -77,10 +77,10 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_filterXage_gt_30X() {
-        Iterator<Vertex> traversal = get_g_v1_filterXage_gt_30X(convertToId("marko"));
+        Iterator<Vertex> traversal = get_g_v1_filterXage_gt_30X(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
         assertFalse(traversal.hasNext());
-        traversal = get_g_v1_filterXage_gt_30X(convertToId("josh"));
+        traversal = get_g_v1_filterXage_gt_30X(convertToVertexId("josh"));
         System.out.println("Testing: " + traversal);
         assertTrue(traversal.hasNext());
         assertEquals(Integer.valueOf(32), traversal.next().<Integer>getValue("age"));
@@ -89,7 +89,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_filterXage_gt_30X() {
-        final Iterator<Vertex> traversal = get_g_v1_out_filterXage_gt_30X(convertToId("marko"));
+        final Iterator<Vertex> traversal = get_g_v1_out_filterXage_gt_30X(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
         assertEquals(Integer.valueOf(32), traversal.next().<Integer>getValue("age"));
         assertFalse(traversal.hasNext());

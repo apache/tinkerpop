@@ -31,15 +31,15 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_select() {
-        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_select(convertToId("marko"));
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_select(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
             counter++;
             Path path = step.next();
             assertEquals(2, path.size());
-            assertEquals(convertToId("marko"), ((Vertex) path.get(0)).getId());
-            assertTrue(((Vertex) path.get(1)).getId().equals(convertToId("vadas")) || ((Vertex) path.get(1)).getId().equals(convertToId("josh")));
+            assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).getId());
+            assertTrue(((Vertex) path.get(1)).getId().equals(convertToVertexId("vadas")) || ((Vertex) path.get(1)).getId().equals(convertToVertexId("josh")));
         }
         assertEquals(2, counter);
     }
@@ -47,7 +47,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXnameX() {
-        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(convertToId("marko"));
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -64,15 +64,15 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXaX() {
-        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(convertToId("marko"));
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
             counter++;
             Path path = step.next();
             assertEquals(1, path.size());
-            assertEquals(convertToId("marko"), ((Vertex) path.get(0)).getId());
-            assertEquals(convertToId("marko"), ((Vertex) path.get("a")).getId());
+            assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).getId());
+            assertEquals(convertToVertexId("marko"), ((Vertex) path.get("a")).getId());
         }
         assertEquals(2, counter);
     }
@@ -80,7 +80,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX() {
-        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(convertToId("marko"));
+        final Iterator<Path> step = get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {

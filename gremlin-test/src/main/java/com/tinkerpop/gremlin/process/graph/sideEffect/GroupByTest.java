@@ -34,7 +34,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
         assertEquals(6, map.size());
         map.forEach((key, values) -> {
             assertEquals(1, values.size());
-            assertEquals(convertToId(key), values.get(0).getId());
+            assertEquals(convertToVertexId(key), values.get(0).getId());
         });
         assertFalse(traversal.hasNext());
     }

@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.process.graph.map;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -25,7 +24,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
-        final Iterator<String> step = get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(convertToId("marko"));
+        final Iterator<String> step = get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         List<String> names = new ArrayList<>();
         while (step.hasNext()) {

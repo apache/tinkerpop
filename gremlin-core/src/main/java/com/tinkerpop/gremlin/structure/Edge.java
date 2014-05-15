@@ -152,11 +152,6 @@ public interface Edge extends Element {
     }
 
     // TODO: test
-    public default void remove() {
-        this.start().remove();
-    }
-
-    // TODO: test
     public default GraphTraversal<Edge, Edge> sideEffect(final SConsumer<Holder<Edge>> consumer) {
         return this.start().sideEffect(consumer);
     }

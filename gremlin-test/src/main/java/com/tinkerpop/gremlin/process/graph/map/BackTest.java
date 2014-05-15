@@ -34,7 +34,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXhereX_out_backXhereX() {
-        final Iterator<Vertex> step = get_g_v1_asXhereX_out_backXhereX(convertToId("marko"));
+        final Iterator<Vertex> step = get_g_v1_asXhereX_out_backXhereX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -48,7 +48,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX() {
-        final Iterator<Vertex> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(convertToId("josh"));
+        final Iterator<Vertex> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX(convertToVertexId("josh"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -63,12 +63,12 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX() {
-        final Iterator<Edge> step = get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(convertToId("marko"));
+        final Iterator<Edge> step = get_g_v1_outE_asXhereX_inV_hasXname_vadasX_backXhereX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         final Edge edge = step.next();
         assertEquals("knows", edge.getLabel());
-        assertEquals(convertToId("vadas"), edge.getVertex(Direction.IN).getId());
-        assertEquals(convertToId("marko"), edge.getVertex(Direction.OUT).getId());
+        assertEquals(convertToVertexId("vadas"), edge.getVertex(Direction.IN).getId());
+        assertEquals(convertToVertexId("marko"), edge.getVertex(Direction.OUT).getId());
         assertEquals(0.5f, edge.<Float>getValue("weight"), 0.0001f);
         assertFalse(step.hasNext());
     }
@@ -76,7 +76,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX() {
-        final Iterator<String> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(convertToId("josh"));
+        final Iterator<String> step = get_g_v4_out_asXhereX_hasXlang_javaX_backXhereX_valueXnameX(convertToVertexId("josh"));
         System.out.println("Testing: " + step);
         int counter = 0;
         final Set<String> names = new HashSet<>();
@@ -94,7 +94,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(CLASSIC)
     //@Ignore("This has to do with as labeling a filter now that its not rolled into VertexQueryStep")
     public void g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX() {
-        final Iterator<Edge> step = get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(convertToId("marko"));
+        final Iterator<Edge> step = get_g_v1_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_backXhereX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         assertTrue(step.hasNext());
         assertTrue(step.hasNext());

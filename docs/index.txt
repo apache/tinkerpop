@@ -9,7 +9,7 @@ image::tinkerpop3-logo.png[width=500]
 
 
 The Third Incarnation of The TinkerPop
---------------------------------------
+======================================
 
 The TinkerPop is the reality that begot Gremlin and all that Gremlin has ever known -- as well as that which is no knowledge. In *TinkerPop0*, Gremlin found himself alone in a world of reference as he moved about trying to understand why this structure existed and for what reason. Far is far and near is near for Gremlin. For The TinkerPop, this is true as well, but also west is right, down is forward, and Gremlin is The TinkerPop, as well as not. When will he realize this?
 
@@ -32,7 +32,7 @@ image::tinkerpop3-splash.png[width=500]
 image::gremlintron.png[width=500]
 
 Graph Computing with TinkerPop3
--------------------------------
+===============================
 
 A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data structure composed of vertices (nodes, dots) and edges (arcs, lines). When modeling a graph in a computer and applying it to modern data sets and practices, the generic mathematically-oriented, binary graph is extended to support both labels and key/value properties. This structure is known as a property graph. More formally, it is a directed, binary, attributed multi-graph. An example property graph is diagrammed below. This graph example will be used extensively throughout the documentation and is called "TinkerPop Classic" as it is the original demo graph distributed with TinkerPop0 in 2009.
 
@@ -58,7 +58,7 @@ TinkerPop3 is the third incarnation of a graph computing framework now built ato
 The purpose of this documentation is to describe this dichotomy at depth and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing.
 
 The Graph Structure
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 The classic TinkerPop graph can be created with the following Java8 code.
 
@@ -82,7 +82,7 @@ In the above code all the vertices are created first and then their respective e
 CAUTION: Many graph vendors do not allow the user to specify an element ID and in such cases, the element ID key/value is ignored.
 
 Annotated Lists
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 The values of a property can be any arbitrary `Object` as long as the object type is supported by the underlying graph vendor. One particular special object that has been introduced into TinkerPop3 is the `AnnotatedList`. AnnotatedLists are useful in systems that support auditing and provenance. In such instances, a particular property key will want to be associated with a list of values. For example, assume that the locations of a person are a property on a vertex. This can be represented solely using a `List<String>`, but in many instances, other metadata (i.e. annotations) may be desired, because a person could have lived in various locations over time.
 
@@ -116,7 +116,7 @@ image::tinkerpop-modern.png[width=600]
 
 
 The Graph Process
-~~~~~~~~~~~~~~~~~
+-----------------
 
 The primary way in which graphs are processed is by means of graph traversals. A graph traversal can be spawed from a Graph, Vertex, or Edge. For example, Graph provides two traversal methods.
 
@@ -173,7 +173,7 @@ The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anon
 NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than it ever was before. In TinkerPop0 through TinkerPop2, Gremlin-Java was extremely verbose due to the simulation of lambdas via anonymous inner classes.  
 
 Traversal Mechanics
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps are the middle of the traversal (e.g. `out("knows")` and `value("name")`), and the result is "traversal.next()'d" out of the right of the traversal (e.g. "vadas" and "josh").
 
@@ -200,8 +200,8 @@ marko
 CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective holder. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
 
 [[tinkergraph-reference-implementation]]
-TinkerGraph Reference Implementation
-------------------------------------
+TinkerGraph
+-----------
 
 image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory, non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
 
@@ -231,10 +231,10 @@ Each graph vendor will have different mechanism by which indices and schemas are
 
 
 The Traversal API
------------------
+=================
 
 Graph Traversal Steps
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 The primary Traversal is `GraphTraversal`, and graph traversals can be spawned off of Graph, Vertex, and Edge. A list of all the steps are provided below along with a description. Note that a Traversal is defined as `Traversal<S,E>` where the `S` stands for start and the `E` stands for end. Likewise, each `Step<S,E>` maintains the same convention.
 
@@ -257,11 +257,11 @@ The primary Traversal is `GraphTraversal`, and graph traversals can be spawned o
 
 
 Traversal Optimizers
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
-An `Optimizer` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in two primary situations:
+An `Optimizer` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in two situations:
 
- * There is a more efficient way to express the traversal at the TinkerPop level.
+ * There is a more efficient way to express the traversal at the TinkerPop3 level.
  * There is a more efficient way to express the traversal at the graph vendor level.
 
 An extremely simply Optimizer is the `IdentityOptimizer` and it is a type-1 optimizer defined as follows:
@@ -277,12 +277,12 @@ public class IdentityOptimizer implements Optimizer.FinalOptimizer {
     }
 }
 
-This optimizer simply removes any unlabeled `IdentityStep`s in the Traversal. More common are type-2 optimizers which are defined by graph vendor implementations of TinkerPop. A simple example in TinkerGraph is provided. Note the expression:
+This optimizer simply removes any unlabeled `IdentityStep` in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. More common are type-2 optimizers which are defined by graph vendors who implement TinkerPop3.
 
 [source,java]
 g.V().has("name","marko")
 
-This expression can be executed in a `O(|V|)` or `O(log(|V|)` fashion in TinkerGraph depending on whether there is or is not an index defined for "name."
+The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in TinkerGraph depending on whether there is or is not an index defined for "name."
 
 [source,java]
 public class TinkerGraphStepOptimizer implements Optimizer.FinalOptimizer {
@@ -317,7 +317,7 @@ public class TinkerGraphStepOptimizer implements Optimizer.FinalOptimizer {
     }
 }
 
-The traversal is redefined by simply taking an chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, study `vertices()` and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
+The traversal is redefined by simply taking an chain of `has()`-steps and `interval()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review `vertices()` and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
 
 [source,java]
 ----
@@ -369,8 +369,8 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 ----
 
 
-Creating a Domain Specific Language
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Domain Specific Languages
+-------------------------
 
 The super interface of GraphTraversal is `Traversal`. It is possible for developers to create domain specific traversals by extending Traversal. For example, a `SocialTraversal` example is provided below.
 
@@ -378,11 +378,13 @@ The super interface of GraphTraversal is `Traversal`. It is possible for develop
 ----
 public interface SocialTraversal<S, E> extends Traversal<S, E> {
    public default SocialTraversal<S, Vertex> people() {
-     return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("age")));
+     return (SocialTraversal) this.addStep(
+       new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("age")));
    }
 
    public default SocialTraversal<S, Vertex> people(String name) {
-     return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("name", name)));
+     return (SocialTraversal) this.addStep(
+       new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("name", name)));
    }
 
   public default SocialTraversal<S, Vertex> knows() {
@@ -408,12 +410,12 @@ public interface SocialTraversal<S, E> extends Traversal<S, E> {
 This traversal definition can now be used as follows.
 
 [source,java]
-g.traversal(SocialTraversal.class).people(Optional.of("marko")).knows().name()
+g.traversal(SocialTraversal.class).people("marko").knows().name()
 
 By extending Traversal, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
 
 The GraphComputer API
----------------------
+=====================
 
 TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and only touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries touch a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
 
@@ -422,8 +424,10 @@ TinkerPop3 provides two primary means of interacting with a graph: link:http://e
 
 image::oltp-vs-olap.png[width=600]
 
+The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges and in effect return various computations of that traversal. For example, the elements at the end of the path, the full path traversed, or some side-effect such as the count or various groupings of the objects seen during the traversal. Thus, each step (1,2,3), is a movement along this referential structure. With Gremlin OLAP, all vertices are provided a VertexProgram. That program runs in parallel to all other programs with the programs sending messages to one another according to the topological structure of the graph as a communication network (with random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex however, all messages are being working independent of one another, in parallel.
+
 GraphComputer and VertexProgram
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 In Gremlin, it is possible to express to have the same traversal executed either using the standard OTLP-engine or have it executed using the OLAP-engine. The difference being where the query is submitted.
 
@@ -458,6 +462,65 @@ When this returns, it returns an weighted iterator where those objects with coun
 
 NOTE: This model of path-based graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics system and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines]
 
+A Collection of VertexPrograms
+------------------------------
+
+PageRankVertexProgram
+~~~~~~~~~~~~~~~~~~~~~
+
+Perhaps the most popular OLAP-oriented graph algorithm is link:http://en.wikipedia.org/wiki/PageRank[PageRank]. This eigenvector centrality variant was developed by Brin and Page of Google.
+
+[source,java]
+----
+public class PageRankVertexProgram implements VertexProgram<Double> {
+
+    private MessageType.Local messageType = MessageType.Local.of(new VertexQueryBuilder().direction(Direction.OUT));
+
+    private double vertexCountAsDouble = 1;
+    private double alpha = 0.85d;
+    private int totalIterations = 30;
+
+    public PageRankVertexProgram() {
+
+    }
+
+    public void initialize(final Configuration configuration) {
+        this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
+        this.alpha = configuration.getDouble(ALPHA, 0.85d);
+        this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
+    }
+
+    public Map<String, KeyType> getComputeKeys() {
+        return VertexProgram.ofComputeKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    }
+
+    public Class<Double> getMessageClass() {
+        return Double.class;
+    }
+
+    public void setup(final GraphComputer.SideEffects sideEffects) {
+
+    }
+
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.SideEffects sideEffects) {
+        if (sideEffects.isInitialIteration()) {
+            double initialPageRank = 1.0d / this.vertexCountAsDouble;
+            double edgeCount = Long.valueOf(this.messageType.getQuery().build(vertex).count()).doubleValue();
+            vertex.setProperty(PAGE_RANK, initialPageRank);
+            vertex.setProperty(EDGE_COUNT, edgeCount);
+            messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
+        } else {
+            double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.messageType)).reduce(0.0d, (a, b) -> a + b);
+            newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
+            vertex.setProperty(PAGE_RANK, newPageRank);
+            messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>getProperty(EDGE_COUNT).orElse(0.0d));
+        }
+    }
+
+    public boolean terminate(final GraphComputer.SideEffects sideEffects) {
+        return sideEffects.getIteration() >= this.totalIterations;
+    }
+----
 
 
 Gremlin Utilities
@@ -486,5 +549,5 @@ Implementations
 Neo4j-Gremlin
 -------------
 
-Graph-Gremlin
+Giraph-Gremlin
 --------------

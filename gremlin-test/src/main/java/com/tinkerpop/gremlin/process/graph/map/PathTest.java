@@ -29,12 +29,12 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_propertyXnameX_path() {
-        final Iterator<Path> step = get_g_v1_valueXnameX_path(convertToId("marko"));
+        final Iterator<Path> step = get_g_v1_valueXnameX_path(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         final Path path = step.next();
         assertFalse(step.hasNext());
         assertEquals(2, path.size());
-        assertEquals(convertToId("marko"), ((Vertex) path.get(0)).<String>getId());
+        assertEquals(convertToVertexId("marko"), ((Vertex) path.get(0)).<String>getId());
         assertEquals("marko", ((Vertex) path.get(0)).<String>getValue("name"));
         assertEquals("marko", path.<String>get(1));
     }
@@ -42,7 +42,7 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_out_pathXage_nameX() {
-        final Iterator<Path> step = get_g_v1_out_pathXage_nameX(convertToId("marko"));
+        final Iterator<Path> step = get_g_v1_out_pathXage_nameX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         final Set<String> names = new HashSet<>();

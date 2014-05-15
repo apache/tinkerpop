@@ -122,7 +122,7 @@ public abstract class ValuesTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_outXcreatedX_values() {
-        final Iterator<Map<String, Object>> step = get_g_v1_outXcreatedX_values(convertToId("marko"));
+        final Iterator<Map<String, Object>> step = get_g_v1_outXcreatedX_values(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         assertTrue(step.hasNext());
         final Map<String, Object> values = step.next();

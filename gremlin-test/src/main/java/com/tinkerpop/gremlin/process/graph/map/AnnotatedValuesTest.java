@@ -32,7 +32,7 @@ public abstract class AnnotatedValuesTest extends AbstractGremlinTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_STRING_VALUES)
     public void g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X() {
-        final Iterator<AnnotatedValue<String>> step = get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X(convertToId("marko"));
+        final Iterator<AnnotatedValue<String>> step = get_g_v1_annotatedValuesXlocationsX_intervalXstartTime_2004_2006X(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         final List<AnnotatedValue<String>> locations = StreamFactory.stream(step).collect(Collectors.toList());
         assertEquals(2, locations.size());
