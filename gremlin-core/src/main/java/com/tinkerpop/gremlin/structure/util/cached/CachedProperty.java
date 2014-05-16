@@ -47,8 +47,12 @@ public class CachedProperty<V> implements Property, Serializable {
         return true;
     }
 
+    public boolean isHidden() {
+        return this.key.startsWith(Graph.HIDDEN_PREFIX);
+    }
+
     public String key() {
-        return this.key;
+        return ElementHelper.removeHiddenPrefix(this.key);
     }
 
     public V value() {
