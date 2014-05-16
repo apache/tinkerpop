@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
-import com.tinkerpop.gremlin.process.util.HolderOptimizer;
+import com.tinkerpop.gremlin.process.util.HolderTraversalStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.Serializer;
@@ -61,7 +61,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 }
                 this.traversalSupplier = (SSupplier<Traversal>) Serializer.deserializeObject(bytes);
             }
-            this.trackPaths = HolderOptimizer.trackPaths(this.traversalSupplier.get());
+            this.trackPaths = HolderTraversalStrategy.trackPaths(this.traversalSupplier.get());
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -81,7 +81,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.SideEffects sideEffects) {
         final Traversal traversal = this.traversalSupplier.get();
-        traversal.optimizers().doFinalOptimizers(traversal);
+        traversal.optimizers().applyFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         startStep.clear();
         final String future = (traversal.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
@@ -110,7 +110,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.SideEffects sideEffects) {
         final Traversal traversal = this.traversalSupplier.get();
-        traversal.optimizers().doFinalOptimizers(traversal);
+        traversal.optimizers().applyFinalOptimizers(traversal);
         ((GraphStep) traversal.getSteps().get(0)).clear();
         if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);

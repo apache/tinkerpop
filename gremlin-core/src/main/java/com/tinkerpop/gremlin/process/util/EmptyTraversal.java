@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.Optimizers;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
@@ -18,7 +18,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
     private static final Variables VARIABLES = new DefaultVariables();         // TODO: make "empty memory?"
-    private static final Optimizers OPTIMIZERS = new DefaultOptimizers();   // TODO: make "empty optimizers?"
+    private static final TraversalStrategies TRAVERSAL_STRATEGIES = new DefaultTraversalStrategies();   // TODO: make "empty traversalStrategies?"
 
     public static EmptyTraversal instance() {
         return INSTANCE;
@@ -36,8 +36,8 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
         return VARIABLES;
     }
 
-    public Optimizers optimizers() {
-        return OPTIMIZERS;
+    public TraversalStrategies optimizers() {
+        return TRAVERSAL_STRATEGIES;
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {

@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.util.optimizers;
 
-import com.tinkerpop.gremlin.process.Optimizer;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdentityOptimizer implements Optimizer.FinalOptimizer {
+public class IdentityOptimizerTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
-    public void optimize(final Traversal traversal) {
+    public void apply(final Traversal traversal) {
         ((List<Step>) traversal.getSteps()).stream()
                 .filter(step -> step instanceof IdentityStep && !TraversalHelper.isLabeled(step))
                 .collect(Collectors.<Step>toList())

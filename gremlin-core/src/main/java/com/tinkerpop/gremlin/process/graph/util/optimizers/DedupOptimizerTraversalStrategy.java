@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.util.optimizers;
 
-import com.tinkerpop.gremlin.process.Optimizer;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.filter.DedupStep;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DedupOptimizer implements Optimizer.FinalOptimizer {
+public class DedupOptimizerTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
     private static final List<Class> BIJECTIVE_PIPES = new ArrayList<Class>(
             Arrays.asList(
@@ -23,7 +23,7 @@ public class DedupOptimizer implements Optimizer.FinalOptimizer {
                     OrderStep.class
             ));
 
-    public void optimize(final Traversal traversal) {
+    public void apply(final Traversal traversal) {
         boolean done = false;
         while (!done) {
             done = true;

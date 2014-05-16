@@ -84,7 +84,7 @@ public class BatchGraph<T extends Graph> implements Graph {
      * ids of the specified IdType. Supplying vertex ids which do not match this type will throw exceptions.
      *
      * @param graph      Graph to be wrapped
-     * @param type       Type of vertex id expected. This information is used to optimize the vertex cache
+     * @param type       Type of vertex id expected. This information is used to apply the vertex cache
      *                   memory footprint.
      * @param bufferSize Defines the number of vertices and edges loaded before starting a new transaction. The
      *                   larger this value, the more memory is required but the faster the loading process.

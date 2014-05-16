@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers.TinkerGraphStepOptimizer;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers.TinkerGraphStepTraversalStrategy;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
@@ -103,12 +103,12 @@ public class TinkerGraph implements Graph, Serializable {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>() {
             public GraphTraversal<Object, Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer)
-                    this.optimizers().unregister(TinkerGraphStepOptimizer.class);
+                    this.optimizers().unregister(TinkerGraphStepTraversalStrategy.class);
                 return super.submit(engine);
             }
         };
         traversal.memory().set(Traversal.Variables.Variable.hidden("g"), this);    // TODO: is this good?
-        traversal.optimizers().register(new TinkerGraphStepOptimizer());
+        traversal.optimizers().register(new TinkerGraphStepTraversalStrategy());
         traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         return traversal;
     }
@@ -117,11 +117,11 @@ public class TinkerGraph implements Graph, Serializable {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>() {
             public GraphTraversal<Object, Edge> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer)
-                    this.optimizers().unregister(TinkerGraphStepOptimizer.class);
+                    this.optimizers().unregister(TinkerGraphStepTraversalStrategy.class);
                 return super.submit(engine);
             }
         };
-        traversal.optimizers().register(new TinkerGraphStepOptimizer());
+        traversal.optimizers().register(new TinkerGraphStepTraversalStrategy());
         traversal.addStep(new TinkerGraphStep(traversal, Edge.class, this));
         return traversal;
     }

@@ -1,11 +1,9 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.Optimizer;
-import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
 import com.tinkerpop.gremlin.process.graph.map.MapStep;
@@ -14,15 +12,12 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -70,7 +65,7 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
 	public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
 		return (f) -> () -> {
 			final GraphTraversal traversal = f.get();
-			traversal.optimizers().register(new ReadOnlyGraphTraversalOptimizer(ctx.getCurrent()));
+			traversal.optimizers().register(new ReadOnlyGraphTraversalStrategy(ctx.getCurrent()));
 			return traversal;
 		};
 	}
@@ -79,7 +74,7 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
 	public UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getEStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
 		return (f) -> () -> {
 			final GraphTraversal traversal = f.get();
-			traversal.optimizers().register(new ReadOnlyGraphTraversalOptimizer(ctx.getCurrent()));
+			traversal.optimizers().register(new ReadOnlyGraphTraversalStrategy(ctx.getCurrent()));
 			return traversal;
 		};
 	}
@@ -116,14 +111,14 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
 	 * logic consists of a {@link MapStep} that wraps the @{link Element} back up in a {@link StrategyWrapped}
 	 * implementation.
 	 */
-	public static class ReadOnlyGraphTraversalOptimizer implements Optimizer.FinalOptimizer {
+	public static class ReadOnlyGraphTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
 		private final StrategyWrappedGraph graph;
 
-		public ReadOnlyGraphTraversalOptimizer(final StrategyWrappedGraph graph) {
+		public ReadOnlyGraphTraversalStrategy(final StrategyWrappedGraph graph) {
 			this.graph = graph;
 		}
 
-		public void optimize(final Traversal traversal) {
+		public void apply(final Traversal traversal) {
 			// inject a HasStep after each GraphStep, VertexStep or EdgeVertexStep
 			final List<Class> stepsToLookFor = Arrays.<Class>asList(GraphStep.class, VertexStep.class, EdgeVertexStep.class);
 			final List<Integer> positions = new ArrayList<>();

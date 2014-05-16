@@ -21,7 +21,7 @@ import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerVertexStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers.TinkerGraphStepOptimizer;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers.TinkerGraphStepTraversalStrategy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -88,7 +88,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
             public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
-                    this.optimizers().unregister(TinkerGraphStepOptimizer.class);
+                    this.optimizers().unregister(TinkerGraphStepTraversalStrategy.class);
                     final String label = this.getSteps().get(0).getAs();
                     TraversalHelper.removeStep(0, this);
                     final Step identityStep = new IdentityStep(this);

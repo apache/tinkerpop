@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.Optimizers;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
@@ -17,12 +17,12 @@ import java.util.List;
 public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     protected final List<Step> steps = new ArrayList<>();
-    protected final Optimizers optimizers = new DefaultOptimizers();
+    protected final TraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
     protected final Variables variables = new DefaultVariables();
     protected boolean firstNext = true;
 
     public DefaultTraversal() {
-        this.optimizers.register(new HolderOptimizer());
+        this.traversalStrategies.register(new HolderTraversalStrategy());
     }
 
     public List<Step> getSteps() {
@@ -33,8 +33,8 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         return this.variables;
     }
 
-    public Optimizers optimizers() {
-        return optimizers;
+    public TraversalStrategies optimizers() {
+        return traversalStrategies;
     }
 
     public void addStarts(final Iterator<Holder<S>> starts) {
@@ -79,7 +79,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     private final void doFinalOptimization() {
         if (this.firstNext) {
-            this.optimizers().doFinalOptimizers(this);
+            this.optimizers().applyFinalOptimizers(this);
             this.firstNext = false;
         }
     }

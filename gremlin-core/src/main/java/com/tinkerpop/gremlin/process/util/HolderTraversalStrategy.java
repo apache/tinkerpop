@@ -1,15 +1,15 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Optimizer;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Traversal;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HolderOptimizer implements Optimizer.FinalOptimizer {
+public class HolderTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
-    public void optimize(final Traversal traversal) {
-        final boolean trackPaths = HolderOptimizer.trackPaths(traversal);
+    public void apply(final Traversal traversal) {
+        final boolean trackPaths = HolderTraversalStrategy.trackPaths(traversal);
         traversal.getSteps().forEach(step -> {
             if (step instanceof HolderSource)
                 ((HolderSource) step).generateHolderIterator(trackPaths);

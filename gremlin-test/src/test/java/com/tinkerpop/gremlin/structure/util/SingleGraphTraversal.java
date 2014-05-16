@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.Optimizers;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
@@ -29,7 +29,7 @@ public class SingleGraphTraversal<S> implements GraphTraversal<S, S> {
     }
 
     @Override
-    public Optimizers optimizers() {
+    public TraversalStrategies optimizers() {
         return null;
     }
 

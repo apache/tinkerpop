@@ -19,7 +19,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public Variables memory();
 
-    public Optimizers optimizers();
+    public TraversalStrategies optimizers();
 
     public void addStarts(final Iterator<Holder<S>> starts);
 

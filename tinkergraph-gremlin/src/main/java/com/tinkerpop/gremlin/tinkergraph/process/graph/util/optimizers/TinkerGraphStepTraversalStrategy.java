@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers;
 
-import com.tinkerpop.gremlin.process.Optimizer;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.filter.HasStep;
@@ -13,9 +13,9 @@ import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphStepOptimizer implements Optimizer.FinalOptimizer {
+public class TinkerGraphStepTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
-    public void optimize(final Traversal traversal) {
+    public void apply(final Traversal traversal) {
 
         if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {  // TODO: generalize for searching the whole traversal?
             final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
