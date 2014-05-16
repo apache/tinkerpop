@@ -32,14 +32,16 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     @Override
     public void properties(final Object... keyValues) {
-        this.baseElement.properties(keyValues);
+		this.strategyWrappedGraph.strategy().compose(
+			s -> s.getElementProperties(elementStrategyContext),
+			this.baseElement::properties).accept(keyValues);
     }
 
     @Override
     public <V> Property<V> property(final String key) {
-        return this.strategyWrappedGraph.strategy().compose(
+        return new StrategyWrappedProperty<>(this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getElementGetProperty(elementStrategyContext),
-                this.baseElement::property).apply(key);
+                this.baseElement::property).apply(key), this.strategyWrappedGraph);
     }
 
     @Override
@@ -72,7 +74,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     @Override
     public <V> Property<V> property(final String key, final V value) {
         return this.strategyWrappedGraph.strategy().compose(
-                s -> s.<V>getElementSetProperty(elementStrategyContext),
+                s -> s.<V>getElementProperty(elementStrategyContext),
                 this.baseElement::property).apply(key, value);
     }
 
@@ -88,7 +90,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
 	@Override
 	public String toString() {
-		final GraphStrategy strategy = this.strategyWrappedGraph.strategy().getGraphStrategy().orElse(DoNothingGraphStrategy.INSTANCE);
+		final GraphStrategy strategy = this.strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
 		return String.format("[%s[%s]]", strategy, baseElement.toString());
 	}
 }
