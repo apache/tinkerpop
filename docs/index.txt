@@ -825,8 +825,114 @@ By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible t
 Gremlin Server
 --------------
 
+Gremlin Server provides a way to remotely execute Gremlin scripts against one or more `Graph` instances hosted within it.  The benefits of using Gremlin Server include:
 
+* Allows any Gremlin Structure-enabled graph to exist as a standalone server, which in turn enables the ability for multiple clients to communicate with the same graph database.
+* Enables execution of ad-hoc queries through remotely submitted Gremlin scripts.
+* Allows for the hosting of Gremlin-based DSLs (Domain Specific Language) that expand the Gremlin language to match the language of the application domain, which will help support common graph use cases such as searching, ranking, and recommendation.
+* Provides a method for Non-JVM languages (e.g. Python, .NET, etc.) to communicate with the TinkerPop stack.
+* Exposes numerous methods for extension and customization to include serialization options, remote commands, etc.
 
+NOTE: Gremlin Server is essentially the replacement for link:http://rexster.tinkerpop.com[Rexster].
+
+Communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and exposes a custom subprotocol for interacting with the server.  The most direct way to get started with Gremlin Server is to issue it some remote Gremlin scripts from the Gremlin Console.  To do that, first start Gremlin Server:
+
+[source,text]
+----
+$bin/gremlin-server.sh config/gremlin-server-min.yaml
+[INFO] GremlinServer -
+         \,,,/
+         (o o)
+-----oOOo-(_)-oOOo-----
+
+[INFO] GremlinServer - Configuring Gremlin Server from config/gremlin-server-min.yaml
+[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=com.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
+[INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo with com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
+[INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo-stringd with com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
+[INFO] Graphs - Graph [g] was successfully configured via [config/tinkergraph-empty.properties].
+[INFO] GremlinExecutor - Getting dependencies for [[org.apache.commons, commons-math3, 3.2]]
+[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
+[INFO] GremlinServer$WebSocketServerInitializer - Initialized GremlinExecutor and configured ScriptEngines.
+[INFO] GremlinServer$WebSocketServerInitializer - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
+[INFO] GremlinServer - Gremlin Server configured with worker thread pool of 1 and boss thread pool of 1
+[INFO] GremlinServer - Websocket channel started at port 8182.
+----
+
+Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] file `config/gremlin-server-min.yaml`.  That file tells Gremlin Server many things such as:
+
+* The host and port to serve on
+* Thread pool sizes
+* Where to report metrics gathered by the server
+* The serializers to make available
+* The Gremlin `ScriptEngine` instances to expose and external dependencies to inject into them
+* `Graph` instances to expose
+
+The log messages that printed above show a number of things, but most importantly, there is a `Graph` instance named `g` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the server.  An initialization script at `scripts/generate-sample.groovy` was executed during startup.  It's contents are as follows:
+
+[source,groovy]
+----
+include::../gremlin-server/scripts/generate-modern.groovy[]
+----
+
+This script loads the "modern" graph into the empty TinkerGraph instance, preparing it for use.  With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
+
+[source,text]
+----
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+gremlin>
+----
+
+When the console starts, it is preconfigured to connect to a remote Gremlin Server listening on `localhost` at port `8182`:
+
+[source,text]
+----
+gremlin> :remote
+==>remote - results as text [localhost/127.0.0.1:8182]
+----
+
+The `:remote` command shown above displays the current status of the remote connection.  This command can also be used to configure a new connection and change other related settings.  To actually send a script to the server a different command is required:
+
+[source,text]
+----
+gremlin> :> g.V.name
+==>Item{resultItem=marko class=java.lang.String}
+==>Item{resultItem=stephen class=java.lang.String}
+==>Item{resultItem=matthias class=java.lang.String}
+==>Item{resultItem=daniel class=java.lang.String}
+==>Item{resultItem=gremlin class=java.lang.String}
+==>Item{resultItem=blueprints class=java.lang.String}
+gremlin> :> g.V.has('name','gremlin').in('uses').name
+==>Item{resultItem=marko class=java.lang.String}
+==>Item{resultItem=daniel class=java.lang.String}
+gremlin> :> g.E.label.groupCount()
+==>Item{resultItem={dependsOn=1, created=5, uses=2} class=java.lang.String}
+----
+
+The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Item` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  As was stated earlier, the `:remote` command can be used to configure the connection to Gremlin Server.  One of the options available is to have results returned as `objects` instead of `text`:
+
+[source,text]
+----
+gremlin> :remote as objects <1>
+==>results as objects
+gremlin> :> g.E.label.groupCount() <2>
+==>Item{resultItem={dependsOn=1, created=5, uses=2} class=java.util.HashMap}
+gremlin> m = _l[0].get(Map.class) <3>
+==>dependsOn=1
+==>created=5
+==>uses=2
+gremlin> m.sort{-it.value}
+==>created=5
+==>uses=2
+==>dependsOn=1
+----
+
+<1> Tells Gremlin Server to serialize the results in a way that they can be deserialized back into an `Object` in the Console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
+<2> When the script is executed again, the `class` is no longer shown to be a `java.lang.String`.  It is instead a `java.util.HashMap`.
+<3> The last result of a remote script is always stored in the reserved variable `_l`, which allows access to the `Item` and by virtue of that, the `Map` itself.
 
 Implementations
 ===============
