@@ -17,12 +17,12 @@ public class IoEdge extends IoElement {
 
     public static IoEdge from(final Edge edge) {
         final IoEdge ioe = new IoEdge();
-        final Vertex in = edge.getVertex(Direction.IN);
-        final Vertex out = edge.getVertex(Direction.OUT);
-        ioe.inV = in.getId();
-        ioe.outV = out.getId();
-        ioe.inVLabel = in.getLabel();
-        ioe.outVLabel = out.getLabel();
+        final Vertex in = edge.inV().next();
+        final Vertex out = edge.outV().next();
+        ioe.inV = in.id();
+        ioe.outV = out.id();
+        ioe.inVLabel = in.label();
+        ioe.outVLabel = out.label();
         return from(edge, ioe);
     }
 }

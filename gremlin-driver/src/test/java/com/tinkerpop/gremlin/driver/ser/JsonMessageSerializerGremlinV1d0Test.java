@@ -104,7 +104,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final Vertex v1 = g.addVertex();
         final Vertex v2 = g.addVertex();
         final Edge e = v1.addEdge("test", v2);
-        e.setProperty("abc", 123);
+        e.property("abc", 123);
 
         final Iterable<Edge> iterable = g.E().toList();
 
@@ -115,12 +115,12 @@ public class JsonMessageSerializerGremlinV1d0Test {
         assertEquals(1, edgeList.size());
 
         final Map<String,Object> deserializedEdge = edgeList.get(0);
-        assertEquals(e.getId(), deserializedEdge.get(GraphSONTokens.ID));
-        assertEquals(v1.getId(), deserializedEdge.get(GraphSONTokens.OUT));
-        assertEquals(v2.getId(), deserializedEdge.get(GraphSONTokens.IN));
-        assertEquals(v1.getLabel(), deserializedEdge.get(GraphSONTokens.OUT_LABEL));
-        assertEquals(v2.getLabel(), deserializedEdge.get(GraphSONTokens.IN_LABEL));
-        assertEquals(e.getLabel(), deserializedEdge.get(GraphSONTokens.LABEL));
+        assertEquals(e.id(), deserializedEdge.get(GraphSONTokens.ID));
+        assertEquals(v1.id(), deserializedEdge.get(GraphSONTokens.OUT));
+        assertEquals(v2.id(), deserializedEdge.get(GraphSONTokens.IN));
+        assertEquals(v1.label(), deserializedEdge.get(GraphSONTokens.OUT_LABEL));
+        assertEquals(v2.label(), deserializedEdge.get(GraphSONTokens.IN_LABEL));
+        assertEquals(e.label(), deserializedEdge.get(GraphSONTokens.LABEL));
         assertEquals(GraphSONTokens.EDGE, deserializedEdge.get(GraphSONTokens.TYPE));
 
         final Map<String,Object> properties = (Map<String,Object>) deserializedEdge.get(GraphSONTokens.PROPERTIES);
@@ -142,7 +142,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         friends.add(5);
         friends.add(map);
 
-        v.setProperty("friends", friends);
+        v.property("friends", friends);
 
         final List list = g.V().toList();
 
@@ -229,7 +229,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
     @Test
     public void serializeAnnotatedList() throws Exception {
         final Graph g = TinkerFactory.createModern();
-        final AnnotatedList<String> al = g.v(1).getValue("locations");
+        final AnnotatedList<String> al = g.v(1).value("locations");
 
         final ResponseMessage response = convert(al);
         assertCommon(response);
@@ -259,7 +259,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
     @Test
     public void serializeAnnotatedValue() throws Exception {
         final Graph g = TinkerFactory.createModern();
-        final AnnotatedList<String> al = g.v(1).getValue("locations");
+        final AnnotatedList<String> al = g.v(1).value("locations");
         final AnnotatedValue<String> annotatedValue = al.annotatedValues().next();
 
         final ResponseMessage response = convert(annotatedValue);

@@ -1,11 +1,16 @@
 package com.tinkerpop.gremlin.structure.util.cached;
 
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,7 +20,7 @@ public class CachedEdge extends CachedElement implements Edge {
     private CachedVertex outVertex;
     private CachedVertex inVertex;
 
-    public CachedEdge(final Object id, final String label, final Map<String,Object> properties,
+    public CachedEdge(final Object id, final String label, final Map<String, Object> properties,
                       final Pair<Object, String> outV, final Pair<Object, String> inV) {
         super(id, label, properties);
         this.outVertex = new CachedVertex(outV.getValue0(), outV.getValue1());
@@ -24,22 +29,49 @@ public class CachedEdge extends CachedElement implements Edge {
 
     public CachedEdge(final Edge edge) {
         super(edge);
-        final Vertex ov = edge.getVertex(Direction.OUT);
-        final Vertex iv = edge.getVertex(Direction.IN);
-        this.outVertex = new CachedVertex(ov.getId(), ov.getLabel());
-        this.inVertex = new CachedVertex(iv.getId(), iv.getLabel());
+        final Vertex ov = edge.outV().next();
+        final Vertex iv = edge.inV().next();
+        this.outVertex = new CachedVertex(ov.id(), ov.label());
+        this.inVertex = new CachedVertex(iv.id(), iv.label());
     }
 
-    public Vertex getVertex(final Direction direction) {
-        if (direction.equals(Direction.OUT))
-            return outVertex;
-        else if (direction.equals(Direction.IN))
-            return inVertex;
-        else
-            throw Edge.Exceptions.bothIsNotSupported();
+    @Override
+    public GraphTraversal<Edge, Vertex> inV() {
+        final GraphTraversal traversal = this.start();
+        traversal.addStep(new CachedEdgeVertexStep(traversal, Direction.IN));
+        return traversal;
+    }
+
+    @Override
+    public GraphTraversal<Edge, Vertex> outV() {
+        final GraphTraversal traversal = this.start();
+        traversal.addStep(new CachedEdgeVertexStep(traversal, Direction.OUT));
+        return traversal;
+    }
+
+    @Override
+    public GraphTraversal<Edge, Vertex> bothV() {
+        final GraphTraversal traversal = this.start();
+        traversal.addStep(new CachedEdgeVertexStep(traversal, Direction.BOTH));
+        return traversal;
     }
 
     public String toString() {
         return StringFactory.edgeString(this);
+    }
+
+    class CachedEdgeVertexStep extends EdgeVertexStep {
+        public CachedEdgeVertexStep(final Traversal traversal, final Direction direction) {
+            super(traversal, direction);
+            this.setFunction(holder -> {
+                final List<Vertex> vertices = new ArrayList<>();
+                if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
+                    vertices.add(outVertex);
+                if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
+                    vertices.add(inVertex);
+
+                return vertices.iterator();
+            });
+        }
     }
 }

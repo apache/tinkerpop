@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -344,7 +343,7 @@ public class BatchGraph<T extends Graph> implements Graph {
             nextElement();
 
             final Vertex ov = getCachedVertex(externalID);
-            final Vertex iv = getCachedVertex(inVertex.getId());
+            final Vertex iv = getCachedVertex(inVertex.id());
 
             previousOutVertexId = externalID;  //keep track of the previous out vertex id
 
@@ -385,13 +384,13 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public Object getId() {
+        public Object id() {
             return this.externalID;
         }
 
         @Override
-        public String getLabel() {
-            return getCachedVertex(externalID).getLabel();
+        public String label() {
+            return getCachedVertex(externalID).label();
         }
 
         @Override
@@ -400,52 +399,42 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public Set<String> getPropertyKeys() {
-            return getCachedVertex(externalID).getPropertyKeys();
+        public Set<String> keys() {
+            return getCachedVertex(externalID).keys();
         }
 
         @Override
-        public Map<String, Property> getProperties() {
-            return getCachedVertex(externalID).getProperties();
+        public Map<String, Property> properties() {
+            return getCachedVertex(externalID).properties();
         }
 
         @Override
-        public Map<String, Property> getHiddens() {
-            return getCachedVertex(externalID).getHiddens();
+        public Map<String, Property> hiddens() {
+            return getCachedVertex(externalID).hiddens();
         }
 
         @Override
-        public <V> Property<V> getProperty(final String key) {
-            return getCachedVertex(externalID).getProperty(key);
+        public <V> Property<V> property(final String key) {
+            return getCachedVertex(externalID).property(key);
         }
 
         @Override
-        public <V> Property<V> setProperty(final String key, final V value) {
-            return getCachedVertex(externalID).setProperty(key, value);
+        public <V> Property<V> property(final String key, final V value) {
+            return getCachedVertex(externalID).property(key, value);
         }
 
         @Override
-        public void setProperties(final Object... keyValues) {
-            getCachedVertex(externalID).setProperties(keyValues);
+        public void properties(final Object... keyValues) {
+            getCachedVertex(externalID).properties(keyValues);
         }
 
         @Override
-        public <V> V getValue(final String key) throws NoSuchElementException {
-            return getCachedVertex(externalID).getValue(key);
+        public <V> V value(final String key) throws NoSuchElementException {
+            return getCachedVertex(externalID).value(key);
         }
 
         @Override
         public <E2> GraphTraversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public <E2> GraphTraversal<Vertex, Property<E2>> property(final String propertyKey) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public <E2> GraphTraversal<Vertex, E2> value(final String propertyKey) {
             throw retrievalNotSupported();
         }
 
@@ -538,18 +527,28 @@ public class BatchGraph<T extends Graph> implements Graph {
     private class BatchEdge implements Edge {
 
         @Override
-        public Vertex getVertex(final Direction direction) throws IllegalArgumentException {
-            return getWrappedEdge().getVertex(direction);
+        public GraphTraversal<Edge, Vertex> inV() {
+            return getWrappedEdge().inV();
         }
 
         @Override
-        public Object getId() {
-            return getWrappedEdge().getLabel();
+        public GraphTraversal<Edge, Vertex> outV() {
+            return getWrappedEdge().outV();
         }
 
         @Override
-        public String getLabel() {
-            return getWrappedEdge().getLabel();
+        public GraphTraversal<Edge, Vertex> bothV() {
+            return getWrappedEdge().bothV();
+        }
+
+        @Override
+        public Object id() {
+            return getWrappedEdge().label();
+        }
+
+        @Override
+        public String label() {
+            return getWrappedEdge().label();
         }
 
         @Override
@@ -558,38 +557,38 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public Map<String, Property> getProperties() {
-            return getWrappedEdge().getProperties();
+        public Map<String, Property> properties() {
+            return getWrappedEdge().properties();
         }
 
         @Override
-        public Map<String, Property> getHiddens() {
-            return getWrappedEdge().getHiddens();
+        public Map<String, Property> hiddens() {
+            return getWrappedEdge().hiddens();
         }
 
         @Override
-        public <V> Property<V> getProperty(final String key) {
-            return getWrappedEdge().getProperty(key);
+        public <V> Property<V> property(final String key) {
+            return getWrappedEdge().property(key);
         }
 
         @Override
-        public <V> Property<V> setProperty(final String key, final V value) {
-            return getWrappedEdge().setProperty(key, value);
+        public <V> Property<V> property(final String key, final V value) {
+            return getWrappedEdge().property(key, value);
         }
 
         @Override
-        public Set<String> getPropertyKeys() {
-            return getWrappedEdge().getPropertyKeys();
+        public Set<String> keys() {
+            return getWrappedEdge().keys();
         }
 
         @Override
-        public void setProperties(final Object... keyValues) {
-            getWrappedEdge().setProperties(keyValues);
+        public void properties(final Object... keyValues) {
+            getWrappedEdge().properties(keyValues);
         }
 
         @Override
-        public <V> V getValue(final String key) throws NoSuchElementException {
-            return getWrappedEdge().getValue(key);
+        public <V> V value(final String key) throws NoSuchElementException {
+            return getWrappedEdge().value(key);
         }
 
         private Edge getWrappedEdge() {

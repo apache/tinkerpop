@@ -64,7 +64,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            final String name = traversal.next().getValue("name");
+            final String name = traversal.next().value("name");
             assertTrue(name.equals("lop") || name.equals("ripple"));
         }
         assertEquals(1, counter);
@@ -78,7 +78,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            final String name = traversal.next().getValue("name");
+            final String name = traversal.next().value("name");
             assertTrue(name.equals("lop") || name.equals("ripple"));
         }
         assertEquals(1, counter);
@@ -92,7 +92,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            final String name = traversal.next().getValue("name");
+            final String name = traversal.next().value("name");
             assertTrue(name.equals("marko") || name.equals("josh") || name.equals("peter"));
         }
         assertEquals(2, counter);
@@ -106,7 +106,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            final String name = traversal.next().getValue("name");
+            final String name = traversal.next().value("name");
             assertTrue(name.equals("marko") || name.equals("josh") || name.equals("peter"));
         }
         assertEquals(2, counter);

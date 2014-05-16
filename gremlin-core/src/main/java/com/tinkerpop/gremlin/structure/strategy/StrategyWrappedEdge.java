@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -21,8 +21,15 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
         return this.baseEdge;
     }
 
-    @Override
-    public Vertex getVertex(final Direction direction) throws IllegalArgumentException {
-        return this.baseEdge.getVertex(direction);
+    public GraphTraversal<Edge, Vertex> inV() {
+        return this.baseEdge.inV();
+    }
+
+    public GraphTraversal<Edge, Vertex> outV() {
+        return this.baseEdge.outV();
+    }
+
+    public GraphTraversal<Edge, Vertex> bothV() {
+        return this.baseEdge.bothV();
     }
 }

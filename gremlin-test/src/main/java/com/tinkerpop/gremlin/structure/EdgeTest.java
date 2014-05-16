@@ -36,7 +36,7 @@ public class EdgeTest extends AbstractGremlinTest {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("knows", v, "string", "marko");
-        final String name = e.getValue("string");
+        final String name = e.value("string");
         assertEquals(name, "marko");
 
     }
@@ -47,7 +47,7 @@ public class EdgeTest extends AbstractGremlinTest {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("knows", v, "integer", 33);
-        final Integer age = e.getValue("integer");
+        final Integer age = e.value("integer");
         assertEquals(Integer.valueOf(33), age);
     }
 
@@ -57,7 +57,7 @@ public class EdgeTest extends AbstractGremlinTest {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("knows", v, "boolean", true);
-        final Boolean best = e.getValue("boolean");
+        final Boolean best = e.value("boolean");
         assertEquals(best, Boolean.valueOf(true));
     }
 
@@ -67,7 +67,7 @@ public class EdgeTest extends AbstractGremlinTest {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("knows", v, "double", 0.1d);
-        final Double best = e.getValue("double");
+        final Double best = e.value("double");
         assertEquals(best, Double.valueOf(0.1d));
     }
 
@@ -77,7 +77,7 @@ public class EdgeTest extends AbstractGremlinTest {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("knows", v, "long", 1l);
-        final Long best = e.getValue("long");
+        final Long best = e.value("long");
         assertEquals(best, Long.valueOf(1l));
     }
 
@@ -87,7 +87,7 @@ public class EdgeTest extends AbstractGremlinTest {
         final Graph graph = g;
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("knows", v, "float", 0.1f);
-        final Float best = e.getValue("float");
+        final Float best = e.value("float");
         assertEquals(best, Float.valueOf(0.1f));
     }
 
@@ -96,14 +96,14 @@ public class EdgeTest extends AbstractGremlinTest {
     public void shouldGetPropertyKeysOnEdge() {
         final Vertex v = g.addVertex();
         final Edge e = v.addEdge("friend", v, "name", "marko", "location", "desert", "status", "dope");
-        Set<String> keys = e.getPropertyKeys();
+        Set<String> keys = e.keys();
         assertEquals(3, keys.size());
 
         assertTrue(keys.contains("name"));
         assertTrue(keys.contains("location"));
         assertTrue(keys.contains("status"));
 
-        final Map<String,Property> m = e.getProperties();
+        final Map<String,Property> m = e.properties();
         assertEquals(3, m.size());
         assertEquals("name", m.get("name").getKey());
         assertEquals("location", m.get("location").getKey());
@@ -112,16 +112,16 @@ public class EdgeTest extends AbstractGremlinTest {
         assertEquals("desert", m.get("location").orElse(""));
         assertEquals("dope", m.get("status").orElse(""));
 
-        e.getProperty("status").remove();
+        e.property("status").remove();
 
-        keys = e.getPropertyKeys();
+        keys = e.keys();
         assertEquals(2, keys.size());
         assertTrue(keys.contains("name"));
         assertTrue(keys.contains("location"));
 
-        e.getProperties().values().stream().forEach(p->p.remove());
+        e.properties().values().stream().forEach(p->p.remove());
 
-        keys = e.getPropertyKeys();
+        keys = e.keys();
         assertEquals(0, keys.size());
     }
 
@@ -145,7 +145,7 @@ public class EdgeTest extends AbstractGremlinTest {
     @Test
     public void shouldReturnEmptyMapIfNoProperties() {
         final Vertex v = g.addVertex();
-        final Map<String,Property> m = v.getProperties();
+        final Map<String,Property> m = v.properties();
         assertNotNull(m);
         assertEquals(0, m.size());
     }

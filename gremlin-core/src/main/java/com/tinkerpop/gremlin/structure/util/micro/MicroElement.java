@@ -24,31 +24,31 @@ public abstract class MicroElement implements Element, Serializable {
         if (null == element)
             throw Graph.Exceptions.argumentCanNotBeNull("element");
 
-        this.id = element.getId();
-        this.label = element.getLabel();
+        this.id = element.id();
+        this.label = element.label();
     }
 
-    public Object getId() {
+    public Object id() {
         return this.id;
     }
 
-    public String getLabel() {
+    public String label() {
         return this.label;
     }
 
-    public Property setProperty(final String key, final Object value) {
+    public Property property(final String key, final Object value) {
         throw new UnsupportedOperationException("Micro elements do not store properties (inflate): " + this.toString());
     }
 
-    public <V> Property<V> getProperty(final String key) {
+    public <V> Property<V> property(final String key) {
         throw new UnsupportedOperationException("Micro elements do not store properties (inflate): " + this.toString());
     }
 
-    public Map<String, Property> getProperties() {
+    public Map<String, Property> properties() {
         throw new UnsupportedOperationException("Micro elements do not store properties (inflate): " + this.toString());
     }
 
-    public Map<String, Property> getHiddens() {
+    public Map<String, Property> hiddens() {
         throw new UnsupportedOperationException("Micro elements do not store properties (inflate): " + this.toString());
     }
 

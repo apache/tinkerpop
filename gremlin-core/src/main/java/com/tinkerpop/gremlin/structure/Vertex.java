@@ -5,17 +5,7 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
-import com.tinkerpop.gremlin.process.graph.filter.HasAnnotationStep;
-import com.tinkerpop.gremlin.process.graph.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.filter.IntervalStep;
-import com.tinkerpop.gremlin.process.graph.map.AnnotatedValueStep;
-import com.tinkerpop.gremlin.process.graph.map.AnnotationValueStep;
-import com.tinkerpop.gremlin.process.graph.map.AnnotationValuesStep;
-import com.tinkerpop.gremlin.process.graph.map.JumpStep;
-import com.tinkerpop.gremlin.process.graph.map.PropertyStep;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;
-import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
@@ -186,15 +176,6 @@ public interface Vertex extends Element {
 
     // TODO: pageRank
 
-    /**
-     * public default <E2> GraphTraversal<Vertex, Property<E2>> properties() {
-     * return (GraphTraversal) this.start().values;
-     * }*
-     */
-
-    public default <E2> GraphTraversal<Vertex, Property<E2>> property(final String propertyKey) {
-        return this.start().<E2>property(propertyKey);
-    }
 
     public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Holder<Vertex>> consumer) {
         return this.start().sideEffect(consumer);
@@ -207,14 +188,6 @@ public interface Vertex extends Element {
 
     // TODO: union
 
-    public default <E2> GraphTraversal<Vertex, E2> value(final String propertyKey) {
-        return this.start().value(propertyKey);
-    }
-
-    // TODO: test
-    public default GraphTraversal<Vertex, Map<String, Object>> values(final String... propertyKeys) {
-        return this.start().values(propertyKeys);
-    }
 
     public default GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
         return this.start().with(variableValues);

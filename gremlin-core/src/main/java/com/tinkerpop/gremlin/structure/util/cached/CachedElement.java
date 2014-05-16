@@ -47,29 +47,29 @@ public abstract class CachedElement implements Element {
     protected CachedElement(final Element element) {
         if (null == element) throw Graph.Exceptions.argumentCanNotBeNull("element");
 
-        this.id = element.getId();
-        this.label = element.getLabel();
-        this.properties = Optional.ofNullable(element.getProperties());
+        this.id = element.id();
+        this.label = element.label();
+        this.properties = Optional.ofNullable(element.properties());
     }
 
-    public Object getId() {
+    public Object id() {
         return this.id;
     }
 
-    public String getLabel() {
+    public String label() {
         return this.label;
     }
 
-    public Property setProperty(final String key, final Object value) {
+    public Property property(final String key, final Object value) {
         throw new UnsupportedOperationException("Cached elements are read-only: " + this.toString());
     }
 
-    public <V> Property<V> getProperty(final String key) {
+    public <V> Property<V> property(final String key) {
         return this.properties.orElseThrow(() -> new IllegalStateException("Properties not assigned to this element which means it is likely a CachedVertex on a CachedEdge"))
                 .getOrDefault(key, Property.empty());
     }
 
-    public Map<String, Property> getProperties() {
+    public Map<String, Property> properties() {
         final Map<String, Property> temp = new HashMap<>();
         this.properties.orElseThrow(() -> new IllegalStateException("Properties not assigned to this element which means it is likely a CachedVertex on a CachedEdge"));
         this.properties.get().forEach((key, property) -> {
@@ -79,7 +79,7 @@ public abstract class CachedElement implements Element {
         return temp;
     }
 
-    public Map<String, Property> getHiddens() {
+    public Map<String, Property> hiddens() {
         final Map<String, Property> temp = new HashMap<>();
         this.properties.orElseThrow(() -> new IllegalStateException("Properties not assigned to this element which means it is likely a CachedVertex on a CachedEdge"));
         this.properties.get().forEach((key, property) -> {

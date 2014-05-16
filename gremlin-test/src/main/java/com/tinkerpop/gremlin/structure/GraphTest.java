@@ -76,8 +76,8 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex v = g.addVertex();
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);
         assertEquals(v, g.V().next());
-        assertEquals(v.getId(), g.V().next().getId());
-        assertEquals(v.getLabel(), g.V().next().getLabel());
+        assertEquals(v.id(), g.V().next().id());
+        assertEquals(v.label(), g.V().next().label());
         v.remove();
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(0, 0));
         g.addVertex();
@@ -221,7 +221,7 @@ public class GraphTest extends AbstractGremlinTest {
         }
 
         for (Edge x : graph.E().toList()) {
-            assertEquals(graphProvider.convertLabel("knows"), x.getLabel());
+            assertEquals(graphProvider.convertLabel("knows"), x.label());
         }
 
         if (graph.getFeatures().vertex().supportsUserSuppliedIds()) {
@@ -256,23 +256,23 @@ public class GraphTest extends AbstractGremlinTest {
             assertEquals(1, vd.outE().count());
 
             for (Edge x : a.outE().toList()) {
-                assertTrue(x.getLabel().equals(graphProvider.convertId("knows")) || x.getLabel().equals(graphProvider.convertId("hates")));
+                assertTrue(x.label().equals(graphProvider.convertId("knows")) || x.label().equals(graphProvider.convertId("hates")));
             }
 
-            assertEquals(graphProvider.convertId("hates"), i.getLabel());
-            assertEquals(graphProvider.convertId("2"), i.getVertex(Direction.IN).getId().toString());
-            assertEquals(graphProvider.convertId("1"), i.getVertex(Direction.OUT).getId().toString());
+            assertEquals(graphProvider.convertId("hates"), i.label());
+            assertEquals(graphProvider.convertId("2"), i.inV().id().next().toString());
+            assertEquals(graphProvider.convertId("1"), i.outV().id().next().toString());
         }
 
         final Set<Object> vertexIds = new HashSet<>();
-        vertexIds.add(a.getId());
-        vertexIds.add(a.getId());
-        vertexIds.add(b.getId());
-        vertexIds.add(b.getId());
-        vertexIds.add(c.getId());
-        vertexIds.add(d.getId());
-        vertexIds.add(d.getId());
-        vertexIds.add(d.getId());
+        vertexIds.add(a.id());
+        vertexIds.add(a.id());
+        vertexIds.add(b.id());
+        vertexIds.add(b.id());
+        vertexIds.add(c.id());
+        vertexIds.add(d.id());
+        vertexIds.add(d.id());
+        vertexIds.add(d.id());
         assertEquals(4, vertexIds.size());
     }
 
@@ -384,17 +384,17 @@ public class GraphTest extends AbstractGremlinTest {
         assertEquals(0, start.inE().count());
         assertEquals(branchSize, start.outE().count());
         for (Edge e : start.outE().toList()) {
-            assertEquals(graphProvider.convertId("test1"), e.getLabel());
-            assertEquals(branchSize, e.getVertex(Direction.IN).out().count());
-            assertEquals(1, e.getVertex(Direction.IN).inE().count());
-            for (Edge f : e.getVertex(Direction.IN).outE().toList()) {
-                assertEquals(graphProvider.convertId("test2"), f.getLabel());
-                assertEquals(branchSize, f.getVertex(Direction.IN).out().count());
-                assertEquals(1, f.getVertex(Direction.IN).in().count());
-                for (Edge g : f.getVertex(Direction.IN).outE().toList()) {
-                    assertEquals(graphProvider.convertId("test3"), g.getLabel());
-                    assertEquals(0, g.getVertex(Direction.IN).out().count());
-                    assertEquals(1, g.getVertex(Direction.IN).in().count());
+            assertEquals(graphProvider.convertId("test1"), e.label());
+            assertEquals(branchSize, e.inV().out().count());
+            assertEquals(1, e.inV().inE().count());
+            for (Edge f : e.inV().outE().toList()) {
+                assertEquals(graphProvider.convertId("test2"), f.label());
+                assertEquals(branchSize, f.inV().out().count());
+                assertEquals(1, f.inV().in().count());
+                for (Edge g : f.inV().outE().toList()) {
+                    assertEquals(graphProvider.convertId("test3"), g.label());
+                    assertEquals(0, g.inV().out().count());
+                    assertEquals(1, g.inV().in().count());
                 }
             }
         }
@@ -416,13 +416,13 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final Vertex u = graph.addVertex();
         if (graph.getFeatures().edge().properties().supportsStringValues()) {
-            v.setProperty("name", "marko");
-            u.setProperty("name", "pavel");
+            v.property("name", "marko");
+            u.property("name", "pavel");
         }
 
         final Edge e = v.addEdge(graphProvider.convertLabel("collaborator"), u);
         if (graph.getFeatures().edge().properties().supportsStringValues())
-            e.setProperty("location", "internet");
+            e.property("location", "internet");
 
         tryCommit(graph, AbstractGremlinSuite.assertVertexEdgeCounts(2, 1));
         graph.close();
@@ -432,14 +432,14 @@ public class GraphTest extends AbstractGremlinTest {
 
         if (graph.getFeatures().vertex().properties().supportsStringValues()) {
             for (Vertex vertex : reopenedGraph.V().toList()) {
-                assertTrue(vertex.getProperty("name").get().equals("marko") || vertex.getProperty("name").get().equals("pavel"));
+                assertTrue(vertex.property("name").get().equals("marko") || vertex.property("name").get().equals("pavel"));
             }
         }
 
         for (Edge edge : reopenedGraph.E().toList()) {
-            assertEquals(graphProvider.convertId("collaborator"), edge.getLabel());
+            assertEquals(graphProvider.convertId("collaborator"), edge.label());
             if (graph.getFeatures().edge().properties().supportsStringValues())
-                assertEquals("internet", edge.getProperty("location").get());
+                assertEquals("internet", edge.property("location").get());
         }
 
         graphProvider.clear(reopenedGraph, graphProvider.standardGraphConfiguration());

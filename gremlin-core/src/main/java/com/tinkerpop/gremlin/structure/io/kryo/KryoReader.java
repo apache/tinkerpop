@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
@@ -98,7 +97,7 @@ public class KryoReader implements GraphReader {
 
             final Direction firstDirection = kryo.readObject(input, Direction.class);
             if (firstDirection == Direction.OUT && (directionRequested == Direction.BOTH || directionRequested == Direction.OUT))
-                readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, v.getId(), vId, l, properties));
+                readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, v.id(), vId, l, properties));
             else {
                 // requested direction in, but BOTH must be serialized so skip this.  the illegalstateexception
                 // prior to this IF should  have caught a problem where IN is not supported at all
@@ -113,7 +112,7 @@ public class KryoReader implements GraphReader {
                 if (firstDirection == Direction.OUT)
                     kryo.readObject(input, Direction.class);
 
-                readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, vId, v.getId(), l, properties));
+                readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, vId, v.id(), l, properties));
             }
         }
 
@@ -198,7 +197,7 @@ public class KryoReader implements GraphReader {
                     else {
                         // writes the real new id of the outV to the temp.  only need to write vertices to temp that
                         // have edges.  no need to reprocess those that don't again.
-                        kryo.writeClassAndObject(output, v.getId());
+                        kryo.writeClassAndObject(output, v.id());
                         readToEndOfEdgesAndWriteToTemp(input, output);
                     }
 
@@ -260,7 +259,7 @@ public class KryoReader implements GraphReader {
     private void setAnnotatedListValues(final List<Pair<String, IoAnnotatedList>> annotatedLists, final Vertex v) {
         annotatedLists.forEach(kal -> {
             // check for existence of the property in case the calling client filtered the property out.
-            final AnnotatedList al = v.getValue(kal.getValue0());
+            final AnnotatedList al = v.value(kal.getValue0());
             if (al != null) {
                 final List<IoAnnotatedValue> valuesForAnnotation = kal.getValue1().annotatedValueList;
                 for (IoAnnotatedValue kav : valuesForAnnotation) {

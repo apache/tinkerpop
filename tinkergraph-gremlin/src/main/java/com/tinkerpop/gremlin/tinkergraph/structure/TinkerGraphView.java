@@ -48,7 +48,7 @@ public class TinkerGraphView implements Serializable {
                     removeProperty(element, key);
                 }
             };
-            this.setValue(element.getId(), key, property);
+            this.setValue(element.id(), key, property);
             return property;
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
@@ -59,7 +59,7 @@ public class TinkerGraphView implements Serializable {
 
     public <V> Property<V> getProperty(final TinkerElement element, final String key) {
         if (isComputeKey(key)) {
-            return this.getValue(element.getId(), key);
+            return this.getValue(element.id(), key);
         } else {
             return element.properties.getOrDefault(key, Property.empty());
         }
@@ -68,7 +68,7 @@ public class TinkerGraphView implements Serializable {
 
     public void removeProperty(final TinkerElement element, final String key) {
         if (isComputeKey(key)) {
-            this.removeValue(element.getId(), key);
+            this.removeValue(element.id(), key);
         } else {
             throw GraphComputer.Exceptions.providedKeyIsNotAComputeKey(key);
             //element.properties.remove(key);

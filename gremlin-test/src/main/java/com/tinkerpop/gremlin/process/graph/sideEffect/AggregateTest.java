@@ -35,7 +35,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
         while (step.hasNext()) {
             counter++;
             Vertex vertex = step.next();
-            assertTrue(vertex.getValue("name").equals("peter") || vertex.getValue("name").equals("josh"));
+            assertTrue(vertex.value("name").equals("peter") || vertex.value("name").equals("josh"));
         }
         assertEquals(2, counter);
     }
@@ -75,7 +75,7 @@ public abstract class AggregateTest extends AbstractGremlinTest {
         }
 
         public List<String> get_g_V_aggregateXa_nameX_iterate_getXaX() {
-            return g.V().aggregate("a", v -> v.getValue("name")).iterate().memory().get("a");
+            return g.V().aggregate("a", v -> v.value("name")).iterate().memory().get("a");
         }
     }
 }

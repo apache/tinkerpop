@@ -26,54 +26,54 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     }
 
     @Override
-    public <V> V getValue(final String key) throws NoSuchElementException {
-        return this.baseElement.getValue(key);
+    public <V> V value(final String key) throws NoSuchElementException {
+        return this.baseElement.value(key);
     }
 
     @Override
-    public void setProperties(final Object... keyValues) {
-        this.baseElement.setProperties(keyValues);
+    public void properties(final Object... keyValues) {
+        this.baseElement.properties(keyValues);
     }
 
     @Override
-    public <V> Property<V> getProperty(final String key) {
+    public <V> Property<V> property(final String key) {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getElementGetProperty(elementStrategyContext),
-                this.baseElement::getProperty).apply(key);
+                this.baseElement::property).apply(key);
     }
 
     @Override
-    public Map<String, Property> getProperties() {
-        return this.baseElement.getProperties();
+    public Map<String, Property> properties() {
+        return this.baseElement.properties();
     }
 
     @Override
-    public Map<String, Property> getHiddens() {
-        return this.baseElement.getHiddens();
+    public Map<String, Property> hiddens() {
+        return this.baseElement.hiddens();
     }
 
     @Override
-    public Set<String> getPropertyKeys() {
-        return this.baseElement.getPropertyKeys();
+    public Set<String> keys() {
+        return this.baseElement.keys();
     }
 
     @Override
-    public String getLabel() {
-        return this.baseElement.getLabel();
+    public String label() {
+        return this.baseElement.label();
     }
 
     @Override
-    public Object getId() {
+    public Object id() {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementGetId(elementStrategyContext),
-                this.baseElement::getId).get().toString();
+                this.baseElement::id).get().toString();
     }
 
     @Override
-    public <V> Property<V> setProperty(final String key, final V value) {
+    public <V> Property<V> property(final String key, final V value) {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.<V>getElementSetProperty(elementStrategyContext),
-                this.baseElement::setProperty).apply(key, value);
+                this.baseElement::property).apply(key, value);
     }
 
     @Override

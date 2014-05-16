@@ -120,7 +120,7 @@ public abstract class AbstractGremlinTest {
      */
     protected Object convertToVertexId(final Graph g, final String identifier) {
         // all test graphs have "name" as a unique id which makes it easy to hardcode this...works for now
-        return ((Vertex) g.V().has("name", identifier).next()).getId();
+        return ((Vertex) g.V().has("name", identifier).next()).id();
     }
 
     protected Object convertToEdgeId(final String identifier1, String edgeLabel, final String identifier2) {
@@ -128,7 +128,7 @@ public abstract class AbstractGremlinTest {
     }
 
     protected Object convertToEdgeId(final Graph g, final String identifier1, String edgeLabel, final String identifier2) {
-        return ((Edge) g.V().has("name", identifier1).outE(edgeLabel).as("e").inV().has("name", identifier2).back("e").next()).getId();
+        return ((Edge) g.V().has("name", identifier1).outE(edgeLabel).as("e").inV().has("name", identifier2).back("e").next()).id();
     }
 
     /**

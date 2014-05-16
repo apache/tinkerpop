@@ -10,9 +10,12 @@ import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
+import org.apache.commons.configuration.Configuration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import java.util.HashSet;
@@ -32,10 +35,13 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     private static final Set<String> imports = new HashSet<>();
     private static final Set<String> staticImports = new HashSet<>();
 
+	// todo: build out tests to ensure that dot star packages don't get fuggled by refactoring. perhaps using * is bad here - we should be explicit
     static {
         // graph structure and process
         imports.add(Graph.class.getPackage().getName() + DOT_STAR);
         imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
+		imports.add(GraphStrategy.class.getPackage().getName() + DOT_STAR);
+		imports.add(GraphFactory.class.getPackage().getName() + DOT_STAR);
 
         // tinkergraph
         imports.add(TinkerGraph.class.getPackage().getName() + DOT_STAR);
@@ -53,6 +59,9 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         // groovy extras
         imports.add(Grape.class.getCanonicalName());
         imports.add(JsonBuilder.class.getPackage().getName() + DOT_STAR);
+
+		// external
+		imports.add(Configuration.class.getPackage().getName() + DOT_STAR);
 
         staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);

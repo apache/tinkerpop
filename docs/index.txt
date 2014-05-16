@@ -9,7 +9,7 @@ image::tinkerpop3-logo.png[width=500]
 
 
 The Third Incarnation of The TinkerPop
---------------------------------------
+======================================
 
 The TinkerPop is the reality that begot Gremlin and all that Gremlin has ever known -- as well as that which is no knowledge. In *TinkerPop0*, Gremlin found himself alone in a world of reference as he moved about trying to understand why this structure existed and for what reason. Far is far and near is near for Gremlin. For The TinkerPop, this is true as well, but also west is right, down is forward, and Gremlin is The TinkerPop, as well as not. When will he realize this?
 
@@ -32,35 +32,35 @@ image::tinkerpop3-splash.png[width=500]
 image::gremlintron.png[width=500]
 
 Graph Computing with TinkerPop3
--------------------------------
+===============================
 
 A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data structure composed of vertices (nodes, dots) and edges (arcs, lines). When modeling a graph in a computer and applying it to modern data sets and practices, the generic mathematically-oriented, binary graph is extended to support both labels and key/value properties. This structure is known as a property graph. More formally, it is a directed, binary, attributed multi-graph. An example property graph is diagrammed below. This graph example will be used extensively throughout the documentation and is called "TinkerPop Classic" as it is the original demo graph distributed with TinkerPop0 in 2009.
 
-TIP: The TinkerPop classic graph is available with <<tinkergraph-reference-implementation,TinkerGraph>> via `TinkerFactory.createClassic()`. TinkerGraph is the reference implementation of TinkerPop3 and is used throughout the documentation.
+TIP: The TinkerPop classic graph is available with <<tinkergraph-reference-implementation,TinkerGraph>> via `TinkerFactory.createClassic()`. TinkerGraph is the reference implementation of TinkerPop3 and is used in all the examples in this documentation.
 
 .TinkerPop Classic
 image::tinkerpop-classic.png[width=500]
 
-TinkerPop3 is the third incarnation of a graph computing framework now built atop Java8. In graph computing, like computing in general, a distinction is made between *structure* (graph) and *process* (traversal). The structure of the graph is the data model defined by a vertex/edge/property topology. The process of the graph is the means by which the structure is analyzed.
+TinkerPop3 is the third incarnation of a graph computing framework. Similar to computing in general, graph computing makes a distinction between *structure* (graph) and *process* (traversal). The structure of the graph is the data model defined by a vertex/edge/property link:http://en.wikipedia.org/wiki/Network_topology[topology]. The process of the graph is the means by which the structure is analyzed. The typical form of graph processing is called a link:http://en.wikipedia.org/wiki/Graph_traversal[traversal].
 
 .Primary components of the TinkerPop3 *structure* API 
- * `Graph`: maintains a set of vertices and edges, and access to administrative functions and transactions.
- * `Element`: maintains a collection of properties and a string label. 
+ * `Graph`: maintains a set of vertices and edges, and access to database functions such as transactions.
+ * `Element`: maintains a collection of properties and a string label denoting the element type.
   ** `Vertex`: extends Element and maintains a set of incoming and outgoing edges.
   ** `Edge`: extends Element and maintains an incoming and outgoing vertex.
- * `Property<V>`: a string key and a V value.
+ * `Property<V>`: a string key associated with a `V` value.
 
 .Primary components of the TinkerPop3 *process* API
- * `Traversal`: a functional data flow process.
-  ** `GraphTraversal`: a traversal that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.)
- * `VertexProgram`: an body of code to be executed by all vertices in a logically parallel fashion.
+ * `Traversal<S,E>`: a functional data flow process transforming objects of type `S` to type `E`.
+  ** `GraphTraversal`: a traversal that is oriented towards the semantics of the raw graph (i.e. vertices, edges, etc.).
+ * `VertexProgram`: code executed at all vertices in a logically parallel fashion migrating the movement of messages. 
 
-The purpose of this documentation is to describe this dichotomy at depth and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing.
+The purpose of this documentation is to describe the structure/process dichotomy at length and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing.
 
 The Graph Structure
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
-The classic TinkerPop graph can be created with the following Java8 code.
+The classic TinkerPop graph previously diagrammed can be created with the following Java8 code. Note that this graph is available as a TinkerGraph using `TinkerFactory.createClassic()`.
 
 [source,java]
 Graph g = TinkerGraph.open();
@@ -81,42 +81,41 @@ In the above code all the vertices are created first and then their respective e
 
 CAUTION: Many graph vendors do not allow the user to specify an element ID and in such cases, the element ID key/value is ignored.
 
-Annotated Lists
-^^^^^^^^^^^^^^^
+NOTE: In TinkerPop3, vertices are allowed a single immutable string label (similar to an edge label). This functionality did not exist in TinkerPop2.
 
-The values of a property can be any arbitrary `Object` as long as the object type is supported by the underlying graph vendor. One particular special object that has been introduced into TinkerPop3 is the `AnnotatedList`. AnnotatedLists are useful in systems that support auditing and provenance. In such instances, a particular property key will want to be associated with a list of values. For example, assume that the locations of a person are a property on a vertex. This can be represented solely using a `List<String>`, but in many instances, other metadata (i.e. annotations) may be desired, because a person could have lived in various locations over time.
+Mutating the Graph
+~~~~~~~~~~~~~~~~~~
 
-image::annotated-list.png[width=600]
-
-In TinkerPop3, an annotated list is created as follows in Java8.
+Below is a sequence of basic graph mutation operations is provided below in Java9.
 
 [source,java]
-Graph g = TinkerGraph.open()
-Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person")
-AnnotatedList locations = marko.setProperty("locations",AnnotatedList.make()).get()
-locations.addValue("san diego","startTime",1997,"endTime",2001)
-locations.addValue("santa cruz","startTime",2001,"endTime",2004)
-locations.addValue("brussels","startTime",2004,"endTime",2005)
-locations.addValue("santa fe","startTime",2005,"endTime",2014)
-System.out.println(locations)
-// [san diego, santa cruz, ...]
-names.annotatedValues().forEach(System.out::println)
-// [san diego:{startTime=1997, endTime=2001}]
-// [santa cruz:{startTime=2001, endTime=2004}]
-// [brussels:{startTime=2004, endTime=2005}]
-// [santa fe:{startTime=2005, endTime=2014}]
-locations.annotatedValues().has('startTime',T.gt,2002).value().forEach(System.out::println)
-// brussels
-// santa fe
-
-The TinkerPop Modern graph is available via `TinkerFactory.createModern()` and provides a new demonstration graph. This graph provides examples of an annotated list.
-
-.TinkerPop Modern
-image::tinkerpop-modern.png[width=600]
-
+// create a new graph
+Graph g = TinkerGraph.open();
+// add a software vertex with a name property
+Vertex gremlin = g.addVertex(Element.LABEL, "software", "name", "gremlin");
+// add a new property
+gremlin.property("created",2009)
+// add a new software vertex to the graph
+Vertex blueprints = g.addVertex(Element.LABEL, "software", "name", "blueprints");
+// connect gremlin to blueprints via a dependsOn-edge
+Edge e = gremlin.addEdge("dependsOn",blueprints);
+// add a property to the edge
+e.property("since",2010)
+// remove that property
+e.property("since").remove()
+// remove the entire edge
+e.remove()
+// connect gremlin to blueprints via encapsulates
+gremlin.addEdge("encapsulates",blueprints)
+// remove both blueprints and gremlin vertices
+blueprints.remove()
+gremlin.remove()
+// the graph is empty
+assert(g.V().count == 0)
+assert(g.E().count == 0)
 
 The Graph Process
-~~~~~~~~~~~~~~~~~
+-----------------
 
 The primary way in which graphs are processed is by means of graph traversals. A graph traversal can be spawed from a Graph, Vertex, or Edge. For example, Graph provides two traversal methods.
 
@@ -173,7 +172,7 @@ The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anon
 NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than it ever was before. In TinkerPop0 through TinkerPop2, Gremlin-Java was extremely verbose due to the simulation of lambdas via anonymous inner classes.  
 
 Traversal Mechanics
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps are the middle of the traversal (e.g. `out("knows")` and `value("name")`), and the result is "traversal.next()'d" out of the right of the traversal (e.g. "vadas" and "josh").
 
@@ -200,8 +199,8 @@ marko
 CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective holder. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
 
 [[tinkergraph-reference-implementation]]
-TinkerGraph Reference Implementation
-------------------------------------
+TinkerGraph
+-----------
 
 image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory, non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
 
@@ -231,10 +230,10 @@ Each graph vendor will have different mechanism by which indices and schemas are
 
 
 The Traversal API
------------------
+=================
 
 Graph Traversal Steps
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 The primary Traversal is `GraphTraversal`, and graph traversals can be spawned off of Graph, Vertex, and Edge. A list of all the steps are provided below along with a description. Note that a Traversal is defined as `Traversal<S,E>` where the `S` stands for start and the `E` stands for end. Likewise, each `Step<S,E>` maintains the same convention.
 
@@ -257,11 +256,11 @@ The primary Traversal is `GraphTraversal`, and graph traversals can be spawned o
 
 
 Traversal Optimizers
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
-An `Optimizer` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in two primary situations:
+An `Optimizer` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in two situations:
 
- * There is a more efficient way to express the traversal at the TinkerPop level.
+ * There is a more efficient way to express the traversal at the TinkerPop3 level.
  * There is a more efficient way to express the traversal at the graph vendor level.
 
 An extremely simply Optimizer is the `IdentityOptimizer` and it is a type-1 optimizer defined as follows:
@@ -277,12 +276,12 @@ public class IdentityOptimizer implements Optimizer.FinalOptimizer {
     }
 }
 
-This optimizer simply removes any unlabeled `IdentityStep`s in the Traversal. More common are type-2 optimizers which are defined by graph vendor implementations of TinkerPop. A simple example in TinkerGraph is provided. Note the expression:
+This optimizer simply removes any unlabeled `IdentityStep` in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. More common are type-2 optimizers which are defined by graph vendors who implement TinkerPop3.
 
 [source,java]
 g.V().has("name","marko")
 
-This expression can be executed in a `O(|V|)` or `O(log(|V|)` fashion in TinkerGraph depending on whether there is or is not an index defined for "name."
+The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in TinkerGraph depending on whether there is or is not an index defined for "name."
 
 [source,java]
 public class TinkerGraphStepOptimizer implements Optimizer.FinalOptimizer {
@@ -317,7 +316,7 @@ public class TinkerGraphStepOptimizer implements Optimizer.FinalOptimizer {
     }
 }
 
-The traversal is redefined by simply taking an chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, study `vertices()` and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
+The traversal is redefined by simply taking an chain of `has()`-steps and `interval()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review `vertices()` and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
 
 [source,java]
 ----
@@ -369,8 +368,8 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 ----
 
 
-Creating a Domain Specific Language
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Domain Specific Languages
+-------------------------
 
 The super interface of GraphTraversal is `Traversal`. It is possible for developers to create domain specific traversals by extending Traversal. For example, a `SocialTraversal` example is provided below.
 
@@ -378,11 +377,13 @@ The super interface of GraphTraversal is `Traversal`. It is possible for develop
 ----
 public interface SocialTraversal<S, E> extends Traversal<S, E> {
    public default SocialTraversal<S, Vertex> people() {
-     return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("age")));
+     return (SocialTraversal) this.addStep(
+       new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("age")));
    }
 
    public default SocialTraversal<S, Vertex> people(String name) {
-     return (SocialTraversal) this.addStep(new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("name", name)));
+     return (SocialTraversal) this.addStep(
+       new StartStep<Vertex>(this, this.memory().<Graph>get("g").V().has("name", name)));
    }
 
   public default SocialTraversal<S, Vertex> knows() {
@@ -408,12 +409,12 @@ public interface SocialTraversal<S, E> extends Traversal<S, E> {
 This traversal definition can now be used as follows.
 
 [source,java]
-g.traversal(SocialTraversal.class).people(Optional.of("marko")).knows().name()
+g.traversal(SocialTraversal.class).people("marko").knows().name()
 
 By extending Traversal, users can create a DSL that is respective of the semantics of their data. Instead of querying in terms of vertices/edges/properties, they can query in terms of, for example, people, their friends, and their names.
 
 The GraphComputer API
----------------------
+=====================
 
 TinkerPop3 provides two primary means of interacting with a graph: link:http://en.wikipedia.org/wiki/Online_transaction_processing[online transaction processing] (OLTP) and link:http://en.wikipedia.org/wiki/Online_analytical_processing[online analytical processing] (OLAP). OTLP-based graph systems allow the user to query the graph in real-time. However, typically, real-time performance is only possible when a local traversal is enacted. A local traversal is one that starts at a particular vertex (or small set of vertices) and only touches a small set of connected vertices (by any arbitrary path of arbitrary length). In short, OLTP queries touch a limited set of data and respond on the order of milliseconds or seconds. On the other hand, with OLAP graph processing, the entire graph is processed and thus, every vertex and edge is analyzed (some times more than once for iterative-based algorithms). Due to the amount of data being processed, the results are typically not returned in real-time and for massive graphs (i.e. graphs represented across a cluster of machines), results can take on the order of minutes or hours.
 
@@ -422,8 +423,10 @@ TinkerPop3 provides two primary means of interacting with a graph: link:http://e
 
 image::oltp-vs-olap.png[width=600]
 
+The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges and in effect return various computations of that traversal. For example, the elements at the end of the path, the full path traversed, or some side-effect such as the count or various groupings of the objects seen during the traversal. Thus, each step (1,2,3), is a movement along this referential structure. With Gremlin OLAP, all vertices are provided a VertexProgram. That program runs in parallel to all other programs with the programs sending messages to one another according to the topological structure of the graph as a communication network (with random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex however, all messages are being working independent of one another, in parallel.
+
 GraphComputer and VertexProgram
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 In Gremlin, it is possible to express to have the same traversal executed either using the standard OTLP-engine or have it executed using the OLAP-engine. The difference being where the query is submitted.
 
@@ -458,6 +461,65 @@ When this returns, it returns an weighted iterator where those objects with coun
 
 NOTE: This model of path-based graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics system and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines]
 
+A Collection of VertexPrograms
+------------------------------
+
+PageRankVertexProgram
+~~~~~~~~~~~~~~~~~~~~~
+
+Perhaps the most popular OLAP-oriented graph algorithm is link:http://en.wikipedia.org/wiki/PageRank[PageRank]. This eigenvector centrality variant was developed by Brin and Page of Google.
+
+[source,java]
+----
+public class PageRankVertexProgram implements VertexProgram<Double> {
+
+    private MessageType.Local messageType = MessageType.Local.of(new VertexQueryBuilder().direction(Direction.OUT));
+
+    private double vertexCountAsDouble = 1;
+    private double alpha = 0.85d;
+    private int totalIterations = 30;
+
+    public PageRankVertexProgram() {
+
+    }
+
+    public void initialize(final Configuration configuration) {
+        this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
+        this.alpha = configuration.getDouble(ALPHA, 0.85d);
+        this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
+    }
+
+    public Map<String, KeyType> getComputeKeys() {
+        return VertexProgram.ofComputeKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
+    }
+
+    public Class<Double> getMessageClass() {
+        return Double.class;
+    }
+
+    public void setup(final GraphComputer.SideEffects sideEffects) {
+
+    }
+
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.SideEffects sideEffects) {
+        if (sideEffects.isInitialIteration()) {
+            double initialPageRank = 1.0d / this.vertexCountAsDouble;
+            double edgeCount = Long.valueOf(this.messageType.getQuery().build(vertex).count()).doubleValue();
+            vertex.property(PAGE_RANK, initialPageRank);
+            vertex.property(EDGE_COUNT, edgeCount);
+            messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
+        } else {
+            double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.messageType)).reduce(0.0d, (a, b) -> a + b);
+            newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
+            vertex.property(PAGE_RANK, newPageRank);
+            messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>property(EDGE_COUNT).orElse(0.0d));
+        }
+    }
+
+    public boolean terminate(final GraphComputer.SideEffects sideEffects) {
+        return sideEffects.getIteration() >= this.totalIterations;
+    }
+----
 
 
 Gremlin Utilities
@@ -466,17 +528,303 @@ Gremlin Utilities
 Gremlin I/O
 ----------
 
+The task of getting data in and out of `Graph` instances is the job of the Gremlin I/O packages.  Gremlin I/O provides two interfaces that for reading and writing `Graph` instances: `GraphReader` and `GraphWriter`.  These interfaces expose methods that support:
+
+* Reading and writing an entire `Graph`
+* Reading and writing a single `Vertex` (with and without associated `Edge` objects)
+* Reading and writing a single `Edge`
+
+In all cases, these methods operate in the currency of `InputStream` and `OutputStream` objects, allowing graphs and their related elements to be written to and read from files, byte arrays, etc.
+
+
 GraphML Reader/Writer
 ~~~~~~~~~~~~~~~~~~~~~
+
+The link:http://graphml.graphdrawing.org/[GraphML] file format is a common XML-based representation of a graph.  It is widely supported by graph-related tools and libraries making it a solid interchange format for TinkerPop.  In other words, if the intent is to work with graph data in conjunction with applications outside of TinkerPop, GraphML maybe be the best choice to do that.  Common use cases might be:
+
+* Generate a graph link:https://networkx.github.io/[NetworkX], export it with GraphML and import it to TinkerPop.
+* Produce a subgraph and export it to GraphML to be consumed by and visualized in link:https://gephi.org/[Gephi].
+* Migrate the data of an entire graph to a different graph database no supported by TinkerPop.
+
+As GraphML is a specification for the serialization of an entire graph and not the individual elements of a graph, methods that support input and output of single vertices and edges are not supported.
+
+CAUTION: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
+
+The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.xml` and then how to read that file back into a different instance:
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
+try (final OutputStream os = new FileOutputStream("tinkerpop-classic.xml")) {
+    GraphMLWriter.create().build().writeGraph(os, g);
+}
+
+final GraphReader reader = GraphMLReader.create().build();
+try (final InputStream stream = new FileInputStream("tinkerpop-classic.xml")) {
+    reader.readGraph(stream, g);
+}
+----
+
+GraphSON Reader/Writer
+~~~~~~~~~~~~~~~~~~
+
+GraphSON is a JSON-based format that developed from earlier versions of TinkerPop.  It is not backward compatible to prior versions.  GraphSON has some support from graph-related application outside of TinkerPop, but it is generally best used in two cases:
+
+* A text format of the graph or its elements is desired (e.g. debugging, usage in source control, etc.)
+* The graph or its elements need to be consumed by code that is not JVM-based (e.g. Python, .NET, etc.)
+
+GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.json` and then how to read that file back into a different instance:
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
+try (final OutputStream os = new FileOutputStream("tinkerpop-classic.json")) {
+    GraphSONWriter.create().build().writeGraph(os, g);
+}
+
+final GraphReader reader = GraphSONReader.create().build();
+try (final InputStream stream = new FileInputStream("tinkerpop-classic.json")) {
+    reader.readGraph(stream, g);
+}
+----
+
+The `GraphSONReader` and `GraphSONWriter` have a number of options that they can be configured with.  One of the important options is the ability to embed type information into the output.  By embedding the types, it becomes possible to serialize a graph without losing type information that might be important when being consumed by another source.  The importance of this concept is demonstrated in the following example where a single `Vertex` is written to GraphSON using the Gremlin Console:
+
+[source,groovy]
+----
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> w = GraphSONWriter.create().build()
+==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@1af146
+gremlin> f = new FileOutputStream('test.txt')
+==>java.io.FileOutputStream@5c8eee0f
+gremlin> w.writeVertex(f, g.v(1), Direction.BOTH)
+==>null
+gremlin> f.close()
+----
+
+The following GraphSON example shows the output of `GraphSonWriter.writeVertex()` with associated edges:
+
+[source,js]
+----
+{
+    "inV": [],
+    "id": 1,
+    "label": "default",
+    "type": "vertex",
+    "outV": [
+        {
+            "inV": 3,
+            "inVLabel": "default",
+            "outVLabel": "default",
+            "id": 9,
+            "label": "created",
+            "type": "edge",
+            "outV": 1,
+            "properties": {
+                "weight": 0.4
+            }
+        },
+        {
+            "inV": 2,
+            "inVLabel": "default",
+            "outVLabel": "default",
+            "id": 7,
+            "label": "knows",
+            "type": "edge",
+            "outV": 1,
+            "properties": {
+                "weight": 0.5
+            }
+        },
+        {
+            "inV": 4,
+            "inVLabel": "default",
+            "outVLabel": "default",
+            "id": 8,
+            "label": "knows",
+            "type": "edge",
+            "outV": 1,
+            "properties": {
+                "weight": 1
+            }
+        }
+    ],
+    "properties": {
+        "name": "marko",
+        "age": 29
+    }
+}
+----
+
+The vertex properly serializes to valid JSON but note that a consuming application will not automatically know how to interpret the numeric values.  In coercing those Java values to JSON, such information is lost.  For example, it is no longer clear if the `weight` value on the edges should be read as a `Double` or an `Float`.
+
+With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided:
+
+[source,groovy]
+----
+gremlin> w = GraphSONWriter.create().embedTypes(true).build()
+==>com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter@350ec41e
+----
+
+In the above code, the `embedTypes` option is set to `true` and the output below shows the difference in the output:
+
+[source,js]
+----
+{
+    "@class": "java.util.HashMap",
+    "inV": [
+        "java.util.ArrayList",
+        []
+    ],
+    "id": 1,
+    "label": "default",
+    "type": "vertex",
+    "outV": [
+        "java.util.ArrayList",
+        [
+            {
+                "@class": "java.util.HashMap",
+                "inV": 3,
+                "inVLabel": "default",
+                "outVLabel": "default",
+                "id": 9,
+                "label": "created",
+                "type": "edge",
+                "outV": 1,
+                "properties": {
+                    "@class": "java.util.HashMap",
+                    "weight": [
+                        "java.lang.Float",
+                        0.4
+                    ]
+                }
+            },
+            {
+                "@class": "java.util.HashMap",
+                "inV": 2,
+                "inVLabel": "default",
+                "outVLabel": "default",
+                "id": 7,
+                "label": "knows",
+                "type": "edge",
+                "outV": 1,
+                "properties": {
+                    "@class": "java.util.HashMap",
+                    "weight": [
+                        "java.lang.Float",
+                        0.5
+                    ]
+                }
+            },
+            {
+                "@class": "java.util.HashMap",
+                "inV": 4,
+                "inVLabel": "default",
+                "outVLabel": "default",
+                "id": 8,
+                "label": "knows",
+                "type": "edge",
+                "outV": 1,
+                "properties": {
+                    "@class": "java.util.HashMap",
+                    "weight": [
+                        "java.lang.Float",
+                        1
+                    ]
+                }
+            }
+        ]
+    ],
+    "properties": {
+        "@class": "java.util.HashMap",
+        "name": "marko",
+        "age": 29
+    }
+}
+----
+
+The ambiguity of components of the GraphSON is now removed by the `@class` property, which contains Java class information for the data it is associated with.  While the output is more verbose, it comes with the security of not losing type information.  While non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the values should be coerced back into the correct types in the target language.
 
 Kryo Reader/Writer
 ~~~~~~~~~~~~~~~~~~
 
-Gremlin Server
---------------
+The link:https://github.com/EsotericSoftware/kryo[Kryo] format is a binary format Graph serialization format designed for usage by JVM languages.  It is designed to be an efficient, non-lossy and represents the standard format to use when working with data inside of the TinkerPop stack.  Common use cases include:
+
+* Migration from one Gremlin Structure implementation to another (e.g. `TinkerGraph` to `Neo4jGraph`)
+* Serialization of individual graph elements to be sent over the network to another JVM.
+* Backups of in-memory graphs or subgraphs.
+
+CAUTION: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to consider the features of each `Graph` and whether or not the data types supported in one will be supported in the other.  Failure to do so, may result in errors.
+
+Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-classic.gio` and then how to read that file back into a different instance:
+
+[source,java]
+----
+final Graph g = TinkerFactory.createClassic();
+try (final OutputStream os = new FileOutputStream("tinkerpop-classic.gio")) {
+    KryoWriter.create().build().writeGraph(os, g);
+}
+
+final GraphReader reader = KryoReader.create().build();
+try (final InputStream stream = new FileInputStream("tinkerpop-classic.gio")) {
+    reader.readGraph(stream, g);
+}
+----
+
+NOTE: The preferred extension for files names produced by Kryo `.gio`.
 
 Graph Strategy
 --------------
+
+A Graph Strategy provides a way to expand, inspect or otherwise alter the behavior of a `Graph` implementation.  A Graph Strategy injects arbitrary functions into the `Graph` API, so that when a method call is made, the strategy functions can manipulate the default behavior of the underlying `Graph`.  TinkerPop3 is packaged with the following strategies:
+
+* `IdGraphStrategy` - enables support for custom element identifiers for those graphs which don't otherwise support them
+* `PartitionGraphStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
+* `ReadOnlyGraphStrategy` - prevents writing to the `Graph`
+* `SequenceGraphStrategy` - apply multiple `GraphStrategy` implementations in sequenced ordered to a single `Graph` instance
+
+NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Graph` implementations with additional features.  A Graph strategy is generally analogous to that capability.
+
+To use a `GraphStrategy` instance, use the `GraphFactory` to instantiate the `Graph` as follows:
+
+[source,text]
+----
+gremlin> conf = new BaseConfiguration()
+==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
+gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
+==>null
+gremlin> g = GraphFactory.open(conf, Optional.of(new ReadOnlyGraphStrategy()))
+==>com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph@b968a76
+----
+
+The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyGraphStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a holder for the underlying `TinkerGraph` and the `ReadOnlyGraphStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
+
+[source,text]
+----
+gremlin> g.addVertex('name','stephen')
+Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy and is therefore unmodifiable
+----
+
+The above code tries to mutate the underlying `TinkerGraph`.  Note that `ReadOnlyGraphStrategy` prevents that and throws an exception.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
+
+[source,text]
+----
+gremlin> g.getBaseGraph()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> bg = g.getBaseGraph()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> bg.addVertex('name','stephen')
+==>v[0]
+gremlin> g.v(0l).value('name')
+==>stephen
+----
+
+By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex.
+
+Gremlin Server
+--------------
+
 
 
 
@@ -486,5 +834,5 @@ Implementations
 Neo4j-Gremlin
 -------------
 
-Graph-Gremlin
+Giraph-Gremlin
 --------------

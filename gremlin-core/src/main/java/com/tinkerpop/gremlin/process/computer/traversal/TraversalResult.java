@@ -53,7 +53,7 @@ public class TraversalResult<T> implements Iterator<T> {
         if (HolderOptimizer.trackPaths(this.traversalSupplier.get())) {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.graph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
-                        .map(v -> this.result.v(v.getId()).<TraversalPaths>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(null))
+                        .map(v -> this.result.v(v.id()).<TraversalPaths>property(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
                         .flatMap(tracker -> {
                             final List list = new ArrayList();
@@ -75,7 +75,7 @@ public class TraversalResult<T> implements Iterator<T> {
         } else {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.graph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
-                        .map(v -> this.result.v(v.getId()).<TraversalCounters>getProperty(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(null))
+                        .map(v -> this.result.v(v.id()).<TraversalCounters>property(TraversalVertexProgram.TRAVERSAL_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
                         .flatMap(tracker -> {
                             final List list = new ArrayList();

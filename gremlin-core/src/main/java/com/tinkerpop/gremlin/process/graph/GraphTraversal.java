@@ -24,9 +24,11 @@ import com.tinkerpop.gremlin.process.graph.map.BackStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.graph.map.IdStep;
 import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.map.IntersectStep;
 import com.tinkerpop.gremlin.process.graph.map.JumpStep;
+import com.tinkerpop.gremlin.process.graph.map.LabelStep;
 import com.tinkerpop.gremlin.process.graph.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.map.MatchStep;
 import com.tinkerpop.gremlin.process.graph.map.OrderStep;
@@ -99,6 +101,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final FlatMapStep<E, E2> flatMapStep = new FlatMapStep<>(this);
         flatMapStep.setFunction(function);
         return (GraphTraversal) this.addStep(flatMapStep);
+    }
+
+    public default GraphTraversal<S, Object> id() {
+        return (GraphTraversal) this.addStep(new IdStep<Element>(this));
+    }
+
+    public default GraphTraversal<S, String> label() {
+        return (GraphTraversal) this.addStep(new LabelStep<Element>(this));
     }
 
     public default GraphTraversal<S, E> identity() {

@@ -29,7 +29,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -59,11 +58,11 @@ public class TinkerGraphTest implements Serializable {
         g.traversal(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEach(System.out::println);
 
         /*Graph h = g.compute().program(PageRankVertexProgram.create().getConfiguration()).submit().get().getValue0();
-        System.out.println(h.v(1).getValue(PageRankVertexProgram.PAGE_RANK).toString());
+        System.out.println(h.v(1).value(PageRankVertexProgram.PAGE_RANK).toString());
         Map<String, String> map = new HashMap<>();
         map.put(PageRankVertexProgram.PAGE_RANK, "pageRank");
         TinkerGraphComputer.mergeComputedView(g, h, map);
-        System.out.println(g.v(1).getValue("pageRank").toString());*/
+        System.out.println(g.v(1).value("pageRank").toString());*/
     }
 
     @Test
@@ -72,8 +71,8 @@ public class TinkerGraphTest implements Serializable {
         g.createIndex("name", Vertex.class);
         final Vertex marko = g.addVertex("name", "marko", "age", 33, "blah", "bloop");
         final Vertex stephen = g.addVertex("name", "stephen", "id", 12, "blah", "bloop");
-        stephen.setProperty(Property.Key.hidden("name"), "stephen");
-        assertEquals("stephen", stephen.getProperty(Property.Key.hidden("name")).get());
+        stephen.property(Property.Key.hidden("name"), "stephen");
+        assertEquals("stephen", stephen.property(Property.Key.hidden("name")).get());
         final Random r = new Random();
         Stream.generate(() -> g.addVertex(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt())).limit(100000).count();
         assertEquals(100002, g.vertices.size());
@@ -82,10 +81,10 @@ public class TinkerGraphTest implements Serializable {
         //System.out.println(marko.out("knows", "workedWith").toString());
         g.createIndex("blah", Vertex.class);
 
-        edge.setProperty("weight", 1.0f);
-        edge.setProperty("creator", "stephen");
-        assertEquals(edge.getValue("weight"), Float.valueOf(1.0f));
-        assertEquals(edge.getProperty("creator").get(), "stephen");
+        edge.property("weight", 1.0f);
+        edge.property("creator", "stephen");
+        assertEquals(edge.value("weight"), Float.valueOf(1.0f));
+        assertEquals(edge.property("creator").get(), "stephen");
 
         //g.V().out().value("name").path().map(p -> p.get().getAsLabels()).forEach(System.out::println);
         //marko.out().path().map(p -> p.get().getAsLabels()).forEach(System.out::println);
@@ -120,9 +119,9 @@ public class TinkerGraphTest implements Serializable {
      */
     @Test
     public void shouldWriteClassicGraphAsGraphML() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.xml");
-        GraphMLWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
-        os.close();
+        try (final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.xml")) {
+        	GraphMLWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
+		}
     }
 
     /**
@@ -235,8 +234,8 @@ public class TinkerGraphTest implements Serializable {
     public void shouldValidateAnnotatedList() {
         final TinkerGraph g = TinkerGraph.open();
         final Vertex marko = g.addVertex();
-        marko.setProperty("names", AnnotatedList.make());
-        final Property<AnnotatedList<String>> names = marko.getProperty("names");
+        marko.property("names", AnnotatedList.make());
+        final Property<AnnotatedList<String>> names = marko.property("names");
         System.out.println(names.get().addValue("marko", "time", 1));
         names.get().addValue("antonio", "time", 2);
         names.get().addValue("mrodriguez", "time", 7);

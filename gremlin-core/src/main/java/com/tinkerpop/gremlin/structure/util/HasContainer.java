@@ -34,17 +34,17 @@ public class HasContainer implements Serializable {
     public boolean test(final Element element) {
         if (null != this.value) {
             if (this.key.equals(Element.ID))
-                return this.predicate.test(element.getId(), this.value);
+                return this.predicate.test(element.id(), this.value);
             else if (this.key.equals(Element.LABEL))
-                return this.predicate.test(element.getLabel(), this.value);
+                return this.predicate.test(element.label(), this.value);
             else {
-                final Property property = element.getProperty(this.key);
+                final Property property = element.property(this.key);
                 return property.isPresent() && this.predicate.test(property.get(), this.value);
             }
         } else {
             return Contains.IN.equals(this.predicate) ?
-                    element.getProperty(this.key).isPresent() :
-                    !element.getProperty(this.key).isPresent();
+                    element.property(this.key).isPresent() :
+                    !element.property(this.key).isPresent();
         }
     }
 

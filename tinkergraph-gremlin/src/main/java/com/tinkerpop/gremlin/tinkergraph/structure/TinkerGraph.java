@@ -139,7 +139,7 @@ public class TinkerGraph implements Graph, Serializable {
         }
 
         final Vertex vertex = new TinkerVertex(idValue, label, this);
-        this.vertices.put(vertex.getId(), vertex);
+        this.vertices.put(vertex.id(), vertex);
         ElementHelper.attachProperties(vertex, keyValues);
         return vertex;
     }

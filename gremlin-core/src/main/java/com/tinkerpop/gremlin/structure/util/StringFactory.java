@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.structure.util;
 
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
@@ -48,14 +47,14 @@ public class StringFactory {
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Vertex}.
      */
     public static String vertexString(final Vertex vertex) {
-        return V + L_BRACKET + vertex.getId() + R_BRACKET;
+        return V + L_BRACKET + vertex.id() + R_BRACKET;
     }
 
     /**
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Edge}.
      */
     public static String edgeString(final Edge edge) {
-        return E + L_BRACKET + edge.getId() + R_BRACKET + L_BRACKET + edge.getVertex(Direction.OUT).getId() + DASH + edge.getLabel() + ARROW + edge.getVertex(Direction.IN).getId() + R_BRACKET;
+        return E + L_BRACKET + edge.id() + R_BRACKET + L_BRACKET + edge.outV().next().id() + DASH + edge.label() + ARROW + edge.inV().next().id() + R_BRACKET;
     }
 
     /**
@@ -126,7 +125,7 @@ public class StringFactory {
     }
 
     private static Function<Method, String> createTransform(final Graph.Features.FeatureSet features) {
-        return FunctionUtils.wrapFunction((m) ->  ">-- " + m.getName().substring(prefixLength) + ": " + m.invoke(features, null).toString() + LINE_SEPARATOR);
+        return FunctionUtils.wrapFunction((m) -> ">-- " + m.getName().substring(prefixLength) + ": " + m.invoke(features, null).toString() + LINE_SEPARATOR);
     }
 
     private static void printFeatureTitle(final Class<? extends Graph.Features.FeatureSet> featureClass, final StringBuilder sb) {

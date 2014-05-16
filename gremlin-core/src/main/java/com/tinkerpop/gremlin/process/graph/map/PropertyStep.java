@@ -11,6 +11,6 @@ public class PropertyStep<E> extends MapStep<Element, Property<E>> {
 
     public PropertyStep(final Traversal traversal, final String key) {
         super(traversal);
-        this.setFunction(holder -> holder.get().getProperty(key));
+        this.setFunction(holder -> holder.get().property(key));
     }
 }

@@ -56,11 +56,11 @@ class GraphSONVertex {
         public void ser(final GraphSONVertex directionalVertex, final JsonGenerator jsonGenerator) throws IOException {
             final Vertex vertex = directionalVertex.getVertexToSerialize();
             final Map<String,Object> m = new HashMap<>();
-            m.put(GraphSONTokens.ID, vertex.getId());
-            m.put(GraphSONTokens.LABEL, vertex.getLabel());
+            m.put(GraphSONTokens.ID, vertex.id());
+            m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
             m.put(GraphSONTokens.PROPERTIES,
-                    vertex.getProperties().values().stream().collect(
+                    vertex.properties().values().stream().collect(
                             Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IoAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
