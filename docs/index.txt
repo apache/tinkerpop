@@ -8,8 +8,8 @@ image::tinkerpop3-logo.png[width=500]
 // :source-highlighter: coderay
 
 
-The Third Incarnation of The TinkerPop
-======================================
+The TinkerPop Story
+===================
 
 TinkerPop0
 ----------
@@ -297,20 +297,19 @@ The primary Traversal is `GraphTraversal`, and graph traversals can be spawned o
  * ...
 
 
-Traversal Strategies
+Traversal Optimizers
 --------------------
 
-A `TraversalStrategy` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in the following situations:
+An `Optimizer` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in two situations:
 
  * There is a more efficient way to express the traversal at the TinkerPop3 level.
  * There is a more efficient way to express the traversal at the graph vendor level.
- * There are additional steps to inject or included steps to remove from the traversal to automatically alter its behavior.
 
-An extremely simply Optimizer is the `IdentityOptimizerTraversalStrategy` and it is a type-1 strategy defined as follows:
+An extremely simply Optimizer is the `IdentityOptimizer` and it is a type-1 optimizer defined as follows:
 
 [source,java]
-public class IdentityOptimizerTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
-    public void apply(final Traversal traversal) {
+public class IdentityOptimizer implements Optimizer.FinalOptimizer {
+    public void optimize(final Traversal traversal) {
         ((List<Step>) traversal.getSteps()).stream()
                 .filter(step -> step instanceof IdentityStep
                     && !TraversalHelper.isLabeled(step))
@@ -319,7 +318,7 @@ public class IdentityOptimizerTraversalStrategy implements TraversalStrategy.Fin
     }
 }
 
-This strategy simply removes any unlabeled `IdentityStep` in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. More common are type-2 strategy which are defined by graph vendors who implement TinkerPop3.
+This optimizer simply removes any unlabeled `IdentityStep` in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. More common are type-2 optimizers which are defined by graph vendors who implement TinkerPop3.
 
 [source,java]
 g.V().has("name","marko")
@@ -327,8 +326,8 @@ g.V().has("name","marko")
 The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in TinkerGraph depending on whether there is or is not an index defined for "name."
 
 [source,java]
-public class TinkerGraphStepTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
-    public void apply(final Traversal traversal) {
+public class TinkerGraphStepOptimizer implements Optimizer.FinalOptimizer {
+    public void optimize(final Traversal traversal) {
         if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {
             final TinkerGraphStep tinkerGraphStep
                 = (TinkerGraphStep) traversal.getSteps().get(0);
