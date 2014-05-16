@@ -219,7 +219,7 @@ The Graph API
 =============
 
 Hidden Properties
-~~~~~~~~~~~~~~~~~
+-----------------
 
 A hidden property is a property that is hidden from the various property accessor methods. Hidden properties are typically used in situations where administrative data about an element must be stored that is not so much a description of the element itself. An itemization of use cases are presented below.
 
@@ -261,12 +261,12 @@ gremlin> v.property('status')
 ----
 
 Graph Variables
-~~~~~~~~~~~~~~~
+---------------
 
 TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value pairs associated with the graph itself. These variables are intended to store metadata about the graph. Examples include: schema information, global permissions data, etc.
 
 Graph Transactions
-~~~~~~~~~~~~~~~~~~
+------------------
 
 A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction] is a unit of work.
 
