@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.process.util;
+package com.tinkerpop.gremlin.process.strategy;
 
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.TraversalStrategy;

@@ -1,7 +1,9 @@
-package com.tinkerpop.gremlin.process.util;
+package com.tinkerpop.gremlin.process.strategy;
 
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.HolderSource;
+import com.tinkerpop.gremlin.process.util.PathConsumer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -49,7 +49,7 @@ import com.tinkerpop.gremlin.process.graph.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.SubGraphStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
-import com.tinkerpop.gremlin.process.util.HolderTraversalStrategy;
+import com.tinkerpop.gremlin.process.strategy.HolderTraversalStrategy;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Compare;

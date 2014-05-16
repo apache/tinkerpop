@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
-import com.tinkerpop.gremlin.process.util.HolderTraversalStrategy;
+import com.tinkerpop.gremlin.process.strategy.HolderTraversalStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.Serializer;

@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.util.HolderTraversalStrategy;
+import com.tinkerpop.gremlin.process.strategy.HolderTraversalStrategy;
 import com.tinkerpop.gremlin.process.util.MicroPath;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
