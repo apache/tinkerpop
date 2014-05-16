@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 
 import java.util.NoSuchElementException;
@@ -59,6 +60,11 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
     @Override
     public void ifPresent(final Consumer<? super V> consumer) {
         this.baseProperty.ifPresent(consumer);
+    }
+
+    @Override
+    public boolean isHidden() {
+        return this.baseProperty.isHidden();
     }
 
     @Override

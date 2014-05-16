@@ -44,7 +44,11 @@ public class MicroProperty<V> implements Property, Serializable {
     }
 
     public String key() {
-        return this.key;
+        return ElementHelper.removeHiddenPrefix(this.key);
+    }
+
+    public boolean isHidden() {
+        return this.key.startsWith(Graph.HIDDEN_PREFIX);
     }
 
     public V value() {

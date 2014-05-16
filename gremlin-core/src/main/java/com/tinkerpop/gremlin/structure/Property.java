@@ -41,9 +41,7 @@ public abstract interface Property<V> {
             throw exceptionSupplier.get();
     }
 
-    public default boolean isHidden() {
-        return this.key().startsWith(Graph.HIDDEN_PREFIX);
-    }
+    public boolean isHidden();
 
     public <E extends Element> E getElement();
 
@@ -64,6 +62,11 @@ public abstract interface Property<V> {
             @Override
             public boolean isPresent() {
                 return false;
+            }
+
+            @Override
+            public boolean isHidden() {
+                throw Exceptions.propertyDoesNotExist();
             }
 
             @Override
