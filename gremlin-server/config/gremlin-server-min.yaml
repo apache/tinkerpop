@@ -1,7 +1,7 @@
 host: localhost
 port: 8182
-threadPoolWorker: 4
-gremlinPool: 16
+threadPoolWorker: 1
+gremlinPool: 8
 scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
 graphs: {
@@ -11,10 +11,11 @@ use:
 scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math, org.apache.commons.math3.util.FastMath],
-    staticImports: [java.lang.Math.PI]}}
+    staticImports: [java.lang.Math.PI],
+    scripts: [scripts/generate-modern.groovy]}}
 serializers:
   - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0 }
-  - { className: com.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
+  - { className: com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0, config: { serializeResultToString: true }}
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
 threadPoolBoss: 1
