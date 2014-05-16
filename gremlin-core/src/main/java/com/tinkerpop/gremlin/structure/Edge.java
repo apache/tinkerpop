@@ -27,6 +27,7 @@ import java.util.function.BiPredicate;
  * </pre>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Joshua Shinavier (http://fortytwo.net)
  */
 public interface Edge extends Element {
 
