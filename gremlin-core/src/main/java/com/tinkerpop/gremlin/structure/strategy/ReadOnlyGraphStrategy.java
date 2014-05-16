@@ -64,4 +64,9 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
             return new UnsupportedOperationException(String.format("Graph uses %s and is therefore unmodifiable", ReadOnlyGraphStrategy.class));
         }
     }
+
+	@Override
+	public String toString() {
+		return ReadOnlyGraphStrategy.class.getSimpleName().toLowerCase();
+	}
 }

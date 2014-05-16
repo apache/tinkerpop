@@ -795,7 +795,7 @@ gremlin> conf = new BaseConfiguration()
 gremlin> conf.setProperty("gremlin.graph","com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph")
 ==>null
 gremlin> g = GraphFactory.open(conf, Optional.of(new ReadOnlyGraphStrategy()))
-==>com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph@b968a76
+==>[readonlygraphstrategy[tinkergraph[vertices:0 edges:0]]]
 ----
 
 The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyGraphStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a holder for the underlying `TinkerGraph` and the `ReadOnlyGraphStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
@@ -810,8 +810,6 @@ The above code tries to mutate the underlying `TinkerGraph`.  Note that `ReadOnl
 
 [source,text]
 ----
-gremlin> g.getBaseGraph()
-==>tinkergraph[vertices:0 edges:0]
 gremlin> bg = g.getBaseGraph()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> bg.addVertex('name','stephen')

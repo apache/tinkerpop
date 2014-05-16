@@ -96,6 +96,11 @@ public class IdGraphStrategy implements GraphStrategy {
         };
     }
 
+	@Override
+	public String toString() {
+		return String.format("%s[%s]", IdGraphStrategy.class.getSimpleName(), idKey).toLowerCase();
+	}
+
     private void throwIfIdKeyIsSet(final Class<? extends Element> element, final String k) {
         if (supportsAnId(element) && this.idKey.equals(k))
             throw new IllegalArgumentException(String.format("The key [%s] is protected by %s and cannot be set", idKey, IdGraphStrategy.class.getSimpleName()));

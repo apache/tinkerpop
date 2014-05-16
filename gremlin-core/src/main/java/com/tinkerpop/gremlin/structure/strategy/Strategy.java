@@ -20,12 +20,12 @@ public interface Strategy  {
      * Set the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} to utilized in the various Blueprints methods that it supports.  Set to
      * {@link java.util.Optional#EMPTY} by default.
      */
-    public void setGraphStrategy(final Optional<? extends GraphStrategy> strategy);
+    public void setGraphStrategy(final Optional<GraphStrategy> strategy);
 
     /**
      * Gets the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} for the {@link com.tinkerpop.gremlin.structure.Graph}.
      */
-    public Optional<? extends GraphStrategy> getGraphStrategy();
+    public Optional<GraphStrategy> getGraphStrategy();
 
     /**
      * If a {@link Strategy} is present, then return a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} function that takes the function of the
@@ -85,17 +85,17 @@ public interface Strategy  {
      * Basic {@link Strategy} implementation where the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} can be get or set.
      */
     public static class Simple implements Strategy {
-        private Optional<? extends GraphStrategy> strategy = Optional.empty();
+        private Optional<GraphStrategy> strategy = Optional.empty();
 
         @Override
-        public void setGraphStrategy(final Optional<? extends GraphStrategy> strategy) {
+        public void setGraphStrategy(final Optional<GraphStrategy> strategy) {
             if (null == strategy)
                 throw Graph.Exceptions.argumentCanNotBeNull("strategy");
             this.strategy = strategy;
         }
 
         @Override
-        public Optional<? extends GraphStrategy> getGraphStrategy() {
+        public Optional<GraphStrategy> getGraphStrategy() {
             return strategy;
         }
     }
@@ -104,7 +104,7 @@ public interface Strategy  {
      * A {@link Strategy} implementation where the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} can be get or set as {@link ThreadLocal}.
      */
     public static class Local implements Strategy {
-        private ThreadLocal<Optional<? extends GraphStrategy>> strategy = new ThreadLocal<Optional<? extends GraphStrategy>>(){
+        private ThreadLocal<Optional<GraphStrategy>> strategy = new ThreadLocal<Optional<GraphStrategy>>(){
             @Override
             protected Optional<GraphStrategy> initialValue() {
                 return Optional.empty();
@@ -112,14 +112,14 @@ public interface Strategy  {
         };
 
         @Override
-        public void setGraphStrategy(final Optional<? extends GraphStrategy> strategy) {
+        public void setGraphStrategy(final Optional<GraphStrategy> strategy) {
             if (null == strategy)
                 throw Graph.Exceptions.argumentCanNotBeNull("strategy");
             this.strategy.set(strategy);
         }
 
         @Override
-        public Optional<? extends GraphStrategy> getGraphStrategy() {
+        public Optional<GraphStrategy> getGraphStrategy() {
             return this.strategy.get();
         }
     }

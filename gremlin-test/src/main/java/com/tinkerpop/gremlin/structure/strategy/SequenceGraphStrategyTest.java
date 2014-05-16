@@ -223,6 +223,14 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         assertEquals(methods.length, spy.getCount());
     }
 
+	@Test
+	public void shouldGenerateToStringProperty() throws Exception {
+		final ReadOnlyGraphStrategy readonly = new ReadOnlyGraphStrategy();
+		final IdGraphStrategy id = new IdGraphStrategy.Builder("key").build();
+		final SequenceGraphStrategy strategy = new SequenceGraphStrategy(readonly, id);
+		assertEquals("readonlygraphstrategy->idgraphstrategy[key]", strategy.toString());
+	}
+
     public class SpyGraphStrategy implements GraphStrategy {
 
         private int count = 0;

@@ -107,6 +107,11 @@ public class PartitionGraphStrategy implements GraphStrategy {
         };
     }
 
+	@Override
+	public String toString() {
+		return PartitionGraphStrategy.class.getSimpleName();
+	}
+
     /**
      * Analyzes the traversal and injects the partition logic after every access to a vertex or edge.  The partition
      * logic consists of a {@link HasStep} with partition key and value followed by a {@code Transform}

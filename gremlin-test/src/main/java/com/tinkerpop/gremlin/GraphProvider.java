@@ -36,7 +36,7 @@ public interface GraphProvider {
     /**
      * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
      */
-    default public Graph openTestGraph(final Configuration config, final Optional<? extends GraphStrategy> strategy) {
+    default public Graph openTestGraph(final Configuration config, final Optional<GraphStrategy> strategy) {
         return GraphFactory.open(config, strategy);
     }
 

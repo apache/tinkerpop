@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.commons.configuration.Configuration;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 

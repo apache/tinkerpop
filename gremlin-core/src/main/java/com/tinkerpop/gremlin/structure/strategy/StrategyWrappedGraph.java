@@ -92,4 +92,10 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
     public void close() throws Exception {
         this.baseGraph.close();
     }
+
+	@Override
+	public String toString() {
+		final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(DoNothingGraphStrategy.INSTANCE);
+		return String.format("[%s[%s]]", strategy, baseGraph.toString());
+	}
 }

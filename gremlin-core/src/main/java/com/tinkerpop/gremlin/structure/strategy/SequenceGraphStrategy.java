@@ -14,6 +14,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -79,6 +80,12 @@ public class SequenceGraphStrategy implements GraphStrategy {
     public UnaryOperator<Supplier<Object>> getElementGetId(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementGetId(ctx));
     }
+
+	@Override
+	public String toString() {
+		return String.join("->", graphStrategySequence.stream().map(Object::toString)
+				.map(String::toLowerCase).collect(Collectors.<String>toList()));
+	}
 
     /**
      * Compute a new strategy function from the sequence of supplied {@link GraphStrategy} objects.

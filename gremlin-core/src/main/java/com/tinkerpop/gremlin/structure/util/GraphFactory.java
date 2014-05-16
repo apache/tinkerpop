@@ -30,7 +30,7 @@ public class GraphFactory {
      * @return A {@link com.tinkerpop.gremlin.structure.Graph} instance.
      * @throws IllegalArgumentException if {@code configuration} or {@code strategy} are null
      */
-    public static Graph open(final Configuration configuration, final Optional<? extends GraphStrategy> strategy) {
+    public static Graph open(final Configuration configuration, final Optional<GraphStrategy> strategy) {
         if (null == configuration)
             throw Graph.Exceptions.argumentCanNotBeNull("configuration");
 

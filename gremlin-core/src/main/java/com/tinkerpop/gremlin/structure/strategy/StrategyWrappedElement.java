@@ -85,4 +85,10 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
                     return null;
                 }).get();
     }
+
+	@Override
+	public String toString() {
+		final GraphStrategy strategy = this.strategyWrappedGraph.strategy().getGraphStrategy().orElse(DoNothingGraphStrategy.INSTANCE);
+		return String.format("[%s[%s]]", strategy, baseElement.toString());
+	}
 }
