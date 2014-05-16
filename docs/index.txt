@@ -820,7 +820,7 @@ NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Gr
 
 To use a `GraphStrategy` instance, use the `GraphFactory` to instantiate the `Graph` as follows:
 
-[source,text]
+[source,groovy]
 ----
 gremlin> conf = new BaseConfiguration()
 ==>org.apache.commons.configuration.BaseConfiguration@5b40ceb
@@ -832,7 +832,7 @@ gremlin> g = GraphFactory.open(conf, Optional.of(new ReadOnlyGraphStrategy()))
 
 The above code specifies the creation of a `TinkerGraph` with the use of `ReadOnlyGraphStrategy`.  Note that the `GraphFactory` does not return a `TinkerGraph` instance.  It returns a `StrategyWrappedGraph` which is a holder for the underlying `TinkerGraph` and the `ReadOnlyGraphStrategy`.  Since `StrategyWrappedGraph` implements the `Graph` interface, it can be used in the same manner as `TinkerGraph` or any other implementation.
 
-[source,text]
+[source,groovy]
 ----
 gremlin> g.addVertex('name','stephen')
 Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy and is therefore unmodifiable
@@ -840,7 +840,7 @@ Graph uses class com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategy 
 
 The above code tries to mutate the underlying `TinkerGraph`.  Note that `ReadOnlyGraphStrategy` prevents that and throws an exception.  At any point, the `GraphStrategy` can be bypassed by getting the underlying `TinkerGraph`.
 
-[source,text]
+[source,groovy]
 ----
 gremlin> bg = g.getBaseGraph()
 ==>tinkergraph[vertices:0 edges:0]
@@ -918,7 +918,7 @@ gremlin>
 
 When the console starts, it is preconfigured to connect to a remote Gremlin Server listening on `localhost` at port `8182`:
 
-[source,text]
+[source,groovy]
 ----
 gremlin> :remote
 ==>remote - results as text [localhost/127.0.0.1:8182]
@@ -926,7 +926,7 @@ gremlin> :remote
 
 The `:remote` command shown above displays the current status of the remote connection.  This command can also be used to configure a new connection and change other related settings.  To actually send a script to the server a different command is required:
 
-[source,text]
+[source,groovy]
 ----
 gremlin> :> g.V.name
 ==>Item{resultItem=marko class=java.lang.String}
@@ -944,7 +944,7 @@ gremlin> :> g.E.label.groupCount()
 
 The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Item` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  As was stated earlier, the `:remote` command can be used to configure the connection to Gremlin Server.  One of the options available is to have results returned as `objects` instead of `text`:
 
-[source,text]
+[source,groovy]
 ----
 gremlin> :remote as objects <1>
 ==>results as objects
