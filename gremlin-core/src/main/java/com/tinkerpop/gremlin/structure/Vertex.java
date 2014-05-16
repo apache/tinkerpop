@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
@@ -102,12 +102,12 @@ public interface Vertex extends Element {
         return this.start().as(as);
     }
 
-    public default GraphTraversal<Vertex, Vertex> filter(final SPredicate<Holder<Vertex>> predicate) {
+    public default GraphTraversal<Vertex, Vertex> filter(final SPredicate<Traverser<Vertex>> predicate) {
         return this.start().filter(predicate);
     }
 
     // TODO: test
-    public default <E2> GraphTraversal<Vertex, E2> flatMap(final SFunction<Holder<Vertex>, Iterator<E2>> function) {
+    public default <E2> GraphTraversal<Vertex, E2> flatMap(final SFunction<Traverser<Vertex>, Iterator<E2>> function) {
         return this.start().flatMap(function);
     }
 
@@ -164,17 +164,17 @@ public interface Vertex extends Element {
     }
 
     // TODO: test
-    public default GraphTraversal<Vertex, Vertex> jump(final String as, final SPredicate<Holder<Vertex>> ifPredicate) {
+    public default GraphTraversal<Vertex, Vertex> jump(final String as, final SPredicate<Traverser<Vertex>> ifPredicate) {
         return this.start().jump(as, ifPredicate);
     }
 
     // TODO: test
-    public default GraphTraversal<Vertex, Vertex> jump(final String as, final SPredicate<Holder<Vertex>> ifPredicate, final SPredicate<Holder<Vertex>> emitPredicate) {
+    public default GraphTraversal<Vertex, Vertex> jump(final String as, final SPredicate<Traverser<Vertex>> ifPredicate, final SPredicate<Traverser<Vertex>> emitPredicate) {
         return this.start().jump(as, ifPredicate, emitPredicate);
     }
 
     // TODO: test
-    public default <E2> GraphTraversal<Vertex, E2> map(final SFunction<Holder<Vertex>, E2> function) {
+    public default <E2> GraphTraversal<Vertex, E2> map(final SFunction<Traverser<Vertex>, E2> function) {
         return this.start().map(function);
     }
 
@@ -186,7 +186,7 @@ public interface Vertex extends Element {
     // TODO: pageRank
 
 
-    public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Holder<Vertex>> consumer) {
+    public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Traverser<Vertex>> consumer) {
         return this.start().sideEffect(consumer);
     }
 

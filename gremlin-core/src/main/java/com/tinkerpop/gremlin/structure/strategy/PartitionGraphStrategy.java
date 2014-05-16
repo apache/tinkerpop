@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -137,7 +137,7 @@ public class PartitionGraphStrategy implements GraphStrategy {
             Collections.reverse(positions);
             for (int pos : positions) {
                 final MapStep<Object, Object> transformToStrategy = new MapStep<>(traversal);
-                transformToStrategy.setFunction((Holder<Object> t) -> {
+                transformToStrategy.setFunction((Traverser<Object> t) -> {
                     // todo: need to make sure we're not re-wrapping in strategy over and over again.
                     final Object o = t.get();
                     if (o instanceof Vertex)

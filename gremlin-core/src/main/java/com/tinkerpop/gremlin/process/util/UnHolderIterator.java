@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 
 import java.util.Iterator;
 
@@ -9,9 +9,9 @@ import java.util.Iterator;
  */
 public class UnHolderIterator<T> implements Iterator<T> {
 
-    private final Iterator<Holder<T>> iterator;
+    private final Iterator<Traverser<T>> iterator;
 
-    public UnHolderIterator(final Iterator<Holder<T>> iterator) {
+    public UnHolderIterator(final Iterator<Traverser<T>> iterator) {
         this.iterator = iterator;
     }
 

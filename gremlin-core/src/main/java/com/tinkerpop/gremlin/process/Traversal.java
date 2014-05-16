@@ -21,7 +21,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public TraversalStrategies optimizers();
 
-    public void addStarts(final Iterator<Holder<S>> starts);
+    public void addStarts(final Iterator<Traverser<S>> starts);
 
     public <S, E, T extends Traversal<S, E>> T addStep(final Step<?, E> step);
 

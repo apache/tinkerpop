@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
 import org.javatuples.Pair;
 
 /**
- * Holder class for {@link com.tinkerpop.gremlin.structure.Element} serializers.
+ * Traverser class for {@link com.tinkerpop.gremlin.structure.Element} serializers.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

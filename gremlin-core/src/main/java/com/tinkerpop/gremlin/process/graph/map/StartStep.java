@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.PathHolder;
-import com.tinkerpop.gremlin.process.SimpleHolder;
+import com.tinkerpop.gremlin.process.SimpleTraverser;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.HolderIterator;
 import com.tinkerpop.gremlin.process.util.HolderSource;
@@ -19,7 +19,7 @@ public class StartStep<S> extends MapStep<S, S> implements HolderSource {
 
     public StartStep(final Traversal traversal, final Object start) {
         super(traversal);
-        this.setFunction(Holder::get);
+        this.setFunction(Traverser::get);
         this.start = start;
         this.generateHolderIterator(false);
     }
@@ -34,7 +34,7 @@ public class StartStep<S> extends MapStep<S, S> implements HolderSource {
             this.starts.add(trackPaths ? new HolderIterator(this, (Iterator) this.start) : new HolderIterator((Iterator) this.start));
         } else {
             this.starts.clear();
-            this.starts.add(new SingleIterator(trackPaths ? new PathHolder<>(this.getAs(), this.start) : new SimpleHolder<>(this.start)));
+            this.starts.add(new SingleIterator(trackPaths ? new PathTraverser<>(this.getAs(), this.start) : new SimpleTraverser<>(this.start)));
         }
     }
 }

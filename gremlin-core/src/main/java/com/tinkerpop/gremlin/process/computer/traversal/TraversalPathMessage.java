@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -24,13 +24,13 @@ public class TraversalPathMessage extends TraversalMessage {
     private TraversalPathMessage() {
     }
 
-    private TraversalPathMessage(final Holder holder) {
-        super(holder);
-        this.holder.setPath(MicroPath.deflate(this.holder.getPath()));
+    private TraversalPathMessage(final Traverser traverser) {
+        super(traverser);
+        this.traverser.setPath(MicroPath.deflate(this.traverser.getPath()));
     }
 
-    public static TraversalPathMessage of(final Holder holder) {
-        return new TraversalPathMessage(holder);
+    public static TraversalPathMessage of(final Traverser traverser) {
+        return new TraversalPathMessage(traverser);
     }
 
     public static boolean execute(final Vertex vertex,
@@ -42,7 +42,7 @@ public class TraversalPathMessage extends TraversalMessage {
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         messages.forEach(message -> {
-            message.holder.inflate(vertex);
+            message.traverser.inflate(vertex);
             if (message.executePaths(vertex, messenger, tracker, traversal))
                 voteToHalt.set(false);
         });
@@ -69,15 +69,15 @@ public class TraversalPathMessage extends TraversalMessage {
     private boolean executePaths(final Vertex vertex, final Messenger messenger,
                                  final TraversalPaths tracker,
                                  final Traversal traversal) {
-        if (this.holder.isDone()) {
-            this.holder.deflate();
-            MapHelper.incr(tracker.getDoneGraphTracks(), this.holder.get(), this.holder);
+        if (this.traverser.isDone()) {
+            this.traverser.deflate();
+            MapHelper.incr(tracker.getDoneGraphTracks(), this.traverser.get(), this.traverser);
             return false;
         }
 
-        final Step step = TraversalHelper.getAs(this.holder.getFuture(), traversal);
-        MapHelper.incr(tracker.getGraphTracks(), this.holder.get(), this.holder);
-        step.addStarts(new SingleIterator(this.holder));
+        final Step step = TraversalHelper.getAs(this.traverser.getFuture(), traversal);
+        MapHelper.incr(tracker.getGraphTracks(), this.traverser.get(), this.traverser);
+        step.addStarts(new SingleIterator(this.traverser));
         return processStep(step, vertex, messenger, tracker);
     }
 

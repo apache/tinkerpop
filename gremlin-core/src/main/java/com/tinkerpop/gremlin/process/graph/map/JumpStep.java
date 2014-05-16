@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
@@ -8,14 +8,13 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Iterator;
-import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class JumpStep<S> extends MapStep<S, S> {
 
-    public JumpStep(final Traversal traversal, final String as, final SPredicate<Holder<S>> ifPredicate, final SPredicate<Holder<S>> emitPredicate) {
+    public JumpStep(final Traversal traversal, final String as, final SPredicate<Traverser<S>> ifPredicate, final SPredicate<Traverser<S>> emitPredicate) {
         super(traversal);
         final Step<?, ?> jumpStep = TraversalHelper.asExists(as, this.traversal) ? TraversalHelper.getAs(as, this.traversal) : null;
         this.setFunction(holder -> {
@@ -34,5 +33,5 @@ public class JumpStep<S> extends MapStep<S, S> {
         });
     }
 
-    // TODO: Be sure to Holder.resetLoops() when the object leaves the step. May have to implement processNextStart() and MapStep doesn't allow this.
+    // TODO: Be sure to Traverser.resetLoops() when the object leaves the step. May have to implement processNextStart() and MapStep doesn't allow this.
 }

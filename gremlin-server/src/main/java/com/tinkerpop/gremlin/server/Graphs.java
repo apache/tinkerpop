@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Holder of {@link Graph} instances configured for the server to be passed to sessionless bindings. The
+ * Traverser of {@link Graph} instances configured for the server to be passed to sessionless bindings. The
  * {@link Graph} instances are read from the {@link Settings} for Gremlin Server as defined in the configuration
  * file.
  */

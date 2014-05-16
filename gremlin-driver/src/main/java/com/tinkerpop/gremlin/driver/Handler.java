@@ -30,7 +30,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Holder for internal handler classes for constructing the Channel Pipeline.
+ * Traverser for internal handler classes for constructing the Channel Pipeline.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

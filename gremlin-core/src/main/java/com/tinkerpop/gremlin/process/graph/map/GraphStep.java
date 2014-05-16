@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.HolderSource;
 import com.tinkerpop.gremlin.structure.Element;
@@ -19,9 +19,9 @@ public abstract class GraphStep<E extends Element> extends FlatMapStep<E, E> imp
 
     public abstract void generateHolderIterator(final boolean trackPaths);
 
-    protected Holder<E> processNextStart() {
-        final Holder<E> holder = this.starts.next();
-        holder.setFuture(this.getNextStep().getAs());
-        return holder;
+    protected Traverser<E> processNextStart() {
+        final Traverser<E> traverser = this.starts.next();
+        traverser.setFuture(this.getNextStep().getAs());
+        return traverser;
     }
 }

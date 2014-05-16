@@ -3,8 +3,8 @@ package com.tinkerpop.gremlin.giraph.process.olap;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.tinkerpop.gremlin.process.PathHolder;
-import com.tinkerpop.gremlin.process.SimpleHolder;
+import com.tinkerpop.gremlin.process.PathTraverser;
+import com.tinkerpop.gremlin.process.SimpleTraverser;
 import org.apache.hadoop.io.Writable;
 
 import java.io.ByteArrayInputStream;
@@ -22,8 +22,8 @@ public class KryoWritable<T> implements Writable {
     T t;
 
     public KryoWritable() {
-        KRYO.register(SimpleHolder.class);
-        KRYO.register(PathHolder.class);
+        KRYO.register(SimpleTraverser.class);
+        KRYO.register(PathTraverser.class);
         // TODO: We may need to create concrete ID numbers in cross JVM situations.
     }
 

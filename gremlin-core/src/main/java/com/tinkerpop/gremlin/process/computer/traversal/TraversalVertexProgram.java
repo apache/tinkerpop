@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.PathHolder;
-import com.tinkerpop.gremlin.process.SimpleHolder;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.PathTraverser;
+import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -84,24 +84,24 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         traversal.optimizers().applyFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         startStep.clear();
-        final String future = (traversal.getSteps().size() == 1) ? Holder.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
+        final String future = (traversal.getSteps().size() == 1) ? Traverser.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
         // TODO: Was doing some HasContainer.testAll() stuff prior to the big change (necessary?)
         // TODO: Make this an optimizer.
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         if (Vertex.class.isAssignableFrom(startStep.returnClass)) {
-            final Holder<Vertex> holder = this.trackPaths ?
-                    new PathHolder<>(startStep.getAs(), vertex) :
-                    new SimpleHolder<>(vertex);
-            holder.setFuture(future);
-            messenger.sendMessage(vertex, MessageType.Global.of(vertex), TraversalMessage.of(holder));
+            final Traverser<Vertex> traverser = this.trackPaths ?
+                    new PathTraverser<>(startStep.getAs(), vertex) :
+                    new SimpleTraverser<>(vertex);
+            traverser.setFuture(future);
+            messenger.sendMessage(vertex, MessageType.Global.of(vertex), TraversalMessage.of(traverser));
             voteToHalt.set(false);
         } else if (Edge.class.isAssignableFrom(startStep.returnClass)) {
             vertex.outE().forEach(e -> {
-                final Holder<Edge> holder = this.trackPaths ?
-                        new PathHolder<>(startStep.getAs(), e) :
-                        new SimpleHolder<>(e);
-                holder.setFuture(future);
-                messenger.sendMessage(vertex, MessageType.Global.of(vertex), TraversalMessage.of(holder));
+                final Traverser<Edge> traverser = this.trackPaths ?
+                        new PathTraverser<>(startStep.getAs(), e) :
+                        new SimpleTraverser<>(e);
+                traverser.setFuture(future);
+                messenger.sendMessage(vertex, MessageType.Global.of(vertex), TraversalMessage.of(traverser));
                 voteToHalt.set(false);
             });
         }

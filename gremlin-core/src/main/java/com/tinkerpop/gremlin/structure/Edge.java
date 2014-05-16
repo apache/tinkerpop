@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
@@ -65,12 +65,12 @@ public interface Edge extends Element {
     }
 
     // TODO: test
-    public default GraphTraversal<Edge, Edge> filter(final SPredicate<Holder<Edge>> predicate) {
+    public default GraphTraversal<Edge, Edge> filter(final SPredicate<Traverser<Edge>> predicate) {
         return this.start().filter(predicate);
     }
 
     // TODO: test
-    public default <E2> GraphTraversal<Edge, E2> flatMap(final SFunction<Holder<Edge>, Iterator<E2>> function) {
+    public default <E2> GraphTraversal<Edge, E2> flatMap(final SFunction<Traverser<Edge>, Iterator<E2>> function) {
         return this.start().flatMap(function);
     }
 
@@ -132,17 +132,17 @@ public interface Edge extends Element {
     }
 
     // TODO: test
-    public default GraphTraversal<Edge, Edge> jump(final String as, final SPredicate<Holder<Edge>> ifPredicate) {
+    public default GraphTraversal<Edge, Edge> jump(final String as, final SPredicate<Traverser<Edge>> ifPredicate) {
         return this.start().jump(as, ifPredicate);
     }
 
     // TODO: test
-    public default GraphTraversal<Edge, Edge> jump(final String as, final SPredicate<Holder<Edge>> ifPredicate, final SPredicate<Holder<Edge>> emitPredicate) {
+    public default GraphTraversal<Edge, Edge> jump(final String as, final SPredicate<Traverser<Edge>> ifPredicate, final SPredicate<Traverser<Edge>> emitPredicate) {
         return this.start().jump(as, ifPredicate, emitPredicate);
     }
 
     // TODO: test
-    public default <E2> GraphTraversal<Edge, E2> map(final SFunction<Holder<Edge>, E2> function) {
+    public default <E2> GraphTraversal<Edge, E2> map(final SFunction<Traverser<Edge>, E2> function) {
         return this.start().map(function);
     }
 
@@ -152,7 +152,7 @@ public interface Edge extends Element {
     }
 
     // TODO: test
-    public default GraphTraversal<Edge, Edge> sideEffect(final SConsumer<Holder<Edge>> consumer) {
+    public default GraphTraversal<Edge, Edge> sideEffect(final SConsumer<Traverser<Edge>> consumer) {
         return this.start().sideEffect(consumer);
     }
 

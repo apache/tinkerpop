@@ -1,8 +1,7 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.PathHolder;
-import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.process.PathTraverser;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -16,25 +15,25 @@ import java.util.List;
  */
 public abstract class TraversalMessage implements Serializable {
 
-    protected Holder holder;
+    protected Traverser traverser;
 
     protected TraversalMessage() {
     }
 
-    protected TraversalMessage(final Holder holder) {
-        this.holder = holder;
-        this.holder.deflate();
+    protected TraversalMessage(final Traverser traverser) {
+        this.traverser = traverser;
+        this.traverser.deflate();
     }
 
-    public Holder getHolder() {
-        return this.holder;
+    public Traverser getTraverser() {
+        return this.traverser;
     }
 
-    public static <T extends TraversalMessage> T of(final Holder holder) {
-        if (holder instanceof PathHolder)
-            return (T) TraversalPathMessage.of(holder);
+    public static <T extends TraversalMessage> T of(final Traverser traverser) {
+        if (traverser instanceof PathTraverser)
+            return (T) TraversalPathMessage.of(traverser);
         else
-            return (T) TraversalCounterMessage.of(holder);
+            return (T) TraversalCounterMessage.of(traverser);
     }
 
     public static List<Vertex> getHostingVertices(final Object object) {

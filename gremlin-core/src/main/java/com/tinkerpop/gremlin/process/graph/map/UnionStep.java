@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
@@ -20,14 +20,14 @@ public class UnionStep<S, E> extends AbstractStep<S, E> {
         this.traversalRing = new TraversalRing<>(traversals);
     }
 
-    protected Holder<E> processNextStart() {
+    protected Traverser<E> processNextStart() {
         while (true) {
             int counter = 0;
             while (counter++ < this.traversalRing.size()) {
                 final Traversal<S, E> p = this.traversalRing.next();
                 if (p.hasNext()) return TraversalHelper.getEnd(p).next();
             }
-            final Holder<S> start = this.starts.next();
+            final Traverser<S> start = this.starts.next();
             this.traversalRing.forEach(p -> p.addStarts(new SingleIterator<>(start.makeSibling())));
         }
     }

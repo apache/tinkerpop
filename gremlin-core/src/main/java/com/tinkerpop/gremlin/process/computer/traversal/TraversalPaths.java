@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -14,35 +14,35 @@ import java.util.Map;
  */
 public class TraversalPaths implements Serializable {
 
-    protected final Map<Object, List<Holder>> previousObjectTracks;
-    protected final Map<Object, List<Holder>> graphTracks = new HashMap<>();
-    protected final Map<Object, List<Holder>> objectTracks = new HashMap<>();
+    protected final Map<Object, List<Traverser>> previousObjectTracks;
+    protected final Map<Object, List<Traverser>> graphTracks = new HashMap<>();
+    protected final Map<Object, List<Traverser>> objectTracks = new HashMap<>();
 
-    protected final Map<Object, List<Holder>> doneGraphTracks = new HashMap<>();
-    protected final Map<Object, List<Holder>> doneObjectTracks = new HashMap<>();
+    protected final Map<Object, List<Traverser>> doneGraphTracks = new HashMap<>();
+    protected final Map<Object, List<Traverser>> doneObjectTracks = new HashMap<>();
 
     public TraversalPaths(final Vertex vertex) {
         final Property<TraversalPaths> tracker = vertex.property(TraversalVertexProgram.TRAVERSAL_TRACKER);
         this.previousObjectTracks = tracker.isPresent() ? tracker.value().objectTracks : new HashMap<>();
     }
 
-    public Map<Object, List<Holder>> getDoneGraphTracks() {
+    public Map<Object, List<Traverser>> getDoneGraphTracks() {
         return this.doneGraphTracks;
     }
 
-    public Map<Object, List<Holder>> getDoneObjectTracks() {
+    public Map<Object, List<Traverser>> getDoneObjectTracks() {
         return this.doneObjectTracks;
     }
 
-    public Map<Object, List<Holder>> getObjectTracks() {
+    public Map<Object, List<Traverser>> getObjectTracks() {
         return this.objectTracks;
     }
 
-    public Map<Object, List<Holder>> getGraphTracks() {
+    public Map<Object, List<Traverser>> getGraphTracks() {
         return this.graphTracks;
     }
 
-    public Map<Object, List<Holder>> getPreviousObjectTracks() {
+    public Map<Object, List<Traverser>> getPreviousObjectTracks() {
         return this.previousObjectTracks;
     }
 }

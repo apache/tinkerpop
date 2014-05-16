@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
@@ -9,38 +9,37 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
-    public SFunction<Holder<S>, Iterator<E>> function;
-    protected final Queue<Iterator<Holder<E>>> queue = new LinkedList<>();
+    public SFunction<Traverser<S>, Iterator<E>> function;
+    protected final Queue<Iterator<Traverser<E>>> queue = new LinkedList<>();
 
     public FlatMapStep(final Traversal traversal) {
         super(traversal);
     }
 
-    public void setFunction(final SFunction<Holder<S>, Iterator<E>> function) {
+    public void setFunction(final SFunction<Traverser<S>, Iterator<E>> function) {
         this.function = function;
     }
 
-    protected Holder<E> processNextStart() {
+    protected Traverser<E> processNextStart() {
         while (true) {
-            final Holder<E> holder = this.getNext();
-            if (null != holder) return holder;
+            final Traverser<E> traverser = this.getNext();
+            if (null != traverser) return traverser;
         }
     }
 
-    protected Holder<E> getNext() {
+    protected Traverser<E> getNext() {
         if (this.queue.isEmpty()) {
-            final Holder<S> holder = this.starts.next();
-            this.queue.add(new FlatMapHolderIterator<>(holder, this, this.function.apply(holder)));
+            final Traverser<S> traverser = this.starts.next();
+            this.queue.add(new FlatMapHolderIterator<>(traverser, this, this.function.apply(traverser)));
             return null;
         } else {
-            final Iterator<Holder<E>> iterator = this.queue.peek();
+            final Iterator<Traverser<E>> iterator = this.queue.peek();
             if (iterator.hasNext()) {
                 return iterator.next();
             } else {
@@ -50,13 +49,13 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
         }
     }
 
-    private class FlatMapHolderIterator<A, B> implements Iterator<Holder<B>> {
+    private class FlatMapHolderIterator<A, B> implements Iterator<Traverser<B>> {
 
-        private final Holder<A> head;
+        private final Traverser<A> head;
         private final Iterator<B> iterator;
         private final Step step;
 
-        protected FlatMapHolderIterator(final Holder<A> head, final Step step, final Iterator<B> iterator) {
+        protected FlatMapHolderIterator(final Traverser<A> head, final Step step, final Iterator<B> iterator) {
             this.iterator = iterator;
             this.head = head;
             this.step = step;
@@ -66,7 +65,7 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
             return this.iterator.hasNext();
         }
 
-        public Holder<B> next() {
+        public Traverser<B> next() {
             return this.head.makeChild(this.step.getAs(), this.iterator.next());
         }
     }

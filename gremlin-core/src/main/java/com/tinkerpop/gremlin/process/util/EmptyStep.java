@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 
@@ -16,7 +16,7 @@ public class EmptyStep<S, E> implements Step<S, E> {
     private EmptyStep() {
     }
 
-    public void addStarts(final Iterator<Holder<S>> iterator) {
+    public void addStarts(final Iterator<Traverser<S>> iterator) {
 
     }
 
@@ -41,7 +41,7 @@ public class EmptyStep<S, E> implements Step<S, E> {
     }
 
     public String getAs() {
-        return Holder.NO_FUTURE;
+        return Traverser.NO_FUTURE;
     }
 
     public void setAs(String as) {
@@ -52,7 +52,7 @@ public class EmptyStep<S, E> implements Step<S, E> {
         return false;
     }
 
-    public Holder<E> next() {
+    public Traverser<E> next() {
         throw FastNoSuchElementException.instance();
     }
 

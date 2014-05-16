@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.process.Holder;
-import com.tinkerpop.gremlin.process.PathHolder;
+import com.tinkerpop.gremlin.process.PathTraverser;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -12,30 +12,30 @@ import com.tinkerpop.gremlin.util.function.SFunction;
  */
 public class MapStep<S, E> extends AbstractStep<S, E> {
 
-    public SFunction<Holder<S>, E> function;
+    public SFunction<Traverser<S>, E> function;
 
     public MapStep(final Traversal traversal) {
         super(traversal);
     }
 
-    protected Holder<E> processNextStart() {
+    protected Traverser<E> processNextStart() {
         while (true) {
-            final Holder<S> holder = this.starts.next();
-            final E temp = this.function.apply(holder);
+            final Traverser<S> traverser = this.starts.next();
+            final E temp = this.function.apply(traverser);
             if (NO_OBJECT != temp)
-                if (holder.get().equals(temp)) {// no path extension (i.e. a filter, identity, side-effect)
-                    if (holder instanceof PathHolder && TraversalHelper.isLabeled(this)) {
-                        final Holder<E> sibling = (Holder<E>) holder.makeSibling();
+                if (traverser.get().equals(temp)) {// no path extension (i.e. a filter, identity, side-effect)
+                    if (traverser instanceof PathTraverser && TraversalHelper.isLabeled(this)) {
+                        final Traverser<E> sibling = (Traverser<E>) traverser.makeSibling();
                         sibling.getPath().renameLastStep(this.getAs());
                         return sibling;
                     } else
-                        return (Holder<E>) holder.makeSibling();
+                        return (Traverser<E>) traverser.makeSibling();
                 } else
-                    return holder.makeChild(this.getAs(), temp);
+                    return traverser.makeChild(this.getAs(), temp);
         }
     }
 
-    public void setFunction(final SFunction<Holder<S>, E> function) {
+    public void setFunction(final SFunction<Traverser<S>, E> function) {
         this.function = function;
     }
 }

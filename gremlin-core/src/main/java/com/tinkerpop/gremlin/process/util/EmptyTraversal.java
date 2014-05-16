@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -41,7 +41,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
         return TRAVERSAL_STRATEGIES;
     }
 
-    public void addStarts(final Iterator<Holder<S>> starts) {
+    public void addStarts(final Iterator<Traverser<S>> starts) {
 
     }
 

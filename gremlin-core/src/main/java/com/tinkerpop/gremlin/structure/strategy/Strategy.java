@@ -10,7 +10,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
- * A holder of a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} object owned by a {@link com.tinkerpop.gremlin.structure.Graph} instance.
+ * A traverser of a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} object owned by a {@link com.tinkerpop.gremlin.structure.Graph} instance.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

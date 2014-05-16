@@ -11,19 +11,19 @@ import com.tinkerpop.gremlin.structure.util.micro.MicroVertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SimpleHolder<T> implements Holder<T> {
+public class SimpleTraverser<T> implements Traverser<T> {
 
-    private static final String PATH_ERROR_MESSAGE = "Path tracking is not supported by this Holder: " + SimpleHolder.class;
+    private static final String PATH_ERROR_MESSAGE = "Path tracking is not supported by this Traverser: " + SimpleTraverser.class;
 
     protected T t;
     protected String future = NO_FUTURE;
     protected int loops = 0;
 
-    private SimpleHolder() {
+    private SimpleTraverser() {
 
     }
 
-    public SimpleHolder(final T t) {
+    public SimpleTraverser(final T t) {
         this.t = t;
     }
 
@@ -63,15 +63,15 @@ public class SimpleHolder<T> implements Holder<T> {
         this.loops = 0;
     }
 
-    public <R> SimpleHolder<R> makeChild(final String as, final R r) {
-        final SimpleHolder<R> holder = new SimpleHolder<>(r);
+    public <R> SimpleTraverser<R> makeChild(final String as, final R r) {
+        final SimpleTraverser<R> holder = new SimpleTraverser<>(r);
         holder.future = this.future;
         holder.loops = this.loops;
         return holder;
     }
 
-    public SimpleHolder<T> makeSibling() {
-        final SimpleHolder<T> holder = new SimpleHolder<>(this.t);
+    public SimpleTraverser<T> makeSibling() {
+        final SimpleTraverser<T> holder = new SimpleTraverser<>(this.t);
         holder.future = this.future;
         holder.loops = this.loops;
         return holder;
@@ -85,7 +85,7 @@ public class SimpleHolder<T> implements Holder<T> {
         return this.t.hashCode();
     }
 
-    public Holder<T> deflate() {
+    public Traverser<T> deflate() {
         if (this.t instanceof Vertex) {
             this.t = (T) MicroVertex.deflate((Vertex) this.t);
         } else if (this.t instanceof Edge) {
@@ -96,7 +96,7 @@ public class SimpleHolder<T> implements Holder<T> {
         return this;
     }
 
-    public Holder<T> inflate(final Vertex vertex) {
+    public Traverser<T> inflate(final Vertex vertex) {
         if (this.t instanceof MicroVertex) {
             this.t = (T) ((MicroVertex) this.t).inflate(vertex);
         } else if (this.t instanceof MicroEdge) {
@@ -108,8 +108,8 @@ public class SimpleHolder<T> implements Holder<T> {
     }
 
     public boolean equals(final Object object) {
-        if (object instanceof SimpleHolder)
-            return this.t.equals(((SimpleHolder) object).get());
+        if (object instanceof SimpleTraverser)
+            return this.t.equals(((SimpleTraverser) object).get());
         else
             return false;
     }

@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 
@@ -16,7 +16,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected String as;
     protected final Traversal traversal;
     protected ExpandableStepIterator<S> starts;
-    private Holder<E> nextEnd;
+    private Traverser<E> nextEnd;
     private boolean available;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
@@ -28,7 +28,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         this.as = UNDERSCORE + this.traversal.getSteps().size();
     }
 
-    public void addStarts(final Iterator<Holder<S>> starts) {
+    public void addStarts(final Iterator<Traverser<S>> starts) {
         this.starts.add((Iterator) starts);
     }
 
@@ -56,14 +56,14 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         return this.as;
     }
 
-    public Holder<E> next() {
+    public Traverser<E> next() {
         if (this.available) {
             this.available = false;
             return this.nextEnd;
         } else {
-            final Holder<E> holder = this.processNextStart();
-            holder.setFuture(this.nextStep.getAs());
-            return holder;
+            final Traverser<E> traverser = this.processNextStart();
+            traverser.setFuture(this.nextStep.getAs());
+            return traverser;
         }
     }
 
@@ -87,7 +87,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         return this.traversal;
     }
 
-    protected abstract Holder<E> processNextStart() throws NoSuchElementException;
+    protected abstract Traverser<E> processNextStart() throws NoSuchElementException;
 
     public String toString() {
         return TraversalHelper.makeStepString(this);

@@ -188,21 +188,21 @@ marko
 
 NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than it ever was before. In TinkerPop0 through TinkerPop2, Gremlin-Java was extremely verbose due to the simulation of lambdas via anonymous inner classes.  
 
-The Traversal Holder
-~~~~~~~~~~~~~~~~~~~~
+The Traverser
+~~~~~~~~~~~~~
 
 When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps are the middle of the traversal (e.g. `out("knows")` and `value("name")`), and the result is "traversal.next()'d" out of the right of the traversal (e.g. "vadas" and "josh").
 
 image::traversal-mechanics.png[width=500]
 
-In TinkerPop3, the objects propagating through the traversal are wrapped in a `Holder<T>`. The holder concept is new as of TinkerPop3 and provides the means by which steps remain stateless. A holder maintains all the metadata about the traversal -- e.g., how many times the object has gone through a loop, the path history of the object, etc. This data can be accessed by a step:
+In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept is new as of TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser, etc. This data can be accessed by a step:
 
 [source,groovy]
 marko.out('knows').name.path
 ==>[v[1], v[2], vadas]
 ==>[v[1], v[4], josh]
 
-In the general form of the expression, the input to the functions map, flatMap, and filter are a `Holder<T>`. Hence, the reason, the general form lambdas start with a `v.get()` (i.e. "get the raw object of the holder containing a vertex"). The general form of path-step demonstrates how the metadata of the holder is accessed without accessing the raw object. 
+In the general form of the expression, the input to the functions map, flatMap, and filter are a `Traverser<T>`. Hence, the reason, the general form lambdas start with a `v.get()` (i.e. "get the raw object of the traverser containing a vertex"). The general form of path-step demonstrates how the metadata of the traverser is accessed without accessing the raw object. 
 
 [source,groovy]
 marko
@@ -213,7 +213,7 @@ marko
 ==>[v[1], v[2], vadas]
 ==>[v[1], v[4], josh]
 
-CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective holder. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
+CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective traverser. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
 
 The Graph API
 =============

@@ -3,11 +3,11 @@ package com.tinkerpop.gremlin.process;
 import java.io.Serializable;
 import java.util.Iterator;
 
-public interface Step<S, E> extends Iterator<Holder<E>>, Serializable {
+public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable {
 
     public static final NoObject NO_OBJECT = new NoObject();
 
-    public void addStarts(final Iterator<Holder<S>> iterator);
+    public void addStarts(final Iterator<Traverser<S>> iterator);
 
     public void setPreviousStep(final Step<?, S> step);
 

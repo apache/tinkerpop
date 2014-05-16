@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.graph;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
@@ -91,13 +91,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// TRANSFORM STEPS /////////////////////
 
-    public default <E2> GraphTraversal<S, E2> map(final SFunction<Holder<E>, E2> function) {
+    public default <E2> GraphTraversal<S, E2> map(final SFunction<Traverser<E>, E2> function) {
         final MapStep<E, E2> mapStep = new MapStep<>(this);
         mapStep.setFunction(function);
         return (GraphTraversal) this.addStep(mapStep);
     }
 
-    public default <E2> GraphTraversal<S, E2> flatMap(final SFunction<Holder<E>, Iterator<E2>> function) {
+    public default <E2> GraphTraversal<S, E2> flatMap(final SFunction<Traverser<E>, Iterator<E2>> function) {
         final FlatMapStep<E, E2> flatMapStep = new FlatMapStep<>(this);
         flatMapStep.setFunction(function);
         return (GraphTraversal) this.addStep(flatMapStep);
@@ -195,7 +195,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new OrderStep<E>(this, (a, b) -> ((Comparable<E>) a.get()).compareTo(b.get())));
     }
 
-    public default GraphTraversal<S, E> order(final Comparator<Holder<E>> comparator) {
+    public default GraphTraversal<S, E> order(final Comparator<Traverser<E>> comparator) {
         return (GraphTraversal) this.addStep(new OrderStep<>(this, comparator));
     }
 
@@ -265,7 +265,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// FILTER STEPS /////////////////////
 
-    public default GraphTraversal<S, E> filter(final SPredicate<Holder<E>> predicate) {
+    public default GraphTraversal<S, E> filter(final SPredicate<Traverser<E>> predicate) {
         final FilterStep<E> filterStep = new FilterStep<>(this);
         filterStep.setPredicate(predicate);
         return (GraphTraversal) this.addStep(filterStep);
@@ -370,7 +370,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
-    public default GraphTraversal<S, E> sideEffect(final SConsumer<Holder<E>> consumer) {
+    public default GraphTraversal<S, E> sideEffect(final SConsumer<Traverser<E>> consumer) {
         return (GraphTraversal) this.addStep(new SideEffectStep<>(this, consumer));
     }
 
@@ -436,11 +436,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.jump(as, h -> true, h -> false);
     }
 
-    public default GraphTraversal<S, E> jump(final String as, final SPredicate<Holder<E>> ifPredicate) {
+    public default GraphTraversal<S, E> jump(final String as, final SPredicate<Traverser<E>> ifPredicate) {
         return this.jump(as, ifPredicate, h -> false);
     }
 
-    public default GraphTraversal<S, E> jump(final String as, final SPredicate<Holder<E>> ifPredicate, final SPredicate<Holder<E>> emitPredicate) {
+    public default GraphTraversal<S, E> jump(final String as, final SPredicate<Traverser<E>> ifPredicate, final SPredicate<Traverser<E>> emitPredicate) {
         return (GraphTraversal) this.addStep(new JumpStep<>(this, as, ifPredicate, emitPredicate));
     }
 
@@ -464,7 +464,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final FunctionRing functionRing = new FunctionRing(branchFunctions);
         try {
             while (true) {
-                final Path path = ((Holder) endStep.next()).getPath();
+                final Path path = ((Traverser) endStep.next()).getPath();
                 for (int i = 0; i < path.size(); i++) {
                     final Object object = functionRing.next().apply(path.get(i));
                     if (!depth.containsKey(object))

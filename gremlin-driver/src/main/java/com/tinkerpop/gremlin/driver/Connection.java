@@ -124,7 +124,7 @@ class Connection {
     }
 
     public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> future) {
-        // once there is a completed write, then create a holder for the result set and complete
+        // once there is a completed write, then create a traverser for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
         final Connection thisConnection = this;
         final ChannelPromise promise = channel.newPromise()

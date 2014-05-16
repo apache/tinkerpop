@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.MessageType;
@@ -26,13 +26,13 @@ public class TraversalCounterMessage extends TraversalMessage {
     private TraversalCounterMessage() {
     }
 
-    private TraversalCounterMessage(final Holder holder) {
-        super(holder);
+    private TraversalCounterMessage(final Traverser traverser) {
+        super(traverser);
         this.counter = 1l;
     }
 
-    public static TraversalCounterMessage of(final Holder holder) {
-        return new TraversalCounterMessage(holder);
+    public static TraversalCounterMessage of(final Traverser traverser) {
+        return new TraversalCounterMessage(traverser);
     }
 
     public Long getCounter() {
@@ -50,10 +50,10 @@ public class TraversalCounterMessage extends TraversalMessage {
                                   final Traversal traversal) {
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final Map<Holder, Long> localCounts = new HashMap<>();
+        final Map<Traverser, Long> localCounts = new HashMap<>();
 
         messages.forEach(message -> {
-            message.holder.inflate(vertex);
+            message.traverser.inflate(vertex);
             if (message.executeCounts(tracker, traversal, localCounts))
                 voteToHalt.set(false);
         });
@@ -88,23 +88,23 @@ public class TraversalCounterMessage extends TraversalMessage {
     }
 
     private boolean executeCounts(final TraversalCounters tracker,
-                                  final Traversal traversal, Map<Holder, Long> localCounts) {
+                                  final Traversal traversal, Map<Traverser, Long> localCounts) {
 
-        if (this.holder.isDone()) {
-            this.holder.deflate();
-            MapHelper.incr(tracker.getDoneGraphTracks(), this.holder, this.counter);
+        if (this.traverser.isDone()) {
+            this.traverser.deflate();
+            MapHelper.incr(tracker.getDoneGraphTracks(), this.traverser, this.counter);
             return false;
         }
 
-        final Step step = TraversalHelper.getAs(this.holder.getFuture(), traversal);
-        MapHelper.incr(tracker.getGraphTracks(), this.holder, this.counter);
+        final Step step = TraversalHelper.getAs(this.traverser.getFuture(), traversal);
+        MapHelper.incr(tracker.getGraphTracks(), this.traverser, this.counter);
         for (int i = 0; i < this.counter; i++) {
-            step.addStarts(new SingleIterator(this.holder));
+            step.addStarts(new SingleIterator(this.traverser));
         }
         return processStep(step, localCounts);
     }
 
-    private static boolean processStep(final Step<?, ?> step, final Map<Holder, Long> localCounts) {
+    private static boolean processStep(final Step<?, ?> step, final Map<Traverser, Long> localCounts) {
         final boolean messageSent = step.hasNext();
         step.forEachRemaining(holder -> MapHelper.incr(localCounts, holder, 1l));
         return messageSent;

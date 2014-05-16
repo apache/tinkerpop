@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
 import com.tinkerpop.gremlin.giraph.process.olap.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
-import com.tinkerpop.gremlin.process.SimpleHolder;
+import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounters;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
@@ -35,7 +35,7 @@ public class GremlinKryoVertexWriter extends VertexWriter {
 
         GremlinKryo kryo = GremlinKryo.create()
                 .addCustom(
-                        SimpleHolder.class,
+                        SimpleTraverser.class,
                         TraversalCounters.class)
                 .build();
         writer = KryoWriter.create().custom(kryo).build();

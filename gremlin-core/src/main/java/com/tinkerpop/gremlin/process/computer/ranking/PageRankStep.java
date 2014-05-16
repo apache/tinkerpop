@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.ranking;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -27,7 +27,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
         this(traversal, 0.85d);
     }
 
-    public Holder<Pair<Vertex, Double>> processNextStart() {
+    public Traverser<Pair<Vertex, Double>> processNextStart() {
         try {
             if (this.firstNext) {
                 this.resultantGraph = this.graph.compute().program(PageRankVertexProgram.create().alpha(this.alpha).getConfiguration()).submit().get().getValue0();
@@ -36,8 +36,8 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-        final Holder<Vertex> holder = this.starts.next();
-        final Vertex vertex = holder.get();
-        return holder.makeChild(this.getAs(), new Pair<>(vertex, (Double) this.resultantGraph.v(vertex.id()).value(PageRankVertexProgram.PAGE_RANK)));
+        final Traverser<Vertex> traverser = this.starts.next();
+        final Vertex vertex = traverser.get();
+        return traverser.makeChild(this.getAs(), new Pair<>(vertex, (Double) this.resultantGraph.v(vertex.id()).value(PageRankVertexProgram.PAGE_RANK)));
     }
 }

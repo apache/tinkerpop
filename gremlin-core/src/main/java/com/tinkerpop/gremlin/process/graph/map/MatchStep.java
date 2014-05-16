@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.process.Holder;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
@@ -56,44 +56,44 @@ public class MatchStep<S, E> extends AbstractStep<S, E> implements PathConsumer 
             throw new IllegalStateException("One of the match traversals must be an end traversal");
     }
 
-    protected Holder<E> processNextStart() {
+    protected Traverser<E> processNextStart() {
         while (true) {
             if (this.endTraversal.hasNext()) {
-                final Holder<E> holder = (Holder<E>) TraversalHelper.getEnd(this.endTraversal).next();
-                if (doPredicates(this.outAs, holder)) {
-                    return holder;
+                final Traverser<E> traverser = (Traverser<E>) TraversalHelper.getEnd(this.endTraversal).next();
+                if (doPredicates(this.outAs, traverser)) {
+                    return traverser;
                 }
             } else {
-                final Holder temp = this.starts.next();
+                final Traverser temp = this.starts.next();
                 temp.getPath().renameLastStep(this.inAs); // TODO: is this cool? this is the only place path is needed! (make this not a PathConsumer)
                 doMatch(this.inAs, temp);
             }
         }
     }
 
-    private void doMatch(final String as, final Holder holder) {
-        if (!doPredicates(as, holder))
+    private void doMatch(final String as, final Traverser traverser) {
+        if (!doPredicates(as, traverser))
             return;
 
         if (as.equals(this.endTraversalStartAs)) {
-            this.endTraversal.addStarts(new SingleIterator<>(holder));
+            this.endTraversal.addStarts(new SingleIterator<>(traverser));
             return;
         }
 
         for (final Traversal traversal : this.internalTraversals.get(as)) {
-            traversal.addStarts(new SingleIterator<>(holder));
+            traversal.addStarts(new SingleIterator<>(traverser));
             final Step<?, ?> endStep = TraversalHelper.getEnd(traversal);
             while (endStep.hasNext()) {
-                final Holder temp = endStep.next();
+                final Traverser temp = endStep.next();
                 doMatch(endStep.getAs(), temp);
             }
         }
     }
 
-    private boolean doPredicates(final String as, final Holder holder) {
+    private boolean doPredicates(final String as, final Traverser traverser) {
         if (this.predicateTraversals.containsKey(as)) {
             for (final Traversal traversal : this.predicateTraversals.get(as)) {
-                traversal.addStarts(new SingleIterator<>(holder));
+                traversal.addStarts(new SingleIterator<>(traverser));
                 if (!TraversalHelper.hasNextIteration(traversal))
                     return false;
             }

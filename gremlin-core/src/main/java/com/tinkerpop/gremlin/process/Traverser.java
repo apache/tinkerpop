@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Holder<T> extends Serializable {
+public interface Traverser<T> extends Serializable {
 
     public static final String NO_FUTURE = "noFuture";
 
@@ -33,11 +33,11 @@ public interface Holder<T> extends Serializable {
 
     public void setFuture(final String as);
 
-    public <R> Holder<R> makeChild(final String as, final R r);
+    public <R> Traverser<R> makeChild(final String as, final R r);
 
-    public Holder<T> makeSibling();
+    public Traverser<T> makeSibling();
 
-    public Holder<T> deflate();
+    public Traverser<T> deflate();
 
-    public Holder<T> inflate(final Vertex hostVertex);
+    public Traverser<T> inflate(final Vertex hostVertex);
 }
