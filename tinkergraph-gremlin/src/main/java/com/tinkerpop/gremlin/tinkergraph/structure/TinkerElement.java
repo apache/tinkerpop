@@ -41,7 +41,7 @@ abstract class TinkerElement implements Element, Serializable {
         final Map<String, Property> temp = new HashMap<>();
         this.properties.forEach((key, property) -> {
             if (key.startsWith(Graph.HIDDEN_PREFIX))
-                temp.put(key, property);
+                temp.put(ElementHelper.removeHiddenPrefix(key), property);
         });
         return temp;
     }

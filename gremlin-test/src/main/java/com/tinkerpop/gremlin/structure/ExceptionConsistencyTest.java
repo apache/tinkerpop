@@ -318,7 +318,7 @@ public class ExceptionConsistencyTest {
                 final Vertex v = this.g.addVertex();
                 v.property("names", AnnotatedList.make());
                 final Property<AnnotatedList<String>> names = v.property("names");
-                names.get().addValue(annotatedValue, arguments);
+                names.value().addValue(annotatedValue, arguments);
                 fail(String.format("Call to addValue should have thrown an exception with these arguments [%s]", arguments));
             } catch (Exception ex) {
                 assertEquals(expectedException.getClass(), ex.getClass());

@@ -165,13 +165,13 @@ public class PropertyTest {
         private void assertPropertyValue(final Element element) {
             if (value instanceof Map)
                 tryCommit(g, graph -> {
-                    final Map map = element.<Map>property("key").get();
+                    final Map map = element.<Map>property("key").value();
                     assertEquals(((Map) value).size(), map.size());
                     ((Map) value).keySet().forEach(k -> assertEquals(((Map) value).get(k), map.get(k)));
                 });
             else if (value instanceof List)
                 tryCommit(g, graph -> {
-                    final List l = element.<List>property("key").get();
+                    final List l = element.<List>property("key").value();
                     assertEquals(((List) value).size(), l.size());
                     for (int ix = 0; ix < ((List) value).size(); ix++) {
                         assertEquals(((List) value).get(ix), l.get(ix));
@@ -179,12 +179,12 @@ public class PropertyTest {
                 });
             else if (value instanceof MockSerializable)
                 tryCommit(g, graph -> {
-                    final MockSerializable mock = element.<MockSerializable>property("key").get();
+                    final MockSerializable mock = element.<MockSerializable>property("key").value();
                     assertEquals(((MockSerializable) value).getTestField(), mock.getTestField());
                 });
             else if (value instanceof boolean[])
                 tryCommit(g, graph -> {
-                    final boolean[] l = element.<boolean[]>property("key").get();
+                    final boolean[] l = element.<boolean[]>property("key").value();
                     assertEquals(((boolean[]) value).length, l.length);
                     for (int ix = 0; ix < ((boolean[]) value).length; ix++) {
                         assertEquals(((boolean[]) value)[ix], l[ix]);
@@ -192,7 +192,7 @@ public class PropertyTest {
                 });
             else if (value instanceof double[])
                 tryCommit(g, graph -> {
-                    final double[] l = element.<double[]>property("key").get();
+                    final double[] l = element.<double[]>property("key").value();
                     assertEquals(((double[]) value).length, l.length);
                     for (int ix = 0; ix < ((double[]) value).length; ix++) {
                         assertEquals(((double[]) value)[ix], l[ix], 0.0d);
@@ -200,7 +200,7 @@ public class PropertyTest {
                 });
             else if (value instanceof float[])
                 tryCommit(g, graph -> {
-                    final float[] l = element.<float[]>property("key").get();
+                    final float[] l = element.<float[]>property("key").value();
                     assertEquals(((float[]) value).length, l.length);
                     for (int ix = 0; ix < ((float[]) value).length; ix++) {
                         assertEquals(((float[]) value)[ix], l[ix], 0.0f);
@@ -208,7 +208,7 @@ public class PropertyTest {
                 });
             else if (value instanceof int[])
                 tryCommit(g, graph -> {
-                    final int[] l = element.<int[]>property("key").get();
+                    final int[] l = element.<int[]>property("key").value();
                     assertEquals(((int[]) value).length, l.length);
                     for (int ix = 0; ix < ((int[]) value).length; ix++) {
                         assertEquals(((int[]) value)[ix], l[ix]);
@@ -216,7 +216,7 @@ public class PropertyTest {
                 });
             else if (value instanceof long[])
                 tryCommit(g, graph -> {
-                    final long[] l = element.<long[]>property("key").get();
+                    final long[] l = element.<long[]>property("key").value();
                     assertEquals(((long[]) value).length, l.length);
                     for (int ix = 0; ix < ((long[]) value).length; ix++) {
                         assertEquals(((long[]) value)[ix], l[ix]);
@@ -224,14 +224,14 @@ public class PropertyTest {
                 });
             else if (value instanceof String[])
                 tryCommit(g, graph -> {
-                    final String[] l = element.<String[]>property("key").get();
+                    final String[] l = element.<String[]>property("key").value();
                     assertEquals(((String[]) value).length, l.length);
                     for (int ix = 0; ix < ((String[]) value).length; ix++) {
                         assertEquals(((String[]) value)[ix], l[ix]);
                     }
                 });
             else
-                tryCommit(g, graph -> assertEquals(value, element.property("key").get()));
+                tryCommit(g, graph -> assertEquals(value, element.property("key").value()));
         }
 
         private Edge createEdgeForPropertyFeatureTests() {

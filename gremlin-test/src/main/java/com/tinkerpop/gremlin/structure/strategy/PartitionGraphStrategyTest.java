@@ -9,18 +9,16 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class PartitionGraphStrategyTest extends AbstractGremlinTest {
-    private static final String partition = Property.Key.hidden("partition");
+    private static final String partition = Property.hidden("partition");
 
     public PartitionGraphStrategyTest() {
-        super(Optional.of(new PartitionGraphStrategy(partition, "A")));
+        super(Optional.of((GraphStrategy) new PartitionGraphStrategy(partition, "A")));
     }
 
     @Test
@@ -28,8 +26,8 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final Vertex v = g.addVertex("any", "thing");
 
         assertNotNull(v);
-        assertEquals("thing", v.property("any").get());
-        assertEquals("A", v.property(partition).get());
+        assertEquals("thing", v.property("any").value());
+        assertEquals("A", v.property(partition).value());
     }
 
     @Test
@@ -39,17 +37,17 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final Edge e = v1.addEdge("connectsTo", v2, "every", "thing");
 
         assertNotNull(v1);
-        assertEquals("thing", v1.property("any").get());
-        assertEquals("A", v2.property(partition).get());
+        assertEquals("thing", v1.property("any").value());
+        assertEquals("A", v2.property(partition).value());
 
         assertNotNull(v2);
-        assertEquals("thing", v2.property("some").get());
-        assertEquals("A", v2.property(partition).get());
+        assertEquals("thing", v2.property("some").value());
+        assertEquals("A", v2.property(partition).value());
 
         assertNotNull(e);
-        assertEquals("thing", e.property("every").get());
+        assertEquals("thing", e.property("every").value());
         assertEquals("connectsTo", e.label());
-        assertEquals("A", e.property(partition).get());
+        assertEquals("A", e.property(partition).value());
     }
 
     @Test
@@ -60,19 +58,19 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final Vertex vB = g.addVertex("any", "b");
 
         assertNotNull(vA);
-        assertEquals("a", vA.property("any").get());
-        assertEquals("A", vA.property(partition).get());
+        assertEquals("a", vA.property("any").value());
+        assertEquals("A", vA.property(partition).value());
 
         assertNotNull(vB);
-        assertEquals("b", vB.property("any").get());
-        assertEquals("B", vB.property(partition).get());
+        assertEquals("b", vB.property("any").value());
+        assertEquals("B", vB.property(partition).value());
 
         final GraphTraversal t = g.V();
         assertTrue(t.optimizers().get().stream().anyMatch(o -> o.getClass().equals(PartitionGraphStrategy.PartitionGraphTraversalOptimizer.class)));
 
         g.V().forEach(v -> {
             assertTrue(v instanceof StrategyWrappedVertex);
-            assertEquals("a", v.property("any").get());
+            assertEquals("a", v.property("any").value());
         });
 
         strategy.removeReadPartition("A");
@@ -80,7 +78,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
 
         g.V().forEach(v -> {
             assertTrue(v instanceof StrategyWrappedVertex);
-            assertEquals("b", v.property("any").get());
+            assertEquals("b", v.property("any").value());
         });
     }
 }

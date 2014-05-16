@@ -16,7 +16,7 @@ public class ValueStep<S, E> extends MapStep<S, E> {
             if (s instanceof AnnotatedValue)
                 return ((AnnotatedValue<E>) s).getValue();
             else if (s instanceof Property)
-                return ((Property<E>) s).get();
+                return ((Property<E>) s).value();
             else throw new IllegalStateException("A value can only be retrieved from a property or annotated value");
         });
     }

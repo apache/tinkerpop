@@ -12,47 +12,37 @@ import java.util.function.Supplier;
  */
 public abstract interface Property<V> {
 
-    public class Key {
-
-        /**
-         * A property key can not be constructed.
-         */
-        private Key() {
-        }
-
-        public static String hidden(final String key) {
-            return Graph.HIDDEN_PREFIX.concat(key);
-        }
-
+    public static String hidden(final String key) {
+        return Graph.HIDDEN_PREFIX.concat(key);
     }
 
-    public String getKey();
+    public String key();
 
-    public V get() throws NoSuchElementException;
+    public V value() throws NoSuchElementException;
 
     public boolean isPresent();
 
     public default void ifPresent(final Consumer<? super V> consumer) {
         if (this.isPresent())
-            consumer.accept(this.get());
+            consumer.accept(this.value());
     }
 
     public default V orElse(final V otherValue) {
-        return this.isPresent() ? this.get() : otherValue;
+        return this.isPresent() ? this.value() : otherValue;
     }
 
     public default V orElseGet(final Supplier<? extends V> edgeSupplier) {
-        return this.isPresent() ? this.get() : edgeSupplier.get();
+        return this.isPresent() ? this.value() : edgeSupplier.get();
     }
 
     public default <E extends Throwable> V orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
-        if (this.isPresent()) return this.get();
+        if (this.isPresent()) return this.value();
         else
             throw exceptionSupplier.get();
     }
 
     public default boolean isHidden() {
-        return this.getKey().startsWith(Graph.HIDDEN_PREFIX);
+        return this.key().startsWith(Graph.HIDDEN_PREFIX);
     }
 
     public <E extends Element> E getElement();
@@ -62,12 +52,12 @@ public abstract interface Property<V> {
     public static <V> Property<V> empty() {
         return new Property<V>() {
             @Override
-            public String getKey() {
+            public String key() {
                 throw Exceptions.propertyDoesNotExist();
             }
 
             @Override
-            public V get() throws NoSuchElementException {
+            public V value() throws NoSuchElementException {
                 throw Exceptions.propertyDoesNotExist();
             }
 

@@ -57,7 +57,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
                 newProperty = new TinkerProperty<>(this, key, value);
                 this.properties.put(key, newProperty);
             }
-            this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
+            this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.value() : null, this);
             return newProperty;
         }
     }

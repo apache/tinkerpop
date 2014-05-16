@@ -17,7 +17,7 @@ public final class Comparators {
     public static final Comparator<Holder<Element>> HELD_ELEMENT_COMPARATOR = Comparator.comparing(e -> e.get().id().toString(), String.CASE_INSENSITIVE_ORDER);
     public static final Comparator<Holder<Vertex>> HELD_VERTEX_COMPARATOR = Comparator.comparing(e -> e.get().id().toString(), String.CASE_INSENSITIVE_ORDER);
     public static final Comparator<Holder<Edge>> HELD_EDGE_COMPARATOR = Comparator.comparing(e -> e.get().id().toString(), String.CASE_INSENSITIVE_ORDER);
-    public static final Comparator<Property> PROPERTY_COMPARATOR = Comparator.comparing(Property::getKey, String.CASE_INSENSITIVE_ORDER);
+    public static final Comparator<Property> PROPERTY_COMPARATOR = Comparator.comparing(Property::key, String.CASE_INSENSITIVE_ORDER);
     public static final Comparator<Map.Entry<String,Property>> PROPERTY_ENTRY_COMPARATOR = Comparator.comparing(Map.Entry::getKey, String.CASE_INSENSITIVE_ORDER);
     public static final Comparator<Map.Entry<String,Object>> OBJECT_ENTRY_COMPARATOR = Comparator.comparing(Map.Entry::getKey, String.CASE_INSENSITIVE_ORDER);
 }

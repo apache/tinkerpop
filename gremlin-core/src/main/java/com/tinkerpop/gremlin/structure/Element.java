@@ -39,7 +39,7 @@ public abstract interface Element {
 
     public default Map<String, Object> values() {
         final Map<String, Object> values = new HashMap<>();
-        this.properties().forEach((k, p) -> values.put(k, p.get()));
+        this.properties().forEach((k, p) -> values.put(k, p.value()));
         return values;
     }
 
@@ -59,7 +59,7 @@ public abstract interface Element {
     public default <V> V value(final String key) throws NoSuchElementException {
         final Property<V> property = this.property(key);
         if (property.isPresent())
-            return property.get();
+            return property.value();
         else throw Property.Exceptions.propertyDoesNotExist(key);
     }
 

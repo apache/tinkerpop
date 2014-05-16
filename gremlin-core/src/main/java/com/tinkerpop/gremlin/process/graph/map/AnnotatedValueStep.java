@@ -20,7 +20,7 @@ public class AnnotatedValueStep<V> extends FlatMapStep<Vertex, AnnotatedValue<V>
         this.annotatedListKey = propertyKey;
         this.setFunction(holder -> {
             final Property<AnnotatedList> property = holder.get().<AnnotatedList>property(propertyKey);
-            return property.isPresent() ? property.get().annotatedValues() : Collections.emptyIterator();
+            return property.isPresent() ? property.value().annotatedValues() : Collections.emptyIterator();
         });
     }
 }

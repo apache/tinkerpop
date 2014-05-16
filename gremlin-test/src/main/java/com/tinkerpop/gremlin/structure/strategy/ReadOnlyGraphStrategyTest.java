@@ -88,7 +88,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         final Vertex v = g.addVertex();
         v.property("test", "test");
         final Property<String> p = v.property("test");
-        assertEquals("test", p.get());
+        assertEquals("test", p.value());
 
         assertException(g -> {
 			final Property<String> prop = g.V().next().property("test");
@@ -103,7 +103,7 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         final Edge e = v.addEdge("friend", v);
         e.properties("test", "test");
         final Property<String> p = e.property("test");
-        assertEquals("test", p.get());
+        assertEquals("test", p.value());
 
 		assertException(g -> {
 			final Property<String> prop = g.E().next().property("test");

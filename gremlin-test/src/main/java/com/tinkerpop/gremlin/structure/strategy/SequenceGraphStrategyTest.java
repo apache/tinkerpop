@@ -31,7 +31,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @Test
     public void shouldAppendPropertyValuesInOrderToVertex() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
+        swg.strategy().setGraphStrategy(Optional.of((GraphStrategy)new SequenceGraphStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -74,15 +74,15 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         final Vertex v = swg.addVertex("any", "thing");
 
         assertNotNull(v);
-        assertEquals("thing", v.property("any").get());
-        assertEquals("working3", v.property("anonymous").get());
-        assertEquals("anything", v.property("try").get());
+        assertEquals("thing", v.property("any").value());
+        assertEquals("working3", v.property("anonymous").value());
+        assertEquals("anything", v.property("try").value());
     }
 
     @Test(expected = RuntimeException.class)
     public void shouldShortCircuitStrategyWithException() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
+        swg.strategy().setGraphStrategy(Optional.of((GraphStrategy)new SequenceGraphStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -119,7 +119,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @Test
     public void shouldShortCircuitStrategyWithNoOp() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
+        swg.strategy().setGraphStrategy(Optional.of((GraphStrategy) new SequenceGraphStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -155,7 +155,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
     @Test
     public void shouldDoSomethingBeforeAndAfter() {
         final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-        swg.strategy().setGraphStrategy(Optional.of(new SequenceGraphStrategy(
+        swg.strategy().setGraphStrategy(Optional.of((GraphStrategy)new SequenceGraphStrategy(
                 new GraphStrategy() {
                     @Override
                     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context ctx) {
@@ -174,7 +174,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
                             // this  means that the next strategy and those below it executed including
                             // the implementation
-                            assertEquals("working3", v.property("anonymous").get());
+                            assertEquals("working3", v.property("anonymous").value());
 
                             // now do something with that vertex after the fact
                             v.property("anonymous", "working2");
@@ -198,8 +198,8 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         final Vertex v = swg.addVertex("any", "thing");
 
         assertNotNull(v);
-        assertEquals("thing", v.property("any").get());
-        assertEquals("working2", v.property("anonymous").get());
+        assertEquals("thing", v.property("any").value());
+        assertEquals("working2", v.property("anonymous").value());
     }
 
     @Test

@@ -41,8 +41,8 @@ public class VertexTest extends AbstractGremlinTest {
         final Vertex v = g.addVertex("name", "marko", "age", 34);
         assertEquals(34, (int) v.value("age"));
         assertEquals("marko", v.<String>value("name"));
-        assertEquals(34, (int) v.property("age").get());
-        assertEquals("marko", v.<String>property("name").get());
+        assertEquals(34, (int) v.property("age").value());
+        assertEquals("marko", v.<String>property("name").value());
         assertEquals(2, v.properties().size());
         assertEquals(2, v.keys().size());
         assertTrue(v.keys().contains("name"));
@@ -53,8 +53,8 @@ public class VertexTest extends AbstractGremlinTest {
         v.property("name", "marko rodriguez");
         assertEquals(34, (int) v.value("age"));
         assertEquals("marko rodriguez", v.<String>value("name"));
-        assertEquals(34, (int) v.property("age").get());
-        assertEquals("marko rodriguez", v.<String>property("name").get());
+        assertEquals(34, (int) v.property("age").value());
+        assertEquals("marko rodriguez", v.<String>property("name").value());
         assertEquals(2, v.properties().size());
         assertEquals(2, v.keys().size());
         assertTrue(v.keys().contains("name"));
@@ -65,7 +65,7 @@ public class VertexTest extends AbstractGremlinTest {
         v.property("location", "santa fe");
         assertEquals(3, v.properties().size());
         assertEquals(3, v.keys().size());
-        assertEquals("santa fe", v.property("location").get());
+        assertEquals("santa fe", v.property("location").value());
         assertEquals(v.property("location"), v.property("location"));
         assertNotEquals(v.property("location"), v.property("name"));
         assertTrue(v.keys().contains("name"));
@@ -194,9 +194,9 @@ public class VertexTest extends AbstractGremlinTest {
 
         final Map<String, Property> m = v.properties();
         assertEquals(3, m.size());
-        assertEquals("name", m.get("name").getKey());
-        assertEquals("location", m.get("location").getKey());
-        assertEquals("status", m.get("status").getKey());
+        assertEquals("name", m.get("name").key());
+        assertEquals("location", m.get("location").key());
+        assertEquals("status", m.get("status").key());
         assertEquals("marko", m.get("name").orElse(""));
         assertEquals("desert", m.get("location").orElse(""));
         assertEquals("dope", m.get("status").orElse(""));

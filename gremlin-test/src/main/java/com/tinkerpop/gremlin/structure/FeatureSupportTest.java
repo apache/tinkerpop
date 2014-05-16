@@ -252,7 +252,7 @@ public class FeatureSupportTest  {
                 // todo: using a FeatureRequirement check on the test itself to avoid an exception on addVertex when the graph doesn't support AnnotatedList...rethink
                 final Vertex v = g.addVertex("key", AnnotatedList.make());
                 final Property<AnnotatedList<String>> al = v.property("key");
-                al.get().addValue("v", "t", value);
+                al.value().addValue("v", "t", value);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
             } catch (UnsupportedOperationException e) {
                 assertEquals(AnnotatedValue.Exceptions.dataTypeOfAnnotatedValueNotSupported(value).getMessage(), e.getMessage());

@@ -33,8 +33,8 @@ public class CachedProperty<V> implements Property, Serializable {
     public CachedProperty(final Property property) {
         if (null == property) throw Graph.Exceptions.argumentCanNotBeNull("property");
 
-        this.key = property.getKey();
-        this.value = (V) property.get();
+        this.key = property.key();
+        this.value = (V) property.value();
         this.hashCode = property.hashCode();
         final Element ele = property.getElement();
         if (ele instanceof Vertex)
@@ -47,11 +47,11 @@ public class CachedProperty<V> implements Property, Serializable {
         return true;
     }
 
-    public String getKey() {
+    public String key() {
         return this.key;
     }
 
-    public V get() {
+    public V value() {
         return this.value;
     }
 

@@ -79,7 +79,7 @@ abstract class Neo4jElement implements Element {
         final Set<String> keys = new HashSet<>();
         for (final String key : this.rawElement.getPropertyKeys()) {
             if (key.startsWith(Graph.HIDDEN_PREFIX))
-                keys.add(key);
+                keys.add(ElementHelper.removeHiddenPrefix(key));
         }
         return keys;
     }

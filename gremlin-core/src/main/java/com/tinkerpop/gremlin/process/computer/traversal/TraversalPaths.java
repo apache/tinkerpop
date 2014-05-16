@@ -23,7 +23,7 @@ public class TraversalPaths implements Serializable {
 
     public TraversalPaths(final Vertex vertex) {
         final Property<TraversalPaths> tracker = vertex.property(TraversalVertexProgram.TRAVERSAL_TRACKER);
-        this.previousObjectTracks = tracker.isPresent() ? tracker.get().objectTracks : new HashMap<>();
+        this.previousObjectTracks = tracker.isPresent() ? tracker.value().objectTracks : new HashMap<>();
     }
 
     public Map<Object, List<Holder>> getDoneGraphTracks() {

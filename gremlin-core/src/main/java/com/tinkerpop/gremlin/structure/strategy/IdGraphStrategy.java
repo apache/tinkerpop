@@ -86,7 +86,7 @@ public class IdGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return supportsAnId(ctx.getCurrent().getClass()) ?
-                (f) -> () -> ctx.getCurrent().getBaseElement().property(idKey).get() : UnaryOperator.identity();
+                (f) -> () -> ctx.getCurrent().getBaseElement().property(idKey).value() : UnaryOperator.identity();
     }
 
     @Override
@@ -126,7 +126,7 @@ public class IdGraphStrategy implements GraphStrategy {
 
     /**
      * Gets the property name of the key used to lookup graph elements.  This is a "hidden" key created by
-     * {@link Property.Key#hidden(String)}.  Use this value to create an index in the underlying graph instance.
+     * {@link com.tinkerpop.gremlin.structure.Property#hidden(String)}.  Use this value to create an index in the underlying graph instance.
      */
     public String getIdKey() {
         return this.idKey;
@@ -182,7 +182,7 @@ public class IdGraphStrategy implements GraphStrategy {
             if (!this.supportsEdgeId && !this.supportsVertexId)
                 throw new IllegalStateException("Since supportsEdgeId and supportsVertexId are false, there is no need to use IdGraphStrategy");
 
-            final String keyForId = this.hiddenIdKey ? Property.Key.hidden(this.idKey) : this.idKey;
+            final String keyForId = this.hiddenIdKey ? Property.hidden(this.idKey) : this.idKey;
             return new IdGraphStrategy(keyForId, this.vertexIdSupplier, this.edgeIdSupplier,
                     this.supportsVertexId, this.supportsEdgeId);
         }

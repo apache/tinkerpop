@@ -22,13 +22,13 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
     }
 
     @Override
-    public String getKey() {
-        return this.baseProperty.getKey();
+    public String key() {
+        return this.baseProperty.key();
     }
 
     @Override
-    public V get() throws NoSuchElementException {
-        return this.baseProperty.get();
+    public V value() throws NoSuchElementException {
+        return this.baseProperty.value();
     }
 
     @Override

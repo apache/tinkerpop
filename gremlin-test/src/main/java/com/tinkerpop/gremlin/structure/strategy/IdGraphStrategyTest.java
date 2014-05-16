@@ -15,10 +15,7 @@ import java.util.UUID;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -30,7 +27,7 @@ public class IdGraphStrategyTest {
     public static class DefaultIdGraphStrategyTest extends AbstractGremlinTest {
 
         public DefaultIdGraphStrategyTest() {
-            super(Optional.of(new IdGraphStrategy.Builder(idKey).build()));
+            super(Optional.of((GraphStrategy) new IdGraphStrategy.Builder(idKey).build()));
         }
 
         @Test
@@ -41,13 +38,13 @@ public class IdGraphStrategyTest {
             tryCommit(g, c -> {
                 assertNotNull(v);
                 assertEquals("test", v.id());
-                assertEquals("test", v.property(strategy.getIdKey()).get());
-                assertEquals("else", v.property("something").get());
+                assertEquals("test", v.property(strategy.getIdKey()).value());
+                assertEquals("else", v.property("something").value());
 
                 final Vertex found = g.v("test");
                 assertEquals("test", found.id());
-                assertEquals("test", found.property(strategy.getIdKey()).get());
-                assertEquals("else", found.property("something").get());
+                assertEquals("test", found.property(strategy.getIdKey()).value());
+                assertEquals("else", found.property("something").value());
 
             });
         }
@@ -62,13 +59,13 @@ public class IdGraphStrategyTest {
             tryCommit(g, c -> {
                 assertNotNull(e);
                 assertEquals("edge-id", e.id());
-                assertEquals("edge-id", e.property(strategy.getIdKey()).get());
-                assertEquals("this", e.property("try").get());
+                assertEquals("edge-id", e.property(strategy.getIdKey()).value());
+                assertEquals("this", e.property("try").value());
 
                 final Edge found = g.e("edge-id");
                 assertEquals("edge-id", found.id());
-                assertEquals("edge-id", found.property(strategy.getIdKey()).get());
-                assertEquals("this", found.property("try").get());
+                assertEquals("edge-id", found.property(strategy.getIdKey()).value());
+                assertEquals("this", found.property("try").value());
             });
         }
 
@@ -80,13 +77,13 @@ public class IdGraphStrategyTest {
             tryCommit(g, c -> {
                 assertNotNull(v);
                 assertNotNull(UUID.fromString(v.id().toString()));
-                assertNotNull(UUID.fromString(v.property(strategy.getIdKey()).get().toString()));
-                assertEquals("else", v.property("something").get());
+                assertNotNull(UUID.fromString(v.property(strategy.getIdKey()).value().toString()));
+                assertEquals("else", v.property("something").value());
 
                 final Vertex found = g.v(v.id());
                 assertNotNull(UUID.fromString(found.id().toString()));
-                assertNotNull(UUID.fromString(found.property(strategy.getIdKey()).get().toString()));
-                assertEquals("else", found.property("something").get());
+                assertNotNull(UUID.fromString(found.property(strategy.getIdKey()).value().toString()));
+                assertEquals("else", found.property("something").value());
             });
         }
 
@@ -100,20 +97,20 @@ public class IdGraphStrategyTest {
             tryCommit(g, c -> {
                 assertNotNull(e);
                 assertNotNull(UUID.fromString(e.id().toString()));
-                assertNotNull(UUID.fromString(e.property(strategy.getIdKey()).get().toString()));
-                assertEquals("this", e.property("try").get());
+                assertNotNull(UUID.fromString(e.property(strategy.getIdKey()).value().toString()));
+                assertEquals("this", e.property("try").value());
 
                 final Edge found = g.e(e.id());
                 assertNotNull(UUID.fromString(found.id().toString()));
-                assertNotNull(UUID.fromString(found.property(strategy.getIdKey()).get().toString()));
-                assertEquals("this", found.property("try").get());
+                assertNotNull(UUID.fromString(found.property(strategy.getIdKey()).value().toString()));
+                assertEquals("this", found.property("try").value());
             });
         }
     }
 
     public static class VertexIdMakerIdGraphStrategyTest extends AbstractGremlinTest {
         public VertexIdMakerIdGraphStrategyTest() {
-            super(Optional.of(new IdGraphStrategy.Builder(idKey)
+            super(Optional.of((GraphStrategy) new IdGraphStrategy.Builder(idKey)
                     .vertexIdMaker(() -> "100").build()));
         }
 
@@ -125,13 +122,13 @@ public class IdGraphStrategyTest {
             tryCommit(g, c -> {
                 assertNotNull(v);
                 assertEquals("100", v.id());
-                assertEquals("100", v.property(strategy.getIdKey()).get());
-                assertEquals("else", v.property("something").get());
+                assertEquals("100", v.property(strategy.getIdKey()).value());
+                assertEquals("else", v.property("something").value());
 
                 final Vertex found = g.v("100");
                 assertEquals("100", found.id());
-                assertEquals("100", found.property(strategy.getIdKey()).get());
-                assertEquals("else", found.property("something").get());
+                assertEquals("100", found.property(strategy.getIdKey()).value());
+                assertEquals("else", found.property("something").value());
 
             });
         }
@@ -139,7 +136,7 @@ public class IdGraphStrategyTest {
 
     public static class EdgeIdMakerIdGraphStrategyTest extends AbstractGremlinTest {
         public EdgeIdMakerIdGraphStrategyTest() {
-            super(Optional.of(new IdGraphStrategy.Builder(idKey)
+            super(Optional.of((GraphStrategy) new IdGraphStrategy.Builder(idKey)
                     .edgeIdMaker(() -> "100").build()));
         }
 
@@ -153,20 +150,20 @@ public class IdGraphStrategyTest {
             tryCommit(g, c -> {
                 assertNotNull(e);
                 assertEquals("100", e.id());
-                assertEquals("100", e.property(strategy.getIdKey()).get());
-                assertEquals("this", e.property("try").get());
+                assertEquals("100", e.property(strategy.getIdKey()).value());
+                assertEquals("this", e.property("try").value());
 
                 final Edge found = g.e("100");
                 assertEquals("100", found.id());
-                assertEquals("100", found.property(strategy.getIdKey()).get());
-                assertEquals("this", found.property("try").get());
+                assertEquals("100", found.property(strategy.getIdKey()).value());
+                assertEquals("this", found.property("try").value());
             });
         }
     }
 
     public static class VertexIdNotSupportedIdGraphStrategyTest extends AbstractGremlinTest {
         public VertexIdNotSupportedIdGraphStrategyTest() {
-            super(Optional.of(new IdGraphStrategy.Builder(idKey)
+            super(Optional.of((GraphStrategy) new IdGraphStrategy.Builder(idKey)
                     .supportsVertexId(false).build()));
         }
 
@@ -180,12 +177,12 @@ public class IdGraphStrategyTest {
                 assertNotNull(v);
                 assertEquals("test", v.id());
                 assertFalse(v.property(strategy.getIdKey()).isPresent());
-                assertEquals("else", v.property("something").get());
+                assertEquals("else", v.property("something").value());
 
                 final Vertex found = g.v("test");
                 assertEquals("test", found.id());
                 assertFalse(found.property(strategy.getIdKey()).isPresent());
-                assertEquals("else", found.property("something").get());
+                assertEquals("else", found.property("something").value());
             });
         }
 
@@ -198,13 +195,13 @@ public class IdGraphStrategyTest {
             tryCommit(g, c -> {
                 assertNotNull(v);
                 assertEquals("test", v.id());
-                assertEquals("should be ok to set this as supportsEdgeId=true", v.property(strategy.getIdKey()).get());
-                assertEquals("else", v.property("something").get());
+                assertEquals("should be ok to set this as supportsEdgeId=true", v.property(strategy.getIdKey()).value());
+                assertEquals("else", v.property("something").value());
 
                 final Vertex found = g.v("test");
                 assertEquals("test", found.id());
-                assertEquals("should be ok to set this as supportsEdgeId=true", found.property(strategy.getIdKey()).get());
-                assertEquals("else", found.property("something").get());
+                assertEquals("should be ok to set this as supportsEdgeId=true", found.property(strategy.getIdKey()).value());
+                assertEquals("else", found.property("something").value());
             });
 
             try {
@@ -226,7 +223,7 @@ public class IdGraphStrategyTest {
 
     public static class EdgeIdNotSupportedIdGraphStrategyTest extends AbstractGremlinTest {
         public EdgeIdNotSupportedIdGraphStrategyTest() {
-            super(Optional.of(new IdGraphStrategy.Builder(idKey)
+            super(Optional.of((GraphStrategy) new IdGraphStrategy.Builder(idKey)
                     .supportsEdgeId(false).build()));
         }
 
@@ -242,12 +239,12 @@ public class IdGraphStrategyTest {
                 assertNotNull(e);
                 assertEquals("edge-id", e.id());
                 assertFalse(e.property(strategy.getIdKey()).isPresent());
-                assertEquals("this", e.property("try").get());
+                assertEquals("this", e.property("try").value());
 
                 final Edge found = g.e("edge-id");
                 assertEquals("edge-id", found.id());
                 assertFalse(found.property(strategy.getIdKey()).isPresent());
-                assertEquals("this", found.property("try").get());
+                assertEquals("this", found.property("try").value());
             });
         }
 
@@ -262,13 +259,13 @@ public class IdGraphStrategyTest {
             tryCommit(g, c -> {
                 assertNotNull(e);
                 assertEquals("edge-id", e.id());
-                assertEquals("this", e.property("try").get());
-                assertEquals("should be ok to set this as supportsEdgeId=false", e.property(strategy.getIdKey()).get());
+                assertEquals("this", e.property("try").value());
+                assertEquals("should be ok to set this as supportsEdgeId=false", e.property(strategy.getIdKey()).value());
 
                 final Edge found = g.e("edge-id");
                 assertEquals("edge-id", found.id());
-                assertEquals("this", found.property("try").get());
-                assertEquals("should be ok to set this as supportsEdgeId=false", found.property(strategy.getIdKey()).get());
+                assertEquals("this", found.property("try").value());
+                assertEquals("should be ok to set this as supportsEdgeId=false", found.property(strategy.getIdKey()).value());
             });
 
             try {

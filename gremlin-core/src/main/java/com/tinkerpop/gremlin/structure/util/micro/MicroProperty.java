@@ -31,8 +31,8 @@ public class MicroProperty<V> implements Property, Serializable {
         if (null == property)
             throw Graph.Exceptions.argumentCanNotBeNull("property");
 
-        this.key = property.getKey();
-        this.value = (V) property.get();
+        this.key = property.key();
+        this.value = (V) property.value();
         this.hashCode = property.hashCode();
         this.element = property.getElement() instanceof Vertex ?
                 MicroVertex.deflate((Vertex) property.getElement()) :
@@ -43,11 +43,11 @@ public class MicroProperty<V> implements Property, Serializable {
         return true;
     }
 
-    public String getKey() {
+    public String key() {
         return this.key;
     }
 
-    public V get() {
+    public V value() {
         return this.value;
     }
 
@@ -81,7 +81,7 @@ public class MicroProperty<V> implements Property, Serializable {
                     .filter(e -> e.id().equals(id))
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("The micro property could not be be found at the provided vertex's edges"))
-                    .property(this.getKey());
+                    .property(this.key());
 
         }
     }

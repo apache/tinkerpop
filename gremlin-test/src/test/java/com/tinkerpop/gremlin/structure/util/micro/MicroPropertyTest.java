@@ -24,9 +24,9 @@ public class MicroPropertyTest {
         when(v.id()).thenReturn("1");
 
         final Property p = mock(Property.class);
-        when(p.getKey()).thenReturn("k");
+        when(p.key()).thenReturn("k");
         when(p.getElement()).thenReturn(v);
-        when(p.get()).thenReturn("val");
+        when(p.value()).thenReturn("val");
 
         this.mp = MicroProperty.deflate(p);
     }
@@ -38,8 +38,8 @@ public class MicroPropertyTest {
 
     @Test
     public void shouldConstructMicroPropertyWithPropertyFromVertex() {
-        assertEquals("k", mp.getKey());
-        assertEquals("val", mp.get());
+        assertEquals("k", mp.key());
+        assertEquals("val", mp.value());
         assertEquals(MicroVertex.class, mp.getElement().getClass());
     }
 
@@ -52,13 +52,13 @@ public class MicroPropertyTest {
         when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
         final Property p = mock(Property.class);
-        when(p.getKey()).thenReturn("k");
+        when(p.key()).thenReturn("k");
         when(p.getElement()).thenReturn(e);
-        when(p.get()).thenReturn("val");
+        when(p.value()).thenReturn("val");
 
         final MicroProperty mp = MicroProperty.deflate(p);
-        assertEquals("k", mp.getKey());
-        assertEquals("val", mp.get());
+        assertEquals("k", mp.key());
+        assertEquals("val", mp.value());
         assertEquals(MicroEdge.class, mp.getElement().getClass());
     }
 
@@ -72,9 +72,9 @@ public class MicroPropertyTest {
         final Vertex v = mock(Vertex.class);
         when(v.id()).thenReturn("1");
         final Property p = mock(Property.class);
-        when(p.getKey()).thenReturn("k");
+        when(p.key()).thenReturn("k");
         when(p.getElement()).thenReturn(v);
-        when(p.get()).thenReturn("val");
+        when(p.value()).thenReturn("val");
 
         final MicroProperty mp2 = MicroProperty.deflate(p);
 
@@ -86,9 +86,9 @@ public class MicroPropertyTest {
         final Vertex v = mock(Vertex.class);
         when(v.id()).thenReturn("2");
         final Property p = mock(Property.class);
-        when(p.getKey()).thenReturn("k");
+        when(p.key()).thenReturn("k");
         when(p.getElement()).thenReturn(v);
-        when(p.get()).thenReturn("val");
+        when(p.value()).thenReturn("val");
 
         final MicroProperty mp2 = MicroProperty.deflate(p);
 
@@ -100,9 +100,9 @@ public class MicroPropertyTest {
         final Vertex v = mock(Vertex.class);
         when(v.id()).thenReturn("1");
         final Property p = mock(Property.class);
-        when(p.getKey()).thenReturn("k1");
+        when(p.key()).thenReturn("k1");
         when(p.getElement()).thenReturn(v);
-        when(p.get()).thenReturn("val");
+        when(p.value()).thenReturn("val");
 
         final MicroProperty mp2 = MicroProperty.deflate(p);
 
@@ -114,9 +114,9 @@ public class MicroPropertyTest {
         final Vertex v = mock(Vertex.class);
         when(v.id()).thenReturn("1");
         final Property p = mock(Property.class);
-        when(p.getKey()).thenReturn("k");
+        when(p.key()).thenReturn("k");
         when(p.getElement()).thenReturn(v);
-        when(p.get()).thenReturn("val1");
+        when(p.value()).thenReturn("val1");
 
         final MicroProperty mp2 = MicroProperty.deflate(p);
 

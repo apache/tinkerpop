@@ -105,9 +105,9 @@ public class EdgeTest extends AbstractGremlinTest {
 
         final Map<String,Property> m = e.properties();
         assertEquals(3, m.size());
-        assertEquals("name", m.get("name").getKey());
-        assertEquals("location", m.get("location").getKey());
-        assertEquals("status", m.get("status").getKey());
+        assertEquals("name", m.get("name").key());
+        assertEquals("location", m.get("location").key());
+        assertEquals("status", m.get("status").key());
         assertEquals("marko", m.get("name").orElse(""));
         assertEquals("desert", m.get("location").orElse(""));
         assertEquals("dope", m.get("status").orElse(""));

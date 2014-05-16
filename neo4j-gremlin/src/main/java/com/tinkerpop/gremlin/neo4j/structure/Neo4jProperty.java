@@ -29,11 +29,11 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
         return (E) this.element;
     }
 
-    public String getKey() {
-        return this.key;
+    public String key() {
+        return ElementHelper.removeHiddenPrefix(this.key);
     }
 
-    public V get() {
+    public V value() {
         return this.value;
     }
 

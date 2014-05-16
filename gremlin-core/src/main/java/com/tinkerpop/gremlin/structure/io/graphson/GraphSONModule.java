@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.AnnotatedValue;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
@@ -69,7 +68,7 @@ public class GraphSONModule extends SimpleModule {
 
             m.put(GraphSONTokens.PROPERTIES,
                     edge.properties().values().stream().collect(
-                            Collectors.toMap(Property::getKey, Property::get)));
+                            Collectors.toMap(Property::key, Property::value)));
 
             jsonGenerator.writeObject(m);
         }
@@ -102,7 +101,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
             m.put(GraphSONTokens.PROPERTIES,
                     vertex.properties().values().stream().collect(
-                            Collectors.toMap(Property::getKey, p -> (p.get() instanceof AnnotatedList) ? IoAnnotatedList.from((AnnotatedList) p.get()) : p.get())));
+                            Collectors.toMap(Property::key, p -> (p.value() instanceof AnnotatedList) ? IoAnnotatedList.from((AnnotatedList) p.value()) : p.value())));
 
             jsonGenerator.writeObject(m);
         }

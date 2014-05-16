@@ -149,10 +149,10 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writePropertyValue(final Output output, final Property val) {
-        if (val.get() instanceof AnnotatedList)
-            kryo.writeClassAndObject(output, IoAnnotatedList.from((AnnotatedList) val.get()));
+        if (val.value() instanceof AnnotatedList)
+            kryo.writeClassAndObject(output, IoAnnotatedList.from((AnnotatedList) val.value()));
         else
-            kryo.writeClassAndObject(output, val.get());
+            kryo.writeClassAndObject(output, val.value());
     }
 
     public static Builder create() {

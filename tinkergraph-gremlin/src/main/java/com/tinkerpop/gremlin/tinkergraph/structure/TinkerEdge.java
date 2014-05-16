@@ -47,7 +47,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
             final Property oldProperty = super.property(key);
             final Property newProperty = new TinkerProperty<>(this, key, value);
             this.properties.put(key, newProperty);
-            this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.get() : null, this);
+            this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.value() : null, this);
             return newProperty;
         }
     }

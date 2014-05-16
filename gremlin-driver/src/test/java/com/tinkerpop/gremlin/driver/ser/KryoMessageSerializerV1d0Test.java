@@ -158,7 +158,7 @@ public class KryoMessageSerializerV1d0Test {
         final Map<String,Property> properties = deserializedVertex.properties();
         assertEquals(1, properties.size());
 
-        final List<Object> deserializedInnerList = (List<Object>) properties.get("friends").get();
+        final List<Object> deserializedInnerList = (List<Object>) properties.get("friends").value();
         assertEquals(3, deserializedInnerList.size());
         assertEquals("x", deserializedInnerList.get(0));
         assertEquals(5, deserializedInnerList.get(1));

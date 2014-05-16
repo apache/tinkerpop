@@ -105,7 +105,7 @@ public class ElementHelperTest {
 
     @Test
     public void shouldAllowEvenNumberOfKeyValuesAndValidKeys() {
-        ElementHelper.legalPropertyKeyValueArray("key", "test", "value-for-this-one", 1, Property.Key.hidden("1"), "none");
+        ElementHelper.legalPropertyKeyValueArray("key", "test", "value-for-this-one", 1, Property.hidden("1"), "none");
     }
 
     @Test
@@ -324,10 +324,10 @@ public class ElementHelperTest {
         when(mockPropertyB.isPresent()).thenReturn(true);
         when(mockPropertyA.getElement()).thenReturn(mockElement);
         when(mockPropertyB.getElement()).thenReturn(mockElement);
-        when(mockPropertyA.getKey()).thenReturn("k");
-        when(mockPropertyB.getKey()).thenReturn("k");
-        when(mockPropertyA.get()).thenReturn("v");
-        when(mockPropertyB.get()).thenReturn("v");
+        when(mockPropertyA.key()).thenReturn("k");
+        when(mockPropertyB.key()).thenReturn("k");
+        when(mockPropertyA.value()).thenReturn("v");
+        when(mockPropertyB.value()).thenReturn("v");
 
         assertTrue(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
     }
@@ -342,10 +342,10 @@ public class ElementHelperTest {
         when(mockPropertyB.isPresent()).thenReturn(true);
         when(mockPropertyA.getElement()).thenReturn(mockElement);
         when(mockPropertyB.getElement()).thenReturn(mockElementDifferent);
-        when(mockPropertyA.getKey()).thenReturn("k");
-        when(mockPropertyB.getKey()).thenReturn("k");
-        when(mockPropertyA.get()).thenReturn("v");
-        when(mockPropertyB.get()).thenReturn("v");
+        when(mockPropertyA.key()).thenReturn("k");
+        when(mockPropertyB.key()).thenReturn("k");
+        when(mockPropertyA.value()).thenReturn("v");
+        when(mockPropertyB.value()).thenReturn("v");
 
         assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
     }
@@ -359,10 +359,10 @@ public class ElementHelperTest {
         when(mockPropertyB.isPresent()).thenReturn(true);
         when(mockPropertyA.getElement()).thenReturn(mockElement);
         when(mockPropertyB.getElement()).thenReturn(mockElement);
-        when(mockPropertyA.getKey()).thenReturn("k");
-        when(mockPropertyB.getKey()).thenReturn("k1");
-        when(mockPropertyA.get()).thenReturn("v");
-        when(mockPropertyB.get()).thenReturn("v");
+        when(mockPropertyA.key()).thenReturn("k");
+        when(mockPropertyB.key()).thenReturn("k1");
+        when(mockPropertyA.value()).thenReturn("v");
+        when(mockPropertyB.value()).thenReturn("v");
 
         assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
     }
@@ -376,10 +376,10 @@ public class ElementHelperTest {
         when(mockPropertyB.isPresent()).thenReturn(true);
         when(mockPropertyA.getElement()).thenReturn(mockElement);
         when(mockPropertyB.getElement()).thenReturn(mockElement);
-        when(mockPropertyA.getKey()).thenReturn("k");
-        when(mockPropertyB.getKey()).thenReturn("k");
-        when(mockPropertyA.get()).thenReturn("v");
-        when(mockPropertyB.get()).thenReturn("v1");
+        when(mockPropertyA.key()).thenReturn("k");
+        when(mockPropertyB.key()).thenReturn("k");
+        when(mockPropertyA.value()).thenReturn("v");
+        when(mockPropertyB.value()).thenReturn("v1");
 
         assertFalse(ElementHelper.areEqual(mockPropertyA, mockPropertyB));
     }

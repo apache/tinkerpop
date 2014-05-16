@@ -39,11 +39,11 @@ public class AnnotationTest {
             final Vertex v = g.addVertex();
             v.property("names", AnnotatedList.make());
             final Property<AnnotatedList<String>> names = v.property("names");
-            names.get().addValue("antonio", "time", 1);
-            names.get().addValue("antonio", "time", 2);
-            names.get().addValue("antonio", "time", 3);
+            names.value().addValue("antonio", "time", 1);
+            names.value().addValue("antonio", "time", 2);
+            names.value().addValue("antonio", "time", 3);
 
-            tryCommit(g, graph->assertEquals(StringFactory.annotatedListString(names.get()), names.get().toString()));
+            tryCommit(g, graph->assertEquals(StringFactory.annotatedListString(names.value()), names.value().toString()));
             tryCommit(g, graph->assertEquals(StringFactory.propertyString(names), names.toString()));
         }
 
@@ -53,7 +53,7 @@ public class AnnotationTest {
             final Vertex v = g.addVertex();
             v.property("names", AnnotatedList.make());
             final Property<AnnotatedList<String>> names = v.property("names");
-            final AnnotatedValue av = names.get().addValue("antonio", "time", 1);
+            final AnnotatedValue av = names.value().addValue("antonio", "time", 1);
 
             tryCommit(g, graph->assertEquals(StringFactory.annotatedValueString(av), av.toString()));
         }
@@ -141,7 +141,7 @@ public class AnnotationTest {
             final Vertex v = g.addVertex();
             v.property("key", AnnotatedList.make());
             final Property<AnnotatedList<String>> keys = v.property("key");
-            keys.get().addValue("test", "k", value);
+            keys.value().addValue("test", "k", value);
 
             final AnnotatedList al = v.value("key");
             if (value instanceof Map)

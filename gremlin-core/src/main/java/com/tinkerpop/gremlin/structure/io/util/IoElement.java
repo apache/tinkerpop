@@ -20,7 +20,7 @@ public abstract class IoElement {
         ioe.label = element.label();
 
         // get the value out of a Property.
-        ioe.properties = element.properties().entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e-> e.getValue().get()));
+        ioe.properties = element.properties().entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e-> e.getValue().value()));
         return ioe;
     }
 }

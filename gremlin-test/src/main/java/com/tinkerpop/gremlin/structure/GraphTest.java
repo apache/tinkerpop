@@ -432,14 +432,14 @@ public class GraphTest extends AbstractGremlinTest {
 
         if (graph.getFeatures().vertex().properties().supportsStringValues()) {
             for (Vertex vertex : reopenedGraph.V().toList()) {
-                assertTrue(vertex.property("name").get().equals("marko") || vertex.property("name").get().equals("pavel"));
+                assertTrue(vertex.property("name").value().equals("marko") || vertex.property("name").value().equals("pavel"));
             }
         }
 
         for (Edge edge : reopenedGraph.E().toList()) {
             assertEquals(graphProvider.convertId("collaborator"), edge.label());
             if (graph.getFeatures().edge().properties().supportsStringValues())
-                assertEquals("internet", edge.property("location").get());
+                assertEquals("internet", edge.property("location").value());
         }
 
         graphProvider.clear(reopenedGraph, graphProvider.standardGraphConfiguration());

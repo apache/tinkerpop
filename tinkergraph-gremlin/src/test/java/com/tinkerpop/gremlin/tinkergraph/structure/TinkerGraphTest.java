@@ -71,8 +71,8 @@ public class TinkerGraphTest implements Serializable {
         g.createIndex("name", Vertex.class);
         final Vertex marko = g.addVertex("name", "marko", "age", 33, "blah", "bloop");
         final Vertex stephen = g.addVertex("name", "stephen", "id", 12, "blah", "bloop");
-        stephen.property(Property.Key.hidden("name"), "stephen");
-        assertEquals("stephen", stephen.property(Property.Key.hidden("name")).get());
+        stephen.property(Property.hidden("name"), "stephen");
+        assertEquals("stephen", stephen.property(Property.hidden("name")).value());
         final Random r = new Random();
         Stream.generate(() -> g.addVertex(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt())).limit(100000).count();
         assertEquals(100002, g.vertices.size());
@@ -84,7 +84,7 @@ public class TinkerGraphTest implements Serializable {
         edge.property("weight", 1.0f);
         edge.property("creator", "stephen");
         assertEquals(edge.value("weight"), Float.valueOf(1.0f));
-        assertEquals(edge.property("creator").get(), "stephen");
+        assertEquals(edge.property("creator").value(), "stephen");
 
         //g.V().out().value("name").path().map(p -> p.get().getAsLabels()).forEach(System.out::println);
         //marko.out().path().map(p -> p.get().getAsLabels()).forEach(System.out::println);
@@ -236,15 +236,15 @@ public class TinkerGraphTest implements Serializable {
         final Vertex marko = g.addVertex();
         marko.property("names", AnnotatedList.make());
         final Property<AnnotatedList<String>> names = marko.property("names");
-        System.out.println(names.get().addValue("marko", "time", 1));
-        names.get().addValue("antonio", "time", 2);
-        names.get().addValue("mrodriguez", "time", 7);
+        System.out.println(names.value().addValue("marko", "time", 1));
+        names.value().addValue("antonio", "time", 2);
+        names.value().addValue("mrodriguez", "time", 7);
         System.out.println(names);
         System.out.println("-------");
-        names.get().annotatedValues().has("time", 1).value().forEach(System.out::println);
+        names.value().annotatedValues().has("time", 1).value().forEach(System.out::println);
         System.out.println("-------");
-        names.get().annotatedValues().<AnnotatedValue>has("time", 1).forEach(AnnotatedValue::remove);
-        names.get().annotatedValues().value().forEach(System.out::println);
+        names.value().annotatedValues().<AnnotatedValue>has("time", 1).forEach(AnnotatedValue::remove);
+        names.value().annotatedValues().value().forEach(System.out::println);
     }
 
     @Test

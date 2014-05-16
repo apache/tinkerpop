@@ -91,7 +91,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             Vertex v2 = originalGraph.v(v1.id());
             keyMapping.forEach((key1, key2) -> {
                 if (v1.property(key1).isPresent()) {
-                    final Object value = v1.property(key1).get();
+                    final Object value = v1.property(key1).value();
                     ((TinkerGraph) originalGraph).useGraphView = false;
                     v2.property(key2, value);
                     ((TinkerGraph) originalGraph).useGraphView = true;

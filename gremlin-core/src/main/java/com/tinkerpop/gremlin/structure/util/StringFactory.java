@@ -61,7 +61,7 @@ public class StringFactory {
      * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Property}.
      */
     public static String propertyString(final Property property) {
-        return property.isPresent() ? P + L_BRACKET + property.getKey() + ARROW + property.get() + R_BRACKET : EMPTY_PROPERTY;
+        return property.isPresent() ? P + L_BRACKET + property.key() + ARROW + property.value() + R_BRACKET : EMPTY_PROPERTY;
     }
 
     /**
