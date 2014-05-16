@@ -11,17 +11,29 @@ image::tinkerpop3-logo.png[width=500]
 The Third Incarnation of The TinkerPop
 ======================================
 
+TinkerPop0
+----------
+
 The TinkerPop is the reality that begot Gremlin and all that Gremlin has ever known -- as well as that which is no knowledge. In *TinkerPop0*, Gremlin found himself alone in a world of reference as he moved about trying to understand why this structure existed and for what reason. Far is far and near is near for Gremlin. For The TinkerPop, this is true as well, but also west is right, down is forward, and Gremlin is The TinkerPop, as well as not. When will he realize this?
 
 image::gremlin-logo.png[width=400]
+
+TinkerPop1
+----------
 
 Confused by his wanders, for *TinkerPop1* Gremlin machined his friends Blueprints, Pipes, Frames, Furnace, and Rexster. However, The TinkerPop is elusive and difficult to realize through mechanical means. Gremlin thought that perhaps if the machines were more precise, they will allow him to more quickly, move through The TinkerPop and ultimately, understand it completely. With a little help from his friends, Gremlin traverses and traverses but when he is here, he is not there and thus, not fully with The TinkerPop which is everywhere.
 
 image::gremlin-and-friends.png[width=600]
 
+TinkerPop2
+----------
+
 Perhaps if he faster then he can be at all vertices at "once." In *TinkerPop2*, Gremlin created various optimizations to his machines. However, regardless of his haste, he is always stuck within his reference structure, patterned by his graph of associations that move him about --- ping, pong, ping, pong (a mere sliver of that which is The TinkerPop). Unsatisfied with his approach to The TinkerPop, he contemplated what TinkerPop3 would be. Gremlin reviewed the situation with his friends -- long discussions ensued.
 
 image::tinkerpop-reading.png[width=500]
+
+TinkerPop3
+----------
 
 His final push, his final emphatic expression of himself made him rethink his approach. For his third attempt he gathered his friends...
 
@@ -31,8 +43,8 @@ image::tinkerpop3-splash.png[width=500]
 
 image::gremlintron.png[width=500]
 
-Graph Computing with TinkerPop3
-===============================
+Graph Computing
+===============
 
 A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data structure composed of vertices (nodes, dots) and edges (arcs, lines). When modeling a graph in a computer and applying it to modern data sets and practices, the generic mathematically-oriented, binary graph is extended to support both labels and key/value properties. This structure is known as a property graph. More formally, it is a directed, binary, attributed multi-graph. An example property graph is diagrammed below. This graph example will be used extensively throughout the documentation and is called "TinkerPop Classic" as it is the original demo graph distributed with TinkerPop0 in 2009.
 
@@ -118,78 +130,43 @@ gremlin.remove()
 assert(g.V().count == 0)
 assert(g.E().count == 0)
 
-Hidden Properties
-~~~~~~~~~~~~~~~~~
-
-A hidden property is a property that is hidden from the various property accessor methods. Hidden properties are typically used in situations where administrative data about an element must be stored that is not so much a description of the element itself. An itemization of use cases are presented below.
-
- * *Permissions*: what user or groups have read/write permission to this element
- * *Time keeping*: when was this element created? when does this element expire?
- * *Presentation*: what color should this element be presented as?
-
-The hidden properties API is presented in the example below represented in Gremlin-Groovy.
-
-[source,groovy]
-----
-$ bin/gremlin.sh
-
-         \,,,/
-         (o o)
------oOOo-(3)-oOOo-----
-gremlin> g = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> v = g.addVertex('name','pierre')
-==>v[0]
-gremlin> v.property('location','belgium')
-==>p[location->belgium]
-gremlin> v.property(Property.hidden('status'),'user')
-==>p[status->user]
-gremlin> v.keys()
-==>name
-==>location
-gremlin> v.hiddenKeys()
-==>status
-gremlin> v.property(Property.hidden('status'))
-==>p[status->user]
-gremlin> v.property('status')
-==>p[empty]
-----
-
-
 The Graph Process
 -----------------
 
-image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed is by means of graph traversals. A graph traversal can be spawed from a Graph, Vertex, or Edge. For example, Graph provides two traversal methods.
+image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed are a graph traversal. A traversal is an algorithmic walk across the elements of a graph according to the referential structure explicit within the graph data structure. For example, starting at vertex 1, take all incident friendship-edges to adjacent friend vertices. Next, traverse from those friend-vertices to respective incident worksFor-edges to a collection of company-vertices. Finally, select the name-property value of company-vertices. Traversals in Gremlin are spawned from either a `Graph`, `Vertex`, or `Edge`. For example, Graph provides two traversal methods.
 
  . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
  . `Graph.E()`: generates a traversal starting at all edges in the graph.
 
 The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition and implements `Iterator` and `Iterable`. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of three ways.
 
- . `map`: transform the incoming object to another object
- . `flatMap`: transform the incoming object to an iterator of other objects
- . `filter`: allow or disallow the object from proceeding to the next step
+ . `map`: transform the incoming object to another object (S &rarr; E).
+ . `flatMap`: transform the incoming object to an iterator of other objects (S &rarr; E^*^).
+ . `filter`: allow or disallow the object from proceeding to the next step (S &rarr; S &cup; &empty;).
 
 NOTE: Both map and filter can be represented as flatMap. Map can return an iterator with a single object in it. Filter can return an iterator with a single object in it or no object at all. Thus, flatMap is the most general construct -- "turn the incoming object into an iterator of objects."
 
-Given the classic TinkerPop graph, the following query will return the names of all the people that Marko knows. The following query is demonstrated using the Gremlin-Groovy REPL. This is accessible via `bin/gremlin.sh` (or `bin/gremlin.bat` for Windows users).
-
+Given the classic TinkerPop graph, the following query will return the names of all the people that Marko knows. The following query is demonstrated using Gremlin-Groovy.
 [source,groovy]
-----
 gremlin> g.V().has('name','marko').out('knows').name
 ==>vadas
 ==>josh
-----
 
-Or, if the vertex marko is already realized with a direct reference pointer, then the traversal can be spawed off that vertex.
+Or, if the vertex marko is already realized with a direct reference pointer, then the traversal can be spawned off that vertex. This illustrates that vertex (as well as edge) also have `GraphTraversal`-return methods and an exploration of their respective JavaDocs will demonstrate what is available.
 
 [source,groovy]
-marko.out('knows').name
+gremlin> marko = g.v(1)
+==>v[1]
+gremlin> marko.out('knows').name
+==>vadas
+==>josh
 
 .The Name of The People That Marko Knows
 image::tinkerpop-classic-ex1.png[width=500]
 
-Again, all steps extend either map, flatMap, or filter. Thus, the traversal above can be written in its generic form as:
+Again, all steps extend either map, flatMap, or filter. Thus, the traversal above can be written in its generic form below. Note the Gremlin-Groovy syntax convention of `v['name']`. This is Groovy syntactic sugar that resolved to `v.value('name')`. In the next section, the `it.get()` will be explained as this is an important feature of TinkerPop3 that is not available in previous version of TinkerPop. 
+
+IMPORTANT: The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. The lambdas introduced by Java8 are supported in TinkerPop3.
 
 [source,groovy]
 marko
@@ -199,12 +176,20 @@ marko
 ==>vadas
 ==>josh
 
-The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. The lambdas introduced by Java8 are supported in TinkerPop3.
+Finally, as a strictly academic exercise, the traversal can be written completely using flatMap.
+
+[source,groovy]
+marko
+  .flatMap{it.get()['name'] == 'marko' ? [it.get()].iterator() : [].iterator()}
+  .flatMap{it.get().out('knows')}
+  .flatMap{[it.get()['name']].iterator()}
+==>vadas
+==>josh
 
 NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than it ever was before. In TinkerPop0 through TinkerPop2, Gremlin-Java was extremely verbose due to the simulation of lambdas via anonymous inner classes.  
 
-Traversal Mechanics
-~~~~~~~~~~~~~~~~~~~
+The Traversal Holder
+~~~~~~~~~~~~~~~~~~~~
 
 When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps are the middle of the traversal (e.g. `out("knows")` and `value("name")`), and the result is "traversal.next()'d" out of the right of the traversal (e.g. "vadas" and "josh").
 
@@ -230,35 +215,60 @@ marko
 
 CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective holder. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
 
-[[tinkergraph-reference-implementation]]
-TinkerGraph
------------
+The Graph API
+=============
 
-image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory, non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
+Hidden Properties
+~~~~~~~~~~~~~~~~~
 
-[source,java]
-Graph g = TinkerGraph.open();
-Vertex marko = g.addVertex("name","marko","age",29);
-Vertex lop = g.addVertex("name","lop","lang","java");
-marko.addEdge("created",lop,"weight",0.6d);
+A hidden property is a property that is hidden from the various property accessor methods. Hidden properties are typically used in situations where administrative data about an element must be stored that is not so much a description of the element itself. An itemization of use cases are presented below.
 
-The above graph creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6 property. Next, the graph can be queried as such.
+ * *Permissions*: What user or groups have read/write permission to this element?
+ * *Time keeping*: When was this element created? When does this element expire?
+ * *Presentation*: What color should this element be presented as?
+ * *Provenance*: Which user created this element?
+ * *Auditing*: Has this element been deleted from the system? Who deleted this element?
 
-[source,java]
-g.V().has("name","marko").out("created").value("name")
+The hidden properties API is presented in the example below represented in the Gremlin-Groovy REPL. This REPL is accessible via `bin/gremlin.sh` (or `bin/gremlin.bat` for Windows users).
 
-The `g.V().has("name","marko")` part of the query can be executed in two ways.
 
- * A linear scan of all vertices filtering out those vertices that don't have the name "marko"
- * A `O(log(|V|))` index lookup for all vertices with the name "marko"
+[source,groovy]
+----
+$ bin/gremlin.sh
 
-Given the initial graph construction in the first code block, no index was defined and thus, a linear scan is executed. However, if the graph was constructed as such, then an index lookup would be used.
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> v = g.addVertex('name','pierre')
+==>v[0]
+gremlin> v.property('location','belgium')
+==>p[location->belgium]
+gremlin> v.property(Property.hidden('status'),'user')
+==>p[status->user]
+gremlin> v.keys()
+==>name
+==>location
+gremlin> v.hiddenKeys()
+==>status
+gremlin> p = v.property(Property.hidden('status'))
+==>p[status->user]
+gremlin> p.isHidden()
+==>true
+gremlin> v.property('status')
+==>p[empty]
+----
 
-[source,java]
-Graph g = TinkerGraph.open();
-g.createIndex("name",Vertex.class)
+Graph Variables
+~~~~~~~~~~~~~~~
 
-Each graph vendor will have different mechanism by which indices and schemas are defined. TinkerPop3 does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other vendors, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding data to the graph.
+TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value pairs associated with the graph itself. These variables are intended to store metadata about the graph. Examples include: schema information, global permissions data, etc.
+
+Graph Transactions
+~~~~~~~~~~~~~~~~~~
+
+A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction] is a unit of work.
 
 
 The Traversal API
@@ -967,6 +977,36 @@ gremlin> m.sort{-it.value}
 
 Implementations
 ===============
+
+[[tinkergraph-reference-implementation]]
+TinkerGraph
+-----------
+
+image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory, non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
+
+[source,java]
+Graph g = TinkerGraph.open();
+Vertex marko = g.addVertex("name","marko","age",29);
+Vertex lop = g.addVertex("name","lop","lang","java");
+marko.addEdge("created",lop,"weight",0.6d);
+
+The above graph creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6 property. Next, the graph can be queried as such.
+
+[source,java]
+g.V().has("name","marko").out("created").value("name")
+
+The `g.V().has("name","marko")` part of the query can be executed in two ways.
+
+ * A linear scan of all vertices filtering out those vertices that don't have the name "marko"
+ * A `O(log(|V|))` index lookup for all vertices with the name "marko"
+
+Given the initial graph construction in the first code block, no index was defined and thus, a linear scan is executed. However, if the graph was constructed as such, then an index lookup would be used.
+
+[source,java]
+Graph g = TinkerGraph.open();
+g.createIndex("name",Vertex.class)
+
+Each graph vendor will have different mechanism by which indices and schemas are defined. TinkerPop3 does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other vendors, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding data to the graph.
 
 Neo4j-Gremlin
 -------------
