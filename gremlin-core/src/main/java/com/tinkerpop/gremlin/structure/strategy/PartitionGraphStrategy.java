@@ -125,7 +125,7 @@ public class PartitionGraphStrategy implements GraphStrategy {
         }
 
         public void apply(final Traversal traversal) {
-            // inject a HasStep after each GraphStep, VertexStep or EdgeVertexStep
+            // inject a HasStep and MapStep after each GraphStep, VertexStep or EdgeVertexStep
             final List<Class> stepsToLookFor = Arrays.<Class>asList(GraphStep.class, VertexStep.class, EdgeVertexStep.class);
             final List<Integer> positions = new ArrayList<>();
             final List<?> traversalSteps = traversal.getSteps();
