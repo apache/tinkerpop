@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -11,18 +12,19 @@ import java.util.Set;
  */
 public class DefaultVariables implements Traversal.Variables {
 
-    private final Map<String, Object> memory = new HashMap<>();
+    private Map<String, Object> memory;
 
     public <T> void set(final String variable, final T value) {
+        if (null == this.memory) this.memory = new HashMap<>();
         this.memory.put(variable, value);
     }
 
     public <T> T get(final String variable) {
-        return (T) this.memory.get(variable);
+        return null == this.memory ? null : (T) this.memory.get(variable);
     }
 
     public Set<String> getVariables() {
-        return this.memory.keySet();
+        return null == this.memory ? Collections.emptySet() : this.memory.keySet();
     }
 
 }

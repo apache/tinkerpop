@@ -60,7 +60,7 @@ The purpose of this documentation is to describe the structure/process dichotomy
 The Graph Structure
 -------------------
 
-The classic TinkerPop graph previously diagrammed can be created with the following Java8 code. Note that this graph is available as a TinkerGraph using `TinkerFactory.createClassic()`.
+image:gremlin-standing.png[width=125,float=left] A graph's structure is the topology formed by the explicit references between its vertices, edges, and properties. A vertex has incident edges. A vertex is adjacent to another vertex if they share an incident edge. A property is attached to an element and an element has a set of properties. A property is a key/value pair, where the key is always a character `String`. The graph structure API of TinkerPop3 provides the methods necessary to create such a structure. The classic TinkerPop graph previously diagrammed can be created with the following Java8 code. Note that this graph is available as a TinkerGraph using `TinkerFactory.createClassic()`.
 
 [source,java]
 Graph g = TinkerGraph.open();
@@ -77,16 +77,20 @@ josh.addEdge("created", ripple, Element.ID, 10, "weight", 1.0f);
 josh.addEdge("created", lop, Element.ID, 11, "weight", 0.4f);
 peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2f);
 
-In the above code all the vertices are created first and then their respective edges. There are two reserved keys: id (`Element.ID`) and label (`Element.LABEL`). When any of these, along with a set of other key value pairs is provided to `Graph.addVertex(Object...)` or `Graph.addEdge(String,Vertex,Object...)`, the respective element is created along with the provided key/value pair properties amended. 
+In the above code all the vertices are created first and then their respective edges. There are two reserved keys: id (`Element.ID`) and label (`Element.LABEL`). When any of these, along with a set of other key value pairs is provided to `Graph.addVertex(Object...)` or `Vertex.addEdge(String,Vertex,Object...)`, the respective element is created along with the provided key/value pair properties appended to it. 
 
-CAUTION: Many graph vendors do not allow the user to specify an element ID and in such cases, the element ID key/value is ignored.
+CAUTION: Many graph vendors do not allow the user to specify an element ID and in such cases, an `IllegalArgumentException` is thrown.
 
 NOTE: In TinkerPop3, vertices are allowed a single immutable string label (similar to an edge label). This functionality did not exist in TinkerPop2.
 
 Mutating the Graph
 ~~~~~~~~~~~~~~~~~~
 
-Below is a sequence of basic graph mutation operations is provided below in Java9.
+Below is a sequence of basic graph mutation operations represented in Java8. One of the major differences between TinkerPop2 and TinkerPop3 is that in TinkerPop3, the Java convention of using setters and getters has been abandoned in favor of a syntax that is more aligned with the syntax of Gremlin-Groovy in TinkerPop2. Given that Gremlin-Java8 and Gremlin-Groovy are nearly identical due to the inclusion of Java8 lambdas, a big efforts was made to ensure that both languages are as similar as possible. 
+
+TIP: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
+
+CAUTION: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used. Usually which derivative of Gremlin is being used is made explicit in the text, however, if not, a simple mouse over on the code block will state the language as either "JAVA" or "GROOVY."
 
 [source,java]
 // create a new graph
@@ -114,10 +118,48 @@ gremlin.remove()
 assert(g.V().count == 0)
 assert(g.E().count == 0)
 
+Hidden Properties
+~~~~~~~~~~~~~~~~~
+
+A hidden property is a property that is hidden from the various property accessor methods. Hidden properties are typically used in situations where administrative data about an element must be stored that is not so much a description of the element itself. An itemization of use cases are presented below.
+
+ * *Permissions*: what user or groups have read/write permission to this element
+ * *Time keeping*: when was this element created? when does this element expire?
+ * *Presentation*: what color should this element be presented as?
+
+The hidden properties API is presented in the example below represented in Gremlin-Groovy.
+
+[source,groovy]
+----
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> v = g.addVertex('name','pierre')
+==>v[0]
+gremlin> v.property('location','belgium')
+==>p[location->belgium]
+gremlin> v.property(Property.hidden('status'),'user')
+==>p[status->user]
+gremlin> v.keys()
+==>name
+==>location
+gremlin> v.hiddenKeys()
+==>status
+gremlin> v.property(Property.hidden('status'))
+==>p[status->user]
+gremlin> v.property('status')
+==>p[empty]
+----
+
+
 The Graph Process
 -----------------
 
-The primary way in which graphs are processed is by means of graph traversals. A graph traversal can be spawed from a Graph, Vertex, or Edge. For example, Graph provides two traversal methods.
+image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed is by means of graph traversals. A graph traversal can be spawed from a Graph, Vertex, or Edge. For example, Graph provides two traversal methods.
 
  . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
  . `Graph.E()`: generates a traversal starting at all edges in the graph.
@@ -132,18 +174,8 @@ NOTE: Both map and filter can be represented as flatMap. Map can return an itera
 
 Given the classic TinkerPop graph, the following query will return the names of all the people that Marko knows. The following query is demonstrated using the Gremlin-Groovy REPL. This is accessible via `bin/gremlin.sh` (or `bin/gremlin.bat` for Windows users).
 
-TIP: image:groovy-logo.png[width=175,float=left] Gremlin-Groovy leverages the link:http://groovy.codehaus.org/[Groovy 2.x language] to express Gremlin traversals. One of the major benefits of Groovy is the inclusion of a runtime console that makes it easy for developers to practice with the Gremlin language and for production users to connect to their graph and execute traversals in an interactive manner. Moreover, Gremlin-Groovy provides various syntax simplifications.
-
-CAUTION: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used. Usually which derivative of Gremlin is being used is made explicit in the text, however, if not, a simple mouse over on the code block will state the language as either "JAVA" or "GROOVY."
-
-
 [source,groovy]
 ----
-$ bin/gremlin.sh
-
-         \,,,/
-         (o o)
------oOOo-(3)-oOOo-----
 gremlin> g.V().has('name','marko').out('knows').name
 ==>vadas
 ==>josh

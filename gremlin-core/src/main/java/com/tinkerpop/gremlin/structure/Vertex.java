@@ -31,6 +31,11 @@ public interface Vertex extends Element {
 
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
+    /**
+     * The following steps need to be implemented by the vendor as these these defined how the edges are
+     * retrieved off of a vertex. All other steps are derivatives of this and thus, defaulted in Vertex.
+     */
+
     public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels);
 
     public GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels);
@@ -43,7 +48,9 @@ public interface Vertex extends Element {
 
     public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels);
 
-    // vertex-specific steps ///////////////////////////////////////////////////
+    /**
+     * The following steps are Vertex specific and have default implementations based on the vendor implementations above.
+     */
 
     public default GraphTraversal<Vertex, Vertex> out(final String... labels) {
         return this.out(Integer.MAX_VALUE, labels);
@@ -69,7 +76,9 @@ public interface Vertex extends Element {
         return this.bothE(Integer.MAX_VALUE, labels);
     }
 
-    // element steps ///////////////////////////////////////////////////////////
+    /**
+     * The following steps are general to element but repeated here for the sake of ensuring property type casting.
+     */
 
     public default GraphTraversal<Vertex, Vertex> aggregate(final String variable, final SFunction... preAggregateFunctions) {
         return this.start().aggregate(variable, preAggregateFunctions);
