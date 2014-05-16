@@ -122,13 +122,13 @@ public interface GraphStrategy {
     }
 
     /**
-     * Construct a {@link java.util.function.BiFunction} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#setProperty(String, Object)}.
+     * Construct a {@link java.util.function.BiFunction} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#property(String, Object)}.
      * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
      * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiFunction} with
-     *         {@link com.tinkerpop.gremlin.structure.Element#setProperty(String,Object)} signature
+     *         {@link com.tinkerpop.gremlin.structure.Element#property(String,Object)} signature
      *         and returns an enhanced strategy {@link java.util.function.BiFunction} with the same signature
      */
     public default <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementSetProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
@@ -172,4 +172,15 @@ public interface GraphStrategy {
     public default UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
+
+	public static class DoNothingGraphStrategy implements GraphStrategy {
+		public static final DoNothingGraphStrategy INSTANCE = new DoNothingGraphStrategy();
+
+		private DoNothingGraphStrategy() {}
+
+		@Override
+		public String toString() {
+			return "passthru";
+		}
+	}
 }
