@@ -66,6 +66,10 @@ public class PartitionGraphStrategy implements GraphStrategy {
         this.readPartitions.add(readPartition);
     }
 
+	public void clearReadPartitions() {
+		this.readPartitions.clear();
+	}
+
     @Override
     public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return (f) -> () -> {

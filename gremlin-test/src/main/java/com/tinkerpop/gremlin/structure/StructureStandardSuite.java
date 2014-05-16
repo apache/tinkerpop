@@ -66,8 +66,9 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
         VertexTest.class
     };
 
-    /*
+	/*
     private static final Class<?>[] allTests = new Class<?>[]{
+			ReadOnlyGraphStrategyTest.class,
         PartitionGraphStrategyTest.class
     };
     */

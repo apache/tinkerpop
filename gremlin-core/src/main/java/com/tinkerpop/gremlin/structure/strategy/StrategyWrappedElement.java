@@ -66,9 +66,9 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     @Override
     public Object id() {
-        return this.strategyWrappedGraph.strategy().compose(
+		return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementGetId(elementStrategyContext),
-                this.baseElement::id).get().toString();
+                this.baseElement::id).get();
     }
 
     @Override

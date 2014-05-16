@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -80,5 +81,49 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
             assertTrue(v instanceof StrategyWrappedVertex);
             assertEquals("b", v.property("any").value());
         });
+
+		strategy.addReadPartition("A");
+		assertEquals(2, g.V().count());
     }
+
+	@Test
+	@Ignore
+	public void shouldWriteToMultiplePartitions() {
+		final Vertex vA = g.addVertex("any", "a");
+		final Vertex vAA = g.addVertex("any", "aa");
+		final Edge vAvAA = vA.addEdge("a->a", vAA);
+
+		final PartitionGraphStrategy strategy = (PartitionGraphStrategy) ((StrategyWrappedGraph) g).strategy().getGraphStrategy().get();
+		strategy.setWritePartition("B");
+		final Vertex vB = g.addVertex("any", "b");
+		vA.addEdge("a->b", vB);
+
+		strategy.setWritePartition("C");
+		final Vertex vC = g.addVertex("any", "c");
+		vB.addEdge("b->c", vC);
+		vA.addEdge("a->c", vC);
+
+		final GraphTraversal t = g.V();
+		assertTrue(t.optimizers().get().stream().anyMatch(o -> o.getClass().equals(PartitionGraphStrategy.PartitionGraphTraversalStrategy.class)));
+
+		strategy.clearReadPartitions();
+		assertEquals(0, g.V().count());
+		assertEquals(0, g.E().count());
+
+		strategy.addReadPartition("A");
+		assertEquals(2, g.V().count());
+		assertEquals(1, g.E().count());
+		assertEquals(1, g.v(vA.id()).outE().count());
+		assertEquals(vAvAA.id(), g.v(vA.id()).outE().next().id());
+		assertEquals(1, g.v(vA.id()).out().count());
+		assertEquals(vAA.id(), g.v(vA.id()).out().next().id());
+
+		strategy.addReadPartition("B");
+		assertEquals(3, g.V().count());
+		assertEquals(2, g.E().count());
+
+		strategy.addReadPartition("C");
+		assertEquals(4, g.V().count());
+		assertEquals(4, g.E().count());
+	}
 }
