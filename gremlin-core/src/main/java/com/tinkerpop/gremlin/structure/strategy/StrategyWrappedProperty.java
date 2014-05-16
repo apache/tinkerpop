@@ -68,7 +68,7 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
                 () -> {
                     this.baseProperty.remove();
                     return null;
-                });
+                }).get();
     }
 
 	@Override

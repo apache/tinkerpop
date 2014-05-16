@@ -29,7 +29,7 @@ public interface Strategy  {
 
     /**
      * If a {@link Strategy} is present, then return a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} function that takes the function of the
-     * Blueprints implementation denoted by {@code T} as an argument and returns back a function with {@code T}. If
+     * Gremlin Structure implementation denoted by {@code T} as an argument and returns back a function with {@code T}. If
      * no {@link Strategy} is present then it simply returns the {@code impl} as the default.
      *
      * @param f a function to execute if a {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} is present.

@@ -9,8 +9,8 @@ import com.tinkerpop.gremlin.util.function.TriFunction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -62,8 +62,8 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementSetProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getElementSetProperty(ctx));
+    public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementProperty(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getElementProperty(ctx));
     }
 
     @Override
@@ -80,6 +80,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
     public UnaryOperator<Supplier<Object>> getElementGetId(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementGetId(ctx));
     }
+
+	@Override
+	public UnaryOperator<Consumer<Object[]>> getElementProperties(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+		return this.composeStrategyUnaryOperator(s -> s.getElementGetId(ctx));
+	}
 
 	@Override
 	public String toString() {

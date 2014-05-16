@@ -18,6 +18,7 @@ import com.tinkerpop.gremlin.process.graph.util.optimizers.SideEffectCapOptimize
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.function.TriFunction;
@@ -114,7 +115,8 @@ public class PartitionGraphStrategy implements GraphStrategy {
 
     /**
      * Analyzes the traversal and injects the partition logic after every access to a vertex or edge.  The partition
-     * logic consists of a {@link HasStep} with partition key and value followed by a {@code Transform}
+     * logic consists of a {@link HasStep} with partition key and value followed by a {@link MapStep} that wraps
+	 * the @{link Element} back up in a {@link StrategyWrapped} implementation.
      */
     public static class PartitionGraphTraversalOptimizer implements Optimizer.FinalOptimizer {
 
@@ -148,6 +150,8 @@ public class PartitionGraphStrategy implements GraphStrategy {
                         return new StrategyWrappedVertex((Vertex) o, graph);
                     else if (o instanceof Edge)
                         return new StrategyWrappedEdge((Edge) o, graph);
+					else if (o instanceof Property)
+						return new StrategyWrappedProperty((Property) o, graph);
                     else
                         return o;
                 });
