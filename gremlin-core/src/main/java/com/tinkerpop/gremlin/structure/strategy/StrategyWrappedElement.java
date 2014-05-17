@@ -3,10 +3,12 @@ package com.tinkerpop.gremlin.structure.strategy;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
+import org.javatuples.Pair;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -47,7 +49,8 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     @Override
     public Map<String, Property> properties() {
-        return this.baseElement.properties();
+        return this.baseElement.properties().entrySet().stream().map(e -> Pair.with(e.getKey(), new StrategyWrappedProperty(e.getValue(), strategyWrappedGraph)))
+                .collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
     }
 
     @Override
