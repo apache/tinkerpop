@@ -46,8 +46,11 @@ public class StrategyWrappedTraversalStrategy implements TraversalStrategy.Final
         for (int pos : positions) {
             final MapStep<Object, Object> transformToStrategy = new MapStep<>(traversal);
             transformToStrategy.setFunction((Traverser<Object> t) -> {
-                // todo: need to make sure we're not re-wrapping in strategy over and over again.
                 final Object o = t.get();
+
+                // make sure we're not re-wrapping in strategy over and over again.
+                if (o instanceof StrategyWrapped) return o;
+
                 if (o instanceof Vertex)
                     return new StrategyWrappedVertex((Vertex) o, graph);
                 else if (o instanceof Edge)

@@ -176,5 +176,18 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         assertEquals(vB.id(), g.e(eBtovC.id()).outV().id().next());
         assertEquals(vC.id(), g.e(eAtovC.id()).inV().id().next());
         assertFalse(g.e(eAtovC.id()).outV().hasNext());
+
+        strategy.addReadPartition("A");
+        g.v(vA.id()).out().out().forEach(v -> {
+            assertTrue(v instanceof StrategyWrapped);
+            assertFalse(((StrategyWrappedElement) v).getBaseElement() instanceof StrategyWrapped);
+        });
+
+        g.v(vA.id()).outE().inV().outE().forEach(e -> {
+            assertTrue(e instanceof StrategyWrapped);
+            assertFalse(((StrategyWrappedElement) e).getBaseElement() instanceof StrategyWrapped);
+        });
     }
+
+    // todo: make sure all properties are wrapped
 }
