@@ -27,6 +27,17 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
     @Override
+    public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
+        final UnaryOperator<GraphTraversal> composedStrategy = graphStrategySequence.stream().map(SequenceGraphStrategy::convertToUnaryOperator)
+                .reduce(null, (acc, next) -> acc == null ? next : toUnaryOp(acc.compose(next)));
+        return composedStrategy.apply(traversal);
+    }
+
+    public static UnaryOperator<GraphTraversal> convertToUnaryOperator(final GraphStrategy s) {
+        return (traversal) -> s.applyStrategyToTraversal(traversal);
+    }
+
+    @Override
     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getAddVertexStrategy(ctx));
     }
@@ -34,16 +45,6 @@ public class SequenceGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getAddEdgeStrategy(ctx));
-    }
-
-    @Override
-    public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getVStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getVStrategy(ctx));
-    }
-
-    @Override
-    public UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getEStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
-        return this.composeStrategyUnaryOperator(s -> s.getVStrategy(ctx));
     }
 
     @Override

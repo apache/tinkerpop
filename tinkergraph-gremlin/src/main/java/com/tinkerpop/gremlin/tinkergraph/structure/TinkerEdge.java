@@ -105,7 +105,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
         final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<Edge, Edge>() {
             public GraphTraversal<Edge, Edge> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
-                    this.optimizers().unregister(TinkerGraphStepTraversalStrategy.class);
+                    this.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
                     final String label = this.getSteps().get(0).getAs();
                     TraversalHelper.removeStep(0, this);
                     final Step identityStep = new IdentityStep(this);

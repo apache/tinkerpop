@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.graph.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.map.VertexStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
@@ -71,20 +72,30 @@ public class PartitionGraphStrategy implements GraphStrategy {
 	}
 
     @Override
-    public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> () -> {
-            final GraphTraversal traversal = f.get();
-            traversal.optimizers().register(new PartitionGraphTraversalStrategy(this.partitionKey, this.readPartitions, ctx.getCurrent()));
-            return traversal;
+    public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
+        traversal.strategies().register(new PartitionGraphTraversalStrategy(this.partitionKey, this.readPartitions));
+        return traversal;
+    }
+
+    @Override
+    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return (f) -> (id) -> {
+            final Vertex v = f.apply(id);
+            final Property<String> p = v.property(this.partitionKey);
+            if (!p.isPresent() || !this.readPartitions.contains(p.value())) throw Graph.Exceptions.elementNotFound();
+
+            return new StrategyWrappedVertex(v, ctx.getCurrent());
         };
     }
 
     @Override
-    public UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getEStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> () -> {
-            final GraphTraversal traversal = f.get();
-            traversal.optimizers().register(new PartitionGraphTraversalStrategy(this.partitionKey, this.readPartitions, ctx.getCurrent()));
-            return traversal;
+    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+        return (f) -> (id) -> {
+            final Edge e = f.apply(id);
+            final Property<String> p = e.property(this.partitionKey);
+            if (!p.isPresent() || !this.readPartitions.contains(p.value())) throw Graph.Exceptions.elementNotFound();
+
+            return new StrategyWrappedEdge(e, ctx.getCurrent());
         };
     }
 
@@ -113,23 +124,20 @@ public class PartitionGraphStrategy implements GraphStrategy {
 
     /**
      * Analyzes the traversal and injects the partition logic after every access to a vertex or edge.  The partition
-     * logic consists of a {@link HasStep} with partition key and value followed by a {@link MapStep} that wraps
-	 * the @{link Element} back up in a {@link StrategyWrapped} implementation.
+     * logic consists of a {@link HasStep} with partition key and value.
      */
     public static class PartitionGraphTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
         private final String partitionKey;
         private final Set<String> readPartitions;
-        private final StrategyWrappedGraph graph;
 
-        public PartitionGraphTraversalStrategy(final String partitionKey, final Set<String> readPartitions, final StrategyWrappedGraph graph) {
+        public PartitionGraphTraversalStrategy(final String partitionKey, final Set<String> readPartitions) {
             this.partitionKey = partitionKey;
             this.readPartitions = readPartitions;
-            this.graph = graph;
         }
 
         public void apply(final Traversal traversal) {
-            // inject a HasStep and MapStep after each GraphStep, VertexStep or EdgeVertexStep
+            // inject a HasStep after each GraphStep, VertexStep or EdgeVertexStep
             final List<Class> stepsToLookFor = Arrays.<Class>asList(GraphStep.class, VertexStep.class, EdgeVertexStep.class);
             final List<Integer> positions = new ArrayList<>();
             final List<?> traversalSteps = traversal.getSteps();
@@ -140,22 +148,7 @@ public class PartitionGraphStrategy implements GraphStrategy {
 
             Collections.reverse(positions);
             for (int pos : positions) {
-                final MapStep<Object, Object> transformToStrategy = new MapStep<>(traversal);
-                transformToStrategy.setFunction((Traverser<Object> t) -> {
-                    // todo: need to make sure we're not re-wrapping in strategy over and over again.
-                    final Object o = t.get();
-                    if (o instanceof Vertex)
-                        return new StrategyWrappedVertex((Vertex) o, graph);
-                    else if (o instanceof Edge)
-                        return new StrategyWrappedEdge((Edge) o, graph);
-					else if (o instanceof Property)
-						return new StrategyWrappedProperty((Property) o, graph);
-                    else
-                        return o;
-                });
-
                 TraversalHelper.insertStep(new HasStep(traversal, new HasContainer(this.partitionKey, T.convert(T.in), readPartitions)), pos + 1, traversal);
-                TraversalHelper.insertStep(transformToStrategy, pos + 1, traversal);
             }
         }
     }

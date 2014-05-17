@@ -37,7 +37,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
         return VARIABLES;
     }
 
-    public TraversalStrategies optimizers() {
+    public TraversalStrategies strategies() {
         return TRAVERSAL_STRATEGIES;
     }
 

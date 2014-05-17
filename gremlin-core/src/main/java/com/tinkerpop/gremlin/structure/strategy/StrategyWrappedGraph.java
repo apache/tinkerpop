@@ -55,12 +55,12 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        return strategy().compose(s -> s.getVStrategy(graphContext), this.baseGraph::V).get();
+        return applyStrategy(baseGraph.V());
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
-        return strategy().compose(s -> s.getEStrategy(graphContext), this.baseGraph::E).get();
+        return applyStrategy(baseGraph.E());
     }
 
     @Override
@@ -98,4 +98,10 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
 		final GraphStrategy strategy = this.strategy.getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
 		return String.format("[%s[%s]]", strategy, baseGraph.toString());
 	}
+
+    private <S,E> GraphTraversal<S,E> applyStrategy(final GraphTraversal<S,E> traversal) {
+        traversal.strategies().register(new StrategyWrappedTraversalStrategy(this));
+        this.strategy.getGraphStrategy().ifPresent(s -> s.applyStrategyToTraversal(traversal));
+        return traversal;
+    }
 }

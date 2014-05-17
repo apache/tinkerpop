@@ -29,7 +29,7 @@ public class SingleGraphTraversal<S> implements GraphTraversal<S, S> {
     }
 
     @Override
-    public TraversalStrategies optimizers() {
+    public TraversalStrategies strategies() {
         return null;
     }
 

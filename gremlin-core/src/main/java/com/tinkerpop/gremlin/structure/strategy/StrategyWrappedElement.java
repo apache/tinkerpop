@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 
@@ -93,4 +94,10 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 		final GraphStrategy strategy = this.strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
 		return String.format("[%s[%s]]", strategy, baseElement.toString());
 	}
+
+    protected <S,E> GraphTraversal<S,E> applyStrategy(final GraphTraversal<S,E> traversal) {
+        traversal.strategies().register(new StrategyWrappedTraversalStrategy(this.strategyWrappedGraph));
+        this.strategyWrappedGraph.strategy().getGraphStrategy().ifPresent(s -> s.applyStrategyToTraversal(traversal));
+        return traversal;
+    }
 }

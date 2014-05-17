@@ -22,14 +22,14 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
     }
 
     public GraphTraversal<Edge, Vertex> inV() {
-        return this.baseEdge.inV();
+        return applyStrategy(this.baseEdge.inV());
     }
 
     public GraphTraversal<Edge, Vertex> outV() {
-        return this.baseEdge.outV();
+        return applyStrategy(this.baseEdge.outV());
     }
 
     public GraphTraversal<Edge, Vertex> bothV() {
-        return this.baseEdge.bothV();
+        return applyStrategy(this.baseEdge.bothV());
     }
 }

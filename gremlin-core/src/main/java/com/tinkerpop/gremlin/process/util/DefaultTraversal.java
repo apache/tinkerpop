@@ -35,7 +35,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         return this.variables;
     }
 
-    public TraversalStrategies optimizers() {
+    public TraversalStrategies strategies() {
         return traversalStrategies;
     }
 
@@ -81,7 +81,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     private final void doFinalOptimization() {
         if (this.firstNext) {
-            this.optimizers().applyFinalOptimizers(this);
+            this.strategies().applyFinalOptimizers(this);
             this.firstNext = false;
         }
     }

@@ -62,24 +62,6 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
 	@Override
-	public UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-		return (f) -> () -> {
-			final GraphTraversal traversal = f.get();
-			traversal.optimizers().register(new ReadOnlyGraphTraversalStrategy(ctx.getCurrent()));
-			return traversal;
-		};
-	}
-
-	@Override
-	public UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getEStrategy(Strategy.Context<StrategyWrappedGraph> ctx) {
-		return (f) -> () -> {
-			final GraphTraversal traversal = f.get();
-			traversal.optimizers().register(new ReadOnlyGraphTraversalStrategy(ctx.getCurrent()));
-			return traversal;
-		};
-	}
-
-	@Override
 	public String toString() {
 		return ReadOnlyGraphStrategy.class.getSimpleName().toLowerCase();
 	}
@@ -105,47 +87,4 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
             return new UnsupportedOperationException(String.format("Graph uses %s and is therefore unmodifiable", ReadOnlyGraphStrategy.class));
         }
     }
-
-	/**
-	 * Analyzes the traversal and injects the readonly logic after every access to a vertex or edge.  The readonly
-	 * logic consists of a {@link MapStep} that wraps the @{link Element} back up in a {@link StrategyWrapped}
-	 * implementation.
-	 */
-	public static class ReadOnlyGraphTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
-		private final StrategyWrappedGraph graph;
-
-		public ReadOnlyGraphTraversalStrategy(final StrategyWrappedGraph graph) {
-			this.graph = graph;
-		}
-
-		public void apply(final Traversal traversal) {
-			// inject a MapStep after each GraphStep, VertexStep or EdgeVertexStep
-			final List<Class> stepsToLookFor = Arrays.<Class>asList(GraphStep.class, VertexStep.class, EdgeVertexStep.class);
-			final List<Integer> positions = new ArrayList<>();
-			final List<?> traversalSteps = traversal.getSteps();
-			for (int ix = 0; ix < traversalSteps.size(); ix++) {
-				final int pos = ix;
-				if (stepsToLookFor.stream().anyMatch(c -> c.isAssignableFrom(traversalSteps.get(pos).getClass()))) positions.add(ix);
-			}
-
-			Collections.reverse(positions);
-			for (int pos : positions) {
-				final MapStep<Object, Object> transformToStrategy = new MapStep<>(traversal);
-				transformToStrategy.setFunction((Traverser<Object> t) -> {
-					// todo: need to make sure we're not re-wrapping in strategy over and over again.
-					final Object o = t.get();
-					if (o instanceof Vertex)
-						return new StrategyWrappedVertex((Vertex) o, graph);
-					else if (o instanceof Edge)
-						return new StrategyWrappedEdge((Edge) o, graph);
-					else if (o instanceof Property)
-						return new StrategyWrappedProperty((Property) o, graph);
-					else
-						return o;
-				});
-
-				TraversalHelper.insertStep(transformToStrategy, pos + 1, traversal);
-			}
-		}
-	}
 }

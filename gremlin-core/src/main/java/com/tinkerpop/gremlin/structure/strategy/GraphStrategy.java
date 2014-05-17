@@ -39,6 +39,15 @@ import java.util.function.UnaryOperator;
 public interface GraphStrategy {
 
     /**
+     * For all methods that return a {@link GraphTraversal} add a {@link com.tinkerpop.gremlin.process.TraversalStrategy}.
+     * The {@link StrategyWrapped} classes will automatically add steps that will ensure that all items that come
+     * out of the traversal are wrapped appropriately.
+     */
+    public default GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
+        return traversal;
+    }
+
+    /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#addVertex(Object...)}.
      *
      * @param ctx the context within which this strategy function is called
@@ -46,28 +55,6 @@ public interface GraphStrategy {
      *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
     public default UnaryOperator<Function<Object[],Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return UnaryOperator.identity();
-    }
-
-    /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#V()}.
-     *
-     * @param ctx the context within which this strategy function is called
-     * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with {@link com.tinkerpop.gremlin.structure.Graph#V()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
-     */
-    public default UnaryOperator<Supplier<GraphTraversal<Vertex, Vertex>>> getVStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return UnaryOperator.identity();
-    }
-
-    /**
-     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#E()}.
-     *
-     * @param ctx the context within which this strategy function is called
-     * @return a {@link java.util.function.Supplier} that accepts a {@link java.util.function.Supplier} with {@link com.tinkerpop.gremlin.structure.Graph#E()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
-     */
-    public default UnaryOperator<Supplier<GraphTraversal<Edge, Edge>>> getEStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
 
