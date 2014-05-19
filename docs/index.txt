@@ -1082,5 +1082,27 @@ Each graph vendor will have different mechanism by which indices and schemas are
 Neo4j-Gremlin
 -------------
 
+image:neotech-logo.png[]
+
+[source,xml]
+----
+<dependency>
+   <groupId>com.tinkerpop.tinkerpop3</groupId>
+   <artifactId>neo4j-gremlin</artifactId>
+   <version>??</version>
+</dependency>
+----
+
+link:http://neotechnology.com[Neo Technology] are the developers of the link:http://neo4j.org[Neo4j graph database]. Neo4j natively supports the property graph data model. Note that Neo4j requires that the value objects in the property map of an element be Java primitives, `java.lang.String` values, or arrays of primitives and `java.lang.String` values.
+
+[source,groovy]
+----
+gremlin> :use com.tinkerpop.tinkerpop3 neo4j-gremlin 3.0.0-SNAPSHOT
+==>groovy.grape.Grape, org.apache.commons.configuration.*, com.tinkerpop.gremlin.structure.*, com.tinkerpop.gremlin.structure.Compare.*, com.tinkerpop.gremlin.structure.io.util.*, com.tinkerpop.gremlin.process.*, com.tinkerpop.gremlin.structure.io.*, groovy.json.*, com.tinkerpop.gremlin.structure.strategy.*, com.tinkerpop.gremlin.structure.io.graphson.*, com.tinkerpop.gremlin.tinkergraph.structure.*, com.tinkerpop.gremlin.structure.util.*, com.tinkerpop.gremlin.structure.io.kryo.*, com.tinkerpop.gremlin.structure.Direction.*, com.tinkerpop.gremlin.structure.io.graphml.*, com.tinkerpop.gremlin.algorithm.generator.*, com.tinkerpop.gremlin.neo4j.structure.*
+==>loaded: {disableChecksums=false, module=neo4j-gremlin, autoDownload=true, calleeDepth=4, changing=false, version=3.0.0-SNAPSHOT, group=com.tinkerpop.tinkerpop3}
+gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+----
+
 Giraph-Gremlin
 --------------
