@@ -14,24 +14,58 @@ import java.util.function.Function;
  */
 public interface Transaction extends Closeable {
 
+    /**
+     * Opens a transaction.
+     */
     public void open();
 
+    /**
+     * Commits a transaction.
+     */
     public void commit();
 
+    /**
+     * Rolls back a transaction.
+     */
     public void rollback();
 
+    /**
+     * Submit a unit of work that represents a transaction returning a {@link Workload} that can be automatically
+     * retried in the event of failure.
+     */
     public <R> Workload<R> submit(final Function<Graph, R> work);
 
+    /**
+     * Creaes a transaction that can be executed across multiple threads.
+     */
     public <G extends Graph> G create();
 
+    /**
+     * Determines if a transaction is currently open.
+     */
     public boolean isOpen();
 
+    /**
+     * An internal function that signals a read or a write has occurred - not meant to be called directly.
+     */
     public void readWrite();
 
+    /**
+     * Closes the transaction where the default close behavior will be executed.
+     */
     public void close();
 
+    /**
+     * Describes how a transaction is started when a read or a write occurs.  This value can be set using standard
+     * behaviors defined in {@link READ_WRITE_BEHAVIOR} or a custom {@link Consumer} function.
+     */
     public Transaction onReadWrite(final Consumer<Transaction> consumer);
 
+    /**
+     * Describes what happens to a transaction on a call to {@link com.tinkerpop.gremlin.structure.Graph#close()}.
+     * This value can be set using standard behavior defined in {@link CLOSE_BEHAVIOR} or a custom {@link Consumer}
+     * function.
+     */
     public Transaction onClose(final Consumer<Transaction> consumer);
 
     public static class Exceptions {
@@ -99,6 +133,9 @@ public interface Transaction extends Closeable {
      * Behaviors to supply to the {@link #onReadWrite(java.util.function.Consumer)}.
      */
     public static enum READ_WRITE_BEHAVIOR implements Consumer<Transaction> {
+        /**
+         * Transactions are automatically started when a read or a write occurs.
+         */
         AUTO {
             @Override
             public void accept(final Transaction transaction) {
@@ -106,6 +143,9 @@ public interface Transaction extends Closeable {
             }
         },
 
+        /**
+         * Transactions must be explicitly opened for operations to occur on the graph.
+         */
         MANUAL {
             @Override
             public void accept(final Transaction transaction) {
