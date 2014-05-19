@@ -268,7 +268,79 @@ TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value 
 Graph Transactions
 ------------------
 
-A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction] is a unit of work.
+A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction] represents a unit of work to execute against the database.  Transactions are controlled by an implementation of the `Transaction` interface and that object can be obtained from the `Graph` interface using the `tx()` method.  Determining when a transaction starts is dependent upon the behavior assigned to the `Transaction`.  It is up to the `Graph` implementation to determine the default behavior and unless the implementation doesn't allow it, the behavior itself can be altered via these `Transaction` methods:
+
+[source,java]
+----
+public Transaction onReadWrite(final Consumer<Transaction> consumer);
+
+public Transaction onClose(final Consumer<Transaction> consumer);
+----
+
+Providing a `Consumer` function to `onReadWrite` allows definition of how a transaction starts when a read or a write occurs. `Transaction.READ_WRITE_BEHAVIOR` contains pre-defined `Consumer` functions to supply to the `onReadWrite` method.  It has two options:
+
+* `AUTO` - automatic transactions where the transaction is started implicitly to the read or write operation
+* `MANUAL` - manual transactions where it is up to the user to explicitly open a transaction, throwing an exception if the transaction is not open
+
+Providing a `Consumer` function to `onClose` allows configuration of how a transaction is handled when `Graph.close()` is called.  `Transaction.CLOSE_BEHAVIOR` has several pre-defined options that can be supplied to this method:
+
+* COMMIT - automatically commit an open transaction
+* ROLLBACK - automatically rollback an open transaction
+* MANUAL - throw an exception if a transaction is open, forcing the user to explicitly close the transaction
+
+Once there is an understanding for how transactions are configured, most of the rest of the `Transaction` interface is self-explanatory:
+
+[source,groovy]
+----
+gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
+gremlin> g.features
+==>FEATURES
+> GraphFeatures
+>-- Transactions: true  <1>
+>-- Computer: false
+>-- Persistence: true
+...
+gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.AUTO) <2>
+==>com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
+gremlin> g.addVertex("name","stephen")  <3>
+==>v[0]
+gremlin> g.tx().commit() <4>
+==>null
+gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL) <5>
+==>com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
+gremlin> g.tx().isOpen()
+==>false
+gremlin> g.addVertex("name","marko") <6>
+Open a transaction before attempting to read/write the transaction
+gremlin> g.tx().open() <7>
+==>null
+gremlin> g.addVertex("name","marko") <8>
+==>v[1]
+gremlin> g.tx().commit()
+==>null
+----
+
+<1> Check `features` to ensure that the graph supports transactions.
+<2> By default, `Neo4jGraph` is configured with "automatic" transactions, so it is set here for demonstration purposes only.
+<3> When the vertex is added, the transaction is automatically started.  From this point, more mutations can be staged or other read operations executed in the context of that open transaction.
+<4> Calling `commit` finalizes the transaction.
+<5> Change transaction behavior to require manual control.
+<6> Adding a vertex now results in failure because the transaction was not explicitly opened.
+<7> Explicitly open a transaction.
+<8> Adding a vertex now succeeds as the transaction was manually opened.
+
+The `Transaction` object also exposes a method for executing automatic transaction retries:
+
+[source,groovy]
+----
+gremlin> g.tx().submit{it.addVertex("name","josh")}.retry(10)
+==>v[2]
+gremlin> g.tx().submit{it.addVertex("name","daniel")}.exponentialBackoff(10)
+==>v[3]
+----
+
+As shown above, the `submit` method takes a `Function<Graph, R>` which is the unit of work to execute and possibly retry on failure.  The method returns a `Transaction.Workload` object which has a number of default methods for common retry strategies.  It is also possible to supply a custom retry function if a default one does not suit the required purpose.
 
 
 The Traversal API
