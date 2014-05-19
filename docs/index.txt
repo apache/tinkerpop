@@ -138,7 +138,7 @@ image:gremlin-running.png[width=125,float=left] The primary way in which graphs 
  . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
  . `Graph.E()`: generates a traversal starting at all edges in the graph.
 
-The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition and implements `Iterator` and `Iterable`. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of three ways.
+The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of three ways.
 
  . `map`: transform the incoming object to another object (S &rarr; E).
  . `flatMap`: transform the incoming object to an iterator of other objects (S &rarr; E^*^).
@@ -164,7 +164,7 @@ gremlin> marko.out('knows').name
 .The Name of The People That Marko Knows
 image::tinkerpop-classic-ex1.png[width=500]
 
-Again, all steps extend either map, flatMap, or filter. Thus, the traversal above can be written in its generic form below. Note the Gremlin-Groovy syntax convention of `v['name']`. This is Groovy syntactic sugar that resolved to `v.value('name')`. In the next section, the `it.get()` will be explained as this is an important feature of TinkerPop3 that is not available in previous version of TinkerPop. 
+Again, all steps extend either map, flatMap, or filter. Thus, the traversal above can be written in its generic form below. Note the Gremlin-Groovy syntax convention of `v['name']`. This is Groovy syntactic sugar that resolved to `v.value('name')`. In the next section, the `it.get()` will be explained as this is an important feature of TinkerPop3 that is not available in previous versions of TinkerPop. 
 
 IMPORTANT: The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. The lambdas introduced by Java8 are supported in TinkerPop3.
 
@@ -191,29 +191,27 @@ NOTE: Gremlin-Java is much more aligned with Gremlin-Groovy in TinkerPop3 than i
 The Traverser
 ~~~~~~~~~~~~~
 
-When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps are the middle of the traversal (e.g. `out("knows")` and `value("name")`), and the result is "traversal.next()'d" out of the right of the traversal (e.g. "vadas" and "josh").
+When a traversal is executed, the source of the traversal is on the left of the expression (e.g. vertex 1), the steps are the middle of the traversal (e.g. `out("knows")` and `value("name")`), and the results are "traversal.next()'d" out of the right of the traversal (e.g. "vadas" and "josh").
 
 image::traversal-mechanics.png[width=500]
 
-In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept is new as of TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser, etc. This data can be accessed by a step:
+In TinkerPop3, the objects propagating through the traversal are wrapped in a `Traverser<T>`. The traverser concept is new as of TinkerPop3 and provides the means by which steps remain stateless. A traverser maintains all the metadata about the traversal -- e.g., how many times the traverser has gone through a loop, the path history of the traverser, the current object being traversed, etc. Traverser metdata can be accessed by a step. A classic example is the `path()`-step.
 
 [source,groovy]
 marko.out('knows').name.path
 ==>[v[1], v[2], vadas]
 ==>[v[1], v[4], josh]
 
-In the general form of the expression, the input to the functions map, flatMap, and filter are a `Traverser<T>`. Hence, the reason, the general form lambdas start with a `v.get()` (i.e. "get the raw object of the traverser containing a vertex"). The general form of path-step demonstrates how the metadata of the traverser is accessed without accessing the raw object. 
+CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective traverser. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
+
+Another example is the `jump()`-step which takes into account the number of times the traverser has gone through a particular section of the traversal expression.
 
 [source,groovy]
-marko
-  .filter{it.get()['name'] == 'marko'}
-  .flatMap{it.get().out('knows')}
-  .map{it.get()['name']}
-  .map{it.getPath()}
-==>[v[1], v[2], vadas]
-==>[v[1], v[4], josh]
+marko.as('a').out.jump('a'){it.loops < 2}.name
+==>ripple
+==>lop
 
-CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path of the respective traverser. Thus, traversal optimizers analyze the traversal to determine if path metadata is accessed. If not, then path calculations are turned off.
+IMPORTANT: In TinkerPop2, the `jump()`-step was called `loop()`. Jump has been generalized to support both do-while and while-do semantics which is explained in <<jump-step,Jump Step>>.
 
 The Graph API
 =============
@@ -347,9 +345,11 @@ The Traversal API
 =================
 
 At the most general level there is `Traversal<S,E>` which implements both `Iterator<E>` and `Iterable<E>`, where the `S` stands for start and the `E` stands for end. A traversal is composed of three primary components:
+  
   . `Step<S,E>`: a individual function applied to `S` to yield `E`.
   . `TraversalStrategy`: interceptor methods to alter the execution of the traversal.
   . `Traversal.Variables`: key/value pairs that can be used to store global information about the traversal.
+
 The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal`.
 
 Graph Traversal Steps
@@ -374,6 +374,39 @@ A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or Edge. A list o
  * `jump(string)` : teleport S to the labeled string-labeled step in the traversal.
  * ...
 
+[[jump-step]]
+Jump Step
+~~~~~~~~~
+
+TinkerPop3 introduces the `jump()`-step. This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with jump(), the Gremlin is no longer constrained to *do-while* semantics, but not can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of jump() in action in Gremlin-Groovy.
+
+[source,groovy]
+gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}.name <1>
+==>ripple
+==>lop
+gremlin> g.v(1).as('a').jump('b'){it.loops>1}.out.jump('a').name.as('b') <2>
+==>ripple
+==>lop
+gremlin> g.v(1).jump('a').out.out.out.name.as('a') <3>
+==>marko
+
+<1> do-while semantics as found in the classic `loop()`-step in TinkerPop2.
+<2> while-do semantics as introduced in TinkerPop3. Jump to step `b` if loops greater than 1 else, `out` and jump back to `a`.   
+<3> a non-predicate based jump where `out.out.out` is seen as inert code.
+
+Finally, jump() also supports an "emit predicate." Whereby the traverser is split in two -- the traverser exists the code block as well as continues back within the code block.
+
+[source,groovy]
+gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}{true}.name
+==>lop
+==>vadas
+==>josh
+==>ripple
+==>lop
+
+image::jump-step-example.png[width=500]
+
+The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop. 
 
 Traversal Strategy
 ------------------
