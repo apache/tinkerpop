@@ -20,7 +20,7 @@ import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerEdgeVertexStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.util.optimizers.TinkerGraphStepTraversalStrategy;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.util.strategy.TinkerGraphStepTraversalStrategy;
 
 import java.util.Set;
 
