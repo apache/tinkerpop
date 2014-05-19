@@ -45,6 +45,10 @@ public class ExceptionCoverageTest {
 
             add("com.tinkerpop.gremlin.structure.Graph$Exceptions#onlyOneOrNoGraphComputerClass");
 
+            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexAdditionsNotSupported");
+            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#vertexLookupsNotSupported");
+            add("com.tinkerpop.gremlin.structure.Graph$Exceptions#edgeLookupsNotSupported");
+
             // todo: need to write consistency tests for the following items still...........
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");

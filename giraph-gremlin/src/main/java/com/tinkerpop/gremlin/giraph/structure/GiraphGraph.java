@@ -38,26 +38,26 @@ public class GiraphGraph implements Graph {
 
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
-        traversal.addStep(new GiraphGraphStep(traversal));
+        traversal.addStep(new GiraphGraphStep(traversal, Vertex.class));
         return traversal;
     }
 
     public GraphTraversal<Edge, Edge> E() {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
-        traversal.addStep(new GiraphGraphStep(traversal));
+        traversal.addStep(new GiraphGraphStep(traversal, Edge.class));
         return traversal;
     }
 
     public Vertex v(final Object id) {
-        throw new UnsupportedOperationException();
+        throw Exceptions.vertexAdditionsNotSupported();
     }
 
     public Edge e(final Object id) {
-        throw new UnsupportedOperationException();
+        throw Exceptions.edgeLookupsNotSupported();
     }
 
     public Vertex addVertex(final Object... keyValues) {
-        throw new UnsupportedOperationException();
+        throw Exceptions.vertexLookupsNotSupported();
     }
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
@@ -66,17 +66,16 @@ public class GiraphGraph implements Graph {
 
 
     public <V extends Variables> V variables() {
-        return null;
+        throw Exceptions.memoryNotSupported();
     }
 
     public String toString() {
-        return StringFactory.graphString(this, this.configuration.getString(GiraphGraphComputer.GREMLIN_INPUT_LOCATION) + "-" +
-                this.configuration.getString(GiraphGraphComputer.VERTEX_PROGRAM) + "->" +
-                this.configuration.getString(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION));
+        return StringFactory.graphString(this, this.configuration.getString(GiraphGraphComputer.GREMLIN_INPUT_LOCATION) +
+                "->" + this.configuration.getString(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION));
     }
 
     public void close() {
-
+        this.configuration = new BaseConfiguration();
     }
 
     public Transaction tx() {
@@ -85,6 +84,16 @@ public class GiraphGraph implements Graph {
 
 
     public Features getFeatures() {
-        return null;
+        return new Features() {
+            @Override
+            public GraphFeatures graph() {
+                return new GraphFeatures() {
+                    @Override
+                    public boolean supportsComputer() {
+                        return true;
+                    }
+                };
+            }
+        };
     }
 }

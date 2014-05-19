@@ -54,7 +54,7 @@ public interface Graph extends AutoCloseable {
     public default <T extends Traversal> T traversal(final Class<T> traversalClass) {
         try {
             final T t = (T) traversalClass.getMethod(Traversal.OF).invoke(null);
-            t.memory().set("g",this);
+            t.memory().set("g", this);
             return t;
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -404,6 +404,18 @@ public interface Graph extends AutoCloseable {
 
         public static UnsupportedOperationException graphComputerNotSupported() {
             return new UnsupportedOperationException("Graph does not support graph computer");
+        }
+
+        public static UnsupportedOperationException vertexLookupsNotSupported() {
+            return new UnsupportedOperationException("Graph does not support vertex lookups by id");
+        }
+
+        public static UnsupportedOperationException edgeLookupsNotSupported() {
+            return new UnsupportedOperationException("Graph does not support edge lookups by id");
+        }
+
+        public static UnsupportedOperationException vertexAdditionsNotSupported() {
+            return new UnsupportedOperationException("Graph does not support adding vertices");
         }
 
         public static IllegalArgumentException vertexWithIdAlreadyExists(final Object id) {

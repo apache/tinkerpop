@@ -2,15 +2,15 @@ package com.tinkerpop.gremlin.giraph.process.graph.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
-import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.Element;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphStep extends GraphStep {
+public class GiraphGraphStep<E extends Element> extends GraphStep<E> {
 
-    public GiraphGraphStep(Traversal traversal) {
-        super(traversal, Vertex.class);
+    public GiraphGraphStep(final Traversal traversal, final Class<E> returnClass) {
+        super(traversal, returnClass);
     }
 
     public void clear() {
