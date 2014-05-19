@@ -21,8 +21,9 @@ public class CachedEdge extends CachedElement implements Edge {
     private CachedVertex inVertex;
 
     public CachedEdge(final Object id, final String label, final Map<String, Object> properties,
+					  final Map<String, Object> hiddenProperties,
                       final Pair<Object, String> outV, final Pair<Object, String> inV) {
-        super(id, label, properties);
+        super(id, label, properties, hiddenProperties);
         this.outVertex = new CachedVertex(outV.getValue0(), outV.getValue1());
         this.inVertex = new CachedVertex(inV.getValue0(), inV.getValue1());
     }

@@ -56,7 +56,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
@@ -1475,7 +1474,6 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     public static void assertModernGraph(final Graph g1) {
-		// todo: assert whole modern graph.
         if (g1.getFeatures().graph().memory().supportsVariables()) {
             final Map<String, Object> m = g1.variables().asMap();
             if (g1.getFeatures().graph().memory().supportsStringValues())
@@ -1492,6 +1490,8 @@ public class IoTest extends AbstractGremlinTest {
         assertFalse(itty1.hasNext());
         assertEquals("person", v1.label());
         assertEquals(1, v1.keys().size());
+		assertEquals(1, v1.hiddenKeys().size());
+		assertEquals("rw", v1.hiddens().get("acl").value());
         if (g1.getFeatures().vertex().supportsUserSuppliedIds())
             assertEquals(1, v1.id());
     }

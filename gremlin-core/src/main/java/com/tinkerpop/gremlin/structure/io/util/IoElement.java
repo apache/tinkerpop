@@ -14,13 +14,14 @@ public abstract class IoElement {
     public Object id;
     public String label;
     public Map properties;
+	public Map hiddenProperties;
 
     protected static <T extends IoElement, E extends Element> T from(final E element, final T ioe) {
         ioe.id = element.id();
         ioe.label = element.label();
+        ioe.properties = element.values();
+		ioe.hiddenProperties = element.hiddenValues();
 
-        // get the value out of a Property.
-        ioe.properties = element.properties().entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e-> e.getValue().value()));
         return ioe;
     }
 }

@@ -43,6 +43,12 @@ public abstract interface Element {
         return values;
     }
 
+	public default Map<String, Object> hiddenValues() {
+		final Map<String, Object> values = new HashMap<>();
+		this.hiddens().forEach((k, p) -> values.put(k, p.value()));
+		return values;
+	}
+
     public Map<String, Property> properties();
 
     public Map<String, Property> hiddens();

@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
@@ -242,6 +243,13 @@ public class KryoReader implements GraphReader {
                     kryo.readClassAndObject(input);
                 });
 
+				// read hidden count so we know how many properties to skip
+				final int numberOfHiddens = input.readInt();
+				IntStream.range(0, numberOfHiddens).forEach(i -> {
+					input.readString();
+					kryo.readClassAndObject(input);
+				});
+
                 // next in/out id to skip
                 inOrOutId = kryo.readClassAndObject(input);
             }
@@ -261,6 +269,8 @@ public class KryoReader implements GraphReader {
 
             // label
             output.writeString(input.readString());
+
+			// standard properties
             final int props = input.readInt();
             output.writeInt(props);
             IntStream.range(0, props).forEach(i -> {
@@ -270,6 +280,17 @@ public class KryoReader implements GraphReader {
                 // value
                 kryo.writeClassAndObject(output, kryo.readClassAndObject(input));
             });
+
+			// hidden properties
+			final int hiddens = input.readInt();
+			output.writeInt(hiddens);
+			IntStream.range(0, hiddens).forEach(i -> {
+				// key
+				output.writeString(input.readString());
+
+				// value
+				kryo.writeClassAndObject(output, kryo.readClassAndObject(input));
+			});
 
             // next inId or terminator
             inId = kryo.readClassAndObject(input);
@@ -320,6 +341,13 @@ public class KryoReader implements GraphReader {
             elementArgs.add(key);
 			elementArgs.add(kryo.readClassAndObject(input));
         });
+
+		final int numberOfHiddens = input.readInt();
+		IntStream.range(0, numberOfHiddens).forEach(i -> {
+			final String key = input.readString();
+			elementArgs.add(Property.hidden(key));
+			elementArgs.add(kryo.readClassAndObject(input));
+		});
     }
 
     private void deleteTempFileSilently() {

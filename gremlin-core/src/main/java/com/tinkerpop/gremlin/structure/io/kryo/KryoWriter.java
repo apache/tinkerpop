@@ -144,6 +144,14 @@ public class KryoWriter implements GraphWriter {
             output.writeString(key);
             writePropertyValue(output, val);
         });
+
+		final Map<String, Property> hiddens = e.hiddens();
+		final int hiddenCount = hiddens.size();
+		output.writeInt(hiddenCount);
+		hiddens.forEach((key, val) -> {
+			output.writeString(key);
+			writePropertyValue(output, val);
+		});
     }
 
     private void writePropertyValue(final Output output, final Property val) {

@@ -16,8 +16,8 @@ public class CachedVertex extends CachedElement implements Vertex {
         super(id, label);
     }
 
-    public CachedVertex(final Object id, final String label, final Map<String,Object> properties) {
-        super(id, label, properties);
+    public CachedVertex(final Object id, final String label, final Map<String,Object> properties, final Map<String,Object> hiddenProperties) {
+        super(id, label, properties, hiddenProperties);
     }
 
     public CachedVertex(final Vertex vertex) {
