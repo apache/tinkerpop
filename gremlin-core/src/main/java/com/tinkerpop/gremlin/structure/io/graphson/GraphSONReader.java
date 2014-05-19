@@ -6,15 +6,12 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
-import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedValue;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import com.tinkerpop.gremlin.util.function.TriFunction;
@@ -154,30 +151,12 @@ public class GraphSONReader implements GraphReader {
 
     private static Vertex readVertexData(final Map<String,Object> vertexData, final TriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
         final Map<String, Object> properties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
-        final List<Pair<String, IoAnnotatedList>> annotatedLists = new ArrayList<>();
         final Object[] propsAsArray = properties.entrySet().stream().flatMap(e -> {
             final Object o = e.getValue();
-            if (o instanceof IoAnnotatedList) {
-                annotatedLists.add(Pair.with(e.getKey(), (IoAnnotatedList) o));
-                return Stream.of(e.getKey(), AnnotatedList.make());
-            } else {
-                return Stream.of(e.getKey(), e.getValue());
-            }
+            return Stream.of(e.getKey(), e.getValue());
         }).toArray();
 
-        final Vertex newVertex = vertexMaker.apply(vertexData.get(GraphSONTokens.ID), vertexData.get(GraphSONTokens.LABEL).toString(), propsAsArray);
-        setAnnotatedListValues(annotatedLists, newVertex);
-        return newVertex;
-    }
-
-    private static void setAnnotatedListValues(final List<Pair<String, IoAnnotatedList>> annotatedLists, final Vertex v) {
-        annotatedLists.forEach(kal -> {
-            final AnnotatedList al = v.value(kal.getValue0());
-            final List<IoAnnotatedValue> valuesForAnnotation = kal.getValue1().annotatedValueList;
-            for (IoAnnotatedValue kav : valuesForAnnotation) {
-                al.addValue(kav.value, kav.toAnnotationsArray());
-            }
-        });
+        return vertexMaker.apply(vertexData.get(GraphSONTokens.ID), vertexData.get(GraphSONTokens.LABEL).toString(), propsAsArray);
     }
 
     public static Builder create() {

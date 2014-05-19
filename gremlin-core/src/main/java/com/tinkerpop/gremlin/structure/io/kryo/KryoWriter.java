@@ -147,9 +147,6 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writePropertyValue(final Output output, final Property val) {
-        // TODO: STEPHEN JUST COMMMENTED STUFF OUT if (val.value() instanceof AnnotatedList)
-        // TODO: STEPHEN JUST COMMMENTED STUFF OUT    kryo.writeClassAndObject(output, IoAnnotatedList.from((AnnotatedList) val.value()));
-        // TODO: STEPHEN JUST COMMMENTED STUFF OUTelse
         kryo.writeClassAndObject(output, val.value());
     }
 

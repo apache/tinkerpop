@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.process.graph.filter.GroovyRandomTestG;
 import com.tinkerpop.gremlin.process.graph.filter.GroovyRangeTestG;
 import com.tinkerpop.gremlin.process.graph.filter.GroovyRetainTestG;
 import com.tinkerpop.gremlin.process.graph.filter.GroovySimplePathTestG;
-import com.tinkerpop.gremlin.process.graph.map.GroovyAnnotatedValuesTestG;
 import com.tinkerpop.gremlin.process.graph.map.GroovyBackTestG;
 import com.tinkerpop.gremlin.process.graph.map.GroovyJumpTestG;
 import com.tinkerpop.gremlin.process.graph.map.GroovyOrderTestG;
@@ -51,7 +50,6 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyRangeTestG.class,
             GroovyRetainTestG.class,
             GroovySimplePathTestG.class,
-            GroovyAnnotatedValuesTestG.class,
             GroovyBackTestG.class,
             GroovyJumpTestG.class,
             GroovyOrderTestG.class,

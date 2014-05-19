@@ -22,7 +22,6 @@ public class ExceptionCoverageTest {
 
         // these are the classes that have Exceptions that need to be checked.
         final Class[] blueprintsExceptions = {
-                AnnotatedValue.Exceptions.class,
                 Edge.Exceptions.class,
                 Element.Exceptions.class,
                 Graph.Exceptions.class,
@@ -38,7 +37,6 @@ public class ExceptionCoverageTest {
         // like the first set listed (and labelled as such) below in the list assignments.
         final Set<String> ignore = new HashSet<String>() {{
             // these exceptions is not used directly...they are called by other exception methods.
-            add("com.tinkerpop.gremlin.structure.AnnotatedValue$Exceptions#annotationKeyIsReserved");
             add("com.tinkerpop.gremlin.structure.Property$Exceptions#propertyKeyIsReserved");
             add("com.tinkerpop.gremlin.structure.Graph$Variables$Exceptions#memoryKeyIsReserved");
 

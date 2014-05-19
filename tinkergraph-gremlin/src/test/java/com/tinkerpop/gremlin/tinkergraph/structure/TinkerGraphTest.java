@@ -4,8 +4,6 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.AnnotatedList;
-import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.IoTest;
@@ -228,23 +226,6 @@ public class TinkerGraphTest implements Serializable {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern.gio");
         KryoWriter.create().build().writeGraph(os, TinkerFactory.createModern());
         os.close();
-    }
-
-    @Test
-    public void shouldValidateAnnotatedList() {
-        final TinkerGraph g = TinkerGraph.open();
-        final Vertex marko = g.addVertex();
-        marko.property("names", AnnotatedList.make());
-        final Property<AnnotatedList<String>> names = marko.property("names");
-        System.out.println(names.value().addValue("marko", "time", 1));
-        names.value().addValue("antonio", "time", 2);
-        names.value().addValue("mrodriguez", "time", 7);
-        System.out.println(names);
-        System.out.println("-------");
-        names.value().annotatedValues().has("time", 1).value().forEach(System.out::println);
-        System.out.println("-------");
-        names.value().annotatedValues().<AnnotatedValue>has("time", 1).forEach(AnnotatedValue::remove);
-        names.value().annotatedValues().value().forEach(System.out::println);
     }
 
     @Test

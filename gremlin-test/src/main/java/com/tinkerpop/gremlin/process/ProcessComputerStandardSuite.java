@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.process.graph.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.graph.filter.RandomTest;
 import com.tinkerpop.gremlin.process.graph.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.filter.SimplePathTest;
-import com.tinkerpop.gremlin.process.graph.map.AnnotatedValuesTest;
 import com.tinkerpop.gremlin.process.graph.map.BackTest;
 import com.tinkerpop.gremlin.process.graph.map.JumpTest;
 import com.tinkerpop.gremlin.process.graph.map.PathTest;
@@ -62,7 +61,6 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             // RangeTest.JavaComputerRangeTest.class, TODO: Makes no sense in GraphComputer
             RetainTest.JavaComputerRetainTest.class,
             SimplePathTest.JavaComputerSimplePathTest.class,
-            AnnotatedValuesTest.JavaComputerAnnotatedValuesTest.class,
             BackTest.JavaComputerBackTest.class,
             JumpTest.JavaComputerJumpTest.class,
             // OrderTest.JavaOrderTest.class
@@ -101,7 +99,6 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             // RangeTest.class,
             RetainTest.class,
             SimplePathTest.class,
-            AnnotatedValuesTest.class,
             BackTest.class,
             JumpTest.class,
             PathTest.class,

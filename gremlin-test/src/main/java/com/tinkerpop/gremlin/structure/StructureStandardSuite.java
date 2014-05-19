@@ -45,7 +45,6 @@ import java.util.stream.Stream;
 public class StructureStandardSuite extends AbstractGremlinSuite {
 
     private static final Class<?>[] allTests = new Class<?>[]{
-        AnnotationTest.class,
         BatchTest.class,
         CommunityGeneratorTest.class,
         DistributionGeneratorTest.class,

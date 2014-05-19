@@ -8,14 +8,10 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.DefaultStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.AnnotatedList;
-import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
-import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedValue;
 import com.tinkerpop.gremlin.structure.io.util.IoEdge;
 import com.tinkerpop.gremlin.structure.io.util.IoVertex;
 import org.javatuples.Pair;
@@ -173,7 +169,7 @@ public final class GremlinKryo {
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is HashMap.Entry=58.
+         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is Collections.singleton=54.
          */
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class,Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
@@ -185,8 +181,6 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(double[].class, null, 31));
             add(Triplet.<Class, Serializer, Integer>with(String[].class, null, 32));
             add(Triplet.<Class, Serializer, Integer>with(Object[].class, null, 33));
-            add(Triplet.<Class, Serializer, Integer>with(AnnotatedList.class, new AnnotatedSerializer.AnnotatedListSerializer(), 22));
-            add(Triplet.<Class, Serializer, Integer>with(AnnotatedValue.class, new AnnotatedSerializer.AnnotatedValueSerializer(), 23));
             add(Triplet.<Class, Serializer, Integer>with(ArrayList.class, null, 10));
             add(Triplet.<Class, Serializer, Integer>with(BigInteger.class, null, 34));
             add(Triplet.<Class, Serializer, Integer>with(BigDecimal.class, null, 35));
@@ -197,8 +191,8 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(Collections.EMPTY_MAP.getClass(), null, 52));
             add(Triplet.<Class, Serializer, Integer>with(Collections.EMPTY_SET.getClass(), null, 53));
             add(Triplet.<Class, Serializer, Integer>with(Collections.singleton(null).getClass(), null, 54));
-            add(Triplet.<Class, Serializer, Integer>with(Collections.singletonList(null).getClass(), null, 55));
-            add(Triplet.<Class, Serializer, Integer>with(Collections.singletonMap(null, null).getClass(), null, 56));
+            add(Triplet.<Class, Serializer, Integer>with(Collections.singletonList(null).getClass(), null, 24));
+            add(Triplet.<Class, Serializer, Integer>with(Collections.singletonMap(null, null).getClass(), null, 23));
             add(Triplet.<Class, Serializer, Integer>with(Contains.class, null, 49));
             add(Triplet.<Class, Serializer, Integer>with(Currency.class, null, 40));
             add(Triplet.<Class, Serializer, Integer>with(Date.class, null, 38));
@@ -207,16 +201,13 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(EdgeTerminator.class, null, 14));
             add(Triplet.<Class, Serializer, Integer>with(EnumSet.class, null, 46));
             add(Triplet.<Class, Serializer, Integer>with(HashMap.class, null, 11));
-            add(Triplet.<Class, Serializer, Integer>with(HashMap.Entry.class, null, 58));
-            add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedList.class, null, 15));
-            add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedList.IoListValue.class, null, 24));
-            add(Triplet.<Class, Serializer, Integer>with(IoAnnotatedValue.class, null, 16));
+            add(Triplet.<Class, Serializer, Integer>with(HashMap.Entry.class, null, 16));
             add(Triplet.<Class, Serializer, Integer>with(IoEdge.class, null, 21));
             add(Triplet.<Class, Serializer, Integer>with(IoVertex.class, null, 20));
             add(Triplet.<Class, Serializer, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Serializer, Integer>with(LinkedHashMap.class, null, 47));
-            add(Triplet.<Class, Serializer, Integer>with(linkedHashMapEntryClass, null, 59));
-            add(Triplet.<Class, Serializer, Integer>with(Locale.class, null, 57));
+            add(Triplet.<Class, Serializer, Integer>with(linkedHashMapEntryClass, null, 15));
+            add(Triplet.<Class, Serializer, Integer>with(Locale.class, null, 22));
             add(Triplet.<Class, Serializer, Integer>with(StringBuffer.class, null, 43));
             add(Triplet.<Class, Serializer, Integer>with(StringBuilder.class, null, 44));
             add(Triplet.<Class, Serializer, Integer>with(T.class, null, 48));

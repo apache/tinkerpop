@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
@@ -568,10 +569,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexNoEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.value("locations");
-        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
-        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        final Vertex v1 = g.addVertex("name", "marko");
 
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5f);
@@ -580,8 +578,7 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1);
 
-            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
-
+			final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
@@ -596,69 +593,16 @@ public class IoTest extends AbstractGremlinTest {
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
-                            assertEquals(2, m.size());
-                            assertEquals(v1.value("name"), m.get("name").toString());
-                            assertEquals(AnnotatedList.make(), m.get("locations"));
-
-                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                            // set after the fact.
-                            final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
-                            return vsub1;
-                        });
-            }
-
-            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadWriteVertexNoEdgesToKryoAndDontSetAnnotatedListValues() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.value("locations");
-        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
-        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
-
-        final Vertex v2 = g.addVertex();
-        v1.addEdge("friends", v2, "weight", 0.5f);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final KryoWriter writer = KryoWriter.create().build();
-            writer.writeVertex(os, v1);
-
-            final KryoReader reader = KryoReader.create()
-                    .setWorkingDirectory(File.separator + "tmp").build();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais,
-                        (vertexId, label, properties) -> {
-                            assertEquals(v1.id(), vertexId);
-                            assertEquals(v1.label(), label);
-
-                            final Map<String, Object> m = new HashMap<>();
-                            for (int i = 0; i < properties.length; i = i + 2) {
-                                if (!properties[i].equals(Element.ID))
-                                    m.put((String) properties[i], properties[i + 1]);
-                            }
-
-                            assertEquals(2, m.size());
+                            assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
 
-                            // purposely ignore the AnnotatedList property.
-
-                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                            // set after the fact.
-                            final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.value("locations")).thenReturn(null);
-                            return vsub1;
+							called.set(true);
+                            return mock(Vertex.class);
                         });
             }
+			assertTrue(called.get());
         }
     }
-
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
@@ -691,7 +635,7 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(v1.value("name"), m.get("name").toString());
 
                             called.set(true);
-                            return null;
+                            return mock(Vertex.class);
                         });
             }
 
@@ -704,10 +648,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithOUTOUTEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.value("locations");
-        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
-        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        final Vertex v1 = g.addVertex("name", "marko");
 
         final Vertex v2 = g.addVertex();
         final Edge e = v1.addEdge("friends", v2, "weight", 0.5f);
@@ -716,8 +657,8 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.OUT);
 
-            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
-
+			final AtomicBoolean calledVertex = new AtomicBoolean(false);
+			final AtomicBoolean calledEdge = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
@@ -733,14 +674,11 @@ public class IoTest extends AbstractGremlinTest {
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
-                            assertEquals(2, m.size());
+                            assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
-                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                            // set after the fact.
+							calledVertex.set(true);
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
                             when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
@@ -753,13 +691,14 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5f, properties[1]);
 
+							calledEdge.set(true);
+
                             return null;
                         });
             }
 
-            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
-
+			assertTrue(calledVertex.get());
+			assertTrue(calledEdge.get());
         }
     }
 
@@ -821,10 +760,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithININEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.value("locations");
-        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
-        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        final Vertex v1 = g.addVertex("name", "marko");
 
         final Vertex v2 = g.addVertex();
         final Edge e = v2.addEdge("friends", v1, "weight", 0.5f);
@@ -833,7 +769,8 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.IN);
 
-            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+			final AtomicBoolean calledVertex = new AtomicBoolean(false);
+			final AtomicBoolean calledEdge = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
@@ -850,14 +787,12 @@ public class IoTest extends AbstractGremlinTest {
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
-                            assertEquals(2, m.size());
+                            assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
-                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                            // set after the fact.
+							calledVertex.set(true);
+
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
                             when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
@@ -870,12 +805,14 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5f, properties[1]);
 
+							calledEdge.set(true);
+
                             return null;
                         });
             }
 
-            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+			assertTrue(calledVertex.get());
+			assertTrue(calledEdge.get());
         }
     }
 
@@ -938,10 +875,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHBOTHEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.value("locations");
-        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
-        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        final Vertex v1 = g.addVertex("name", "marko");
 
         final Vertex v2 = g.addVertex();
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
@@ -951,7 +885,9 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.BOTH);
 
-            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+            final AtomicBoolean calledVertex = new AtomicBoolean(false);
+			final AtomicBoolean calledEdge1 = new AtomicBoolean(false);
+			final AtomicBoolean calledEdge2 = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
@@ -970,14 +906,12 @@ public class IoTest extends AbstractGremlinTest {
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
-                            assertEquals(2, m.size());
+                            assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
-                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                            // set after the fact.
+							calledVertex.set(true);
+
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
                             when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
@@ -989,6 +923,8 @@ public class IoTest extends AbstractGremlinTest {
                                 assertEquals(e1.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(0.5f, properties[1]);
+
+								calledEdge1.set(true);
                             } else if (edgeId.equals(e2.id())) {
                                 assertEquals(v1.id(), outId);
                                 assertEquals(v2.id(), inId);
@@ -996,6 +932,8 @@ public class IoTest extends AbstractGremlinTest {
                                 assertEquals(e2.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(1.0f, properties[1]);
+
+								calledEdge2.set(true);
                             } else {
                                 fail("An edge id generated that does not exist");
                             }
@@ -1004,8 +942,9 @@ public class IoTest extends AbstractGremlinTest {
                         });
             }
 
-            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+			assertTrue(calledVertex.get());
+			assertTrue(calledEdge1.get());
+			assertTrue(calledEdge2.get());
         }
     }
 
@@ -1014,10 +953,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHBOTHEdgesToKryoSkipProperties() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.value("locations");
-        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
-        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        final Vertex v1 = g.addVertex("name", "marko");
 
         final Vertex v2 = g.addVertex();
         v2.addEdge("friends", v1, "weight", 0.5f);
@@ -1027,8 +963,7 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.BOTH);
 
-            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
-
+			final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
@@ -1039,14 +974,15 @@ public class IoTest extends AbstractGremlinTest {
 
                             assertEquals(v1.label(), label);
 
-                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                            // set after the fact.
+							calledVertex.set(true);
+
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
                             when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         });
             }
+
+			assertTrue(calledVertex.get());
         }
     }
 
@@ -1199,10 +1135,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHINEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.value("locations");
-        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
-        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        final Vertex v1 = g.addVertex("name", "marko");
 
         final Vertex v2 = g.addVertex();
         final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
@@ -1212,7 +1145,8 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.BOTH);
 
-            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+			final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+			final AtomicBoolean edge1Called = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
@@ -1229,14 +1163,12 @@ public class IoTest extends AbstractGremlinTest {
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
-                            assertEquals(2, m.size());
+                            assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
-                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                            // set after the fact.
+							vertexCalled.set(true);
+
                             final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
                             when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
@@ -1248,6 +1180,8 @@ public class IoTest extends AbstractGremlinTest {
                                 assertEquals(e1.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(0.5f, properties[1]);
+
+								edge1Called.set(true);
                             } else {
                                 fail("An edge id generated that does not exist");
                             }
@@ -1256,8 +1190,8 @@ public class IoTest extends AbstractGremlinTest {
                         });
             }
 
-            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+			assertTrue(vertexCalled.get());
+			assertTrue(edge1Called.get());
         }
     }
 
@@ -1327,10 +1261,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexWithBOTHOUTEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko", "locations", AnnotatedList.make());
-        final AnnotatedList<String> locations = v1.value("locations");
-        locations.addValue("san diego", "startTime", 1997, "endTime", 2001);
-        locations.addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+        final Vertex v1 = g.addVertex("name", "marko");
 
         final Vertex v2 = g.addVertex();
         v2.addEdge("friends", v1, "weight", 0.5f);
@@ -1340,7 +1271,8 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.BOTH);
 
-            final AnnotatedList locationAnnotatedList = mock(AnnotatedList.class);
+			final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+			final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
@@ -1357,14 +1289,12 @@ public class IoTest extends AbstractGremlinTest {
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
-                            assertEquals(2, m.size());
+                            assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
-                            assertEquals(AnnotatedList.make(), m.get("locations"));
 
-                            // return a mock Vertex here so that the annotated list can be tested.  annotated lists are
-                            // set after the fact.
-                            final Vertex vsub1 = mock(Vertex.class);
-                            when(vsub1.value("locations")).thenReturn(locationAnnotatedList);
+							vertexCalled.set(true);
+
+							final Vertex vsub1 = mock(Vertex.class);
                             when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
@@ -1376,6 +1306,8 @@ public class IoTest extends AbstractGremlinTest {
                                 assertEquals(e2.keys().size(), properties.length / 2);
                                 assertEquals("weight", properties[0]);
                                 assertEquals(1.0f, properties[1]);
+
+								edgeCalled.set(true);
                             } else {
                                 fail("An edge id generated that does not exist");
                             }
@@ -1384,8 +1316,8 @@ public class IoTest extends AbstractGremlinTest {
                         });
             }
 
-            verify(locationAnnotatedList).addValue("san diego", "startTime", 1997, "endTime", 2001);
-            verify(locationAnnotatedList).addValue("santa cruz", "startTime", 2001, "endTime", 2004);
+			assertTrue(vertexCalled.get());
+			assertTrue(edgeCalled.get());
         }
     }
 
@@ -1543,6 +1475,7 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     public static void assertModernGraph(final Graph g1) {
+		// todo: assert whole modern graph.
         if (g1.getFeatures().graph().memory().supportsVariables()) {
             final Map<String, Object> m = g1.variables().asMap();
             if (g1.getFeatures().graph().memory().supportsStringValues())
@@ -1558,28 +1491,9 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v1 = itty1.next();
         assertFalse(itty1.hasNext());
         assertEquals("person", v1.label());
-        assertEquals(2, v1.keys().size());
+        assertEquals(1, v1.keys().size());
         if (g1.getFeatures().vertex().supportsUserSuppliedIds())
             assertEquals(1, v1.id());
-        final AnnotatedList<String> v1location = v1.value("locations");
-        assertEquals(4, v1location.annotatedValues().toList().size());
-        v1location.annotatedValues().toList().forEach(av -> {
-            if (av.getValue().equals("san diego")) {
-                assertEquals(1997, av.getAnnotation("startTime").get());
-                assertEquals(2001, av.getAnnotation("endTime").get());
-            } else if (av.getValue().equals("santa cruz")) {
-                assertEquals(2001, av.getAnnotation("startTime").get());
-                assertEquals(2004, av.getAnnotation("endTime").get());
-            } else if (av.getValue().equals("brussels")) {
-                assertEquals(2004, av.getAnnotation("startTime").get());
-                assertEquals(2005, av.getAnnotation("endTime").get());
-            } else if (av.getValue().equals("santa fe")) {
-                assertEquals(2005, av.getAnnotation("startTime").get());
-                assertEquals(2014, av.getAnnotation("endTime").get());
-            }
-
-            assertEquals(2, av.getAnnotationKeys().size());
-        });
     }
 
     public static void assertClassicGraph(final Graph g1, final boolean lossyForFloat, final boolean lossyForId) {

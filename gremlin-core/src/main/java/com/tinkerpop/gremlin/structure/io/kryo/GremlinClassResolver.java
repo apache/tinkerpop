@@ -63,11 +63,6 @@ class GremlinClassResolver implements ClassResolver {
             type = Vertex.class;
         else if (Edge.class.isAssignableFrom(clazz))
             type = Edge.class;
-        /* TODO: STEPHEN I JUST COMMENTED THIS OUT
-        else if (AnnotatedList.class.isAssignableFrom(clazz))
-            type = AnnotatedList.class;
-        else if (AnnotatedValue.class.isAssignableFrom(clazz))
-            type = AnnotatedValue.class;*/
         else
             type = clazz;
 

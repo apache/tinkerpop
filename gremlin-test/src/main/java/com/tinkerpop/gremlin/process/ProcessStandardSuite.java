@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.process.graph.filter.RandomTest;
 import com.tinkerpop.gremlin.process.graph.filter.RangeTest;
 import com.tinkerpop.gremlin.process.graph.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.filter.SimplePathTest;
-import com.tinkerpop.gremlin.process.graph.map.AnnotatedValuesTest;
 import com.tinkerpop.gremlin.process.graph.map.BackTest;
 import com.tinkerpop.gremlin.process.graph.map.JumpTest;
 import com.tinkerpop.gremlin.process.graph.map.OrderTest;
@@ -66,7 +65,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             RangeTest.JavaRangeTest.class,
             RetainTest.JavaRetainTest.class,
             SimplePathTest.JavaSimplePathTest.class,
-            AnnotatedValuesTest.JavaAnnotatedValuesTest.class,
             BackTest.JavaBackTest.class,
             JumpTest.JavaJumpTest.class,
             OrderTest.JavaOrderTest.class,
@@ -96,7 +94,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             RangeTest.class,
             RetainTest.class,
             SimplePathTest.class,
-            AnnotatedValuesTest.class,
             BackTest.class,
             JumpTest.class,
             OrderTest.class,

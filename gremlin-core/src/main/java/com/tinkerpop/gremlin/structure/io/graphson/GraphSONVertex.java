@@ -4,16 +4,12 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -59,9 +55,7 @@ class GraphSONVertex {
             m.put(GraphSONTokens.ID, vertex.id());
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
-            m.put(GraphSONTokens.PROPERTIES,
-                    vertex.properties().values().stream().collect(
-                            Collectors.toMap(Property::key, p -> (p.value() instanceof AnnotatedList) ? IoAnnotatedList.from((AnnotatedList) p.value()) : p.value())));
+            m.put(GraphSONTokens.PROPERTIES, vertex.values());
 
             if (directionalVertex.getDirection() == Direction.BOTH || directionalVertex.getDirection() == Direction.OUT) {
                 m.put(GraphSONTokens.OUT, vertex.outE().toList());

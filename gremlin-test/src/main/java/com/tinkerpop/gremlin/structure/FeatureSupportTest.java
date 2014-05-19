@@ -217,50 +217,6 @@ public class FeatureSupportTest  {
     }
 
     /**
-     * Feature checks that tests if {@link com.tinkerpop.gremlin.structure.AnnotatedList}
-     * functionality to determine if a feature should be on when it is marked as not supported.
-     */
-    @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = AnnotatedValue.Exceptions.class, methods = {
-            "dataTypeOfAnnotatedValueNotSupported"
-    })
-    public static class AnnotationFunctionalityTest extends AbstractGremlinTest {
-        private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
-
-        @Parameterized.Parameters(name = "{index}: supports{0}({1})")
-        public static Iterable<Object[]> data() {
-            return AnnotationTest.AnnotationFeatureSupportTest.data();
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public String featureName;
-
-        @Parameterized.Parameter(value = 1)
-        public Object value;
-
-        /**
-         * In this case, the feature requirement for vertex annotations is checked, because it means that at least
-         * one aspect of annotations is supported so we need to test other features to make sure they work properly.
-         * For example, without the FeatureRequirement, Neo4j would thrown an IllegalArgumentException because it
-         * can't accept the value of AnnotatedList as a value.
-         */
-        @Test
-        @FeatureRequirement(featureClass = VertexAnnotationFeatures.class, feature = VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
-        public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
-            assumeThat(g.getFeatures().supports(VertexAnnotationFeatures.class, featureName), is(false));
-            try {
-                // todo: using a FeatureRequirement check on the test itself to avoid an exception on addVertex when the graph doesn't support AnnotatedList...rethink
-                final Vertex v = g.addVertex("key", AnnotatedList.make());
-                final Property<AnnotatedList<String>> al = v.property("key");
-                al.value().addValue("v", "t", value);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), featureName));
-            } catch (UnsupportedOperationException e) {
-                assertEquals(AnnotatedValue.Exceptions.dataTypeOfAnnotatedValueNotSupported(value).getMessage(), e.getMessage());
-            }
-        }
-    }
-
-    /**
      * Feature checks that tests if {@link com.tinkerpop.gremlin.structure.Graph.Variables}
      * functionality to determine if a feature should be on when it is marked as not supported.
      */

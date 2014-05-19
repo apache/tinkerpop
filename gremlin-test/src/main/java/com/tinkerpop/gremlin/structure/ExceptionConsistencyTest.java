@@ -274,60 +274,6 @@ public class ExceptionConsistencyTest {
     }
 
     /**
-     * Tests for exceptions with {@link com.tinkerpop.gremlin.structure.AnnotatedValue}.
-     */
-    @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = AnnotatedValue.Exceptions.class, methods = {
-            "providedKeyValuesMustBeAMultipleOfTwo",
-            "providedKeyValuesMustHaveAStringOnEvenIndices",
-            "annotationValueCanNotBeNull",
-            "annotationKeyValueIsReserved",
-            "annotationKeyCanNotBeEmpty",
-            "annotationKeyCanNotBeNull",
-            "annotatedValueCanNotBeNull"
-    })
-    public static class AnnotatedValueTest extends AbstractGremlinTest {
-
-        @Parameterized.Parameters(name = "{index}: expect - {0},{1}")
-        public static Iterable<Object[]> data() {
-            return Arrays.asList(new Object[][]{
-                    {null, new Object[]{"good", "odd", "number", "arguments"}, AnnotatedValue.Exceptions.annotatedValueCanNotBeNull()},
-                    {"something", new Object[]{"odd", "number", "arguments"}, AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {"something", new Object[]{"odd"}, AnnotatedValue.Exceptions.providedKeyValuesMustBeAMultipleOfTwo()},
-                    {"something", new Object[]{"odd", "number", 123, "test"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
-                    {"something", new Object[]{"odd", null}, AnnotatedValue.Exceptions.annotationValueCanNotBeNull()},
-                    {"something", new Object[]{null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
-                    {"something", new Object[]{(String) null, "val"}, AnnotatedValue.Exceptions.providedKeyValuesMustHaveAStringOnEvenIndices()},
-                    {"something", new Object[]{AnnotatedValue.VALUE, "v"}, AnnotatedValue.Exceptions.annotationKeyValueIsReserved()},
-                    {"something", new Object[]{"", "val"}, AnnotatedValue.Exceptions.annotationKeyCanNotBeEmpty()}});
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public String annotatedValue;
-
-        @Parameterized.Parameter(value = 1)
-        public Object[] arguments;
-
-        @Parameterized.Parameter(value = 2)
-        public Exception expectedException;
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = FEATURE_ANNOTATIONS)
-        public void testAnnotatedListAddValue() throws Exception {
-            try {
-                final Vertex v = this.g.addVertex();
-                v.property("names", AnnotatedList.make());
-                final Property<AnnotatedList<String>> names = v.property("names");
-                names.value().addValue(annotatedValue, arguments);
-                fail(String.format("Call to addValue should have thrown an exception with these arguments [%s]", arguments));
-            } catch (Exception ex) {
-                assertEquals(expectedException.getClass(), ex.getClass());
-                assertEquals(expectedException.getMessage(), ex.getMessage());
-            }
-        }
-    }
-
-    /**
      * Addition of an {@link com.tinkerpop.gremlin.structure.Edge} without a label should throw an exception.
      */
     @ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {

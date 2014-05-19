@@ -9,12 +9,10 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuadConsumer;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import com.tinkerpop.gremlin.util.function.TriFunction;
-import org.javatuples.Pair;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -78,9 +76,8 @@ public class KryoReader implements GraphReader {
         final Object vertexId = kryo.readClassAndObject(input);
         final String label = input.readString();
 
-        final List<Pair<String, IoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
+        readElementProperties(input, vertexArgs);
         final Vertex v = vertexMaker.apply(vertexId, label, vertexArgs.toArray());
-        //TODO: STEPHEN JUST COMMENTED STUFF OUT setAnnotatedListValues(annotatedLists, v);
 
         final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
         if (!streamContainsEdgesInSomeDirection && Optional.ofNullable(directionRequested).isPresent())
@@ -171,12 +168,9 @@ public class KryoReader implements GraphReader {
                     vertexArgs.addAll(Arrays.asList(Element.ID, current));
 
                     vertexArgs.addAll(Arrays.asList(Element.LABEL, input.readString()));
-                    final List<Pair<String, IoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
+                    readElementProperties(input, vertexArgs);
 
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
-
-                    // annotated list properties are set after the fact
-                    // TODO: STEPHEN JUST COMMENTED STUFF OUT setAnnotatedListValues(annotatedLists, v);
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
@@ -254,19 +248,6 @@ public class KryoReader implements GraphReader {
         }
     }
 
-    /*private void setAnnotatedListValues(final List<Pair<String, IoAnnotatedList>> annotatedLists, final Vertex v) {
-        annotatedLists.forEach(kal -> {
-            // check for existence of the property in case the calling client filtered the property out.
-            final AnnotatedList al = v.value(kal.getValue0());
-            if (al != null) {
-                final List<IoAnnotatedValue> valuesForAnnotation = kal.getValue1().annotatedValueList;
-                for (IoAnnotatedValue kav : valuesForAnnotation) {
-                    al.addValue(kav.value, kav.toAnnotationsArray());
-                }
-            }
-        });
-    }*/
-
     /**
      * Reads through the all the edges for a vertex and writes the edges to a temp file which will be read later.
      */
@@ -331,22 +312,14 @@ public class KryoReader implements GraphReader {
     }
 
 
-    private List<Pair<String, IoAnnotatedList>> readElementProperties(final Input input, final List<Object> elementArgs) {
+    private void readElementProperties(final Input input, final List<Object> elementArgs) {
         // todo: do we just let this fail or do we check features for supported property types
-        final List<Pair<String, IoAnnotatedList>> list = new ArrayList<>();
         final int numberOfProperties = input.readInt();
         IntStream.range(0, numberOfProperties).forEach(i -> {
             final String key = input.readString();
             elementArgs.add(key);
-            final Object val = kryo.readClassAndObject(input);
-            if (val instanceof IoAnnotatedList) {
-                // TODO: STEPHEN JUST COMMMENTED STUFF OUT elementArgs.add(AnnotatedList.make());
-                list.add(Pair.with(key, (IoAnnotatedList) val));
-            } else
-                elementArgs.add(val);
+			elementArgs.add(kryo.readClassAndObject(input));
         });
-
-        return list;
     }
 
     private void deleteTempFileSilently() {
