@@ -1144,5 +1144,22 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
 
+[[giraph-gremlin]]
 Giraph-Gremlin
 --------------
+
+image:giraph-logo.png[width=100]
+
+[source,xml]
+----
+<dependency>
+   <groupId>com.tinkerpop.tinkerpop3</groupId>
+   <artifactId>giraph-gremlin</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+link:http://giraph.apache.org[Giraph] is an Apache Foundation project focused on OLAP-based graph processing. Giraph makes use of the message-passing model of distributed graph computing made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs can then communicate with one another in a bulk synchronous parallel (BSP) manner.
+
+
+

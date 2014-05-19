@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.Optional;
@@ -19,12 +20,20 @@ import java.util.Optional;
  */
 public class GiraphGraph implements Graph {
 
+    private Configuration configuration;
+
+    private GiraphGraph() {
+
+    }
+
     public static GiraphGraph open() {
-        return open(Optional.empty());
+        return GiraphGraph.open(Optional.empty());
     }
 
     public static <G extends Graph> G open(final Optional<Configuration> configuration) {
-        return (G) new GiraphGraph();
+        final GiraphGraph graph = new GiraphGraph();
+        graph.configuration = configuration.orElse(new BaseConfiguration());
+        return (G) graph;
     }
 
     public GraphTraversal<Vertex, Vertex> V() {
@@ -52,7 +61,7 @@ public class GiraphGraph implements Graph {
     }
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
-        return (C) new GiraphGraphComputer();
+        return (C) new GiraphGraphComputer().program(this.configuration);
     }
 
 
@@ -61,7 +70,9 @@ public class GiraphGraph implements Graph {
     }
 
     public String toString() {
-        return StringFactory.graphString(this, "[giraph]");
+        return StringFactory.graphString(this, this.configuration.getString(GiraphGraphComputer.GREMLIN_INPUT_LOCATION) + "-" +
+                this.configuration.getString(GiraphGraphComputer.VERTEX_PROGRAM) + "->" +
+                this.configuration.getString(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION));
     }
 
     public void close() {
