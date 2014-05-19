@@ -284,9 +284,9 @@ Providing a `Consumer` function to `onReadWrite` allows definition of how a tran
 
 Providing a `Consumer` function to `onClose` allows configuration of how a transaction is handled when `Graph.close()` is called.  `Transaction.CLOSE_BEHAVIOR` has several pre-defined options that can be supplied to this method:
 
-* COMMIT - automatically commit an open transaction
-* ROLLBACK - automatically rollback an open transaction
-* MANUAL - throw an exception if a transaction is open, forcing the user to explicitly close the transaction
+* `COMMIT` - automatically commit an open transaction
+* `ROLLBACK` - automatically rollback an open transaction
+* `MANUAL` - throw an exception if a transaction is open, forcing the user to explicitly close the transaction
 
 Once there is an understanding for how transactions are configured, most of the rest of the `Transaction` interface is self-explanatory:
 
