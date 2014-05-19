@@ -679,7 +679,7 @@ Gremlin Utilities
 =================
 
 Gremlin I/O
-----------
+-----------
 
 The task of getting data in and out of `Graph` instances is the job of the Gremlin I/O packages.  Gremlin I/O provides two interfaces that for reading and writing `Graph` instances: `GraphReader` and `GraphWriter`.  These interfaces expose methods that support:
 
