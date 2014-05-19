@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.giraph.process.olap;
+package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram;

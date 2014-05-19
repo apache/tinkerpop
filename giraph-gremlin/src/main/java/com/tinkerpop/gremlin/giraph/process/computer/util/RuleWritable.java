@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.giraph.process.olap.util;
+package com.tinkerpop.gremlin.giraph.process.computer.util;
 
 import com.tinkerpop.gremlin.util.Serializer;
 import org.apache.hadoop.io.Writable;

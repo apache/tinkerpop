@@ -1,6 +1,6 @@
-package com.tinkerpop.gremlin.giraph.process.olap;
+package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.process.olap.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;

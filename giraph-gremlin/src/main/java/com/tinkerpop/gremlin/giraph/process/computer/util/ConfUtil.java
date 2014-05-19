@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.giraph.process.olap.util;
+package com.tinkerpop.gremlin.giraph.process.computer.util;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;

@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure.io.tinkergraph;
 
 
-import com.tinkerpop.gremlin.giraph.process.olap.GiraphGraphComputer;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;

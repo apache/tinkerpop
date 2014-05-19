@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
 import com.tinkerpop.gremlin.giraph.process.graph.map.GiraphGraphStep;
-import com.tinkerpop.gremlin.giraph.process.olap.GiraphGraphComputer;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;

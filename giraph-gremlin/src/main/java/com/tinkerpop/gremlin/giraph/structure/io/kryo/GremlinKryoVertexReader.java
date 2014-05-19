@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import com.tinkerpop.gremlin.giraph.process.olap.GiraphGraphComputer;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;

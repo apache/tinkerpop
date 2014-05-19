@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
-import com.tinkerpop.gremlin.giraph.process.olap.GiraphGraphComputerSideEffects;
-import com.tinkerpop.gremlin.giraph.process.olap.GiraphMessenger;
-import com.tinkerpop.gremlin.giraph.process.olap.KryoWritable;
-import com.tinkerpop.gremlin.giraph.process.olap.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerSideEffects;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
+import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
+import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Edge;
