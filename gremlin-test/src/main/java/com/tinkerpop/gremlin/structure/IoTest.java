@@ -383,7 +383,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteEdgeToKryo() throws Exception {
         final Vertex v1 = g.addVertex();
         final Vertex v2 = g.addVertex();
-        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
+        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, Property.hidden("acl"), "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final KryoWriter writer = KryoWriter.create().build();
@@ -399,9 +399,11 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(v1.id(), outId);
                             assertEquals(v2.id(), inId);
                             assertEquals(e.label(), label);
-                            assertEquals(e.keys().size(), properties.length / 2);
+                            assertEquals(e.keys().size() + e.hiddenKeys().size(), properties.length / 2);
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5f, properties[1]);
+							assertEquals(Property.hidden("acl"), properties[2]);
+							assertEquals("rw", properties[3]);
 
                             called.set(true);
 
@@ -419,7 +421,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteEdgeToGraphSON() throws Exception {
         final Vertex v1 = g.addVertex();
         final Vertex v2 = g.addVertex();
-        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
+        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, Property.hidden("acl"), "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.create().build();
@@ -434,9 +436,11 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(v1.id().toString(), outId.toString()); // lossy
                             assertEquals(v2.id().toString(), inId.toString());  // lossy
                             assertEquals(e.label(), label);
-                            assertEquals(e.keys().size(), properties.length / 2);
-                            assertEquals("weight", properties[0]);
-                            assertEquals(0.5d, properties[1]);    // lossy
+							assertEquals(e.keys().size() + e.hiddenKeys().size(), properties.length / 2);
+							assertEquals("weight", properties[0]);
+							assertEquals(0.5d, properties[1]); //lossy
+							assertEquals(Property.hidden("acl"), properties[2]);
+							assertEquals("rw", properties[3]);
 
                             called.set(true);
 
@@ -455,7 +459,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteEdgeToGraphSONNonLossy() throws Exception {
         final Vertex v1 = g.addVertex(Element.ID, 1l);
         final Vertex v2 = g.addVertex(Element.ID, 2l);
-        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f);
+        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, Property.hidden("acl"), "rw");
 
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = GraphSONWriter.create()
@@ -474,9 +478,11 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(v1.id(), outId);
                             assertEquals(v2.id(), inId);
                             assertEquals(e.label(), label);
-                            assertEquals(e.keys().size(), properties.length / 2);
-                            assertEquals("weight", properties[0]);
-                            assertEquals(0.5f, properties[1]);
+							assertEquals(e.keys().size() + e.hiddenKeys().size(), properties.length / 2);
+							assertEquals("weight", properties[0]);
+							assertEquals(0.5f, properties[1]);
+							assertEquals(Property.hidden("acl"), properties[2]);
+							assertEquals("rw", properties[3]);
 
                             called.set(true);
 
@@ -568,7 +574,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadWriteVertexNoEdgesToKryo() throws Exception {
-        final Vertex v1 = g.addVertex("name", "marko");
+        final Vertex v1 = g.addVertex("name", "marko", Property.hidden("acl"), "rw");
 
         final Vertex v2 = g.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5f);
@@ -592,8 +598,9 @@ public class IoTest extends AbstractGremlinTest {
                                     m.put((String) properties[i], properties[i + 1]);
                             }
 
-                            assertEquals(1, m.size());
+                            assertEquals(2, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
+							assertEquals(v1.hiddenValues().get("acl"), m.get(Property.hidden("acl")).toString());
 
 							called.set(true);
                             return mock(Vertex.class);
