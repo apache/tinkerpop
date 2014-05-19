@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.structure.io.kryo;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -11,7 +10,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
-import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedValue;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.QuadConsumer;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
@@ -82,7 +80,7 @@ public class KryoReader implements GraphReader {
 
         final List<Pair<String, IoAnnotatedList>> annotatedLists = readElementProperties(input, vertexArgs);
         final Vertex v = vertexMaker.apply(vertexId, label, vertexArgs.toArray());
-        setAnnotatedListValues(annotatedLists, v);
+        //TODO: STEPHEN JUST COMMENTED STUFF OUT setAnnotatedListValues(annotatedLists, v);
 
         final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
         if (!streamContainsEdgesInSomeDirection && Optional.ofNullable(directionRequested).isPresent())
@@ -178,7 +176,7 @@ public class KryoReader implements GraphReader {
                     final Vertex v = graph.addVertex(vertexArgs.toArray());
 
                     // annotated list properties are set after the fact
-                    setAnnotatedListValues(annotatedLists, v);
+                    // TODO: STEPHEN JUST COMMENTED STUFF OUT setAnnotatedListValues(annotatedLists, v);
 
                     // the gio file should have been written with a direction specified
                     final boolean hasDirectionSpecified = input.readBoolean();
@@ -256,7 +254,7 @@ public class KryoReader implements GraphReader {
         }
     }
 
-    private void setAnnotatedListValues(final List<Pair<String, IoAnnotatedList>> annotatedLists, final Vertex v) {
+    /*private void setAnnotatedListValues(final List<Pair<String, IoAnnotatedList>> annotatedLists, final Vertex v) {
         annotatedLists.forEach(kal -> {
             // check for existence of the property in case the calling client filtered the property out.
             final AnnotatedList al = v.value(kal.getValue0());
@@ -267,7 +265,7 @@ public class KryoReader implements GraphReader {
                 }
             }
         });
-    }
+    }*/
 
     /**
      * Reads through the all the edges for a vertex and writes the edges to a temp file which will be read later.
@@ -284,7 +282,7 @@ public class KryoReader implements GraphReader {
             output.writeString(input.readString());
             final int props = input.readInt();
             output.writeInt(props);
-            IntStream.range(0, props).forEach(i-> {
+            IntStream.range(0, props).forEach(i -> {
                 // key
                 output.writeString(input.readString());
 
@@ -332,13 +330,7 @@ public class KryoReader implements GraphReader {
         }
     }
 
-    /**
-     * Read element properties from input stream and put them into an argument list.  Properties that have an
-     * {@link AnnotatedList} as a value have their data returned to be added once it is added to the graph.
-     *
-     * @return a list of keys that are {@link AnnotatedList} values which must be set after the property is added
-     * to the vertex
-     */
+
     private List<Pair<String, IoAnnotatedList>> readElementProperties(final Input input, final List<Object> elementArgs) {
         // todo: do we just let this fail or do we check features for supported property types
         final List<Pair<String, IoAnnotatedList>> list = new ArrayList<>();
@@ -348,7 +340,7 @@ public class KryoReader implements GraphReader {
             elementArgs.add(key);
             final Object val = kryo.readClassAndObject(input);
             if (val instanceof IoAnnotatedList) {
-                elementArgs.add(AnnotatedList.make());
+                // TODO: STEPHEN JUST COMMMENTED STUFF OUT elementArgs.add(AnnotatedList.make());
                 list.add(Pair.with(key, (IoAnnotatedList) val));
             } else
                 elementArgs.add(val);
@@ -360,7 +352,8 @@ public class KryoReader implements GraphReader {
     private void deleteTempFileSilently() {
         try {
             tempFile.delete();
-        } catch (Exception ex) { }
+        } catch (Exception ex) {
+        }
     }
 
     public static Builder create() {

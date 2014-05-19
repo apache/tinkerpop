@@ -1,25 +1,21 @@
 package com.tinkerpop.gremlin.process.graph;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankStep;
 import com.tinkerpop.gremlin.process.graph.filter.CyclicPathStep;
 import com.tinkerpop.gremlin.process.graph.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
-import com.tinkerpop.gremlin.process.graph.filter.HasAnnotationStep;
 import com.tinkerpop.gremlin.process.graph.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.filter.IntervalStep;
 import com.tinkerpop.gremlin.process.graph.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.filter.SimplePathStep;
-import com.tinkerpop.gremlin.process.graph.map.AnnotatedValueStep;
-import com.tinkerpop.gremlin.process.graph.map.AnnotationValueStep;
-import com.tinkerpop.gremlin.process.graph.map.AnnotationValuesStep;
 import com.tinkerpop.gremlin.process.graph.map.BackStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
@@ -48,10 +44,9 @@ import com.tinkerpop.gremlin.process.graph.sideEffect.LinkStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.SubGraphStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
-import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.strategy.HolderTraversalStrategy;
+import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -113,18 +108,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> identity() {
         return (GraphTraversal) this.addStep(new IdentityStep<>(this));
-    }
-
-    public default <E2> GraphTraversal<S, E2> annotation(final String annotationKey) {
-        return (GraphTraversal) this.addStep(new AnnotationValueStep<>(this, annotationKey));
-    }
-
-    public default GraphTraversal<S, Map<String, Object>> annotations(final String... annotationKeys) {
-        return (GraphTraversal) this.addStep(new AnnotationValuesStep(this, annotationKeys));
-    }
-
-    public default <E2> GraphTraversal<S, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-        return (GraphTraversal) this.addStep(new AnnotatedValueStep<>(this, propertyKey));
     }
 
     public default GraphTraversal<S, Vertex> out(final int branchFactor, final String... labels) {
@@ -292,7 +275,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> has(final String key) {
-        return (GraphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Contains.IN)));
+        return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(key, Contains.IN)));
     }
 
     public default <E2> GraphTraversal<S, E2> has(final String key, final Object value) {
@@ -304,35 +287,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
-        return (GraphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
+        return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(key, predicate, value)));
     }
 
     public default <E2> GraphTraversal<S, E2> hasNot(final String key) {
-        return (GraphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Contains.NOT_IN)));
+        return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(key, Contains.NOT_IN)));
     }
-
-    ///////////
-
-    /*public default Traversal<S, Element> has(final String propertyKey, final String annotationKey) {
-        return this.addStep(new HasAnnotationStep(this, propertyKey, new HasContainer(annotationKey, Contains.IN)));
-    }*/
-
-    public default GraphTraversal<S, Element> has(final String propertyKey, final String annotationKey, final BiPredicate biPredicate, final Object annotationValue) {
-        return (GraphTraversal) this.addStep(new HasAnnotationStep(this, propertyKey, new HasContainer(annotationKey, biPredicate, annotationValue)));
-    }
-
-    public default GraphTraversal<S, Element> has(final String propertyKey, final String annotationKey, final T t, final Object annotationValue) {
-        return this.has(propertyKey, annotationKey, T.convert(t), annotationValue);
-    }
-
-    public default GraphTraversal<S, Element> has(final String propertyKey, final String annotationKey, final Object annotationValue) {
-        return this.has(propertyKey, annotationKey, Compare.EQUAL, annotationValue);
-    }
-
-    /*public default Traversal<S, Element> hasNot(final String propertyKey, final String annotationKey) {
-        return this.addStep(new HasAnnotationStep(this, propertyKey, new HasContainer(annotationKey, Contains.NOT_IN)));
-    }*/
-    //////////
 
     public default <E2> GraphTraversal<S, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
         return (GraphTraversal) this.addStep(new IntervalStep(this,
@@ -486,9 +446,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                     ((Element) object).remove();
                 else if (object instanceof Property)
                     ((Property) object).remove();
-                else if (object instanceof AnnotatedValue)
-                    ((AnnotatedValue) object).remove();
                 else {
+                    // TODO: USE REFLECTION TO FIND REMOVE?
                     throw new IllegalStateException("The following object does not have a remove() method: " + object);
                 }
             }

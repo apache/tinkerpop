@@ -45,21 +45,6 @@ public interface Edge extends Element {
     }
 
     // TODO: test
-    public default <E2> GraphTraversal<Edge, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-        return this.start().<E2>annotatedValues(propertyKey);
-    }
-
-    // TODO: test
-    public default <E2> GraphTraversal<Edge, E2> annotation(final String annotationKey) {
-        return this.start().annotation(annotationKey);
-    }
-
-    // TODO: test
-    public default GraphTraversal<Edge, Map<String, Object>> annotations(final String... annotationKeys) {
-        return this.start().annotations(annotationKeys);
-    }
-
-    // TODO: test
     public default GraphTraversal<Edge, Edge> as(final String as) {
         return this.start().as(as);
     }
@@ -92,21 +77,6 @@ public interface Edge extends Element {
     // TODO: test
     public default <E2> GraphTraversal<Edge, E2> has(final String key, final BiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
-    }
-
-    // TODO: test
-    public default GraphTraversal<Edge, Element> has(final String propertyKey, final String annotationKey, final BiPredicate biPredicate, final Object annotationValue) {
-        return this.start().has(propertyKey, annotationKey, biPredicate, annotationValue);
-    }
-
-    // TODO: test
-    public default GraphTraversal<Edge, Element> has(final String propertyKey, final String annotationKey, final T t, final Object annotationValue) {
-        return this.start().has(propertyKey, annotationKey, t, annotationValue);
-    }
-
-    // TODO: test
-    public default GraphTraversal<Edge, Element> has(final String propertyKey, final String annotationKey, final Object annotationValue) {
-        return this.start().has(propertyKey, annotationKey, annotationValue);
     }
 
     // TODO: test

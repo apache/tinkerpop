@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;
 import com.tinkerpop.gremlin.process.strategy.DedupOptimizerTraversalStrategy;
 import com.tinkerpop.gremlin.process.strategy.IdentityOptimizerTraversalStrategy;
-import com.tinkerpop.gremlin.process.strategy.SideEffectCapOptimizerTraversalStrategy;
+import com.tinkerpop.gremlin.process.strategy.SideEffectCapTraversalStrategy;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 
 /**
@@ -16,7 +16,7 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
         super();
         this.traversalStrategies.register(new DedupOptimizerTraversalStrategy());
         this.traversalStrategies.register(new IdentityOptimizerTraversalStrategy());
-        this.traversalStrategies.register(new SideEffectCapOptimizerTraversalStrategy());
+        this.traversalStrategies.register(new SideEffectCapTraversalStrategy());
     }
 
     public GraphTraversal<S, E> submit(final TraversalEngine engine) {

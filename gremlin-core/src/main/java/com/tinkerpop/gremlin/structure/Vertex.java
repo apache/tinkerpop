@@ -84,20 +84,6 @@ public interface Vertex extends Element {
         return this.start().aggregate(variable, preAggregateFunctions);
     }
 
-    public default <E2> GraphTraversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-        return this.start().<E2>annotatedValues(propertyKey);
-    }
-
-    // TODO: test
-    public default <E2> GraphTraversal<Vertex, E2> annotation(final String annotationKey) {
-        return this.start().annotation(annotationKey);
-    }
-
-    // TODO: test
-    public default GraphTraversal<Vertex, Map<String, Object>> annotations(final String... annotationKeys) {
-        return this.start().annotations(annotationKeys);
-    }
-
     public default GraphTraversal<Vertex, Vertex> as(final String as) {
         return this.start().as(as);
     }
@@ -126,21 +112,6 @@ public interface Vertex extends Element {
     // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> has(final String key, final BiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
-    }
-
-    // TODO: test
-    public default GraphTraversal<Vertex, Element> has(final String propertyKey, final String annotationKey, final BiPredicate biPredicate, final Object annotationValue) {
-        return this.start().has(propertyKey, annotationKey, biPredicate, annotationValue);
-    }
-
-    // TODO: test
-    public default GraphTraversal<Vertex, Element> has(final String propertyKey, final String annotationKey, final T t, final Object annotationValue) {
-        return this.start().has(propertyKey, annotationKey, t, annotationValue);
-    }
-
-    // TODO: test
-    public default GraphTraversal<Vertex, Element> has(final String propertyKey, final String annotationKey, final Object annotationValue) {
-        return this.start().has(propertyKey, annotationKey, annotationValue);
     }
 
     public default <E2> GraphTraversal<Vertex, E2> hasNot(final String key) {

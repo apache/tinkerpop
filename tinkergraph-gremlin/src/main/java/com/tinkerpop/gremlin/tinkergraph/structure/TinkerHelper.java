@@ -139,8 +139,4 @@ public class TinkerHelper {
             vertices.add((TinkerVertex) edge.inVertex);
         return vertices.iterator();
     }
-
-    public static <V> Iterator<TinkerAnnotatedValue<V>> getAnnotatedValues(final TinkerAnnotatedList<V> annotatedList) {
-        return (Iterator) new ArrayList<>(annotatedList.annotatedValues).iterator();
-    }
 }

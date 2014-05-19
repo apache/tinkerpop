@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.structure.util;
 
-import com.tinkerpop.gremlin.structure.AnnotatedList;
-import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
@@ -11,8 +9,6 @@ import org.javatuples.Pair;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -71,27 +67,6 @@ public class StringFactory {
      */
     public static String graphString(final Graph graph, final String internalString) {
         return graph.getClass().getSimpleName().toLowerCase() + L_BRACKET + internalString + R_BRACKET;
-    }
-
-    /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.AnnotatedList}.
-     */
-    public static String annotatedListString(final AnnotatedList<?> annotatedList) {
-        final StringBuilder builder = new StringBuilder(L_BRACKET);
-        annotatedList.values().range(0, 1).forEach(v -> builder.append(v).append(COMMA_SPACE));
-        if (builder.length() > 1)
-            builder.append(DOTS);
-        builder.append(R_BRACKET);
-        return builder.toString();
-    }
-
-    /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.AnnotatedValue}.
-     */
-    public static String annotatedValueString(final AnnotatedValue<?> annotatedValue) {
-        final Map<String, Object> annotations = new HashMap<>();
-        annotatedValue.getAnnotationKeys().forEach(key -> annotations.put(key, annotatedValue.getAnnotation(key).get()));
-        return L_BRACKET + annotatedValue.getValue() + COLON + annotations.toString() + R_BRACKET;
     }
 
     /**

@@ -9,7 +9,6 @@ import com.tinkerpop.gremlin.process.graph.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -45,18 +44,8 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         } else {
             ElementHelper.validateProperty(key, value);
             final Property oldProperty = super.property(key);
-            Property newProperty;
-            if (value == AnnotatedList.make()) {
-                if (!this.properties.containsKey(key) || !(this.properties.get(key) instanceof AnnotatedList)) {
-                    newProperty = new TinkerProperty<>(this, key, new TinkerAnnotatedList<>());
-                    this.properties.put(key, newProperty);
-                } else {
-                    return this.properties.get(key);
-                }
-            } else {
-                newProperty = new TinkerProperty<>(this, key, value);
-                this.properties.put(key, newProperty);
-            }
+            final Property newProperty = new TinkerProperty<>(this, key, value);
+            this.properties.put(key, newProperty);
             this.graph.vertexIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.value() : null, this);
             return newProperty;
         }

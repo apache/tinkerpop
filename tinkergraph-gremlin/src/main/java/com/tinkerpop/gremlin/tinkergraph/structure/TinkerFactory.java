@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
-import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -16,33 +15,33 @@ import com.tinkerpop.gremlin.structure.Vertex;
 public class TinkerFactory {
     public static TinkerGraph createClassic() {
         final TinkerGraph g = TinkerGraph.open();
-		generateClassic(g);
-		return g;
-    }
-
-	public static void generateClassic(final TinkerGraph g) {
-		final Vertex marko = g.addVertex(Element.ID, 1, "name", "marko", "age", 29);
-		final Vertex vadas = g.addVertex(Element.ID, 2, "name", "vadas", "age", 27);
-		final Vertex lop = g.addVertex(Element.ID, 3, "name", "lop", "lang", "java");
-		final Vertex josh = g.addVertex(Element.ID, 4, "name", "josh", "age", 32);
-		final Vertex ripple = g.addVertex(Element.ID, 5, "name", "ripple", "lang", "java");
-		final Vertex peter = g.addVertex(Element.ID, 6, "name", "peter", "age", 35);
-		marko.addEdge("knows", vadas, Element.ID, 7, "weight", 0.5f);
-		marko.addEdge("knows", josh, Element.ID, 8, "weight", 1.0f);
-		marko.addEdge("created", lop, Element.ID, 9, "weight", 0.4f);
-		josh.addEdge("created", ripple, Element.ID, 10, "weight", 1.0f);
-		josh.addEdge("created", lop, Element.ID, 11, "weight", 0.4f);
-		peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2f);
-	}
-
-    public static TinkerGraph createModern() {
-        final TinkerGraph g = TinkerGraph.open();
-		generateModern(g);
+        generateClassic(g);
         return g;
     }
 
-	public static void generateModern(final TinkerGraph g) {
-		// todo: need to add hidden properties to make sure IO works well for these items
+    public static void generateClassic(final TinkerGraph g) {
+        final Vertex marko = g.addVertex(Element.ID, 1, "name", "marko", "age", 29);
+        final Vertex vadas = g.addVertex(Element.ID, 2, "name", "vadas", "age", 27);
+        final Vertex lop = g.addVertex(Element.ID, 3, "name", "lop", "lang", "java");
+        final Vertex josh = g.addVertex(Element.ID, 4, "name", "josh", "age", 32);
+        final Vertex ripple = g.addVertex(Element.ID, 5, "name", "ripple", "lang", "java");
+        final Vertex peter = g.addVertex(Element.ID, 6, "name", "peter", "age", 35);
+        marko.addEdge("knows", vadas, Element.ID, 7, "weight", 0.5f);
+        marko.addEdge("knows", josh, Element.ID, 8, "weight", 1.0f);
+        marko.addEdge("created", lop, Element.ID, 9, "weight", 0.4f);
+        josh.addEdge("created", ripple, Element.ID, 10, "weight", 1.0f);
+        josh.addEdge("created", lop, Element.ID, 11, "weight", 0.4f);
+        peter.addEdge("created", lop, Element.ID, 12, "weight", 0.2f);
+    }
+
+    /*public static TinkerGraph createModern() {
+        final TinkerGraph g = TinkerGraph.open();
+		generateModern(g);
+        return g;
+    }*/
+
+	/*public static void generateModern(final TinkerGraph g) {
+        // todo: need to add hidden properties to make sure IO works well for these items
 		final Graph.Variables variables = g.variables();
 		variables.set("name", "modern");
 		variables.set("year", 2014);
@@ -83,7 +82,7 @@ public class TinkerFactory {
 		matthias.addEdge("created", blueprints, "date", 2012);
 		daniel.addEdge("uses", gremlin, "skill", 1.0f);
 		gremlin.addEdge("dependsOn", blueprints);
-	}
+	}*/
 
     public interface SocialTraversal<S, E> extends Traversal<S, E> {
 

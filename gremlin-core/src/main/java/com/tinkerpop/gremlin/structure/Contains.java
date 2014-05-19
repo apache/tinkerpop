@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.util.StreamFactory;
-
 import java.util.Collection;
 import java.util.function.BiPredicate;
 
@@ -23,14 +21,7 @@ public enum Contains implements BiPredicate<Object, Object> {
     IN, NOT_IN;
 
     public boolean test(final Object first, final Object second) {
-        if (second instanceof Collection)
-            return this.equals(IN) ? ((Collection) second).contains(first) : !((Collection) second).contains(first);
-        else if (second instanceof AnnotatedList) {
-            final boolean exists = StreamFactory.stream(((AnnotatedList) second).values())
-                    .filter(av -> ((AnnotatedValue) av).getValue().equals(first)).iterator().hasNext();
-            return this.equals(IN) ? exists : !exists;
-        } else
-            throw new IllegalArgumentException("The provide argument must be either a Collection or AnnotatedList: " + second.getClass());
+        return this.equals(IN) ? ((Collection) second).contains(first) : !((Collection) second).contains(first);
     }
 
     public Contains opposite() {

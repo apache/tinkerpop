@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -431,11 +430,6 @@ public class BatchGraph<T extends Graph> implements Graph {
         @Override
         public <V> V value(final String key) throws NoSuchElementException {
             return getCachedVertex(externalID).value(key);
-        }
-
-        @Override
-        public <E2> GraphTraversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-            throw retrievalNotSupported();
         }
 
         @Override

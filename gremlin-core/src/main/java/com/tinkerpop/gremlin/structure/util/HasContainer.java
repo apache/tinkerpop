@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.structure.util;
 
-import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
@@ -54,34 +53,6 @@ public class HasContainer implements Serializable {
         else {
             for (final HasContainer hasContainer : hasContainers) {
                 if (!hasContainer.test(element))
-                    return false;
-            }
-            return true;
-        }
-    }
-
-    public <V> boolean test(final AnnotatedValue<V> annotatedValue) {
-        if (null != this.value) {
-            if (this.key.equals(AnnotatedValue.VALUE))
-                return this.predicate.test(annotatedValue.getValue(), this.value);
-
-            if (!annotatedValue.getAnnotation(this.key).isPresent())
-                return false;
-
-            return this.predicate.test(annotatedValue.getAnnotation(this.key).get(), this.value);
-        } else {
-            return Contains.IN.equals(this.predicate) ?
-                    annotatedValue.getAnnotation(this.key).isPresent() :
-                    !annotatedValue.getAnnotation(this.key).isPresent();
-        }
-    }
-
-    public static <V> boolean testAll(final AnnotatedValue<V> annotatedValue, final List<HasContainer> hasContainers) {
-        if (hasContainers.size() == 0)
-            return true;
-        else {
-            for (final HasContainer hasContainer : hasContainers) {
-                if (!hasContainer.test(annotatedValue))
                     return false;
             }
             return true;

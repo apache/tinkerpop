@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.structure.io.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
-import com.tinkerpop.gremlin.structure.AnnotatedList;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -10,7 +9,6 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
-import com.tinkerpop.gremlin.structure.io.util.IoAnnotatedList;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -149,10 +147,10 @@ public class KryoWriter implements GraphWriter {
     }
 
     private void writePropertyValue(final Output output, final Property val) {
-        if (val.value() instanceof AnnotatedList)
-            kryo.writeClassAndObject(output, IoAnnotatedList.from((AnnotatedList) val.value()));
-        else
-            kryo.writeClassAndObject(output, val.value());
+        // TODO: STEPHEN JUST COMMMENTED STUFF OUT if (val.value() instanceof AnnotatedList)
+        // TODO: STEPHEN JUST COMMMENTED STUFF OUT    kryo.writeClassAndObject(output, IoAnnotatedList.from((AnnotatedList) val.value()));
+        // TODO: STEPHEN JUST COMMMENTED STUFF OUTelse
+        kryo.writeClassAndObject(output, val.value());
     }
 
     public static Builder create() {

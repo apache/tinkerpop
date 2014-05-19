@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SideEffectCapOptimizerTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class SideEffectCapTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
     public void apply(final Traversal traversal) {
         if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable)

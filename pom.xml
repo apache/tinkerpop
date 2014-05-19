@@ -108,7 +108,7 @@
         <junit.version>4.11</junit.version>
         <netty.version>4.0.19.Final</netty.version>
         <metrics.version>3.0.2</metrics.version>
-        <groovy.version>2.3.0</groovy.version>
+        <groovy.version>2.3.1</groovy.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>

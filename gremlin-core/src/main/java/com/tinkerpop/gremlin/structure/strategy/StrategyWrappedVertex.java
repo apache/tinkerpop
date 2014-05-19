@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.structure.AnnotatedValue;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SConsumer;
@@ -108,11 +107,6 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     @Override
     public GraphTraversal<Vertex, Vertex> as(final String as) {
         return applyStrategy(this.baseVertex.as(as));
-    }
-
-    @Override
-    public <E2> GraphTraversal<Vertex, AnnotatedValue<E2>> annotatedValues(final String propertyKey) {
-        return applyStrategy(this.baseVertex.annotatedValues(propertyKey));
     }
 
     @Override
