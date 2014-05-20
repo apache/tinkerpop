@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public interface GraphComputer extends TraversalEngine {
 
-    String VERTEX_PROGRAM = "gremlin.vertexProgram";
+    public static String VERTEX_PROGRAM = "gremlin.vertexProgram";
 
     public enum Isolation {
         /**

@@ -84,7 +84,6 @@ public class GiraphGraph implements Graph {
         throw Exceptions.transactionsNotSupported();
     }
 
-
     public Features getFeatures() {
         return new Features() {
             @Override

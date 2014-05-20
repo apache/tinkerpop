@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
@@ -34,6 +34,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalSupplier";
     public static final String TRAVERSAL_SUPPLIER_CLASS = "gremlin.traversalSupplierClass";
+    // TODO: public static final String TRAVERSAL_STRING = "gremlin.traversalString";
 
     private static final String TRACK_PATHS = "gremlin.traversalVertexProgram.trackPaths";
     private static final String VOTE_TO_HALT = "voteToHalt";
