@@ -1,8 +1,7 @@
 package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
+
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
-import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -10,7 +9,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGremlinPlugin implements GremlinPlugin {
+public class GiraphGremlinPlugin { //implements GremlinPlugin {
 
     private static final String IMPORT = "import ";
     private static final String DOT_STAR = ".*";
@@ -19,13 +18,13 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
         add(IMPORT + GiraphGraph.class.getPackage().getName() + DOT_STAR);
     }};
 
-    @Override
+    //@Override
     public String getName() {
         return "giraph";
     }
 
-    @Override
+    /*@Override
     public void pluginTo(final PluginAcceptor pluginAcceptor) {
         pluginAcceptor.addImports(IMPORTS);
-    }
+    }*/
 }

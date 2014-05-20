@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
-import com.tinkerpop.gremlin.giraph.process.graph.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
+import com.tinkerpop.gremlin.giraph.process.graph.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -49,7 +49,7 @@ public class GiraphGraph implements Graph {
     }
 
     public Vertex v(final Object id) {
-        throw Exceptions.vertexAdditionsNotSupported();
+        throw Exceptions.vertexLookupsNotSupported();
     }
 
     public Edge e(final Object id) {
@@ -57,11 +57,11 @@ public class GiraphGraph implements Graph {
     }
 
     public Vertex addVertex(final Object... keyValues) {
-        throw Exceptions.vertexLookupsNotSupported();
+        throw Exceptions.vertexAdditionsNotSupported();
     }
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
-        return (C) new GiraphGraphComputer().program(this.configuration);
+        return (C) new GiraphGraphComputer(this, this.configuration);
     }
 
 

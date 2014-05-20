@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -31,7 +32,14 @@ public class GiraphGraphComputer implements GraphComputer {
     public static final String GREMLIN_INPUT_LOCATION = "gremlin.input.location";
     public static final String GREMLIN_OUTPUT_LOCATION = "gremlin.output.location";
 
+    protected final GiraphGraph giraphGraph;
+
     private org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
+
+    public GiraphGraphComputer(final GiraphGraph giraphGraph, final Configuration configuration) {
+        configuration.getKeys().forEachRemaining(key -> this.hadoopConfiguration.set(key, configuration.getProperty(key).toString()));
+        this.giraphGraph = giraphGraph;
+    }
 
     public GraphComputer isolation(final Isolation isolation) {
         if (isolation.equals(Isolation.DIRTY_BSP))
@@ -49,6 +57,7 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public Future<Pair<Graph, SideEffects>> submit() {
+        //return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
         try {
             final String bspDirectory = "_bsp"; //"temp-" + UUID.randomUUID().toString();
             final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
@@ -80,7 +89,9 @@ public class GiraphGraphComputer implements GraphComputer {
             e.printStackTrace();
             throw new IllegalStateException(e.getMessage(), e);
         }
-        return null; // TODO: What does this mean in Giraph?
+        return null;
+        //   return new Pair<Graph, SideEffects>(this.giraphGraph, null);
+        // });
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {

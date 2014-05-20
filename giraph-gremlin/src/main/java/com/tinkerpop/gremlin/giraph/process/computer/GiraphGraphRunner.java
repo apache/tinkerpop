@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -50,7 +51,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
         try {
             final FileConfiguration configuration = new PropertiesConfiguration();
             configuration.load(new File(args[0]));
-            GraphComputer computer = new GiraphGraphComputer();
+            GraphComputer computer = new GiraphGraphComputer(GiraphGraph.open(), configuration);
             computer.program(configuration).submit();
         } catch (Exception e) {
             System.out.println(e);
