@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.giraph.process.computer;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
+import com.tinkerpop.gremlin.process.util.HolderSource;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -15,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -31,6 +32,8 @@ public class GiraphGraphComputer implements GraphComputer {
 
     public static final String GREMLIN_INPUT_LOCATION = "gremlin.input.location";
     public static final String GREMLIN_OUTPUT_LOCATION = "gremlin.output.location";
+    public static final String GIRAPH_VERTEX_INPUT_FORMAT_CLASS = "giraph.vertexInputFormatClass";
+    public static final String GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS = "giraph.vertexOutputFormatClass";
 
     protected final GiraphGraph giraphGraph;
 
@@ -95,6 +98,7 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        return Collections.emptyIterator();
+        ((HolderSource) traversal.getSteps().get(0)).clear();
+        return new TraversalResult<>(this.giraphGraph, () -> traversal);
     }
 }

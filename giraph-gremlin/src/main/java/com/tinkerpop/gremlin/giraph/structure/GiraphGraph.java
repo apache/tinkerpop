@@ -70,8 +70,10 @@ public class GiraphGraph implements Graph {
     }
 
     public String toString() {
-        return StringFactory.graphString(this, this.configuration.getString(GiraphGraphComputer.GREMLIN_INPUT_LOCATION) +
-                "->" + this.configuration.getString(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION));
+        return StringFactory.graphString(this,
+                this.configuration.getString(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS) +
+                        " -> " +
+                        this.configuration.getString(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS));
     }
 
     public void close() {

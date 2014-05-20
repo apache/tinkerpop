@@ -96,6 +96,4 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
             }
         }
     }
-
-    // TODO: Move back to read/writeVertex
 }

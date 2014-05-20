@@ -17,11 +17,11 @@
             <artifactId>gremlin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>com.tinkerpop.tinkerpop3</groupId>
             <artifactId>gremlin-groovy</artifactId>
             <version>${project.version}</version>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>com.tinkerpop.tinkerpop3</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
