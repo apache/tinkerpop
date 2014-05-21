@@ -25,20 +25,20 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     }
 
     public <R> PathTraverser<R> makeChild(final String as, final R r) {
-        final PathTraverser<R> holder = new PathTraverser<>(r);
-        holder.loops = this.loops;
-        holder.path.add(this.path);
-        holder.path.add(as, r);
-        holder.future = this.future;
-        return holder;
+        final PathTraverser<R> traverser = new PathTraverser<>(r);
+        traverser.loops = this.loops;
+        traverser.path.add(this.path);
+        traverser.path.add(as, r);
+        traverser.future = this.future;
+        return traverser;
     }
 
     public PathTraverser<T> makeSibling() {
-        final PathTraverser<T> holder = new PathTraverser<>(this.t);
-        holder.loops = this.loops;
-        holder.path.add(this.path);
-        holder.future = this.future;
-        return holder;
+        final PathTraverser<T> traverser = new PathTraverser<>(this.t);
+        traverser.loops = this.loops;
+        traverser.path.add(this.path);
+        traverser.future = this.future;
+        return traverser;
     }
 
     public boolean equals(final Object object) {

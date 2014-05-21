@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
-import com.tinkerpop.gremlin.process.strategy.HolderTraversalStrategy;
+import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.Serializer;
@@ -62,7 +62,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 }
                 this.traversalSupplier = (SSupplier<Traversal>) Serializer.deserializeObject(bytes);
             }
-            this.trackPaths = HolderTraversalStrategy.trackPaths(this.traversalSupplier.get());
+            this.trackPaths = TraverserTraversalStrategy.trackPaths(this.traversalSupplier.get());
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

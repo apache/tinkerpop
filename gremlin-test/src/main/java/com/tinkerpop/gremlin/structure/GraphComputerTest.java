@@ -9,6 +9,6 @@ import org.junit.Test;
 public class GraphComputerTest extends AbstractGremlinTest {
     @Test
     public void shouldComputeSomeBusiness() {
-        // temporary placeholder as the test previously in here has been moved to FeatureSupportTest.
+        // temporary placetraverser as the test previously in here has been moved to FeatureSupportTest.
     }
 }

@@ -13,18 +13,18 @@ public class ExceptStep<S> extends FilterStep<S> {
         super(traversal);
         final Object temp = this.traversal.memory().get(variable);
         if (temp instanceof Collection)
-            this.setPredicate(holder -> !((Collection) temp).contains(holder.get()));
+            this.setPredicate(traverser -> !((Collection) temp).contains(traverser.get()));
         else
-            this.setPredicate(holder -> !temp.equals(holder.get()));
+            this.setPredicate(traverser -> !temp.equals(traverser.get()));
     }
 
     public ExceptStep(final Traversal traversal, final Collection<S> exceptionCollection) {
         super(traversal);
-        this.setPredicate(holder -> !exceptionCollection.contains(holder.get()));
+        this.setPredicate(traverser -> !exceptionCollection.contains(traverser.get()));
     }
 
     public ExceptStep(final Traversal traversal, final S exceptionObject) {
         super(traversal);
-        this.setPredicate(holder -> !exceptionObject.equals(holder.get()));
+        this.setPredicate(traverser -> !exceptionObject.equals(traverser.get()));
     }
 }

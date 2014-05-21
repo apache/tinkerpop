@@ -17,18 +17,18 @@ public class JumpStep<S> extends MapStep<S, S> {
     public JumpStep(final Traversal traversal, final String as, final SPredicate<Traverser<S>> ifPredicate, final SPredicate<Traverser<S>> emitPredicate) {
         super(traversal);
         final Step<?, ?> jumpStep = TraversalHelper.asExists(as, this.traversal) ? TraversalHelper.getAs(as, this.traversal) : null;
-        this.setFunction(holder -> {
+        this.setFunction(traverser -> {
             if (null != jumpStep)
-                holder.incrLoops();
-            if (ifPredicate.test(holder)) {
-                holder.setFuture(as);
+                traverser.incrLoops();
+            if (ifPredicate.test(traverser)) {
+                traverser.setFuture(as);
                 if (null == jumpStep)
-                    TraversalHelper.getAs(as, this.traversal).addStarts((Iterator) new SingleIterator<>(holder));
+                    TraversalHelper.getAs(as, this.traversal).addStarts((Iterator) new SingleIterator<>(traverser));
                 else
-                    jumpStep.addStarts((Iterator) new SingleIterator<>(holder));
-                return (S) (emitPredicate.test(holder) ? holder.get() : NO_OBJECT);
+                    jumpStep.addStarts((Iterator) new SingleIterator<>(traverser));
+                return (S) (emitPredicate.test(traverser) ? traverser.get() : NO_OBJECT);
             } else {
-                return (S) holder.get();
+                return (S) traverser.get();
             }
         });
     }

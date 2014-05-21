@@ -23,8 +23,8 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
         this.functionRing = new FunctionRing<>(preGroupFunctions);
         this.groupCountMap = groupCountMap;
         this.traversal.memory().set(CAP_VARIABLE, this.groupCountMap);
-        this.setPredicate(holder -> {
-            MapHelper.incr(this.groupCountMap, this.functionRing.next().apply(holder.get()), 1l);
+        this.setPredicate(traverser -> {
+            MapHelper.incr(this.groupCountMap, this.functionRing.next().apply(traverser.get()), 1l);
             return true;
         });
     }

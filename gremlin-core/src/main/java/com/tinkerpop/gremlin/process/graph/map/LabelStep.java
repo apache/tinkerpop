@@ -10,6 +10,6 @@ public class LabelStep<E extends Element> extends MapStep<E, String> {
 
     public LabelStep(final Traversal traversal) {
         super(traversal);
-        this.setFunction(holder -> holder.get().label());
+        this.setFunction(traverser -> traverser.get().label());
     }
 }

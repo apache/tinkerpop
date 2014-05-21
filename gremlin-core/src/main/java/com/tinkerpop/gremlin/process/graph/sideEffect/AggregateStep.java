@@ -23,10 +23,10 @@ public class AggregateStep<S> extends FlatMapStep<S, S> {
         super(traversal);
         this.functionRing = new FunctionRing<>(preAggregateFunctions);
         this.aggregate = this.traversal.memory().getOrCreate(variable, ArrayList::new);
-        this.setFunction(holder -> {
+        this.setFunction(traverser -> {
             final List<S> list = new ArrayList<>();
-            list.add(holder.get());
-            this.aggregate.add(this.functionRing.next().apply(holder.get()));
+            list.add(traverser.get());
+            this.aggregate.add(this.functionRing.next().apply(traverser.get()));
             StreamFactory.stream(this.getPreviousStep()).forEach(nextHolder -> {
                 list.add(nextHolder.get());
                 this.aggregate.add(this.functionRing.next().apply(nextHolder.get()));

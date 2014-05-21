@@ -71,7 +71,7 @@ public class MicroEdge extends MicroElement implements Edge {
     class MicroEdgeVertexStep extends EdgeVertexStep {
         public MicroEdgeVertexStep(final Traversal traversal, final Direction direction) {
             super(traversal, direction);
-            this.setFunction(holder -> {
+            this.setFunction(traverser -> {
                 final List<Vertex> vertices = new ArrayList<>();
                 if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
                     vertices.add(outVertex);

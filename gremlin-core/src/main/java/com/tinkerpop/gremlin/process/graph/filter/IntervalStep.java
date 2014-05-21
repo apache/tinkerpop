@@ -17,8 +17,8 @@ public class IntervalStep extends FilterStep<Element> {
         super(traversal);
         this.startContainer = startContainer;
         this.endContainer = endContainer;
-        this.setPredicate(holder -> {
-            final Element element = holder.get();
+        this.setPredicate(traverser -> {
+            final Element element = traverser.get();
             return startContainer.test(element) && endContainer.test(element);
         });
     }

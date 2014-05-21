@@ -13,7 +13,7 @@ public class CountStep<S> extends FilterStep<S> implements SideEffectCapable {
     public CountStep(final Traversal traversal) {
         super(traversal);
         this.traversal.memory().set(CAP_VARIABLE, this.counter);
-        this.setPredicate(holder -> {
+        this.setPredicate(traverser -> {
             this.counter++;
             return true;
         });

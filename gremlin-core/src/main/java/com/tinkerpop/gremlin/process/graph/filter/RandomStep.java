@@ -16,7 +16,7 @@ public class RandomStep<S> extends FilterStep<S> {
     public RandomStep(final Traversal traversal, final double probability) {
         super(traversal);
         this.probability = probability;
-        this.setPredicate(holder -> this.probability >= this.random.nextDouble());
+        this.setPredicate(traverser -> this.probability >= this.random.nextDouble());
     }
 
     public String toString() {

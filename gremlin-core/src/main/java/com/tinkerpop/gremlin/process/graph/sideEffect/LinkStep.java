@@ -21,9 +21,9 @@ public class LinkStep extends MapStep<Vertex, Vertex> implements PathConsumer {
         this.direction = direction;
         this.label = label;
         this.as = as;
-        super.setFunction(holder -> {
-            final Vertex current = holder.get();
-            final Vertex other = holder.getPath().get(as);
+        super.setFunction(traverser -> {
+            final Vertex current = traverser.get();
+            final Vertex other = traverser.getPath().get(as);
             if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
                 other.addEdge(label, current);
             }

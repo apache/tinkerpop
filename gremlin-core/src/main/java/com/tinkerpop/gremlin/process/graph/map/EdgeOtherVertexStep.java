@@ -14,12 +14,12 @@ public class EdgeOtherVertexStep extends MapStep<Edge, Vertex> implements PathCo
 
     public EdgeOtherVertexStep(final Traversal traversal) {
         super(traversal);
-        this.setFunction(holder -> {
-            final Path path = holder.getPath();
+        this.setFunction(traverser -> {
+            final Path path = traverser.getPath();
             final Vertex vertex = path.get(path.size() - 2);
-            return ElementHelper.areEqual(vertex, holder.get().outV().next()) ?
-                    holder.get().inV().next() :
-                    holder.get().outV().next();
+            return ElementHelper.areEqual(vertex, traverser.get().outV().next()) ?
+                    traverser.get().inV().next() :
+                    traverser.get().outV().next();
         });
     }
 }

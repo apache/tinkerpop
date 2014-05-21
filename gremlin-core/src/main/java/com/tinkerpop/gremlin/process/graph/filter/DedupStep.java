@@ -18,10 +18,10 @@ public class DedupStep<S> extends FilterStep<S> {
         final Set<Object> set = new LinkedHashSet<>();
         if (null == uniqueFunction) {
             this.hasUniqueFunction = false;
-            this.setPredicate(holder -> set.add(holder.get()));
+            this.setPredicate(traverser -> set.add(traverser.get()));
         } else {
             this.hasUniqueFunction = true;
-            this.setPredicate(holder -> set.add(uniqueFunction.apply(holder.get())));
+            this.setPredicate(traverser -> set.add(uniqueFunction.apply(traverser.get())));
         }
     }
 

@@ -24,7 +24,7 @@ public class RangeStep<S> extends FilterStep<S> {
         this.high = high;
 
         final AtomicInteger counter = new AtomicInteger(-1);
-        this.setPredicate(holder -> {
+        this.setPredicate(traverser -> {
             counter.incrementAndGet();
             if ((this.low == -1 || counter.get() >= this.low) && (this.high == -1 || counter.get() <= this.high))
                 return true;

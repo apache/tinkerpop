@@ -2,19 +2,19 @@ package com.tinkerpop.gremlin.process.strategy;
 
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.HolderSource;
+import com.tinkerpop.gremlin.process.util.TraverserSource;
 import com.tinkerpop.gremlin.process.util.PathConsumer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HolderTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class TraverserTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
     public void apply(final Traversal traversal) {
-        final boolean trackPaths = HolderTraversalStrategy.trackPaths(traversal);
+        final boolean trackPaths = TraverserTraversalStrategy.trackPaths(traversal);
         traversal.getSteps().forEach(step -> {
-            if (step instanceof HolderSource)
-                ((HolderSource) step).generateHolderIterator(trackPaths);
+            if (step instanceof TraverserSource)
+                ((TraverserSource) step).generateTraverserIterator(trackPaths);
         });
     }
 
@@ -27,8 +27,8 @@ public class HolderTraversalStrategy implements TraversalStrategy.FinalTraversal
 
     public static <S, E> void doPathTracking(final Traversal<S, E> traversal) {
         traversal.getSteps().forEach(step -> {
-            if (step instanceof HolderSource)
-                ((HolderSource) step).generateHolderIterator(true);
+            if (step instanceof TraverserSource)
+                ((TraverserSource) step).generateTraverserIterator(true);
         });
     }
 }

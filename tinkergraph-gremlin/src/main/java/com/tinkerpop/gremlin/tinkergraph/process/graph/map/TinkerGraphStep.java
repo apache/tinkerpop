@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.process.graph.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
-import com.tinkerpop.gremlin.process.util.HolderIterator;
+import com.tinkerpop.gremlin.process.util.TraverserIterator;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -28,15 +28,15 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     public TinkerGraphStep(final Traversal traversal, final Class<E> returnClass, final TinkerGraph graph) {
         super(traversal, returnClass);
         this.graph = graph;
-        this.generateHolderIterator(false);
+        this.generateTraverserIterator(false);
     }
 
-    public void generateHolderIterator(final boolean trackPaths) {
+    public void generateTraverserIterator(final boolean trackPaths) {
         this.starts.clear();
         if (trackPaths)
-            this.starts.add(new HolderIterator(this, Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
+            this.starts.add(new TraverserIterator(this, Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
         else
-            this.starts.add(new HolderIterator(Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
+            this.starts.add(new TraverserIterator(Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
 
     }
 

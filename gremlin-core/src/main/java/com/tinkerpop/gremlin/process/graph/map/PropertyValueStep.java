@@ -20,7 +20,7 @@ public class PropertyValueStep<E> extends MapStep<Element, E> {
         this.key = key;
         this.defaultValue = SOptional.empty();
         this.defaultSupplier = SOptional.empty();
-        this.setFunction(holder -> holder.get().<E>property(key).orElse((E) NO_OBJECT));
+        this.setFunction(traverser -> traverser.get().<E>property(key).orElse((E) NO_OBJECT));
     }
 
     public PropertyValueStep(final Traversal traversal, final String key, final E defaultValue) {
@@ -28,7 +28,7 @@ public class PropertyValueStep<E> extends MapStep<Element, E> {
         this.key = key;
         this.defaultValue = SOptional.of(defaultValue);
         this.defaultSupplier = SOptional.empty();
-        this.setFunction(holder -> holder.get().<E>property(key).orElse(this.defaultValue.get()));
+        this.setFunction(traverser -> traverser.get().<E>property(key).orElse(this.defaultValue.get()));
     }
 
     public PropertyValueStep(final Traversal traversal, final String key, final Supplier<E> defaultSupplier) {
@@ -36,6 +36,6 @@ public class PropertyValueStep<E> extends MapStep<Element, E> {
         this.key = key;
         this.defaultValue = SOptional.empty();
         this.defaultSupplier = SOptional.of(defaultSupplier);
-        this.setFunction(holder -> holder.get().<E>property(key).orElse(this.defaultSupplier.get().get()));
+        this.setFunction(traverser -> traverser.get().<E>property(key).orElse(this.defaultSupplier.get().get()));
     }
 }

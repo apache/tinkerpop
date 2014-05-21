@@ -20,8 +20,8 @@ public class SelectStep extends MapStep<Object, Path> implements PathConsumer {
         super(traversal);
         this.functionRing = new FunctionRing(stepFunctions);
         this.asLabels = asLabels.toArray(new String[asLabels.size()]);
-        this.setFunction(holder -> {
-            final Path path = holder.getPath();
+        this.setFunction(traverser -> {
+            final Path path = traverser.getPath();
             if (this.functionRing.hasFunctions()) {
                 final Path temp = new Path();
                 if (this.asLabels.length == 0)

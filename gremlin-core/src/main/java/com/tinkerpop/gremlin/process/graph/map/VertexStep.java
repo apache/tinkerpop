@@ -24,23 +24,23 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> {
         this.branchFactor = branchFactor;
         //this.returnClass = returnClass;
         if (Vertex.class.isAssignableFrom(returnClass)) {
-            this.setFunction(holder -> {
+            this.setFunction(traverser -> {
                 if (this.direction.equals(Direction.OUT)) {
-                    return (Iterator<E>) holder.get().out(branchFactor, this.labels);
+                    return (Iterator<E>) traverser.get().out(branchFactor, this.labels);
                 } else if (this.direction.equals(Direction.IN)) {
-                    return (Iterator<E>) holder.get().in(branchFactor, this.labels);
+                    return (Iterator<E>) traverser.get().in(branchFactor, this.labels);
                 } else {
-                    return (Iterator<E>) holder.get().both(branchFactor, this.labels);
+                    return (Iterator<E>) traverser.get().both(branchFactor, this.labels);
                 }
             });
         } else {
-            this.setFunction(holder -> {
+            this.setFunction(traverser -> {
                 if (this.direction.equals(Direction.OUT)) {
-                    return (Iterator<E>) holder.get().outE(branchFactor, this.labels);
+                    return (Iterator<E>) traverser.get().outE(branchFactor, this.labels);
                 } else if (this.direction.equals(Direction.IN)) {
-                    return (Iterator<E>) holder.get().inE(branchFactor, this.labels);
+                    return (Iterator<E>) traverser.get().inE(branchFactor, this.labels);
                 } else {
-                    return (Iterator<E>) holder.get().bothE(branchFactor, this.labels);
+                    return (Iterator<E>) traverser.get().bothE(branchFactor, this.labels);
                 }
             });
         }

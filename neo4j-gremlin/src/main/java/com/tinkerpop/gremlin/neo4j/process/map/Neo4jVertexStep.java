@@ -28,20 +28,20 @@ public class Neo4jVertexStep<E extends Element> extends VertexStep<E> {
         super(traversal, returnClass, direction, branchFactor, labels);
         if (Vertex.class.isAssignableFrom(returnClass)) {
             if (direction.equals(com.tinkerpop.gremlin.structure.Direction.OUT))
-                this.setFunction(holder -> (Iterator) StreamFactory.stream(new Neo4jVertexVertexIterable<>(g, ((Neo4jVertex) holder.get()).getRawVertex(), Direction.OUTGOING, labels)).limit(this.branchFactor).iterator());
+                this.setFunction(traverser -> (Iterator) StreamFactory.stream(new Neo4jVertexVertexIterable<>(g, ((Neo4jVertex) traverser.get()).getRawVertex(), Direction.OUTGOING, labels)).limit(this.branchFactor).iterator());
             else if (direction.equals(com.tinkerpop.gremlin.structure.Direction.IN))
-                this.setFunction(holder -> (Iterator) StreamFactory.stream(new Neo4jVertexVertexIterable<>(g, ((Neo4jVertex) holder.get()).getRawVertex(), Direction.INCOMING, labels)).limit(this.branchFactor).iterator());
+                this.setFunction(traverser -> (Iterator) StreamFactory.stream(new Neo4jVertexVertexIterable<>(g, ((Neo4jVertex) traverser.get()).getRawVertex(), Direction.INCOMING, labels)).limit(this.branchFactor).iterator());
             else
-                this.setFunction(holder -> (Iterator) Stream.concat(StreamFactory.stream(new Neo4jVertexVertexIterable<>(g, ((Neo4jVertex) holder.get()).getRawVertex(), Direction.OUTGOING, labels)),
-                                                                    StreamFactory.stream(new Neo4jVertexVertexIterable<>(g, ((Neo4jVertex) holder.get()).getRawVertex(), Direction.INCOMING, labels))).limit(this.branchFactor).iterator());
+                this.setFunction(traverser -> (Iterator) Stream.concat(StreamFactory.stream(new Neo4jVertexVertexIterable<>(g, ((Neo4jVertex) traverser.get()).getRawVertex(), Direction.OUTGOING, labels)),
+                                                                    StreamFactory.stream(new Neo4jVertexVertexIterable<>(g, ((Neo4jVertex) traverser.get()).getRawVertex(), Direction.INCOMING, labels))).limit(this.branchFactor).iterator());
         } else {
             if (direction.equals(com.tinkerpop.gremlin.structure.Direction.OUT))
-                this.setFunction(holder -> (Iterator) StreamFactory.stream(new Neo4jVertexEdgeIterable<>(g, ((Neo4jVertex) holder.get()).getRawVertex(), Direction.OUTGOING, labels)).limit(this.branchFactor).iterator());
+                this.setFunction(traverser -> (Iterator) StreamFactory.stream(new Neo4jVertexEdgeIterable<>(g, ((Neo4jVertex) traverser.get()).getRawVertex(), Direction.OUTGOING, labels)).limit(this.branchFactor).iterator());
             else if (direction.equals(com.tinkerpop.gremlin.structure.Direction.IN))
-                this.setFunction(holder -> (Iterator) StreamFactory.stream(new Neo4jVertexEdgeIterable<>(g, ((Neo4jVertex) holder.get()).getRawVertex(), Direction.INCOMING, labels)).limit(this.branchFactor).iterator());
+                this.setFunction(traverser -> (Iterator) StreamFactory.stream(new Neo4jVertexEdgeIterable<>(g, ((Neo4jVertex) traverser.get()).getRawVertex(), Direction.INCOMING, labels)).limit(this.branchFactor).iterator());
             else
-                this.setFunction(holder -> (Iterator) Stream.concat(StreamFactory.stream(new Neo4jVertexEdgeIterable<>(g, ((Neo4jVertex) holder.get()).getRawVertex(), Direction.OUTGOING, labels)),
-                                                                    StreamFactory.stream(new Neo4jVertexEdgeIterable<>(g, ((Neo4jVertex) holder.get()).getRawVertex(), Direction.INCOMING, labels))).limit(this.branchFactor).iterator());
+                this.setFunction(traverser -> (Iterator) Stream.concat(StreamFactory.stream(new Neo4jVertexEdgeIterable<>(g, ((Neo4jVertex) traverser.get()).getRawVertex(), Direction.OUTGOING, labels)),
+                                                                    StreamFactory.stream(new Neo4jVertexEdgeIterable<>(g, ((Neo4jVertex) traverser.get()).getRawVertex(), Direction.INCOMING, labels))).limit(this.branchFactor).iterator());
         }
     }
 

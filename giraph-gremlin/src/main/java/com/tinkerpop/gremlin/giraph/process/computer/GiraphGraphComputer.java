@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
-import com.tinkerpop.gremlin.process.util.HolderSource;
+import com.tinkerpop.gremlin.process.util.TraverserSource;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -98,7 +98,7 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        ((HolderSource) traversal.getSteps().get(0)).clear();
+        ((TraverserSource) traversal.getSteps().get(0)).clear();
         return new TraversalResult<>(this.giraphGraph, () -> traversal);
     }
 }

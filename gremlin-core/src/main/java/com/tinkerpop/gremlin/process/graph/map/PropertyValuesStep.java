@@ -13,6 +13,6 @@ public class PropertyValuesStep extends MapStep<Element, Map<String, Object>> {
 
     public PropertyValuesStep(final Traversal traversal, final String... keys) {
         super(traversal);
-        this.setFunction(holder -> ElementHelper.propertyMap(holder.get(), keys));
+        this.setFunction(traverser -> ElementHelper.propertyMap(traverser.get(), keys));
     }
 }

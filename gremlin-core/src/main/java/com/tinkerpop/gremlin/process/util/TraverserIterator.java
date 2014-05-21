@@ -10,19 +10,19 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HolderIterator<T> implements Iterator<Traverser<T>> {
+public class TraverserIterator<T> implements Iterator<Traverser<T>> {
 
     private final Iterator<T> iterator;
     private final Step step;
     private final boolean trackPaths;
 
-    public HolderIterator(final Step step, final Iterator<T> iterator) {
+    public TraverserIterator(final Step step, final Iterator<T> iterator) {
         this.iterator = iterator;
         this.step = step;
         this.trackPaths = true;
     }
 
-    public HolderIterator(final Iterator<T> iterator) {
+    public TraverserIterator(final Iterator<T> iterator) {
         this.iterator = iterator;
         this.step = null;
         this.trackPaths = false;

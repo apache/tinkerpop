@@ -10,6 +10,6 @@ public class ValueStep<E> extends MapStep<Property, E> {
 
     public ValueStep(final Traversal traversal) {
         super(traversal);
-        this.setFunction(holder -> (E) holder.get().value());
+        this.setFunction(traverser -> (E) traverser.get().value());
     }
 }

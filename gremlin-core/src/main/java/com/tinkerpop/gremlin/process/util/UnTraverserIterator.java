@@ -7,11 +7,11 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class UnHolderIterator<T> implements Iterator<T> {
+public class UnTraverserIterator<T> implements Iterator<T> {
 
     private final Iterator<Traverser<T>> iterator;
 
-    public UnHolderIterator(final Iterator<Traverser<T>> iterator) {
+    public UnTraverserIterator(final Iterator<Traverser<T>> iterator) {
         this.iterator = iterator;
     }
 

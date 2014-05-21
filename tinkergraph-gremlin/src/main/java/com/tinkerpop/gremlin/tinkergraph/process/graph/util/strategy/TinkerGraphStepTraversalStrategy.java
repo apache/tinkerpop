@@ -37,7 +37,7 @@ public class TinkerGraphStepTraversalStrategy implements TraversalStrategy.Final
                 }
                 currentStep = currentStep.getNextStep();
             }
-            tinkerGraphStep.generateHolderIterator(false);
+            tinkerGraphStep.generateTraverserIterator(false);
         }
     }
 }

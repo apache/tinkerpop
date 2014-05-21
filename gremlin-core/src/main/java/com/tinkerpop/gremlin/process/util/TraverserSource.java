@@ -3,9 +3,9 @@ package com.tinkerpop.gremlin.process.util;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface HolderSource {
+public interface TraverserSource {
 
-    public void generateHolderIterator(final boolean trackPaths);
+    public void generateTraverserIterator(final boolean trackPaths);
 
     public void clear();
 }

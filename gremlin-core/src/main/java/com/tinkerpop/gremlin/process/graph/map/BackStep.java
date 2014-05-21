@@ -14,7 +14,7 @@ public class BackStep<S, E> extends MapStep<S, E> implements PathConsumer {
     public BackStep(final Traversal traversal, final String as) {
         super(traversal);
         this.as = as;
-        this.setFunction(holder -> holder.getPath().get(this.as));
+        this.setFunction(traverser -> traverser.getPath().get(this.as));
     }
 
     public String toString() {

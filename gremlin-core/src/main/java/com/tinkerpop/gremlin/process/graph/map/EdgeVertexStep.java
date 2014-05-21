@@ -16,13 +16,13 @@ public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> {
     public EdgeVertexStep(final Traversal traversal, final Direction direction) {
         super(traversal);
         this.direction = direction;
-        this.setFunction(holder -> {
+        this.setFunction(traverser -> {
             if (direction.equals(Direction.IN))
-                return holder.get().inV();
+                return traverser.get().inV();
             else if (direction.equals(Direction.OUT))
-                return holder.get().outV();
+                return traverser.get().outV();
             else
-                return holder.get().bothV();
+                return traverser.get().bothV();
         });
     }
 

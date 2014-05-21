@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.map;
 
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.UnHolderIterator;
+import com.tinkerpop.gremlin.process.util.UnTraverserIterator;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.ArrayList;
@@ -17,12 +17,12 @@ public class ShuffleStep<S> extends FlatMapStep<S, S> {
 
     public ShuffleStep(final Traversal traversal) {
         super(traversal);
-        this.setFunction(holder -> {
+        this.setFunction(traverser -> {
             final List<Traverser<S>> list = new ArrayList<>();
-            list.add(holder);
+            list.add(traverser);
             list.addAll(StreamFactory.stream(getPreviousStep()).collect(Collectors.<Traverser<S>>toList()));
             Collections.shuffle(list);
-            return new UnHolderIterator<>(list.iterator());
+            return new UnTraverserIterator<>(list.iterator());
         });
     }
 }

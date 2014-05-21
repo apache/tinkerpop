@@ -39,8 +39,8 @@ public class SubGraphStep<S> extends FilterStep<S> implements SideEffectCapable,
         this.idMap = Optional.ofNullable(vertexMap).orElse(new HashMap<>());
         this.subgraph = subgraph;
         this.traversal.memory().set(CAP_VARIABLE, this.subgraph);
-        this.setPredicate(holder -> {
-            holder.getPath().stream().map(Pair::getValue1)
+        this.setPredicate(traverser -> {
+            traverser.getPath().stream().map(Pair::getValue1)
                     .filter(i -> i instanceof Edge)
                     .map(e -> (Edge) e)
                     .filter(e -> !edgesAdded.contains(e.id()))

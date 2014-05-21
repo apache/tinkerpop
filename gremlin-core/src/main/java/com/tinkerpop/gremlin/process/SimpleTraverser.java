@@ -64,17 +64,17 @@ public class SimpleTraverser<T> implements Traverser<T> {
     }
 
     public <R> SimpleTraverser<R> makeChild(final String as, final R r) {
-        final SimpleTraverser<R> holder = new SimpleTraverser<>(r);
-        holder.future = this.future;
-        holder.loops = this.loops;
-        return holder;
+        final SimpleTraverser<R> traverser = new SimpleTraverser<>(r);
+        traverser.future = this.future;
+        traverser.loops = this.loops;
+        return traverser;
     }
 
     public SimpleTraverser<T> makeSibling() {
-        final SimpleTraverser<T> holder = new SimpleTraverser<>(this.t);
-        holder.future = this.future;
-        holder.loops = this.loops;
-        return holder;
+        final SimpleTraverser<T> traverser = new SimpleTraverser<>(this.t);
+        traverser.future = this.future;
+        traverser.loops = this.loops;
+        return traverser;
     }
 
     public String toString() {

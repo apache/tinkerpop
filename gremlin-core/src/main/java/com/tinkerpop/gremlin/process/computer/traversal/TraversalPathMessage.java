@@ -52,17 +52,17 @@ public class TraversalPathMessage extends TraversalMessage {
             if (message.executePaths(vertex, messenger, tracker, traversal))
                 voteToHalt.set(false);
         });
-        tracker.getPreviousObjectTracks().forEach((object, holders) -> {
-            holders.forEach(holder -> {
-                if (holder.isDone()) {
+        tracker.getPreviousObjectTracks().forEach((object, traversers) -> {
+            traversers.forEach(traverser -> {
+                if (traverser.isDone()) {
                     if (object instanceof Path) {
-                        MapHelper.incr(tracker.getDoneObjectTracks(), MicroPath.deflate(((Path) object)), holder);
+                        MapHelper.incr(tracker.getDoneObjectTracks(), MicroPath.deflate(((Path) object)), traverser);
                     } else {
-                        MapHelper.incr(tracker.getDoneObjectTracks(), object, holder);
+                        MapHelper.incr(tracker.getDoneObjectTracks(), object, traverser);
                     }
                 } else {
-                    final Step step = TraversalHelper.getAs(holder.getFuture(), traversal);
-                    step.addStarts(new SingleIterator(holder));
+                    final Step step = TraversalHelper.getAs(traverser.getFuture(), traversal);
+                    step.addStarts(new SingleIterator(traverser));
                     if (processStep(step, vertex, messenger, tracker))
                         voteToHalt.set(false);
                 }
@@ -89,18 +89,18 @@ public class TraversalPathMessage extends TraversalMessage {
 
     private static boolean processStep(final Step<?, ?> step, final Vertex vertex, final Messenger messenger, final TraversalPaths tracker) {
         final boolean messageSent = step.hasNext();
-        step.forEachRemaining(holder -> {
-            final Object end = holder.get();
+        step.forEachRemaining(traverser -> {
+            final Object end = traverser.get();
             if (end instanceof Element || end instanceof Property) {
                 messenger.sendMessage(
                         vertex,
                         MessageType.Global.of(getHostingVertices(end)),
-                        TraversalPathMessage.of(holder));
+                        TraversalPathMessage.of(traverser));
             } else {
                 if (end instanceof Path) {
-                    MapHelper.incr(tracker.getObjectTracks(), MicroPath.deflate(((Path) end)), holder);
+                    MapHelper.incr(tracker.getObjectTracks(), MicroPath.deflate(((Path) end)), traverser);
                 } else {
-                    MapHelper.incr(tracker.getObjectTracks(), end, holder);
+                    MapHelper.incr(tracker.getObjectTracks(), end, traverser);
                 }
             }
         });

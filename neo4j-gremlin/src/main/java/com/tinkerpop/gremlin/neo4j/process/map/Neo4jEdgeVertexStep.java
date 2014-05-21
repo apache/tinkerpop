@@ -18,8 +18,8 @@ import java.util.List;
 public class Neo4jEdgeVertexStep extends EdgeVertexStep {
     public Neo4jEdgeVertexStep(final Traversal traversal, final Neo4jGraph graph, final Direction direction) {
         super(traversal, direction);
-        this.setFunction(holder -> {
-            Relationship relationship = ((Relationship) ((Neo4jEdge) holder.get()).getRawElement());
+        this.setFunction(traverser -> {
+            Relationship relationship = ((Relationship) ((Neo4jEdge) traverser.get()).getRawElement());
             final List<Vertex> vertices = new ArrayList<>();
             if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
                 vertices.add(new Neo4jVertex(relationship.getStartNode(), graph));

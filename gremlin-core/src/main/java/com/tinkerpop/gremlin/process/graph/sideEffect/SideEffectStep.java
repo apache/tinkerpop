@@ -12,9 +12,9 @@ public class SideEffectStep<S> extends MapStep<S, S> {
 
     public SideEffectStep(final Traversal traversal, final SConsumer<Traverser<S>> consumer) {
         super(traversal);
-        this.setFunction(holder -> {
-            consumer.accept(holder);
-            return holder.get();
+        this.setFunction(traverser -> {
+            consumer.accept(traverser);
+            return traverser.get();
         });
     }
 

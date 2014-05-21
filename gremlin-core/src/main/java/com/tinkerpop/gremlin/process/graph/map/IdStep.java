@@ -10,6 +10,6 @@ public class IdStep<E extends Element> extends MapStep<E, Object> {
 
     public IdStep(final Traversal traversal) {
         super(traversal);
-        this.setFunction(holder -> holder.get().id());
+        this.setFunction(traverser -> traverser.get().id());
     }
 }

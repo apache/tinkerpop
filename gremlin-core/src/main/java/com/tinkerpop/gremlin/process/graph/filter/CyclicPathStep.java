@@ -10,6 +10,6 @@ public class CyclicPathStep<S> extends FilterStep<S> implements PathConsumer {
 
     public CyclicPathStep(final Traversal traversal) {
         super(traversal);
-        this.setPredicate(holder -> !holder.getPath().isSimple());
+        this.setPredicate(traverser -> !traverser.getPath().isSimple());
     }
 }

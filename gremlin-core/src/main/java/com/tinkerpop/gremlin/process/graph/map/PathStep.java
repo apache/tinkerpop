@@ -18,9 +18,9 @@ public class PathStep<S> extends MapStep<S, Path> implements PathConsumer {
     public PathStep(final Traversal traversal, final SFunction... pathFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing(pathFunctions);
-        this.setFunction(holder -> {
+        this.setFunction(traverser -> {
             final Path path = new Path();
-            holder.getPath().forEach((a, b) -> path.add(a, this.functionRing.next().apply(b)));
+            traverser.getPath().forEach((a, b) -> path.add(a, this.functionRing.next().apply(b)));
             return path;
         });
     }

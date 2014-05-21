@@ -16,7 +16,7 @@ public class GiraphGraphStep<E extends Element> extends GraphStep<E> {
     public void clear() {
     }
 
-    public void generateHolderIterator(final boolean trackPaths) {
+    public void generateTraverserIterator(final boolean trackPaths) {
 
     }
 }
