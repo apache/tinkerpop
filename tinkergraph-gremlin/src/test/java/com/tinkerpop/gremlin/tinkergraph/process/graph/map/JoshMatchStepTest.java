@@ -15,13 +15,12 @@ public class JoshMatchStepTest {
     @Test
     public void forJosh() {
         Graph g = TinkerFactory.createClassic();
-        g.V().match("a", "d",
+        g.V().match("a","c",
                 GraphTraversal.of().as("a").out("created").as("b"),
                 GraphTraversal.of().as("b").has("name", "lop"),
                 GraphTraversal.of().as("b").in("created").as("c"),
-                GraphTraversal.of().as("c").has("age", 29),
-                GraphTraversal.of().as("c").out("knows").as("d"))
-                .select(As.of("a", "d"), v -> ((Vertex) v).value("name")).forEach(System.out::println);
+                GraphTraversal.of().as("c").has("age", 29))
+                .select(As.of("a", "c"), v -> ((Vertex)v).value("name")).forEach(System.out::println);;
 
         System.out.println("--------------");
 

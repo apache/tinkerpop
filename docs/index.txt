@@ -109,26 +109,32 @@ CAUTION: In the code examples presented throughout this documentation, either Gr
 Graph g = TinkerGraph.open();
 // add a software vertex with a name property
 Vertex gremlin = g.addVertex(Element.LABEL, "software", "name", "gremlin");
+assert(g.V().count() == 1)
+assert(g.E().count() == 0)
 // add a new property
 gremlin.property("created",2009)
 // add a new software vertex to the graph
 Vertex blueprints = g.addVertex(Element.LABEL, "software", "name", "blueprints");
 // connect gremlin to blueprints via a dependsOn-edge
 Edge e = gremlin.addEdge("dependsOn",blueprints);
+assert(g.V().count() == 2)
+assert(g.E().count() == 1)
 // add a property to the edge
 e.property("since",2010)
 // remove that property
 e.property("since").remove()
 // remove the entire edge
 e.remove()
+assert(g.V().count() == 2)
+assert(g.E().count() == 0)
 // connect gremlin to blueprints via encapsulates
 gremlin.addEdge("encapsulates",blueprints)
 // remove both blueprints and gremlin vertices
 blueprints.remove()
 gremlin.remove()
 // the graph is empty
-assert(g.V().count == 0)
-assert(g.E().count == 0)
+assert(g.V().count() == 0)
+assert(g.E().count() == 0)
 
 The Graph Process
 -----------------
@@ -427,7 +433,7 @@ Extracting a portion of a graph from a larger one for analysis, visualization or
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = new TinkerGraph() <1>
+gremlin> sg = TinkerGraph.open() <1>
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> g.E.subGraph(sg, {it.label == 'knows'}) <2>
 ==>tinkergraph[vertices:3 edges:2]
@@ -446,7 +452,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 ----
 gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> sg = new TinkerGraph()
+gremlin> sg = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
 gremlin> g.v(3).as('a').inE.outV.jump('a'){it.loops<3}{true}.subGraph(sg, {true})   <1>
 ==>tinkergraph[vertices:4 edges:4]
@@ -475,6 +481,24 @@ g.V().match("a",
   GraphTraversal.of().as("b").in("created").as("c"),
   GraphTraversal.of().as("c").has("age", 29))
     .select(As.of("a", "c"), v -> v.value("name")) 
+// [josh, marko]
+// [marko, marko]
+// [peter, marko]
+
+MatchStep brings functionality similar to SPARQL to TinkerPop. A few of the the differentiating qualities include:
+
+[source,java]
+g.V().match("a", "c"
+  GraphTraversal.of().as("a").out("created").has("name","lop").as("b"), <1>
+  GraphTraversal.of().as("b").in("created").has("age", 29).as("c"),
+  GraphTraversal.of().as("c").out().jump("c")(v -> v.getLoops() < 2). <2>
+    .out("knows").name  <3>
+// josh
+// vadas
+
+<1> *Arbitrary length patterns*: `match()` is not restricted to triple patterns.
+<2> *Recursion support*: `match()` supports the `jump()`-step within a pattern.
+<3> *Path/pattern hybrid*: Pre and prior to a match an be a path expression and thus, both constructs supported in the same traversal.
 
 
 Traversal Strategy
