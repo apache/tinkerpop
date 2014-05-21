@@ -85,6 +85,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         traversal.strategies().applyFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         startStep.clear();
+
         final String future = (traversal.getSteps().size() == 1) ? Traverser.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
         // TODO: Was doing some HasContainer.testAll() stuff prior to the big change (necessary?)
         // TODO: Make this an optimizer.
@@ -110,16 +111,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.SideEffects sideEffects) {
-        final Traversal traversal = this.traversalSupplier.get();
-        traversal.strategies().applyFinalOptimizers(traversal);
-        ((GraphStep) traversal.getSteps().get(0)).clear();
         if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
-            sideEffects.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
+            sideEffects.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, this.traversalSupplier));
             vertex.property(TRAVERSAL_TRACKER, tracker);
         } else {
             final TraversalCounters tracker = new TraversalCounters(vertex);
-            sideEffects.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, traversal));
+            sideEffects.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, this.traversalSupplier));
             vertex.property(TRAVERSAL_TRACKER, tracker);
         }
     }

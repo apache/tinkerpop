@@ -1,16 +1,18 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
+import com.tinkerpop.gremlin.process.graph.map.GraphStep;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.SSupplier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +49,11 @@ public class TraversalCounterMessage extends TraversalMessage {
                                   final Iterable<TraversalCounterMessage> messages,
                                   final Messenger messenger,
                                   final TraversalCounters tracker,
-                                  final Traversal traversal) {
+                                  final SSupplier<Traversal> traversalSupplier) {
+
+        final Traversal traversal = traversalSupplier.get();
+        traversal.strategies().applyFinalOptimizers(traversal);
+        ((GraphStep) traversal.getSteps().get(0)).clear();
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final Map<Traverser, Long> localCounts = new HashMap<>();
@@ -58,30 +64,31 @@ public class TraversalCounterMessage extends TraversalMessage {
                 voteToHalt.set(false);
         });
 
-        tracker.getPreviousObjectTracks().forEach((holder, counts) -> {
-            if (holder.isDone()) {
-                MapHelper.incr(tracker.getDoneObjectTracks(), holder, counts);
+        tracker.getPreviousObjectTracks().forEach((traverser, counts) -> {
+            if (traverser.isDone()) {
+                MapHelper.incr(tracker.getDoneObjectTracks(), traverser, counts);
             } else {
-                final Step step = TraversalHelper.getAs(holder.getFuture(), traversal);
+                final Step step = TraversalHelper.getAs(traverser.getFuture(), traversal);
+                // TODO: get rid of loop constructs
                 for (int i = 0; i < counts; i++) {
-                    step.addStarts(new SingleIterator(holder));
+                    step.addStarts(new SingleIterator(traverser));
                 }
-                if (processStep(step, localCounts))
+                if (processStep(step, localCounts, 1l))
                     voteToHalt.set(false);
             }
         });
 
-        localCounts.forEach((holder, count) -> {
-            if (holder.get() instanceof Element || holder.get() instanceof Property) {
-                final Object end = holder.get();
-                final TraversalCounterMessage message = TraversalCounterMessage.of(holder);
+        localCounts.forEach((traverser, count) -> {
+            if (traverser.get() instanceof Element || traverser.get() instanceof Property) {
+                final Object end = traverser.get();
+                final TraversalCounterMessage message = TraversalCounterMessage.of(traverser);
                 message.setCounter(count);
                 messenger.sendMessage(
                         vertex,
                         MessageType.Global.of(TraversalMessage.getHostingVertices(end)),
                         message);
             } else {
-                MapHelper.incr(tracker.getObjectTracks(), holder, count);
+                MapHelper.incr(tracker.getObjectTracks(), traverser, count);
             }
         });
         return voteToHalt.get();
@@ -98,15 +105,17 @@ public class TraversalCounterMessage extends TraversalMessage {
 
         final Step step = TraversalHelper.getAs(this.traverser.getFuture(), traversal);
         MapHelper.incr(tracker.getGraphTracks(), this.traverser, this.counter);
+        // TODO: get rid of loop constructs
         for (int i = 0; i < this.counter; i++) {
             step.addStarts(new SingleIterator(this.traverser));
         }
-        return processStep(step, localCounts);
+        return processStep(step, localCounts, 1l);
     }
 
-    private static boolean processStep(final Step<?, ?> step, final Map<Traverser, Long> localCounts) {
+    private static boolean processStep(final Step<?, ?> step, final Map<Traverser, Long> localCounts, final long counter) {
+        //TODO: FOR LOOP WE NEED TO ISOLATE THE STEP!
         final boolean messageSent = step.hasNext();
-        step.forEachRemaining(holder -> MapHelper.incr(localCounts, holder, 1l));
+        step.forEachRemaining(traverser -> MapHelper.incr(localCounts, traverser, counter));
         return messageSent;
     }
 }

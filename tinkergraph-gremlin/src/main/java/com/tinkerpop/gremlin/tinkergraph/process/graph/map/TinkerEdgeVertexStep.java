@@ -15,6 +15,6 @@ public class TinkerEdgeVertexStep extends EdgeVertexStep {
 
     public TinkerEdgeVertexStep(final Traversal traversal, final Direction direction) {
         super(traversal, direction);
-        this.setFunction(holder -> (Iterator) TinkerHelper.getVertices(((TinkerEdge) holder.get()), direction));
+        this.setFunction(traverser -> (Iterator) TinkerHelper.getVertices(((TinkerEdge) traverser.get()), direction));
     }
 }
