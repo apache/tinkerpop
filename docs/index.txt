@@ -406,7 +406,50 @@ gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}{true}.name
 
 image::jump-step-example.png[width=500]
 
-The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop. 
+The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop.
+
+[[subgraph-step]]
+Subgraph Step
+~~~~~~~~~~~~~
+
+Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The Subgraph Step provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
+
+[source,groovy]
+----
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> sg = new TinkerGraph() <1>
+==>tinkergraph[vertices:0 edges:0]
+gremlin> g.E.subGraph(sg, {it.label == 'knows'}) <2>
+==>tinkergraph[vertices:3 edges:2]
+gremlin> sg.E <3>
+==>e[7][1-knows->2]
+==>e[8][1-knows->4]
+----
+
+<1> The empty graph to which the subgraph will be generated.
+<2> As this function produces "edge-induced" subgraphs, the traversal must contain edges in the path.  Those edges found in that path are evaluated by a `Predicate` function to determine if they should be copied to the subgraph in conjunction with their associated vertices.
+<3> The subgraph contains only "knows" edges.
+
+A more common subgraphing use case is to get all of the graph structure surrounding a single vertex:
+
+[source,groovy]
+----
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> sg = new TinkerGraph()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> g.v(3).as('a').inE.outV.jump('a'){it.loops<3}{true}.subGraph(sg, {true})   <1>
+==>tinkergraph[vertices:4 edges:4]
+gremlin> sg.E
+==>e[8][1-knows->4]
+==>e[9][1-created->3]
+==>e[11][4-created->3]
+==>e[12][6-created->3]
+----
+
+<1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph.
+
 
 Traversal Strategy
 ------------------
