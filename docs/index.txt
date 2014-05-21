@@ -762,7 +762,7 @@ try (final InputStream stream = new FileInputStream("tinkerpop-classic.xml")) {
 ----
 
 GraphSON Reader/Writer
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 GraphSON is a JSON-based format that developed from earlier versions of TinkerPop.  It is not backward compatible to prior versions.  GraphSON has some support from graph-related application outside of TinkerPop, but it is generally best used in two cases:
 
