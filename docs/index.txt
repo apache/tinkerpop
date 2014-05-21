@@ -216,6 +216,15 @@ IMPORTANT: In TinkerPop2, the `jump()`-step was called `loop()`. Jump has been g
 The Graph API
 =============
 
+Features
+--------
+
+Features are the means by which vendors can expose nuance difference between their data stores. 
+
+ . *Graph Features*
+ . *Vertex Features*
+ . *Edge Features*
+
 Hidden Properties
 -----------------
 
@@ -409,7 +418,7 @@ image::jump-step-example.png[width=500]
 The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop.
 
 [[subgraph-step]]
-Subgraph Step
+SubGraph Step
 ~~~~~~~~~~~~~
 
 Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The Subgraph Step provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:
@@ -449,6 +458,23 @@ gremlin> sg.E
 ----
 
 <1> Starting at vertex `3`, traverse 3 steps away on in-edges, outputting all of that into the subgraph.
+
+Match Step
+~~~~~~~~~~
+
+`MatchStep` was introduced into TinkerPop3 to support a more declarative form of pattern matching. This step extends the functionality of `table()` and `select()` with the inclusion of `match()`.
+
+"Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
+
+image::match-step.png[width=500]
+
+[source,java]
+g.V().match("a",
+  GraphTraversal.of().as("a").out("created").as("b"),
+  GraphTraversal.of().as("b").has("name", "lop"),
+  GraphTraversal.of().as("b").in("created").as("c"),
+  GraphTraversal.of().as("c").has("age", 29))
+    .select(As.of("a", "c"), v -> v.value("name")) 
 
 
 Traversal Strategy
