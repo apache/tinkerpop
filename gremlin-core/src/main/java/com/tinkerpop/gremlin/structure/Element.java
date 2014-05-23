@@ -62,9 +62,7 @@ public abstract interface Element {
 
     public default <V> V value(final String key) throws NoSuchElementException {
         final Property<V> property = this.property(key);
-        if (property.isPresent())
-            return property.value();
-        else throw Property.Exceptions.propertyDoesNotExist(key);
+        return property.orElseThrow(() -> Property.Exceptions.propertyDoesNotExist(key));
     }
 
     /*
