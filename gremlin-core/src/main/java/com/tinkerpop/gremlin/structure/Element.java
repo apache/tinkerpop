@@ -27,8 +27,6 @@ public abstract interface Element {
 
     public void remove();
 
-    // todo: make sure id/label get returned as properties
-
     public default Set<String> keys() {
         return this.properties().keySet();
     }
