@@ -43,6 +43,7 @@ import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.LinkStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.SubGraphStep;
+import com.tinkerpop.gremlin.process.graph.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
@@ -388,6 +389,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, Vertex> linkBoth(final String label, final String as) {
         return (GraphTraversal) this.addStep(new LinkStep(this, Direction.BOTH, label, as));
+    }
+
+    public default GraphTraversal<S,E> timeLimit(final long timeLimit) {
+        return (GraphTraversal) this.addStep(new TimeLimitStep<E>(this, timeLimit));
     }
 
     ///////////////////// BRANCH STEPS /////////////////////
