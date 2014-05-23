@@ -43,4 +43,22 @@ public class GiraphGraphRunnerTest {
 
         tempFile.delete();
     }
+
+   /* @Test
+    public void test() throws Exception {
+        Graph g = TinkerGraph.open();
+        GraphMLReader reader = GraphMLReader.create().build();
+        reader.readGraph(new FileInputStream("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml"), g);
+
+        GraphSONWriter writer = GraphSONWriter.create().build();
+        g.V().forEach(v -> {
+            try {
+                final FileOutputStream fos = new FileOutputStream("/tmp/grateful-dead-adjlist.json", true);
+                fos.write("\n".getBytes());
+                writer.writeVertex(fos, v, Direction.BOTH);
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        });
+    } */
 }
