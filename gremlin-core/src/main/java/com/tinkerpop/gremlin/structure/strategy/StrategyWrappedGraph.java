@@ -11,6 +11,12 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import java.util.Optional;
 
 /**
+ * A wrapper class for {@link Graph} instances that host and apply a {@link GraphStrategy}.  The wrapper implements
+ * {@link Graph} itself and intercepts calls made to the hosted instance and then applies the strategy.  Methods
+ * that return an extension of {@link com.tinkerpop.gremlin.structure.Element} or a
+ * {@link com.tinkerpop.gremlin.structure.Property} will be automatically wrapped in a {@link StrategyWrapped}
+ * implementation.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StrategyWrappedGraph implements Graph, StrategyWrapped {
@@ -23,10 +29,16 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
         this.graphContext = new Strategy.Context<>(baseGraph, this);
     }
 
+    /**
+     * Gets the underlying base {@link Graph} that is being hosted within this wrapper.
+     */
     public Graph getBaseGraph() {
         return this.baseGraph;
     }
 
+    /**
+     * Gets the strategy hosted within the wrapper.
+     */
     public Strategy strategy() {
         return this.strategy;
     }
