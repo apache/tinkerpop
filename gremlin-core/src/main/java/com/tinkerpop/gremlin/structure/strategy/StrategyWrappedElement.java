@@ -73,6 +73,13 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     }
 
     @Override
+    public Map<String, Object> values() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getElementValues(elementStrategyContext),
+                this.baseElement::values).get();
+    }
+
+    @Override
     public String label() {
         return this.strategyWrappedGraph.strategy().compose(
                 s -> s.getElementLabel(elementStrategyContext),

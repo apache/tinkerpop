@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.util.function.TriFunction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -101,6 +102,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
     @Override
     public UnaryOperator<Supplier<Set<String>>> getElementHiddenKeys(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementHiddenKeys(ctx));
+    }
+
+    @Override
+    public UnaryOperator<Supplier<Map<String, Object>>> getElementValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getElementValues(ctx));
     }
 
 	@Override
