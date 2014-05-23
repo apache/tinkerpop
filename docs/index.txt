@@ -60,7 +60,8 @@ On the third chapter of his life, Gremlin decided he needed a new form. For maki
 image::gremlintron.png[width=500]
 
 When the dust settled in his workshop, Gremlin emerged Gremlitron. It was time to realize that all that he realized was just a realization and that all realized realizations are just as real. For The TinkerPop is and is not.
- 
+
+NOTE: TinkerPop2 and below made a sharp distinction between the various TinkerPop projects: Blueprints, Pipes, Gremlin, Frames, Furnace, and Rexster. With TinkerPop3, all of these projects have been merged and are generally known as Gremlin. *Blueprints* -> Gremlin Structure API : *Pipes* -> `GraphTraversal` : *Frames* -> `Traversal` : *Furnace* -> `GraphComputer` and `VertexProgram` : *Rexster* -> GremlinServer.
 
 Graph Computing
 ===============
