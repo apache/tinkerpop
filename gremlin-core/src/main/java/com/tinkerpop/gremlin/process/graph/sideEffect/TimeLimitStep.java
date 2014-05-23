@@ -4,9 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.map.MapStep;
 
 import java.util.NoSuchElementException;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Randall Barnhart (random pi)
@@ -15,27 +13,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class TimeLimitStep<S> extends MapStep<S, S> {
 
-    private final AtomicBoolean done = new AtomicBoolean(false);
-    private final AtomicBoolean started = new AtomicBoolean(false);
-    private final Timer timer = new Timer();
+    private final AtomicLong startTime = new AtomicLong(-1);
 
     public TimeLimitStep(final Traversal traversal, final long timeLimit) {
         super(traversal);
-        super.setFunction(s -> {
-            if (!this.started.get()) {
-                this.started.set(true);
-                this.timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        done.set(true);
-                    }
-                }, timeLimit);
-            }
-            if (!done.get()) {
-                return s.get();
-            } else {
+        super.setFunction(traverser -> {
+            if (this.startTime.get() == -1l)
+                this.startTime.set(System.currentTimeMillis());
+            if ((System.currentTimeMillis() - this.startTime.get()) >= timeLimit)
                 throw new NoSuchElementException();
-            }
+            return traverser.get();
         });
     }
 }
