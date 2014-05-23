@@ -148,7 +148,7 @@ public interface GraphStrategy {
      *         {@link com.tinkerpop.gremlin.structure.Element#id()} signature
      *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default UnaryOperator<Supplier<Object>> getElementId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -162,7 +162,7 @@ public interface GraphStrategy {
      *         {@link com.tinkerpop.gremlin.structure.Element#id()} signature
      *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<Supplier<String>> getElementGetLabel(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default UnaryOperator<Supplier<String>> getElementLabel(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 

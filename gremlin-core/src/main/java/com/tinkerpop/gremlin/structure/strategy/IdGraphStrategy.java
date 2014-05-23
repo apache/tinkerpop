@@ -84,7 +84,7 @@ public class IdGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public UnaryOperator<Supplier<Object>> getElementGetId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public UnaryOperator<Supplier<Object>> getElementId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return supportsAnId(ctx.getCurrent().getClass()) ?
                 (f) -> () -> ctx.getCurrent().getBaseElement().property(idKey).value() : UnaryOperator.identity();
     }
