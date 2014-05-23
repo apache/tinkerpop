@@ -98,6 +98,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
         return this.composeStrategyUnaryOperator(s -> s.getElementKeys(ctx));
     }
 
+    @Override
+    public UnaryOperator<Supplier<Set<String>>> getElementHiddenKeys(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getElementHiddenKeys(ctx));
+    }
+
 	@Override
 	public String toString() {
 		return String.join("->", graphStrategySequence.stream().map(Object::toString)

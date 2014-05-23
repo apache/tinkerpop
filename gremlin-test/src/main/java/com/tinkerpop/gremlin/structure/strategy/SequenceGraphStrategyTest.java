@@ -297,6 +297,11 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
+        public UnaryOperator<Supplier<Set<String>>> getElementHiddenKeys(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
+        }
+
+        @Override
         public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
             return spy();
         }
