@@ -26,11 +26,6 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
-    public <V> V value(final String key) throws NoSuchElementException {
-        return baseVertex.value(key);
-    }
-
-    @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         final Vertex baseInVertex = (inVertex instanceof StrategyWrappedVertex) ? ((StrategyWrappedVertex) inVertex).getBaseVertex() : inVertex;
         return new StrategyWrappedEdge(this.strategyWrappedGraph.strategy().compose(
