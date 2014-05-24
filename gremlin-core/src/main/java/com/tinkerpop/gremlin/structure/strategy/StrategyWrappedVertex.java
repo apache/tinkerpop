@@ -6,8 +6,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 
-import java.util.NoSuchElementException;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

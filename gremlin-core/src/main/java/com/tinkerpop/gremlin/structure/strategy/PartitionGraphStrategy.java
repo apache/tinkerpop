@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;

@@ -1,23 +1,10 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
-import com.tinkerpop.gremlin.process.graph.map.GraphStep;
-import com.tinkerpop.gremlin.process.graph.map.MapStep;
-import com.tinkerpop.gremlin.process.graph.map.VertexStep;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
