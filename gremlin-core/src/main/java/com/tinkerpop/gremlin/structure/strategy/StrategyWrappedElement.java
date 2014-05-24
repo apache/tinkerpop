@@ -36,7 +36,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     @Override
     public void properties(final Object... keyValues) {
 		this.strategyWrappedGraph.strategy().compose(
-			s -> s.getElementProperties(elementStrategyContext),
+			s -> s.getElementPropertiesSetter(elementStrategyContext),
 			this.baseElement::properties).accept(keyValues);
     }
 
@@ -49,7 +49,10 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     @Override
     public Map<String, Property> properties() {
-        return this.baseElement.properties().entrySet().stream().map(e -> Pair.with(e.getKey(), new StrategyWrappedProperty(e.getValue(), strategyWrappedGraph)))
+		return this.strategyWrappedGraph.strategy().compose(
+				s -> s.getElementPropertiesGetter(elementStrategyContext),
+				() -> this.baseElement.properties()).get().entrySet().stream()
+				.map(e -> Pair.with(e.getKey(), new StrategyWrappedProperty(e.getValue(), strategyWrappedGraph)))
                 .collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
     }
 

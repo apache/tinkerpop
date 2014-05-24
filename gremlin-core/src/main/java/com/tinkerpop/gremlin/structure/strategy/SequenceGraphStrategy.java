@@ -90,7 +90,12 @@ public class SequenceGraphStrategy implements GraphStrategy {
     }
 
 	@Override
-	public UnaryOperator<Consumer<Object[]>> getElementProperties(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+	public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+		return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
+	}
+
+	@Override
+	public UnaryOperator<Supplier<Map<String, Property>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
 		return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
 	}
 

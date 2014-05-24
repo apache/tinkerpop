@@ -98,7 +98,7 @@ public class IdGraphStrategy implements GraphStrategy {
     }
 
 	@Override
-	public UnaryOperator<Consumer<Object[]>> getElementProperties(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+	public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
 		return (f) -> (kvs) -> {
 			throwIfIdKeyIsSet(ctx.getCurrent().getClass(), ElementHelper.getKeys(kvs));
 			f.accept(kvs);

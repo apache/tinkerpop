@@ -47,7 +47,7 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     }
 
 	@Override
-	public UnaryOperator<Consumer<Object[]>> getElementProperties(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+	public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
 		return (f) -> (t) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
 	}
 

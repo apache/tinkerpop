@@ -313,11 +313,16 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         }
 
         @Override
-        public UnaryOperator<Consumer<Object[]>> getElementProperties(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
         }
 
-        @Override
+		@Override
+		public UnaryOperator<Supplier<Map<String, Property>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+			return spy();
+		}
+
+		@Override
         public UnaryOperator<Supplier<Map<String, Object>>> getElementValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
         }
