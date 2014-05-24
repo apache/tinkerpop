@@ -58,7 +58,11 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     @Override
     public Map<String, Property> hiddens() {
-        return this.baseElement.hiddens();
+		return this.strategyWrappedGraph.strategy().compose(
+				s -> s.getElementPropertiesGetter(elementStrategyContext),
+				this.baseElement::hiddens).get().entrySet().stream()
+				.map(e -> Pair.with(e.getKey(), new StrategyWrappedProperty(e.getValue(), strategyWrappedGraph)))
+				.collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));
     }
 
     @Override

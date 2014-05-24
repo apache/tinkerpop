@@ -99,6 +99,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
 		return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
 	}
 
+	@Override
+	public UnaryOperator<Supplier<Map<String, Property>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+		return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
+	}
+
     @Override
     public UnaryOperator<Supplier<Set<String>>> getElementKeys(Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return this.composeStrategyUnaryOperator(s -> s.getElementKeys(ctx));
