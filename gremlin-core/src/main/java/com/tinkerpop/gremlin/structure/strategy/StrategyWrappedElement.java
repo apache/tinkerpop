@@ -30,7 +30,9 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
 
     @Override
     public <V> V value(final String key) throws NoSuchElementException {
-        return this.baseElement.value(key);
+		return this.strategyWrappedGraph.strategy().compose(
+				s -> s.<V>getElementValue(elementStrategyContext),
+				this.baseElement::value).apply(key);
     }
 
     @Override
@@ -59,7 +61,7 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     @Override
     public Map<String, Property> hiddens() {
 		return this.strategyWrappedGraph.strategy().compose(
-				s -> s.getElementPropertiesGetter(elementStrategyContext),
+				s -> s.getElementHiddens(elementStrategyContext),
 				this.baseElement::hiddens).get().entrySet().stream()
 				.map(e -> Pair.with(e.getKey(), new StrategyWrappedProperty(e.getValue(), strategyWrappedGraph)))
 				.collect(Collectors.toMap(p -> p.getValue0(), p -> p.getValue1()));

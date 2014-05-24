@@ -338,6 +338,11 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 		}
 
 		@Override
+		public <V> UnaryOperator<Function<String, V>> getElementValue(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+			return spy();
+		}
+
+		@Override
         public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
             spy();
             return traversal;
