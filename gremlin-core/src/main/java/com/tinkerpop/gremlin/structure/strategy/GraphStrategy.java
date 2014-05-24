@@ -39,8 +39,6 @@ import java.util.function.UnaryOperator;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphStrategy {
-    // todo: review new element methods.
-
     /**
      * For all methods that return a {@link GraphTraversal} add a {@link com.tinkerpop.gremlin.process.TraversalStrategy}.
      * The {@link StrategyWrapped} classes will automatically add steps that will ensure that all items that come
