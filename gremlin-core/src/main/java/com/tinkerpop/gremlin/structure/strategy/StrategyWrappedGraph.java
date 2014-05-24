@@ -92,7 +92,7 @@ public class StrategyWrappedGraph implements Graph, StrategyWrapped {
 
     @Override
     public <V extends Variables> V variables() {
-        return this.baseGraph.variables();
+        return (V) new StrategyWrappedVariables(this.baseGraph.variables(), this);
     }
 
     @Override
