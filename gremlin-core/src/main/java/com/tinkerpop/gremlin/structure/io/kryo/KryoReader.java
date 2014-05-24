@@ -63,7 +63,8 @@ public class KryoReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction directionRequested,
+    public Vertex readVertex(final InputStream inputStream,
+                             final Direction directionRequested,
                              final TriFunction<Object, String, Object[], Vertex> vertexMaker,
                              final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         if (null != directionRequested && null == edgeMaker)

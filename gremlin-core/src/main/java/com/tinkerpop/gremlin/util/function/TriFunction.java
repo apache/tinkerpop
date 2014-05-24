@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Represents a function that accepts two arguments and produces a result. This is the tri-arity specialization of
+ * Represents a function that accepts three arguments and produces a result. This is the arity-3 specialization of
  * Function.
  * <p/>
  * This is a functional interface whose functional method is apply(Object, Object, Object).
