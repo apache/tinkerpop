@@ -5,11 +5,9 @@ import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 import org.apache.hadoop.io.NullWritable;
@@ -21,7 +19,6 @@ import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.NoSuchElementException;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -48,17 +45,17 @@ public class GraphSONAdjacencyRecordReader extends RecordReader<NullWritable, Gi
         if (!this.lineRecordReader.nextKeyValue())
             return false;
 
-        TinkerGraph g = TinkerGraph.open();
+        final TinkerGraph g = TinkerGraph.open();
 
-        TriFunction<Object, String, Object[], Vertex> vertexMaker = (id, label, props) -> createVertex(g, id, label, props);
-        QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker = (id, outId, inId, label, props) -> createEdge(g, id, outId, inId, label, props);
+        final TriFunction<Object, String, Object[], Vertex> vertexMaker = (id, label, props) -> createVertex(g, id, label, props);
+        final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker = (id, outId, inId, label, props) -> createEdge(g, id, outId, inId, label, props);
 
         Vertex v;
-        try (InputStream in = new ByteArrayInputStream(lineRecordReader.getCurrentValue().getBytes())) {
-            v = graphSONReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+        try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
+            v = this.graphSONReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
         }
 
-        vertex = new GiraphVertex(g, v);
+        this.vertex = new GiraphVertex(g, v);
 
         return true;
     }
