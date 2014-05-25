@@ -11,8 +11,11 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 
 import java.io.File;
@@ -39,6 +42,8 @@ public class GiraphGraphRunner extends Configured implements Tool {
             final GiraphJob job = new GiraphJob(this.giraphConfiguration,
                     "GiraphGremlin: " + VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(this.giraphConfiguration)));
             //job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
+            FileInputFormat.addInputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_INPUT_LOCATION)));
+            FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
             job.run(true);
         } catch (Exception e) {
             e.printStackTrace();

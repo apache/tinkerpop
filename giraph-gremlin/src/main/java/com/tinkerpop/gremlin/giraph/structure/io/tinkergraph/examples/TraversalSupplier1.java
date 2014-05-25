@@ -11,6 +11,6 @@ public class TraversalSupplier1 implements SSupplier<Traversal> {
 
     public Traversal get() {
         // return GiraphGraph.open().V().as("x").out().jump("x", h -> h.getLoops() < 10).value("name");
-        return GiraphGraph.open().V().as("x").out().out().out().out().value("name");
+        return GiraphGraph.open().V().as("x").out().out().value("name");
     }
 }
