@@ -9,7 +9,6 @@ import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -24,6 +23,11 @@ public class GraphSONAdjacencyOutputFormat extends FileOutputFormat<NullWritable
     @Override
     public RecordWriter<NullWritable, GiraphVertex> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
         return new GraphSONAdjacencyRecordWriter(getDataOuputStream(job));
+    }
+
+    public RecordWriter<NullWritable, GiraphVertex> getRecordWriter(final TaskAttemptContext job,
+                                                                    final DataOutputStream outputStream) throws IOException, InterruptedException {
+        return new GraphSONAdjacencyRecordWriter(outputStream);
     }
 
     // copied from FaunusFileOutputFormat
