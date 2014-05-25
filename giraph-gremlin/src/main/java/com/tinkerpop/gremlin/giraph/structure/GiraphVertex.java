@@ -35,13 +35,13 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
     public GiraphVertex() {
     }
 
-    public GiraphVertex(final Graph gremlinGraph,
+    /*public GiraphVertex(final Graph gremlinGraph,
                         final com.tinkerpop.gremlin.structure.Vertex gremlinVertex) {
         this.gremlinGraph = gremlinGraph;
         this.gremlinVertex = gremlinVertex;
 
         this.initialize(new LongWritable(Long.valueOf(this.gremlinVertex.id().toString())), this.getTextOfSubGraph(), EmptyOutEdges.instance());
-    }
+    }*/
 
     public GiraphVertex(final com.tinkerpop.gremlin.structure.Vertex gremlinVertex) {
         this.gremlinGraph = TinkerGraph.open();
