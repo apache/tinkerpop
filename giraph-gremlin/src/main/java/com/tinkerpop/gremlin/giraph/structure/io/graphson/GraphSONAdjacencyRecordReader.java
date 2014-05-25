@@ -55,7 +55,7 @@ public class GraphSONAdjacencyRecordReader extends RecordReader<NullWritable, Gi
             v = this.graphSONReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
         }
 
-        this.vertex = new GiraphVertex(g, v);
+        this.vertex = new GiraphVertex(v);
 
         return true;
     }
