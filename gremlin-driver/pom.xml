@@ -12,7 +12,7 @@
     <name>Gremlin-Driver: Connect to Gremlin Server</name>
     <dependencies>
         <dependency>
-            <groupId>com.tinkerpop.tinkerpop3</groupId>
+            <groupId>com.tinkerpop</groupId>
             <artifactId>gremlin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -45,7 +45,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop.tinkerpop3</groupId>
+            <groupId>com.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

@@ -12,12 +12,12 @@
     <name>Gremlin-Test: Gremlin Language Test Suite</name>
     <dependencies>
         <dependency>
-            <groupId>com.tinkerpop.tinkerpop3</groupId>
+            <groupId>com.tinkerpop</groupId>
             <artifactId>gremlin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop.tinkerpop3</groupId>
+            <groupId>com.tinkerpop</groupId>
             <artifactId>gremlin-algorithm</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -12,17 +12,17 @@
     <name>Gremlin-Server: Gremlin on the Server</name>
     <dependencies>
         <dependency>
-            <groupId>com.tinkerpop.tinkerpop3</groupId>
+            <groupId>com.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop.tinkerpop3</groupId>
+            <groupId>com.tinkerpop</groupId>
             <artifactId>gremlin-driver</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tinkerpop.tinkerpop3</groupId>
+            <groupId>com.tinkerpop</groupId>
             <artifactId>gremlin-groovy</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -46,7 +46,7 @@
         </dependency>
         <!-- TESTING -->
         <dependency>
-            <groupId>com.tinkerpop.tinkerpop3</groupId>
+            <groupId>com.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
