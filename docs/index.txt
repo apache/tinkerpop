@@ -1265,8 +1265,6 @@ Each graph vendor will have different mechanism by which indices and schemas are
 Neo4j-Gremlin
 -------------
 
-image:neotech-logo.png[]
-
 [source,xml]
 ----
 <dependency>
@@ -1276,7 +1274,7 @@ image:neotech-logo.png[]
 </dependency>
 ----
 
-link:http://neotechnology.com[Neo Technology] are the developers of the link:http://neo4j.org[Neo4j graph database]. Neo4j natively supports the property graph data model. Note that Neo4j requires that the value objects in the property map of an element be Java primitives, `java.lang.String` values, or arrays of primitives and `java.lang.String` values.
+image:neotech-logo.png[float=left] link:http://neotechnology.com[Neo Technology] are the developers of the link:http://neo4j.org[Neo4j graph database]. Neo4j natively supports the property graph data model. Note that Neo4j requires that the value objects in the property map of an element be Java primitives, `java.lang.String` values, or arrays of primitives and `java.lang.String` values.
 
 [source,groovy]
 ----
@@ -1291,8 +1289,6 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 Giraph-Gremlin
 --------------
 
-image:giraph-logo.png[width=100]
-
 [source,xml]
 ----
 <dependency>
@@ -1302,7 +1298,124 @@ image:giraph-logo.png[width=100]
 </dependency>
 ----
 
-link:http://giraph.apache.org[Giraph] is an Apache Foundation project focused on OLAP-based graph processing. Giraph makes use of the message-passing model of distributed graph computing made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs can then communicate with one another in a bulk synchronous parallel (BSP) manner.
+image:giraph-logo.png[width=75,float=left] link:http://giraph.apache.org[Giraph] is an Apache Foundation project focused on OLAP-based graph processing. Giraph makes use of the message-passing model of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs can then communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns well with TinkerPop OLAP and the `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph and is called `GiraphGraphComputer`.
+
+IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see their link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, it is advisable that the reader also familiarize themselves with Giraph as well via their link:http://giraph.apache.org/quick_start.html[Getting Started] page.
+
+Giraph-Gremlin Property Files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `GiraphGraphComputer` makes use of a properties file much like any other `GraphComputer`. However, given the relationship to Hadoop which is property heavy, it is important to look at a particular properties file. The properties file below is located at `conf/giraph-graphson.properties'.
+
+[source,text]
+gremlin.input.location=tinkerpop-classic-adjlist.ldjson
+giraph.vertexInputFormatClass=
+   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONAdjacencyVertexInputFormat
+gremlin.output.location=output
+giraph.vertexOutputFormatClass=
+   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONAdjacencyVertexOutputFormat
+gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
+gremlin.traversalSupplierClass=
+   com.tinkerpop.gremlin.giraph.process.graph.examples.TraversalSupplier1
+giraph.minWorkers=2
+giraph.maxWorkers=2
+
+NOTE: The extension `ldjson` refers to link:http://en.wikipedia.org/wiki/Line_Delimited_JSON[line-delimitated JSON] which is the file format used by `GraphSONWriter` when writing an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of a graph.
+
+A review of the properties above are discussed below.
+
+ * `gremlin.input.location`: the location of the input file(s) for Giraph to read the graph from
+ * `giraph.vertexInputFormatClass`: the format that the input file(s) are represented in
+ * `gremlin.output.location`: the location to write the final Giraph graph to
+ * `giraph.vertexOutputFormatClass`: the format that the output file(s) should be represented in
+ * `gremlin.vertexProgram`: the `VertexProgram` to disseminate to all vertices in the `GiraphGraph`
+ * `gremlin.traversalSupplierClass`: for `TraversalVertexProgram`, the location of the Gremlin traversal to use
+ * `giraph.minWorkers`: the minimum number of parallel workers to execute the vertices of the graph
+ * `giraph.maxWorkers`: the maximum number of parallel workers to execute the vertices of the graph
+
+IMPORTANT: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the `VertexProgram`s on the vertices of the graph.
+
+The above properties file states:
+
+	The location of the graph is tinkerpop-classic-adjlist.ldjson. Interpret that file using GraphSONAdjacencyVertexInputFormat. Execute the TraversalVertexProgram on all vertices of the graph using the traversal defined in TraversalSupplier1. Write the computed on GiraphGraph to output/ as a GraphSONAdjacencyOutputFormat. Do not use more or less than 2 workers (thus, 3 map-slots) to execute the job.
+ 
+Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Giraph-Gremlin job on the respective Hadoop cluster.
+
+
+Running a Giraph-Gremlin Job
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `TraversalSupplier1` class mentioned in the previous section looks as such:
+
+[source,java]
+public class TraversalSupplier1 implements SSupplier<Traversal> {
+    public Traversal get() {
+        return GiraphGraph.open().V().out().out().value("name");
+    }
+}
+
+It declares what the Gremlin-Java traversal to execute on the loaded `GiraphGraph` by way of `TraversalVertexProgram`. To execute this traversal from the command line, use `GiraphGraphRunner` as follows:
+
+[source,bash]
+hadoop jar target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner conf/giraph-graphson.properties
+
+The execution yields the `[INFO]` logging of the Hadoop job.
+
+[source,bash]
+$ hadoop jar target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner conf/giraph-graphson.properties
+14/05/26 12:11:35 WARN mapred.JobClient: Use GenericOptionsParser for parsing the arguments. Applications should implement Tool for the same.
+14/05/26 12:11:35 INFO mapred.JobClient: Running job: job_201405261209_0001
+14/05/26 12:11:36 INFO mapred.JobClient:  map 0% reduce 0%
+14/05/26 12:11:57 INFO mapred.JobClient:  map 33% reduce 0%
+14/05/26 12:11:58 INFO mapred.JobClient:  map 66% reduce 0%
+14/05/26 12:11:59 INFO mapred.JobClient:  map 100% reduce 0%
+14/05/26 12:11:59 INFO mapred.JobClient: Job complete: job_201405261209_0001
+14/05/26 12:11:59 INFO mapred.JobClient: Counters: 32
+14/05/26 12:11:59 INFO mapred.JobClient:   Map-Reduce Framework
+14/05/26 12:11:59 INFO mapred.JobClient:     Spilled Records=0
+14/05/26 12:11:59 INFO mapred.JobClient:     Map input records=3
+14/05/26 12:11:59 INFO mapred.JobClient:     SPLIT_RAW_BYTES=132
+14/05/26 12:11:59 INFO mapred.JobClient:     Map output records=0
+14/05/26 12:11:59 INFO mapred.JobClient:     Total committed heap usage (bytes)=347078656
+14/05/26 12:11:59 INFO mapred.JobClient:   Giraph Timers
+14/05/26 12:11:59 INFO mapred.JobClient:     Total (milliseconds)=2718
+14/05/26 12:11:59 INFO mapred.JobClient:     Superstep 2 (milliseconds)=58
+14/05/26 12:11:59 INFO mapred.JobClient:     Shutdown (milliseconds)=361
+14/05/26 12:11:59 INFO mapred.JobClient:     Superstep 1 (milliseconds)=130
+14/05/26 12:11:59 INFO mapred.JobClient:     Input superstep (milliseconds)=886
+14/05/26 12:11:59 INFO mapred.JobClient:     Superstep 0 (milliseconds)=317
+14/05/26 12:11:59 INFO mapred.JobClient:     Setup (milliseconds)=882
+14/05/26 12:11:59 INFO mapred.JobClient:     Superstep 3 (milliseconds)=47
+14/05/26 12:11:59 INFO mapred.JobClient:     Superstep 4 (milliseconds)=33
+14/05/26 12:11:59 INFO mapred.JobClient:   File Input Format Counters
+14/05/26 12:11:59 INFO mapred.JobClient:     Bytes Read=0
+14/05/26 12:11:59 INFO mapred.JobClient:   Giraph Stats
+14/05/26 12:11:59 INFO mapred.JobClient:     Aggregate finished vertices=0
+14/05/26 12:11:59 INFO mapred.JobClient:     Aggregate edges=0
+14/05/26 12:11:59 INFO mapred.JobClient:     Sent messages=0
+14/05/26 12:11:59 INFO mapred.JobClient:     Current workers=2
+14/05/26 12:11:59 INFO mapred.JobClient:     Last checkpointed superstep=0
+14/05/26 12:11:59 INFO mapred.JobClient:     Current master task partition=0
+14/05/26 12:11:59 INFO mapred.JobClient:     Superstep=5
+14/05/26 12:11:59 INFO mapred.JobClient:     Aggregate vertices=6
+14/05/26 12:11:59 INFO mapred.JobClient:   FileSystemCounters
+14/05/26 12:11:59 INFO mapred.JobClient:     HDFS_BYTES_READ=2519
+14/05/26 12:11:59 INFO mapred.JobClient:     FILE_BYTES_WRITTEN=235461
+14/05/26 12:11:59 INFO mapred.JobClient:     HDFS_BYTES_WRITTEN=3354
+14/05/26 12:11:59 INFO mapred.JobClient:   Job Counters
+14/05/26 12:11:59 INFO mapred.JobClient:     Launched map tasks=3
+14/05/26 12:11:59 INFO mapred.JobClient:     SLOTS_MILLIS_REDUCES=0
+14/05/26 12:11:59 INFO mapred.JobClient:     SLOTS_MILLIS_MAPS=28105
+14/05/26 12:11:59 INFO mapred.JobClient:   File Output Format Counters
+14/05/26 12:11:59 INFO mapred.JobClient:     Bytes Written=0
+
+IMPORTANT: The only way to currently execute a Giraph-Gremlin job is via the terminal (as demonstrated above) or programmatically via Java or Groovy. Direct Gremlin-Groovy support via `:remote` should be coming soon.
+
+Understanding the Output
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+A PageRank Example
+~~~~~~~~~~~~~~~~~~
 
 Conclusion
 ==========

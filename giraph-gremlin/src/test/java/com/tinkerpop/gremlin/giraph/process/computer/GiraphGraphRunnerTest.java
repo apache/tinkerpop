@@ -1,6 +1,10 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.function.SSupplier;
@@ -44,21 +48,11 @@ public class GiraphGraphRunnerTest {
         tempFile.delete();
     }
 
-   /* @Test
+    @Test
     public void test() throws Exception {
-        Graph g = TinkerGraph.open();
-        GraphMLReader reader = GraphMLReader.create().build();
-        reader.readGraph(new FileInputStream("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml"), g);
+        Graph g = TinkerFactory.createClassic();
 
         GraphSONWriter writer = GraphSONWriter.create().build();
-        g.V().forEach(v -> {
-            try {
-                final FileOutputStream fos = new FileOutputStream("/tmp/grateful-dead-adjlist.json", true);
-                fos.write("\n".getBytes());
-                writer.writeVertex(fos, v, Direction.BOTH);
-            } catch (Exception e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-        });
-    } */
+        writer.writeVertices(new FileOutputStream("/tmp/tinkerpop-classic-adjlist.json"), g.V(), Direction.BOTH);
+    }
 }
