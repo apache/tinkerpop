@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import com.tinkerpop.gremlin.structure.io.GraphMigrator;
@@ -27,6 +28,7 @@ import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
+import com.tinkerpop.gremlin.structure.io.kryo.VertexByteArrayInputStream;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
@@ -49,6 +51,9 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -56,6 +61,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
@@ -648,6 +654,69 @@ public class IoTest extends AbstractGremlinTest {
             assertTrue(called.get());
         }
     }
+
+	@Test
+	@FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+	@FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
+	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+	@LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+	public void shouldReadWriteVerticesNoEdgesToKryo() throws Exception {
+		try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+			final KryoWriter writer = KryoWriter.create().build();
+			writer.writeVertices(os, g.V().has("age", T.gt, 30));
+
+			final AtomicInteger called = new AtomicInteger(0);
+			final KryoReader reader = KryoReader.create()
+					.setWorkingDirectory(File.separator + "tmp").build();
+
+			try (final VertexByteArrayInputStream vbais = new VertexByteArrayInputStream(new ByteArrayInputStream(os.toByteArray()))) {
+				reader.readVertex(new ByteArrayInputStream(vbais.readVertexBytes().toByteArray()),
+						(vertexId, label, properties) -> {
+							called.incrementAndGet();
+							return mock(Vertex.class);
+						});
+
+				reader.readVertex(new ByteArrayInputStream(vbais.readVertexBytes().toByteArray()),
+						(vertexId, label, properties) -> {
+							called.incrementAndGet();
+							return mock(Vertex.class);
+						});
+			}
+
+			assertEquals(2, called.get());
+		}
+	}
+
+	@Test
+	@FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+	@LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+	public void shouldReadWriteVerticesNoEdgesToGraphSON() throws Exception {
+		try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+			final GraphSONWriter writer = GraphSONWriter.create().build();
+			writer.writeVertices(os, g.V().has("age", T.gt, 30));
+
+			final AtomicInteger called = new AtomicInteger(0);
+			final GraphSONReader reader = GraphSONReader.create().build();
+			final BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray())));
+			String line = br.readLine();
+			reader.readVertex(new ByteArrayInputStream(line.getBytes()),
+					(vertexId, label, properties) -> {
+						called.incrementAndGet();
+						return mock(Vertex.class);
+					});
+
+			line = br.readLine();
+			reader.readVertex(new ByteArrayInputStream(line.getBytes()),
+					(vertexId, label, properties) -> {
+						called.incrementAndGet();
+						return mock(Vertex.class);
+					});
+
+			assertEquals(2, called.get());
+		}
+	}
 
     @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)

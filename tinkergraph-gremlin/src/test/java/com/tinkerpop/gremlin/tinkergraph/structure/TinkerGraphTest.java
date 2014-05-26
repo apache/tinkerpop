@@ -201,21 +201,19 @@ public class TinkerGraphTest implements Serializable {
         os.close();
     }
 
-    /* only necessary when the graphml version needs to be adjusted
-    @Test
-    public void shouldWriteGratefulGraphToGraphML() throws IOException {
-        final Graph g = TinkerGraph.open();
 
-        final GraphReader reader = com.tinkerpop.gremlin.structure.io.kryo.KryoReader.create().build();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/kryo/graph-example-2.gio")) {
-            reader.readGraph(stream, g);
-        }
+	@Test
+	public void shouldWriteGratefulGraphAsGraphSON() throws IOException {
+		final Graph g = TinkerGraph.open();
+		final GraphReader reader = GraphMLReader.create().build();
+		try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/graphml/grateful-dead.xml")) {
+			reader.readGraph(stream, g);
+		}
 
-        final OutputStream os = new FileOutputStream("/tmp/graph-example-2.xml");
-        GraphMLWriter.create().build().writeGraph(os, g);
-        os.close();
-    }
-    */
+		final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.json");
+		GraphSONWriter.create().embedTypes(true).build().writeGraph(os, g);
+		os.close();
+	}
 
 
     /**

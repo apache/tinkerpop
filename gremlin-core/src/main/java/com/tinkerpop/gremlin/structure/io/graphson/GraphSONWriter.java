@@ -2,14 +2,18 @@ package com.tinkerpop.gremlin.structure.io.graphson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphWriter;
 
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 /**
  * A @{link GraphWriter} that writes a graph and its elements to a JSON-based representation. This implementation
@@ -48,7 +52,35 @@ public class GraphSONWriter implements GraphWriter {
         this.mapper.writeValue(outputStream, e);
     }
 
-    public static Builder create() {
+	@Override
+	public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
+		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+		while (traversal.hasNext()) {
+			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+				writeVertex(baos, traversal.next(), direction);
+				writer.write(new String(baos.toByteArray()));
+				writer.newLine();
+			}
+		}
+
+		writer.flush();
+	}
+
+	@Override
+	public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
+		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+		while (traversal.hasNext()) {
+			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+				writeVertex(baos, traversal.next());
+				writer.write(new String(baos.toByteArray()));
+				writer.newLine();
+			}
+		}
+
+		writer.flush();
+	}
+
+	public static Builder create() {
         return new Builder();
     }
 

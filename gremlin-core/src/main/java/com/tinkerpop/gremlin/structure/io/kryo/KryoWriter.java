@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.io.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -12,10 +13,12 @@ import com.tinkerpop.gremlin.structure.io.GraphWriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * The {@link GraphWriter} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
@@ -27,6 +30,14 @@ import java.util.Optional;
 public class KryoWriter implements GraphWriter {
     private Kryo kryo;
     private final GremlinKryo.HeaderWriter headerWriter;
+	private static final UUID delimiter = UUID.fromString("2DEE3ABF-9963-4546-A578-C1C48690D7F7");
+	public static final byte[] DELIMITER = new byte[16];
+
+	static {
+		final ByteBuffer bb = ByteBuffer.wrap(DELIMITER);
+		bb.putLong(delimiter.getMostSignificantBits());
+		bb.putLong(delimiter.getLeastSignificantBits());
+	}
 
     private KryoWriter(final GremlinKryo gremlinKryo) {
         this.kryo = gremlinKryo.createKryo();
@@ -81,7 +92,7 @@ public class KryoWriter implements GraphWriter {
         output.flush();
     }
 
-    private void writeEdgeToOutput(final Output output, final Edge e) {
+	private void writeEdgeToOutput(final Output output, final Edge e) {
         this.writeElement(output, e, Optional.empty());
     }
 

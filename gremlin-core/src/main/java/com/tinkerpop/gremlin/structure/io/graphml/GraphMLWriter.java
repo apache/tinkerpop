@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.structure.io.graphml;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -67,7 +68,17 @@ public class GraphMLWriter implements GraphWriter {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
-    /**
+	@Override
+	public void writeVertices(OutputStream outputStream, Traversal<?, Vertex> traversal, Direction direction) throws IOException {
+		throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+	}
+
+	@Override
+	public void writeVertices(OutputStream outputStream, Traversal<?, Vertex> traversal) throws IOException {
+		throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+	}
+
+	/**
      * Write the data in a Graph to a GraphML OutputStream.
      *
      * @param outputStream the GraphML OutputStream to write the Graph data to
