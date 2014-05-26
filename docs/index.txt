@@ -1268,9 +1268,9 @@ Neo4j-Gremlin
 [source,xml]
 ----
 <dependency>
-   <groupId>com.tinkerpop.tinkerpop3</groupId>
+   <groupId>com.tinkerpop</groupId>
    <artifactId>neo4j-gremlin</artifactId>
-   <version>x.y.z</version>
+   <version>3.y.z</version>
 </dependency>
 ----
 
@@ -1292,9 +1292,9 @@ Giraph-Gremlin
 [source,xml]
 ----
 <dependency>
-   <groupId>com.tinkerpop.tinkerpop3</groupId>
+   <groupId>com.tinkerpop</groupId>
    <artifactId>giraph-gremlin</artifactId>
-   <version>x.y.z</version>
+   <version>3.y.z</version>
 </dependency>
 ----
 
