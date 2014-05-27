@@ -118,9 +118,9 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals(new Integer(123), (Integer) deserialiedEdge.value("abc"));
         assertEquals(1, deserialiedEdge.properties().size());
         assertEquals(0l, deserialiedEdge.outV().id().next());
-        assertEquals(Element.DEFAULT_LABEL, deserialiedEdge.outV().label().next());
+        assertEquals(Vertex.DEFAULT_LABEL, deserialiedEdge.outV().label().next());
         assertEquals(1l, deserialiedEdge.inV().id().next());
-        assertEquals(Element.DEFAULT_LABEL, deserialiedEdge.inV().label().next());
+        assertEquals(Vertex.DEFAULT_LABEL, deserialiedEdge.inV().label().next());
     }
 
     @Test
@@ -148,7 +148,7 @@ public class KryoMessageSerializerV1d0Test {
 
         final CachedVertex deserializedVertex = vertexList.get(0);
         assertEquals(0l, deserializedVertex.id());
-        assertEquals(Element.DEFAULT_LABEL, deserializedVertex.label());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.label());
 
         final Map<String,Property> properties = deserializedVertex.properties();
         assertEquals(1, properties.size());
@@ -179,7 +179,7 @@ public class KryoMessageSerializerV1d0Test {
         final Vertex deserializedMarko = deserializedMap.keySet().iterator().next();
         assertEquals("marko", deserializedMarko.value("name").toString());
         assertEquals(1, deserializedMarko.id());
-        assertEquals(Element.DEFAULT_LABEL, deserializedMarko.label());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedMarko.label());
         assertEquals(new Integer(29), (Integer) deserializedMarko.value("age"));
         assertEquals(2, deserializedMarko.properties().size());
 

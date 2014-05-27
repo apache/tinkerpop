@@ -150,7 +150,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
 
         final Map<String,Object> deserializedVertex = vertexList.get(0);
         assertEquals(0l, deserializedVertex.get(GraphSONTokens.ID));
-        assertEquals(Element.DEFAULT_LABEL, deserializedVertex.get(GraphSONTokens.LABEL));
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.get(GraphSONTokens.LABEL));
 
         final Map<String,Object> properties = (Map<String,Object>) deserializedVertex.get(GraphSONTokens.PROPERTIES);
         assertEquals(1, properties.size());

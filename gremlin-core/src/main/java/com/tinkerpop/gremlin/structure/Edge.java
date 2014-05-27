@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.structure;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;
@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.function.BiPredicate;
 
 /**
@@ -30,6 +29,8 @@ import java.util.function.BiPredicate;
  * @author Joshua Shinavier (http://fortytwo.net)
  */
 public interface Edge extends Element {
+
+    public static final String DEFAULT_LABEL = "edge";
 
     public GraphTraversal<Edge, Vertex> inV();
 

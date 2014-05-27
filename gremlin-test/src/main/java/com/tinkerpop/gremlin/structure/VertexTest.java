@@ -30,7 +30,7 @@ public class VertexTest extends AbstractGremlinTest {
     @Test
     public void shouldUseDefaultLabelIfNotSpecified() {
         final Vertex v = g.addVertex("name", "marko");
-        assertEquals(Element.DEFAULT_LABEL, v.label());
+        assertEquals(Vertex.DEFAULT_LABEL, v.label());
     }
 
     @Test

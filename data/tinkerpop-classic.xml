@@ -13,32 +13,32 @@
         <node id="1">
             <data key="name">marko</data>
             <data key="age">29</data>
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
         </node>
         <node id="2">
             <data key="name">vadas</data>
             <data key="age">27</data>
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
         </node>
         <node id="3">
             <data key="name">lop</data>
             <data key="lang">java</data>
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
         </node>
         <node id="4">
             <data key="name">josh</data>
             <data key="age">32</data>
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
         </node>
         <node id="5">
             <data key="name">ripple</data>
             <data key="lang">java</data>
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
         </node>
         <node id="6">
             <data key="name">peter</data>
             <data key="age">35</data>
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
         </node>
         <edge id="7" source="1" target="2">
             <data key="weight">0.5</data>

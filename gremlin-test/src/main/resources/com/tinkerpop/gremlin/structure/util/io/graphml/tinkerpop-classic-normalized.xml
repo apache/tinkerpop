@@ -8,32 +8,32 @@
     <key id="weight" for="edge" attr.name="weight" attr.type="float"></key>
     <graph id="G" edgedefault="directed">
         <node id="1">
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
             <data key="age">29</data>
             <data key="name">marko</data>
         </node>
         <node id="2">
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
             <data key="age">27</data>
             <data key="name">vadas</data>
         </node>
         <node id="3">
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
             <data key="lang">java</data>
             <data key="name">lop</data>
         </node>
         <node id="4">
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
             <data key="age">32</data>
             <data key="name">josh</data>
         </node>
         <node id="5">
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
             <data key="lang">java</data>
             <data key="name">ripple</data>
         </node>
         <node id="6">
-            <data key="labelV">default</data>
+            <data key="labelV">vertex</data>
             <data key="age">35</data>
             <data key="name">peter</data>
         </node>

@@ -906,13 +906,13 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
 {
     "inV": [],
     "id": 1,
-    "label": "default",
+    "label": "vertex",
     "type": "vertex",
     "outV": [
         {
             "inV": 3,
-            "inVLabel": "default",
-            "outVLabel": "default",
+            "inVLabel": "vertex",
+            "outVLabel": "vertex",
             "id": 9,
             "label": "created",
             "type": "edge",
@@ -923,8 +923,8 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
         },
         {
             "inV": 2,
-            "inVLabel": "default",
-            "outVLabel": "default",
+            "inVLabel": "vertex",
+            "outVLabel": "vertex",
             "id": 7,
             "label": "knows",
             "type": "edge",
@@ -935,8 +935,8 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
         },
         {
             "inV": 4,
-            "inVLabel": "default",
-            "outVLabel": "default",
+            "inVLabel": "vertex",
+            "outVLabel": "vertex",
             "id": 8,
             "label": "knows",
             "type": "edge",
@@ -974,7 +974,7 @@ In the above code, the `embedTypes` option is set to `true` and the output below
         []
     ],
     "id": 1,
-    "label": "default",
+    "label": "vertex",
     "type": "vertex",
     "outV": [
         "java.util.ArrayList",
@@ -982,8 +982,8 @@ In the above code, the `embedTypes` option is set to `true` and the output below
             {
                 "@class": "java.util.HashMap",
                 "inV": 3,
-                "inVLabel": "default",
-                "outVLabel": "default",
+                "inVLabel": "vertex",
+                "outVLabel": "vertex",
                 "id": 9,
                 "label": "created",
                 "type": "edge",
@@ -999,8 +999,8 @@ In the above code, the `embedTypes` option is set to `true` and the output below
             {
                 "@class": "java.util.HashMap",
                 "inV": 2,
-                "inVLabel": "default",
-                "outVLabel": "default",
+                "inVLabel": "vertex",
+                "outVLabel": "vertex",
                 "id": 7,
                 "label": "knows",
                 "type": "edge",
@@ -1016,8 +1016,8 @@ In the above code, the `embedTypes` option is set to `true` and the output below
             {
                 "@class": "java.util.HashMap",
                 "inV": 4,
-                "inVLabel": "default",
-                "outVLabel": "default",
+                "inVLabel": "vertex",
+                "outVLabel": "vertex",
                 "id": 8,
                 "label": "knows",
                 "type": "edge",
@@ -1444,26 +1444,26 @@ The part-files can merged out of HDFS and into a single file on the local drive 
 $ hadoop fs -getmerge output tinkerpop-classic-adjlist-2.ldjson
 
 [source,js]
-{"inV":[],"id":1,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"outV":[{"inV":3,"inVLabel":"default","outVLabel":"default","id":0,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":2,"inVLabel":"default","outVLabel":"default","id":2,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}},{"inV":4,"inVLabel":"default","outVLabel":"default","id":3,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"properties":{"name":"marko","age":29}}
-{"inV":[{"inV":5,"inVLabel":"default","outVLabel":"default","id":0,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}}],"id":5,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{"ripple":1},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{"ripple":1}}},"outV":[],"properties":{"name":"ripple","lang":"java"}}
-{"inV":[{"inV":3,"inVLabel":"default","outVLabel":"default","id":0,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"default","outVLabel":"default","id":1,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"default","outVLabel":"default","id":2,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"id":3,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{"lop":1},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{"lop":1}}},"outV":[],"properties":{"name":"lop","lang":"java"}}
-{"inV":[{"inV":4,"inVLabel":"default","outVLabel":"default","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"id":4,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"outV":[{"inV":5,"inVLabel":"default","outVLabel":"default","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},{"inV":3,"inVLabel":"default","outVLabel":"default","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}],"properties":{"name":"josh","age":32}}
-{"inV":[{"inV":2,"inVLabel":"default","outVLabel":"default","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}}],"id":2,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"outV":[],"properties":{"name":"vadas","age":27}}
-{"inV":[],"id":6,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"outV":[{"inV":3,"inVLabel":"default","outVLabel":"default","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"properties":{"name":"peter","age":35}}
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"marko","age":29}}
+{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"vadas","age":27}}
+{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"lop","lang":"java"}}
+{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"josh","age":32}}
+{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"ripple","lang":"java"}}
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"peter","age":35}}
 
 Looking particularly at the lop-vertex:
 
 [source,js]
-{"inV":[
- {"inV":3,"inVLabel":"default","outVLabel":"default","id":0,
+{"inE":[
+ {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":0,
   "label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},
- {"inV":3,"inVLabel":"default","outVLabel":"default","id":1,
+ {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":1,
   "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},
- {"inV":3,"inVLabel":"default","outVLabel":"default","id":2,
+ {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":2,
   "label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}
 ],
  "id":3,
- "label":"default",
+ "label":"vertex",
  "type":"vertex",
  "hiddens":{
   "gremlin.traversalVertexProgram.traversalTracker": {
@@ -1473,7 +1473,7 @@ Looking particularly at the lop-vertex:
     "doneGraphTracks":{},
     "doneObjectTracks":{"lop":1}}
   },
-"outV":[],
+"outE":[],
 "properties":{
   "name":"lop",
   "lang":"java"

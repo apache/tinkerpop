@@ -120,7 +120,7 @@ public class Neo4jGraph implements Graph {
         if (ElementHelper.getIdValue(keyValues).isPresent())
             throw Vertex.Exceptions.userSuppliedIdsNotSupported();
 
-        final String label = ElementHelper.getLabelValue(keyValues).orElse(Element.DEFAULT_LABEL);
+        final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
 
         this.tx().readWrite();
         final Neo4jVertex vertex = new Neo4jVertex(this.rawGraph.createNode(DynamicLabel.label(label)), this);

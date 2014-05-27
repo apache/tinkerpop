@@ -37,7 +37,7 @@ public abstract class SubGraphTest extends AbstractGremlinTest {
             assertEquals("knows", e.label());
             assertEquals("marko", e.outV().value("name").next());
             assertEquals(new Integer(29), e.outV().<Integer>value("age").next());
-            assertEquals(Element.DEFAULT_LABEL, e.outV().label().next());
+            assertEquals(Vertex.DEFAULT_LABEL, e.outV().label().next());
 
             final String name = e.inV().<String>value("name").next();
             if (name.equals("vadas"))

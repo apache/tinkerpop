@@ -29,6 +29,8 @@ import java.util.function.BiPredicate;
  */
 public interface Vertex extends Element {
 
+    public static final String DEFAULT_LABEL = "vertex";
+
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
     /**

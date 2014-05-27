@@ -118,8 +118,8 @@ public class TinkerGraphTest implements Serializable {
     @Test
     public void shouldWriteClassicGraphAsGraphML() throws IOException {
         try (final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.xml")) {
-        	GraphMLWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
-		}
+            GraphMLWriter.create().build().writeGraph(os, TinkerFactory.createClassic());
+        }
     }
 
     /**
@@ -202,18 +202,18 @@ public class TinkerGraphTest implements Serializable {
     }
 
 
-	@Test
-	public void shouldWriteGratefulGraphAsGraphSON() throws IOException {
-		final Graph g = TinkerGraph.open();
-		final GraphReader reader = GraphMLReader.create().build();
-		try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/graphml/grateful-dead.xml")) {
-			reader.readGraph(stream, g);
-		}
+    @Test
+    public void shouldWriteGratefulGraphAsGraphSON() throws IOException {
+        final Graph g = TinkerGraph.open();
+        final GraphReader reader = GraphMLReader.create().build();
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/com/tinkerpop/gremlin/structure/util/io/graphml/grateful-dead.xml")) {
+            reader.readGraph(stream, g);
+        }
 
-		final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.json");
-		GraphSONWriter.create().embedTypes(true).build().writeGraph(os, g);
-		os.close();
-	}
+        final OutputStream os = new FileOutputStream(tempPath + "grateful-dead.json");
+        GraphSONWriter.create().embedTypes(true).build().writeGraph(os, g);
+        os.close();
+    }
 
 
     /**
