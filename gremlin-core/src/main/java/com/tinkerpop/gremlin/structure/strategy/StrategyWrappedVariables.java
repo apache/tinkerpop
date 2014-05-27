@@ -29,7 +29,9 @@ public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variable
 
 	@Override
 	public <R> R get(final String variable) {
-		return this.baseVariables.get(variable);
+		return this.strategyWrappedGraph.strategy().compose(
+				s -> s.<R>getVariableGetStrategy(variableStrategyContext),
+				this.baseVariables::get).apply(variable);
 	}
 
 	@Override

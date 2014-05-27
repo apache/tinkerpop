@@ -130,8 +130,13 @@ public class SequenceGraphStrategy implements GraphStrategy {
 	}
 
 	@Override
-	public UnaryOperator<Supplier<Set<String>>> getVariableGetVariablesStrategy(Strategy.Context<? extends StrategyWrappedVariables> ctx) {
+	public UnaryOperator<Supplier<Set<String>>> getVariableGetVariablesStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
 		return this.composeStrategyUnaryOperator(s -> s.getVariableGetVariablesStrategy(ctx));
+	}
+
+	@Override
+	public <R> UnaryOperator<Function<String, R>> getVariableGetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+		return this.composeStrategyUnaryOperator(s -> s.getVariableGetStrategy(ctx));
 	}
 
 	@Override
