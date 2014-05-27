@@ -117,11 +117,11 @@ public class GraphSONReader implements GraphReader {
         final Map<String,Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
         final Vertex v = readVertexData(vertexData, vertexMaker);
 
-        if (vertexData.containsKey(GraphSONTokens.OUT) && (direction == Direction.BOTH || direction == Direction.OUT))
-            readVertexEdges(edgeMaker, vertexData, GraphSONTokens.OUT);
+        if (vertexData.containsKey(GraphSONTokens.OUT_E) && (direction == Direction.BOTH || direction == Direction.OUT))
+            readVertexEdges(edgeMaker, vertexData, GraphSONTokens.OUT_E);
 
-        if (vertexData.containsKey(GraphSONTokens.IN) && (direction == Direction.BOTH || direction == Direction.IN))
-            readVertexEdges(edgeMaker, vertexData, GraphSONTokens.IN);
+        if (vertexData.containsKey(GraphSONTokens.IN_E) && (direction == Direction.BOTH || direction == Direction.IN))
+            readVertexEdges(edgeMaker, vertexData, GraphSONTokens.IN_E);
 
         return v;
     }
