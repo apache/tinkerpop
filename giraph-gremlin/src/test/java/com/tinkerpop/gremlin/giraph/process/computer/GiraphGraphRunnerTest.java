@@ -53,6 +53,6 @@ public class GiraphGraphRunnerTest {
         Graph g = TinkerFactory.createClassic();
 
         GraphSONWriter writer = GraphSONWriter.create().build();
-        writer.writeVertices(new FileOutputStream("/tmp/tinkerpop-classic-adjlist.json"), g.V(), Direction.BOTH);
+        writer.writeVertices(new FileOutputStream("/tmp/tinkerpop-classic-adjlist.ldjson"), g.V(), Direction.BOTH);
     }*/
 }
