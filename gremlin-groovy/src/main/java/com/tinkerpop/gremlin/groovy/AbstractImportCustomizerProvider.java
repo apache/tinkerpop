@@ -35,7 +35,6 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     private static final Set<String> imports = new HashSet<>();
     private static final Set<String> staticImports = new HashSet<>();
 
-	// todo: build out tests to ensure that dot star packages don't get fuggled by refactoring. perhaps using * is bad here - we should be explicit
     static {
         // graph structure and process
         imports.add(Graph.class.getPackage().getName() + DOT_STAR);
