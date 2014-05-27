@@ -62,6 +62,18 @@ public interface GraphStrategy {
 	}
 
 	/**
+	 * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()}.
+	 *
+	 * @param ctx the context within which this strategy function is called
+	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+	 *         {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()} signature
+	 *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+	 */
+	public default UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+		return UnaryOperator.identity();
+	}
+
+	/**
 	 * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#get(String)}.
 	 *
 	 * @param ctx the context within which this strategy function is called

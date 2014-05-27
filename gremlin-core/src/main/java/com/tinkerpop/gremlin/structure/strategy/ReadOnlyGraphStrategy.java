@@ -5,6 +5,8 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -52,6 +54,11 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
 	@Override
 	public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
 		return (f) -> (k,v) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
+	}
+
+	@Override
+	public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+		return (f) -> () -> Collections.unmodifiableMap(f.get());
 	}
 
 	@Override

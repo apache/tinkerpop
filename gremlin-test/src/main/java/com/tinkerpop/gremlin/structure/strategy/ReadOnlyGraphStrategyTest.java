@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.Optional;
 
@@ -118,6 +119,15 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
 		assertException(g -> {
 			g.variables().set("will", "not work");
 		});
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	@FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
+	public void shouldNotAllowVariableAsMapModifications() {
+		g.variables().set("will", "be read-only");
+		final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+		swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
+		swg.variables().asMap().put("will", "not work");
 	}
 
     private void assertException(final ConsumerThatThrows stt) {

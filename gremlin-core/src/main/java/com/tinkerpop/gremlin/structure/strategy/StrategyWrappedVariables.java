@@ -48,6 +48,8 @@ public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variable
 
 	@Override
 	public Map<String, Object> asMap() {
-		return this.baseVariables.asMap();
+		return this.strategyWrappedGraph.strategy().compose(
+				s -> s.getVariableAsMapStrategy(variableStrategyContext),
+				this.baseVariables::asMap).get();
 	}
 }

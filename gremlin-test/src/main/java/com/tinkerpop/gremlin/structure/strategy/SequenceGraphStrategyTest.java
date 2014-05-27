@@ -359,6 +359,11 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 		}
 
 		@Override
+		public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+			return spy();
+		}
+
+		@Override
         public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
             spy();
             return traversal;

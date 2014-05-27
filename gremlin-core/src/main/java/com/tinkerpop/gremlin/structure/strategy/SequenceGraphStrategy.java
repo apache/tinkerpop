@@ -146,6 +146,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
 	}
 
 	@Override
+	public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+		return this.composeStrategyUnaryOperator(s -> s.getVariableAsMapStrategy(ctx));
+	}
+
+	@Override
 	public String toString() {
 		return String.join("->", graphStrategySequence.stream().map(Object::toString)
 				.map(String::toLowerCase).collect(Collectors.<String>toList()));
