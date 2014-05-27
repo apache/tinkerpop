@@ -86,7 +86,6 @@ abstract class Neo4jElement implements Element {
     public <V> Property<V> property(final String key) {
         this.graph.tx().readWrite();
 
-        // todo: do we stil convert collection down to array?? - return (T) tryConvertCollectionToArrayList(this.rawElement.property(key));
         if (this.rawElement.hasProperty(key))
             return new Neo4jProperty<>(this, key, (V) this.rawElement.getProperty(key));
         else
@@ -97,8 +96,6 @@ abstract class Neo4jElement implements Element {
     public <V> Property<V> property(final String key, final V value) {
         ElementHelper.validateProperty(key, value);
         this.graph.tx().readWrite();
-
-        // todo: do we worry about - this.rawElement.setProperty(key, tryConvertCollectionToArray(value));
 
         try {
             this.rawElement.setProperty(key, value);
