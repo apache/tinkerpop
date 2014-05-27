@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -137,6 +138,11 @@ public class SequenceGraphStrategy implements GraphStrategy {
 	@Override
 	public <R> UnaryOperator<Function<String, R>> getVariableGetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
 		return this.composeStrategyUnaryOperator(s -> s.getVariableGetStrategy(ctx));
+	}
+
+	@Override
+	public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+		return this.composeStrategyUnaryOperator(s -> s.getVariableSetStrategy(ctx));
 	}
 
 	@Override

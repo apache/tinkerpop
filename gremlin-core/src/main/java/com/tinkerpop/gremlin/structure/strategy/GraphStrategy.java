@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -68,6 +69,17 @@ public interface GraphStrategy {
 	 *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
 	 */
 	public default <R> UnaryOperator<Function<String,R>> getVariableGetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+		return UnaryOperator.identity();
+	}
+
+	/**
+	 * Construct a {@link java.util.function.BiConsumer} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#set(String,Object)}.
+	 *
+	 * @param ctx the context within which this strategy function is called
+	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiConsumer} with {@link com.tinkerpop.gremlin.structure.Graph.Variables#set(String,Object)} signature
+	 *         and returns an enhanced strategy {@link java.util.function.BiConsumer} with the same signature
+	 */
+	public default UnaryOperator<BiConsumer<String,Object>> getVariableSetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
 		return UnaryOperator.identity();
 	}
 

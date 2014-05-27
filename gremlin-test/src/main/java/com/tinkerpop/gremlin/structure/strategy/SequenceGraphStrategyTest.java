@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -339,6 +340,21 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 
 		@Override
 		public <V> UnaryOperator<Function<String, V>> getElementValue(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+			return spy();
+		}
+
+		@Override
+		public UnaryOperator<Supplier<Set<String>>> getVariableGetVariablesStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+			return spy();
+		}
+
+		@Override
+		public <R> UnaryOperator<Function<String, R>> getVariableGetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+			return spy();
+		}
+
+		@Override
+		public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
 			return spy();
 		}
 

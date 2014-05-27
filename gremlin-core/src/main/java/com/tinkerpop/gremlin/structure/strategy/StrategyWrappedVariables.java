@@ -36,7 +36,9 @@ public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variable
 
 	@Override
 	public void set(final String variable, final Object value) {
-		this.set(variable, value);
+		this.strategyWrappedGraph.strategy().compose(
+				s -> s.getVariableSetStrategy(variableStrategyContext),
+				this.baseVariables::set).accept(variable, value);
 	}
 
 	@Override

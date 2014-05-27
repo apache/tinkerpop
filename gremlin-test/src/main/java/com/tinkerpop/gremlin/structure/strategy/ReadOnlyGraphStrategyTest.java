@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.util.Optional;
 
+import static com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -110,6 +111,14 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
 			prop.remove();
 		});
     }
+
+	@Test
+	@FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
+	public void shouldNotAllowVariableModifications() {
+		assertException(g -> {
+			g.variables().set("will", "not work");
+		});
+	}
 
     private void assertException(final ConsumerThatThrows stt) {
         try {

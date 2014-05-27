@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -47,6 +48,11 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
     public <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(final Strategy.Context<StrategyWrappedProperty<V>> ctx) {
         return readOnlySupplier();
     }
+
+	@Override
+	public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+		return (f) -> (k,v) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
+	}
 
 	@Override
 	public String toString() {
