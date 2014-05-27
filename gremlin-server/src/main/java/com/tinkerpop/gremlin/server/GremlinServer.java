@@ -52,8 +52,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
- * Start and stop Gremlin Server.  Adapted from
- * https://github.com/netty/netty/tree/netty-4.0.10.Final/example/src/main/java/io/netty/example/http/websocketx/server
+ * Start and stop Gremlin Server.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
