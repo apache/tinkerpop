@@ -7,4 +7,5 @@ notifications:
 jdk:
   - oraclejdk8
 notifications:
-  hipchat: QPSIDcKeqElL85bbTQ7kG3DIX/MvwErMMB1o/Ri/7FL5grzeoBMOaRWtQX8MqW0+wsdnxPavILAYv+LRcTKragR6f69es+phCRgOybgXTV0/83tyLyx0FbdNnJGwyZcvGoxA2t8HO4Its5SNUXVDdDDMr+uNl9/Lxqm75yo5qqs=
+  hipchat:
+    secure: QPSIDcKeqElL85bbTQ7kG3DIX/MvwErMMB1o/Ri/7FL5grzeoBMOaRWtQX8MqW0+wsdnxPavILAYv+LRcTKragR6f69es+phCRgOybgXTV0/83tyLyx0FbdNnJGwyZcvGoxA2t8HO4Its5SNUXVDdDDMr+uNl9/Lxqm75yo5qqs=
