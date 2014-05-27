@@ -37,8 +37,7 @@ public class GiraphGraphComputer implements GraphComputer {
     public static final String GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS = "giraph.vertexOutputFormatClass";
 
     protected final GiraphGraph giraphGraph;
-
-    private org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
+    protected org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
 
     public GiraphGraphComputer(final GiraphGraph giraphGraph, final Configuration configuration) {
         configuration.getKeys().forEachRemaining(key -> this.hadoopConfiguration.set(key, configuration.getProperty(key).toString()));
@@ -57,7 +56,7 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public static void mergeComputedView(final Graph original, final Graph computed, Map<String, String> keyMapping) {
-        throw new IllegalStateException("Do something here...");
+        throw new UnsupportedOperationException("GiraphGraphComputer does not support merge computed view as this does not make sense in a Hadoop environment");
     }
 
     public Future<Pair<Graph, SideEffects>> submit() {

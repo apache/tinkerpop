@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import com.tinkerpop.gremlin.giraph.structure.io.tinkergraph.TinkerGraphVertexWriter;
 import org.apache.giraph.io.VertexOutputFormat;
 import org.apache.giraph.io.VertexWriter;
 import org.apache.hadoop.mapred.FileOutputCommitter;
