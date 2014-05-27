@@ -1,0 +1,8 @@
+language: java
+notifications:
+  email:
+    - okrammarko@gmail.com
+    - spmva@genoprime.com
+    - josh@fortytwo.net
+jdk:
+  - oraclejdk8
