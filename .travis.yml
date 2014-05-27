@@ -6,6 +6,6 @@ notifications:
     - josh@fortytwo.net
   hipchat:
       rooms:
-        secure: "QPSIDcKeqElL85bbTQ7kG3DIX/MvwErMMB1o/Ri/7FL5grzeoBMOaRWtQX8MqW0+wsdnxPavILAYv+LRcTKragR6f69es+phCRgOybgXTV0/83tyLyx0FbdNnJGwyZcvGoxA2t8HO4Its5SNUXVDdDDMr+uNl9/Lxqm75yo5qqs="
+        secure: vMWqDialSquOmrly5TOk/cHKgUrkYYwj9RKF7SNyZnk5RVAIMUmmZFHYjKsO5uCoGDm2bD3Lbe0Ov7qodCRSj8QNKoMnuJ4ze91TSjCUyedAsk/OiNHGXxq4JYgH0aYgRWAYlzM6H4Kg2Mf+oyY+20a9/bTIgtSPi4eLvYW0y18=
 jdk:
   - oraclejdk8
