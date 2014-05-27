@@ -20,11 +20,11 @@ public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variable
 		this.variableStrategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
 	}
 
-	// todo: build this out.
-
 	@Override
 	public Set<String> getVariables() {
-		return this.baseVariables.getVariables();
+		return this.strategyWrappedGraph.strategy().compose(
+				s -> s.getVariableGetVariablesStrategy(variableStrategyContext),
+				this.baseVariables::getVariables).get();
 	}
 
 	@Override
