@@ -11,8 +11,7 @@ import java.util.function.BiFunction;
 
 /**
  * A {@link MessageType} represents the "address" of a message. A message can have multiple receivers and message type
- * allows the underlying {@link GraphComputer} to apply the message passing. In many situations there is no need
- * to create multiple of the same message (thus, index based on message type).
+ * allows the underlying {@link GraphComputer} to apply the message passing.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)

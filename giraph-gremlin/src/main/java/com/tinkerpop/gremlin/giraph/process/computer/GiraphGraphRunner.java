@@ -57,7 +57,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
             final FileConfiguration configuration = new PropertiesConfiguration();
             configuration.load(new File(args[0]));
             GraphComputer computer = new GiraphGraphComputer(GiraphGraph.open(), configuration);
-            computer.program(configuration).submit();
+            computer.program(configuration).submit().get();
         } catch (Exception e) {
             System.out.println(e);
             throw e;
