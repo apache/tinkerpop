@@ -150,8 +150,6 @@ public class KryoReader implements GraphReader {
         try (final Output output = new Output(new FileOutputStream(tempFile))) {
             final boolean supportedMemory = input.readBoolean();
             if (supportedMemory) {
-                // todo: do we just let this fail or do we check features for supported memory types
-
                 // if the graph that serialized the data supported memory then the memory needs to be read
                 // to advance the reader forward.  if the graph being read into doesn't support the memory
                 // then we just setting the data to memory.
@@ -335,7 +333,6 @@ public class KryoReader implements GraphReader {
 
 
     private void readElementProperties(final Input input, final List<Object> elementArgs) {
-        // todo: do we just let this fail or do we check features for supported property types
         final int numberOfProperties = input.readInt();
         IntStream.range(0, numberOfProperties).forEach(i -> {
             final String key = input.readString();
