@@ -48,11 +48,11 @@ public class GiraphGraphRunnerTest {
         tempFile.delete();
     }
 
-    @Test
+    /*@Test
     public void test() throws Exception {
         Graph g = TinkerFactory.createClassic();
 
         GraphSONWriter writer = GraphSONWriter.create().build();
         writer.writeVertices(new FileOutputStream("/tmp/tinkerpop-classic-adjlist.json"), g.V(), Direction.BOTH);
-    }
+    }*/
 }

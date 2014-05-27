@@ -68,7 +68,7 @@ Graph Computing
 
 A link:http://en.wikipedia.org/wiki/Graph_(data_structure)[graph] is a data structure composed of vertices (nodes, dots) and edges (arcs, lines). When modeling a graph in a computer and applying it to modern data sets and practices, the generic mathematically-oriented, binary graph is extended to support both labels and key/value properties. This structure is known as a property graph. More formally, it is a directed, binary, attributed multi-graph. An example property graph is diagrammed below. This graph example will be used extensively throughout the documentation and is called "TinkerPop Classic" as it is the original demo graph distributed with TinkerPop0 back in 2009 (i.e. the good ol' days -- it was the best of times and it was the worst of times).
 
-TIP: The TinkerPop classic graph is available with <<tinkergraph,TinkerGraph>> via `TinkerFactory.createClassic()`. TinkerGraph is the reference implementation of TinkerPop3 and is used in nearly all the examples in this documentation.
+TIP: The TinkerPop classic graph is available with <<tinkergraph-gremlin,TinkerGraph>> via `TinkerFactory.createClassic()`. TinkerGraph is the reference implementation of TinkerPop3 and is used in nearly all the examples in this documentation.
 
 .TinkerPop Classic
 image::tinkerpop-classic.png[width=500]
@@ -1042,6 +1042,7 @@ In the above code, the `embedTypes` option is set to `true` and the output below
 
 The ambiguity of components of the GraphSON is now removed by the `@class` property, which contains Java class information for the data it is associated with.  While the output is more verbose, it comes with the security of not losing type information.  While non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the values should be coerced back into the correct types in the target language.
 
+[[gremlin-kryo]]
 Kryo Reader/Writer
 ~~~~~~~~~~~~~~~~~~
 
@@ -1231,9 +1232,18 @@ gremlin> m.sort{-it.value}
 Implementations
 ===============
 
-[[tinkergraph]]
-TinkerGraph
------------
+[[tinkergraph-gremlin]]
+TinkerGraph-Gremlin
+-------------------
+
+[source,xml]
+----
+<dependency>
+   <groupId>com.tinkerpop</groupId>
+   <artifactId>tinkergraph-gremlin</artifactId>
+   <version>3.y.z</version>
+</dependency>
+----
 
 image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory, non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
 
@@ -1274,7 +1284,7 @@ Neo4j-Gremlin
 </dependency>
 ----
 
-image:neotech-logo.png[float=left] link:http://neotechnology.com[Neo Technology] are the developers of the link:http://neo4j.org[Neo4j graph database]. Neo4j natively supports the property graph data model. Note that Neo4j requires that the value objects in the property map of an element be Java primitives, `java.lang.String` values, or arrays of primitives and `java.lang.String` values.
+image:neotech-logo.png[width=150,float=left] link:http://neotechnology.com[Neo Technology] are the developers of the link:http://neo4j.org[Neo4j graph database]. Neo4j natively supports the property graph data model. Note that Neo4j requires that the value objects in the property map of an element be Java primitives, `java.lang.String` values, or arrays of primitives and `java.lang.String` values.
 
 [source,groovy]
 ----
@@ -1302,8 +1312,8 @@ image:giraph-logo.png[width=75,float=left] link:http://giraph.apache.org[Giraph]
 
 IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see their link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, it is advisable that the reader also familiarize themselves with Giraph as well via their link:http://giraph.apache.org/quick_start.html[Getting Started] page.
 
-Giraph-Gremlin Property Files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Properties Files
+~~~~~~~~~~~~~~~~
 
 The `GiraphGraphComputer` makes use of a properties file much like any other `GraphComputer`. However, given the relationship to Hadoop which is property heavy, it is important to look at a particular properties file. The properties file below is located at `conf/giraph-graphson.properties'.
 
@@ -1337,7 +1347,7 @@ IMPORTANT: The maximum number of workers can be no larger than the number of map
 
 The above properties file states:
 
-	The location of the graph is tinkerpop-classic-adjlist.ldjson. Interpret that file using GraphSONAdjacencyVertexInputFormat. Execute the TraversalVertexProgram on all vertices of the graph using the traversal defined in TraversalSupplier1. Write the computed on GiraphGraph to output/ as a GraphSONAdjacencyOutputFormat. Do not use more or less than 2 workers (thus, 3 map-slots) to execute the job.
+	The location of the graph is tinkerpop-classic-adjlist.ldjson. Interpret that file using GraphSONAdjacencyVertexInputFormat. Execute the TraversalVertexProgram on all vertices of the graph using the traversal defined in TraversalSupplier1. Write the computed on GiraphGraph to output/ as a GraphSONAdjacencyOutputFormat. Use 2 workers (thus, 3 map-slots) to execute the job.
  
 Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Giraph-Gremlin job on the respective Hadoop cluster.
 
@@ -1345,7 +1355,16 @@ Along with the properties above, the numerous link:http://hadoop.apache.org/docs
 Running a Giraph-Gremlin Job
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The `TraversalSupplier1` class mentioned in the previous section looks as such:
+The properties file in the previous section stated the `gremlin.input.location` to be `tinkerpop-classic-adjlist.ldjson`. This means that this file will be looked for on link:http://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system[HDFS]. Therefore, the file must be put into the filesystem.
+
+[source,bash]
+$ hadoop fs -copyFromLocal data/tinkerpop-classic-adjlist.ldjson tinkerpop-classic-adjlist.ldjson
+$ hadoop fs -ls
+Found 1 item
+-rw-r--r--   1 marko supergroup       2387 2014-05-26 12:11 /user/marko/tinkerpop-classic-adjlist.ldjson
+
+
+Next, the `TraversalSupplier1` class mentioned in the properties file is distributed with Giraph-Gremlin. It declares what Gremlin-Java traversal to execute on the loaded `GiraphGraph` by way of `TraversalVertexProgram` (the `gremlin.vertexProgram`). 
 
 [source,java]
 public class TraversalSupplier1 implements SSupplier<Traversal> {
@@ -1354,12 +1373,7 @@ public class TraversalSupplier1 implements SSupplier<Traversal> {
     }
 }
 
-It declares what the Gremlin-Java traversal to execute on the loaded `GiraphGraph` by way of `TraversalVertexProgram`. To execute this traversal from the command line, use `GiraphGraphRunner` as follows:
-
-[source,bash]
-hadoop jar target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner conf/giraph-graphson.properties
-
-The execution yields the `[INFO]` logging of the Hadoop job.
+To execute this traversal from the command line, use `GiraphGraphRunner` as follows:
 
 [source,bash]
 $ hadoop jar target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner conf/giraph-graphson.properties
@@ -1413,6 +1427,68 @@ IMPORTANT: The only way to currently execute a Giraph-Gremlin job is via the ter
 
 Understanding the Output
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+When job completes, the output is written to `gremlin.output.location` which was defined in the properties file as `output`. Realize that Hadoop will write the output according to the number of workers. Given that there were 2 workers, there are two files in `output`.
+
+[source,bash]
+$ hadoop fs -ls output
+Found 4 items
+-rw-r--r--   1 marko supergroup          0 2014-05-27 09:51 /user/marko/output/_SUCCESS
+drwxr-xr-x   - marko supergroup          0 2014-05-27 09:50 /user/marko/output/_logs
+-rw-r--r--   1 marko supergroup       1840 2014-05-27 09:50 /user/marko/output/part-m-00001
+-rw-r--r--   1 marko supergroup       1514 2014-05-27 09:50 /user/marko/output/part-m-00002
+
+The part-files can merged out of HDFS and into a single file on the local drive  using `-getmerge`.
+
+[source,bash]
+$ hadoop fs -getmerge output tinkerpop-classic-adjlist-2.ldjson
+
+[source,js]
+{"inV":[],"id":1,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"outV":[{"inV":3,"inVLabel":"default","outVLabel":"default","id":0,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":2,"inVLabel":"default","outVLabel":"default","id":2,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}},{"inV":4,"inVLabel":"default","outVLabel":"default","id":3,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"properties":{"name":"marko","age":29}}
+{"inV":[{"inV":5,"inVLabel":"default","outVLabel":"default","id":0,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}}],"id":5,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{"ripple":1},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{"ripple":1}}},"outV":[],"properties":{"name":"ripple","lang":"java"}}
+{"inV":[{"inV":3,"inVLabel":"default","outVLabel":"default","id":0,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"default","outVLabel":"default","id":1,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"default","outVLabel":"default","id":2,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"id":3,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{"lop":1},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{"lop":1}}},"outV":[],"properties":{"name":"lop","lang":"java"}}
+{"inV":[{"inV":4,"inVLabel":"default","outVLabel":"default","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"id":4,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"outV":[{"inV":5,"inVLabel":"default","outVLabel":"default","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},{"inV":3,"inVLabel":"default","outVLabel":"default","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}],"properties":{"name":"josh","age":32}}
+{"inV":[{"inV":2,"inVLabel":"default","outVLabel":"default","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}}],"id":2,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"outV":[],"properties":{"name":"vadas","age":27}}
+{"inV":[],"id":6,"label":"default","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traversalTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"outV":[{"inV":3,"inVLabel":"default","outVLabel":"default","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"properties":{"name":"peter","age":35}}
+
+Looking particularly at the lop-vertex:
+
+[source,js]
+{"inV":[
+ {"inV":3,"inVLabel":"default","outVLabel":"default","id":0,
+  "label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},
+ {"inV":3,"inVLabel":"default","outVLabel":"default","id":1,
+  "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},
+ {"inV":3,"inVLabel":"default","outVLabel":"default","id":2,
+  "label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}
+],
+ "id":3,
+ "label":"default",
+ "type":"vertex",
+ "hiddens":{
+  "gremlin.traversalVertexProgram.traversalTracker": {
+    "previousObjectTracks":{"lop":1},
+    "graphTracks":{},
+    "objectTracks":{},
+    "doneGraphTracks":{},
+    "doneObjectTracks":{"lop":1}}
+  },
+"outV":[],
+"properties":{
+  "name":"lop",
+  "lang":"java"
+}
+
+In the hidden properties of the vertex is a property called `gremlin.traversalVertexProgram.traversalTracker`. The `doneObjectTracks`-key states that there is a single counter on the `String` "lop". An analogous result is found on "ripple." This is the correct result of the computation as:
+
+[source,groovy]
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g.V.out.out.name
+==>ripple
+==>lop
+
+IMPORTANT: GraphSON is a verbose I/O format. It is useful for demonstrations because it is a human-readable format, but in practice is not used for large-scale computations. Instead, <<gremlin-kryo,GremlinKryo>> is used.
 
 A PageRank Example
 ~~~~~~~~~~~~~~~~~~

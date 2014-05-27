@@ -29,7 +29,7 @@ public class TinkerGraphVertexWriter extends VertexWriter {
 
     @Override
     public void writeVertex(final Vertex giraphVertex) throws IOException {
-        System.out.println(((GiraphVertex) giraphVertex).getGremlinVertex() + ":" + ((GiraphVertex) giraphVertex).getGremlinVertex().<TraversalCounters>property(TraversalVertexProgram.TRAVERSAL_TRACKER).value().getDoneObjectTracks());
+        System.out.println(((GiraphVertex) giraphVertex).getGremlinVertex() + ":" + ((GiraphVertex) giraphVertex).getGremlinVertex().<TraversalCounters>property(TraversalVertexProgram.TRAVERSER_TRACKER).value().getDoneObjectTracks());
     }
 
     @Override

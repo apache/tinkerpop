@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Direction;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.VertexQueryBuilder;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -20,8 +21,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     private MessageType.Local messageType = MessageType.Local.of(new VertexQueryBuilder().direction(Direction.OUT));
 
-    public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank";
-    public static final String EDGE_COUNT = "gremlin.pageRankVertexProgram.edgeCount";
+    public static final String PAGE_RANK = Property.hidden("gremlin.pageRankVertexProgram.pageRank");
+    public static final String EDGE_COUNT = Property.hidden("gremlin.pageRankVertexProgram.edgeCount");
 
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
