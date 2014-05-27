@@ -12,6 +12,7 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
 import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.function.SSupplier;
@@ -38,7 +39,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private static final String TRACK_PATHS = "gremlin.traversalVertexProgram.trackPaths";
     private static final String VOTE_TO_HALT = "voteToHalt";
-    public static final String TRAVERSAL_TRACKER = "gremlin.traversalVertexProgram.traversalTracker";
+    public static final String TRAVERSER_TRACKER = Property.hidden("gremlin.traversalVertexProgram.traverserTracker");
 
     private SSupplier<Traversal> traversalSupplier;
     private boolean trackPaths = false;
@@ -114,11 +115,11 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
             sideEffects.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, this.traversalSupplier));
-            vertex.property(TRAVERSAL_TRACKER, tracker);
+            vertex.property(TRAVERSER_TRACKER, tracker);
         } else {
             final TraversalCounters tracker = new TraversalCounters(vertex);
             sideEffects.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, this.traversalSupplier));
-            vertex.property(TRAVERSAL_TRACKER, tracker);
+            vertex.property(TRAVERSER_TRACKER, tracker);
         }
     }
 
@@ -139,7 +140,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     public Map<String, KeyType> getComputeKeys() {
-        return VertexProgram.ofComputeKeys(TRAVERSAL_TRACKER, KeyType.VARIABLE);
+        return VertexProgram.ofComputeKeys(TRAVERSER_TRACKER, KeyType.VARIABLE);
     }
 
     public String toString() {
