@@ -61,9 +61,6 @@ public class Neo4jGraph implements Graph {
         this.rawGraph = rawGraph;
         transactionManager = ((GraphDatabaseAPI) rawGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
         cypher = new ExecutionEngine(rawGraph);
-
-        // todo: indices were established in init
-        // init();
     }
 
     private Neo4jGraph(final Configuration configuration) {
@@ -76,9 +73,6 @@ public class Neo4jGraph implements Graph {
 
             transactionManager = ((GraphDatabaseAPI) rawGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
             cypher = new ExecutionEngine(rawGraph);
-
-            // todo: indices were established in init
-            // init();
 
         } catch (Exception e) {
             if (this.rawGraph != null)
@@ -184,7 +178,7 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
-        throw Graph.Exceptions.graphComputerNotSupported(); // todo: fix later
+        throw Graph.Exceptions.graphComputerNotSupported();
     }
 
     @Override
@@ -194,7 +188,7 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public <V extends Variables> V variables() {
-        throw Graph.Exceptions.memoryNotSupported(); // todo: fix later
+        throw Graph.Exceptions.memoryNotSupported();
     }
 
     @Override
@@ -341,12 +335,12 @@ public class Neo4jGraph implements Graph {
             return new GraphFeatures() {
                 @Override
                 public boolean supportsComputer() {
-                    return false;  // todo: temporary...
+                    return false;
                 }
 
                 @Override
                 public VariableFeatures memory() {
-                    return new Neo4jVariableFeatures();  // todo: temporary
+                    return new Neo4jVariableFeatures();
                 }
 
                 @Override

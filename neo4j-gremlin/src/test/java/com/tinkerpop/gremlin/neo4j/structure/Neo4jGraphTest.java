@@ -20,8 +20,6 @@ public class Neo4jGraphTest {
 
     private final Neo4jGraphProvider graphProvider = new Neo4jGraphProvider();
 
-    // todo: include tests for proper updates to indices
-
     @Test
     public void shouldExecuteCypher() throws Exception {
         final Configuration conf = graphProvider.newGraphConfiguration("standard");
