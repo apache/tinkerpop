@@ -98,7 +98,6 @@ abstract class Neo4jElement implements Element {
         ElementHelper.validateProperty(key, value);
         this.graph.tx().readWrite();
 
-        // todo: deal with annotatedlist/value
         // todo: do we worry about - this.rawElement.setProperty(key, tryConvertCollectionToArray(value));
 
         try {
