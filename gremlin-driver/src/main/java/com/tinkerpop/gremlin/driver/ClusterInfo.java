@@ -10,15 +10,15 @@ import java.util.concurrent.ConcurrentMap;
  */
 class ClusterInfo {
 
-    private final Cluster.Manager manager;
+    private final Cluster cluster;
     private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<>();
 
-    public ClusterInfo(final Cluster.Manager manager) {
-        this.manager = manager;
+    public ClusterInfo(final Cluster cluster) {
+        this.cluster = cluster;
     }
 
     public Host add(final InetSocketAddress address) {
-        final Host newHost = new Host(address);
+        final Host newHost = new Host(address, cluster);
         final Host previous = hosts.putIfAbsent(address, newHost);
         return previous == null ? newHost : null;
     }

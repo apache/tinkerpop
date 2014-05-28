@@ -57,8 +57,6 @@ public class Client {
         }
     }
 
-
-
     public ResultSet submit(final SFunction<Graph, Traversal> traversal) {
         return submit("g", traversal);
     }
@@ -104,6 +102,7 @@ public class Client {
 
         final CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
+		// todo: add some retry action in here in case of direct failure
         // todo: choose a host with some smarts - this is pretty whatever atm
         final ConnectionPool pool = hostConnectionPools.values().iterator().next();
         try {

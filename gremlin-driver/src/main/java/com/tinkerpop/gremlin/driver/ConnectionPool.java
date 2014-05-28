@@ -118,8 +118,20 @@ class ConnectionPool {
 
         int inFlight = connection.inFlight.decrementAndGet();
         if (connection.isDead()) {
+			logger.debug("Marking host as dead at {}", this.host);
+
             // a dead connection signifies a likely dead host - given that assumption close the pool.  we could likely
-			// have a smarter and more configurable choice here, but for now this is ok.
+			// have a smarter and more configurable choice here, but for now this is ok. provide the makeUnavailable
+			// method a function to try to reopen the connection.
+			host.makeUnavailable(h -> {
+				try {
+					connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
+					this.open.set(connections.size());
+					return true;
+				} catch (Exception ex) {
+					return false;
+				}
+			});
 			closeAsync();
         } else {
             if (bin.contains(connection) && inFlight == 0) {
@@ -193,9 +205,9 @@ class ConnectionPool {
 
     private void newConnection() {
         cluster.executor().submit(() -> {
-                addConnectionIfUnderMaximum();
-                scheduledForCreation.decrementAndGet();
-                return null;
+			addConnectionIfUnderMaximum();
+			scheduledForCreation.decrementAndGet();
+			return null;
         });
     }
 
