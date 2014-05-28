@@ -6,11 +6,13 @@ import com.tinkerpop.gremlin.driver.Item;
 import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
 import com.tinkerpop.gremlin.util.TimeUtil;
+import io.netty.channel.ChannelException;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.nio.channels.ClosedChannelException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +21,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -114,4 +117,26 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
+
+	@Test
+	public void shouldFailOnDeadHost() throws Exception {
+		final Cluster cluster = Cluster.create("localhost").serializer(Serializers.JSON_V1D0).build();
+		final Client client = cluster.connect();
+
+		// ensure that connection to server is good
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+
+		// kill the server which will make the client mark the host as unavailable
+		this.stopServer();
+
+		try {
+			// try to re-issue a request now that the server is down
+			client.submit("1+1").all().join();
+			fail();
+		} catch (RuntimeException re) {
+			assertTrue(re.getCause().getCause() instanceof ClosedChannelException);
+		} finally {
+			cluster.close();
+		}
+	}
 }

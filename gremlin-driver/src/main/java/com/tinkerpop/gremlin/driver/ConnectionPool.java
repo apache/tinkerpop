@@ -88,29 +88,29 @@ class ConnectionPool {
             return waitForConnection(timeout, unit);
         }
 
+		if (null == leastUsedConn) {
+			if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+			return waitForConnection(timeout, unit);
+		}
+
         // if the number in flight on the least used connection exceeds the max allowed and the pool size is
         // not at maximum then consider opening a connection
         if (leastUsedConn.inFlight.get() >= maxSimultaneousRequestsPerConnection && connections.size() < maxPoolSize)
             considerNewConnection();
 
-        if (leastUsedConn == null) {
-            if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
-            return waitForConnection(timeout, unit);
-        } else {
-            while (true) {
-                int inFlight = leastUsedConn.inFlight.get();
+		while (true) {
+			int inFlight = leastUsedConn.inFlight.get();
 
-                // if the number in flight starts to exceed what's available for this connection, then we need
-                // to wait for a connection to become available.
-                if (inFlight >= leastUsedConn.availableInProcess()) {
-                    return waitForConnection(timeout, unit);
-                }
+			// if the number in flight starts to exceed what's available for this connection, then we need
+			// to wait for a connection to become available.
+			if (inFlight >= leastUsedConn.availableInProcess()) {
+				return waitForConnection(timeout, unit);
+			}
 
-                if (leastUsedConn.inFlight.compareAndSet(inFlight, inFlight + 1)) {
-                    return leastUsedConn;
-                }
-            }
-        }
+			if (leastUsedConn.inFlight.compareAndSet(inFlight, inFlight + 1)) {
+				return leastUsedConn;
+			}
+		}
     }
 
     public void returnConnection(final Connection connection) throws ConnectionException {
@@ -118,7 +118,21 @@ class ConnectionPool {
 
         int inFlight = connection.inFlight.decrementAndGet();
         if (connection.isDead()) {
-            // todo: probably need to signal that the host is hurting - maybe try to reopen?
+			logger.debug("Marking host as dead at {}", this.host);
+
+            // a dead connection signifies a likely dead host - given that assumption close the pool.  we could likely
+			// have a smarter and more configurable choice here, but for now this is ok. provide the makeUnavailable
+			// method a function to try to reopen the connection.
+			host.makeUnavailable(h -> {
+				try {
+					connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
+					this.open.set(connections.size());
+					return true;
+				} catch (Exception ex) {
+					return false;
+				}
+			});
+			closeAsync();
         } else {
             if (bin.contains(connection) && inFlight == 0) {
                 if (bin.remove(connection))
@@ -191,9 +205,9 @@ class ConnectionPool {
 
     private void newConnection() {
         cluster.executor().submit(() -> {
-                addConnectionIfUnderMaximum();
-                scheduledForCreation.decrementAndGet();
-                return null;
+			addConnectionIfUnderMaximum();
+			scheduledForCreation.decrementAndGet();
+			return null;
         });
     }
 

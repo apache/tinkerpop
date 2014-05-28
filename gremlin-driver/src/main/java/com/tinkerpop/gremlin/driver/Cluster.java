@@ -15,8 +15,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 /**
@@ -118,7 +118,7 @@ public class Cluster {
         return manager.serializer;
     }
 
-    ExecutorService executor() {
+	ScheduledExecutorService executor() {
         return manager.executor;
     }
 
@@ -273,17 +273,17 @@ public class Cluster {
         private final MessageSerializer serializer;
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
 
-        private final ExecutorService executor;
+        private final ScheduledExecutorService executor;
 
         private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
                         final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings) {
-            this.clusterInfo = new ClusterInfo(this);
+            this.clusterInfo = new ClusterInfo(Cluster.this);
             this.contactPoints = contactPoints;
             this.connectionPoolSettings = connectionPoolSettings;
             this.factory = new Factory(nioPoolSize);
             this.serializer = serializer;
-            this.executor =  Executors.newFixedThreadPool(workerPoolSize,
-                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
+            this.executor =  Executors.newScheduledThreadPool(workerPoolSize,
+					new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
         }
 
         synchronized void init() {

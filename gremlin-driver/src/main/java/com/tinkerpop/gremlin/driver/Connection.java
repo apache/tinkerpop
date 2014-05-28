@@ -86,7 +86,6 @@ class Connection {
     }
 
     public boolean isDead() {
-        // todo: what is being signalled here?
         return isDead;
     }
 
@@ -129,17 +128,24 @@ class Connection {
         final Connection thisConnection = this;
         final ChannelPromise promise = channel.newPromise()
                 .addListener(f -> {
-                    final LinkedBlockingQueue<ResponseMessage> responseQueue = new LinkedBlockingQueue<>();
-                    final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
-                    readCompleted.thenAcceptAsync(v -> {
-                        thisConnection.returnToPool();
-                        if (isClosed() && pending.isEmpty())
-                            shutdown(closeFuture.get());
-                    });
-                    final ResponseQueue handler = new ResponseQueue(responseQueue, readCompleted);
-                    pending.put(requestMessage.getRequestId(), handler);
-                    final ResultSet resultSet = new ResultSet(handler, cluster.executor());
-                    future.complete(resultSet);
+					if (!f.isSuccess()) {
+						logger.debug(String.format("Write on connection %s failed", thisConnection), f.cause());
+						thisConnection.isDead = true;
+						thisConnection.returnToPool();
+						future.completeExceptionally(f.cause());
+					} else {
+						final LinkedBlockingQueue<ResponseMessage> responseQueue = new LinkedBlockingQueue<>();
+						final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
+						readCompleted.thenAcceptAsync(v -> {
+							thisConnection.returnToPool();
+							if (isClosed() && pending.isEmpty())
+								shutdown(closeFuture.get());
+						});
+						final ResponseQueue handler = new ResponseQueue(responseQueue, readCompleted);
+						pending.put(requestMessage.getRequestId(), handler);
+						final ResultSet resultSet = new ResultSet(handler, cluster.executor());
+						future.complete(resultSet);
+					}
                 });
         channel.writeAndFlush(requestMessage, promise);
         return promise;
