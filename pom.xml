@@ -533,7 +533,7 @@
                                         <!--<iconsdir>images/icons</iconsdir>-->
                                         <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
-                                        <stylesheet>readthedocs.css</stylesheet>
+                                        <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                     </attributes>
                                 </configuration>
