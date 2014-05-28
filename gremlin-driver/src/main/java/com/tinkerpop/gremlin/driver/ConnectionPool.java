@@ -93,7 +93,7 @@ class ConnectionPool {
         if (leastUsedConn.inFlight.get() >= maxSimultaneousRequestsPerConnection && connections.size() < maxPoolSize)
             considerNewConnection();
 
-        if (leastUsedConn == null) {
+        if (null == leastUsedConn) {
             if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
             return waitForConnection(timeout, unit);
         } else {
@@ -118,7 +118,9 @@ class ConnectionPool {
 
         int inFlight = connection.inFlight.decrementAndGet();
         if (connection.isDead()) {
-            // todo: probably need to signal that the host is hurting - maybe try to reopen?
+            // a dead connection signifies a likely dead host - given that assumption close the pool.  we could likely
+			// have a smarter and more configurable choice here, but for now this is ok.
+			closeAsync();
         } else {
             if (bin.contains(connection) && inFlight == 0) {
                 if (bin.remove(connection))
