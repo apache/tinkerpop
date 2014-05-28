@@ -88,29 +88,29 @@ class ConnectionPool {
             return waitForConnection(timeout, unit);
         }
 
+		if (null == leastUsedConn) {
+			if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+			return waitForConnection(timeout, unit);
+		}
+
         // if the number in flight on the least used connection exceeds the max allowed and the pool size is
         // not at maximum then consider opening a connection
         if (leastUsedConn.inFlight.get() >= maxSimultaneousRequestsPerConnection && connections.size() < maxPoolSize)
             considerNewConnection();
 
-        if (null == leastUsedConn) {
-            if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
-            return waitForConnection(timeout, unit);
-        } else {
-            while (true) {
-                int inFlight = leastUsedConn.inFlight.get();
+		while (true) {
+			int inFlight = leastUsedConn.inFlight.get();
 
-                // if the number in flight starts to exceed what's available for this connection, then we need
-                // to wait for a connection to become available.
-                if (inFlight >= leastUsedConn.availableInProcess()) {
-                    return waitForConnection(timeout, unit);
-                }
+			// if the number in flight starts to exceed what's available for this connection, then we need
+			// to wait for a connection to become available.
+			if (inFlight >= leastUsedConn.availableInProcess()) {
+				return waitForConnection(timeout, unit);
+			}
 
-                if (leastUsedConn.inFlight.compareAndSet(inFlight, inFlight + 1)) {
-                    return leastUsedConn;
-                }
-            }
-        }
+			if (leastUsedConn.inFlight.compareAndSet(inFlight, inFlight + 1)) {
+				return leastUsedConn;
+			}
+		}
     }
 
     public void returnConnection(final Connection connection) throws ConnectionException {
