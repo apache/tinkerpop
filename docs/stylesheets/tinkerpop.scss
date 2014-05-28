@@ -12,6 +12,12 @@
   overflow-wrap: normal; /* needed for webkit browsers */
 }
 
+// Change TOC entries from italic to bold
+#toc ul.sectlevel0 > li > a {
+  font-style: normal;
+  font-weight: bold;
+}
+
 h4 {
   color: $subheader-font-color;
 }
