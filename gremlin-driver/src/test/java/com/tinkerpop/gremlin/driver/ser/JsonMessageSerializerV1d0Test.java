@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -131,8 +130,7 @@ public class JsonMessageSerializerV1d0Test {
         assertEquals("b", innerJsonObject.optString("a"));
     }
 
-    @Ignore
-    // TODO The problem is that when you will need to say whether you want the properties or the hidden properties
+	@Test
     public void serializeHiddenProperties() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex("abc", 123);
@@ -159,7 +157,13 @@ public class JsonMessageSerializerV1d0Test {
         assertNotNull(properties);
 
         assertEquals(123, properties.getInt("abc"));
-        assertEquals("stephen", properties.getString(Property.hidden("hidden")));
+		assertEquals(1, properties.length());
+
+		final JSONObject hiddens = vertexAsJson.optJSONObject(GraphSONTokens.HIDDENS);
+		assertNotNull(hiddens);
+
+		assertEquals("stephen", hiddens.getString("hidden"));
+		assertEquals(1, hiddens.length());
     }
 
     @Test
