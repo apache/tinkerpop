@@ -325,7 +325,7 @@ p a > code:hover { color: #373737; }
 
 #toc { border-bottom: 1px solid #dddddd; padding-bottom: 1.25em; }
 #toc > ul { margin-left: 0.25em; }
-#toc ul.sectlevel0 > li > a { font-style: italic; }
+#toc ul.sectlevel0 > li > a { font-weight: bold; }
 #toc ul.sectlevel0 ul.sectlevel1 { margin-left: 0; margin-top: 0.5em; margin-bottom: 0.5em; }
 #toc ul { list-style-type: none; }
 
