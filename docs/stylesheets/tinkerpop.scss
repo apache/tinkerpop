@@ -9,6 +9,7 @@
 .listingblock code {
   white-space: pre;
   overflow: auto;
+  overflow-wrap: normal; /* needed for webkit browsers */
 }
 
 h4 {

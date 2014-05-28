@@ -651,7 +651,7 @@ span.icon > [class^="icon-"], span.icon > [class*=" icon-"] { cursor: default; }
 .conum:after { content: attr(data-value); }
 .conum:not([data-value]):empty { display: none; }
 
-.listingblock code { white-space: pre; overflow: auto; }
+.listingblock code { white-space: pre; overflow: auto; overflow-wrap: normal; /* needed for webkit browsers */ }
 
 h4 { color: #6c818f; }
 
