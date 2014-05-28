@@ -107,7 +107,8 @@ public class Client {
         final ConnectionPool pool = hostConnectionPools.values().iterator().next();
         try {
             // the connection is returned to the pool once the response has been completed...see Connection.write()
-            final Connection connection = pool.borrowConnection(300, TimeUnit.SECONDS);
+			// the connection may be returned to the pool with the host being marked as "unavailable"
+            final Connection connection = pool.borrowConnection(300, TimeUnit.SECONDS);  // todo: configuration
             connection.write(msg, future);
             return future;
         } catch (Exception ex) {
