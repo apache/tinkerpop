@@ -13,7 +13,7 @@
     <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>http://tinkerpop.com</url>
-    <name>TinkerPop3: The Third Incarnation of the TinkerPop</name>
+    <name>TinkerPop3: A Graph Computing Framework</name>
     <mailingLists>
         <mailingList>
             <name>Gremlin Users</name>

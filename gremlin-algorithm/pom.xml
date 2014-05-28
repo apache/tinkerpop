@@ -10,8 +10,7 @@
     </parent>
     <artifactId>gremlin-algorithm</artifactId>
     <url>http://gremlin.tinkerpop.com</url>
-    <name>Gremlin-Algorithms</name>
-    <description>Graph algorithms</description>
+    <name>Gremlin Algorithms: Graph Computing Algorithms for TinkerPop3</name>
     <dependencies>
         <dependency>
             <groupId>com.tinkerpop</groupId>
