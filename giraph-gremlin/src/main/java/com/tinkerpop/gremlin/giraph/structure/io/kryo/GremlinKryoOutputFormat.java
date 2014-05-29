@@ -1,30 +1,26 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import org.apache.giraph.io.VertexOutputFormat;
-import org.apache.giraph.io.VertexWriter;
-import org.apache.hadoop.mapred.FileOutputCommitter;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.OutputCommitter;
+import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.io.CommonOutputFormat;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GremlinKryoOutputFormat extends VertexOutputFormat {
+public class GremlinKryoOutputFormat extends CommonOutputFormat {
 
-    public GremlinKryoOutputFormat() {
-        System.out.println("create GremlinKryoOutputFormat");
+    @Override
+    public RecordWriter<NullWritable, GiraphVertex> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
+        return new GremlinKryoRecordWriter(getDataOuputStream(job));
     }
 
-    public void checkOutputSpecs(JobContext context) {
-
-    }
-
-    public VertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new GremlinKryoVertexWriter();
-    }
-
-    public OutputCommitter getOutputCommitter(TaskAttemptContext context) {
-        return new FileOutputCommitter();
+    public RecordWriter<NullWritable, GiraphVertex> getRecordWriter(final TaskAttemptContext job,
+                                                                    final DataOutputStream outputStream) throws IOException, InterruptedException {
+        return new GremlinKryoRecordWriter(outputStream);
     }
 }

@@ -90,6 +90,7 @@ public class GraphSONAdjacencyRecordReaderWriterTest {
         assertEquals(808, lines.length);
         String line42 = lines[41];
         assertTrue(line42.contains("outVLabel"));
+        assertTrue(line42.contains("Jorma"));
     }
 
     private <T> long count(final Iterable<T> iter) {
