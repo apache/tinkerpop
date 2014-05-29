@@ -33,11 +33,11 @@ public class VertexStreamIteratorTest {
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
 
-            VertexStreamIterator vbais = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), reader);
+            VertexStreamIterator vsi = new VertexStreamIterator(new ByteArrayInputStream(os.toByteArray()), reader);
 
             boolean found = false;
-            while (vbais.hasNext()) {
-                Vertex v = vbais.next();
+            while (vsi.hasNext()) {
+                Vertex v = vsi.next();
 
                 //System.out.println("v = " + v);
                 //System.out.println("\tin edges: " + count(v.in().toList()));

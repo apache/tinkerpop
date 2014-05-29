@@ -22,7 +22,6 @@ import java.io.File;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -34,13 +33,13 @@ public class GremlinKryoRecordReaderWriterTest {
         conf.set("fs.file.impl", LocalFileSystem.class.getName());
         conf.set("fs.default.name", "file:///");
 
-        File testFile = new File(this.getClass().getResource("../graphson/grateful-dead-adjlist.ldjson").getPath());
+        File testFile = new File(this.getClass().getResource("grateful-dead-vertices.gio").getPath());
         FileSplit split = new FileSplit(
                 new Path(testFile.getAbsoluteFile().toURI().toString()), 0,
                 testFile.length(), null);
-        System.out.println("reading GraphSON adjacency file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
+        System.out.println("reading Gremlin Kryo file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
 
-        GraphSONAdjacencyInputFormat inputFormat = ReflectionUtils.newInstance(GraphSONAdjacencyInputFormat.class, conf);
+        GremlinKryoInputFormat inputFormat = ReflectionUtils.newInstance(GremlinKryoInputFormat.class, conf);
         TaskAttemptContext job = new TaskAttemptContext(conf, new TaskAttemptID());
         RecordReader reader = inputFormat.createRecordReader(split, job);
 

@@ -91,7 +91,6 @@ public class VertexStreamIterator implements Iterator<Vertex> {
 
     private Vertex advance() throws IOException {
         currentByte = inputStream.read();
-        //System.out.println("currentByte: " + currentByte);
 
         if (-1 == currentByte) {
             if (len > 0) {

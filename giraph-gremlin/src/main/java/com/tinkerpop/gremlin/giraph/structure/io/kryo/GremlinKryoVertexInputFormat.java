@@ -18,13 +18,26 @@ import java.util.List;
  */
 public class GremlinKryoVertexInputFormat extends VertexInputFormat {
 
+    private final GremlinKryoInputFormat fileInputFormat;
+
+    public GremlinKryoVertexInputFormat() {
+        fileInputFormat = new GremlinKryoInputFormat();
+    }
+
     public List<InputSplit> getSplits(final JobContext context,
                                       final int minSplitCountHint) throws IOException, InterruptedException {
-        return Arrays.<InputSplit>asList(new DBInputFormat.DBInputSplit());
+        // note: hint ignored
+        return fileInputFormat.getSplits(context);
     }
 
     public VertexReader createVertexReader(final InputSplit split,
                                            final TaskAttemptContext context) throws IOException {
-        return new GremlinKryoVertexReader();
+        VertexReader reader = new GremlinKryoVertexReader();
+        try {
+            reader.initialize(split, context);
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
+        return reader;
     }
 }
