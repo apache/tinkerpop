@@ -279,6 +279,8 @@ IMPORTANT: In TinkerPop2, the `jump()`-step was called `loop()`. Jump has been g
 The Graph API
 =============
 
+image::gremlin-standing.png[width=125]
+
 Features
 --------
 
@@ -409,18 +411,21 @@ As shown above, the `submit` method takes a `Function<Graph, R>` which is the un
 The Traversal API
 =================
 
-At the most general level there is `Traversal<S,E>` which implements both `Iterator<E>` and `Iterable<E>`, where the `S` stands for start and the `E` stands for end. A traversal is composed of three primary components:
-  
-  . `Step<S,E>`: a individual function applied to `S` to yield `E`.
-  . `TraversalStrategy`: interceptor methods to alter the execution of the traversal.
-  . `Traversal.Variables`: key/value pairs that can be used to store global information about the traversal.
+image::gremlin-running.png[width=125]
 
-The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal`.
+At the most general level there is `Traversal<S,E>` which implements `Iterator<E>`, where the `S` stands for start and the `E` stands for end. A traversal is composed of four primary components:
+  
+ . `Step<S,E>`: a individual function applied to `S` to yield `E`.
+ . `TraversalStrategy`: interceptor methods to alter the execution of the traversal.
+ . `Traversal.Variables`: key/value pairs that can be used to store global information about the traversal.
+ . `Traverser<T>`: the object propagating through the `Traversal` currently representing an object of type `T`. 
+
+The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`.
 
 Graph Traversal Steps
 ---------------------
 
-A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or Edge. A list of all the steps are provided below along with a description.
+A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A list of all the steps are provided below along with a description.
 
 . Transform: S &rarr; E
  * `map(function)`: apply the provided function to S and emit the result as E.
@@ -443,7 +448,7 @@ A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or Edge. A list o
 Jump Step
 ~~~~~~~~~
 
-TinkerPop3 introduces the `jump()`-step. This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with jump(), the Gremlin is no longer constrained to *do-while* semantics, but not can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of jump() in action in Gremlin-Groovy.
+TinkerPop3 introduces the `jump()`-step. This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with jump(), the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of jump() in action in Gremlin-Groovy.
 
 [source,groovy]
 gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}.name <1>
@@ -472,6 +477,8 @@ gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}{true}.name
 image::jump-step-example.png[width=500]
 
 The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop.
+
+The jump()-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to arbitrarily take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traverses can be moved between traversal steps as necessary without ill-effects.
 
 [[subgraph-step]]
 SubGraph Step
@@ -550,7 +557,6 @@ g.V().match("a", "c"
 <2> *Recursion support*: `match()` supports the `jump()`-step within a pattern.
 <3> *Path/pattern hybrid*: Pre and prior to a match an be a path expression and thus, both constructs supported in the same traversal.
 
-
 Traversal Strategy
 ------------------
 
@@ -577,28 +583,24 @@ This strategy simply removes any unlabeled `IdentityStep` steps in the Traversal
 [source,java]
 g.V().has("name","marko")
 
-The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in TinkerGraph depending on whether there is or is not an index defined for "name."
+The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<tinkergraph-gremlin,TinkerGraph>> depending on whether there is or is not an index defined for "name."
 
 [source,java]
 TinkerGraphStepTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
     public void apply(final Traversal traversal) {
         if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {
-            final TinkerGraphStep tinkerGraphStep
-                = (TinkerGraphStep) traversal.getSteps().get(0);
+            final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
             Step currentStep = tinkerGraphStep.getNextStep();
             while (true) {
                 if (currentStep == EmptyStep.instance()
                     || TraversalHelper.isLabeled(currentStep)) 
                     break;
                 if (currentStep instanceof HasStep) {
-                    tinkerGraphStep.hasContainers.add(
-                        ((HasStep) currentStep).hasContainer);
+                    tinkerGraphStep.hasContainers.add(((HasStep) currentStep).hasContainer);
                     TraversalHelper.removeStep(currentStep, traversal);
                 } else if (currentStep instanceof IntervalStep) {
-                    tinkerGraphStep.hasContainers.add(
-                        ((IntervalStep) currentStep).startContainer);
-                    tinkerGraphStep.hasContainers.add(
-                        ((IntervalStep) currentStep).endContainer);
+                    tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).startContainer);
+                    tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).endContainer);
                     TraversalHelper.removeStep(currentStep, traversal);
                 } else if (currentStep instanceof IdentityStep) {
                     // do nothing
@@ -612,7 +614,7 @@ TinkerGraphStepTraversalStrategy implements TraversalStrategy.FinalTraversalStra
     }
 }
 
-The traversal is redefined by simply taking an chain of `has()`-steps and `interval()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review `vertices()` and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
+The traversal is redefined by simply taking a chain of `has()`-steps and `interval()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
 
 [source,java]
 ----
@@ -621,9 +623,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     private TinkerGraph graph;
     public List<HasContainer> hasContainers = new ArrayList<>();
 
-    public TinkerGraphStep(Traversal traversal,
-                           Class<E> returnClass,
-                           TinkerGraph graph) {
+    public TinkerGraphStep(Traversal traversal, Class<E> returnClass, TinkerGraph graph) {
         super(traversal, returnClass);
         this.graph = graph;
         this.generateHolderIterator(false);
@@ -645,9 +645,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
         HasContainer indexedContainer = getIndexKey(Vertex.class);
         return (Iterator) ((null == indexedContainer) ?
                 TinkerHelper.getVertices(this.graph).parallelStream() :
-                TinkerHelper.queryVertexIndex(this.graph, 
-                    indexedContainer.key, 
-                    indexedContainer.value).parallelStream())
+                TinkerHelper.queryVertexIndex(this.graph, indexedContainer.key, indexedContainer.value).parallelStream())
                 .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers))
                 .collect(Collectors.toList()).iterator();
     }
@@ -655,14 +653,12 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     private HasContainer getIndexKey(Class<? extends Element> indexedClass) {
         Set<String> indexedKeys = this.graph.getIndexedKeys(indexedClass);
         return this.hasContainers.stream()
-                .filter(c -> indexedKeys.contains(c.key)
-                    && c.predicate.equals(Compare.EQUAL))
+                .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
                 .findFirst()
                 .orElseGet(() -> null);
     }
 }
 ----
-
 
 Domain Specific Languages
 -------------------------
