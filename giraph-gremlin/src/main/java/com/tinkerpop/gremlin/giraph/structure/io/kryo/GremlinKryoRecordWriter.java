@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.kryo.GremlinKryo;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
-import com.tinkerpop.gremlin.structure.io.kryo.VertexTerminator;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -19,9 +18,6 @@ import java.io.IOException;
  * @author Joshua Shinavier (http://fortytwo.net)
  */
 public class GremlinKryoRecordWriter extends RecordWriter<NullWritable, GiraphVertex> {
-
-    // TODO: why isn't VertexTerminator.INSTANCE.terminal static?
-    //private static final byte[] DELIMITER = VertexTerminator.INSTANCE.terminal;
 
     private final DataOutputStream out;
     private final KryoWriter kryoWriter;
@@ -43,7 +39,6 @@ public class GremlinKryoRecordWriter extends RecordWriter<NullWritable, GiraphVe
         if (null != vertex) {
             Vertex gremlinVertex = vertex.getGremlinVertex();
             kryoWriter.writeVertex(out, gremlinVertex, Direction.BOTH);
-            //out.write(DELIMITER);
         }
     }
 
