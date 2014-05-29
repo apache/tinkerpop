@@ -715,12 +715,12 @@ TinkerPop3 provides two primary means of interacting with a graph: link:http://e
 
 image::oltp-vs-olap.png[width=600]
 
-The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges and in effect return various computations of that traversal. For example, the elements at the end of the path, the full path traversed, or some side-effect such as the count or various groupings of the objects seen during the traversal. Thus, each step (1,2,3), is a movement along this referential structure. With Gremlin OLAP, all vertices are provided a VertexProgram. That program runs in parallel to all other programs with the programs sending messages to one another according to the topological structure of the graph as a communication network (with random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex however, all messages are being working independent of one another, in parallel.
+The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges. With Gremlin OLAP, all vertices are provided a VertexProgram. The programs send messages to one another according to the topological structure of the graph as a communication network (with random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex. However, all messages are being working independent of one another, in parallel.
 
 GraphComputer and VertexProgram
 -------------------------------
 
-In Gremlin, it is possible to express to have the same traversal executed either using the standard OTLP-engine or have it executed using the OLAP-engine. The difference being where the query is submitted.
+In Gremlin, it is possible to have the same traversal executed either using the standard OTLP-engine or have it executed using the OLAP-engine. The difference being where the query is submitted.
 
 [source,groovy]
 g = TinkerFactory.createClassic()
@@ -732,7 +732,7 @@ g.v(1).out('knows').name.submit(g.compute())
 ==>vadas
 ==>josh
 
-The first traversal assumes the standard `Traversal` iterator should be `next'd()` for its results. The second traversal is submitted to `g.compute()` which is the `GraphComputer` associated with the graph `g`. GraphComputer forms the foundation of the OLAP model of TinkerPop3. GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logical parallel until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing values, etc.). The GraphComputer is submitted a VertexProgram and that VertexProgram is copied to all the vertices in the graph. Then the GraphComputer orchestrates the execution of the `VertexProgram.execute()` method on all the vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are then able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `LocalMessage` and `GlobalMessage`. A local message is a message to an incident edge or adjacent vertex. A global message is a message to any arbitrary element in the graph. 
+image:bsp-diagram.png[width=400,float=right] The first traversal assumes the standard `Traversal` iterator should be `next'd()` for its results. The second traversal is submitted to `g.compute()` which is the `GraphComputer` associated with the graph `g`. GraphComputer forms the foundation of the OLAP model of TinkerPop3. GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logically parallel manner until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing in the graph, etc.). A submitted VertexProgram is copied to all the vertices in the graph. Then the GraphComputer orchestrates the execution of the `VertexProgram.execute()` method on all the vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `LocalMessage` and `GlobalMessage`. A local message is a message to an incident edge or adjacent vertex. A global message is a message to any arbitrary element in the graph. 
 
 image::graphcomputer.png[width=500]
 
@@ -751,10 +751,12 @@ In the traversal above, the traversal is put into a newly constructed `Traversal
 
 When this returns, it returns an weighted iterator where those objects with counters are iterated and displayed for the number of counters on associated with that object.
 
-NOTE: This model of path-based graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics system and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines]
+NOTE: This model of path-based graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics system and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
 
 A Collection of VertexPrograms
 ------------------------------
+
+TinkerPop3 provides a collection of `VertexProgram`s that implement common algorithms. This section discusses the various implementations.
 
 PageRankVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~
