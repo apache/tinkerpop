@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -20,6 +21,10 @@ public class TraversalHelper {
 
     public static boolean isLabeled(final String as) {
         return !as.startsWith(UNDERSCORE);
+    }
+
+    public static <C extends Step> Optional<C> getFirstStep(final Traversal traversal, final Class<C> classToGet) {
+        return traversal.getSteps().stream().filter(step -> classToGet.isAssignableFrom(step.getClass())).findFirst();
     }
 
     public static <S, E> Step<S, E> getAs(final String as, final Traversal<?, ?> traversal) {

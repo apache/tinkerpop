@@ -27,10 +27,10 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
         if (messageType instanceof MessageType.Local) {
             final MessageType.Local<Object, M> localMessageType = (MessageType.Local) messageType;
             final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
-            return StreamFactory.iterable(StreamFactory.stream(localMessageType.getQuery().build().reverse().build(vertex))
+            return StreamFactory.iterable(StreamFactory.stream(localMessageType.reverse(vertex))
                     .map(e -> {
                         edge[0] = e;
-                        return (localMessageType.getQuery().direction.equals(Direction.OUT)) ?
+                        return (localMessageType.getDirection().equals(Direction.OUT)) ?
                                 receiveMessages.get(e.outV().id().next()) :
                                 receiveMessages.get(e.inV().id().next());
 

@@ -35,17 +35,10 @@ public class TinkerGraphComputerTest {
         // g.V().pageRank().order((a, b) -> b.get().getValue1().compareTo(a.get().getValue1())).range(0,2).forEachRemaining(System.out::println);
     }
 
-    @Ignore
     @Test
     public void testOLAPWriteBack() throws Exception {
         Graph g = TinkerFactory.createClassic();
 
-        //Graph g = TinkerGraph.open();
-        //new KryoReader.Builder(g).build().readGraph(new FileInputStream("gremlin/data/graph-example-2.gio"));
-        //g.V().value("name").forEach(System.out::println);
-
-        //g.V().pageRank().sideEffect(p -> p.get().getValue0().setProperty("pageRank", p.get().getValue1())).forEachRemaining(System.out::println);
-        //System.out.println("---------------");
         g.V().has("name")
                 .pageRank()
                 .order((a, b) -> a.get().getValue1().compareTo(b.get().getValue1()))
