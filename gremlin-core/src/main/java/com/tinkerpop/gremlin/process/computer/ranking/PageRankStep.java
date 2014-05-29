@@ -1,11 +1,18 @@
 package com.tinkerpop.gremlin.process.computer.ranking;
 
-import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.javatuples.Pair;
+
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -16,6 +23,7 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
     private boolean firstNext = true;
     private Graph resultantGraph;
     public double alpha;
+    public SSupplier<Traversal<Vertex, Edge>> incidentTraversal = () -> GraphTraversal.of().outE();
 
     public PageRankStep(final Traversal traversal, final double alpha) {
         super(traversal);
@@ -27,10 +35,19 @@ public class PageRankStep extends AbstractStep<Vertex, Pair<Vertex, Double>> {
         this(traversal, 0.85d);
     }
 
+    public PageRankStep(final Traversal traversal, final String as) {
+        this(traversal, 0.85);
+        List<Step> steps = TraversalHelper.getRange(as, this.getAs(), traversal);
+        steps.stream().forEach(step -> TraversalHelper.removeStep(step, traversal));
+        Traversal<Vertex, Edge> temp = GraphTraversal.of();
+        steps.stream().forEach(step -> TraversalHelper.insertStep(step, temp.getSteps().size(), temp));
+        this.incidentTraversal = () -> temp;
+    }
+
     public Traverser<Pair<Vertex, Double>> processNextStart() {
         try {
             if (this.firstNext) {
-                this.resultantGraph = this.graph.compute().program(PageRankVertexProgram.create().alpha(this.alpha).getConfiguration()).submit().get().getValue0();
+                this.resultantGraph = this.graph.compute().program(PageRankVertexProgram.create().alpha(this.alpha).incidentTraversal(this.incidentTraversal).getConfiguration()).submit().get().getValue0();
                 this.firstNext = false;
             }
         } catch (Exception e) {

@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -25,6 +26,23 @@ public class TraversalHelper {
 
     public static <C extends Step> Optional<C> getFirstStep(final Traversal traversal, final Class<C> classToGet) {
         return traversal.getSteps().stream().filter(step -> classToGet.isAssignableFrom(step.getClass())).findFirst();
+    }
+
+    public static List<Step> getRange(final String startAs, final String endAs, final Traversal traversal) {
+        final List<Step> steps = new ArrayList<>();
+        boolean inRange = false;
+        for (final Step step : (List<Step>) traversal.getSteps()) {
+            if (step.getAs().equals(startAs)) {
+                inRange = true;
+                steps.add(step);
+            } else if (step.getAs().equals(endAs)) {
+                inRange = false;
+                steps.add(step);
+            } else if (inRange) {
+                steps.add(step);
+            }
+        }
+        return steps;
     }
 
     public static <S, E> Step<S, E> getAs(final String as, final Traversal<?, ?> traversal) {

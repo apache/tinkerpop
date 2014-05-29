@@ -16,6 +16,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,8 +48,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
-                final SSupplier<Traversal<Vertex, Edge>> incidentTraversal = (SSupplier) Serializer.deserializeObject((byte[]) configuration.getProperty(INCIDENT_TRAVERSAL));
-                this.messageType = MessageType.Local.of(incidentTraversal);
+                final List byteList = configuration.getList(INCIDENT_TRAVERSAL);
+                byte[] bytes = new byte[byteList.size()];
+                for (int i = 0; i < byteList.size(); i++) {
+                    bytes[i] = Byte.valueOf(byteList.get(i).toString().replace("[", "").replace("]", ""));
+                }
+                this.messageType = MessageType.Local.of((SSupplier) Serializer.deserializeObject(bytes));
             }
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
