@@ -10,12 +10,12 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GremlinKryoVertexReader extends VertexReader {
+public class KryoVertexReader extends VertexReader {
 
-    private final GremlinKryoRecordReader recordReader;
+    private final KryoRecordReader recordReader;
 
-    public GremlinKryoVertexReader() {
-        recordReader = new GremlinKryoRecordReader();
+    public KryoVertexReader() {
+        recordReader = new KryoRecordReader();
     }
 
     public void initialize(final InputSplit inputSplit,

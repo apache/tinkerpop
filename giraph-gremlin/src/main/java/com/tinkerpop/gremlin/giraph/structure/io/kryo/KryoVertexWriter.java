@@ -12,12 +12,12 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GremlinKryoVertexWriter extends VertexWriter {
-    private final GremlinKryoOutputFormat outputFormat;
+public class KryoVertexWriter extends VertexWriter {
+    private final KryoOutputFormat outputFormat;
     private RecordWriter<NullWritable, GiraphVertex> recordWriter;
 
-    public GremlinKryoVertexWriter() {
-        outputFormat = new GremlinKryoOutputFormat();
+    public KryoVertexWriter() {
+        outputFormat = new KryoOutputFormat();
     }
 
     public void initialize(TaskAttemptContext context) throws IOException, InterruptedException {

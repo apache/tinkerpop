@@ -1,27 +1,23 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONAdjacencyInputFormat;
-import com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONAdjacencyVertexReader;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.lib.db.DBInputFormat;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GremlinKryoVertexInputFormat extends VertexInputFormat {
+public class KryoVertexInputFormat extends VertexInputFormat {
 
-    private final GremlinKryoInputFormat fileInputFormat;
+    private final KryoInputFormat fileInputFormat;
 
-    public GremlinKryoVertexInputFormat() {
-        fileInputFormat = new GremlinKryoInputFormat();
+    public KryoVertexInputFormat() {
+        fileInputFormat = new KryoInputFormat();
     }
 
     public List<InputSplit> getSplits(final JobContext context,
@@ -32,7 +28,7 @@ public class GremlinKryoVertexInputFormat extends VertexInputFormat {
 
     public VertexReader createVertexReader(final InputSplit split,
                                            final TaskAttemptContext context) throws IOException {
-        VertexReader reader = new GremlinKryoVertexReader();
+        VertexReader reader = new KryoVertexReader();
         try {
             reader.initialize(split, context);
         } catch (InterruptedException e) {

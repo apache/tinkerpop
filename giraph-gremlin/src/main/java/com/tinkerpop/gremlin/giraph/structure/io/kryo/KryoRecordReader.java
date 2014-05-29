@@ -18,14 +18,14 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GremlinKryoRecordReader extends RecordReader<NullWritable, GiraphVertex> {
+public class KryoRecordReader extends RecordReader<NullWritable, GiraphVertex> {
 
     private VertexStreamIterator vertexStreamIterator;
     private FSDataInputStream inputStream;
 
     private float progress = 0f;
 
-    public GremlinKryoRecordReader() {
+    public KryoRecordReader() {
     }
 
     @Override

@@ -12,15 +12,15 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GremlinKryoOutputFormat extends CommonOutputFormat {
+public class KryoOutputFormat extends CommonOutputFormat {
 
     @Override
     public RecordWriter<NullWritable, GiraphVertex> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
-        return new GremlinKryoRecordWriter(getDataOuputStream(job));
+        return new KryoRecordWriter(getDataOuputStream(job));
     }
 
     public RecordWriter<NullWritable, GiraphVertex> getRecordWriter(final TaskAttemptContext job,
                                                                     final DataOutputStream outputStream) throws IOException, InterruptedException {
-        return new GremlinKryoRecordWriter(outputStream);
+        return new KryoRecordWriter(outputStream);
     }
 }

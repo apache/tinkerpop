@@ -17,13 +17,13 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GremlinKryoInputFormat extends FileInputFormat<NullWritable, GiraphVertex> implements Configurable {
+public class KryoInputFormat extends FileInputFormat<NullWritable, GiraphVertex> implements Configurable {
 
     private Configuration config;
 
     @Override
     public RecordReader<NullWritable, GiraphVertex> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
-        RecordReader<NullWritable, GiraphVertex> reader = new GremlinKryoRecordReader();
+        RecordReader<NullWritable, GiraphVertex> reader = new KryoRecordReader();
         reader.initialize(split, context);
         return reader;
     }

@@ -17,12 +17,12 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GremlinKryoRecordWriter extends RecordWriter<NullWritable, GiraphVertex> {
+public class KryoRecordWriter extends RecordWriter<NullWritable, GiraphVertex> {
 
     private final DataOutputStream out;
     private final KryoWriter kryoWriter;
 
-    public GremlinKryoRecordWriter(final DataOutputStream out) {
+    public KryoRecordWriter(final DataOutputStream out) {
         this.out = out;
 
         GremlinKryo kryo = GremlinKryo.create()

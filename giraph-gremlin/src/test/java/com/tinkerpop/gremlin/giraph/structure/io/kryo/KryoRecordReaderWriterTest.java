@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
-import com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONAdjacencyInputFormat;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.hadoop.conf.Configuration;
@@ -26,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GremlinKryoRecordReaderWriterTest {
+public class KryoRecordReaderWriterTest {
     @Test
     public void testAll() throws Exception {
         Configuration conf = new Configuration(false);
@@ -39,13 +38,13 @@ public class GremlinKryoRecordReaderWriterTest {
                 testFile.length(), null);
         System.out.println("reading Gremlin Kryo file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
 
-        GremlinKryoInputFormat inputFormat = ReflectionUtils.newInstance(GremlinKryoInputFormat.class, conf);
+        KryoInputFormat inputFormat = ReflectionUtils.newInstance(KryoInputFormat.class, conf);
         TaskAttemptContext job = new TaskAttemptContext(conf, new TaskAttemptID());
         RecordReader reader = inputFormat.createRecordReader(split, job);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try (DataOutputStream dos = new DataOutputStream(bos)) {
-            GremlinKryoOutputFormat outputFormat = new GremlinKryoOutputFormat();
+            KryoOutputFormat outputFormat = new KryoOutputFormat();
             RecordWriter writer = outputFormat.getRecordWriter(job, dos);
 
             float lastProgress = -1f;
