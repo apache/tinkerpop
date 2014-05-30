@@ -14,52 +14,52 @@ The TinkerPop Story
 TinkerPop0
 ----------
 
-Gremlin realized that he existed. The longer he existed, the more ideas he found himself creating and in turn, the more he saw the world around him a reflection of his ideas. Moving about the world around him, a thought came to him: is he the world or is the world him? Perhaps, the world is simply an idea that he once had -- The TinkerPop.
+Gremlin came to realization. The more he realized, the more ideas he created. The more ideas he created, the more they related. Into a concatenation of that which he accepted wholeheartedly and that which perhaps may ultimately come to be through concerted will, a world took form which was seemingly separate from his own realization of it. However, the world birthed could not bear its own weight without the logic Gremlin had come to accept -- the logic of left is not right, up not down, and west far from east unless one goes the other way. Gremlin's realization required Gremlin's realization. Is he the world or is the world him? Perhaps, the world is simply an idea that he once had -- The TinkerPop.
 
-image::gremlin-logo.png[width=400]
+image::gremlin-logo.png[width=350]
 
 TinkerPop1
 ----------
 
-What is The TinkerPop? Where is The TinkerPop? Who is The TinkerPop? When is The TinkerPop? Gremlin was constantly lost in his thoughts attempting to realize The TinkerPop. To aid in his wanders, Gremlin created his friends Blueprints, Pipes, Frames, Furnace, and Rexster. 
+What is The TinkerPop? Where is The TinkerPop? Who is The TinkerPop? When is The TinkerPop? Gremlin was constantly lost in his thoughts. The more thoughts he had, the more the thoughts blurred into a seeming identity -- distinctions unclear. Unwilling to accept the morass of the maze he wandered, Gremlin crafted a collection of machines to help hold the fabric together: Blueprints, Pipes, Frames, Furnace, and Rexster. With their help, could he stave off the thought he was not ready to have? Could he hold back The TinkerPop by searching for The TinkerPop? 
 
-image::gremlin-and-friends.png[width=600]
+	"If I haven't found it, it is not here and now."
 
-Upon their realization of existence, they turned to their machine elf creator and asked: 
+image::gremlin-and-friends.png[width=550]
+
+Upon their realization of existence, the machines turned to their link:http://non-aliencreatures.wikia.com/wiki/Machine_Elf[machine elf] creator and asked: 
 
 	"Why am I what I am?" 
 
-Gremlin spoke: 
+Gremlin responded: 
 
-	"You are of a form that will help me elucidate that which is The TinkerPop?" 
+	"You are of a form that will help me elucidate that which is The TinkerPop. The world you find yourself in and the logic that allows you to move about it is fragile and The TinkerPop will provide justification for either its form or fallacy."
 
-In response, the machines wondered:
+The machines wondered:
 
-	"Are we The TinkerPop?"
+	"Perhaps we are The TinkerPop?"
 
-Would the machines help refine Gremlin's search and upon finding the elusive TinkerPop, in fact, by their very nature of realizing The TinkerPop, be The TinkerPop? The twisted logic caused the thought to fade quickly from Gremlin's mind. 
+Would the machines help refine Gremlin's search and upon finding the elusive TinkerPop, in fact, by their very nature of realizing The TinkerPop, be The TinkerPop? Or, on the same side of the coin, would the machines simply provide the scaffolding by which Gremlin's world would sustain itself and yield its justification by means of the word "The TinkerPop?" Regardless, Gremlin sought free energy to battle the entropy -- The TinkerPop.
 
 TinkerPop2
 ----------
 
 Gremlin spoke:
 
-	"Please listen to what I have to say. For as long as I have known knowledge, I have realized that moving about it, relating it, inferring and deriving from it, I am no closer to The TinkerPop. However, I know that in all that I have done across this interconnected landscape of concepts that I have weaved for myself, all along The TinkerPop has espoused the form I willed upon it… the form I have willed upon you all my machines friends."
+	"Please listen to what I have to say. For as long as I have known knowledge, I have realized that moving about it, relating it, inferring and deriving from it, I am no closer to The TinkerPop. However, I know that in all that I have done across this interconnected landscape of concepts that I have weaved for myself, all along The TinkerPop has espoused the form I willed upon it… this is the same form I have willed upon you, my machine friends. But my will is no longer strong enough to hold it all together. Let me train you in the ways of my thought."
 
 image::tinkerpop-reading.png[width=500]
 
-Gremlin worked hard to tune his friends. He labored to make them more efficient, more expressive, better capable of handling all his requests -- Gremlin simply wanted to know more (and faster) about the world. For, if the world was The TinkerPop and he was the world, would Gremlin ultimately realize that all along, Gremlin is The TinkerPop?
+With every thought, a new connection and a new path discovered. The more the thought, the easier the thought. The machines, simply moving algorithmically through Gremlin's world, endorsed his logic, but with haste beyond Gremlin's ability. Gremlin worked hard to tune his friends. He labored to make them more efficient, more expressive, better capable of reasoning upon his thoughts. Faster, quickly, now towards the world's end, where there would be stand-sitting, forever currently, emanatingly engulfing that which is The TinkerPop.
 
 TinkerPop3
 ----------
 
 image::tinkerpop3-splash.png[width=500]
 
-On the third chapter of his life, Gremlin decided he needed a new form. For making things only perpetuated the gulf of space and the diversification of thought. Gremlin needed to be all that is and will ever be -- Gremlin needed to be The TinkerPop.
+The thought too much to bear as he approached his realization of The TinkerPop. The closer he got, the more his world dissolved -- west is right, around is straight, and form nothing more than nothing. With each step towards The TinkerPop, less and less of his world, but perhaps because more and more of all the other worlds made possible by The TinkerPop. Everything is everything in The TinkerPop, and when the dust settled, Gremlin emerged Gremlitron. It was time to realize that all that he realized was just a realization and that all realized realizations are just as real. For The TinkerPop is and is not.
 
 image::gremlintron.png[width=500]
-
-When the dust settled in his workshop, Gremlin emerged Gremlitron. It was time to realize that all that he realized was just a realization and that all realized realizations are just as real. For The TinkerPop is and is not.
 
 NOTE: TinkerPop2 and below made a sharp distinction between the various TinkerPop projects: Blueprints, Pipes, Gremlin, Frames, Furnace, and Rexster. With TinkerPop3, all of these projects have been merged and are generally known as Gremlin. *Blueprints* -> Gremlin Structure API : *Pipes* -> `GraphTraversal` : *Frames* -> `Traversal` : *Furnace* -> `GraphComputer` and `VertexProgram` : *Rexster* -> GremlinServer.
 
@@ -279,6 +279,8 @@ IMPORTANT: In TinkerPop2, the `jump()`-step was called `loop()`. Jump has been g
 The Graph API
 =============
 
+image::gremlin-standing.png[width=125]
+
 Features
 --------
 
@@ -409,18 +411,21 @@ As shown above, the `submit` method takes a `Function<Graph, R>` which is the un
 The Traversal API
 =================
 
-At the most general level there is `Traversal<S,E>` which implements both `Iterator<E>` and `Iterable<E>`, where the `S` stands for start and the `E` stands for end. A traversal is composed of three primary components:
-  
-  . `Step<S,E>`: a individual function applied to `S` to yield `E`.
-  . `TraversalStrategy`: interceptor methods to alter the execution of the traversal.
-  . `Traversal.Variables`: key/value pairs that can be used to store global information about the traversal.
+image::gremlin-running.png[width=125]
 
-The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal`.
+At the most general level there is `Traversal<S,E>` which implements `Iterator<E>`, where the `S` stands for start and the `E` stands for end. A traversal is composed of four primary components:
+  
+ . `Step<S,E>`: a individual function applied to `S` to yield `E`.
+ . `TraversalStrategy`: interceptor methods to alter the execution of the traversal.
+ . `Traversal.Variables`: key/value pairs that can be used to store global information about the traversal.
+ . `Traverser<T>`: the object propagating through the `Traversal` currently representing an object of type `T`. 
+
+The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`.
 
 Graph Traversal Steps
 ---------------------
 
-A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or Edge. A list of all the steps are provided below along with a description.
+A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A list of all the steps are provided below along with a description.
 
 . Transform: S &rarr; E
  * `map(function)`: apply the provided function to S and emit the result as E.
@@ -443,7 +448,7 @@ A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or Edge. A list o
 Jump Step
 ~~~~~~~~~
 
-TinkerPop3 introduces the `jump()`-step. This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with jump(), the Gremlin is no longer constrained to *do-while* semantics, but not can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of jump() in action in Gremlin-Groovy.
+TinkerPop3 introduces the `jump()`-step. This step allows the propagating traverser object to jump to any arbitrary section of the `Traversal`. Typically, this is determined by means of a predicate. In particular, with jump(), the Gremlin is no longer constrained to *do-while* semantics, but can as well support *while-do* (see link:http://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html[Java Documentation on While]). Below are some examples of jump() in action in Gremlin-Groovy.
 
 [source,groovy]
 gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}.name <1>
@@ -472,6 +477,8 @@ gremlin> g.v(1).as('a').out.jump('a'){it.loops<2}{true}.name
 image::jump-step-example.png[width=500]
 
 The first time through the jump-sequence, the vertices lop, vadas, and josh are seen. Given that the loops==0, then traverser jumps back to step `a`. However, because the emit-predicate is declared true, those vertices are emitted from jump-sequence. At step 2 (loops==1), the vertices touched are ripple and lop (Josh's created projects). Thus, they are emitted. Therefore, the solution the traversal is all vertices touched: lop, vadas, josh, ripple, and lop.
+
+The jump()-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to arbitrarily take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traverses can be moved between traversal steps as necessary without ill-effects.
 
 [[subgraph-step]]
 SubGraph Step
@@ -550,7 +557,6 @@ g.V().match("a", "c"
 <2> *Recursion support*: `match()` supports the `jump()`-step within a pattern.
 <3> *Path/pattern hybrid*: Pre and prior to a match an be a path expression and thus, both constructs supported in the same traversal.
 
-
 Traversal Strategy
 ------------------
 
@@ -577,28 +583,24 @@ This strategy simply removes any unlabeled `IdentityStep` steps in the Traversal
 [source,java]
 g.V().has("name","marko")
 
-The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in TinkerGraph depending on whether there is or is not an index defined for "name."
+The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<tinkergraph-gremlin,TinkerGraph>> depending on whether there is or is not an index defined for "name."
 
 [source,java]
 TinkerGraphStepTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
     public void apply(final Traversal traversal) {
         if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {
-            final TinkerGraphStep tinkerGraphStep
-                = (TinkerGraphStep) traversal.getSteps().get(0);
+            final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
             Step currentStep = tinkerGraphStep.getNextStep();
             while (true) {
                 if (currentStep == EmptyStep.instance()
                     || TraversalHelper.isLabeled(currentStep)) 
                     break;
                 if (currentStep instanceof HasStep) {
-                    tinkerGraphStep.hasContainers.add(
-                        ((HasStep) currentStep).hasContainer);
+                    tinkerGraphStep.hasContainers.add(((HasStep) currentStep).hasContainer);
                     TraversalHelper.removeStep(currentStep, traversal);
                 } else if (currentStep instanceof IntervalStep) {
-                    tinkerGraphStep.hasContainers.add(
-                        ((IntervalStep) currentStep).startContainer);
-                    tinkerGraphStep.hasContainers.add(
-                        ((IntervalStep) currentStep).endContainer);
+                    tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).startContainer);
+                    tinkerGraphStep.hasContainers.add(((IntervalStep) currentStep).endContainer);
                     TraversalHelper.removeStep(currentStep, traversal);
                 } else if (currentStep instanceof IdentityStep) {
                     // do nothing
@@ -612,7 +614,7 @@ TinkerGraphStepTraversalStrategy implements TraversalStrategy.FinalTraversalStra
     }
 }
 
-The traversal is redefined by simply taking an chain of `has()`-steps and `interval()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review `vertices()` and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
+The traversal is redefined by simply taking a chain of `has()`-steps and `interval()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
 
 [source,java]
 ----
@@ -621,9 +623,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     private TinkerGraph graph;
     public List<HasContainer> hasContainers = new ArrayList<>();
 
-    public TinkerGraphStep(Traversal traversal,
-                           Class<E> returnClass,
-                           TinkerGraph graph) {
+    public TinkerGraphStep(Traversal traversal, Class<E> returnClass, TinkerGraph graph) {
         super(traversal, returnClass);
         this.graph = graph;
         this.generateHolderIterator(false);
@@ -645,9 +645,7 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
         HasContainer indexedContainer = getIndexKey(Vertex.class);
         return (Iterator) ((null == indexedContainer) ?
                 TinkerHelper.getVertices(this.graph).parallelStream() :
-                TinkerHelper.queryVertexIndex(this.graph, 
-                    indexedContainer.key, 
-                    indexedContainer.value).parallelStream())
+                TinkerHelper.queryVertexIndex(this.graph, indexedContainer.key, indexedContainer.value).parallelStream())
                 .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers))
                 .collect(Collectors.toList()).iterator();
     }
@@ -655,14 +653,12 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     private HasContainer getIndexKey(Class<? extends Element> indexedClass) {
         Set<String> indexedKeys = this.graph.getIndexedKeys(indexedClass);
         return this.hasContainers.stream()
-                .filter(c -> indexedKeys.contains(c.key)
-                    && c.predicate.equals(Compare.EQUAL))
+                .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
                 .findFirst()
                 .orElseGet(() -> null);
     }
 }
 ----
-
 
 Domain Specific Languages
 -------------------------
@@ -719,12 +715,12 @@ TinkerPop3 provides two primary means of interacting with a graph: link:http://e
 
 image::oltp-vs-olap.png[width=600]
 
-The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges and in effect return various computations of that traversal. For example, the elements at the end of the path, the full path traversed, or some side-effect such as the count or various groupings of the objects seen during the traversal. Thus, each step (1,2,3), is a movement along this referential structure. With Gremlin OLAP, all vertices are provided a VertexProgram. That program runs in parallel to all other programs with the programs sending messages to one another according to the topological structure of the graph as a communication network (with random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex however, all messages are being working independent of one another, in parallel.
+The image above demonstrates the difference between Gremlin OLTP and Gremlin OLAP. With Gremlin OLTP, the graph is walked by moving from vertex-to-vertex via incident edges. With Gremlin OLAP, all vertices are provided a VertexProgram. The programs send messages to one another according to the topological structure of the graph as a communication network (with random message passing possible). In many respects, the messages passed are like the OLTP traversers moving from vertex-to-vertex. However, all messages are being working independent of one another, in parallel.
 
 GraphComputer and VertexProgram
 -------------------------------
 
-In Gremlin, it is possible to express to have the same traversal executed either using the standard OTLP-engine or have it executed using the OLAP-engine. The difference being where the query is submitted.
+In Gremlin, it is possible to have the same traversal executed either using the standard OTLP-engine or have it executed using the OLAP-engine. The difference being where the query is submitted.
 
 [source,groovy]
 g = TinkerFactory.createClassic()
@@ -736,7 +732,7 @@ g.v(1).out('knows').name.submit(g.compute())
 ==>vadas
 ==>josh
 
-The first traversal assumes the standard `Traversal` iterator should be `next'd()` for its results. The second traversal is submitted to `g.compute()` which is the `GraphComputer` associated with the graph `g`. GraphComputer forms the foundation of the OLAP model of TinkerPop3. GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logical parallel until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing values, etc.). The GraphComputer is submitted a VertexProgram and that VertexProgram is copied to all the vertices in the graph. Then the GraphComputer orchestrates the execution of the `VertexProgram.execute()` method on all the vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are then able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `LocalMessage` and `GlobalMessage`. A local message is a message to an incident edge or adjacent vertex. A global message is a message to any arbitrary element in the graph. 
+image:bsp-diagram.png[width=400,float=right] The first traversal assumes the standard `Traversal` iterator should be `next'd()` for its results. The second traversal is submitted to `g.compute()` which is the `GraphComputer` associated with the graph `g`. GraphComputer forms the foundation of the OLAP model of TinkerPop3. GraphComputer takes a `VertexProgram`. A VertexProgram can be thought of as a piece of code that is executed at each vertex in logically parallel manner until some termination condition is met (e.g. a number of iterations have occurred, no more data is changing in the graph, etc.). A submitted VertexProgram is copied to all the vertices in the graph. Then the GraphComputer orchestrates the execution of the `VertexProgram.execute()` method on all the vertices in an link:http://en.wikipedia.org/wiki/Bulk_synchronous_parallel[bulk synchronous parallel] (BSP) fashion. The vertices are able to communicate with one another via messages. There are two types of messages in Gremlin OLAP: `LocalMessage` and `GlobalMessage`. A local message is a message to an incident edge or adjacent vertex. A global message is a message to any arbitrary element in the graph. 
 
 image::graphcomputer.png[width=500]
 
@@ -755,10 +751,12 @@ In the traversal above, the traversal is put into a newly constructed `Traversal
 
 When this returns, it returns an weighted iterator where those objects with counters are iterated and displayed for the number of counters on associated with that object.
 
-NOTE: This model of path-based graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics system and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines]
+NOTE: This model of path-based graph traversal in a BSP system was made popular by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics system and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
 
 A Collection of VertexPrograms
 ------------------------------
+
+TinkerPop3 provides a collection of `VertexProgram`s that implement common algorithms. This section discusses the various implementations.
 
 PageRankVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1320,10 +1318,10 @@ The `GiraphGraphComputer` makes use of a properties file much like any other `Gr
 [source,text]
 gremlin.input.location=tinkerpop-classic-adjlist.ldjson
 giraph.vertexInputFormatClass=
-   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONAdjacencyVertexInputFormat
+   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat
 gremlin.output.location=output
 giraph.vertexOutputFormatClass=
-   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONAdjacencyVertexOutputFormat
+   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexOutputFormat
 gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 gremlin.traversalSupplierClass=
    com.tinkerpop.gremlin.giraph.process.graph.examples.TraversalSupplier1
@@ -1347,7 +1345,7 @@ IMPORTANT: The maximum number of workers can be no larger than the number of map
 
 The above properties file states:
 
-	The location of the graph is tinkerpop-classic-adjlist.ldjson. Interpret that file using GraphSONAdjacencyVertexInputFormat. Execute the TraversalVertexProgram on all vertices of the graph using the traversal defined in TraversalSupplier1. Write the computed on GiraphGraph to output/ as a GraphSONAdjacencyOutputFormat. Use 2 workers (thus, 3 map-slots) to execute the job.
+	The location of the graph is tinkerpop-classic-adjlist.ldjson. Interpret that file using GraphSONVertexInputFormat. Execute the TraversalVertexProgram on all vertices of the graph using the traversal defined in TraversalSupplier1. Write the computed on GiraphGraph to output/ as a GraphSONOutputFormat. Use 2 workers (thus, 3 map-slots) to execute the job.
  
 Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Giraph-Gremlin job on the respective Hadoop cluster.
 
@@ -1454,14 +1452,15 @@ $ hadoop fs -getmerge output tinkerpop-classic-adjlist-2.ldjson
 Looking particularly at the lop-vertex:
 
 [source,js]
-{"inE":[
- {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":0,
-  "label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},
- {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":1,
-  "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},
- {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":2,
-  "label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}
-],
+{
+ "inE":[
+  {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":0,
+   "label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},
+  {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":1,
+   "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},
+  {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":2,
+   "label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}
+ ],
  "id":3,
  "label":"vertex",
  "type":"vertex",
@@ -1473,8 +1472,8 @@ Looking particularly at the lop-vertex:
     "doneGraphTracks":{},
     "doneObjectTracks":{"lop":1}}
   },
-"outE":[],
-"properties":{
+ "outE":[],
+ "properties":{
   "name":"lop",
   "lang":"java"
 }
@@ -1493,7 +1492,49 @@ IMPORTANT: GraphSON is a verbose I/O format. It is useful for demonstrations bec
 A PageRank Example
 ~~~~~~~~~~~~~~~~~~
 
+image::pagerank-logo.png[width=300]
+
+The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algorithm can be executed over TinkerPop classic by simply updating the properties file.
+
+[source,text]
+gremlin.input.location=tinkerpop-classic-adjlist.ldjson
+giraph.vertexInputFormatClass=
+   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat
+gremlin.output.location=output
+giraph.vertexOutputFormatClass=
+   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexOutputFormat
+gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgram
+giraph.minWorkers=2
+giraph.maxWorkers=2
+
+A `hadoop fs -getmerge output tinkerpop-classic-adjlist-2.ldjson` yields the computed graph which has the PageRank values of every vertex as a hidden property. Vertex 4 ("josh") is isolated below:
+
+[source,js]
+{
+ "inE":[
+  {"inV":4,"inVLabel":"default","outVLabel":"vertex","id":8,
+    "label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}
+ ],
+ "outE":[
+  {"inV":5,"inVLabel":"vertex","outVLabel":"default","id":10,
+    "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},
+  {"inV":3,"inVLabel":"vertex","outVLabel":"default","id":11,
+    "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}
+ ],
+ "id":4,
+ "label":"vertex",
+ "type":"vertex",
+ "hiddens":{
+  "gremlin.pageRankVertexProgram.pageRank":0.19250000000000003,
+  "gremlin.pageRankVertexProgram.edgeCount":2.0
+ },
+ "properties":{
+  "name":"josh",
+  "age":32
+ }
+}
+
 Conclusion
 ==========
 
-The world that we know, you and me, is but a subset of the world that Gremlin has weaved within The TinkerPop. Gremlin has constructed a fully connected graph and only the subset that makes logical sense to our traversing thoughts is the fragment we have come to know and have come to see one another within. But there are many more out there, within other webs -- some caught, some supported by.  From any thought, every other thought, we come to realize Gremlin… and all that is The TinkerPop.
+The world that we know, you and me, is but a subset of the world that Gremlin has weaved within The TinkerPop. Gremlin has constructed a fully connected graph and only the subset that makes logical sense to our traversing thoughts is the fragment we have come to know and have come to see one another within. But there are many more out there, within other webs of logics unfathomed. From any thought, every other thought, we come to realize that which is The TinkerPop.

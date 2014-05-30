@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.giraph.structure.io.graphson;
+package com.tinkerpop.gremlin.giraph.structure.io;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import org.apache.hadoop.conf.Configuration;
@@ -7,7 +7,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
-import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -18,20 +17,10 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyOutputFormat extends FileOutputFormat<NullWritable, GiraphVertex> {
-
-    @Override
-    public RecordWriter<NullWritable, GiraphVertex> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
-        return new GraphSONAdjacencyRecordWriter(getDataOuputStream(job));
-    }
-
-    public RecordWriter<NullWritable, GiraphVertex> getRecordWriter(final TaskAttemptContext job,
-                                                                    final DataOutputStream outputStream) throws IOException, InterruptedException {
-        return new GraphSONAdjacencyRecordWriter(outputStream);
-    }
+public abstract class CommonOutputFormat extends FileOutputFormat<NullWritable, GiraphVertex> {
 
     // copied from FaunusFileOutputFormat
-    private DataOutputStream getDataOuputStream(final TaskAttemptContext job) throws IOException, InterruptedException {
+    protected DataOutputStream getDataOuputStream(final TaskAttemptContext job) throws IOException, InterruptedException {
         final Configuration conf = job.getConfiguration();
         boolean isCompressed = getCompressOutput(job);
         CompressionCodec codec = null;

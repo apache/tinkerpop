@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.GFunction
+import com.tinkerpop.gremlin.groovy.GSupplier
 import com.tinkerpop.gremlin.groovy.GremlinLoader
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 import com.tinkerpop.gremlin.util.function.SFunction
@@ -50,9 +51,8 @@ class StepLoader {
             return ((GraphTraversal) delegate).path(GFunction.make(pathClosures));
         }
 
-        // necessary so there is not an ambiguous method call
         GraphTraversal.metaClass.select = { final List<String> asLabels ->
-            return ((GraphTraversal) delegate).select(asLabels,  new SFunction[0]);
+            return ((GraphTraversal) delegate).select(asLabels, new SFunction[0]);
         }
 
         GraphTraversal.metaClass.select = { final List<String> asLabels, final Closure... stepClosures ->
@@ -67,7 +67,6 @@ class StepLoader {
             return ((GraphTraversal) delegate).aggregate(variable, GFunction.make(preAggregateClosures));
         }
 
-        // necessary so there is not an ambiguous method call
         GraphTraversal.metaClass.aggregate = { final String variable ->
             return ((GraphTraversal) delegate).aggregate(variable, new SFunction[0]);
         }
@@ -82,6 +81,11 @@ class StepLoader {
 
         GraphTraversal.metaClass.tree = { final Closure... branchClosures ->
             return ((GraphTraversal) delegate).tree(GFunction.make(branchClosures));
+        }
+
+        GraphTraversal.metaClass.pageRank { final Closure closure ->
+            final Closure newClosure = closure.dehydrate();
+            return ((GraphTraversal) delegate).pageRank(new GSupplier(newClosure));
         }
     }
 }

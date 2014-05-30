@@ -8,8 +8,7 @@
         <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-core</artifactId>
-    <name>Gremlin Core</name>
-    <description>Gremlin core components representing graph structure and processes.</description>
+    <name>Gremlin Core: The Primary Components of TinkerPop3</name>
     <dependencies>
         <dependency>
             <groupId>commons-configuration</groupId>

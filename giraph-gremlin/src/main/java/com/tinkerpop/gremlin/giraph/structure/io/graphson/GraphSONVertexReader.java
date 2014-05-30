@@ -10,11 +10,11 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyVertexReader extends VertexReader {
-    private final GraphSONAdjacencyRecordReader recordReader;
+public class GraphSONVertexReader extends VertexReader {
+    private final GraphSONRecordReader recordReader;
 
-    public GraphSONAdjacencyVertexReader() {
-        recordReader = new GraphSONAdjacencyRecordReader();
+    public GraphSONVertexReader() {
+        recordReader = new GraphSONRecordReader();
     }
 
     public void initialize(final InputSplit inputSplit,

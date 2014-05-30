@@ -8,10 +8,10 @@ import java.util.Arrays;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class VertexTerminator {
+public class VertexTerminator {
     public static final VertexTerminator INSTANCE = new VertexTerminator();
 
-	private final byte[] terminal;
+	public final byte[] terminal;
 
     private VertexTerminator() {
 		terminal = ByteBuffer.allocate(8).putLong(4185403236219066774L).array();

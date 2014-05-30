@@ -12,13 +12,13 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyVertexWriter extends VertexWriter {
+public class GraphSONVertexWriter extends VertexWriter {
 
-    private final GraphSONAdjacencyOutputFormat outputFormat;
+    private final GraphSONOutputFormat outputFormat;
     private RecordWriter<NullWritable, GiraphVertex> recordWriter;
 
-    public GraphSONAdjacencyVertexWriter() {
-        outputFormat = new GraphSONAdjacencyOutputFormat();
+    public GraphSONVertexWriter() {
+        outputFormat = new GraphSONOutputFormat();
     }
 
     public void initialize(TaskAttemptContext context) throws IOException, InterruptedException {

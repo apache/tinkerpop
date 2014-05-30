@@ -17,13 +17,13 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyInputFormat extends FileInputFormat<NullWritable, GiraphVertex> implements Configurable {
+public class GraphSONInputFormat extends FileInputFormat<NullWritable, GiraphVertex> implements Configurable {
 
     private Configuration config;
 
     @Override
     public RecordReader<NullWritable, GiraphVertex> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
-        RecordReader<NullWritable, GiraphVertex> reader = new GraphSONAdjacencyRecordReader();
+        RecordReader<NullWritable, GiraphVertex> reader = new GraphSONRecordReader();
         reader.initialize(split, context);
         return reader;
     }

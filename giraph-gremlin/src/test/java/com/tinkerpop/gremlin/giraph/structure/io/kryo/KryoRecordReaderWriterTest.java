@@ -1,15 +1,8 @@
-package com.tinkerpop.gremlin.giraph.structure.io.graphson;
+package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
-import com.tinkerpop.gremlin.structure.Direction;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
-import com.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
@@ -25,8 +18,6 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -34,27 +25,26 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyRecordReaderWriterTest {
-
+public class KryoRecordReaderWriterTest {
     @Test
     public void testAll() throws Exception {
         Configuration conf = new Configuration(false);
         conf.set("fs.file.impl", LocalFileSystem.class.getName());
         conf.set("fs.default.name", "file:///");
 
-        File testFile = new File(this.getClass().getResource("grateful-dead-adjlist.ldjson").getPath());
+        File testFile = new File(this.getClass().getResource("grateful-dead-vertices.gio").getPath());
         FileSplit split = new FileSplit(
                 new Path(testFile.getAbsoluteFile().toURI().toString()), 0,
                 testFile.length(), null);
-        System.out.println("reading GraphSON adjacency file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
+        System.out.println("reading Gremlin Kryo file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
 
-        GraphSONAdjacencyInputFormat inputFormat = ReflectionUtils.newInstance(GraphSONAdjacencyInputFormat.class, conf);
+        KryoInputFormat inputFormat = ReflectionUtils.newInstance(KryoInputFormat.class, conf);
         TaskAttemptContext job = new TaskAttemptContext(conf, new TaskAttemptID());
         RecordReader reader = inputFormat.createRecordReader(split, job);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try (DataOutputStream dos = new DataOutputStream(bos)) {
-            GraphSONAdjacencyOutputFormat outputFormat = new GraphSONAdjacencyOutputFormat();
+            KryoOutputFormat outputFormat = new KryoOutputFormat();
             RecordWriter writer = outputFormat.getRecordWriter(job, dos);
 
             float lastProgress = -1f;
@@ -86,10 +76,11 @@ public class GraphSONAdjacencyRecordReaderWriterTest {
         }
 
         //System.out.println("bos: " + new String(bos.toByteArray()));
-        String[] lines = new String(bos.toByteArray()).split("\n");
+        String[] lines = new String(bos.toByteArray()).split("\\x3a\\x15.\\x11\\x70...");
         assertEquals(808, lines.length);
         String line42 = lines[41];
-        assertTrue(line42.contains("outVLabel"));
+        //System.out.println("line42: " + line42);
+        assertTrue(line42.contains("Jorma"));
     }
 
     private <T> long count(final Iterable<T> iter) {

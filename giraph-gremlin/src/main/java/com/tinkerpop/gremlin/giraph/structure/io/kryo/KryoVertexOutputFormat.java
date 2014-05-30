@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.giraph.structure.io.graphson;
+package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
 import org.apache.giraph.io.VertexOutputFormat;
 import org.apache.giraph.io.VertexWriter;
@@ -12,17 +12,15 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyVertexOutputFormat extends VertexOutputFormat {
+public class KryoVertexOutputFormat extends VertexOutputFormat {
     public VertexWriter createVertexWriter(TaskAttemptContext context) throws IOException, InterruptedException {
-        return new GraphSONAdjacencyVertexWriter();
+        return new KryoVertexWriter();
     }
 
     public void checkOutputSpecs(JobContext context) throws IOException, InterruptedException {
-        // TODO: ?
     }
 
     public OutputCommitter getOutputCommitter(TaskAttemptContext context) throws IOException, InterruptedException {
-        // TODO: ?
         return new FileOutputCommitter();
     }
 }

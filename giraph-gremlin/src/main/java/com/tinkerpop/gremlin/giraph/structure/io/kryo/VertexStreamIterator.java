@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
+import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import com.tinkerpop.gremlin.util.function.TriFunction;
@@ -90,7 +91,6 @@ public class VertexStreamIterator implements Iterator<Vertex> {
 
     private Vertex advance() throws IOException {
         currentByte = inputStream.read();
-        //System.out.println("currentByte: " + currentByte);
 
         if (-1 == currentByte) {
             if (len > 0) {

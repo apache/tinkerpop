@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.giraph.structure.io.graphson;
+package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexReader;
@@ -12,12 +12,12 @@ import java.util.List;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyVertexInputFormat extends VertexInputFormat {
+public class KryoVertexInputFormat extends VertexInputFormat {
 
-    private final GraphSONAdjacencyInputFormat fileInputFormat;
+    private final KryoInputFormat fileInputFormat;
 
-    public GraphSONAdjacencyVertexInputFormat() {
-        fileInputFormat = new GraphSONAdjacencyInputFormat();
+    public KryoVertexInputFormat() {
+        fileInputFormat = new KryoInputFormat();
     }
 
     public List<InputSplit> getSplits(final JobContext context,
@@ -28,7 +28,7 @@ public class GraphSONAdjacencyVertexInputFormat extends VertexInputFormat {
 
     public VertexReader createVertexReader(final InputSplit split,
                                            final TaskAttemptContext context) throws IOException {
-        VertexReader reader = new GraphSONAdjacencyVertexReader();
+        VertexReader reader = new KryoVertexReader();
         try {
             reader.initialize(split, context);
         } catch (InterruptedException e) {
