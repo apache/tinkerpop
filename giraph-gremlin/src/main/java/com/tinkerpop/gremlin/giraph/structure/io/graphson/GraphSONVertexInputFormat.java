@@ -12,12 +12,12 @@ import java.util.List;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyVertexInputFormat extends VertexInputFormat {
+public class GraphSONVertexInputFormat extends VertexInputFormat {
 
-    private final GraphSONAdjacencyInputFormat fileInputFormat;
+    private final GraphSONInputFormat fileInputFormat;
 
-    public GraphSONAdjacencyVertexInputFormat() {
-        fileInputFormat = new GraphSONAdjacencyInputFormat();
+    public GraphSONVertexInputFormat() {
+        fileInputFormat = new GraphSONInputFormat();
     }
 
     public List<InputSplit> getSplits(final JobContext context,
@@ -28,7 +28,7 @@ public class GraphSONAdjacencyVertexInputFormat extends VertexInputFormat {
 
     public VertexReader createVertexReader(final InputSplit split,
                                            final TaskAttemptContext context) throws IOException {
-        VertexReader reader = new GraphSONAdjacencyVertexReader();
+        VertexReader reader = new GraphSONVertexReader();
         try {
             reader.initialize(split, context);
         } catch (InterruptedException e) {

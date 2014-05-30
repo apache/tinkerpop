@@ -12,9 +12,9 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyVertexOutputFormat extends VertexOutputFormat {
+public class GraphSONVertexOutputFormat extends VertexOutputFormat {
     public VertexWriter createVertexWriter(TaskAttemptContext context) throws IOException, InterruptedException {
-        return new GraphSONAdjacencyVertexWriter();
+        return new GraphSONVertexWriter();
     }
 
     public void checkOutputSpecs(JobContext context) throws IOException, InterruptedException {

@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyRecordReaderWriterTest {
+public class GraphSONRecordReaderWriterTest {
 
     @Test
     public void testAll() throws Exception {
@@ -39,13 +39,13 @@ public class GraphSONAdjacencyRecordReaderWriterTest {
                 testFile.length(), null);
         System.out.println("reading GraphSON adjacency file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
 
-        GraphSONAdjacencyInputFormat inputFormat = ReflectionUtils.newInstance(GraphSONAdjacencyInputFormat.class, conf);
+        GraphSONInputFormat inputFormat = ReflectionUtils.newInstance(GraphSONInputFormat.class, conf);
         TaskAttemptContext job = new TaskAttemptContext(conf, new TaskAttemptID());
         RecordReader reader = inputFormat.createRecordReader(split, job);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try (DataOutputStream dos = new DataOutputStream(bos)) {
-            GraphSONAdjacencyOutputFormat outputFormat = new GraphSONAdjacencyOutputFormat();
+            GraphSONOutputFormat outputFormat = new GraphSONOutputFormat();
             RecordWriter writer = outputFormat.getRecordWriter(job, dos);
 
             float lastProgress = -1f;

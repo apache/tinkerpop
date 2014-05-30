@@ -15,7 +15,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyRecordWriter extends RecordWriter<NullWritable, GiraphVertex> {
+public class GraphSONRecordWriter extends RecordWriter<NullWritable, GiraphVertex> {
     private static final String UTF8 = "UTF-8";
     private static final byte[] NEWLINE;
     private final DataOutputStream out;
@@ -29,7 +29,7 @@ public class GraphSONAdjacencyRecordWriter extends RecordWriter<NullWritable, Gi
         }
     }
 
-    public GraphSONAdjacencyRecordWriter(final DataOutputStream out) {
+    public GraphSONRecordWriter(final DataOutputStream out) {
         this.out = out;
         this.graphSONWriter = GraphSONWriter.create().build();
     }

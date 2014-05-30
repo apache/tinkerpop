@@ -23,13 +23,13 @@ import java.io.InputStream;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONAdjacencyRecordReader extends RecordReader<NullWritable, GiraphVertex> {
+public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphVertex> {
 
     private final LineRecordReader lineRecordReader;
     private final GraphSONReader graphSONReader;
     private GiraphVertex vertex = null;
 
-    public GraphSONAdjacencyRecordReader() {
+    public GraphSONRecordReader() {
         this.lineRecordReader = new LineRecordReader();
         this.graphSONReader = GraphSONReader.create().build();
     }
