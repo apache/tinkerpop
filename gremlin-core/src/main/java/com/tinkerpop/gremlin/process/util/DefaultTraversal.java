@@ -20,7 +20,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     protected final List<Step> steps = new ArrayList<>();
     protected final TraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-    protected final Variables variables = new DefaultVariables();
+    protected final Memory memory = new DefaultMemory();
     protected boolean firstNext = true;
 
     public DefaultTraversal() {
@@ -31,8 +31,8 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
         return this.steps;
     }
 
-    public Variables memory() {
-        return this.variables;
+    public Memory memory() {
+        return this.memory;
     }
 
     public TraversalStrategies strategies() {

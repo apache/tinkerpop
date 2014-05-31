@@ -31,15 +31,13 @@ public interface GraphComputer extends TraversalEngine {
          */
         BSP,
         /**
-         * Computations are carried out in a bulk synchronous manner.
+         * Computations are carried out in an bulk asynchronous manner.
          * The results of a vertex property update are visible before the end of the round.
          */
         DIRTY_BSP
     }
 
     public GraphComputer isolation(final Isolation isolation);
-
-    // TODO: operation(onOriginal, clone, ??)
 
     public GraphComputer program(final Configuration configuration);
 

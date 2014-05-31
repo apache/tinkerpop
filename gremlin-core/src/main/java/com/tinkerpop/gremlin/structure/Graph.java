@@ -69,17 +69,6 @@ public interface Graph extends AutoCloseable {
 
     public interface Variables {
 
-        public class Variable {
-
-            private Variable() {
-
-            }
-
-            public static String hidden(final String key) {
-                return HIDDEN_PREFIX.concat(key);
-            }
-        }
-
         public Set<String> getVariables();
 
         public <R> R get(final String variable);
