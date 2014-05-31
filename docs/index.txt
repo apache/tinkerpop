@@ -1538,13 +1538,13 @@ A `hadoop fs -getmerge output tinkerpop-classic-adjlist-2.ldjson` yields the com
 [source,js]
 {
  "inE":[
-  {"inV":4,"inVLabel":"default","outVLabel":"vertex","id":8,
+  {"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,
     "label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}
  ],
  "outE":[
-  {"inV":5,"inVLabel":"vertex","outVLabel":"default","id":10,
+  {"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,
     "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},
-  {"inV":3,"inVLabel":"vertex","outVLabel":"default","id":11,
+  {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,
     "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}
  ],
  "id":4,
