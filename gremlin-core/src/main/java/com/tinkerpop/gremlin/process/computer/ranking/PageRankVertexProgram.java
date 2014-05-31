@@ -5,18 +5,17 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,17 +47,11 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
-                final List byteList = configuration.getList(INCIDENT_TRAVERSAL);
-                byte[] bytes = new byte[byteList.size()];
-                for (int i = 0; i < byteList.size(); i++) {
-                    bytes[i] = Byte.valueOf(byteList.get(i).toString().replace("[", "").replace("]", ""));
-                }
-                this.messageType = MessageType.Local.of((SSupplier) Serializer.deserializeObject(bytes));
+                this.messageType = MessageType.Local.of(VertexProgramHelper.deserializeSupplier(configuration, INCIDENT_TRAVERSAL));
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
-
     }
 
     public Map<String, KeyType> getComputeKeys() {
@@ -117,7 +110,11 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         }
 
         public Builder incidentTraversal(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) throws IOException {
-            configuration.setProperty(INCIDENT_TRAVERSAL, Serializer.serializeObject(incidentTraversal));
+            try {
+                VertexProgramHelper.serializeSupplier(incidentTraversal, this.configuration, INCIDENT_TRAVERSAL);
+            } catch (final IOException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
             return this;
         }
 
