@@ -1,12 +1,9 @@
 package com.tinkerpop.gremlin.process.computer;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.map.VertexStep;
-import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.util.TraverserIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -76,23 +73,15 @@ public abstract class MessageType implements Serializable {
 
         public Traversal<Vertex, Vertex> vertices(final Vertex vertex) {
             final Traversal traversal = this.incidentTraversal.get();
-            final VertexStep step = TraversalHelper.getFirstStep(traversal, VertexStep.class).get();
-            traversal.addStep(new EdgeVertexStep(traversal, step.direction.opposite()));
-            TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
-            return traversal;
-        }
-
-        public Traversal<Vertex, Edge> reverse(final Vertex vertex) {
-            final Traversal<Vertex, Edge> traversal = this.incidentTraversal.get();
-            final VertexStep step = TraversalHelper.getFirstStep(traversal, VertexStep.class).get();
-            step.direction = step.direction.opposite();
+            final VertexStep step = TraversalHelper.getLastStep(traversal, VertexStep.class).get();
+            step.returnClass = Vertex.class;
             TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
             return traversal;
         }
 
         public Direction getDirection() {
             final Traversal traversal = this.incidentTraversal.get();
-            final VertexStep step = TraversalHelper.getFirstStep(traversal, VertexStep.class).get();
+            final VertexStep step = TraversalHelper.getLastStep(traversal, VertexStep.class).get();
             return step.direction;
         }
 

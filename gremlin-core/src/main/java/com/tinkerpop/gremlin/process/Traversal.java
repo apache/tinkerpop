@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.util.Reversible;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,6 +67,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     /////////
 
+    public default Traversal<S, E> reverse() {
+        this.getSteps().stream().filter(step -> step instanceof Reversible).forEach(step -> ((Reversible) step).reverse());
+        return this;
+    }
+
     public default List<E> next(final int amount) {
         final List<E> result = new ArrayList<>();
         int counter = 0;
@@ -123,5 +130,4 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
         }
     }
-
 }

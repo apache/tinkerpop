@@ -60,6 +60,7 @@ import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
+import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.javatuples.Pair;
 
 import java.util.Arrays;
@@ -391,7 +392,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new LinkStep(this, Direction.BOTH, label, as));
     }
 
-    public default GraphTraversal<S,E> timeLimit(final long timeLimit) {
+    public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
         return (GraphTraversal) this.addStep(new TimeLimitStep<E>(this, timeLimit));
     }
 
@@ -472,5 +473,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, Pair<Vertex, Double>> pageRank() {
         return (GraphTraversal) this.addStep(new PageRankStep(this));
+    }
+
+    public default GraphTraversal<S, Pair<Vertex, Double>> pageRank(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) {
+        return (GraphTraversal) this.addStep(new PageRankStep(this, incidentTraversal));
     }
 }

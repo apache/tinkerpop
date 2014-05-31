@@ -3,11 +3,11 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -24,25 +24,9 @@ public class TraversalHelper {
         return !as.startsWith(UNDERSCORE);
     }
 
-    public static <C extends Step> Optional<C> getFirstStep(final Traversal traversal, final Class<C> classToGet) {
-        return traversal.getSteps().stream().filter(step -> classToGet.isAssignableFrom(step.getClass())).findFirst();
-    }
-
-    public static List<Step> getRange(final String startAs, final String endAs, final Traversal traversal) {
-        final List<Step> steps = new ArrayList<>();
-        boolean inRange = false;
-        for (final Step step : (List<Step>) traversal.getSteps()) {
-            if (step.getAs().equals(startAs)) {
-                inRange = true;
-                steps.add(step);
-            } else if (step.getAs().equals(endAs)) {
-                inRange = false;
-                steps.add(step);
-            } else if (inRange) {
-                steps.add(step);
-            }
-        }
-        return steps;
+    public static <C extends Step> Optional<C> getLastStep(final Traversal traversal, final Class<C> classToGet) {
+        final List<C> steps = (List) traversal.getSteps().stream().filter(step -> classToGet.isAssignableFrom(step.getClass())).collect(Collectors.<C>toList());
+        return steps.size() == 0 ? Optional.empty() : Optional.of(steps.get(steps.size() - 1));
     }
 
     public static <S, E> Step<S, E> getAs(final String as, final Traversal<?, ?> traversal) {
