@@ -14297,7 +14297,7 @@
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2014-05-31 16:48:15 +0000</string>
+	<string>2014-05-31 16:49:32 +0000</string>
 	<key>Modifier</key>
 	<string>Marko Rodriguez</string>
 	<key>NotesVisible</key>
@@ -46515,7 +46515,7 @@ lang:java}</string>
 				</dict>
 				<dict>
 					<key>Bounds</key>
-					<string>{{470, 211}, {9, 18}}</string>
+					<string>{{466.16851741075516, 210.73032331466675}, {9, 18}}</string>
 					<key>Class</key>
 					<string>ShapedGraphic</string>
 					<key>FitText</key>
@@ -46540,6 +46540,15 @@ lang:java}</string>
 					</dict>
 					<key>ID</key>
 					<integer>102</integer>
+					<key>Line</key>
+					<dict>
+						<key>ID</key>
+						<integer>103</integer>
+						<key>Position</key>
+						<real>0.42064520716667175</real>
+						<key>RotationType</key>
+						<integer>0</integer>
+					</dict>
 					<key>Shape</key>
 					<string>Rectangle</string>
 					<key>Style</key>
@@ -46648,8 +46657,8 @@ lang:java}</string>
 					<integer>99</integer>
 					<key>Points</key>
 					<array>
-						<string>{479, 376}</string>
-						<string>{469, 392}</string>
+						<string>{479.00001525878906, 383.5}</string>
+						<string>{469.00001525878906, 399.5}</string>
 					</array>
 					<key>Style</key>
 					<dict>
@@ -46668,7 +46677,7 @@ lang:java}</string>
 				</dict>
 				<dict>
 					<key>Bounds</key>
-					<string>{{469, 374}, {10, 18}}</string>
+					<string>{{469.00001525878906, 381.5}, {10, 18}}</string>
 					<key>Class</key>
 					<string>ShapedGraphic</string>
 					<key>FitText</key>
