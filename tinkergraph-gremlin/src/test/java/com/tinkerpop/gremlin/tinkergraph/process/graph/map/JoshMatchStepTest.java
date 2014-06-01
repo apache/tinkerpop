@@ -15,29 +15,29 @@ public class JoshMatchStepTest {
     @Test
     public void forJosh() {
         Graph g = TinkerFactory.createClassic();
-        g.V().match("a","c",
-                GraphTraversal.of().as("a").out("created").as("b"),
-                GraphTraversal.of().as("b").has("name", "lop"),
-                GraphTraversal.of().as("b").in("created").as("c"),
-                GraphTraversal.of().as("c").has("age", 29))
-                .select(As.of("a", "c"), v -> ((Vertex)v).value("name")).forEach(System.out::println);;
+        g.V().match("a", "c",
+                g.of().as("a").out("created").as("b"),
+                g.of().as("b").has("name", "lop"),
+                g.of().as("b").in("created").as("c"),
+                g.of().as("c").has("age", 29))
+                .select(As.of("a", "c"), v -> ((Vertex) v).value("name")).forEach(System.out::println);
 
         System.out.println("--------------");
 
         g.V().match("a", "c",
-                GraphTraversal.of().as("a").out("created").as("b"),
-                GraphTraversal.of().as("a").out("knows").as("b"),
-                GraphTraversal.of().as("b").identity().as("c"))
+                g.of().as("a").out("created").as("b"),
+                g.of().as("a").out("knows").as("b"),
+                g.of().as("b").identity().as("c"))
                 .value("name").path().forEach(System.out::println);
 
         System.out.println("--------------");
 
         g.V().match("a", "b",
-                GraphTraversal.of().as("a").out("knows").has("name", "josh"),
-                GraphTraversal.of().as("a").out("created").has("name", "lop"),
-                GraphTraversal.of().as("a").out("created").as("b"),
-                GraphTraversal.of().as("b").has("lang", "java"),
-                GraphTraversal.of().as("b").in("created").has("name", "peter"))
+                g.of().as("a").out("knows").has("name", "josh"),
+                g.of().as("a").out("created").has("name", "lop"),
+                g.of().as("a").out("created").as("b"),
+                g.of().as("b").has("lang", "java"),
+                g.of().as("b").in("created").has("name", "peter"))
                 .value("name").path().forEach(System.out::println);
     }
 }

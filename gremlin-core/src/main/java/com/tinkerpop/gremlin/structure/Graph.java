@@ -61,6 +61,10 @@ public interface Graph extends AutoCloseable {
         }
     }
 
+    public default GraphTraversal of() {
+        return GraphTraversal.of();
+    }
+
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
 
     public Transaction tx();

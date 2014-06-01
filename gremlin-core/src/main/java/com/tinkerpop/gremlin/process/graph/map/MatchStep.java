@@ -52,8 +52,9 @@ public class MatchStep<S, E> extends AbstractStep<S, E> implements PathConsumer 
                 }
             }
         }
-        if (null == this.endTraversal)
+        if (null == this.endTraversal) {
             throw new IllegalStateException("One of the match traversals must be an end traversal");
+        }
     }
 
     protected Traverser<E> processNextStart() {
