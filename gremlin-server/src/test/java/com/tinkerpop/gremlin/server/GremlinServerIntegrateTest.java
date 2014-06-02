@@ -144,6 +144,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
 	@Test
 	public void shouldEventuallySucceedWithRoundRobin() throws Exception {
+		// todo: when we have a config on borrowed connection timeout, set it low here to make the test go faster.
 		final String noGremlinServer = "74.125.225.19";
 		final Cluster cluster = Cluster.create(noGremlinServer).addContactPoint("localhost").build();
 		final Client client = cluster.connect();
