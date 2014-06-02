@@ -14,7 +14,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StartStep<S> extends MapStep<S, S> implements TraverserSource, Reversible {
+public class StartStep<S> extends MapStep<S, S> implements TraverserSource {
 
     public Object start;
 

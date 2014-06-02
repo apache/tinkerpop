@@ -2,11 +2,12 @@ package com.tinkerpop.gremlin.process.graph.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
+import com.tinkerpop.gremlin.process.util.Reversible;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountStep<S> extends FilterStep<S> implements SideEffectCapable {
+public class CountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible {
 
     private Long counter = 0l;
 
