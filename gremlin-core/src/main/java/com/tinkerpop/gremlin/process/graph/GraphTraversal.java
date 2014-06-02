@@ -19,6 +19,7 @@ import com.tinkerpop.gremlin.process.graph.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.graph.map.BackStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
+import com.tinkerpop.gremlin.process.graph.map.ElementPropertyStep;
 import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.map.IdStep;
 import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
@@ -29,7 +30,6 @@ import com.tinkerpop.gremlin.process.graph.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.map.MatchStep;
 import com.tinkerpop.gremlin.process.graph.map.OrderStep;
 import com.tinkerpop.gremlin.process.graph.map.PathStep;
-import com.tinkerpop.gremlin.process.graph.map.PropertyStep;
 import com.tinkerpop.gremlin.process.graph.map.PropertyValueStep;
 import com.tinkerpop.gremlin.process.graph.map.PropertyValuesStep;
 import com.tinkerpop.gremlin.process.graph.map.SelectStep;
@@ -185,7 +185,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Property<E2>> property(final String propertyKey) {
-        return (GraphTraversal) this.addStep(new PropertyStep<>(this, propertyKey));
+        return (GraphTraversal) this.addStep(new ElementPropertyStep<>(this, propertyKey));
     }
 
     public default GraphTraversal<S, E> shuffle() {

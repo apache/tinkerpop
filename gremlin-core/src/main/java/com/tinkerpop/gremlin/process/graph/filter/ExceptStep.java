@@ -1,13 +1,14 @@
 package com.tinkerpop.gremlin.process.graph.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.Reversible;
 
 import java.util.Collection;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExceptStep<S> extends FilterStep<S> {
+public class ExceptStep<S> extends FilterStep<S> implements Reversible {
 
     public ExceptStep(final Traversal traversal, final String variable) {
         super(traversal);
