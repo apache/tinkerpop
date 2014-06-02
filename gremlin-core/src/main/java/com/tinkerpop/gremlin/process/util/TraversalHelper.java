@@ -25,7 +25,7 @@ public class TraversalHelper {
     }
 
     public static boolean isReversible(final Traversal traversal) {
-        return traversal.getSteps().stream().filter(step -> !(step instanceof Reversible)).count() == 0;
+        return !traversal.getSteps().stream().filter(step -> !(step instanceof Reversible)).findFirst().isPresent();
     }
 
     public static <C extends Step> Optional<C> getLastStep(final Traversal traversal, final Class<C> classToGet) {
@@ -85,10 +85,12 @@ public class TraversalHelper {
         }
     }
 
-    public static void removeStep(final Step step, final Traversal traversal) {
+    public static int removeStep(final Step step, final Traversal traversal) {
+        final int stepIndex = traversal.getSteps().indexOf(step);
         traversal.getSteps().remove(step);
         reLabelSteps(traversal);
         reLinkSteps(traversal);
+        return stepIndex;
     }
 
     public static void removeStep(final int index, final Traversal traversal) {

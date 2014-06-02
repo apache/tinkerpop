@@ -1,13 +1,14 @@
 package com.tinkerpop.gremlin.process.graph.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.Reversible;
 
 import java.util.Collection;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RetainStep<S> extends FilterStep<S> {
+public class RetainStep<S> extends FilterStep<S> implements Reversible {
 
     public RetainStep(final Traversal traversal, final String variable) {
         super(traversal);
@@ -18,14 +19,14 @@ public class RetainStep<S> extends FilterStep<S> {
             this.setPredicate(traverser -> temp.equals(traverser.get()));
     }
 
-    public RetainStep(final Traversal traversal, final Collection<S> exceptionCollection) {
+    public RetainStep(final Traversal traversal, final Collection<S> retainCollection) {
         super(traversal);
-        this.setPredicate(traverser -> exceptionCollection.contains(traverser.get()));
+        this.setPredicate(traverser -> retainCollection.contains(traverser.get()));
     }
 
-    public RetainStep(final Traversal traversal, final S exceptionObject) {
+    public RetainStep(final Traversal traversal, final S retainObject) {
         super(traversal);
-        this.setPredicate(traverser -> exceptionObject.equals(traverser.get()));
+        this.setPredicate(traverser -> retainObject.equals(traverser.get()));
     }
 
 }
