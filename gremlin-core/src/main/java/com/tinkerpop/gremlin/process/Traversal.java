@@ -19,7 +19,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public static final String OF = "of";
 
-    public Variables memory();
+    public Memory memory();
 
     public TraversalStrategies strategies();
 
@@ -37,29 +37,20 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         return traversal;
     }*/
 
-    public interface Variables extends Serializable {
+    public interface Memory extends Serializable {
 
-        public static class Variable {
+        public <T> void set(final String key, final T value);
 
-            private static final String HIDDEN_PREFIX = "%&%";
+        public <T> T get(final String key);
 
-            public static String hidden(final String key) {
-                return HIDDEN_PREFIX.concat(key);
-            }
-        }
+        public Set<String> getKeys();
 
-        public <T> void set(final String variable, final T value);
-
-        public <T> T get(final String variable);
-
-        public Set<String> getVariables();
-
-        public default <T> T getOrCreate(final String variable, final Supplier<T> orCreate) {
-            if (this.getVariables().contains(variable))
-                return this.get(variable);
+        public default <T> T getOrCreate(final String key, final Supplier<T> orCreate) {
+            if (this.getKeys().contains(key))
+                return this.get(key);
             else {
                 T t = orCreate.get();
-                this.set(variable, t);
+                this.set(key, t);
                 return t;
             }
         }

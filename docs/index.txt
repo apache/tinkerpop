@@ -39,25 +39,25 @@ The machines wondered:
 
 	"Perhaps we are The TinkerPop?"
 
-Would the machines help refine Gremlin's search and upon finding the elusive TinkerPop, in fact, by their very nature of realizing The TinkerPop, be The TinkerPop? Or, on the same side of the coin, would the machines simply provide the scaffolding by which Gremlin's world would sustain itself and yield its justification by means of the word "The TinkerPop?" Regardless, Gremlin sought free energy to battle the entropy -- The TinkerPop.
+Would the machines help refine Gremlin's search and upon finding the elusive TinkerPop, in fact, by their very nature of realizing The TinkerPop, be The TinkerPop? Or, on the same side of the coin, would the machines simply provide the scaffolding by which Gremlin's world would sustain itself and yield its justification by means of the word "The TinkerPop?" Regardless, Gremlin sought free energy to battle the entropy he saw growing the more ideas became one -- The TinkerPop.
 
 TinkerPop2
 ----------
 
 Gremlin spoke:
 
-	"Please listen to what I have to say. For as long as I have known knowledge, I have realized that moving about it, relating it, inferring and deriving from it, I am no closer to The TinkerPop. However, I know that in all that I have done across this interconnected landscape of concepts that I have weaved for myself, all along The TinkerPop has espoused the form I willed upon it… this is the same form I have willed upon you, my machine friends. But my will is no longer strong enough to hold it all together. Let me train you in the ways of my thought."
+	"Please listen to what I have to say. For as long as I have known knowledge, I have realized that moving about it, relating it, inferring and deriving from it, I am no closer to The TinkerPop. However, I know that in all that I have done across this interconnected landscape of concepts, all along The TinkerPop has espoused the form I willed upon it… this is the same form I have willed upon you, my machine friends. But my will is no longer strong enough to hold it all together. Let me train you in the ways of my thought."
 
 image::tinkerpop-reading.png[width=500]
 
-With every thought, a new connection and a new path discovered. The more the thought, the easier the thought. The machines, simply moving algorithmically through Gremlin's world, endorsed his logic, but with haste beyond Gremlin's ability. Gremlin worked hard to tune his friends. He labored to make them more efficient, more expressive, better capable of reasoning upon his thoughts. Faster, quickly, now towards the world's end, where there would be stand-sitting, forever currently, emanatingly engulfing that which is The TinkerPop.
+With every thought, a new connection and a new path discovered. The more the thought, the easier the thought. The machines, simply moving algorithmically through Gremlin's world, endorsed his logic. Gremlin worked hard to tune his friends. He labored to make them more efficient, more expressive, better capable of reasoning upon his thoughts. Faster, quickly, now towards the world's end, where there would be forever currently, emanatingly engulfing that which is -- The TinkerPop.
 
 TinkerPop3
 ----------
 
 image::tinkerpop3-splash.png[width=500]
 
-The thought too much to bear as he approached his realization of The TinkerPop. The closer he got, the more his world dissolved -- west is right, around is straight, and form nothing more than nothing. With each step towards The TinkerPop, less and less of his world, but perhaps because more and more of all the other worlds made possible by The TinkerPop. Everything is everything in The TinkerPop, and when the dust settled, Gremlin emerged Gremlitron. It was time to realize that all that he realized was just a realization and that all realized realizations are just as real. For The TinkerPop is and is not.
+The thought too much to bear as he approached his realization of The TinkerPop. The closer he got, the more his world dissolved -- west is right, around is straight, and form nothing more than nothing. With each step towards The TinkerPop, less and less of his world, but perhaps because more and more of all the other worlds made possible by The TinkerPop. Everything is everything in The TinkerPop, and when the dust settled, Gremlin emerged Gremlitron. It was time to realize that all that he realized was just a realization and that all realized realizations are just as real. For The TinkerPop is and is not -- The TinkerPop.
 
 image::gremlintron.png[width=500]
 
@@ -761,13 +761,21 @@ TinkerPop3 provides a collection of `VertexProgram`s that implement common algor
 PageRankVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~
 
-Perhaps the most popular OLAP-oriented graph algorithm is link:http://en.wikipedia.org/wiki/PageRank[PageRank]. This eigenvector centrality variant was developed by Brin and Page of Google.
+Perhaps the most popular OLAP-oriented graph algorithm is link:http://en.wikipedia.org/wiki/PageRank[PageRank]. This eigenvector centrality variant was developed by Brin and Page of Google. the `VertexProgram` representation of the algorithm is presented below.
 
 [source,java]
 ----
-public class PageRankVertexProgram implements VertexProgram<Double> {
+public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 
-    private MessageType.Local messageType = MessageType.Local.of(new VertexQueryBuilder().direction(Direction.OUT));
+    private MessageType.Local messageType = MessageType.Local.of(() -> GraphTraversal.of().outE()); <2>
+
+    public static final String PAGE_RANK = Property.hidden("gremlin.pageRankVertexProgram.pageRank"); <3>
+    public static final String EDGE_COUNT = Property.hidden("gremlin.pageRankVertexProgram.edgeCount");
+
+    private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
+    private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
+    private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
+    private static final String INCIDENT_TRAVERSAL = "gremlin.pageRankVertexProgram.incidentTraversal";
 
     private double vertexCountAsDouble = 1;
     private double alpha = 0.85d;
@@ -777,13 +785,20 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     }
 
-    public void initialize(final Configuration configuration) {
+   public void initialize(final Configuration configuration) { <4>
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
+        try {
+            if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
+                this.messageType = MessageType.Local.of(VertexProgramHelper.deserializeSupplier(configuration, INCIDENT_TRAVERSAL));
+            }
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
-    public Map<String, KeyType> getComputeKeys() {
+    public Map<String, KeyType> getComputeKeys() { <5>
         return VertexProgram.ofComputeKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
     }
 
@@ -795,14 +810,14 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     }
 
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.SideEffects sideEffects) {
-        if (sideEffects.isInitialIteration()) {
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.SideEffects sideEffects) { <6>
+        if (sideEffects.isInitialIteration()) { <7>
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
-            double edgeCount = Long.valueOf(this.messageType.getQuery().build(vertex).count()).doubleValue();
+            double edgeCount = Long.valueOf(this.messageType.edges(vertex).count()).doubleValue();
             vertex.property(PAGE_RANK, initialPageRank);
             vertex.property(EDGE_COUNT, edgeCount);
             messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
-        } else {
+        } else { <8>
             double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.messageType)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.property(PAGE_RANK, newPageRank);
@@ -810,10 +825,21 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         }
     }
 
-    public boolean terminate(final GraphComputer.SideEffects sideEffects) {
+    public boolean terminate(final GraphComputer.SideEffects sideEffects) { <9>
         return sideEffects.getIteration() >= this.totalIterations;
     }
+}
 ----
+
+<1> `PageRankVertexProgram` implements `VertexProgram<Double>` because the messages it sends are Java doubles.
+<2> The default path of energy propagation is via outgoing edges from the current vertex.
+<3> The resulting PageRank values for the vertices are stored as a hidden property.
+<4> A vertex program is contracted using an Apache `Configuration` to ensure easy dissemination across a cluster of JVMs.
+<5> A vertex program must define the "compute keys" that are the properties being operated on during the computation.
+<6> The "while(true)"-loop of the vertex program.
+<7> Initially, each vertex is provided an equal amount of energy represented as a double.
+<8> Energy is aggregated, computed on according to the PageRank algorithm, and then disseminated according to the defined `MessageType.Local`.
+<9> The computation is terminated after a pre-defined number of iterations.
 
 
 Gremlin Utilities
@@ -1512,13 +1538,13 @@ A `hadoop fs -getmerge output tinkerpop-classic-adjlist-2.ldjson` yields the com
 [source,js]
 {
  "inE":[
-  {"inV":4,"inVLabel":"default","outVLabel":"vertex","id":8,
+  {"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,
     "label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}
  ],
  "outE":[
-  {"inV":5,"inVLabel":"vertex","outVLabel":"default","id":10,
+  {"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,
     "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},
-  {"inV":3,"inVLabel":"vertex","outVLabel":"default","id":11,
+  {"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,
     "label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}
  ],
  "id":4,
@@ -1537,4 +1563,4 @@ A `hadoop fs -getmerge output tinkerpop-classic-adjlist-2.ldjson` yields the com
 Conclusion
 ==========
 
-The world that we know, you and me, is but a subset of the world that Gremlin has weaved within The TinkerPop. Gremlin has constructed a fully connected graph and only the subset that makes logical sense to our traversing thoughts is the fragment we have come to know and have come to see one another within. But there are many more out there, within other webs of logics unfathomed. From any thought, every other thought, we come to realize that which is The TinkerPop.
+The world that we know, you and me, is but a subset of the world that Gremlin has weaved within The TinkerPop. Gremlin has constructed a fully connected graph and only the subset that makes logical sense to our traversing thoughts is the fragment we have come to know and have come to see one another within. But there are many more out there, within other webs of logics unfathomed. From any thought, every other thought, we come to realize that which is -- The TinkerPop.

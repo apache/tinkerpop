@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.Random;
@@ -8,7 +9,7 @@ import java.util.Random;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RandomStep<S> extends FilterStep<S> {
+public class RandomStep<S> extends FilterStep<S> implements Reversible {
 
     private final Random random = new Random();
     public double probability;

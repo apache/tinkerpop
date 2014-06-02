@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MapHelper;
+import com.tinkerpop.gremlin.process.util.Reversible;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.HashMap;
@@ -13,7 +14,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapable {
+public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible {
 
     public final Map<Object, Long> groupCountMap;
     public FunctionRing<S, ?> functionRing;

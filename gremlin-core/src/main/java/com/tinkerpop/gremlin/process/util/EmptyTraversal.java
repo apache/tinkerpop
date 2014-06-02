@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
 public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
-    private static final Variables VARIABLES = new DefaultVariables();         // TODO: make "empty memory?"
+    private static final Memory MEMORY = new DefaultMemory();         // TODO: make "empty memory?"
     private static final TraversalStrategies TRAVERSAL_STRATEGIES = new DefaultTraversalStrategies();   // TODO: make "empty traversalStrategies?"
 
     public static EmptyTraversal instance() {
@@ -33,8 +33,8 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
         throw new NoSuchElementException();
     }
 
-    public Variables memory() {
-        return VARIABLES;
+    public Memory memory() {
+        return MEMORY;
     }
 
     public TraversalStrategies strategies() {

@@ -57,6 +57,7 @@ public class Path {
         return new ArrayList<>(this.asLabels);
     }
 
+    // TODO: why does this have to exist. I hate this.
     public void renameLastStep(final String as) {
         this.asLabels.set(this.asLabels.size() - 1, as);
     }
@@ -75,8 +76,8 @@ public class Path {
         }
     }
 
-    public Stream<Pair<String, Object>> stream(){
-        return IntStream.range(0, this.size()).mapToObj(i->Pair.with(this.asLabels.get(i), this.objects.get(i)));
+    public Stream<Pair<String, Object>> stream() {
+        return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(this.asLabels.get(i), this.objects.get(i)));
     }
 
     public Path subset(final String... asLabels) {

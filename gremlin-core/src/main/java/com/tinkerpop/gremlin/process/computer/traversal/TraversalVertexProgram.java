@@ -9,19 +9,17 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
 import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -56,15 +54,10 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                         (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
                 this.traversalSupplier = traversalSupplierClass.getConstructor().newInstance();
             } else {
-                final List byteList = configuration.getList(TRAVERSAL_SUPPLIER);
-                byte[] bytes = new byte[byteList.size()];
-                for (int i = 0; i < byteList.size(); i++) {
-                    bytes[i] = Byte.valueOf(byteList.get(i).toString().replace("[", "").replace("]", ""));
-                }
-                this.traversalSupplier = (SSupplier<Traversal>) Serializer.deserializeObject(bytes);
+                this.traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, TRAVERSAL_SUPPLIER);
             }
             this.trackPaths = TraverserTraversalStrategy.trackPaths(this.traversalSupplier.get());
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
@@ -162,13 +155,8 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
         public Builder traversal(final SSupplier<Traversal> traversalSupplier) {
             try {
-                final List<Byte> byteList = new ArrayList<>();
-                final byte[] bytes = Serializer.serializeObject(traversalSupplier);
-                for (byte b : bytes) {
-                    byteList.add(b);
-                }
-                this.configuration.setProperty(TRAVERSAL_SUPPLIER, byteList);
-            } catch (IOException e) {
+                VertexProgramHelper.serializeSupplier(traversalSupplier, this.configuration, TRAVERSAL_SUPPLIER);
+            } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             return this;

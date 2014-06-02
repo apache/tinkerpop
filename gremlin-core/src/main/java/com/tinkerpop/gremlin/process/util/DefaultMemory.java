@@ -10,20 +10,20 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DefaultVariables implements Traversal.Variables {
+public class DefaultMemory implements Traversal.Memory {
 
     private Map<String, Object> memory;
 
-    public <T> void set(final String variable, final T value) {
+    public <T> void set(final String key, final T value) {
         if (null == this.memory) this.memory = new HashMap<>();
-        this.memory.put(variable, value);
+        this.memory.put(key, value);
     }
 
-    public <T> T get(final String variable) {
-        return null == this.memory ? null : (T) this.memory.get(variable);
+    public <T> T get(final String key) {
+        return null == this.memory ? null : (T) this.memory.get(key);
     }
 
-    public Set<String> getVariables() {
+    public Set<String> getKeys() {
         return null == this.memory ? Collections.emptySet() : this.memory.keySet();
     }
 

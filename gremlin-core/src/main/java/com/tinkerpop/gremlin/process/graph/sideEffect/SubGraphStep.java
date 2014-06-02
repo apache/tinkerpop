@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.sideEffect;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
 import com.tinkerpop.gremlin.process.util.PathConsumer;
+import com.tinkerpop.gremlin.process.util.Reversible;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -23,7 +24,7 @@ import java.util.stream.Stream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubGraphStep<S> extends FilterStep<S> implements SideEffectCapable, PathConsumer {
+public class SubGraphStep<S> extends FilterStep<S> implements SideEffectCapable, PathConsumer, Reversible {
     private final Graph subgraph;
     private final Map<Object, Vertex> idMap;
     private final Set<Object> edgesAdded;

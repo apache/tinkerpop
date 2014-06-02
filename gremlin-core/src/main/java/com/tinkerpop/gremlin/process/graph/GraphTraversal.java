@@ -19,6 +19,9 @@ import com.tinkerpop.gremlin.process.graph.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.graph.map.BackStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
+import com.tinkerpop.gremlin.process.graph.map.ElementPropertyStep;
+import com.tinkerpop.gremlin.process.graph.map.ElementValueStep;
+import com.tinkerpop.gremlin.process.graph.map.ElementValuesStep;
 import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.map.IdStep;
 import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
@@ -29,13 +32,10 @@ import com.tinkerpop.gremlin.process.graph.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.map.MatchStep;
 import com.tinkerpop.gremlin.process.graph.map.OrderStep;
 import com.tinkerpop.gremlin.process.graph.map.PathStep;
-import com.tinkerpop.gremlin.process.graph.map.PropertyStep;
 import com.tinkerpop.gremlin.process.graph.map.PropertyValueStep;
-import com.tinkerpop.gremlin.process.graph.map.PropertyValuesStep;
 import com.tinkerpop.gremlin.process.graph.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.map.UnionStep;
-import com.tinkerpop.gremlin.process.graph.map.ValueStep;
 import com.tinkerpop.gremlin.process.graph.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.GroupByStep;
@@ -185,7 +185,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Property<E2>> property(final String propertyKey) {
-        return (GraphTraversal) this.addStep(new PropertyStep<>(this, propertyKey));
+        return (GraphTraversal) this.addStep(new ElementPropertyStep<>(this, propertyKey));
     }
 
     public default GraphTraversal<S, E> shuffle() {
@@ -193,23 +193,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> value() {
-        return (GraphTraversal) this.addStep(new ValueStep<>(this));
+        return (GraphTraversal) this.addStep(new PropertyValueStep<>(this));
     }
 
     public default <E2> GraphTraversal<S, E2> value(final String propertyKey) {
-        return (GraphTraversal) this.addStep(new PropertyValueStep<>(this, propertyKey));
+        return (GraphTraversal) this.addStep(new ElementValueStep<>(this, propertyKey));
     }
 
     public default <E2> GraphTraversal<S, E2> value(final String propertyKey, final E2 defaultValue) {
-        return (GraphTraversal) this.addStep(new PropertyValueStep<>(this, propertyKey, defaultValue));
+        return (GraphTraversal) this.addStep(new ElementValueStep<>(this, propertyKey, defaultValue));
     }
 
     public default <E2> GraphTraversal<S, E2> value(final String propertyKey, final Supplier<E2> defaultSupplier) {
-        return (GraphTraversal) this.addStep(new PropertyValueStep<>(this, propertyKey, defaultSupplier));
+        return (GraphTraversal) this.addStep(new ElementValueStep<>(this, propertyKey, defaultSupplier));
     }
 
     public default GraphTraversal<S, Map<String, Object>> values(final String... propertyKeys) {
-        return (GraphTraversal) this.addStep(new PropertyValuesStep(this, propertyKeys));
+        return (GraphTraversal) this.addStep(new ElementValuesStep(this, propertyKeys));
     }
 
     public default GraphTraversal<S, Path> path(final SFunction... pathFunctions) {

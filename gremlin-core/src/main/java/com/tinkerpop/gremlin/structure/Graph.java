@@ -61,6 +61,10 @@ public interface Graph extends AutoCloseable {
         }
     }
 
+    public default GraphTraversal of() {
+        return GraphTraversal.of();
+    }
+
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
 
     public Transaction tx();
@@ -68,17 +72,6 @@ public interface Graph extends AutoCloseable {
     public <V extends Variables> V variables();
 
     public interface Variables {
-
-        public class Variable {
-
-            private Variable() {
-
-            }
-
-            public static String hidden(final String key) {
-                return HIDDEN_PREFIX.concat(key);
-            }
-        }
 
         public Set<String> getVariables();
 

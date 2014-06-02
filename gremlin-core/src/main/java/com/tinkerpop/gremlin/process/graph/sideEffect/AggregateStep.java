@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.sideEffect;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
+import com.tinkerpop.gremlin.process.util.Reversible;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
@@ -14,7 +15,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AggregateStep<S> extends FlatMapStep<S, S> {
+public class AggregateStep<S> extends FlatMapStep<S, S> implements Reversible {
 
     public final FunctionRing<S, ?> functionRing;
     final Collection aggregate;

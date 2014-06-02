@@ -24,7 +24,7 @@ public class SingleGraphTraversal<S> implements GraphTraversal<S, S> {
     }
 
     @Override
-    public Variables memory() {
+    public Memory memory() {
         return null;
     }
 

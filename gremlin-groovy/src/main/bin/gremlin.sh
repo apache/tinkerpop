@@ -65,5 +65,5 @@ if [ -n "$SCRIPT_DEBUG" ]; then
     set -x
 fi
 
-# Start the JVM
-$JAVA $JAVA_OPTIONS $MAIN_CLASS "$@"
+# Start the JVM, execute the application, and return its exit code
+exec $JAVA $JAVA_OPTIONS $MAIN_CLASS "$@"

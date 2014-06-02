@@ -1,7 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.map;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.util.Reversible;
 import com.tinkerpop.gremlin.process.util.UnTraverserIterator;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class OrderStep<S> extends FlatMapStep<S, S> {
+public class OrderStep<S> extends FlatMapStep<S, S> implements Reversible {
 
     public Comparator<Traverser<S>> comparator;
 

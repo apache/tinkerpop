@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.process.graph.sideEffect;
 
-import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Property;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface SideEffectCapable {
 
-    public static final String CAP_VARIABLE = Traversal.Variables.Variable.hidden("cap");
+    public static final String CAP_VARIABLE = Property.hidden("cap");
 }

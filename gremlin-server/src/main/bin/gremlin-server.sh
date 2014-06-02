@@ -23,8 +23,5 @@ if [ "$JAVA_OPTIONS" = "" ] ; then
     JAVA_OPTIONS="-Xms32m -Xmx512m"
 fi
 
-# Launch the application
-$JAVA -Dlog4j.configuration=log4j-server.properties $JAVA_OPTIONS -cp $CP:$CLASSPATH com.tinkerpop.gremlin.server.GremlinServer $@
-
-# Return the program's exit code
-exit $?
+# Execute the application and return its exit code
+exec $JAVA -Dlog4j.configuration=log4j-server.properties $JAVA_OPTIONS -cp $CP:$CLASSPATH com.tinkerpop.gremlin.server.GremlinServer $@
