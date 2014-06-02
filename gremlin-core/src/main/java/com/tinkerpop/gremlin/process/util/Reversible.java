@@ -5,5 +5,6 @@ package com.tinkerpop.gremlin.process.util;
  */
 public interface Reversible {
 
-    public void reverse();
+    public default void reverse() {
+    }
 }

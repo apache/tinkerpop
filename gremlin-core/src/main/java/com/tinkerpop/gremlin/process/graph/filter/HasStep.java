@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.filter;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
@@ -8,7 +9,7 @@ import com.tinkerpop.gremlin.structure.util.HasContainer;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasStep extends FilterStep<Element> {
+public class HasStep extends FilterStep<Element> implements Reversible {
 
     public HasContainer hasContainer;
 

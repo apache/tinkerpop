@@ -2,19 +2,33 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.map.PropertyStep;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 
 public class TraversalHelperTest {
+
+    @Test
+    public void shouldCorrectlyTestIfReversible() {
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().out()));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().outE().inV()));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().in().in()));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().inE().outV().outE().inV()));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().outE().has("since").inV()));
+        assertTrue(TraversalHelper.isReversible(GraphTraversal.of().outE().as("x")));
+
+        assertFalse(TraversalHelper.isReversible(GraphTraversal.of().as("a").outE().back("a")));
+
+    }
 
     @Test
     public void shouldChainTogetherStepsWithNextPreviousInALinkedListStructure() {
