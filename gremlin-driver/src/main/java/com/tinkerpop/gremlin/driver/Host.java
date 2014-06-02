@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -79,4 +81,11 @@ class Host {
                 ", webSocketUri=" + webSocketUri +
                 '}';
     }
+
+	public static interface Listener {
+		public void onAvailable(final Host host);
+		public void onUnavailable(final Host host);
+		public void onNew(final Host host);
+		public void onRemove(final Host host);
+	}
 }

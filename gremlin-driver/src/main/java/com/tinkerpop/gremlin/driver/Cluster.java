@@ -29,8 +29,10 @@ public class Cluster {
     private Manager manager;
 
     private Cluster(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
-                    final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings) {
-        this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize, connectionPoolSettings);
+                    final int nioPoolSize, final int workerPoolSize,
+					final Settings.ConnectionPoolSettings connectionPoolSettings,
+					final LoadBalancingStrategy loadBalancingStrategy) {
+        this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize, connectionPoolSettings, loadBalancingStrategy);
     }
 
     public synchronized void init() {
@@ -126,6 +128,10 @@ public class Cluster {
         return manager.connectionPoolSettings;
     }
 
+	LoadBalancingStrategy loadBalancingStrategy() {
+		return manager.loadBalancingStrategy;
+	}
+
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
@@ -138,6 +144,7 @@ public class Cluster {
         private int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
         private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
+		private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
 
         private Builder() {
             // empty to prevent direct instantiation
@@ -211,7 +218,12 @@ public class Cluster {
             return this;
         }
 
-        public Builder addContactPoint(final String address) {
+		public Builder loadBalancingStrategy(final LoadBalancingStrategy loadBalancingStrategy) {
+			this.loadBalancingStrategy = loadBalancingStrategy;
+			return this;
+		}
+
+		public Builder addContactPoint(final String address) {
             try {
                 this.addresses.add(InetAddress.getByName(address));
                 return this;
@@ -244,7 +256,8 @@ public class Cluster {
             connectionPoolSettings.minSimultaneousRequestsPerConnection = this.minSimultaneousRequestsPerConnection;
             connectionPoolSettings.maxSize = this.maxConnectionPoolSize;
             connectionPoolSettings.minSize = this.minConnectionPoolSize;
-            return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize, connectionPoolSettings);
+            return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
+					connectionPoolSettings, loadBalancingStrategy);
         }
     }
 
@@ -272,11 +285,14 @@ public class Cluster {
         private final Factory factory;
         private final MessageSerializer serializer;
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
+		private final LoadBalancingStrategy loadBalancingStrategy;
 
         private final ScheduledExecutorService executor;
 
         private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
-                        final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings) {
+                        final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings,
+						final LoadBalancingStrategy loadBalancingStrategy) {
+			this.loadBalancingStrategy = loadBalancingStrategy;
             this.clusterInfo = new ClusterInfo(Cluster.this);
             this.contactPoints = contactPoints;
             this.connectionPoolSettings = connectionPoolSettings;

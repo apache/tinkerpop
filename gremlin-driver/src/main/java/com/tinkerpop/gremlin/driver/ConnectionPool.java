@@ -61,8 +61,15 @@ class ConnectionPool {
         this.minInProcess = settings.minInProcessPerConnection;
 
         final List<Connection> l = new ArrayList<>(minPoolSize);
-        for (int i = 0; i < minPoolSize; i++)
-            l.add(new Connection(host.getWebSocketUri(), this, cluster, settings.maxInProcessPerConnection));
+
+		try {
+			for (int i = 0; i < minPoolSize; i++)
+				l.add(new Connection(host.getWebSocketUri(), this, cluster, settings.maxInProcessPerConnection));
+		} catch (Exception re) {
+			// ok if we don't get it initialized here - when a request is attempted in a connection from the
+			// pool it will try to create new connections as needed.
+			logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, l.size());
+		}
 
         this.connections = new CopyOnWriteArrayList<>(l);
         this.open = new AtomicInteger(connections.size());
@@ -127,11 +134,18 @@ class ConnectionPool {
 				try {
 					connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
 					this.open.set(connections.size());
+
+					// host is reconnected and a connection is now available
+					this.cluster.loadBalancingStrategy().onAvailable(host);
 					return true;
 				} catch (Exception ex) {
 					return false;
 				}
 			});
+
+			// let the load-balancer know that the host is acting poorly
+			this.cluster.loadBalancingStrategy().onUnavailable(host);
+
 			closeAsync();
         } else {
             if (bin.contains(connection) && inFlight == 0) {
@@ -159,7 +173,8 @@ class ConnectionPool {
 
     public CompletableFuture<Void> closeAsync() {
         logger.info("Signalled closing of connection pool on {} with core size of {}", host, minPoolSize);
-        CompletableFuture<Void> future = closeFuture.get();
+
+		CompletableFuture<Void> future = closeFuture.get();
         if (future != null)
             return future;
 
@@ -282,6 +297,24 @@ class ConnectionPool {
 
             remaining = to - TimeUtil.timeSince(start, unit);
         } while (remaining > 0);
+
+		// todo: need to abstract the host availability function a bit - this is kinda rigid
+		// if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short)
+		host.makeUnavailable(h -> {
+			try {
+				connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
+				this.open.set(connections.size());
+
+				// host is reconnected and a connection is now available
+				this.cluster.loadBalancingStrategy().onAvailable(host);
+				return true;
+			} catch (Exception ex) {
+				return false;
+			}
+		});
+
+		// let the load-balancer know that the host is acting poorly
+		this.cluster.loadBalancingStrategy().onUnavailable(host);
 
         throw new TimeoutException();
     }

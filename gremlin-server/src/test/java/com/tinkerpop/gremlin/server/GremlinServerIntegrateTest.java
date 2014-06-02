@@ -12,10 +12,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.net.ConnectException;
 import java.nio.channels.ClosedChannelException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -138,5 +140,30 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 		} finally {
 			cluster.close();
 		}
+	}
+
+	@Test
+	public void shouldEventuallySucceedWithRoundRobin() throws Exception {
+		final String noGremlinServer = "74.125.225.19";
+		final Cluster cluster = Cluster.create(noGremlinServer).addContactPoint("localhost").build();
+		final Client client = cluster.connect();
+
+		try {
+			// this first attempt will fail because it's sending stuff to a host it can't connect to
+			client.submit("1+1").all().join();
+			fail();
+		} catch (RuntimeException re) {
+			assertTrue(re.getCause().getCause() instanceof TimeoutException);
+		}
+
+		// ensure that connection to server is good - that host should be marked "dead" and remaining
+		// requests should succeed
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+
+		cluster.close();
 	}
 }

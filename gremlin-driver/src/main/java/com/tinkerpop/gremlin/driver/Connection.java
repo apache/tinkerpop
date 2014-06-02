@@ -72,8 +72,9 @@ class Connection {
 
             logger.info("Created new connection for {}", uri);
         } catch (InterruptedException ie) {
-            ie.printStackTrace();
-            throw new RuntimeException(ie);
+			logger.debug("Error opening connection on {}", uri);
+
+			throw new RuntimeException(ie);
         }
     }
 
