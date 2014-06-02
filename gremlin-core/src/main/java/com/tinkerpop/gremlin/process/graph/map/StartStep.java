@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.Reversible;
 import com.tinkerpop.gremlin.process.util.TraverserIterator;
 import com.tinkerpop.gremlin.process.util.TraverserSource;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
@@ -13,7 +14,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class StartStep<S> extends MapStep<S, S> implements TraverserSource {
+public class StartStep<S> extends MapStep<S, S> implements TraverserSource, Reversible {
 
     public Object start;
 

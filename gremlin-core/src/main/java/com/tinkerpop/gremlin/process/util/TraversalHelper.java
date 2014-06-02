@@ -24,6 +24,10 @@ public class TraversalHelper {
         return !as.startsWith(UNDERSCORE);
     }
 
+    public static boolean isReversible(final Traversal traversal) {
+        return traversal.getSteps().stream().filter(step -> !(step instanceof Reversible)).count() == 0;
+    }
+
     public static <C extends Step> Optional<C> getLastStep(final Traversal traversal, final Class<C> classToGet) {
         final List<C> steps = (List) traversal.getSteps().stream().filter(step -> classToGet.isAssignableFrom(step.getClass())).collect(Collectors.<C>toList());
         return steps.size() == 0 ? Optional.empty() : Optional.of(steps.get(steps.size() - 1));
