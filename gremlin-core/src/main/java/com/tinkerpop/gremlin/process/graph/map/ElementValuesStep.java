@@ -9,9 +9,9 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ValuesStep extends MapStep<Element, Map<String, Object>> {
+public class ElementValuesStep extends MapStep<Element, Map<String, Object>> {
 
-    public ValuesStep(final Traversal traversal, final String... keys) {
+    public ElementValuesStep(final Traversal traversal, final String... keys) {
         super(traversal);
         this.setFunction(traverser -> ElementHelper.propertyMap(traverser.get(), keys));
     }
