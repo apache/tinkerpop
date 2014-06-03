@@ -581,6 +581,7 @@
                                 <goals>
                                     <goal>upload</goal>
                                 </goals>
+                                <inherited>false</inherited>
                                 <configuration>
                                     <fromDir>${htmlsingle.output.dir}</fromDir>
                                     <serverId>tinkerpop.s3</serverId> <!-- your ~/.m2/settings.xml must match -->
