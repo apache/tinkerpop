@@ -171,13 +171,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
                 <configuration>
                     <additionalparam>-Xdoclint:none</additionalparam>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>aggregate</id>
+                        <id>aggregate-in-site-lifecycle</id>
                         <goals>
                             <goal>aggregate</goal>
                         </goals>
@@ -318,9 +317,19 @@
                     <artifactId>xml-maven-plugin</artifactId>
                     <version>1.0</version>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.9.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>wagon-maven-plugin</artifactId>
+                    <version>1.0-beta-5</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
     <reporting>
         <plugins>
             <plugin>
@@ -565,7 +574,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0-beta-5</version>
                         <executions>
                             <execution>
                                 <id>upload-asciidocs-to-s3</id>
@@ -577,6 +585,65 @@
                                     <fromDir>${htmlsingle.output.dir}</fromDir>
                                     <serverId>tinkerpop.s3</serverId> <!-- your ~/.m2/settings.xml must match -->
                                     <url>s3://www.tinkerpop.com/docs/tinkerpop3/${project.version}</url>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>javadoc-upload</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>javadoc-upload</name>
+                </property>
+            </activation>
+
+            <properties>
+                <javadoc.dir>${project.build.directory}/site/apidocs</javadoc.dir>
+            </properties>
+
+            <build>
+                <plugins>
+                    <!-- There's a maven-javadoc-plugin:aggregate execution above,
+                         but it's bound to the site lifecycle, so we can't rely on it.
+                         This execution binds to the default lifecycle. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>aggregate-in-default-lifecycle</id>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>upload-asciidocs-to-s3</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload</goal>
+                                </goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <fromDir>${javadoc.dir}</fromDir>
+                                    <serverId>tinkerpop.s3</serverId> <!-- your ~/.m2/settings.xml must match -->
+                                    <!-- <optimize>true</optimize> --> <!-- not supported by the S3 wagon -->
+                                    <url>s3://www.tinkerpop.com/javadocs/tinkerpop3/${project.version}</url>
                                 </configuration>
                             </execution>
                         </executions>
