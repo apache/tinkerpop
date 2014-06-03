@@ -660,7 +660,7 @@ public class IoTest extends AbstractGremlinTest {
 	@FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
 	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
 	@LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-	public void shouldReadWriteVerticesNoEdgesToKryo() throws Exception {
+	public void shouldReadWriteVerticesNoEdgesToKryoManual() throws Exception {
 		try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 			final KryoWriter writer = KryoWriter.create().build();
 			writer.writeVertices(os, g.V().has("age", T.gt, 30));
@@ -689,10 +689,41 @@ public class IoTest extends AbstractGremlinTest {
 
 	@Test
 	@FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+	@FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
+	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+	@LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+	public void shouldReadWriteVerticesNoEdgesToKryo() throws Exception {
+		try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+			final KryoWriter writer = KryoWriter.create().build();
+			writer.writeVertices(os, g.V().has("age", T.gt, 30));
+
+			final AtomicInteger called = new AtomicInteger(0);
+			final KryoReader reader = KryoReader.create()
+					.setWorkingDirectory(File.separator + "tmp").build();
+
+			try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+				final Iterator<Vertex> itty = reader.readVertices(bais,
+						null,
+						(vertexId, label, properties) -> {
+							called.incrementAndGet();
+							return mock(Vertex.class);
+						}, null);
+
+				assertNotNull(itty.next());
+				assertNotNull(itty.next());
+				assertFalse(itty.hasNext());
+			}
+
+			assertEquals(2, called.get());
+		}
+	}
+
+	@Test
+	@FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
 	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
 	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
 	@LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-	public void shouldReadWriteVerticesNoEdgesToGraphSON() throws Exception {
+	public void shouldReadWriteVerticesNoEdgesToGraphSONManual() throws Exception {
 		try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 			final GraphSONWriter writer = GraphSONWriter.create().build();
 			writer.writeVertices(os, g.V().has("age", T.gt, 30));
@@ -718,7 +749,33 @@ public class IoTest extends AbstractGremlinTest {
 		}
 	}
 
-    @Test
+	@Test
+	@FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+	@LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+	public void shouldReadWriteVerticesNoEdgesToGraphSON() throws Exception {
+		try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+			final GraphSONWriter writer = GraphSONWriter.create().build();
+			writer.writeVertices(os, g.V().has("age", T.gt, 30));
+
+			final AtomicInteger called = new AtomicInteger(0);
+			final GraphSONReader reader = GraphSONReader.create().build();
+			final Iterator<Vertex> itty = reader.readVertices(new ByteArrayInputStream(os.toByteArray()), null,
+					(vertexId, label, properties) -> {
+						called.incrementAndGet();
+						return mock(Vertex.class);
+					}, null);
+
+			assertNotNull(itty.next());
+			assertNotNull(itty.next());
+			assertFalse(itty.hasNext());
+			assertEquals(2, called.get());
+		}
+	}
+
+
+	@Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)

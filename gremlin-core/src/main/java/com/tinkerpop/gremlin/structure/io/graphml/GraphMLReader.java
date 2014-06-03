@@ -17,6 +17,7 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -62,7 +63,14 @@ public class GraphMLReader implements GraphReader {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
-    @Override
+	@Override
+	public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+							   			 final TriFunction<Object, String, Object[], Vertex> vertexMaker,
+							   			 final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+		throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+	}
+
+	@Override
     public Edge readEdge(final InputStream inputStream, final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }

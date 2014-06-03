@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,56 +68,38 @@ public class KryoReader implements GraphReader {
                              final Direction directionRequested,
                              final TriFunction<Object, String, Object[], Vertex> vertexMaker,
                              final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-        if (null != directionRequested && null == edgeMaker)
-            throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
-
         final Input input = new Input(inputStream);
-        this.headerReader.read(kryo, input);
-
-        final List<Object> vertexArgs = new ArrayList<>();
-
-        final Object vertexId = kryo.readClassAndObject(input);
-        final String label = input.readString();
-
-        readElementProperties(input, vertexArgs);
-        final Vertex v = vertexMaker.apply(vertexId, label, vertexArgs.toArray());
-
-        final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
-        if (!streamContainsEdgesInSomeDirection && Optional.ofNullable(directionRequested).isPresent())
-            throw new IllegalStateException(String.format("The direction %s was requested but no attempt was made to serialize edges into this stream", directionRequested));
-
-        // if there are edges in the stream and the direction is not present then the rest of the stream is
-        // simply ignored
-        if (Optional.ofNullable(directionRequested).isPresent()) {
-            final Direction directionsInStream = kryo.readObject(input, Direction.class);
-            if (directionsInStream != Direction.BOTH && directionsInStream != directionRequested)
-                throw new IllegalStateException(String.format("Stream contains %s edges, but requesting %s", directionsInStream, directionRequested));
-
-            final Direction firstDirection = kryo.readObject(input, Direction.class);
-            if (firstDirection == Direction.OUT && (directionRequested == Direction.BOTH || directionRequested == Direction.OUT))
-                readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, v.id(), vId, l, properties));
-            else {
-                // requested direction in, but BOTH must be serialized so skip this.  the illegalstateexception
-                // prior to this IF should  have caught a problem where IN is not supported at all
-                if (firstDirection == Direction.OUT && directionRequested == Direction.IN)
-                    skipEdges(input);
-            }
-
-            if (directionRequested == Direction.BOTH || directionRequested == Direction.IN) {
-                // if the first direction was OUT then it was either read or skipped.  in that case, the marker
-                // of the stream is currently ready to read the IN direction. otherwise it's in the perfect place
-                // to start reading edges
-                if (firstDirection == Direction.OUT)
-                    kryo.readObject(input, Direction.class);
-
-                readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, vId, v.id(), l, properties));
-            }
-        }
-
-        return v;
+		return readVertex(directionRequested, vertexMaker, edgeMaker, input);
     }
 
-    @Override
+	@Override
+	public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+							   			 final TriFunction<Object, String, Object[], Vertex> vertexMaker,
+							   			 final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+		final Input input = new Input(inputStream);
+		return new Iterator<Vertex>() {
+			@Override
+			public boolean hasNext() {
+				return !input.eof();
+			}
+
+			@Override
+			public Vertex next() {
+				try {
+					final Vertex v = readVertex(direction, vertexMaker, edgeMaker, input);
+
+					// read the vertex terminator
+					kryo.readClassAndObject(input);
+
+					return v;
+				} catch (Exception ex) {
+					throw new RuntimeException(ex);
+				}
+			}
+		};
+	}
+
+	@Override
     public Vertex readVertex(final InputStream inputStream, final TriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
         return readVertex(inputStream, null, vertexMaker, null);
     }
@@ -208,6 +191,56 @@ public class KryoReader implements GraphReader {
             deleteTempFileSilently();
         }
     }
+
+	private Vertex readVertex(final Direction directionRequested, final TriFunction<Object, String, Object[], Vertex> vertexMaker,
+							  final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker, final Input input) throws IOException {
+		if (null != directionRequested && null == edgeMaker)
+			throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
+
+		this.headerReader.read(kryo, input);
+
+		final List<Object> vertexArgs = new ArrayList<>();
+
+		final Object vertexId = kryo.readClassAndObject(input);
+		final String label = input.readString();
+
+		readElementProperties(input, vertexArgs);
+		final Vertex v = vertexMaker.apply(vertexId, label, vertexArgs.toArray());
+
+		final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
+		if (!streamContainsEdgesInSomeDirection && Optional.ofNullable(directionRequested).isPresent())
+			throw new IllegalStateException(String.format("The direction %s was requested but no attempt was made to serialize edges into this stream", directionRequested));
+
+		// if there are edges in the stream and the direction is not present then the rest of the stream is
+		// simply ignored
+		if (Optional.ofNullable(directionRequested).isPresent()) {
+			final Direction directionsInStream = kryo.readObject(input, Direction.class);
+			if (directionsInStream != Direction.BOTH && directionsInStream != directionRequested)
+				throw new IllegalStateException(String.format("Stream contains %s edges, but requesting %s", directionsInStream, directionRequested));
+
+			final Direction firstDirection = kryo.readObject(input, Direction.class);
+			if (firstDirection == Direction.OUT && (directionRequested == Direction.BOTH || directionRequested == Direction.OUT))
+				readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, v.id(), vId, l, properties));
+			else {
+				// requested direction in, but BOTH must be serialized so skip this.  the illegalstateexception
+				// prior to this IF should  have caught a problem where IN is not supported at all
+				if (firstDirection == Direction.OUT && directionRequested == Direction.IN)
+					skipEdges(input);
+			}
+
+			if (directionRequested == Direction.BOTH || directionRequested == Direction.IN) {
+				// if the first direction was OUT then it was either read or skipped.  in that case, the marker
+				// of the stream is currently ready to read the IN direction. otherwise it's in the perfect place
+				// to start reading edges
+				if (firstDirection == Direction.OUT)
+					kryo.readObject(input, Direction.class);
+
+				readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, vId, v.id(), l, properties));
+			}
+		}
+
+		return v;
+	}
 
     private void readEdges(final Input input, final QuadConsumer<Object, Object, String, Object[]> edgeMaker) {
         if (input.readBoolean()) {
