@@ -20,10 +20,17 @@ public enum Contains implements BiPredicate<Object, Object> {
 
     IN, NOT_IN;
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
     public boolean test(final Object first, final Object second) {
         return this.equals(IN) ? ((Collection) second).contains(first) : !((Collection) second).contains(first);
     }
 
+	/**
+	 * Produce the opposite representation of the current {@code Contains} object.
+	 */
     public Contains opposite() {
         return this.equals(IN) ? NOT_IN : IN;
     }
