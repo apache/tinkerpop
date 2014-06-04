@@ -46,6 +46,7 @@ import com.tinkerpop.gremlin.process.graph.sideEffect.SubGraphStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
 import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
+import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -477,5 +478,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, Pair<Vertex, Double>> pageRank(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) {
         return (GraphTraversal) this.addStep(new PageRankStep(this, incidentTraversal));
+    }
+
+    /////////////////////////////////////
+
+    public class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements GraphTraversal<S, E> {
     }
 }
