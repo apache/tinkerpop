@@ -78,7 +78,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Collection<E> fill(final Collection<E> collection) {
         try {
-            while (true) {
+            while (this.hasNext()) {
                 collection.add(this.next());
             }
         } catch (final NoSuchElementException e) {
@@ -88,7 +88,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal iterate() {
         try {
-            while (true) {
+            while (this.hasNext()) {
                 this.next();
             }
         } catch (final NoSuchElementException e) {
@@ -99,7 +99,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     public default long count() {
         long counter = 0;
         try {
-            while (true) {
+            while (this.hasNext()) {
                 this.next();
                 counter++;
             }
@@ -114,7 +114,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default void forEach(final Consumer<E> consumer) {
         try {
-            while (true) {
+            while (this.hasNext()) {
                 consumer.accept(this.next());
             }
         } catch (final NoSuchElementException e) {
