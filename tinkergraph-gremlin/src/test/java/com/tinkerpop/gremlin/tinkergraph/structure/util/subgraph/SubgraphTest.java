@@ -3,12 +3,17 @@ package com.tinkerpop.gremlin.tinkergraph.structure.util.subgraph;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategy;
 import com.tinkerpop.gremlin.structure.util.subgraph.Subgraph;
+import com.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -27,6 +32,12 @@ public class SubgraphTest {
         Function<Edge, Boolean> edgeCriterion = edge -> true;
 
         Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
+
+        /*
+        Optional<GraphStrategy> strategyToTest = Optional.of(new SubgraphStrategy(vertexCriterion, edgeCriterion));
+        TinkerGraphGraphProvider gp = new TinkerGraphGraphProvider();
+        Graph sg = gp.openTestGraph(gp.standardGraphConfiguration(), strategyToTest);
+        */
 
         // three vertices are included in the subgraph
         assertEquals(6, count(g.V().toList()));
@@ -63,9 +74,11 @@ public class SubgraphTest {
 
         Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
 
+        // all vertices are here
         assertEquals(6, count(g.V().toList()));
         assertEquals(6, count(sg.V().toList()));
 
+        // only the given edges are included
         assertEquals(6, count(g.E().toList()));
         assertEquals(3, count(sg.E().toList()));
 

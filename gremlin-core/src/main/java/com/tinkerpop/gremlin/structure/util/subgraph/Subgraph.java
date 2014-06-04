@@ -34,12 +34,12 @@ public class Subgraph implements Graph {
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        return new SubgraphTraversal<>(baseGraph.V(), vertexCriterion, edgeCriterion, true, true);
+        return new SubgraphTraversal<>(baseGraph.V(), vertexCriterion, edgeCriterion, true);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
-        return new SubgraphTraversal(baseGraph.E(), vertexCriterion, edgeCriterion, false, false);
+        return new SubgraphTraversal(baseGraph.E(), vertexCriterion, edgeCriterion, false);
     }
 
     @Override

@@ -19,20 +19,18 @@ public class SubgraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
     private final Traversal<S, E> baseTraversal;
     private final Function<Vertex, Boolean> vertexCriterion;
     private final Function<Edge, Boolean> edgeCriterion;
-    private final boolean fromVertices, toVertices;
+    private final boolean isVertexIterator;
 
     private Element nextElement;
 
     public SubgraphTraversal(final Traversal<S, E> baseTraversal,
                              final Function<Vertex, Boolean> vertexCriterion,
                              final Function<Edge, Boolean> edgeCriterion,
-                             final boolean fromVertices,
-                             final boolean toVertices) {
+                             final boolean isVertexIterator) {
         this.baseTraversal = baseTraversal;
         this.vertexCriterion = vertexCriterion;
         this.edgeCriterion = edgeCriterion;
-        this.fromVertices = fromVertices;
-        this.toVertices = toVertices;
+        this.isVertexIterator = isVertexIterator;
 
         advanceToNext();
     }
@@ -45,7 +43,7 @@ public class SubgraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
     @Override
     public GraphTraversal<S, E> submit(final TraversalEngine engine) {
         Traversal<S, E> newBaseTraversal = baseTraversal.submit(engine);
-        return new SubgraphTraversal(newBaseTraversal, vertexCriterion, edgeCriterion, fromVertices, toVertices);
+        return new SubgraphTraversal(newBaseTraversal, vertexCriterion, edgeCriterion, isVertexIterator);
     }
 
     @Override
@@ -67,7 +65,7 @@ public class SubgraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
     private void advanceToNext() {
         while (baseTraversal.hasNext()) {
             E nextBaseElement = baseTraversal.next();
-            if (toVertices) {
+            if (isVertexIterator) {
                 if (vertexCriterion.apply((Vertex) nextBaseElement)) {
                     nextElement = new SubgraphVertex((Vertex) nextBaseElement, vertexCriterion, edgeCriterion);
                     return;

@@ -28,21 +28,21 @@ public class SubgraphEdge implements Edge {
     @Override
     public GraphTraversal<Edge, Vertex> inV() {
         return edgeCriterion.apply(baseEdge)
-                ? new SubgraphTraversal<>(baseEdge.inV(), vertexCriterion, edgeCriterion, false, true)
+                ? new SubgraphTraversal<>(baseEdge.inV(), vertexCriterion, edgeCriterion, true)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 
     @Override
     public GraphTraversal<Edge, Vertex> outV() {
         return edgeCriterion.apply(baseEdge)
-                ? new SubgraphTraversal<>(baseEdge.outV(), vertexCriterion, edgeCriterion, false, true)
+                ? new SubgraphTraversal<>(baseEdge.outV(), vertexCriterion, edgeCriterion, true)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 
     @Override
     public GraphTraversal<Edge, Vertex> bothV() {
         return edgeCriterion.apply(baseEdge)
-                ? new SubgraphTraversal<>(baseEdge.bothV(), vertexCriterion, edgeCriterion, false, true)
+                ? new SubgraphTraversal<>(baseEdge.bothV(), vertexCriterion, edgeCriterion, true)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 
