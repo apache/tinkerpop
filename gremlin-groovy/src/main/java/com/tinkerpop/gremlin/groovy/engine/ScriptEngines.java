@@ -43,7 +43,7 @@ public class ScriptEngines {
 	public Object eval(final String script, final Bindings bindings, final String language)
 			throws ScriptException, TimeoutException {
 		if (!scriptEngines.containsKey(language))
-			throw new IllegalArgumentException("Language [%s] not configured on this server.");
+			throw new IllegalArgumentException("Language [%s] not supported");
 
 		return scriptEngines.get(language).eval(script, bindings);
 	}
@@ -54,7 +54,7 @@ public class ScriptEngines {
 	public Object eval(final Reader reader, final Bindings bindings, final String language)
 			throws ScriptException, TimeoutException {
 		if (!scriptEngines.containsKey(language))
-			throw new IllegalArgumentException("Language [%s] not configured on this server.");
+			throw new IllegalArgumentException("Language [%s] not supported");
 
 		return scriptEngines.get(language).eval(reader, bindings);
 	}
@@ -68,7 +68,7 @@ public class ScriptEngines {
 		if (scriptEngines.containsKey(language))
 			scriptEngines.remove(language);
 
-		final ScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports).orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported."));
+		final ScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports).orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported"));
 		scriptEngines.put(language, scriptEngine);
 	}
 
@@ -95,7 +95,7 @@ public class ScriptEngines {
 
 	// todo: does reset kill init script work...probably need to re-init
 	public void reset() {
-		getDependencyManagers().forEach(dm -> dm.reset());
+		getDependencyManagers().forEach(DependencyManager::reset);
 	}
 
 	/**

@@ -185,6 +185,8 @@ public class GremlinExecutorTest {
 
 	@Test
 	public void shouldNotExhaustThreads() throws Exception {
+		// this is not representative of how the GremlinExecutor should be configured.  A single thread executor
+		// shared will create odd behaviors, but it's good for this test.
 		final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 		final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
 				.executorService(executorService)

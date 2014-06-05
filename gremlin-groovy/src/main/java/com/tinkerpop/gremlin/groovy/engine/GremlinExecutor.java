@@ -32,7 +32,7 @@ import java.util.function.Consumer;
  * Execute Gremlin scripts against a {@code ScriptEngine} instance.  It is designed to host any JSR-223 enabled
  * {@code ScriptEngine} and assumes such engines are designed to be thread-safe in the evaluation.  Script evaluation
  * functions return a {@link CompletableFuture} where scripts may timeout if their evaluation
- * takes too long.
+ * takes too long.  The default timeout is 8000ms.
  * <br/>
  * By default, the {@code GremlinExecutor} initializes itself to use a shared thread pool initialized with four
  * threads. This default thread pool is shared for both the task of executing script evaluations and for scheduling
