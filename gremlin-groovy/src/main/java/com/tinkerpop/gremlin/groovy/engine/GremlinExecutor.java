@@ -275,42 +275,66 @@ public class GremlinExecutor {
 			return this;
 		}
 
+		/**
+		 * Replaces any settings provided by {@link #engineSettings(java.util.Map)}.
+		 */
 		public Builder engineSettings(final Map<String, EngineSettings> settings) {
 			this.settings = settings;
 			return this;
 		}
 
+		/**
+		 * The thread pool used to evaluate scripts.
+		 */
 		public Builder executorService(final ExecutorService executorService) {
 			this.executorService = executorService;
 			return this;
 		}
 
+		/**
+		 * The thread pool used to schedule timeouts on scripts.
+		 */
 		public Builder scheduledExecutorService(final ScheduledExecutorService scheduledExecutorService) {
 			this.scheduledExecutorService = scheduledExecutorService;
 			return this;
 		}
 
+		/**
+		 * A {@link Consumer} to execute just before the script evaluation.
+		 */
 		public Builder beforeEval(final Consumer<Bindings> beforeEval) {
 			this.beforeEval = beforeEval;
 			return this;
 		}
 
+		/**
+		 * A {@link Consumer} to execute just after successful script evaluation.
+		 */
 		public Builder afterSuccess(final Consumer<Bindings> afterSuccess) {
 			this.afterSuccess = afterSuccess;
 			return this;
 		}
 
+		/**
+		 * A {@link Consumer} to execute if the script timesout
+		 */
 		public Builder afterTimeout(final Consumer<Bindings> afterTimeout) {
 			this.afterTimeout = afterTimeout;
 			return this;
 		}
 
+		/**
+		 * A {@link Consumer} to execute in the event of failure.
+		 */
 		public Builder afterFailure(final BiConsumer<Bindings, Exception> afterFailure) {
 			this.afterFailure = afterFailure;
 			return this;
 		}
 
-		public Builder setUse(List<List<String>> use) {
+		/**
+		 * A set of maven coordinates for dependencies to be applied for the script engine instances.
+		 */
+		public Builder setUse(final List<List<String>> use) {
 			this.use = use;
 			return this;
 		}
