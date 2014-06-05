@@ -43,24 +43,24 @@ public class SubgraphTest {
 		sg.strategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
-        assertEquals(6, count(g.V().toList()));
-        assertEquals(3, count(sg.V().toList()));
+        assertEquals(6, g.V().count());
+        assertEquals(3, sg.V().count());
 
         // only two edges are present, even though edges are not explicitly excluded
         // (edges require their incident vertices)
-        assertEquals(6, count(g.E().toList()));
-        assertEquals(2, count(sg.E().toList()));
+        assertEquals(6, g.E().count());
+        assertEquals(2, sg.E().count());
 
 		final Vertex v1_g = g.v(1);
 		final Vertex v1_sg = sg.v(1);
-        assertEquals(2, count(v1_g.out("knows").toList()));
-        assertEquals(1, count(v1_sg.out("knows").toList()));
+        assertEquals(2, v1_g.out("knows").count());
+        assertEquals(1, v1_sg.out("knows").count());
 
-        assertEquals(2, count(g.v(1).out("knows").toList()));
-        assertEquals(1, count(sg.v(1).out("knows").toList()));
+        assertEquals(2, g.v(1).out("knows").count());
+        assertEquals(1, sg.v(1).out("knows").count());
 
-        assertEquals(2, count(g.v(1).outE("knows").toList()));
-        assertEquals(1, count(sg.v(1).outE("knows").toList()));
+        assertEquals(2, g.v(1).outE("knows").count());
+        assertEquals(1, sg.v(1).outE("knows").count());
     }
 
     @Test
@@ -72,10 +72,12 @@ public class SubgraphTest {
 
         Graph g = TinkerFactory.createClassic();
 
+        //*
         Function<Vertex, Boolean> vertexCriterion = vertex -> true;
         Function<Edge, Boolean> edgeCriterion = edge -> includedEdgeIds.contains((int) edge.id());
 
         Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
+        //*/
 
         /*
         Predicate<Vertex> vertexCriterion = vertex -> true;
@@ -84,32 +86,26 @@ public class SubgraphTest {
         final Optional<GraphStrategy> strategyToTest = Optional.<GraphStrategy>of(new SubgraphStrategy(vertexCriterion, edgeCriterion));
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
-        */
+        //*/
 
         // all vertices are here
-        assertEquals(6, count(g.V().toList()));
-        assertEquals(6, count(sg.V().toList()));
+        assertEquals(6, g.V().count());
+        assertEquals(6, sg.V().count());
 
         // only the given edges are included
-        assertEquals(6, count(g.E().toList()));
-        assertEquals(3, count(sg.E().toList()));
+        assertEquals(6, g.E().count());
+        assertEquals(3, sg.E().count());
 
-        assertEquals(2, count(g.v(1).outE("knows").toList()));
-        assertEquals(1, count(sg.v(1).outE("knows").toList()));
+        assertEquals(2, g.v(1).outE("knows").count());
+        assertEquals(1, sg.v(1).outE("knows").count());
+
+        assertEquals(2, g.v(1).outE("knows").count());
+        assertEquals(1, sg.v(1).outE("knows").count());
 
         // wrapped Traversal<Vertex, Vertex> takes into account the edges it must pass through
-        assertEquals(2, count(g.v(1).out("knows").toList()));
-        assertEquals(1, count(sg.v(1).out("knows").toList()));
-        assertEquals(2, count(g.v(4).out("created").toList()));
-        assertEquals(1, count(sg.v(4).out("created").toList()));
-    }
-
-    private <T> long count(final Iterable<T> iter) {
-        long count = 0;
-        for (T anIter : iter) {
-            count++;
-        }
-
-        return count;
+        assertEquals(2, g.v(1).out("knows").count());
+        assertEquals(1, sg.v(1).out("knows").count());
+        assertEquals(2, g.v(4).out("created").count());
+        assertEquals(1, sg.v(4).out("created").count());
     }
 }
