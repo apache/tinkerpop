@@ -50,7 +50,7 @@ public class SubgraphStrategy implements GraphStrategy {
                 throw Graph.Exceptions.elementNotFound();
             }
 
-            return new StrategyWrappedVertex(v, ctx.getCurrent());
+            return v;
         };
     }
 
@@ -63,7 +63,7 @@ public class SubgraphStrategy implements GraphStrategy {
                 throw Graph.Exceptions.elementNotFound();
             }
 
-            return new StrategyWrappedEdge(e, ctx.getCurrent());
+            return e;
         };
     }
 
