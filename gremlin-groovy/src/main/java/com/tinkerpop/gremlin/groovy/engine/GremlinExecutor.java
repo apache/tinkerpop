@@ -29,7 +29,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
- * Execute Gremlin scripts against a {@code ScriptEngine} instance.
+ * Execute Gremlin scripts against a {@code ScriptEngine} instance.  It is designed to host any JSR-223 enabled
+ * {@code ScriptEngine} and assumes such engines are designed to be thread-safe in the evaluation.  Script evaluation
+ * functions return a {@link java.util.concurrent.CompletableFuture} where scripts may timeout if their evaluation
+ * takes too long.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -39,7 +42,7 @@ public class GremlinExecutor {
 	/**
 	 * {@link ScriptEngines} instance to evaluate Gremlin script requests.
 	 */
-	private ScriptEngines sharedScriptEngines;
+	private ScriptEngines scriptEngines;
 
 	private final Map<String, EngineSettings> settings;
 	private final long scriptEvaluationTimeout;
@@ -70,7 +73,7 @@ public class GremlinExecutor {
 		this.settings = settings;
 		this.scriptEvaluationTimeout = scriptEvaluationTimeout;
 		this.globalBindings = globalBindings;
-		sharedScriptEngines = createScriptEngines();
+		this.scriptEngines = createScriptEngines();
 	}
 
 	public CompletableFuture<Object> eval(final String script) {
@@ -101,7 +104,7 @@ public class GremlinExecutor {
 				if (logger.isDebugEnabled()) logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
 				beforeEval.accept(bindings);
-				final Object o = sharedScriptEngines.eval(script, bindings, lang);
+				final Object o = scriptEngines.eval(script, bindings, lang);
 
 				if (abort.get())
 					afterTimeout.accept(bindings);
@@ -118,6 +121,10 @@ public class GremlinExecutor {
 		scheduleTimeout(future, script, abort);
 
 		return future;
+	}
+
+	public ScriptEngines getScriptEngines() {
+		return this.scriptEngines;
 	}
 
 	private void scheduleTimeout(final CompletableFuture<Object> evaluationFuture, final String script, final AtomicBoolean abort) {
