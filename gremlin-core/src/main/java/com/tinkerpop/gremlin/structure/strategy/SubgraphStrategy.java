@@ -147,6 +147,10 @@ public class SubgraphStrategy implements GraphStrategy {
 
         public Direction direction;
 
+        public SubgraphEdgeVertexStep(final EdgeVertexStep other) {
+            this(other.getTraversal(), other.getDirection());
+        }
+
         public SubgraphEdgeVertexStep(final Traversal traversal, final Direction direction) {
             super(traversal);
             this.direction = direction;
@@ -184,6 +188,7 @@ public class SubgraphStrategy implements GraphStrategy {
 
         private VertexIterator(Iterator<Vertex> baseIterator) {
             this.baseIterator = baseIterator;
+            advanceToNext();
         }
 
         public boolean hasNext() {
