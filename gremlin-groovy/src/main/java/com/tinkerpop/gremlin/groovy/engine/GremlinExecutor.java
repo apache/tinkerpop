@@ -31,8 +31,14 @@ import java.util.function.Consumer;
 /**
  * Execute Gremlin scripts against a {@code ScriptEngine} instance.  It is designed to host any JSR-223 enabled
  * {@code ScriptEngine} and assumes such engines are designed to be thread-safe in the evaluation.  Script evaluation
- * functions return a {@link java.util.concurrent.CompletableFuture} where scripts may timeout if their evaluation
+ * functions return a {@link CompletableFuture} where scripts may timeout if their evaluation
  * takes too long.
+ * <br/>
+ * By default, the {@code GremlinExecutor} initializes itself to use a shared thread pool initialized with four
+ * threads. This default thread pool is shared for both the task of executing script evaluations and for scheduling
+ * timeouts. It is worth noting that a timeout simply triggers the returned {@link CompletableFuture} to abort, but
+ * the thread processing the script will continue to evaluate until completion.  This offers only marginal protection
+ * against run-away scripts.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -233,6 +239,14 @@ public class GremlinExecutor {
 			this.executorService = scheduledExecutorService;
 		}
 
+		/**
+		 * Add a particular script engine for the executor to instantiate.
+		 *
+		 * @param engineName The name of the engine as defined by the engine itself.
+		 * @param imports A list of imports for the engine.
+		 * @param staticImports A list of static imports for the engine.
+		 * @param scripts A list of scripts to execute in the engine to initialize it.
+		 */
 		public Builder addEngineSettings(final String engineName, final List<String> imports,
 										 final List<String> staticImports, final List<String> scripts) {
 			if (null == imports) throw new IllegalArgumentException("imports cannot be null");
@@ -243,11 +257,19 @@ public class GremlinExecutor {
 			return this;
 		}
 
+		/**
+		 * Bindings to apply to every script evaluated.
+		 */
 		public Builder globalBindings(final Bindings bindings) {
 			this.globalBindings = bindings;
 			return this;
 		}
 
+		/**
+		 * Amount of time a script has before it times out.
+		 *
+		 * @param scriptEvaluationTimeout Time in milliseconds that a script is allowed to run.
+		 */
 		public Builder scriptEvaluationTimeout(final long scriptEvaluationTimeout) {
 			this.scriptEvaluationTimeout = scriptEvaluationTimeout;
 			return this;
