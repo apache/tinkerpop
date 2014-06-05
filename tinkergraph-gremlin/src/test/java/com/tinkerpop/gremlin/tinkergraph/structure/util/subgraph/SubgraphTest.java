@@ -1,10 +1,13 @@
 package com.tinkerpop.gremlin.tinkergraph.structure.util.subgraph;
 
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
+import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategy;
+import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import com.tinkerpop.gremlin.structure.util.subgraph.Subgraph;
 import com.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -21,23 +24,22 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SubgraphTest {
 
     @Test
     public void testVertexCriterion() throws Exception {
-        Graph g = TinkerFactory.createClassic();
+		final Graph g = TinkerFactory.createClassic();
 
-        Function<Vertex, Boolean> vertexCriterion = vertex -> (int) vertex.id() < 4;
-        Function<Edge, Boolean> edgeCriterion = edge -> true;
+		final Function<Vertex, Boolean> vertexCriterion = vertex -> (int) vertex.id() < 4;
+		final Function<Edge, Boolean> edgeCriterion = edge -> true;
 
-        Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
+        //Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
 
-        /*
-        Optional<GraphStrategy> strategyToTest = Optional.of(new SubgraphStrategy(vertexCriterion, edgeCriterion));
-        TinkerGraphGraphProvider gp = new TinkerGraphGraphProvider();
-        Graph sg = gp.openTestGraph(gp.standardGraphConfiguration(), strategyToTest);
-        */
+		final Optional<GraphStrategy> strategyToTest = Optional.<GraphStrategy>of(new SubgraphStrategy(vertexCriterion, edgeCriterion));
+		final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+		sg.strategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
         assertEquals(6, count(g.V().toList()));
@@ -48,8 +50,8 @@ public class SubgraphTest {
         assertEquals(6, count(g.E().toList()));
         assertEquals(2, count(sg.E().toList()));
 
-        Vertex v1_g = g.v(1);
-        Vertex v1_sg = sg.v(1);
+		final Vertex v1_g = g.v(1);
+		final Vertex v1_sg = sg.v(1);
         assertEquals(2, count(v1_g.out("knows").toList()));
         assertEquals(1, count(v1_sg.out("knows").toList()));
 

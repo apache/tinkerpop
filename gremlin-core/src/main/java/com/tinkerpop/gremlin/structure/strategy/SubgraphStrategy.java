@@ -19,17 +19,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SubgraphStrategy implements GraphStrategy {
 
-    private final Function<Vertex, Boolean> vertexCriterion;
-    private final Function<Edge, Boolean> edgeCriterion;
+    private final Predicate<Vertex> vertexCriterion;
+    private final Predicate<Edge> edgeCriterion;
 
-    public SubgraphStrategy(Function<Vertex, Boolean> vertexCriterion, Function<Edge, Boolean> edgeCriterion) {
+    public SubgraphStrategy(final Predicate<Vertex> vertexCriterion, final Predicate<Edge> edgeCriterion) {
         System.out.println("new SubgraphStrategy");
         this.vertexCriterion = vertexCriterion;
         this.edgeCriterion = edgeCriterion;
@@ -73,12 +75,12 @@ public class SubgraphStrategy implements GraphStrategy {
 
     private boolean testVertex(final Vertex vertex) {
         System.out.println("testing: " + vertex);
-        return vertexCriterion.apply(vertex);
+        return vertexCriterion.test(vertex);
     }
 
     private boolean testEdge(final Edge edge) {
         System.out.println("testing: " + edge);
-        return edgeCriterion.apply(edge) && vertexCriterion.apply(edge.inV().next()) && vertexCriterion.apply(edge.outV().next());
+        return edgeCriterion.test(edge) && edge.inV().hasNext() && edge.outV().hasNext();
     }
 
     private boolean testElement(final Element element) {
