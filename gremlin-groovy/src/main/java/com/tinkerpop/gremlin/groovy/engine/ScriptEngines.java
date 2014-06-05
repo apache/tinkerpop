@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -33,7 +33,10 @@ public class ScriptEngines {
 	/**
 	 * {@code ScriptEngine} objects configured for the server keyed on the language name.
 	 */
-	private Map<String, ScriptEngine> scriptEngines = new ConcurrentHashMap<>();
+	private final Map<String, ScriptEngine> scriptEngines = new ConcurrentHashMap<>();
+
+	private final AtomicInteger evaluationCount = new AtomicInteger(0);
+	private volatile boolean controlOperationExecuting = false;
 
 	private static final GremlinGroovyScriptEngineFactory gremlinGroovyScriptEngineFactory = new GremlinGroovyScriptEngineFactory();
 
@@ -41,39 +44,56 @@ public class ScriptEngines {
 	 * Evaluate a script with {@code Bindings} for a particular language.
 	 */
 	public Object eval(final String script, final Bindings bindings, final String language)
-			throws ScriptException, TimeoutException {
+			throws ScriptException {
 		if (!scriptEngines.containsKey(language))
 			throw new IllegalArgumentException("Language [%s] not supported");
 
-		return scriptEngines.get(language).eval(script, bindings);
+		try {
+			awaitControlOp();
+			evaluationCount.incrementAndGet();
+			return scriptEngines.get(language).eval(script, bindings);
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			evaluationCount.decrementAndGet();
+		}
 	}
 
 	/**
 	 * Evaluate a script with {@code Bindings} for a particular language.
 	 */
 	public Object eval(final Reader reader, final Bindings bindings, final String language)
-			throws ScriptException, TimeoutException {
+			throws ScriptException {
 		if (!scriptEngines.containsKey(language))
 			throw new IllegalArgumentException("Language [%s] not supported");
 
-		return scriptEngines.get(language).eval(reader, bindings);
+		try {
+			evaluationCount.incrementAndGet();
+			return scriptEngines.get(language).eval(reader, bindings);
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			evaluationCount.decrementAndGet();
+		}
 	}
 
 	/**
 	 * Reload a {@code ScriptEngine} with fresh imports.
 	 */
 	public void reload(final String language, final Set<String> imports, final Set<String> staticImports) {
-		// TODO: request a block on eval when reloading a language script engine.
+		signalControlOp();
 
-		if (scriptEngines.containsKey(language))
-			scriptEngines.remove(language);
+		try {
+			if (scriptEngines.containsKey(language))
+				scriptEngines.remove(language);
 
-		final ScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports).orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported"));
-		scriptEngines.put(language, scriptEngine);
-	}
-
-	public ScriptEngine get(final String language) {
-		return scriptEngines.get(language);
+			final ScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports).orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported"));
+			scriptEngines.put(language, scriptEngine);
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			controlOperationExecuting = false;
+		}
 	}
 
 	/**
@@ -81,7 +101,15 @@ public class ScriptEngines {
 	 * {@link DependencyManager} interface.
 	 */
 	public void addImports(final Set<String> imports) {
-		getDependencyManagers().forEach(dm -> dm.addImports(imports));
+		signalControlOp();
+
+		try {
+			getDependencyManagers().forEach(dm -> dm.addImports(imports));
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			controlOperationExecuting = false;
+		}
 	}
 
 	/**
@@ -90,12 +118,28 @@ public class ScriptEngines {
 	 * it up.
 	 */
 	public void use(final String group, final String artifact, final String version) {
-		getDependencyManagers().forEach(dm -> dm.use(group, artifact, version));
+		signalControlOp();
+
+		try {
+			getDependencyManagers().forEach(dm -> dm.use(group, artifact, version));
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			controlOperationExecuting = false;
+		}
 	}
 
 	// todo: does reset kill init script work...probably need to re-init
 	public void reset() {
-		getDependencyManagers().forEach(DependencyManager::reset);
+		signalControlOp();
+
+		try {
+			getDependencyManagers().forEach(DependencyManager::reset);
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			controlOperationExecuting = false;
+		}
 	}
 
 	/**
@@ -127,6 +171,33 @@ public class ScriptEngines {
 				.map(se -> (DependencyManager) se)
 				.collect(Collectors.<DependencyManager>toSet());
 	}
+
+	private void signalControlOp() {
+		awaitControlOp();
+		controlOperationExecuting = true;
+		awaitEvalOp();
+	}
+
+	private void awaitControlOp() {
+		while(controlOperationExecuting) {
+			try {
+				Thread.sleep(5);
+			} catch (Exception ex) {
+
+			}
+		}
+	}
+
+	private void awaitEvalOp() {
+		while(evaluationCount.get() > 0) {
+			try {
+				Thread.sleep(5);
+			} catch (Exception ex) {
+
+			}
+		}
+	}
+
 
 	private static Optional<ScriptEngine> createScriptEngine(final String language, final Set<String> imports,
 															 final Set<String> staticImports) {

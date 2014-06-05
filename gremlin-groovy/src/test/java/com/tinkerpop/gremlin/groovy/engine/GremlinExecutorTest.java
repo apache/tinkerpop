@@ -1,12 +1,10 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
-import junit.framework.Assert;
-import org.junit.Test;
-
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -14,8 +12,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-import static junit.framework.TestCase.assertFalse;
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -204,5 +204,42 @@ public class GremlinExecutorTest {
 		}));
 
 		assertEquals(1000, count.intValue());
+	}
+
+	@Test
+	public void shouldFailUntilImportExecutes() throws Exception {
+		final GremlinExecutor gremlinExecutor = GremlinExecutor.create().build();
+
+		final Set<String> imports = new HashSet<String>() {{ add("import java.awt.Color"); }};
+
+		final AtomicInteger successes = new AtomicInteger(0);
+		final AtomicInteger failures = new AtomicInteger(0);
+
+		// issue 1000 scripts in one thread using a class that isn't imported.  this will result in failure.
+		// while that thread is running start a new thread that issues an addImports to include that class.
+		// this should block further evals in the first thread until the import is complete at which point
+		// evals in the first thread will resume and start to succeed
+		final Thread t1 = new Thread(() ->
+			IntStream.range(0, 1000).mapToObj(i -> gremlinExecutor.eval("Color.BLACK"))
+					.forEach(f -> {
+						f.exceptionally(t -> failures.incrementAndGet()).join();
+						if (!f.isCompletedExceptionally())
+							successes.incrementAndGet();
+					})
+		);
+
+		final Thread t2 = new Thread(() -> {
+			while (failures.get() < 500) { }
+			gremlinExecutor.getScriptEngines().addImports(imports);
+		});
+
+		t1.start();
+		t2.start();
+
+		t1.join();
+		t2.join();
+
+		assertTrue(successes.intValue() > 0);
+		assertTrue(failures.intValue() >= 500);
 	}
 }

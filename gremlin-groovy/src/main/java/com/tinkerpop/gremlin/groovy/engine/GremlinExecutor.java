@@ -194,7 +194,7 @@ public class GremlinExecutor {
 				try {
 					final Bindings bindings = new SimpleBindings();
 					bindings.putAll(this.globalBindings);
-					scriptEngines.get(language).eval(p.getValue1(), bindings);
+					scriptEngines.eval(p.getValue1(), bindings, language);
 					logger.info("Initialized {} ScriptEngine with {}", language, p.getValue0());
 				} catch (ScriptException sx) {
 					hasErrors.set(true);
