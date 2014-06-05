@@ -65,7 +65,7 @@ public class SubgraphTest {
 
     @Test
     public void testEdgeCriterion() throws Exception {
-        Set<Integer> includedEdgeIds = new HashSet<>();
+        final Set<Integer> includedEdgeIds = new HashSet<>();
         includedEdgeIds.add(8);
         includedEdgeIds.add(9);
         includedEdgeIds.add(10);
@@ -80,8 +80,8 @@ public class SubgraphTest {
         //*/
 
         /*
-        Predicate<Vertex> vertexCriterion = vertex -> true;
-        Predicate<Edge> edgeCriterion = edge -> includedEdgeIds.contains((int) edge.id());
+        final Predicate<Vertex> vertexCriterion = vertex -> true;
+		final Predicate<Edge> edgeCriterion = edge -> includedEdgeIds.contains((int) edge.id());
 
         final Optional<GraphStrategy> strategyToTest = Optional.<GraphStrategy>of(new SubgraphStrategy(vertexCriterion, edgeCriterion));
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
@@ -95,9 +95,6 @@ public class SubgraphTest {
         // only the given edges are included
         assertEquals(6, g.E().count());
         assertEquals(3, sg.E().count());
-
-        assertEquals(2, g.v(1).outE("knows").count());
-        assertEquals(1, sg.v(1).outE("knows").count());
 
         assertEquals(2, g.v(1).outE("knows").count());
         assertEquals(1, sg.v(1).outE("knows").count());

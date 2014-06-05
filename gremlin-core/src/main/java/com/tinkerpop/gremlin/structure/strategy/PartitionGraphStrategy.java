@@ -81,7 +81,7 @@ public class PartitionGraphStrategy implements GraphStrategy {
             final Property<String> p = v.property(this.partitionKey);
             if (!p.isPresent() || !this.readPartitions.contains(p.value())) throw Graph.Exceptions.elementNotFound();
 
-            return new StrategyWrappedVertex(v, ctx.getCurrent());
+            return v;
         };
     }
 
@@ -92,7 +92,7 @@ public class PartitionGraphStrategy implements GraphStrategy {
             final Property<String> p = e.property(this.partitionKey);
             if (!p.isPresent() || !this.readPartitions.contains(p.value())) throw Graph.Exceptions.elementNotFound();
 
-            return new StrategyWrappedEdge(e, ctx.getCurrent());
+            return e;
         };
     }
 
