@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.junit.Assert.assertEquals;
 
@@ -32,8 +33,8 @@ public class SubgraphTest {
     public void testVertexCriterion() throws Exception {
 		final Graph g = TinkerFactory.createClassic();
 
-		final Function<Vertex, Boolean> vertexCriterion = vertex -> (int) vertex.id() < 4;
-		final Function<Edge, Boolean> edgeCriterion = edge -> true;
+		final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() < 4;
+		final Predicate<Edge> edgeCriterion = edge -> true;
 
         //Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
 
