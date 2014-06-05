@@ -32,24 +32,20 @@ public class SubgraphStrategy implements GraphStrategy {
     private final Predicate<Edge> edgeCriterion;
 
     public SubgraphStrategy(final Predicate<Vertex> vertexCriterion, final Predicate<Edge> edgeCriterion) {
-        System.out.println("new SubgraphStrategy");
         this.vertexCriterion = vertexCriterion;
         this.edgeCriterion = edgeCriterion;
     }
 
     @Override
     public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
-        System.out.println("applyStrategyToTraversal");
         traversal.strategies().register(new SubgraphGraphTraversalStrategy());
         return traversal;
     }
 
     @Override
     public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        System.out.println("getGraphvStrategy");
         return (f) -> (id) -> {
             final Vertex v = f.apply(id);
-            System.out.println("about to test: " + v);
             if (!testVertex(v)) {
                 throw Graph.Exceptions.elementNotFound();
             }
@@ -60,11 +56,9 @@ public class SubgraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        System.out.println("getGrapheStrategy");
         return (f) -> (id) -> {
             final Edge e = f.apply(id);
 
-            // the edge must pass the edge criterion, and both of its incident vertices must also pass the vertex criterion
             if (!testEdge(e)) {
                 throw Graph.Exceptions.elementNotFound();
             }
@@ -74,12 +68,11 @@ public class SubgraphStrategy implements GraphStrategy {
     }
 
     private boolean testVertex(final Vertex vertex) {
-        System.out.println("testing: " + vertex);
         return vertexCriterion.test(vertex);
     }
 
     private boolean testEdge(final Edge edge) {
-        System.out.println("testing: " + edge);
+        // the edge must pass the edge criterion, and both of its incident vertices must also pass the vertex criterion
         return edgeCriterion.test(edge) && edge.inV().hasNext() && edge.outV().hasNext();
     }
 
@@ -127,7 +120,6 @@ public class SubgraphStrategy implements GraphStrategy {
 
             Collections.reverse(positions);
             for (int pos : positions) {
-                System.out.println("inserting step");
                 TraversalHelper.insertStep(new SubgraphFilterStep(traversal), pos + 1, traversal);
             }
         }

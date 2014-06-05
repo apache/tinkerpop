@@ -77,6 +77,15 @@ public class SubgraphTest {
 
         Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
 
+        /*
+        Predicate<Vertex> vertexCriterion = vertex -> true;
+        Predicate<Edge> edgeCriterion = edge -> includedEdgeIds.contains((int) edge.id());
+
+        final Optional<GraphStrategy> strategyToTest = Optional.<GraphStrategy>of(new SubgraphStrategy(vertexCriterion, edgeCriterion));
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        sg.strategy().setGraphStrategy(strategyToTest);
+        */
+
         // all vertices are here
         assertEquals(6, count(g.V().toList()));
         assertEquals(6, count(sg.V().toList()));
