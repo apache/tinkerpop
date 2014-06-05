@@ -1,11 +1,18 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
+import junit.framework.Assert;
 import org.junit.Test;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
@@ -135,5 +142,65 @@ public class GremlinExecutorTest {
 		assertFalse(timeoutCalled.get());
 		assertTrue(successCalled.get());
 		assertFalse(failureCalled.get());
+	}
+
+	@Test
+	public void shouldEvalInMultipleThreads() throws Exception {
+		final GremlinExecutor gremlinExecutor = GremlinExecutor.create().build();
+
+		final CyclicBarrier barrier = new CyclicBarrier(2);
+		final AtomicInteger i1 = new AtomicInteger(0);
+		final AtomicBoolean b1 = new AtomicBoolean(false);
+		final Thread t1 = new Thread(() -> {
+			try {
+				barrier.await();
+				i1.set((Integer) gremlinExecutor.eval("1+1").get());
+			} catch (Exception ex) {
+				b1.set(true);
+			}
+		});
+
+		final AtomicInteger i2 = new AtomicInteger(0);
+		final AtomicBoolean b2 = new AtomicBoolean(false);
+		final Thread t2 = new Thread(() -> {
+			try {
+				barrier.await();
+				i2.set((Integer) gremlinExecutor.eval("1+1").get());
+			} catch (Exception ex) {
+				b2.set(true);
+			}
+		});
+
+		t1.start();
+		t2.start();
+
+		t1.join();
+		t2.join();
+
+		assertEquals(2, i1.get());
+		assertEquals(2, i2.get());
+		assertFalse(b1.get());
+		assertFalse(b2.get());
+	}
+
+	@Test
+	public void shouldNotExhaustThreads() throws Exception {
+		final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+		final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+				.executorService(executorService)
+				.scheduledExecutorService(executorService).build();
+
+		final AtomicInteger count = new AtomicInteger(0);
+		assertTrue(IntStream.range(0, 1000).mapToObj(i -> gremlinExecutor.eval("1+1")).allMatch(f -> {
+				try {
+					return (Integer) f.get() == 2;
+				} catch (Exception ex) {
+					throw new RuntimeException(ex);
+				} finally {
+					count.incrementAndGet();
+				}
+		}));
+
+		assertEquals(1000, count.intValue());
 	}
 }

@@ -29,7 +29,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
- * Execute Gremlin scripts against a {@code ScriptEngine} instance.
+ * Execute Gremlin scripts against a {@code ScriptEngine} instance.  It is designed to host any JSR-223 enabled
+ * {@code ScriptEngine} and assumes such engines are designed to be thread-safe in the evaluation.  Script evaluation
+ * functions return a {@link java.util.concurrent.CompletableFuture} where scripts may timeout if their evaluation
+ * takes too long.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -39,7 +42,7 @@ public class GremlinExecutor {
 	/**
 	 * {@link ScriptEngines} instance to evaluate Gremlin script requests.
 	 */
-	private ScriptEngines sharedScriptEngines;
+	private ScriptEngines scriptEngines;
 
 	private final Map<String, EngineSettings> settings;
 	private final long scriptEvaluationTimeout;
@@ -70,7 +73,7 @@ public class GremlinExecutor {
 		this.settings = settings;
 		this.scriptEvaluationTimeout = scriptEvaluationTimeout;
 		this.globalBindings = globalBindings;
-		sharedScriptEngines = createScriptEngines();
+		this.scriptEngines = createScriptEngines();
 	}
 
 	public CompletableFuture<Object> eval(final String script) {
@@ -79,6 +82,10 @@ public class GremlinExecutor {
 
 	public CompletableFuture<Object> eval(final String script, final Bindings boundVars) {
 		return eval(script, Optional.empty(), boundVars);
+	}
+
+	public CompletableFuture<Object> eval(final String script, final Map<String,Object> boundVars) {
+		return eval(script, Optional.empty(), new SimpleBindings(boundVars));
 	}
 
 	public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Bindings boundVars) {
@@ -97,7 +104,7 @@ public class GremlinExecutor {
 				if (logger.isDebugEnabled()) logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
 				beforeEval.accept(bindings);
-				final Object o = sharedScriptEngines.eval(script, bindings, lang);
+				final Object o = scriptEngines.eval(script, bindings, lang);
 
 				if (abort.get())
 					afterTimeout.accept(bindings);
@@ -116,6 +123,10 @@ public class GremlinExecutor {
 		return future;
 	}
 
+	public ScriptEngines getScriptEngines() {
+		return this.scriptEngines;
+	}
+
 	private void scheduleTimeout(final CompletableFuture<Object> evaluationFuture, final String script, final AtomicBoolean abort) {
 		if (scriptEvaluationTimeout > 0) {
 			// Schedule a timeout in the io threadpool for future execution - killing an eval is cheap
@@ -125,7 +136,8 @@ public class GremlinExecutor {
 
 				if (!evaluationFuture.isDone()) {
 					abort.set(true);
-					evaluationFuture.completeExceptionally(new TimeoutException(String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", scriptEvaluationTimeout, script)));
+					evaluationFuture.completeExceptionally(new TimeoutException(
+							String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", scriptEvaluationTimeout, script)));
 				}
 			}, scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
 
@@ -166,7 +178,7 @@ public class GremlinExecutor {
 				return f.exists();
 			}).map(f -> {
 				try {
-					return Pair.with(f, Optional.<FileReader>of(new FileReader(f)));
+					return Pair.with(f, Optional.of(new FileReader(f)));
 				} catch (IOException ioe) {
 					logger.warn("Could not initialize {} ScriptEngine with {} as file could not be read - {}", language, f, ioe.getMessage());
 					hasErrors.set(true);
