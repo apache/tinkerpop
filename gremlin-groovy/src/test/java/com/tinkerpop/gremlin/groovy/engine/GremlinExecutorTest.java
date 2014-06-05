@@ -190,12 +190,17 @@ public class GremlinExecutorTest {
 				.executorService(executorService)
 				.scheduledExecutorService(executorService).build();
 
+		final AtomicInteger count = new AtomicInteger(0);
 		assertTrue(IntStream.range(0, 1000).mapToObj(i -> gremlinExecutor.eval("1+1")).allMatch(f -> {
 				try {
 					return (Integer) f.get() == 2;
 				} catch (Exception ex) {
 					throw new RuntimeException(ex);
+				} finally {
+					count.incrementAndGet();
 				}
 		}));
+
+		assertEquals(1000, count.intValue());
 	}
 }
