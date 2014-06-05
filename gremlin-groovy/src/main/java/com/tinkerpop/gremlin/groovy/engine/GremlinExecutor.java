@@ -81,6 +81,10 @@ public class GremlinExecutor {
 		return eval(script, Optional.empty(), boundVars);
 	}
 
+	public CompletableFuture<Object> eval(final String script, final Map<String,Object> boundVars) {
+		return eval(script, Optional.empty(), new SimpleBindings(boundVars));
+	}
+
 	public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Bindings boundVars) {
 		final Bindings bindings = new SimpleBindings();
 		bindings.putAll(this.globalBindings);
@@ -125,7 +129,8 @@ public class GremlinExecutor {
 
 				if (!evaluationFuture.isDone()) {
 					abort.set(true);
-					evaluationFuture.completeExceptionally(new TimeoutException(String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", scriptEvaluationTimeout, script)));
+					evaluationFuture.completeExceptionally(new TimeoutException(
+							String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]", scriptEvaluationTimeout, script)));
 				}
 			}, scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
 
@@ -166,7 +171,7 @@ public class GremlinExecutor {
 				return f.exists();
 			}).map(f -> {
 				try {
-					return Pair.with(f, Optional.<FileReader>of(new FileReader(f)));
+					return Pair.with(f, Optional.of(new FileReader(f)));
 				} catch (IOException ioe) {
 					logger.warn("Could not initialize {} ScriptEngine with {} as file could not be read - {}", language, f, ioe.getMessage());
 					hasErrors.set(true);
