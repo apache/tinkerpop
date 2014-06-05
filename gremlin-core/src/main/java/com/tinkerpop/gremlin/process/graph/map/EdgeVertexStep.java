@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
  */
 public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements Reversible {
 
-    public Direction direction;
+    protected Direction direction;
 
     public EdgeVertexStep(final Traversal traversal, final Direction direction) {
         super(traversal);
@@ -33,5 +33,9 @@ public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements Reversi
 
     public void reverse() {
         this.direction = this.direction.opposite();
+    }
+
+    public Direction getDirection() {
+        return direction;
     }
 }

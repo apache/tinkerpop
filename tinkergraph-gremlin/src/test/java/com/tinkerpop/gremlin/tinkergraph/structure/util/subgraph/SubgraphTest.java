@@ -72,10 +72,12 @@ public class SubgraphTest {
 
         Graph g = TinkerFactory.createClassic();
 
+        //*
         Function<Vertex, Boolean> vertexCriterion = vertex -> true;
         Function<Edge, Boolean> edgeCriterion = edge -> includedEdgeIds.contains((int) edge.id());
 
         Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
+        //*/
 
         /*
         final Predicate<Vertex> vertexCriterion = vertex -> true;
@@ -84,7 +86,7 @@ public class SubgraphTest {
         final Optional<GraphStrategy> strategyToTest = Optional.<GraphStrategy>of(new SubgraphStrategy(vertexCriterion, edgeCriterion));
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
-        */
+        //*/
 
         // all vertices are here
         assertEquals(6, g.V().count());
