@@ -18,14 +18,13 @@ public class ProfilingApplication {
 		try {
 			System.out.println("Initializing at: " + System.nanoTime());
 
+			final String host = args.length == 0 ? "localhost" : args[0];
+
 			final int clients = 2;
 			final int requests = 10000;
-			final Cluster cluster = Cluster.create("54.198.44.194")
-					.minConnectionPoolSize(512)
-					.maxConnectionPoolSize(1024)
-					.minSimultaneousRequestsPerConnection(64)
-					.maxSimultaneousRequestsPerConnection(128)
-					.maxInProcessPerConnection(8)
+			final Cluster cluster = Cluster.create(host)
+					.minConnectionPoolSize(64)
+					.maxConnectionPoolSize(128)
 					.nioPoolSize(clients)
 					.workerPoolSize(clients * 4).build();
 
