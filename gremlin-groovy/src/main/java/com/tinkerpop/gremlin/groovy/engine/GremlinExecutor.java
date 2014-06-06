@@ -66,9 +66,6 @@ public class GremlinExecutor {
 							final ExecutorService executorService, final ScheduledExecutorService scheduledExecutorService,
 							final Consumer<Bindings> beforeEval, final Consumer<Bindings> afterSuccess,
 							final Consumer<Bindings> afterTimeout, final BiConsumer<Bindings,Exception> afterFailure) {
-		if (logger.isDebugEnabled())
-			logger.debug("Initializing GremlinExecutor.  This should not happen more than once.");
-
 		this.executorService = executorService;
 		this.scheduledExecutorService = scheduledExecutorService;
 		this.beforeEval = beforeEval;
@@ -92,6 +89,10 @@ public class GremlinExecutor {
 
 	public CompletableFuture<Object> eval(final String script, final Map<String,Object> boundVars) {
 		return eval(script, Optional.empty(), new SimpleBindings(boundVars));
+	}
+
+	public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Map<String,Object> boundVars) {
+		return eval(script, language, new SimpleBindings(boundVars));
 	}
 
 	public CompletableFuture<Object> eval(final String script, final Optional<String> language, final Bindings boundVars) {
@@ -334,7 +335,7 @@ public class GremlinExecutor {
 		/**
 		 * A set of maven coordinates for dependencies to be applied for the script engine instances.
 		 */
-		public Builder setUse(final List<List<String>> use) {
+		public Builder use(final List<List<String>> use) {
 			this.use = use;
 			return this;
 		}

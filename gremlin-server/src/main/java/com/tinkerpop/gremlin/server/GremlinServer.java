@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
+import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.handler.GremlinBinaryRequestDecoder;
 import com.tinkerpop.gremlin.server.handler.GremlinTextRequestDecoder;
 import com.tinkerpop.gremlin.server.handler.GremlinResponseEncoder;
@@ -8,7 +9,6 @@ import com.tinkerpop.gremlin.server.handler.IteratorHandler;
 import com.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import com.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import com.tinkerpop.gremlin.server.util.MetricManager;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -42,13 +42,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
 
 /**
@@ -90,7 +88,7 @@ public class GremlinServer {
 
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new WebSocketServerInitializer(this.settings));
+                    .childHandler(new WebSocketServerInitializer(this.settings, workerGroup));
 
             ch = b.bind(settings.host, settings.port).sync().channel();
             logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
@@ -174,7 +172,7 @@ public class GremlinServer {
 
         final EventExecutorGroup gremlinGroup;
 
-        public WebSocketServerInitializer(final Settings settings) {
+        public WebSocketServerInitializer(final Settings settings, final ScheduledExecutorService scheduledExecutorService) {
             this.settings = settings;
 
             // instantiate and configure the serializers that gremlin server will use - could error out here
@@ -183,14 +181,27 @@ public class GremlinServer {
 
             // initialize graphs from configuration
             if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
-            gremlinExecutor = new GremlinExecutor(this.settings, graphs.get());
-
-            logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
 
             final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
             this.gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, threadFactory);
 
-            logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
+			logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
+
+			final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.create()
+					.scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
+					.afterFailure((b,e) -> graphs.get().rollbackAll())
+					.afterSuccess(b -> graphs.get().commitAll())
+					.beforeEval(b -> graphs.get().rollbackAll())
+					.afterTimeout(b -> graphs.get().rollbackAll())
+					.use(settings.use)
+					.globalBindings(graphs.get().getGraphsAsBindings())
+					.executorService(gremlinGroup)
+					.scheduledExecutorService(scheduledExecutorService);
+
+			settings.scriptEngines.forEach((k,v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts));
+			this.gremlinExecutor = gremlinExecutorBuilder.build();
+
+			logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
 
             if (Optional.ofNullable(settings.ssl).isPresent() && settings.ssl.enabled)
                 this.sslEngine = Optional.ofNullable(createSslEngine());
@@ -267,7 +278,7 @@ public class GremlinServer {
                     Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Pair.with(mimeType, serializer))
             ).forEach(pair -> {
                 logger.info("Configured {} with {}", pair.getValue0(), pair.getValue1().getClass().getName());
-                serializers.put(pair.getValue0(), pair.<MessageSerializer>getValue1());
+                serializers.put(pair.getValue0().toString(), pair.<MessageSerializer>getValue1());
             });
 
             if (serializers.size() == 0) {

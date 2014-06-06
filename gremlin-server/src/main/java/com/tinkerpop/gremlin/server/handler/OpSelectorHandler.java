@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
+import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.Graphs;
-import com.tinkerpop.gremlin.server.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.OpProcessor;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
