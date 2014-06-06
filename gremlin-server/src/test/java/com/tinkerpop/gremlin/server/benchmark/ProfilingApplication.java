@@ -47,10 +47,8 @@ public class ProfilingApplication {
     public static void main (final String[] args) {
 
         try {
-            final String url = "ws://localhost:8182/gremlin";
-            new Worker(1000, 1000, new URI(url)).execute();
-
-
+            final String url = "ws://54.198.44.194:8182/gremlin";
+            new Worker(10000, 1000, new URI(url)).execute();
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
