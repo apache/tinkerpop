@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.structure.io.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -17,7 +16,6 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -93,35 +91,33 @@ public class KryoWriter implements GraphWriter {
     }
 
 	private void writeEdgeToOutput(final Output output, final Edge e) {
-        this.writeElement(output, e, Optional.empty());
+        this.writeElement(output, e, null);
     }
 
     private void writeVertexWithNoEdgesToOutput(final Output output, final Vertex v) {
-        writeElement(output, v, Optional.empty());
+        writeElement(output, v, null);
     }
 
     private void writeVertexToOutput(final Output output, final Vertex v, final Direction direction) {
-        this.writeElement(output, v, Optional.of(direction));
+        this.writeElement(output, v, direction);
     }
 
-    private void writeElement(final Output output, final Element e, final Optional<Direction> direction) {
+    private void writeElement(final Output output, final Element e, final Direction direction) {
         kryo.writeClassAndObject(output, e.id());
         output.writeString(e.label());
 
         writeProperties(output, e);
 
         if (e instanceof Vertex) {
-            output.writeBoolean(direction.isPresent());
-            if (direction.isPresent()) {
+            output.writeBoolean(direction != null);
+            if (direction != null) {
                 final Vertex v = (Vertex) e;
-                final Direction d = direction.get();
+                kryo.writeObject(output, direction);
 
-                kryo.writeObject(output, d);
-
-                if (d == Direction.BOTH || d == Direction.OUT)
+                if (direction == Direction.BOTH || direction == Direction.OUT)
                     writeDirectionalEdges(output, Direction.OUT, v.outE());
 
-                if (d == Direction.BOTH || d == Direction.IN)
+                if (direction == Direction.BOTH || direction == Direction.IN)
                     writeDirectionalEdges(output, Direction.IN, v.inE());
             }
 
