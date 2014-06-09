@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
@@ -208,12 +207,12 @@ public class KryoReader implements GraphReader {
 		final Vertex v = vertexMaker.apply(vertexId, label, vertexArgs.toArray());
 
 		final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
-		if (!streamContainsEdgesInSomeDirection && Optional.ofNullable(directionRequested).isPresent())
+		if (!streamContainsEdgesInSomeDirection && directionRequested != null)
 			throw new IllegalStateException(String.format("The direction %s was requested but no attempt was made to serialize edges into this stream", directionRequested));
 
 		// if there are edges in the stream and the direction is not present then the rest of the stream is
 		// simply ignored
-		if (Optional.ofNullable(directionRequested).isPresent()) {
+		if (directionRequested != null) {
 			final Direction directionsInStream = kryo.readObject(input, Direction.class);
 			if (directionsInStream != Direction.BOTH && directionsInStream != directionRequested)
 				throw new IllegalStateException(String.format("Stream contains %s edges, but requesting %s", directionsInStream, directionRequested));
