@@ -30,7 +30,6 @@ class Settings {
      * Read configuration from a file into a new {@link Settings} object.
      *
      * @param stream an input stream containing a Gremlin Server YAML configuration
-     * @return a new {@link java.util.Optional} object wrapping the created {@link Settings}
      */
     public static Settings read(final InputStream stream) {
         Objects.requireNonNull(stream);
