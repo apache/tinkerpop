@@ -19,7 +19,6 @@ import org.apache.commons.configuration.Configuration;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -56,7 +55,7 @@ public class TinkerGraph implements Graph, Serializable {
      * Test Suite.
      */
     public static TinkerGraph open() {
-        return open(Optional.empty());
+        return open(null);
     }
 
     /**
@@ -75,7 +74,7 @@ public class TinkerGraph implements Graph, Serializable {
      * @param <G>           the {@link com.tinkerpop.gremlin.structure.Graph} instance
      * @return a newly opened {@link com.tinkerpop.gremlin.structure.Graph}
      */
-    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
+    public static <G extends Graph> G open(final Configuration configuration) {
         return (G) new TinkerGraph();
     }
 

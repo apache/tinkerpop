@@ -20,7 +20,7 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
-    private static final Optional<GraphStrategy> readOnlyGraphStrategy = Optional.<GraphStrategy>of(new ReadOnlyGraphStrategy());
+    private static final GraphStrategy readOnlyGraphStrategy = new ReadOnlyGraphStrategy();
     public ReadOnlyGraphStrategyTest() {
     }
 

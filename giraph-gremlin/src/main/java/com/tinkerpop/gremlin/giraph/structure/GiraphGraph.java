@@ -27,12 +27,12 @@ public class GiraphGraph implements Graph {
     }
 
     public static GiraphGraph open() {
-        return GiraphGraph.open(Optional.empty());
+        return GiraphGraph.open(null);
     }
 
-    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
+    public static <G extends Graph> G open(final Configuration configuration) {
         final GiraphGraph graph = new GiraphGraph();
-        graph.configuration = configuration.orElse(new BaseConfiguration());
+        graph.configuration = Optional.ofNullable(configuration).orElse(new BaseConfiguration());
         return (G) graph;
     }
 

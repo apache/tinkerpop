@@ -31,7 +31,7 @@ public interface Graph extends AutoCloseable {
      * Creates a new {@link Graph} instance.  All graphs require that this method be overridden.  It is enforced by the
      * Blueprints test suite.
      */
-    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
+    public static <G extends Graph> G open(final Configuration configuration) {
         throw new UnsupportedOperationException("Implementations must override this method");
     }
 

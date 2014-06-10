@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -44,8 +43,6 @@ public class Neo4jGraph implements Graph {
     private static final String CONFIG_DIRECTORY = "gremlin.neo4j.directory";
     private static final String CONFIG_CONF = "gremlin.neo4j.conf";
 
-    private static final String INDEXED_KEYS_POSTFIX = ":indexed_keys";
-
     protected final ThreadLocal<Boolean> checkElementsInTransaction = new ThreadLocal<Boolean>() {
         protected Boolean initialValue() {
             return false;
@@ -65,10 +62,10 @@ public class Neo4jGraph implements Graph {
 
     private Neo4jGraph(final Configuration configuration) {
         try {
-            final String directory = configuration.getString("gremlin.neo4j.directory");
+            final String directory = configuration.getString(CONFIG_DIRECTORY);
             final GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(directory);
 
-            final Map neo4jSpecificConfig = ConfigurationConverter.getMap(configuration.subset("gremlin.neo4j.conf"));
+            final Map neo4jSpecificConfig = ConfigurationConverter.getMap(configuration.subset(CONFIG_CONF));
             this.rawGraph = builder.setConfig(neo4jSpecificConfig).newGraphDatabase();
 
             transactionManager = ((GraphDatabaseAPI) rawGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
@@ -88,14 +85,13 @@ public class Neo4jGraph implements Graph {
      * @param <G>           the {@link com.tinkerpop.gremlin.structure.Graph} instance
      * @return a newly opened {@link com.tinkerpop.gremlin.structure.Graph}
      */
-    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
+    public static <G extends Graph> G open(final Configuration configuration) {
         if (null == configuration) throw Graph.Exceptions.argumentCanNotBeNull("configuration");
-        final Configuration config = configuration.orElseThrow(() -> Graph.Exceptions.argumentCanNotBeNull("configuration"));
 
-        if (!config.containsKey(CONFIG_DIRECTORY))
+        if (!configuration.containsKey(CONFIG_DIRECTORY))
             throw new IllegalArgumentException(String.format("Neo4j configuration requires that the %s be set", CONFIG_DIRECTORY));
 
-        return (G) new Neo4jGraph(config);
+        return (G) new Neo4jGraph(configuration);
     }
 
     /**
@@ -104,7 +100,7 @@ public class Neo4jGraph implements Graph {
     public static <G extends Graph> G open(final String directory) {
         final Configuration config = new BaseConfiguration();
         config.setProperty(CONFIG_DIRECTORY, directory);
-        return open(Optional.of(config));
+        return open(config);
     }
 
     /**

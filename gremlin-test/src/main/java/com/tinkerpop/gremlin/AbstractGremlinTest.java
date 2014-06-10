@@ -33,17 +33,17 @@ import static org.junit.Assume.assumeThat;
 public abstract class AbstractGremlinTest {
     protected Graph g;
     protected Configuration config;
-    protected Optional<GraphStrategy> strategyToTest;
+    protected GraphStrategy strategyToTest;
     protected GraphProvider graphProvider;
 
     @Rule
     public TestName name = new TestName();
 
     public AbstractGremlinTest() {
-        this(Optional.empty());
+        this(null);
     }
 
-    public AbstractGremlinTest(final Optional<GraphStrategy> strategyToTest) {
+    public AbstractGremlinTest(final GraphStrategy strategyToTest) {
         this.strategyToTest = strategyToTest;
     }
 
@@ -57,7 +57,7 @@ public abstract class AbstractGremlinTest {
         graphProvider.clear(config);
 
         // not sure how the strategy can ever be null, but it seems to happen in the performance tests
-        g = graphProvider.openTestGraph(config, strategyToTest == null ? Optional.<GraphStrategy>empty() : strategyToTest);
+        g = graphProvider.openTestGraph(config, strategyToTest);
 
         final Method testMethod = this.getClass().getMethod(cleanMethodName(name.getMethodName()));
         final FeatureRequirement[] featureRequirement = testMethod.getAnnotationsByType(FeatureRequirement.class);

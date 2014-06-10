@@ -1,22 +1,16 @@
 package com.tinkerpop.gremlin.tinkergraph.structure.util.subgraph;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategy;
-import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import com.tinkerpop.gremlin.structure.util.subgraph.Subgraph;
-import com.tinkerpop.gremlin.tinkergraph.TinkerGraphGraphProvider;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -38,7 +32,7 @@ public class SubgraphTest {
 
         //Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
 
-		final Optional<GraphStrategy> strategyToTest = Optional.<GraphStrategy>of(new SubgraphStrategy(vertexCriterion, edgeCriterion));
+		final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
 		final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
 		sg.strategy().setGraphStrategy(strategyToTest);
 

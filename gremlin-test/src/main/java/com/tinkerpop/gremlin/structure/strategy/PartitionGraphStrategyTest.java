@@ -8,8 +8,6 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.Optional;
-
 import static org.junit.Assert.*;
 
 /**
@@ -19,7 +17,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
 	private static final String partition = Property.hidden("partition");
 
 	public PartitionGraphStrategyTest() {
-		super(Optional.of((GraphStrategy) new PartitionGraphStrategy(partition, "A")));
+		super(new PartitionGraphStrategy(partition, "A"));
 	}
 
 	@Test
