@@ -1,22 +1,17 @@
 package com.tinkerpop.gremlin.server.op.standard;
 
 import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.server.Graphs;
 import com.tinkerpop.gremlin.server.OpProcessor;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
-import com.tinkerpop.gremlin.server.handler.StateKey;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**

@@ -166,6 +166,8 @@ public class Settings {
         return Optional.ofNullable(metrics);
     }
 
+	public Optional<SslSettings> optionalSsl() { return Optional.ofNullable(ssl); }
+
     /**
      * Read configuration from a file into a new {@link Settings} object.
      *

@@ -203,10 +203,7 @@ public class GremlinServer {
 
 			logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
 
-            if (Optional.ofNullable(settings.ssl).isPresent() && settings.ssl.enabled)
-                this.sslEngine = Optional.ofNullable(createSslEngine());
-            else
-                sslEngine = Optional.empty();
+			this.sslEngine = settings.optionalSsl().isPresent() && settings.ssl.enabled ? Optional.ofNullable(createSslEngine()) : Optional.empty();
         }
 
         @Override
