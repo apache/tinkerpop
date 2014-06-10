@@ -21,6 +21,7 @@ import org.neo4j.graphdb.NotInTransactionException;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.impl.core.NodeManager;
 
@@ -41,13 +42,8 @@ public class Neo4jGraph implements Graph {
     private GraphDatabaseService rawGraph;
 
     private static final String CONFIG_DIRECTORY = "gremlin.neo4j.directory";
+	private static final String CONFIG_HA = "gremlin.neo4j.ha";
     private static final String CONFIG_CONF = "gremlin.neo4j.conf";
-
-    protected final ThreadLocal<Boolean> checkElementsInTransaction = new ThreadLocal<Boolean>() {
-        protected Boolean initialValue() {
-            return false;
-        }
-    };
 
     private final Neo4jTransaction neo4jTransaction = new Neo4jTransaction();
 
@@ -63,10 +59,13 @@ public class Neo4jGraph implements Graph {
     private Neo4jGraph(final Configuration configuration) {
         try {
             final String directory = configuration.getString(CONFIG_DIRECTORY);
-            final GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(directory);
+			final Map neo4jSpecificConfig = ConfigurationConverter.getMap(configuration.subset(CONFIG_CONF));
+			final boolean ha = configuration.getBoolean(CONFIG_HA, false);
 
-            final Map neo4jSpecificConfig = ConfigurationConverter.getMap(configuration.subset(CONFIG_CONF));
-            this.rawGraph = builder.setConfig(neo4jSpecificConfig).newGraphDatabase();
+			// if HA is enabled then use the correct factory to instantiate the GraphDatabaseService
+			this.rawGraph = ha ?
+					new HighlyAvailableGraphDatabaseFactory().newHighlyAvailableDatabaseBuilder(directory).setConfig(neo4jSpecificConfig).newGraphDatabase() :
+					new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(directory).setConfig(neo4jSpecificConfig).newGraphDatabase();
 
             transactionManager = ((GraphDatabaseAPI) rawGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
             cypher = new ExecutionEngine(rawGraph);

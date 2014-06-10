@@ -1320,6 +1320,8 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
 
+Note that those connecting to Neo4j Server require use of Neo4j HA.  To configure `Neo4jGraph` for "HA mode", set the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
+
 [[giraph-gremlin]]
 Giraph-Gremlin
 --------------
