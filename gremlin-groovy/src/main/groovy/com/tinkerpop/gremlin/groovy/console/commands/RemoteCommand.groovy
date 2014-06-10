@@ -15,18 +15,24 @@ import org.codehaus.groovy.tools.shell.Groovysh
 class RemoteCommand extends ComplexCommandSupport {
     private final Mediator mediator
     private Cluster currentCluster
-    private boolean toStringResults = true
     private Cluster.Builder lastBuilder
 
     private static final String TOKEN_TEXT = "text"
     private static final String TOKEN_OBJECTS = "objects"
+    private static final String TOKEN_CUSTOM = "custom"
 
+    private static final Map<String, MessageSerializer> serializers = [:].withDefault {null}
     private static final MessageSerializer AS_OBJECTS = new KryoMessageSerializerV1d0()
     private static final MessageSerializer AS_TEXT = new KryoMessageSerializerV1d0()
+
+    private String serializerType = TOKEN_TEXT
 
     static {
         AS_OBJECTS.configure([serializeResultToString: "false"])
         AS_TEXT.configure([serializeResultToString: "true"])
+
+        serializers[TOKEN_TEXT] = AS_TEXT
+        serializers[TOKEN_OBJECTS] = AS_OBJECTS
     }
 
     public RemoteCommand(final Groovysh shell, final Mediator mediator) {
@@ -59,7 +65,7 @@ class RemoteCommand extends ComplexCommandSupport {
 
         try {
             final InetAddress addy = InetAddress.getByName(line)
-            builder = Cluster.create(addy.getHostAddress());
+            builder = Cluster.create(addy.getHostAddress())
         } catch (UnknownHostException e) {
             // not a hostname - try to treat it as a property file
             try {
@@ -76,10 +82,22 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     def Object do_as = { List<String> arguments ->
-        if (!(arguments.contains(TOKEN_TEXT) || arguments.contains(TOKEN_OBJECTS)))
-            return "the 'as' option expects '$TOKEN_TEXT' or '$TOKEN_OBJECTS' as an argument"
+        if (!(arguments.first() in [TOKEN_CUSTOM, TOKEN_OBJECTS, TOKEN_TEXT]))
+            return "the 'as' option expects '$TOKEN_TEXT', '$TOKEN_OBJECTS', or '$TOKEN_CUSTOM' as an argument"
 
-        this.toStringResults = arguments.contains(TOKEN_TEXT)
+        this.serializerType = arguments.first()
+        if (serializerType == TOKEN_CUSTOM) {
+            if (arguments.size() != 2) return "when specifying '$TOKEN_CUSTOM' a ${MessageSerializer.class.getSimpleName()} instance should be specified after it"
+
+            final String serializerBinding = arguments.get(1)
+            final def suspectedSerializer = this.variables[serializerBinding]
+
+            if (null == suspectedSerializer) return "$serializerBinding is not a variable instantiated in the console"
+            if (!(suspectedSerializer instanceof MessageSerializer)) return "$serializerBinding is not a ${MessageSerializer.class.getSimpleName()} instance"
+
+            serializers[TOKEN_CUSTOM] = suspectedSerializer
+        }
+
         makeCluster()
 
         return resultsAsMessage()
@@ -91,7 +109,7 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     private def makeCluster() {
-        lastBuilder.serializer(chooseSerializer())
+        lastBuilder.serializer(serializers[serializerType])
         if (currentCluster != null) currentCluster.close()
         currentCluster = lastBuilder.build();
         currentCluster.init()
@@ -99,11 +117,6 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     private def String resultsAsMessage() {
-        final resultsAs = toStringResults ? TOKEN_TEXT : TOKEN_OBJECTS
-        return "results as $resultsAs"
-    }
-
-    private def MessageSerializer chooseSerializer() {
-        return toStringResults ? AS_TEXT : AS_OBJECTS
+        return "results as $serializerType"
     }
 }
