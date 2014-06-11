@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util.config;
+package com.tinkerpop.gremlin.util.config;
 
 import org.junit.Test;
 import org.yaml.snakeyaml.DumperOptions;

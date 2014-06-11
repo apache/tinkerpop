@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.structure.util;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
-import com.tinkerpop.gremlin.structure.util.config.YamlConfiguration;
+import com.tinkerpop.gremlin.util.config.YamlConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.MapConfiguration;
