@@ -16,6 +16,9 @@ import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.util.IoVertex;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
+import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
+import com.tinkerpop.gremlin.structure.util.cached.CachedElement;
+import com.tinkerpop.gremlin.structure.util.micro.MicroElement;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
@@ -40,13 +43,18 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     private static final Set<String> staticImports = new HashSet<>();
 
     static {
-        // graph structure and process
+        // graph structure
         imports.add(Graph.class.getPackage().getName() + DOT_STAR);
-        imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
-		imports.add(GraphStrategy.class.getPackage().getName() + DOT_STAR);
+        imports.add(GraphStrategy.class.getPackage().getName() + DOT_STAR);
 		imports.add(GraphFactory.class.getPackage().getName() + DOT_STAR);
+		imports.add(BatchGraph.class.getPackage().getName() + DOT_STAR);
+		imports.add(CachedElement.class.getPackage().getName() + DOT_STAR);
+		imports.add(MicroElement.class.getPackage().getName() + DOT_STAR);
 
-        // tinkergraph
+		// graph process
+		imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
+
+		// tinkergraph
         imports.add(TinkerGraph.class.getPackage().getName() + DOT_STAR);
 
         // IO packages
