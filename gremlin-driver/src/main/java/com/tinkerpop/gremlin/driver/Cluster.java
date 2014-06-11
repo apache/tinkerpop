@@ -77,7 +77,11 @@ public class Cluster {
         if (addresses.size() > 1)
             addresses.stream().skip(1).forEach(builder::addContactPoint);
 
-        builder.serializer(settings.serializer);
+		try {
+			builder.serializer(settings.serializer.create());
+		} catch (Exception ex) {
+			throw new IllegalStateException("Could not establish serializer - " + ex.getMessage());
+		}
 
         return builder;
     }
