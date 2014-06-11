@@ -5,14 +5,12 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
-import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,14 +24,6 @@ import java.util.stream.Collectors;
 public interface Graph extends AutoCloseable {
 
     public static final String HIDDEN_PREFIX = "%&%";
-
-    /**
-     * Creates a new {@link Graph} instance.  All graphs require that this method be overridden.  It is enforced by the
-     * Blueprints test suite.
-     */
-    public static <G extends Graph> G open(final Configuration configuration) {
-        throw new UnsupportedOperationException("Implementations must override this method");
-    }
 
 	/**
 	 * Add a {@link Vertex} to a {@code Graph} given an optional series of key/value pairs.  These key/values
