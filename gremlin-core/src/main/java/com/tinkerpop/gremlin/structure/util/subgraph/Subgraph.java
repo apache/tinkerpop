@@ -12,13 +12,13 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class Subgraph implements Graph {
+public class SubGraph implements Graph {
 
     private final Graph baseGraph;
     private final Function<Vertex, Boolean> vertexCriterion;
     private final Function<Edge, Boolean> edgeCriterion;
 
-    public Subgraph(final Graph wrappedGraph,
+    public SubGraph(final Graph wrappedGraph,
                     final Function<Vertex, Boolean> vertexCriterion,
                     final Function<Edge, Boolean> edgeCriterion) {
         this.baseGraph = wrappedGraph;
@@ -29,17 +29,17 @@ public class Subgraph implements Graph {
     @Override
     public Vertex addVertex(final Object... keyValues) {
         // note: created vertex may not pass the vertexCriterion
-        return new SubgraphVertex(baseGraph.addVertex(keyValues), vertexCriterion, edgeCriterion);
+        return new SubGraphVertex(baseGraph.addVertex(keyValues), vertexCriterion, edgeCriterion);
     }
 
     @Override
     public GraphTraversal<Vertex, Vertex> V() {
-        return new SubgraphTraversal<>(baseGraph.V(), vertexCriterion, edgeCriterion, true);
+        return new SubGraphTraversal<>(baseGraph.V(), vertexCriterion, edgeCriterion, true);
     }
 
     @Override
     public GraphTraversal<Edge, Edge> E() {
-        return new SubgraphTraversal(baseGraph.E(), vertexCriterion, edgeCriterion, false);
+        return new SubGraphTraversal(baseGraph.E(), vertexCriterion, edgeCriterion, false);
     }
 
     @Override

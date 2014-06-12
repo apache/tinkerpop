@@ -74,9 +74,8 @@ public abstract class MessageType implements Serializable {
 
         public Traversal<Vertex, Vertex> vertices(final Vertex vertex) {
             final Traversal traversal = this.incidentTraversal.get();
-            //final VertexStep step = TraversalHelper.getLastStep(traversal, VertexStep.class).get();
-            //step.returnClass = Vertex.class;
-            TraversalHelper.insertStep(new EdgeVertexStep(traversal, getDirection().opposite()), traversal.getSteps().size(), traversal);
+            final VertexStep step = TraversalHelper.getLastStep(traversal, VertexStep.class).get();
+            TraversalHelper.insertStep(new EdgeVertexStep(traversal, step.direction.opposite()), traversal.getSteps().size(), traversal);
             TraversalHelper.insertStep(new StartStep<>(traversal, vertex), 0, traversal);
             return traversal;
         }
