@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.process.computer.MessageCombiner;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -9,7 +10,7 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -18,13 +19,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
 
-    private Vertex vertex;
-    private TinkerMessageBoard<M> messageBoard;
+    private final Vertex vertex;
+    private final TinkerMessageBoard<M> messageBoard;
+    private final Optional<MessageCombiner<M>> combiner;
 
 
-    public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard) {
+    public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard, final Optional<MessageCombiner<M>> combiner) {
         this.vertex = vertex;
         this.messageBoard = messageBoard;
+        this.combiner = combiner;
     }
 
     public Iterable<M> receiveMessages(final MessageType messageType) {
@@ -53,10 +56,14 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
 
     public void sendMessage(final MessageType messageType, final M message) {
         if (messageType instanceof MessageType.Local) {
-            getMessageList(vertex.id()).add(message);
+            getMessageList(this.vertex.id()).add(message);
         } else {
             ((MessageType.Global) messageType).vertices().forEach(v -> {
-                getMessageList(v.id()).add(message);
+                final Queue<M> queue = getMessageList(v.id());
+                if (this.combiner.isPresent() && !queue.isEmpty()) {
+                    queue.add(this.combiner.get().combine(queue.remove(), message));
+                } else
+                    queue.add(message);
             });
         }
     }

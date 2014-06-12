@@ -236,7 +236,7 @@ public class BatchGraph<T extends Graph> implements Graph {
 
     @Override
     public <M extends Variables> M variables() {
-        throw Exceptions.memoryNotSupported();
+        throw Exceptions.variablesNotSupported();
     }
 
     @Override

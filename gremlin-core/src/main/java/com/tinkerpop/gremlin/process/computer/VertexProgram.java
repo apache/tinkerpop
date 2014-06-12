@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A {@link VertexProgram} represents one component of a distributed graph computation. Each applicable vertex
@@ -36,8 +37,8 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
      *
-     * @param vertex              the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
-     * @param messenger           the messenger that moves data between vertices
+     * @param vertex      the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
+     * @param messenger   the messenger that moves data between vertices
      * @param sideEffects the shared state between all vertices in the computation
      */
     public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.SideEffects sideEffects);
@@ -54,6 +55,10 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
     public Map<String, KeyType> getComputeKeys();
 
     public Class<M> getMessageClass();
+
+    public default Optional<MessageCombiner<M>> getMessageCombiner() {
+        return Optional.empty();
+    }
 
     public static Map<String, KeyType> ofComputeKeys(final Object... computeKeys) {
         if (computeKeys.length % 2 != 0)

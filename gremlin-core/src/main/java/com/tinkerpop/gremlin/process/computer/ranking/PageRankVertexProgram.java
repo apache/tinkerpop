@@ -41,6 +41,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     }
 
+    @Override
     public void initialize(final Configuration configuration) {
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
@@ -49,25 +50,29 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
                 final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, INCIDENT_TRAVERSAL);
                 VertexProgramHelper.verifyReversibility(traversalSupplier);
-                this.messageType = MessageType.Local.of((SSupplier)traversalSupplier);
+                this.messageType = MessageType.Local.of((SSupplier) traversalSupplier);
             }
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
+    @Override
     public Map<String, KeyType> getComputeKeys() {
         return VertexProgram.ofComputeKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
     }
 
+    @Override
     public Class<Double> getMessageClass() {
         return Double.class;
     }
 
+    @Override
     public void setup(final GraphComputer.SideEffects sideEffects) {
 
     }
 
+    @Override
     public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.SideEffects sideEffects) {
         if (sideEffects.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
@@ -83,6 +88,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         }
     }
 
+    @Override
     public boolean terminate(final GraphComputer.SideEffects sideEffects) {
         return sideEffects.getIteration() >= this.totalIterations;
     }

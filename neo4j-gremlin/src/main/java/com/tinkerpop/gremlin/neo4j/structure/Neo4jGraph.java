@@ -182,7 +182,7 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public <V extends Variables> V variables() {
-        throw Graph.Exceptions.memoryNotSupported();
+        throw Graph.Exceptions.variablesNotSupported();
     }
 
     @Override

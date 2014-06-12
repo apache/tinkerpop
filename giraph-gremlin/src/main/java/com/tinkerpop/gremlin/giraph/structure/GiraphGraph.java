@@ -66,7 +66,7 @@ public class GiraphGraph implements Graph {
 
 
     public <V extends Variables> V variables() {
-        throw Exceptions.memoryNotSupported();
+        throw Exceptions.variablesNotSupported();
     }
 
     public String toString() {
