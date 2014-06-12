@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.function.BiPredicate;
 
 /**
@@ -111,7 +110,6 @@ public interface Vertex extends Element {
         return this.start().has(key, t, value);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> has(final String key, final BiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
     }
