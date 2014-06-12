@@ -8,10 +8,10 @@ import com.tinkerpop.gremlin.process.util.PathConsumer;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraverserTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class PathConsumerStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
     public void apply(final Traversal traversal) {
-        final boolean trackPaths = TraverserTraversalStrategy.trackPaths(traversal);
+        final boolean trackPaths = PathConsumerStrategy.trackPaths(traversal);
         traversal.getSteps().forEach(step -> {
             if (step instanceof TraverserSource)
                 ((TraverserSource) step).generateTraverserIterator(trackPaths);

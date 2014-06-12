@@ -1,15 +1,14 @@
-package com.tinkerpop.gremlin.process.graph.map;
+package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
-import com.tinkerpop.gremlin.process.util.Reversible;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdentityStep<S> extends FilterStep<S> implements Reversible {
+public class PathIdentityStep<S> extends FilterStep<S> implements PathConsumer {
 
-    public IdentityStep(final Traversal traversal) {
+    public PathIdentityStep(final Traversal traversal) {
         super(traversal);
         this.setPredicate(traverser -> true);
     }

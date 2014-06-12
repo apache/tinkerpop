@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.graph.map.StartStep;
 import com.tinkerpop.gremlin.process.strategy.DefaultTraversalStrategies;
-import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
+import com.tinkerpop.gremlin.process.strategy.PathConsumerStrategy;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,7 +24,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     protected boolean firstNext = true;
 
     public DefaultTraversal() {
-        this.traversalStrategies.register(new TraverserTraversalStrategy());
+        this.traversalStrategies.register(new PathConsumerStrategy());
     }
 
     public List<Step> getSteps() {

@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
-import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
+import com.tinkerpop.gremlin.process.strategy.PathConsumerStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -57,7 +57,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             } else {
                 this.traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, TRAVERSAL_SUPPLIER);
             }
-            this.trackPaths = TraverserTraversalStrategy.trackPaths(this.traversalSupplier.get());
+            this.trackPaths = PathConsumerStrategy.trackPaths(this.traversalSupplier.get());
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

@@ -26,6 +26,6 @@ class GroovyMapTestG extends MapTest {
 
     @Override
     public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
-        return g.V().as("a").out().map{t -> ((Vertex) t.getPath().get("a")).value("name")};
+        return g.V().as("a").out().map{t -> ((Vertex) t.getPath().get("a")).value("name")}.enablePaths();
     }
 }

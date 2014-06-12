@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
+import com.tinkerpop.gremlin.process.strategy.PathConsumerStrategy;
 import com.tinkerpop.gremlin.process.util.MicroPath;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -50,7 +50,7 @@ public class TraversalResult<T> implements Iterator<T> {
     }
 
     private void buildIterator() {
-        if (TraverserTraversalStrategy.trackPaths(this.traversalSupplier.get())) {
+        if (PathConsumerStrategy.trackPaths(this.traversalSupplier.get())) {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.graph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
                         .map(v -> this.result.v(v.id()).<TraversalPaths>property(TraversalVertexProgram.TRAVERSER_TRACKER).orElse(null))

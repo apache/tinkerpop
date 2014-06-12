@@ -20,7 +20,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     public void register(final TraversalStrategy traversalStrategy) {
-        this.traversalStrategies.add(0, traversalStrategy);   // TODO: eek around TraverserTraversalStrategy
+        this.traversalStrategies.add(0, traversalStrategy);   // TODO: eek around PathConsumerStrategy
     }
 
     public void unregister(final Class<? extends TraversalStrategy> optimizerClass) {

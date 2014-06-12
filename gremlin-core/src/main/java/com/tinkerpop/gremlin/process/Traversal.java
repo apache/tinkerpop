@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
+import com.tinkerpop.gremlin.process.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.util.Reversible;
 
 import java.io.Serializable;
@@ -57,6 +58,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     /////////
+
+    public default Traversal<S, E> enablePaths() {
+        return (Traversal) this.addStep(new PathIdentityStep<>(this));
+    }
 
     public default Traversal<S, E> reverse() {
         this.getSteps().stream().filter(step -> step instanceof Reversible).forEach(step -> ((Reversible) step).reverse());

@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
 import com.tinkerpop.gremlin.process.util.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.map.MapStep;
 import com.tinkerpop.gremlin.process.util.Reversible;
@@ -12,7 +13,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LinkStep extends MapStep<Vertex, Vertex> implements PathConsumer, Reversible, UnBulkable {
+public class LinkStep extends FilterStep<Vertex> implements PathConsumer, Reversible, UnBulkable {
 
     public Direction direction;
     public String label;
@@ -23,7 +24,7 @@ public class LinkStep extends MapStep<Vertex, Vertex> implements PathConsumer, R
         this.direction = direction;
         this.label = label;
         this.as = as;
-        super.setFunction(traverser -> {
+        super.setPredicate(traverser -> {
             final Vertex current = traverser.get();
             final Vertex other = traverser.getPath().get(as);
             if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) {
@@ -32,7 +33,7 @@ public class LinkStep extends MapStep<Vertex, Vertex> implements PathConsumer, R
             if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) {
                 current.addEdge(label, other);
             }
-            return current;
+            return true;
         });
     }
 

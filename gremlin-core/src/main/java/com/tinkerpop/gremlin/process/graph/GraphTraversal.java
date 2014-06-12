@@ -45,9 +45,10 @@ import com.tinkerpop.gremlin.process.graph.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.SubGraphStep;
 import com.tinkerpop.gremlin.process.graph.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.util.Tree;
-import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
+import com.tinkerpop.gremlin.process.strategy.PathConsumerStrategy;
 import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
+import com.tinkerpop.gremlin.process.util.PathIdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -85,6 +86,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final GraphTraversal traversal = new DefaultGraphTraversal<>();
         traversal.addStep(new IdentityStep(traversal));
         return traversal;
+    }
+
+    public default GraphTraversal<S, E> enablePaths() {
+        return (GraphTraversal) this.addStep(new PathIdentityStep<>(this));
     }
 
     ///////////////////// TRANSFORM STEPS /////////////////////
@@ -426,7 +431,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <T> Tree<T> tree(final SFunction... branchFunctions) {
         final Tree<Object> tree = new Tree<>();
         Tree<Object> depth = tree;
-        TraverserTraversalStrategy.doPathTracking(this);
+        PathConsumerStrategy.doPathTracking(this);
         final Step endStep = TraversalHelper.getEnd(this);
         final FunctionRing functionRing = new FunctionRing(branchFunctions);
         try {
