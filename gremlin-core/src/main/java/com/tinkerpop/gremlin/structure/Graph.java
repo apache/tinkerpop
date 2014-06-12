@@ -25,46 +25,49 @@ public interface Graph extends AutoCloseable {
 
     public static final String HIDDEN_PREFIX = "%&%";
 
-	/**
-	 * Add a {@link Vertex} to a {@code Graph} given an optional series of key/value pairs.  These key/values
-	 * must be provided in an even number where the odd numbered arguments are {@link String} key values and the
-	 * even numbered arguments are the related property values.  Hidden properties can be set by specifying
-	 * the key as {@link Property#hidden}.
-	 */
+    /**
+     * Add a {@link Vertex} to a {@code Graph} given an optional series of key/value pairs.  These key/values
+     * must be provided in an even number where the odd numbered arguments are {@link String} key values and the
+     * even numbered arguments are the related property values.  Hidden properties can be set by specifying
+     * the key as {@link Property#hidden}.
+     */
     public Vertex addVertex(final Object... keyValues);
 
-	/**
-	 * Get a {@link Vertex} given its unique identifier.
-	 * @throws NoSuchElementException if the element is not found.
-	 */
+    /**
+     * Get a {@link Vertex} given its unique identifier.
+     *
+     * @throws NoSuchElementException if the element is not found.
+     */
     public default Vertex v(final Object id) {
         if (null == id) throw Graph.Exceptions.elementNotFound();
         return (Vertex) this.V().has(Element.ID, id).next();
     }
 
-	/**
-	 * Get a {@link Edge} given its unique identifier.
-	 * @throws NoSuchElementException if the element is not found.
-	 */
+    /**
+     * Get a {@link Edge} given its unique identifier.
+     *
+     * @throws NoSuchElementException if the element is not found.
+     */
     public default Edge e(final Object id) {
         if (null == id) throw Graph.Exceptions.elementNotFound();
         return (Edge) this.E().has(Element.ID, id).next();
     }
 
-	/**
-	 * Starts a {@link GraphTraversal} over all vertices.
-	 */
+    /**
+     * Starts a {@link GraphTraversal} over all vertices.
+     */
     public GraphTraversal<Vertex, Vertex> V();
 
-	/**
-	 * Starts a {@link GraphTraversal} over all edges.
-	 */
+    /**
+     * Starts a {@link GraphTraversal} over all edges.
+     */
     public GraphTraversal<Edge, Edge> E();
 
-	/**
-	 * Constructs a new {@link Traversal} over the {@code Graph}
-	 * @param traversalClass a {@link Traversal} implementation to use
-	 */
+    /**
+     * Constructs a new {@link Traversal} over the {@code Graph}
+     *
+     * @param traversalClass a {@link Traversal} implementation to use
+     */
     public default <T extends Traversal> T traversal(final Class<T> traversalClass) {
         try {
             final T t = (T) traversalClass.getMethod(Traversal.OF).invoke(null);
@@ -81,9 +84,9 @@ public interface Graph extends AutoCloseable {
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
 
-	/**
-	 * Configure and control the transactions for those graphs that support this feature.
-	 */
+    /**
+     * Configure and control the transactions for those graphs that support this feature.
+     */
     public Transaction tx();
 
     public <V extends Variables> V variables();
@@ -404,8 +407,8 @@ public interface Graph extends AutoCloseable {
 
         private static final boolean debug = Boolean.parseBoolean(System.getenv().getOrDefault("gremlin.structure.debug", "false"));
 
-        public static UnsupportedOperationException memoryNotSupported() {
-            return new UnsupportedOperationException("Graph does not support graph memory");
+        public static UnsupportedOperationException variablesNotSupported() {
+            return new UnsupportedOperationException("Graph does not support graph variables");
         }
 
         public static UnsupportedOperationException transactionsNotSupported() {

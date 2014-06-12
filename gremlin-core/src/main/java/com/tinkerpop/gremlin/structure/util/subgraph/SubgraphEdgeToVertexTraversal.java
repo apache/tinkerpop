@@ -4,11 +4,11 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 /**
@@ -54,7 +54,7 @@ public class SubGraphEdgeToVertexTraversal extends DefaultGraphTraversal<Vertex,
     @Override
     public Vertex next() {
         if (null == nextVertex) {
-            throw new NoSuchElementException();
+            throw FastNoSuchElementException.instance();
         }
 
         Vertex tmp = nextVertex;

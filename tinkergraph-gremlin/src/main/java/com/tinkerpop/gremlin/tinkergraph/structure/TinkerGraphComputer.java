@@ -69,7 +69,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             vertexProgram.setup(this.sideEffects);
 
             while (true) {
-                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard), this.sideEffects));
+                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.sideEffects));
                 this.sideEffects.incrIteration();
                 g.graphView.completeIteration();
                 this.messageBoard.completeIteration();

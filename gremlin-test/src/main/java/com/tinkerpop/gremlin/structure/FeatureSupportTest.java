@@ -50,7 +50,7 @@ public class FeatureSupportTest  {
      * as not supported.
      */
     @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
-            "memoryNotSupported",
+            "variablesNotSupported",
             "graphComputerNotSupported",
             "transactionsNotSupported"
     })
@@ -99,7 +99,7 @@ public class FeatureSupportTest  {
 
         /**
          * A {@link com.tinkerpop.gremlin.structure.Graph} that does not support {@link com.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures#FEATURE_VARIABLES} must call
-         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#memoryNotSupported()}.
+         * {@link com.tinkerpop.gremlin.structure.Graph.Exceptions#variablesNotSupported()}.
          */
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES, supported = false)
@@ -108,7 +108,7 @@ public class FeatureSupportTest  {
                 g.variables();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, Graph.Features.VariableFeatures.class.getSimpleName(), FEATURE_VARIABLES));
             } catch (UnsupportedOperationException e) {
-                assertEquals(Graph.Exceptions.memoryNotSupported().getMessage(), e.getMessage());
+                assertEquals(Graph.Exceptions.variablesNotSupported().getMessage(), e.getMessage());
             }
         }
 

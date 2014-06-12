@@ -46,6 +46,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     public TraversalVertexProgram() {
     }
 
+    @Override
     public void initialize(final Configuration configuration) {
         try {
             this.trackPaths = configuration.getBoolean(TRACK_PATHS, false);
@@ -62,10 +63,12 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
     }
 
+    @Override
     public void setup(final GraphComputer.SideEffects sideEffects) {
         sideEffects.setIfAbsent(VOTE_TO_HALT, true);
     }
 
+    @Override
     public void execute(final Vertex vertex, final Messenger<M> messenger, GraphComputer.SideEffects sideEffects) {
         if (sideEffects.isInitialIteration()) {
             executeFirstIteration(vertex, messenger, sideEffects);
@@ -116,8 +119,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
     }
 
-    ////////// GRAPH COMPUTER METHODS
-
+    @Override
     public boolean terminate(final GraphComputer.SideEffects sideEffects) {
         final boolean voteToHalt = sideEffects.get(VOTE_TO_HALT);
         if (voteToHalt) {
@@ -128,13 +130,16 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         }
     }
 
+    @Override
     public Class<M> getMessageClass() {
         return (Class) (this.trackPaths ? TraversalPathMessage.class : TraversalCounterMessage.class);
     }
 
+    @Override
     public Map<String, KeyType> getComputeKeys() {
         return VertexProgram.ofComputeKeys(TRAVERSER_TRACKER, KeyType.VARIABLE);
     }
+
 
     public String toString() {
         return "TraversalVertexProgram" + this.traversalSupplier.get().toString();

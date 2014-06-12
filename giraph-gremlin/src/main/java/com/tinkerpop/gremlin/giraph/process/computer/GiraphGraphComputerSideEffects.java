@@ -6,8 +6,6 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.RuleWritable;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.util.EmptyGraph;
 import org.apache.giraph.master.MasterCompute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +42,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Gra
     public void initialize() {
         try {
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(this.getConf()));
-            this.registerAggregator("voteToHalt", MemoryAggregator.class);
+            this.registerAggregator("voteToHalt", MemoryAggregator.class);  // TODO: we need to be able to get all sideEffects upfront. :(
             this.vertexProgram.setup(this);
         } catch (Exception e) {
             // do nothing as Giraph has a hard time starting up with random exceptions until ZooKeeper comes online
@@ -52,7 +50,6 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Gra
     }
 
     public void compute() {
-        //System.out.println("SUPERSTEP: " + this.getSuperstep() + "----" + this.get("voteToHalt"));
         if (!this.isInitialIteration()) {
             if (this.vertexProgram.terminate(this)) {
                 this.haltComputation();
@@ -92,7 +89,6 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Gra
     }
 
     public boolean and(final String variable, final boolean bool) {
-        //System.out.println("ANDing: " + variable + ":" + bool);
         if (null == this.giraphVertex) {
             this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.AND, ((RuleWritable) this.getAggregatedValue(variable)).<Boolean>getObject() && bool));
             return ((RuleWritable) this.getAggregatedValue(variable)).getObject();
@@ -103,24 +99,17 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Gra
     }
 
     public boolean or(final String variable, final boolean bool) {
-        //System.out.println("ORing: " + variable + ":" + bool);
         if (null == this.giraphVertex) {
             this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.OR, ((RuleWritable) this.getAggregatedValue(variable)).<Boolean>getObject() || bool));
             return ((RuleWritable) this.getAggregatedValue(variable)).getObject();
         } else {
             this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.OR, bool));
-            // todo: void or?
             return ((RuleWritable) this.giraphVertex.getAggregatedValue(variable)).getObject();
         }
     }
 
-
     public long incr(final String variable, final long delta) {
         return 1;
-    }
-
-    public Graph getGraph() {
-        return EmptyGraph.instance();
     }
 
     public void write(final DataOutput output) {
