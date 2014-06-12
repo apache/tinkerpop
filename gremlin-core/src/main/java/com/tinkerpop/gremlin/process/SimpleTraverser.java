@@ -108,9 +108,6 @@ public class SimpleTraverser<T> implements Traverser<T> {
     }
 
     public boolean equals(final Object object) {
-        if (object instanceof SimpleTraverser)
-            return this.t.equals(((SimpleTraverser) object).get());
-        else
-            return false;
+        return object instanceof SimpleTraverser && this.t.equals(((SimpleTraverser) object).get());
     }
 }
