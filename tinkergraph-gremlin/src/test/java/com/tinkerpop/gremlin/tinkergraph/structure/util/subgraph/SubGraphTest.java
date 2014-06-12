@@ -5,8 +5,8 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
-import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategy;
-import com.tinkerpop.gremlin.structure.util.subgraph.Subgraph;
+import com.tinkerpop.gremlin.structure.strategy.SubGraphGraphStrategy;
+import com.tinkerpop.gremlin.structure.util.subgraph.SubGraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphTest {
+public class SubGraphTest {
 
     @Test
     public void testVertexCriterion() throws Exception {
@@ -32,7 +32,7 @@ public class SubgraphTest {
 
         //SubGraph sg = new SubGraph(g, vertexCriterion, edgeCriterion);
 
-		final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+		final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
 		final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
 		sg.strategy().setGraphStrategy(strategyToTest);
 
@@ -70,7 +70,7 @@ public class SubgraphTest {
         Function<Vertex, Boolean> vertexCriterion = vertex -> true;
         Function<Edge, Boolean> edgeCriterion = edge -> includedEdgeIds.contains((int) edge.id());
 
-        Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
+        SubGraph sg = new SubGraph(g, vertexCriterion, edgeCriterion);
         //*/
 
         /*

@@ -14,7 +14,7 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class SubgraphEdgeToVertexTraversal extends DefaultGraphTraversal<Vertex, Vertex> {
+public class SubGraphEdgeToVertexTraversal extends DefaultGraphTraversal<Vertex, Vertex> {
 
     private final Traversal<Vertex, Edge> baseTraversal;
     private final Vertex baseVertex;
@@ -23,10 +23,10 @@ public class SubgraphEdgeToVertexTraversal extends DefaultGraphTraversal<Vertex,
 
     private Vertex nextVertex;
 
-    public SubgraphEdgeToVertexTraversal(final Traversal<Vertex, Edge> baseTraversal,
-                                         final Vertex baseVertex,
-                                         final Function<Edge, Boolean> edgeCriterion,
-                                         final Direction direction) {
+    public SubGraphEdgeToVertexTraversal(final Traversal<Vertex, Edge> baseTraversal,
+										 final Vertex baseVertex,
+										 final Function<Edge, Boolean> edgeCriterion,
+										 final Direction direction) {
         this.baseTraversal = baseTraversal;
         this.baseVertex = baseVertex;
         this.edgeCriterion = edgeCriterion;
@@ -43,7 +43,7 @@ public class SubgraphEdgeToVertexTraversal extends DefaultGraphTraversal<Vertex,
     @Override
     public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
         Traversal<Vertex, Edge> newBaseTraversal = baseTraversal.submit(engine);
-        return new SubgraphEdgeToVertexTraversal(newBaseTraversal, baseVertex, edgeCriterion, direction);
+        return new SubGraphEdgeToVertexTraversal(newBaseTraversal, baseVertex, edgeCriterion, direction);
     }
 
     @Override
