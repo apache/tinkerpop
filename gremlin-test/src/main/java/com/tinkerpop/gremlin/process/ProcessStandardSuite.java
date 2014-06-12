@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.process.graph.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.map.BackTest;
 import com.tinkerpop.gremlin.process.graph.map.JumpTest;
+import com.tinkerpop.gremlin.process.graph.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.map.OrderTest;
 import com.tinkerpop.gremlin.process.graph.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.map.SelectTest;
@@ -67,7 +68,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SimplePathTest.JavaSimplePathTest.class,
             BackTest.JavaBackTest.class,
             JumpTest.JavaJumpTest.class,
-            OrderTest.JavaOrderTest.class,
+			MapTest.JavaMapTest.class,
+			OrderTest.JavaOrderTest.class,
             PathTest.JavaPathTest.class,
             SelectTest.JavaSelectTest.class,
             TraversalTest.JavaTraversalTest.class,
@@ -96,6 +98,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SimplePathTest.class,
             BackTest.class,
             JumpTest.class,
+			MapTest.class,
             OrderTest.class,
             PathTest.class,
             SelectTest.class,

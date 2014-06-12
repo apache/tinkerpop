@@ -54,4 +54,7 @@ class GroovyHasTestG extends HasTest {
         g.E.has('label', T.in, ['knows', 'created'])
     }
 
+    public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
+        return g.V().has("name", { v1,v2 -> v1.equals(v2)}, "marko");
+    }
 }
