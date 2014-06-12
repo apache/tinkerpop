@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
 import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategy;
-import com.tinkerpop.gremlin.structure.util.subgraph.SubGraph;
+import com.tinkerpop.gremlin.structure.util.subgraph.Subgraph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubGraphTest {
+public class SubgraphTest {
 
     @Test
     public void testVertexCriterion() throws Exception {
@@ -70,7 +70,7 @@ public class SubGraphTest {
         Function<Vertex, Boolean> vertexCriterion = vertex -> true;
         Function<Edge, Boolean> edgeCriterion = edge -> includedEdgeIds.contains((int) edge.id());
 
-        SubGraph sg = new SubGraph(g, vertexCriterion, edgeCriterion);
+        Subgraph sg = new Subgraph(g, vertexCriterion, edgeCriterion);
         //*/
 
         /*

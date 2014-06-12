@@ -11,13 +11,13 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class SubGraphEdge implements Edge {
+public class SubgraphEdge implements Edge {
 
     private final Edge baseEdge;
     private final Function<Vertex, Boolean> vertexCriterion;
     private final Function<Edge, Boolean> edgeCriterion;
 
-    public SubGraphEdge(final Edge baseEdge,
+    public SubgraphEdge(final Edge baseEdge,
                         final Function<Vertex, Boolean> vertexCriterion,
                         final Function<Edge, Boolean> edgeCriterion) {
         this.baseEdge = baseEdge;
@@ -28,21 +28,21 @@ public class SubGraphEdge implements Edge {
     @Override
     public GraphTraversal<Edge, Vertex> inV() {
         return edgeCriterion.apply(baseEdge)
-                ? new SubGraphTraversal<>(baseEdge.inV(), vertexCriterion, edgeCriterion, true)
+                ? new SubgraphTraversal<>(baseEdge.inV(), vertexCriterion, edgeCriterion, true)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 
     @Override
     public GraphTraversal<Edge, Vertex> outV() {
         return edgeCriterion.apply(baseEdge)
-                ? new SubGraphTraversal<>(baseEdge.outV(), vertexCriterion, edgeCriterion, true)
+                ? new SubgraphTraversal<>(baseEdge.outV(), vertexCriterion, edgeCriterion, true)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 
     @Override
     public GraphTraversal<Edge, Vertex> bothV() {
         return edgeCriterion.apply(baseEdge)
-                ? new SubGraphTraversal<>(baseEdge.bothV(), vertexCriterion, edgeCriterion, true)
+                ? new SubgraphTraversal<>(baseEdge.bothV(), vertexCriterion, edgeCriterion, true)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 

@@ -12,15 +12,15 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class SubGraphVertex implements Vertex {
+public class SubgraphVertex implements Vertex {
 
     private final Vertex baseVertex;
     private final Function<Vertex, Boolean> vertexCriterion;
     private final Function<Edge, Boolean> edgeCriterion;
 
-    public SubGraphVertex(final Vertex baseVertex,
-                          final Function<Vertex, Boolean> vertexCriterion,
-                          final Function<Edge, Boolean> edgeCriterion) {
+    public SubgraphVertex(final Vertex baseVertex,
+						  final Function<Vertex, Boolean> vertexCriterion,
+						  final Function<Edge, Boolean> edgeCriterion) {
         this.baseVertex = baseVertex;
         this.vertexCriterion = vertexCriterion;
         this.edgeCriterion = edgeCriterion;
@@ -31,15 +31,15 @@ public class SubGraphVertex implements Vertex {
                         final Vertex inVertex,
                         final Object... keyValues) {
         // note: created edge may not pass the edgeCriterion
-        return new SubGraphEdge(baseVertex.addEdge(label, ((SubGraphVertex) inVertex).baseVertex, keyValues), vertexCriterion, edgeCriterion);
+        return new SubgraphEdge(baseVertex.addEdge(label, ((SubgraphVertex) inVertex).baseVertex, keyValues), vertexCriterion, edgeCriterion);
     }
 
     @Override
     public GraphTraversal<Vertex, Vertex> out(final int branchFactor,
                                               final String... labels) {
         return vertexCriterion.apply(baseVertex)
-                ? new SubGraphTraversal<>(
-                new SubGraphEdgeToVertexTraversal(baseVertex.outE(branchFactor, labels), baseVertex, edgeCriterion, Direction.IN),
+                ? new SubgraphTraversal<>(
+                new SubgraphEdgeToVertexTraversal(baseVertex.outE(branchFactor, labels), baseVertex, edgeCriterion, Direction.IN),
                 vertexCriterion, edgeCriterion, true)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
@@ -48,8 +48,8 @@ public class SubGraphVertex implements Vertex {
     public GraphTraversal<Vertex, Vertex> in(final int branchFactor,
                                              final String... labels) {
         return vertexCriterion.apply(baseVertex)
-                ? new SubGraphTraversal<>(
-                new SubGraphEdgeToVertexTraversal(baseVertex.inE(branchFactor, labels), baseVertex, edgeCriterion, Direction.OUT),
+                ? new SubgraphTraversal<>(
+                new SubgraphEdgeToVertexTraversal(baseVertex.inE(branchFactor, labels), baseVertex, edgeCriterion, Direction.OUT),
                 vertexCriterion, edgeCriterion, true)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
@@ -58,17 +58,17 @@ public class SubGraphVertex implements Vertex {
     public GraphTraversal<Vertex, Vertex> both(final int branchFactor,
                                                final String... labels) {
         return vertexCriterion.apply(baseVertex)
-                ? new SubGraphTraversal<>(
-                new SubGraphEdgeToVertexTraversal(baseVertex.bothE(branchFactor, labels), baseVertex, edgeCriterion, Direction.BOTH),
+                ? new SubgraphTraversal<>(
+                new SubgraphEdgeToVertexTraversal(baseVertex.bothE(branchFactor, labels), baseVertex, edgeCriterion, Direction.BOTH),
                 vertexCriterion, edgeCriterion, true)
-                : new GraphTraversal.EmptyGraphTraversal<>();
+                : new GraphTraversal.EmptyGraphTraversal<Vertex,Vertex>();
     }
 
     @Override
     public GraphTraversal<Vertex, Edge> outE(final int branchFactor,
                                              final String... labels) {
         return vertexCriterion.apply(baseVertex)
-                ? new SubGraphTraversal<>(baseVertex.outE(branchFactor, labels), vertexCriterion, edgeCriterion, false)
+                ? new SubgraphTraversal<>(baseVertex.outE(branchFactor, labels), vertexCriterion, edgeCriterion, false)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 
@@ -76,7 +76,7 @@ public class SubGraphVertex implements Vertex {
     public GraphTraversal<Vertex, Edge> inE(final int branchFactor,
                                             final String... labels) {
         return vertexCriterion.apply(baseVertex)
-                ? new SubGraphTraversal<>(baseVertex.inE(branchFactor, labels), vertexCriterion, edgeCriterion, false)
+                ? new SubgraphTraversal<>(baseVertex.inE(branchFactor, labels), vertexCriterion, edgeCriterion, false)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 
@@ -84,7 +84,7 @@ public class SubGraphVertex implements Vertex {
     public GraphTraversal<Vertex, Edge> bothE(final int branchFactor,
                                               final String... labels) {
         return vertexCriterion.apply(baseVertex)
-                ? new SubGraphTraversal<>(baseVertex.bothE(branchFactor, labels), vertexCriterion, edgeCriterion, false)
+                ? new SubgraphTraversal<>(baseVertex.bothE(branchFactor, labels), vertexCriterion, edgeCriterion, false)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 
