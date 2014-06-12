@@ -88,7 +88,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return traversal;
     }
 
-    public default GraphTraversal<S, E> enablePaths() {
+    public default GraphTraversal<S, E> trackPaths() {
         return (GraphTraversal) this.addStep(new PathIdentityStep<>(this));
     }
 

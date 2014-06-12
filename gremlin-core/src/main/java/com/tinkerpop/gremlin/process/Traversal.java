@@ -59,7 +59,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     /////////
 
-    public default Traversal<S, E> enablePaths() {
+    public default Traversal<S, E> trackPaths() {
         return (Traversal) this.addStep(new PathIdentityStep<>(this));
     }
 

@@ -97,7 +97,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
-            return g.V().as("a").out().<String>map(v -> ((Vertex) v.getPath().get("a")).value("name")).enablePaths();
+            return g.V().as("a").out().<String>map(v -> ((Vertex) v.getPath().get("a")).value("name")).trackPaths();
         }
     }
 
@@ -123,7 +123,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
-            return g.V().as("a").out().<String>map(t -> ((Vertex) t.getPath().get("a")).value("name")).enablePaths().submit(g.compute());
+            return g.V().as("a").out().<String>map(t -> ((Vertex) t.getPath().get("a")).value("name")).trackPaths().submit(g.compute());
         }
     }
 }
