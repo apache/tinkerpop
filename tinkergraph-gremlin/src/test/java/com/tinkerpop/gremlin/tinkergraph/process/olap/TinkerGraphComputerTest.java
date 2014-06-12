@@ -37,7 +37,7 @@ public class TinkerGraphComputerTest {
     @Test
     public void testOLAPWriteBack() throws Exception {
         Graph g = TinkerFactory.createClassic();
-        g.V().pageRank(() -> GraphTraversal.of().outE("created")).forEachRemaining(System.out::println);
+        g.V().pageRank(() -> GraphTraversal.of().outE()).forEachRemaining(System.out::println);
     }
 
     @Test

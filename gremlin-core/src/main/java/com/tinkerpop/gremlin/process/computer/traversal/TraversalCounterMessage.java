@@ -84,7 +84,6 @@ public class TraversalCounterMessage extends TraversalMessage {
                 final TraversalCounterMessage message = TraversalCounterMessage.of(traverser);
                 message.setCounter(count);
                 messenger.sendMessage(
-                        vertex,
                         MessageType.Global.of(TraversalMessage.getHostingVertices(end)),
                         message);
             } else {
