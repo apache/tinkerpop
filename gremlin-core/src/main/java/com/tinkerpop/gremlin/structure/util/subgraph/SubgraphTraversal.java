@@ -14,7 +14,7 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class SubgraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
+public class SubGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     private final Traversal<S, E> baseTraversal;
     private final Function<Vertex, Boolean> vertexCriterion;
@@ -23,7 +23,7 @@ public class SubgraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     private Element nextElement;
 
-    public SubgraphTraversal(final Traversal<S, E> baseTraversal,
+    public SubGraphTraversal(final Traversal<S, E> baseTraversal,
                              final Function<Vertex, Boolean> vertexCriterion,
                              final Function<Edge, Boolean> edgeCriterion,
                              final boolean isVertexIterator) {
@@ -43,7 +43,7 @@ public class SubgraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
     @Override
     public GraphTraversal<S, E> submit(final TraversalEngine engine) {
         Traversal<S, E> newBaseTraversal = baseTraversal.submit(engine);
-        return new SubgraphTraversal(newBaseTraversal, vertexCriterion, edgeCriterion, isVertexIterator);
+        return new SubGraphTraversal(newBaseTraversal, vertexCriterion, edgeCriterion, isVertexIterator);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class SubgraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
             E nextBaseElement = baseTraversal.next();
             if (isVertexIterator) {
                 if (vertexCriterion.apply((Vertex) nextBaseElement)) {
-                    nextElement = new SubgraphVertex((Vertex) nextBaseElement, vertexCriterion, edgeCriterion);
+                    nextElement = new SubGraphVertex((Vertex) nextBaseElement, vertexCriterion, edgeCriterion);
                     return;
                 }
             } else {
@@ -76,7 +76,7 @@ public class SubgraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
                     // the edge must pass the edge criterion, and both of its incident vertices must also pass the vertex criterion
                     if (vertexCriterion.apply(nextBaseEdge.inV().next()) && vertexCriterion.apply(nextBaseEdge.outV().next())) {
-                        nextElement = new SubgraphEdge(nextBaseEdge, vertexCriterion, edgeCriterion);
+                        nextElement = new SubGraphEdge(nextBaseEdge, vertexCriterion, edgeCriterion);
                         return;
                     }
                 }

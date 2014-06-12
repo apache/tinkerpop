@@ -5,13 +5,14 @@ import com.tinkerpop.gremlin.process.util.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.map.MapStep;
 import com.tinkerpop.gremlin.process.util.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.UnBulkable;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LinkStep extends MapStep<Vertex, Vertex> implements PathConsumer, Reversible {
+public class LinkStep extends MapStep<Vertex, Vertex> implements PathConsumer, Reversible, UnBulkable {
 
     public Direction direction;
     public String label;

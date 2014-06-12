@@ -27,8 +27,8 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     private Isolation isolation = Isolation.BSP;
     private Configuration configuration = new BaseConfiguration();
     private final TinkerGraph graph;
-    private final TinkerMessenger messenger = new TinkerMessenger();
     private final TinkerGraphComputerSideEffects sideEffects = new TinkerGraphComputerSideEffects();
+    private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
 
     public TinkerGraphComputer(final TinkerGraph graph) {
@@ -67,11 +67,12 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             g.useGraphView = true;
             // execute the vertex program
             vertexProgram.setup(this.sideEffects);
+
             while (true) {
-                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, this.sideEffects));
+                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard), this.sideEffects));
                 this.sideEffects.incrIteration();
                 g.graphView.completeIteration();
-                this.messenger.completeIteration();
+                this.messageBoard.completeIteration();
                 if (vertexProgram.terminate(this.sideEffects)) break;
             }
 

@@ -6,9 +6,12 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.graph.map.GraphStep;
+import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraverserSource;
+import com.tinkerpop.gremlin.process.util.UnBulkable;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -53,7 +56,8 @@ public class TraversalCounterMessage extends TraversalMessage {
 
         final Traversal traversal = traversalSupplier.get();
         traversal.strategies().applyFinalOptimizers(traversal);
-        ((GraphStep) traversal.getSteps().get(0)).clear();
+        // TODO: Why is this necessary?
+        ((TraverserSource) traversal.getSteps().get(0)).clear();
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final Map<Traverser, Long> localCounts = new HashMap<>();
@@ -69,12 +73,18 @@ public class TraversalCounterMessage extends TraversalMessage {
                 MapHelper.incr(tracker.getDoneObjectTracks(), traverser, counts);
             } else {
                 final Step step = TraversalHelper.getAs(traverser.getFuture(), traversal);
-                // TODO: get rid of loop constructs
-                for (int i = 0; i < counts; i++) {
+                if (step instanceof UnBulkable) {
+                    for (int i = 0; i < counts; i++) {
+                        step.addStarts(new SingleIterator(traverser));
+                    }
+                    if (processStep(step, localCounts, 1l))
+                        voteToHalt.set(false);
+                } else {
                     step.addStarts(new SingleIterator(traverser));
+                    if (processStep(step, localCounts, counts))
+                        voteToHalt.set(false);
                 }
-                if (processStep(step, localCounts, 1l))
-                    voteToHalt.set(false);
+
             }
         });
 
@@ -84,7 +94,6 @@ public class TraversalCounterMessage extends TraversalMessage {
                 final TraversalCounterMessage message = TraversalCounterMessage.of(traverser);
                 message.setCounter(count);
                 messenger.sendMessage(
-                        vertex,
                         MessageType.Global.of(TraversalMessage.getHostingVertices(end)),
                         message);
             } else {
@@ -105,11 +114,16 @@ public class TraversalCounterMessage extends TraversalMessage {
 
         final Step step = TraversalHelper.getAs(this.traverser.getFuture(), traversal);
         MapHelper.incr(tracker.getGraphTracks(), this.traverser, this.counter);
-        // TODO: get rid of loop constructs
-        for (int i = 0; i < this.counter; i++) {
+
+        if (step instanceof UnBulkable) {
+            for (int i = 0; i < this.counter; i++) {
+                step.addStarts(new SingleIterator(this.traverser));
+            }
+            return processStep(step, localCounts, 1l);
+        } else {
             step.addStarts(new SingleIterator(this.traverser));
+            return processStep(step, localCounts, this.counter);
         }
-        return processStep(step, localCounts, 1l);
     }
 
     private static boolean processStep(final Step<?, ?> step, final Map<Traverser, Long> localCounts, final long counter) {

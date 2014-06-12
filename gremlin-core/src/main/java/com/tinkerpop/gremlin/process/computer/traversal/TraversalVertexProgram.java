@@ -89,7 +89,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                     new PathTraverser<>(startStep.getAs(), vertex) :
                     new SimpleTraverser<>(vertex);
             traverser.setFuture(future);
-            messenger.sendMessage(vertex, MessageType.Global.of(vertex), TraversalMessage.of(traverser));
+            messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
             voteToHalt.set(false);
         } else if (Edge.class.isAssignableFrom(startStep.returnClass)) {
             vertex.outE().forEach(e -> {
@@ -97,7 +97,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                         new PathTraverser<>(startStep.getAs(), e) :
                         new SimpleTraverser<>(e);
                 traverser.setFuture(future);
-                messenger.sendMessage(vertex, MessageType.Global.of(vertex), TraversalMessage.of(traverser));
+                messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
                 voteToHalt.set(false);
             });
         }
@@ -107,11 +107,11 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.SideEffects sideEffects) {
         if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
-            sideEffects.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, this.traversalSupplier));
+            sideEffects.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(this.global), messenger, tracker, this.traversalSupplier));
             vertex.property(TRAVERSER_TRACKER, tracker);
         } else {
             final TraversalCounters tracker = new TraversalCounters(vertex);
-            sideEffects.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, this.traversalSupplier));
+            sideEffects.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(this.global), messenger, tracker, this.traversalSupplier));
             vertex.property(TRAVERSER_TRACKER, tracker);
         }
     }
