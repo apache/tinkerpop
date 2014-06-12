@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.sideEffect;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
 import com.tinkerpop.gremlin.process.util.Reversible;
+import com.tinkerpop.gremlin.process.util.UnBulkable;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable, Reversible {
+public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable, Reversible, UnBulkable {
 
     public Map<K, Collection<V>> groupMap;
     public final Map<K, R> reduceMap;
