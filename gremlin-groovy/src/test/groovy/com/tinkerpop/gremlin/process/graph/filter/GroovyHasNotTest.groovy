@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-class GroovyHasNotTestG extends HasNotTest {
+class GroovyHasNotTest extends HasNotTest {
 
     public Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String prop) {
         g.v(v1Id).hasNot(prop)

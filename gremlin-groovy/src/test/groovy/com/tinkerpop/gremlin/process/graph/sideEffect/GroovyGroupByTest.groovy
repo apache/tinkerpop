@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyGroupByTestG extends GroupByTest {
+class GroovyGroupByTest extends GroupByTest {
 
     public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
         g.V.groupBy{it['name']}

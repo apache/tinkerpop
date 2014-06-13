@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyHasTestG extends HasTest {
+class GroovyHasTest extends HasTest {
 
     public Traversal<Vertex, Vertex> get_g_v1_hasXkeyX(final Object v1Id, final String key) {
         g.v(v1Id).has(key)

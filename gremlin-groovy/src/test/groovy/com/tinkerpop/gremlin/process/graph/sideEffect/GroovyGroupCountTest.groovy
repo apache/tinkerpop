@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyGroupCountTestG extends GroupCountTest {
+class GroovyGroupCountTest extends GroupCountTest {
 
     public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX() {
         g.V.out('created').groupCount { it['name'] }

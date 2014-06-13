@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyRetainTestG extends RetainTest {
+class GroovyRetainTest extends RetainTest {
 
     public Traversal<Vertex, Vertex> get_g_v1_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
         g.v(v1Id).out.retain([g.v(v2Id)])

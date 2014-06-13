@@ -6,8 +6,8 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GroovyMapTestG extends MapTest {
-    public GroovyMapTestG() { requiresGraphComputer = false; }
+class GroovyMapTest extends MapTest {
+    public GroovyMapTest() { requiresGraphComputer = false; }
 
     @Override
     public Traversal<Vertex, String> get_g_v1_mapXnameX(final Object v1Id) {

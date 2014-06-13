@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyRangeTestG extends RangeTest {
+class GroovyRangeTest extends RangeTest {
 
     public Traversal<Vertex, Vertex> get_g_v1_out_rangeX0_1X(final Object v1Id) {
         g.v(v1Id).out[0..1]

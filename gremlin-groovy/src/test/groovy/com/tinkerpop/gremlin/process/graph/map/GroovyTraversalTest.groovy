@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyTraversalTestG extends TraversalTest {
+class GroovyTraversalTest extends TraversalTest {
 
     public Traversal<Vertex, Vertex> get_g_V() {
         g.V

@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyBackTestG extends BackTest {
+class GroovyBackTest extends BackTest {
 
     public Traversal<Vertex, Vertex> get_g_v1_asXhereX_out_backXhereX(final Object v1Id) {
         g.v(v1Id).as('here').out.back('here')

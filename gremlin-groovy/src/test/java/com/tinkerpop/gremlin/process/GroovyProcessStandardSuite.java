@@ -1,27 +1,27 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
-import com.tinkerpop.gremlin.process.graph.filter.GroovyCyclicPathTestG;
-import com.tinkerpop.gremlin.process.graph.filter.GroovyDedupTestG;
-import com.tinkerpop.gremlin.process.graph.filter.GroovyExceptTestG;
-import com.tinkerpop.gremlin.process.graph.filter.GroovyFilterTestG;
-import com.tinkerpop.gremlin.process.graph.filter.GroovyHasTestG;
-import com.tinkerpop.gremlin.process.graph.filter.GroovyIntervalTestG;
-import com.tinkerpop.gremlin.process.graph.filter.GroovyRandomTestG;
-import com.tinkerpop.gremlin.process.graph.filter.GroovyRangeTestG;
-import com.tinkerpop.gremlin.process.graph.filter.GroovyRetainTestG;
-import com.tinkerpop.gremlin.process.graph.filter.GroovySimplePathTestG;
-import com.tinkerpop.gremlin.process.graph.map.GroovyBackTestG;
-import com.tinkerpop.gremlin.process.graph.map.GroovyJumpTestG;
-import com.tinkerpop.gremlin.process.graph.map.GroovyMapTestG;
-import com.tinkerpop.gremlin.process.graph.map.GroovyOrderTestG;
-import com.tinkerpop.gremlin.process.graph.map.GroovyPathTestG;
-import com.tinkerpop.gremlin.process.graph.map.GroovySelectTestG;
-import com.tinkerpop.gremlin.process.graph.map.GroovyTraversalTestG;
-import com.tinkerpop.gremlin.process.graph.map.GroovyValuesTestG;
-import com.tinkerpop.gremlin.process.graph.sideEffect.GroovyAggregateTestG;
-import com.tinkerpop.gremlin.process.graph.sideEffect.GroovyGroupByTestG;
-import com.tinkerpop.gremlin.process.graph.sideEffect.GroovyGroupCountTestG;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyCyclicPathTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyDedupTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyExceptTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyFilterTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyHasTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyIntervalTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyRandomTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyRangeTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovyRetainTest;
+import com.tinkerpop.gremlin.process.graph.filter.GroovySimplePathTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyBackTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyJumpTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyMapTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyOrderTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyPathTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovySelectTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyTraversalTest;
+import com.tinkerpop.gremlin.process.graph.map.GroovyValuesTest;
+import com.tinkerpop.gremlin.process.graph.sideEffect.GroovyAggregateTest;
+import com.tinkerpop.gremlin.process.graph.sideEffect.GroovyGroupByTest;
+import com.tinkerpop.gremlin.process.graph.sideEffect.GroovyGroupCountTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -41,27 +41,27 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            GroovyCyclicPathTestG.class,
-            GroovyDedupTestG.class,
-            GroovyExceptTestG.class,
-            GroovyFilterTestG.class,
-            GroovyHasTestG.class,
-            GroovyIntervalTestG.class,
-            GroovyRandomTestG.class,
-            GroovyRangeTestG.class,
-            GroovyRetainTestG.class,
-            GroovySimplePathTestG.class,
-            GroovyBackTestG.class,
-            GroovyJumpTestG.class,
-			GroovyMapTestG.class,
-            GroovyOrderTestG.class,
-            GroovyPathTestG.class,
-            GroovySelectTestG.class,
-            GroovyTraversalTestG.class,
-            GroovyValuesTestG.class,
-            GroovyAggregateTestG.class,
-            GroovyGroupByTestG.class,
-            GroovyGroupCountTestG.class
+            GroovyCyclicPathTest.class,
+            GroovyDedupTest.class,
+            GroovyExceptTest.class,
+            GroovyFilterTest.class,
+            GroovyHasTest.class,
+            GroovyIntervalTest.class,
+            GroovyRandomTest.class,
+            GroovyRangeTest.class,
+            GroovyRetainTest.class,
+            GroovySimplePathTest.class,
+            GroovyBackTest.class,
+            GroovyJumpTest.class,
+			GroovyMapTest.class,
+            GroovyOrderTest.class,
+            GroovyPathTest.class,
+            GroovySelectTest.class,
+            GroovyTraversalTest.class,
+            GroovyValuesTest.class,
+            GroovyAggregateTest.class,
+            GroovyGroupByTest.class,
+            GroovyGroupCountTest.class
     };
 
 
