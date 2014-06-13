@@ -21,8 +21,8 @@ class GremlinServerSimulation extends Simulation {
   }
 
   val scn = scenario("Gremlin Server Test").randomSwitch(
-    50 -> repeat(10) { exec(addition) },
-    50 -> repeat(25) { exec(addition) }
+    50 -> repeat(50) { exec(addition) },
+    50 -> repeat(100) { exec(addition) }
   )
 
   setUp(
