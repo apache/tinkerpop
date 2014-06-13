@@ -15,6 +15,10 @@ import com.tinkerpop.gremlin.structure.util.micro.MicroVertex;
  */
 public class MicroPath extends Path {
 
+    public MicroPath() {
+
+    }
+
     private MicroPath(final Path path) {
         path.forEach((as, object) -> {
             if (object instanceof MicroElement || object instanceof MicroProperty) {

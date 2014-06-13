@@ -19,7 +19,7 @@ public class SimpleTraverser<T> implements Traverser<T> {
     protected String future = NO_FUTURE;
     protected int loops = 0;
 
-    private SimpleTraverser() {
+    protected SimpleTraverser() {
 
     }
 
