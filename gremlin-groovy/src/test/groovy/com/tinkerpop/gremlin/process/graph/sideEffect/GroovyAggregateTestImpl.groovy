@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyAggregateTest extends AggregateTest {
+class GroovyAggregateTestImpl extends AggregateTest {
 
     public Traversal<Vertex, Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Object v1Id) {
         g.v(v1Id).aggregate('a').out('created').in('created').except('a')

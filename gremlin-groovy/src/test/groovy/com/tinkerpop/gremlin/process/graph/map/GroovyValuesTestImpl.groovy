@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyValuesTest extends ValuesTest {
+class GroovyValuesTestImpl extends ValuesTest {
 
     public Traversal<Vertex, Map<String, Object>> get_g_V_values() {
         g.V.values

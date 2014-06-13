@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyOrderTest extends OrderTest {
+class GroovyOrderTestImpl extends OrderTest {
 
     public Traversal<Vertex, String> get_g_V_name_order() {
         g.V.name.order

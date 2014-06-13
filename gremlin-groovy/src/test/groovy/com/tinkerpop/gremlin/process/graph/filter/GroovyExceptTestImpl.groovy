@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyExceptTest extends ExceptTest {
+class GroovyExceptTestImpl extends ExceptTest {
 
     public Traversal<Vertex, Vertex> get_g_v1_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {
         g.v(v1Id).out.except([g.v(v2Id)])

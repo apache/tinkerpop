@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyFilterTest extends FilterTest {
+class GroovyFilterTestImpl extends FilterTest {
 
     @Override
     public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {

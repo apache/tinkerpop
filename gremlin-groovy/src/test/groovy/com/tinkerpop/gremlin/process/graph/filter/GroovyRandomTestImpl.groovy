@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GroovyRandomTest extends RandomTest {
+class GroovyRandomTestImpl extends RandomTest {
 
     public Traversal<Vertex, Vertex> get_g_V_randomX1X() {
         g.V.random(1.0f)
