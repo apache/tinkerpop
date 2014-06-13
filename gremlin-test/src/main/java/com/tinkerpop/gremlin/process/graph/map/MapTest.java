@@ -54,8 +54,6 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_asXaX_out_mapXa_nameX() {
-        // todo: ignored until there is a mechanism in place for enablePath like in tp2
-
         int marko = 0;
         int peter = 0;
         int josh = 0;
