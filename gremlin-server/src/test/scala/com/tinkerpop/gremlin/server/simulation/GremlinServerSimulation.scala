@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.server.simulation
 
 import io.gatling.core.Predef._
 import scala.concurrent.duration._
-import akka.actor.ActorRef;
+import akka.actor.ActorRef
 import io.gatling.core.action.builder.ActionBuilder
 import io.gatling.core.action.{Chainable, system}
 import bootstrap._
@@ -13,25 +13,31 @@ import io.gatling.core.result.writer.DataWriter
 import com.tinkerpop.gremlin.driver.{Client, Cluster}
 
 class GremlinServerSimulation extends Simulation {
+  val host: String = System.getProperty("host", "localhost")
+  val cluster: Cluster = Cluster.create(host).build()
 
-  val mine = new ActionBuilder {
-    def build(next: ActorRef) = system.actorOf(Props(new GremlinServerAction(next)))
+  val addition = new ActionBuilder {
+    def build(next: ActorRef) = system.actorOf(Props(new GremlinServerAction(next, cluster, "1+1")))
   }
 
-  val usersToSimulate = Integer.getInteger("users", 1).intValue()
-  val simulationTime  = Integer.getInteger("time", 30).intValue()
+  val scn = scenario("Gremlin Server Test").randomSwitch(
+    50 -> repeat(250) { exec(addition) },
+    50 -> repeat(1000) { exec(addition) }
+  )
 
-  val scn = scenario("Gremlin Server Test").repeat(2) { exec(mine) }
-  setUp(scn.inject(ramp(usersToSimulate users) over (simulationTime seconds)))
-    .assertions(global.responseTime.max.lessThan(250),global.successfulRequests.percent.greaterThan(95))
+  setUp(
+    scn.inject(
+      ramp(10 users) over (10 seconds),
+      constantRate(20 usersPerSec) during (15 seconds),
+      ramp(1000 users) over (5 minutes))
+  ).assertions(global.responseTime.max.lessThan(250), global.successfulRequests.percent.greaterThan(95))
 }
 
-class GremlinServerAction(val next: ActorRef) extends Chainable {
-  val cluster: Cluster = Cluster.open
+class GremlinServerAction(val next: ActorRef, val cluster: Cluster, val script: String) extends Chainable {
   val client: Client = cluster.connect
 
   def send(session: Session) {
-    client.submit("1+1")
+    client.submit(script)
   }
 
   def execute(session: Session) {
