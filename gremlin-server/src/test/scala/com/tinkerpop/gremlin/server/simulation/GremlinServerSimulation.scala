@@ -27,7 +27,7 @@ class GremlinServerSimulation extends Simulation {
 
   setUp(
     scn.inject(
-      split(1000 users).into(ramp(100 users) over (30 seconds)).separatedBy(3 seconds))
+      split(1000 users).into(ramp(100 users) over (10 seconds)).separatedBy(3 seconds))
   ).assertions(global.responseTime.max.lessThan(250), global.successfulRequests.percent.greaterThan(95))
 }
 
