@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.giraph.process.graph.strategy;
 
-import com.tinkerpop.gremlin.giraph.process.graph.sideEffect.GiraphGroupCountStep;
+import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGroupCountStep;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.List;

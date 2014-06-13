@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph.map;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.util.As;
+import com.tinkerpop.gremlin.process.graph.step.util.As;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;

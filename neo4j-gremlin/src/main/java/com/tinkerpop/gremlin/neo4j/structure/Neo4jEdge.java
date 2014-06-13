@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.map.Neo4jEdgeVertexStep;
+import com.tinkerpop.gremlin.neo4j.process.step.map.Neo4jEdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;

@@ -12,8 +12,8 @@ import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.map.TinkerGraphStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.util.strategy.TinkerGraphStepTraversalStrategy;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepTraversalStrategy;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;

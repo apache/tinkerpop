@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.util.PathIdentityStep;
-import com.tinkerpop.gremlin.process.util.Reversible;
+import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
+import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 
 import java.io.Serializable;
 import java.util.ArrayList;
