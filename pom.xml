@@ -492,6 +492,7 @@
     </dependencyManagement>
 
     <profiles>
+
         <profile>
             <id>asciidoc</id>
             <activation>

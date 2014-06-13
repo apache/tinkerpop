@@ -119,4 +119,148 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>gatling</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>gatling</name>
+                </property>
+            </activation>
+
+            <properties>
+                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                <gatling.io.version>2.0.0-M3a</gatling.io.version>
+                <scala.version>2.10</scala.version>
+            </properties>
+
+            <dependencies>
+                <!-- include to resolve conflicts within gatling -->
+                <dependency>
+                    <groupId>com.typesafe</groupId>
+                    <artifactId>config</artifactId>
+                    <version>0.3.1</version>
+                    <scope>test</scope>
+                </dependency>
+                <!-- include to resolve conflicts within gatling -->
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-reflect</artifactId>
+                    <version>2.10.2</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>io.gatling</groupId>
+                    <artifactId>gatling-core</artifactId>
+                    <version>${gatling.io.version}</version>
+                    <scope>test</scope>
+                    <exclusions>
+                        <!-- self-conflict -->
+                        <exclusion>
+                            <groupId>com.typesafe</groupId>
+                            <artifactId>config</artifactId>
+                        </exclusion>
+                        <!-- conflict with tinkerpop -->
+                        <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-api</artifactId>
+                        </exclusion>
+                        <!-- self-conflict -->
+                        <exclusion>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-library</artifactId>
+                        </exclusion>
+                        <!-- self-conflict -->
+                        <exclusion>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-reflect</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>org.scalaj</groupId>
+                    <artifactId>scalaj-collection_${scala.version}</artifactId>
+                    <version>1.5</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>io.gatling.highcharts</groupId>
+                    <artifactId>gatling-charts-highcharts</artifactId>
+                    <version>${gatling.io.version}</version>
+                    <scope>test</scope>
+                    <exclusions>
+                        <!-- conflict with tinkerpop -->
+                        <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-api</artifactId>
+                        </exclusion>
+                        <!-- self-conflict -->
+                        <exclusion>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-library</artifactId>
+                        </exclusion>
+                        <!-- self-conflict -->
+                        <exclusion>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-compiler</artifactId>
+                        </exclusion>
+                        <!-- self-conflict -->
+                        <exclusion>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-reflect</artifactId>
+                        </exclusion>
+                        <!-- conflict with gatling-core -->
+                        <exclusion>
+                            <groupId>com.typesafe.akka</groupId>
+                            <artifactId>akka-actor_2.10</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.gatling</groupId>
+                        <artifactId>gatling-maven-plugin</artifactId>
+                        <version>${gatling.io.version}</version>
+                        <executions>
+                            <execution>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Default values -->
+                                    <configDir>src/test/resources</configDir>
+                                    <resultsFolder>target/gatling/results</resultsFolder>
+                                    <simulationsFolder>src/test/scala</simulationsFolder>
+                                    <includes>
+                                        <include>**/*.scala</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <repositories>
+                <repository>
+                    <id>excilys</id>
+                    <name>Excilys Repository</name>
+                    <url>http://repository.excilys.com/content/groups/public</url>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>excilys</id>
+                    <name>Excilys Repository</name>
+                    <url>http://repository.excilys.com/content/groups/public</url>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
 </project>
