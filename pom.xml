@@ -228,6 +228,10 @@
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
                             <exclude>**/*PerformanceTest.java</exclude>
+                            <!-- On some OS these tests execute outside of the context of GroovyProcessStandardSuite -->
+                            <exclude>**/process/graph/filter/Groovy*Test.groovy</exclude>
+                            <exclude>**/process/graph/map/Groovy*Test.groovy</exclude>
+                            <exclude>**/process/graph/sideEffect/Groovy*Test.groovy</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
