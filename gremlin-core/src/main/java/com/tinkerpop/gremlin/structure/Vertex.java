@@ -144,7 +144,6 @@ public interface Vertex extends Element {
         return this.start().jump(as, ifPredicate, emitPredicate);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> map(final SFunction<Traverser<Vertex>, E2> function) {
         return this.start().map(function);
     }
