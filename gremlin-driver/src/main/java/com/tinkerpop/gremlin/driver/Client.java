@@ -41,6 +41,8 @@ public class Client {
         if (initialized)
             return this;
 
+		if (logger.isDebugEnabled()) logger.debug("Initializing client on cluster [{}]", cluster);
+
         cluster.init();
         cluster.getClusterInfo().allHosts().forEach(host -> {
 			try {

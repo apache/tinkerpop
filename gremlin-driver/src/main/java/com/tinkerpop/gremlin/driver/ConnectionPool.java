@@ -82,12 +82,15 @@ class ConnectionPool {
     }
 
     public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
+		logger.debug("Borrowing connection from pool on {} - timeout in {} {}", host, timeout, unit);
+
         if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
 
         final Connection leastUsedConn = selectLeastUsed();
 
         if (connections.isEmpty()) {
-            for (int i = 0; i < minPoolSize; i++) {
+			logger.debug("Tried to borrow connection but the pool was empty for {} - scheduling pool creation and waiting for connection", host);
+			for (int i = 0; i < minPoolSize; i++) {
                 scheduledForCreation.incrementAndGet();
                 newConnection();
             }
@@ -97,13 +100,18 @@ class ConnectionPool {
 
 		if (null == leastUsedConn) {
 			if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+			logger.debug("Pool was initialized but a connection could not be selected earlier - waiting for connection on {}", host);
 			return waitForConnection(timeout, unit);
 		}
 
         // if the number in flight on the least used connection exceeds the max allowed and the pool size is
         // not at maximum then consider opening a connection
-        if (leastUsedConn.inFlight.get() >= maxSimultaneousRequestsPerConnection && connections.size() < maxPoolSize)
-            considerNewConnection();
+		final int currentPoolSize = connections.size();
+        if (leastUsedConn.inFlight.get() >= maxSimultaneousRequestsPerConnection && currentPoolSize < maxPoolSize) {
+			logger.debug("Least used connection {} on {} exceeds maxSimultaneousRequestsPerConnection but pool size {} < maxPoolSize - consider new connection",
+						leastUsedConn, host, currentPoolSize);
+			considerNewConnection();
+		}
 
 		while (true) {
 			int inFlight = leastUsedConn.inFlight.get();
@@ -205,8 +213,11 @@ class ConnectionPool {
     }
 
     private void considerNewConnection() {
+		logger.debug("Considering new connection on {} where pool size is {}", host, connections.size());
         while (true) {
             int inCreation = scheduledForCreation.get();
+
+			logger.debug("There are {} connections scheduled for creation on {}", inCreation, host);
 
             // don't create more than one at a time
             if (inCreation >= 1)
