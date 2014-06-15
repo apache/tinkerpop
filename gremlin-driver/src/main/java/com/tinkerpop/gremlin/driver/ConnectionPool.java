@@ -139,15 +139,7 @@ class ConnectionPool {
         int inFlight = connection.inFlight.decrementAndGet();
         if (connection.isDead()) {
 			logger.debug("Marking {} as dead", this.host);
-
-            // a dead connection signifies a likely dead host - given that assumption close the pool.  we could likely
-			// have a smarter and more configurable choice here, but for now this is ok. provide the makeUnavailable
-			// method a function to try to reopen the connection.
-			host.makeUnavailable(this::tryReconnect);
-
-			// let the load-balancer know that the host is acting poorly
-			this.cluster.loadBalancingStrategy().onUnavailable(host);
-
+			considerUnavailable();
 			closeAsync();
         } else {
             if (bin.contains(connection) && inFlight == 0) {
@@ -312,16 +304,23 @@ class ConnectionPool {
 
 		logger.debug("Timed-out waiting for connection on {} - possibly unavailable", host);
 
-		// todo: need to abstract the host availability function a bit - this is kinda rigid
 		// if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
 		// either way supply a function to reconnect
+		this.considerUnavailable();
+
+        throw new TimeoutException();
+    }
+
+	private void considerUnavailable() {
+		// todo: need to abstract the host availability function a bit - this is kinda rigid
+		// called when a connection is "dead" right now such that a "dead" connection means the host is basically
+		// "dead".  that's probably ok for now, but this decision should likely be more flexibile.
 		host.makeUnavailable(this::tryReconnect);
 
 		// let the load-balancer know that the host is acting poorly
 		this.cluster.loadBalancingStrategy().onUnavailable(host);
 
-        throw new TimeoutException();
-    }
+	}
 
 	private boolean tryReconnect(final Host h) {
 		try {
