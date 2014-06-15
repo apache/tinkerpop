@@ -176,10 +176,7 @@ class Connection {
 
     @Override
     public String toString() {
-        return "Connection{" +
-                "inFlight=" + inFlight + "," +
-                "pending=" + pending.size() +
-                '}';
+		return String.format("Connection{isDead=%s, inFlight=%s, pending=%s}", isDead, inFlight, pending.size());
     }
 
     class ClientPipelineInitializer extends ChannelInitializer<SocketChannel> {

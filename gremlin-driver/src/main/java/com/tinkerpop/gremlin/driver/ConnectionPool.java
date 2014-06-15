@@ -133,27 +133,17 @@ class ConnectionPool {
     }
 
     public void returnConnection(final Connection connection) throws ConnectionException {
+		logger.debug("Attempting to return {} on {}", connection, host);
         if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
 
         int inFlight = connection.inFlight.decrementAndGet();
         if (connection.isDead()) {
-			logger.debug("Marking host as dead at {}", this.host);
+			logger.debug("Marking {} as dead", this.host);
 
             // a dead connection signifies a likely dead host - given that assumption close the pool.  we could likely
 			// have a smarter and more configurable choice here, but for now this is ok. provide the makeUnavailable
 			// method a function to try to reopen the connection.
-			host.makeUnavailable(h -> {
-				try {
-					connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
-					this.open.set(connections.size());
-
-					// host is reconnected and a connection is now available
-					this.cluster.loadBalancingStrategy().onAvailable(host);
-					return true;
-				} catch (Exception ex) {
-					return false;
-				}
-			});
+			host.makeUnavailable(this::tryReconnect);
 
 			// let the load-balancer know that the host is acting poorly
 			this.cluster.loadBalancingStrategy().onUnavailable(host);
@@ -325,26 +315,28 @@ class ConnectionPool {
 		// todo: need to abstract the host availability function a bit - this is kinda rigid
 		// if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
 		// either way supply a function to reconnect
-		host.makeUnavailable(h -> {
-			try {
-				logger.debug("Trying to re-establish connection on {}", host);
-
-				connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
-				this.open.set(connections.size());
-
-				// host is reconnected and a connection is now available
-				this.cluster.loadBalancingStrategy().onAvailable(host);
-				return true;
-			} catch (Exception ex) {
-				return false;
-			}
-		});
+		host.makeUnavailable(this::tryReconnect);
 
 		// let the load-balancer know that the host is acting poorly
 		this.cluster.loadBalancingStrategy().onUnavailable(host);
 
         throw new TimeoutException();
     }
+
+	private boolean tryReconnect(final Host h) {
+		try {
+			logger.debug("Trying to re-establish connection on {}", host);
+
+			connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
+			this.open.set(connections.size());
+
+			// host is reconnected and a connection is now available
+			this.cluster.loadBalancingStrategy().onAvailable(host);
+			return true;
+		} catch (Exception ex) {
+			return false;
+		}
+	}
 
     private void announceAvailableConnection() {
         if (waiter == 0)
