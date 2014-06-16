@@ -143,6 +143,7 @@ class ConnectionPool {
 			closeAsync();
         } else {
             if (bin.contains(connection) && inFlight == 0) {
+				logger.debug("{} is already in the bin and it has no inflight requests so it is safe to close", connection);
                 if (bin.remove(connection))
                     connection.closeAsync();
                 return;
@@ -152,12 +153,17 @@ class ConnectionPool {
             // isn't busy. replace a connection that has a low available in process count which likely means that
             // it's backing up with requests that might never have returned. if neither of these scenarios are met
             // then let the world know the connection is available.
-            if (connections.size() > minPoolSize && inFlight <= minSimultaneousRequestsPerConnection)
-                destroyConnection(connection);
-            else if (connection.availableInProcess() < minInProcess)
-                replaceConnection(connection);
-            else
-                announceAvailableConnection();
+			final int poolSize = connections.size();
+			final int availableInProcess = connection.availableInProcess();
+            if (poolSize > minPoolSize && inFlight <= minSimultaneousRequestsPerConnection) {
+				logger.debug("On {} pool size of {} > minPoolSize {} and inFlight of {} <= minSimultaneousRequestsPerConnection {} so destroy {}",
+						host, poolSize, minPoolSize, inFlight, minSimultaneousRequestsPerConnection, connection);
+				destroyConnection(connection);
+			} else if (connection.availableInProcess() < minInProcess) {
+				logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection);
+				replaceConnection(connection);
+			} else
+				announceAvailableConnection();
         }
     }
 
@@ -193,6 +199,8 @@ class ConnectionPool {
     }
 
     private void replaceConnection(final Connection connection) {
+		logger.debug("Replace {}", connection);
+
         open.decrementAndGet();
         considerNewConnection();
         definitelyDestroyConnection(connection);
@@ -243,9 +251,8 @@ class ConnectionPool {
         return true;
     }
 
-
     private boolean destroyConnection(final Connection connection) {
-        while(true) {
+		while(true) {
             int opened = open.get();
             if (opened <= minPoolSize)
                 return false;
@@ -264,6 +271,8 @@ class ConnectionPool {
 
         if (connection.inFlight.get() == 0 && bin.remove(connection))
             connection.closeAsync();
+
+		logger.debug("{} destroyed", connection);
     }
 
     private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
@@ -323,8 +332,9 @@ class ConnectionPool {
 	}
 
 	private boolean tryReconnect(final Host h) {
+		logger.debug("Trying to re-establish connection on {}", host);
+
 		try {
-			logger.debug("Trying to re-establish connection on {}", host);
 
 			connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
 			this.open.set(connections.size());
@@ -338,6 +348,8 @@ class ConnectionPool {
 	}
 
     private void announceAvailableConnection() {
+		logger.debug("Announce connection available on {}", host);
+
         if (waiter == 0)
             return;
 
