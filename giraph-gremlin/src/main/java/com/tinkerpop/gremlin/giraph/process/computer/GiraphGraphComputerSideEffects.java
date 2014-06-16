@@ -41,7 +41,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Gra
 
     public void initialize() {
         try {
-            this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(this.getConf()));
+            this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
             this.registerAggregator("voteToHalt", MemoryAggregator.class);  // TODO: we need to be able to get all sideEffects upfront. :(
             this.vertexProgram.setup(this);
         } catch (Exception e) {

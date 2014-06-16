@@ -104,6 +104,11 @@ public class TraversalHelper {
         reLinkSteps(traversal);
     }
 
+    public static void replaceStep(final Step removeStep, final Step insertStep, final Traversal traversal) {
+        int index = TraversalHelper.removeStep(removeStep, traversal);
+        TraversalHelper.insertStep(insertStep, index, traversal);
+    }
+
     private static void reLabelSteps(final Traversal traversal) {
         final List<Step> steps = traversal.getSteps();
         for (int i = 0; i < steps.size(); i++) {

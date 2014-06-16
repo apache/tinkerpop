@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.process.ExtendedJobsCalculator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
@@ -14,11 +15,13 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -26,6 +29,9 @@ import java.io.File;
 public class GiraphGraphRunner extends Configured implements Tool {
 
     private final GiraphConfiguration giraphConfiguration;
+
+    public static final String GRAPH = "graph";
+    public static final String SIDE_EFFECT = "sideEffect";
 
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         this.giraphConfiguration = new GiraphConfiguration();
@@ -40,11 +46,18 @@ public class GiraphGraphRunner extends Configured implements Tool {
     public int run(final String[] args) {
         try {
             final GiraphJob job = new GiraphJob(this.giraphConfiguration,
-                    "GiraphGremlin: " + VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(this.giraphConfiguration)));
+                    "GiraphGremlin: " + VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.giraphConfiguration)));
             //job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
             FileInputFormat.addInputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_INPUT_LOCATION)));
             FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
             job.run(true);
+            if (null != this.giraphConfiguration.get("gremlin.extendedJobsCalculator", null)) {
+                final Class<ExtendedJobsCalculator> calculator = (Class) this.giraphConfiguration.getClass("gremlin.extendedJobsCalculator", ExtendedJobsCalculator.class);
+                final List<Job> extendedJobs = calculator.getConstructor().newInstance().determineExtendedJobs(this.giraphConfiguration);
+                for (final Job extendedJob : extendedJobs) {
+                    extendedJob.waitForCompletion(true);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage(), e);

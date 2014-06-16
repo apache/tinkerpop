@@ -145,6 +145,10 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         return "TraversalVertexProgram" + this.traversalSupplier.get().toString();
     }
 
+    public SSupplier<Traversal> getTraversalSupplier() {
+        return this.traversalSupplier;
+    }
+
     //////////////
 
     public static Builder create() {

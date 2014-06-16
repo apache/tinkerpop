@@ -55,7 +55,7 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
 
     @Override
     public void setConf(final org.apache.giraph.conf.ImmutableClassesGiraphConfiguration configuration) {
-        this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(configuration));
+        this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
     }
 
     public com.tinkerpop.gremlin.structure.Vertex getGremlinVertex() {
