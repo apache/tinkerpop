@@ -14,7 +14,9 @@ import com.tinkerpop.gremlin.driver.{Client, Cluster}
 
 class GremlinServerSimulation extends Simulation {
   val host: String = System.getProperty("host", "localhost")
-  val cluster: Cluster = Cluster.create(host).build()
+  val cluster: Cluster = Cluster.create(host)
+    .maxConnectionPoolSize(64)
+    .build()
 
   val addition = new ActionBuilder {
     def build(next: ActorRef) = system.actorOf(Props(new GremlinServerAction(next, cluster, "1+1")))
