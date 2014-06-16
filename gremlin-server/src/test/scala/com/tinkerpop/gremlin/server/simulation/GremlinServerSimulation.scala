@@ -24,13 +24,14 @@ class GremlinServerSimulation extends Simulation {
   }
 
   val scn = scenario("Gremlin Server Test").randomSwitch(
-    50 -> repeat(50) { exec(addition) },
-    50 -> repeat(100) { exec(addition) }
+    50 -> repeat(100) { exec(addition) },
+    50 -> repeat(200) { exec(addition) }
   )
 
   setUp(
     scn.inject(
-      split(1000 users).into(ramp(100 users) over (10 seconds)).separatedBy(3 seconds))
+      //constantRate(100 userPerSec) during(100 seconds))
+      split(1000 users).into(ramp(100 users) over(25 seconds)).separatedBy(1 seconds))
   ).assertions(global.responseTime.max.lessThan(250), global.successfulRequests.percent.greaterThan(95))
 }
 
@@ -38,7 +39,7 @@ class GremlinServerAction(val next: ActorRef, val cluster: Cluster, val script: 
   val client: Client = cluster.connect
 
   def send(session: Session) {
-    client.submit(script)
+    client.submitAsync(script)
   }
 
   def execute(session: Session) {
