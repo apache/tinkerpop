@@ -1339,6 +1339,15 @@ image:giraph-logo.png[width=75,float=left] link:http://giraph.apache.org[Giraph]
 
 IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see their link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, it is advisable that the reader also familiarize themselves with Giraph as well via their link:http://giraph.apache.org/quick_start.html[Getting Started] page.
 
+Installing Giraph-Gremlin
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To the `.bash_profile` file, add the following environmental variables (of course, be sure the directories are the respective locations on your local machine).
+
+[source,text]
+export GIRAPH_HOME=/usr/local/giraph-1.0.0
+export GIRAPH_GREMLIN_HOME=/Users/marko/software/tinkerpop/tinkerpop3/giraph-gremlin/target/giraph-gremlin-3.0.0-SNAPSHOT-standalone
+
 Properties Files
 ~~~~~~~~~~~~~~~~
 

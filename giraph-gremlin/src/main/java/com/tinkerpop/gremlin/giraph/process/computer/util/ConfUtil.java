@@ -8,13 +8,13 @@ import org.apache.hadoop.conf.Configuration;
  */
 public class ConfUtil {
 
-    public static org.apache.commons.configuration.Configuration apacheConfiguration(final Configuration hadoopConfiguration) {
+    public static org.apache.commons.configuration.Configuration makeApacheConfiguration(final Configuration hadoopConfiguration) {
         final org.apache.commons.configuration.Configuration apacheConfiguration = new BaseConfiguration();
         hadoopConfiguration.iterator().forEachRemaining(e -> apacheConfiguration.setProperty(e.getKey(), e.getValue()));
         return apacheConfiguration;
     }
 
-    public static Configuration hadoopConfiguration(final org.apache.commons.configuration.Configuration apacheConfiguration) {
+    public static Configuration makeHadoopConfiguration(final org.apache.commons.configuration.Configuration apacheConfiguration) {
         final Configuration hadoopConfiguration = new Configuration();
         apacheConfiguration.getKeys().forEachRemaining(key -> {
             final Object object = apacheConfiguration.getProperty(key);

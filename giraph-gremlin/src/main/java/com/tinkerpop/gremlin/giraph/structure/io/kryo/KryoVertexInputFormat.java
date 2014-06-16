@@ -13,6 +13,7 @@ import java.util.List;
  * @author Joshua Shinavier (http://fortytwo.net)
  */
 public class KryoVertexInputFormat extends VertexInputFormat {
+    // TODO: Make it implement NativeFormat
 
     private final KryoInputFormat fileInputFormat;
 
