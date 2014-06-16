@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ExtendedJobsCalculator {
+public interface ExtraJobsCalculator {
 
-    public List<Job> determineExtendedJobs(final Configuration configuration);
+    public List<Job> deriveExtraJobs(final Configuration configuration);
 }

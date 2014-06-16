@@ -13,30 +13,28 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalExtendedJobsCalculator implements ExtendedJobsCalculator {
+public class TraversalExtraJobsCalculator implements ExtraJobsCalculator {
 
-    public TraversalExtendedJobsCalculator() {
+    public TraversalExtraJobsCalculator() {
 
     }
 
-    public List<Job> determineExtendedJobs(final Configuration configuration) {
+    public List<Job> deriveExtraJobs(final Configuration configuration) {
         final List<Job> jobs = new ArrayList<>();
         final VertexProgram program = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
         if (program instanceof TraversalVertexProgram) {
-            Traversal traversal = (Traversal) ((TraversalVertexProgram) program).getTraversalSupplier().get();
+            final Traversal traversal = (Traversal) ((TraversalVertexProgram) program).getTraversalSupplier().get();
             traversal.strategies().applyFinalOptimizers(traversal);
             traversal.getSteps().forEach(step -> {
-                if (step instanceof ExtendsJob) {
+                if (step instanceof JobCreator) {
                     try {
-                        final Job job = new Job(configuration, step + ":SideEffect");
-                        ((ExtendsJob) step).configureJob(job, configuration);
-                        jobs.add(job);
+                        jobs.add(((JobCreator) step).createJob(configuration));
                     } catch (Exception e) {
                         throw new RuntimeException(e.getMessage(), e);
                     }
                 }
             });
-        }
+        } else throw new IllegalStateException("The provided vertex program is not a TraversalVertexProgram");
         return jobs;
     }
 }

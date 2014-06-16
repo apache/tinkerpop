@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.process.ExtendedJobsCalculator;
+import com.tinkerpop.gremlin.giraph.process.ExtraJobsCalculator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
@@ -33,6 +33,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
     public static final String GRAPH = "graph";
     public static final String SIDE_EFFECT = "sideEffect";
 
+
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
         this.giraphConfiguration = new GiraphConfiguration();
         hadoopConfiguration.forEach(entry -> this.giraphConfiguration.set(entry.getKey(), entry.getValue()));
@@ -51,9 +52,9 @@ public class GiraphGraphRunner extends Configured implements Tool {
             FileInputFormat.addInputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_INPUT_LOCATION)));
             FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
             job.run(true);
-            if (null != this.giraphConfiguration.get("gremlin.extendedJobsCalculator", null)) {
-                final Class<ExtendedJobsCalculator> calculator = (Class) this.giraphConfiguration.getClass("gremlin.extendedJobsCalculator", ExtendedJobsCalculator.class);
-                final List<Job> extendedJobs = calculator.getConstructor().newInstance().determineExtendedJobs(this.giraphConfiguration);
+            if (null != this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_EXTRA_JOBS_CALCULATOR, null)) {
+                final Class<ExtraJobsCalculator> calculator = (Class) this.giraphConfiguration.getClass(GiraphGraphComputer.GREMLIN_EXTRA_JOBS_CALCULATOR, ExtraJobsCalculator.class);
+                final List<Job> extendedJobs = calculator.getConstructor().newInstance().deriveExtraJobs(this.giraphConfiguration);
                 for (final Job extendedJob : extendedJobs) {
                     extendedJob.waitForCompletion(true);
                 }

@@ -1,7 +1,10 @@
 package com.tinkerpop.gremlin.giraph.process.computer.util;
 
+import com.tinkerpop.gremlin.giraph.structure.io.GiraphGremlinInputFormat;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.InputFormat;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -21,5 +24,15 @@ public class ConfUtil {
             hadoopConfiguration.set(key, object.toString());
         });
         return hadoopConfiguration;
+    }
+
+    public static Class<InputFormat> getInputFormatFromVertexInputFormat(final Class<VertexInputFormat> vertexInputFormatClass) {
+        try {
+            if (GiraphGremlinInputFormat.class.isAssignableFrom(vertexInputFormatClass))
+                return (((GiraphGremlinInputFormat) vertexInputFormatClass.getConstructor().newInstance()).getInputFormatClass());
+        } catch (final Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        throw new IllegalStateException("The provided VertexInputFormatClass is not a GiraphGremlinInputFormat");
     }
 }

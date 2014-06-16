@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ExtendsJob {
+public interface JobCreator {
 
-    public void configureJob(final Job job, final Configuration configuration) throws IOException;
+    public Job createJob(final Configuration configuration) throws IOException;
 }

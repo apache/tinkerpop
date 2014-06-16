@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect;
 
-import com.tinkerpop.gremlin.giraph.process.ExtendsJob;
+import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner;
+import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
-import com.tinkerpop.gremlin.giraph.structure.io.NativeInputFormat;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.UnBulkable;
@@ -36,7 +36,7 @@ import java.util.HashMap;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, UnBulkable, VertexCentric, ExtendsJob {
+public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, UnBulkable, VertexCentric, JobCreator {
 
     public static final String GIRAPH_GROUP_COUNT = Property.hidden("giraphGroupCount");
 
@@ -52,6 +52,10 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
             return true;
         });
     }
+
+    /*public GiraphGroupCountStep(final Traversal traversal, final String variable, final SFunction<S, ?>... preGroupFunctions) {
+        this(traversal, preGroupFunctions);
+    }*/
 
     public void setCurrentVertex(final Vertex vertex) {
         this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(GIRAPH_GROUP_COUNT).orElse(new HashMap<>());
@@ -107,7 +111,8 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
         }
     }
 
-    public void configureJob(final Job job, final Configuration configuration) throws IOException {
+    public Job createJob(final Configuration configuration) throws IOException {
+        final Job job = new Job(configuration, this.toString() + ":SideEffect");
         job.setJarByClass(GiraphGraph.class);
         job.setMapperClass(GiraphGroupCountStep.Map.class);
         job.setCombinerClass(GiraphGroupCountStep.Combiner.class);
@@ -116,18 +121,10 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
         job.setMapOutputValueClass(LongWritable.class);
         job.setOutputKeyClass(Text.class);
         job.setMapOutputValueClass(LongWritable.class);
-        final Class<VertexInputFormat> vertexInputFormatClass = (Class) configuration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class);
-        try {
-            if (NativeInputFormat.class.isAssignableFrom(vertexInputFormatClass))
-                job.setInputFormatClass(((NativeInputFormat) vertexInputFormatClass.getConstructor().newInstance()).getInputFormatClass());
-            else
-                job.setInputFormatClass((Class) vertexInputFormatClass);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-
+        job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) configuration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
         job.setOutputFormatClass(TextOutputFormat.class);
         FileInputFormat.addInputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
         FileOutputFormat.setOutputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphRunner.SIDE_EFFECT));
+        return job;
     }
 }

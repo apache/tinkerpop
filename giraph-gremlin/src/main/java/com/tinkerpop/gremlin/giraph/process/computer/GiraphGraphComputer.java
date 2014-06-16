@@ -31,10 +31,11 @@ public class GiraphGraphComputer implements GraphComputer {
     private static final String DOT_JAR = ".jar";
     private static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
 
-    public static final String GREMLIN_INPUT_LOCATION = "gremlin.input.location";
-    public static final String GREMLIN_OUTPUT_LOCATION = "gremlin.output.location";
+    public static final String GREMLIN_INPUT_LOCATION = "gremlin.inputLocation";
+    public static final String GREMLIN_OUTPUT_LOCATION = "gremlin.outputLocation";
     public static final String GIRAPH_VERTEX_INPUT_FORMAT_CLASS = "giraph.vertexInputFormatClass";
     public static final String GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS = "giraph.vertexOutputFormatClass";
+    public static final String GREMLIN_EXTRA_JOBS_CALCULATOR = "gremlin.extraJobsCalculator";
 
     protected final GiraphGraph giraphGraph;
     protected org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
