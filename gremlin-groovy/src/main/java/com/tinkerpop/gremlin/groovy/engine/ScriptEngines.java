@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +40,12 @@ public class ScriptEngines {
 	private volatile boolean controlOperationExecuting = false;
 
 	private static final GremlinGroovyScriptEngineFactory gremlinGroovyScriptEngineFactory = new GremlinGroovyScriptEngineFactory();
+	private final Consumer<ScriptEngines> initializer;
+
+	public ScriptEngines(final Consumer<ScriptEngines> initializer) {
+		this.initializer = initializer;
+		this.initializer.accept(this);
+	}
 
 	/**
 	 * Evaluate a script with {@code Bindings} for a particular language.
@@ -78,7 +85,8 @@ public class ScriptEngines {
 	}
 
 	/**
-	 * Reload a {@code ScriptEngine} with fresh imports.
+	 * Reload a {@code ScriptEngine} with fresh imports.  Waits for any existing script evaluations to complete but
+	 * then blocks other operations until complete.
 	 */
 	public void reload(final String language, final Set<String> imports, final Set<String> staticImports) {
 		signalControlOp();
@@ -98,7 +106,8 @@ public class ScriptEngines {
 
 	/**
 	 * Perform append to the existing import list for all {@code ScriptEngine} instances that implement the
-	 * {@link DependencyManager} interface.
+	 * {@link DependencyManager} interface.  Waits for any existing script evaluations to complete but
+	 * then blocks other operations until complete.
 	 */
 	public void addImports(final Set<String> imports) {
 		signalControlOp();
@@ -115,7 +124,7 @@ public class ScriptEngines {
 	/**
 	 * Pull in dependencies given some Maven coordinates.  Cycle through each {@code ScriptEngine} and determine if it
 	 * implements {@link DependencyManager}.  For those that do call the @{link DependencyManager#use} method to fire
-	 * it up.
+	 * it up.  Waits for any existing script evaluations to complete but then blocks other operations until complete.
 	 */
 	public void use(final String group, final String artifact, final String version) {
 		signalControlOp();
@@ -129,7 +138,10 @@ public class ScriptEngines {
 		}
 	}
 
-	// todo: does reset kill init script work...probably need to re-init
+	/**
+	 * Resets the ScriptEngines and re-initializes them.  Waits for any existing script evaluations to complete but
+	 * then blocks other operations until complete.
+	 */
 	public void reset() {
 		signalControlOp();
 
@@ -139,6 +151,7 @@ public class ScriptEngines {
 			throw ex;
 		} finally {
 			controlOperationExecuting = false;
+			this.initializer.accept(this);
 		}
 	}
 
@@ -197,7 +210,6 @@ public class ScriptEngines {
 			}
 		}
 	}
-
 
 	private static Optional<ScriptEngine> createScriptEngine(final String language, final Set<String> imports,
 															 final Set<String> staticImports) {

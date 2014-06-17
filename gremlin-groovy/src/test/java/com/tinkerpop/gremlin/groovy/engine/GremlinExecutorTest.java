@@ -257,4 +257,20 @@ public class GremlinExecutorTest {
 
 		assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
 	}
+
+	@Test
+	public void shouldInitializeWithScriptAndWorkAfterRest() throws Exception {
+		final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+				.addEngineSettings("gremlin-groovy",
+						Collections.emptyList(),
+						Collections.emptyList(),
+						Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()))
+				.build();
+
+		assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
+
+		gremlinExecutor.getScriptEngines().reset();
+
+		assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
+	}
 }

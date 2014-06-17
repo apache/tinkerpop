@@ -154,55 +154,56 @@ public class GremlinExecutor {
 	}
 
 	private ScriptEngines createScriptEngines() {
-		final ScriptEngines scriptEngines = new ScriptEngines();
-		for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
-			final String language = config.getKey();
-			scriptEngines.reload(language, new HashSet<>(config.getValue().getImports()),
-					new HashSet<>(config.getValue().getStaticImports()));
-		}
-
-		use.forEach(u -> {
-			if (u.size() != 3)
-				logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
-			else {
-				logger.info("Getting dependencies for [{}]", u);
-				scriptEngines.use(u.get(0), u.get(1), u.get(2));
+		final ScriptEngines scriptEngines = new ScriptEngines(se -> {
+			for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
+				final String language = config.getKey();
+				se.reload(language, new HashSet<>(config.getValue().getImports()),
+						new HashSet<>(config.getValue().getStaticImports()));
 			}
-		});
 
-		// initialization script eval must occur after dependencies are set with "use"
-		for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
-			final String language = config.getKey();
-
-			// script engine initialization files that fail will only log warnings - not fail server initialization
-			final AtomicBoolean hasErrors = new AtomicBoolean(false);
-			config.getValue().getScripts().stream().map(File::new).filter(f -> {
-				if (!f.exists()) {
-					logger.warn("Could not initialize {} ScriptEngine with {} as file does not exist", language, f);
-					hasErrors.set(true);
-				}
-
-				return f.exists();
-			}).map(f -> {
-				try {
-					return Pair.with(f, Optional.of(new FileReader(f)));
-				} catch (IOException ioe) {
-					logger.warn("Could not initialize {} ScriptEngine with {} as file could not be read - {}", language, f, ioe.getMessage());
-					hasErrors.set(true);
-					return Pair.with(f, Optional.<FileReader>empty());
-				}
-			}).filter(p -> p.getValue1().isPresent()).map(p -> Pair.with(p.getValue0(), p.getValue1().get())).forEachOrdered(p -> {
-				try {
-					final Bindings bindings = new SimpleBindings();
-					bindings.putAll(this.globalBindings);
-					scriptEngines.eval(p.getValue1(), bindings, language);
-					logger.info("Initialized {} ScriptEngine with {}", language, p.getValue0());
-				} catch (ScriptException sx) {
-					hasErrors.set(true);
-					logger.warn("Could not initialize {} ScriptEngine with {} as script could not be evaluated - {}", language, p.getValue0(), sx.getMessage());
+			use.forEach(u -> {
+				if (u.size() != 3)
+					logger.warn("Could not resolve dependencies for [{}].  Each entry for the 'use' configuration must include [groupId, artifactId, version]", u);
+				else {
+					logger.info("Getting dependencies for [{}]", u);
+					se.use(u.get(0), u.get(1), u.get(2));
 				}
 			});
-		}
+
+			// initialization script eval must occur after dependencies are set with "use"
+			for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
+				final String language = config.getKey();
+
+				// script engine initialization files that fail will only log warnings - not fail server initialization
+				final AtomicBoolean hasErrors = new AtomicBoolean(false);
+				config.getValue().getScripts().stream().map(File::new).filter(f -> {
+					if (!f.exists()) {
+						logger.warn("Could not initialize {} ScriptEngine with {} as file does not exist", language, f);
+						hasErrors.set(true);
+					}
+
+					return f.exists();
+				}).map(f -> {
+					try {
+						return Pair.with(f, Optional.of(new FileReader(f)));
+					} catch (IOException ioe) {
+						logger.warn("Could not initialize {} ScriptEngine with {} as file could not be read - {}", language, f, ioe.getMessage());
+						hasErrors.set(true);
+						return Pair.with(f, Optional.<FileReader>empty());
+					}
+				}).filter(p -> p.getValue1().isPresent()).map(p -> Pair.with(p.getValue0(), p.getValue1().get())).forEachOrdered(p -> {
+					try {
+						final Bindings bindings = new SimpleBindings();
+						bindings.putAll(this.globalBindings);
+						se.eval(p.getValue1(), bindings, language);
+						logger.info("Initialized {} ScriptEngine with {}", language, p.getValue0());
+					} catch (ScriptException sx) {
+						hasErrors.set(true);
+						logger.warn("Could not initialize {} ScriptEngine with {} as script could not be evaluated - {}", language, p.getValue0(), sx.getMessage());
+					}
+				});
+			}
+		});
 
 		return scriptEngines;
 	}
