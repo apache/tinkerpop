@@ -3,6 +3,9 @@ package com.tinkerpop.gremlin.groovy.engine;
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
@@ -241,5 +244,17 @@ public class GremlinExecutorTest {
 
 		assertTrue(successes.intValue() > 0);
 		assertTrue(failures.intValue() >= 500);
+	}
+
+	@Test
+	public void shouldInitializeWithScript() throws Exception {
+		final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+				.addEngineSettings("gremlin-groovy",
+						Collections.emptyList(),
+						Collections.emptyList(),
+						Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()))
+				.build();
+
+		assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
 	}
 }
