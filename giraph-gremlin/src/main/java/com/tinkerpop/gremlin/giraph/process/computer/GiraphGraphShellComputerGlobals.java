@@ -26,9 +26,9 @@ public class GiraphGraphShellComputerGlobals implements GraphComputer.Globals {
 
     public GiraphGraphShellComputerGlobals(final Configuration configuration) {
         try {
-            final String globalLocation = configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION + "/" + GiraphGraphRunner.GLOBAL, null);
+            final String globalLocation = configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION, null);
             if (null != globalLocation) {
-                for (String line : this.readLines(new Path(globalLocation), configuration)) {
+                for (final String line : this.readLines(new Path(globalLocation + "/" + GiraphGraphRunner.GLOBAL), configuration)) {
                     this.globals.put(line.split("\t")[0], line.split("\t")[1]);
                 }
             }
