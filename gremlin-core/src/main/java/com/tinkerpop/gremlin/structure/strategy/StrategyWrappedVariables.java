@@ -10,48 +10,50 @@ import java.util.Set;
  */
 public class StrategyWrappedVariables implements StrategyWrapped, Graph.Variables {
 
-	protected final StrategyWrappedGraph strategyWrappedGraph;
-	private final Graph.Variables baseVariables;
-	private final Strategy.Context<StrategyWrappedVariables> variableStrategyContext;
+    protected final StrategyWrappedGraph strategyWrappedGraph;
+    private final Graph.Variables baseVariables;
+    private final Strategy.Context<StrategyWrappedVariables> variableStrategyContext;
 
-	public StrategyWrappedVariables(final Graph.Variables variables, final StrategyWrappedGraph strategyWrappedGraph) {
-		if (variables instanceof StrategyWrapped) throw new IllegalArgumentException(
-				String.format("The variables %s is already StrategyWrapped and must be a base Variables", variables));
-		this.baseVariables = variables;
-		this.strategyWrappedGraph = strategyWrappedGraph;
-		this.variableStrategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
-	}
+    public StrategyWrappedVariables(final Graph.Variables variables, final StrategyWrappedGraph strategyWrappedGraph) {
+        if (variables instanceof StrategyWrapped) throw new IllegalArgumentException(
+                String.format("The variables %s is already StrategyWrapped and must be a base Variables", variables));
+        this.baseVariables = variables;
+        this.strategyWrappedGraph = strategyWrappedGraph;
+        this.variableStrategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
+    }
 
-	@Override
-	public Set<String> getVariables() {
-		return this.strategyWrappedGraph.strategy().compose(
-				s -> s.getVariableGetVariablesStrategy(variableStrategyContext),
-				this.baseVariables::getVariables).get();
-	}
+    @Override
+    public Set<String> keys() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVariableKeysStrategy(variableStrategyContext),
+                this.baseVariables::keys).get();
+    }
 
-	@Override
-	public <R> R get(final String variable) {
-		return this.strategyWrappedGraph.strategy().compose(
-				s -> s.<R>getVariableGetStrategy(variableStrategyContext),
-				this.baseVariables::get).apply(variable);
-	}
+    @Override
+    public <R> R get(final String key) {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.<R>getVariableGetStrategy(variableStrategyContext),
+                this.baseVariables::get).apply(key);
+    }
 
-	@Override
-	public void set(final String variable, final Object value) {
-		this.strategyWrappedGraph.strategy().compose(
-				s -> s.getVariableSetStrategy(variableStrategyContext),
-				this.baseVariables::set).accept(variable, value);
-	}
+    @Override
+    public void set(final String key, final Object value) {
+        this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVariableSetStrategy(variableStrategyContext),
+                this.baseVariables::set).accept(key, value);
+    }
 
-	@Override
-	public Graph getGraph() {
-		return strategyWrappedGraph;
-	}
+    @Override
+    public <R> R remove(final String key) {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.<R>getVariableGetStrategy(variableStrategyContext),
+                this.baseVariables::remove).apply(key);
+    }
 
-	@Override
-	public Map<String, Object> asMap() {
-		return this.strategyWrappedGraph.strategy().compose(
-				s -> s.getVariableAsMapStrategy(variableStrategyContext),
-				this.baseVariables::asMap).get();
-	}
+    @Override
+    public Map<String, Object> asMap() {
+        return this.strategyWrappedGraph.strategy().compose(
+                s -> s.getVariableAsMapStrategy(variableStrategyContext),
+                this.baseVariables::asMap).get();
+    }
 }

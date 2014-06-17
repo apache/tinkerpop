@@ -93,16 +93,16 @@ public interface Graph extends AutoCloseable {
 
     public interface Variables {
 
-        public Set<String> getVariables();
+        public Set<String> keys();
 
-        public <R> R get(final String variable);
+        public <R> R get(final String key);
 
-        public void set(final String variable, Object value);
+        public void set(final String key, Object value);
 
-        public Graph getGraph();
+        public <R> R remove(final String key);
 
         public default Map<String, Object> asMap() {
-            final Map<String, Object> map = getVariables().stream()
+            final Map<String, Object> map = keys().stream()
                     .map(key -> Pair.<String, Object>with(key, get(key)))
                     .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
             return Collections.unmodifiableMap(map);

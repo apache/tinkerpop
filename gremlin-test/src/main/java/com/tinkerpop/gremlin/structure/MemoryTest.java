@@ -41,7 +41,7 @@ public class MemoryTest {
             variables.set("yo", "test2");
             variables.set("zo", "test3");
 
-            tryCommit(g, graph -> assertEquals(StringFactory.memoryString(variables), variables.toString()));
+            tryCommit(g, graph -> assertEquals(StringFactory.graphVariablesString(variables), variables.toString()));
         }
     }
 

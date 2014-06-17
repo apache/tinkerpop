@@ -344,7 +344,7 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 		}
 
 		@Override
-		public UnaryOperator<Supplier<Set<String>>> getVariableGetVariablesStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+		public UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
 			return spy();
 		}
 
@@ -357,6 +357,11 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
 		public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
 			return spy();
 		}
+
+        @Override
+        public <R> UnaryOperator<Function<String, R>> getVariableRemoveStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+            return spy();
+        }
 
 		@Override
 		public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {

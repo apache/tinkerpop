@@ -92,7 +92,6 @@ IMPORTANT: TinkerPop3 is licensed under the popular link:http://www.apache.org/l
 
 image:tinkerpop-enabled.png[width=135,float=left] When a graph vendor implements the TinkerPop3 structure and process link:http://en.wikipedia.org/wiki/Application_programming_interface[APIs], their technology is considered _TinkerPop3-enabled_ and becomes nearly indistinguishable from any other TinkerPop-enabled graph system save for their respective time and space complexity. The purpose of this documentation is to describe the structure/process dichotomy at length and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing. Before deep-diving into the various structure/process APIs, a short introductory review of both is provided.
 
-
 The Graph Structure
 -------------------
 
@@ -169,6 +168,7 @@ assert(g.V().count() == 0)
 assert(g.E().count() == 0)
 // tada!
 
+IMPORTANT: TinkerGraph is not a transactional graph. For more information on transaction handling (for those graph systems that support them) see the section dedicated to <<transactions,transactions>>.
 
 The Graph Process
 -----------------
@@ -180,7 +180,7 @@ image:gremlin-running.png[width=125,float=left] The primary way in which graphs 
  . Move from those friend-vertices to company-vertices via worksFor-edges.
  . Finally, select the name-property value of the current company-vertices. 
 
-Traversals in Gremlin are spawned from either a `Graph`, `Vertex`, or `Edge`. Graph provides two traversal methods.
+Traversals in Gremlin are spawned from either a `Graph`, `Vertex`, or `Edge`. The Graph interface provides two traversal methods.
 
  . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
  . `Graph.E()`: generates a traversal starting at all edges in the graph.
@@ -193,7 +193,7 @@ The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintai
 
 In fact, all steps in GraphTraversal either extend `MapStep`, `FlatMapStep`, or `FilterStep`.
 
-TIP: `GraphTraversal` is a link:http://en.wikipedia.org/wiki/Monoid[monoid] in that is an algebraic structure that has a single binary operation that is associative. The binary operation is function composition (i.e. method chaining) and its identity is the step `identity()`. This is related to a link:http://en.wikipedia.org/wiki/Monad_(functional_programming)[monad] as popularized by the functional programming community. 
+TIP: `GraphTraversal` is a link:http://en.wikipedia.org/wiki/Monoid[monoid] in that it is an algebraic structure that has a single binary operation that is associative. The binary operation is function composition (i.e. method chaining) and its identity is the step `identity()`. This is related to a link:http://en.wikipedia.org/wiki/Monad_(functional_programming)[monad] as popularized by the functional programming community. 
 
 NOTE: Both map and filter can be represented as flatMap. Map can return an iterator with a single object in it. Filter can return an iterator with a single object in it or no object at all. Thus, flatMap is the most general construct -- "turn the incoming object into an iterator of objects."
 
@@ -303,7 +303,6 @@ A hidden property is a property that is hidden from the various property accesso
 
 The hidden properties API is presented in the example below represented in the Gremlin-Groovy REPL. This REPL is accessible via `bin/gremlin.sh` (or `bin/gremlin.bat` for Windows users).
 
-
 [source,groovy]
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
@@ -328,8 +327,32 @@ gremlin> v.property('status')
 Graph Variables
 ---------------
 
-TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value pairs associated with the graph itself. These variables are intended to store metadata about the graph. Examples include: schema information, global permissions data, etc.
+TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value pairs associated with the graph itself -- in essence, a `Map<String,Object>`. These variables are intended to store metadata about the graph. Examples include: schema information, global permissions data, system user information, etc. An example of their use is presented below in Gremlin-Groovy:
 
+[source,groovy]
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> g.variables()
+==>variables[size:0]
+gremlin> g.variables().set('systemAdmins',['stephen','peter','pavel'])
+==>null
+gremlin> g.variables().set('systemUsers',['matthias','marko','josh'])
+==>null
+gremlin> g.variables().keys()
+==>systemAdmins
+==>systemUsers
+gremlin> g.variables().get('systemUsers')
+==>matthias
+==>marko
+==>josh
+gremlin> g.variables().remove('systemAdmins')
+==>stephen
+==>peter
+==>pavel
+gremlin> g.variables().keys()
+==>systemUsers
+
+[[transactions]]
 Graph Transactions
 ------------------
 
@@ -406,7 +429,6 @@ gremlin> g.tx().submit{it.addVertex("name","daniel")}.exponentialBackoff(10)
 ----
 
 As shown above, the `submit` method takes a `Function<Graph, R>` which is the unit of work to execute and possibly retry on failure.  The method returns a `Transaction.Workload` object which has a number of default methods for common retry strategies.  It is also possible to supply a custom retry function if a default one does not suit the required purpose.
-
 
 The Traversal API
 =================

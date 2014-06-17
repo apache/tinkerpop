@@ -69,12 +69,8 @@ public class StringFactory {
         return graph.getClass().getSimpleName().toLowerCase() + L_BRACKET + internalString + R_BRACKET;
     }
 
-    /**
-     * Construct the representation for a {@link com.tinkerpop.gremlin.structure.Graph.Variables}.
-     */
-    public static String memoryString(final Graph.Variables variables) {
-        // todo: should this be owned by the implementation...it won't be consistent
-        return variables.toString();
+    public static String graphVariablesString(final Graph.Variables variables) {
+        return  "variables" + L_BRACKET + "size:" + variables.keys().size() + R_BRACKET;
     }
 
     public static String featureString(final Graph.Features features) {
