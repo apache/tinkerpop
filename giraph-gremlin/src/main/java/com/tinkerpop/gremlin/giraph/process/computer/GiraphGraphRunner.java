@@ -14,7 +14,6 @@ import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -24,7 +23,6 @@ import org.apache.hadoop.util.Tool;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +35,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
     private final GiraphConfiguration giraphConfiguration;
 
     public static final String GRAPH = "graph";
-    public static final String GLOBAL = "global";
+    public static final String GLOBALS = "globals";
 
     private static final Logger LOGGER = Logger.getLogger(GiraphGraphRunner.class);
 
@@ -62,14 +60,16 @@ public class GiraphGraphRunner extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
             FileInputFormat.setInputPathFilter(job.getInternalJob(), FileOnlyPathFilter.class);
             job.run(true);
+            // calculate global variables
             if (this.giraphConfiguration.getBoolean(GiraphGraphComputer.GREMLIN_DERIVE_GLOBALS, false)) {
                 final Set<String> globalKeys = new HashSet<String>(vertexProgram.getGlobalKeys());
-                globalKeys.add("runtime");
-                globalKeys.add("iteration");
-                this.giraphConfiguration.setStrings("globalKeys", (String[]) globalKeys.toArray(new String[globalKeys.size()]));
+                globalKeys.add(GlobalsMapReduce.RUNTIME);
+                globalKeys.add(GlobalsMapReduce.ITERATION);
+                this.giraphConfiguration.setStrings(GlobalsMapReduce.GREMLIN_GLOBAL_KEYS, (String[]) globalKeys.toArray(new String[globalKeys.size()]));
                 final Job globalDerivationJob = new GlobalsMapReduce().createJob(this.giraphConfiguration);
                 globalDerivationJob.waitForCompletion(true);
             }
+            // do extra map reduce jobs if necessary
             if (null != this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_EXTRA_JOBS_CALCULATOR, null)) {
                 final Class<ExtraJobsCalculator> calculator = (Class) this.giraphConfiguration.getClass(GiraphGraphComputer.GREMLIN_EXTRA_JOBS_CALCULATOR, ExtraJobsCalculator.class);
 

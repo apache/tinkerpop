@@ -25,13 +25,17 @@ import java.io.IOException;
  */
 public class GlobalsMapReduce implements JobCreator {
 
+    public static final String GREMLIN_GLOBAL_KEYS = "gremlin.globalKeys";
+    public static final String RUNTIME = "runtime";
+    public static final String ITERATION = "iteration";
+
     public static class Map extends Mapper<NullWritable, GiraphVertex, Text, Text> {
         private final Text keyWritable = new Text();
         private final Text valueWritable = new Text();
 
         @Override
         public void map(final NullWritable key, final GiraphVertex value, final Mapper<NullWritable, GiraphVertex, Text, Text>.Context context) throws IOException, InterruptedException {
-            final String[] globalKeys = context.getConfiguration().getStrings("globalKeys");
+            final String[] globalKeys = context.getConfiguration().getStrings(GREMLIN_GLOBAL_KEYS);
             for (final String globalKey : globalKeys) {
                 final Property property = value.getGremlinVertex().property(Property.hidden(globalKey));
                 if (property.isPresent()) {
@@ -58,7 +62,7 @@ public class GlobalsMapReduce implements JobCreator {
     }
 
     public Job createJob(final Configuration configuration) throws IOException {
-        final Job job = new Job(configuration, "Global Derivation");
+        final Job job = new Job(configuration, "Globals Derivation");
         job.setJarByClass(GiraphGraph.class);
         job.setMapperClass(GlobalsMapReduce.Map.class);
         job.setCombinerClass(GlobalsMapReduce.Combiner.class);
@@ -70,7 +74,7 @@ public class GlobalsMapReduce implements JobCreator {
         job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) configuration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
         job.setOutputFormatClass(TextOutputFormat.class);
         FileInputFormat.setInputPaths(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
-        FileOutputFormat.setOutputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphRunner.GLOBAL));
+        FileOutputFormat.setOutputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphRunner.GLOBALS));
         FileInputFormat.setInputPathFilter(job, FileOnlyPathFilter.class);
         return job;
     }
