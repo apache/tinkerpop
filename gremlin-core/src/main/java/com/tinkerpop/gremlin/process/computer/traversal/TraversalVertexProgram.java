@@ -66,20 +66,20 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     @Override
-    public void setup(final GraphComputer.SideEffects sideEffects) {
-        sideEffects.setIfAbsent(VOTE_TO_HALT, true);
+    public void setup(final GraphComputer.Globals globals) {
+        globals.setIfAbsent(VOTE_TO_HALT, true);
     }
 
     @Override
-    public void execute(final Vertex vertex, final Messenger<M> messenger, GraphComputer.SideEffects sideEffects) {
-        if (sideEffects.isInitialIteration()) {
-            executeFirstIteration(vertex, messenger, sideEffects);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, GraphComputer.Globals globals) {
+        if (globals.isInitialIteration()) {
+            executeFirstIteration(vertex, messenger, globals);
         } else {
-            executeOtherIterations(vertex, messenger, sideEffects);
+            executeOtherIterations(vertex, messenger, globals);
         }
     }
 
-    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.SideEffects sideEffects) {
+    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.Globals globals) {
         final Traversal traversal = this.traversalSupplier.get();
         traversal.strategies().applyFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
@@ -106,28 +106,28 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 voteToHalt.set(false);
             });
         }
-        sideEffects.and(VOTE_TO_HALT, voteToHalt.get());
+        globals.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
-    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.SideEffects sideEffects) {
+    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.Globals globals) {
         if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
-            sideEffects.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(this.global), messenger, tracker, this.traversalSupplier));
+            globals.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(this.global), messenger, tracker, this.traversalSupplier));
             vertex.property(TRAVERSER_TRACKER, tracker);
         } else {
             final TraversalCounters tracker = new TraversalCounters(vertex);
-            sideEffects.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(this.global), messenger, tracker, this.traversalSupplier));
+            globals.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(this.global), messenger, tracker, this.traversalSupplier));
             vertex.property(TRAVERSER_TRACKER, tracker);
         }
     }
 
     @Override
-    public boolean terminate(final GraphComputer.SideEffects sideEffects) {
-        final boolean voteToHalt = sideEffects.get(VOTE_TO_HALT);
+    public boolean terminate(final GraphComputer.Globals globals) {
+        final boolean voteToHalt = globals.get(VOTE_TO_HALT);
         if (voteToHalt) {
             return true;
         } else {
-            sideEffects.or(VOTE_TO_HALT, true);
+            globals.or(VOTE_TO_HALT, true);
             return false;
         }
     }

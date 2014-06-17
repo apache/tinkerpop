@@ -44,10 +44,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
         public <T> T get(final String key);
 
-        public Set<String> getKeys();
+        public Set<String> keys();
 
         public default <T> T getOrCreate(final String key, final Supplier<T> orCreate) {
-            if (this.getKeys().contains(key))
+            if (this.keys().contains(key))
                 return this.get(key);
             else {
                 T t = orCreate.get();

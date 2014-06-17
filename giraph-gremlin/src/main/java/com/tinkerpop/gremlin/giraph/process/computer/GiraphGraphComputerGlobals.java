@@ -18,20 +18,20 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphComputerSideEffects extends MasterCompute implements GraphComputer.SideEffects {
+public class GiraphGraphComputerGlobals extends MasterCompute implements GraphComputer.Globals {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputerSideEffects.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputerGlobals.class);
     private VertexProgram vertexProgram;
     private GiraphVertex giraphVertex;
     private long runtime = System.currentTimeMillis();
 
-    public GiraphGraphComputerSideEffects() {
+    public GiraphGraphComputerGlobals() {
         this.giraphVertex = null;
         this.vertexProgram = null;
         this.initialize();
     }
 
-    public GiraphGraphComputerSideEffects(final GiraphVertex giraphVertex) {
+    public GiraphGraphComputerGlobals(final GiraphVertex giraphVertex) {
         this.giraphVertex = giraphVertex;
         this.initialize();
 
@@ -65,7 +65,7 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Gra
         return System.currentTimeMillis() - this.runtime;
     }
 
-    public Set<String> getVariables() {
+    public Set<String> keys() {
         return Collections.emptySet();
     }
 

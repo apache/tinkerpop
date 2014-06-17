@@ -706,16 +706,16 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final GraphComputer.SideEffects sideEffects) {
+        public void setup(final GraphComputer.Globals globals) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.SideEffects sideEffects) {
+        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Globals globals) {
             vertex.property(this.key, this.val);
         }
 
         @Override
-        public boolean terminate(GraphComputer.SideEffects sideEffects) {
+        public boolean terminate(GraphComputer.Globals globals) {
             return true;
         }
 
@@ -753,16 +753,16 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final GraphComputer.SideEffects sideEffects) {
+        public void setup(final GraphComputer.Globals globals) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.SideEffects sideEffects) {
+        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Globals globals) {
             vertex.bothE().forEach(e -> e.property(this.key, this.val));
         }
 
         @Override
-        public boolean terminate(GraphComputer.SideEffects sideEffects) {
+        public boolean terminate(GraphComputer.Globals globals) {
             return true;
         }
 

@@ -76,13 +76,13 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public void setup(final GraphComputer.SideEffects sideEffects) {
+    public void setup(final GraphComputer.Globals globals) {
 
     }
 
     @Override
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.SideEffects sideEffects) {
-        if (sideEffects.isInitialIteration()) {
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.Globals globals) {
+        if (globals.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(this.messageType.edges(vertex).count()).doubleValue();
             vertex.property(PAGE_RANK, initialPageRank);
@@ -97,8 +97,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public boolean terminate(final GraphComputer.SideEffects sideEffects) {
-        return sideEffects.getIteration() >= this.totalIterations;
+    public boolean terminate(final GraphComputer.Globals globals) {
+        return globals.getIteration() >= this.totalIterations;
     }
 
     //////////////////////////////

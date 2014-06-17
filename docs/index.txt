@@ -828,12 +828,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
         return Double.class;
     }
 
-    public void setup(final GraphComputer.SideEffects sideEffects) {
+    public void setup(final GraphComputer.Globals globals) {
 
     }
 
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.SideEffects sideEffects) { <6>
-        if (sideEffects.isInitialIteration()) { <7>
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.Globals globals) { <6>
+        if (globals.isInitialIteration()) { <7>
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(this.messageType.edges(vertex).count()).doubleValue();
             vertex.property(PAGE_RANK, initialPageRank);
@@ -847,8 +847,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
         }
     }
 
-    public boolean terminate(final GraphComputer.SideEffects sideEffects) { <9>
-        return sideEffects.getIteration() >= this.totalIterations;
+    public boolean terminate(final GraphComputer.Globals globals) { <9>
+        return globals.getIteration() >= this.totalIterations;
     }
 }
 ----

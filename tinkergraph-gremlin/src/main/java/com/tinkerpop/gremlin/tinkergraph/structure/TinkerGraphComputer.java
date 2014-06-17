@@ -27,7 +27,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     private Isolation isolation = Isolation.BSP;
     private Configuration configuration = new BaseConfiguration();
     private final TinkerGraph graph;
-    private final TinkerGraphComputerSideEffects sideEffects = new TinkerGraphComputerSideEffects();
+    private final TinkerGraphComputerGlobals sideEffects = new TinkerGraphComputerGlobals();
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
 
@@ -50,7 +50,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         return this;
     }
 
-    public Future<Pair<Graph, SideEffects>> submit() {
+    public Future<Pair<Graph, Globals>> submit() {
         if (this.executed)
             throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();
         else
@@ -59,7 +59,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         final VertexProgram vertexProgram = VertexProgram.createVertexProgram(this.configuration);
         GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
 
-        return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
+        return CompletableFuture.<Pair<Graph, Globals>>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
 
             final TinkerGraph g = this.graph;
@@ -78,7 +78,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
             // update runtime and return the newly computed graph
             this.sideEffects.setRuntime(System.currentTimeMillis() - time);
-            return new Pair<Graph, SideEffects>(this.graph, this.sideEffects);
+            return new Pair<Graph, Globals>(this.graph, this.sideEffects);
         });
     }
 

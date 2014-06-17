@@ -60,8 +60,8 @@ public class GiraphGraphComputer implements GraphComputer {
         throw new UnsupportedOperationException("GiraphGraphComputer does not support merge computed view as this does not make sense in a Hadoop environment");
     }
 
-    public Future<Pair<Graph, SideEffects>> submit() {
-        return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
+    public Future<Pair<Graph, Globals>> submit() {
+        return CompletableFuture.<Pair<Graph, Globals>>supplyAsync(() -> {
             try {
                 final String bspDirectory = "_bsp"; //"temp-" + UUID.randomUUID().toString();
                 final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
@@ -93,7 +93,7 @@ public class GiraphGraphComputer implements GraphComputer {
                 e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            return new Pair<Graph, SideEffects>(this.giraphGraph, null);
+            return new Pair<Graph, Globals>(this.giraphGraph, null);
         });
     }
 

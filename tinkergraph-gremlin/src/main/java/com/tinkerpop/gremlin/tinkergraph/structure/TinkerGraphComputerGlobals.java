@@ -12,21 +12,21 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphComputerSideEffects implements GraphComputer.SideEffects.Administrative {
+public class TinkerGraphComputerGlobals implements GraphComputer.Globals.Administrative {
 
     private final Map<String, Object> memory;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
 
-    public TinkerGraphComputerSideEffects() {
+    public TinkerGraphComputerGlobals() {
         this(new ConcurrentHashMap<>());
     }
 
-    public TinkerGraphComputerSideEffects(final Map<String, Object> state) {
+    public TinkerGraphComputerGlobals(final Map<String, Object> state) {
         this.memory = state;
     }
 
-    public Set<String> getVariables() {
+    public Set<String> keys() {
         return this.memory.keySet();
     }
 
