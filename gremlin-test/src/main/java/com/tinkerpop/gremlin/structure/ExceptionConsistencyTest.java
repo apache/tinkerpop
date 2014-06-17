@@ -720,7 +720,7 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public Set<String> getSideEffectKeys() {
+        public Set<String> getGlobalKeys() {
             return Collections.emptySet();
         }
 
@@ -767,7 +767,7 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public Set<String> getSideEffectKeys() {
+        public Set<String> getGlobalKeys() {
             return Collections.emptySet();
         }
 

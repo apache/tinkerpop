@@ -124,7 +124,7 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
         job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) configuration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
         job.setOutputFormatClass(TextOutputFormat.class);
         FileInputFormat.addInputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
-        FileOutputFormat.setOutputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphRunner.SIDE_EFFECT));
+        FileOutputFormat.setOutputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphRunner.GLOBAL));
         return job;
     }
 }

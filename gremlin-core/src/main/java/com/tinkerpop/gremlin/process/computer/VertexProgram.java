@@ -55,7 +55,7 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
 
     public Map<String, KeyType> getComputeKeys();
 
-    public Set<String> getSideEffectKeys();
+    public Set<String> getGlobalKeys();
 
     public Class<M> getMessageClass();
 

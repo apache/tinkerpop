@@ -27,7 +27,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     private Isolation isolation = Isolation.BSP;
     private Configuration configuration = new BaseConfiguration();
     private final TinkerGraph graph;
-    private final TinkerGraphComputerGlobals sideEffects = new TinkerGraphComputerGlobals();
+    private final TinkerGraphComputerGlobals globals = new TinkerGraphComputerGlobals();
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
 
@@ -66,19 +66,19 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             g.graphView = new TinkerGraphView(this.isolation, vertexProgram.getComputeKeys());
             g.useGraphView = true;
             // execute the vertex program
-            vertexProgram.setup(this.sideEffects);
+            vertexProgram.setup(this.globals);
 
             while (true) {
-                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.sideEffects));
-                this.sideEffects.incrIteration();
+                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.globals));
+                this.globals.incrIteration();
                 g.graphView.completeIteration();
                 this.messageBoard.completeIteration();
-                if (vertexProgram.terminate(this.sideEffects)) break;
+                if (vertexProgram.terminate(this.globals)) break;
             }
 
             // update runtime and return the newly computed graph
-            this.sideEffects.setRuntime(System.currentTimeMillis() - time);
-            return new Pair<Graph, Globals>(this.graph, this.sideEffects);
+            this.globals.setRuntime(System.currentTimeMillis() - time);
+            return new Pair<Graph, Globals>(this.graph, this.globals);
         });
     }
 

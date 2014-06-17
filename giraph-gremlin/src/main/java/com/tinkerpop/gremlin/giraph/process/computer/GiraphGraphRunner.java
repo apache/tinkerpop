@@ -31,7 +31,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
     private final GiraphConfiguration giraphConfiguration;
 
     public static final String GRAPH = "graph";
-    public static final String SIDE_EFFECT = "sideEffect";
+    public static final String GLOBAL = "global";
 
 
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
@@ -73,7 +73,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
             GraphComputer computer = new GiraphGraphComputer(GiraphGraph.open(), configuration);
             computer.program(configuration).submit().get();
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
             throw e;
         }
     }

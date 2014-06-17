@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -30,7 +31,7 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
     private VertexProgram vertexProgram;
     private Graph gremlinGraph;
     private com.tinkerpop.gremlin.structure.Vertex gremlinVertex;
-    private GiraphGraphComputerGlobals computerMemory = new GiraphGraphComputerGlobals(this);
+    private GiraphGraphComputerGlobals globals;
 
     public GiraphVertex() {
     }
@@ -55,7 +56,9 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
 
     @Override
     public void setConf(final org.apache.giraph.conf.ImmutableClassesGiraphConfiguration configuration) {
+        super.setConf(configuration);
         this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
+        this.globals = new GiraphGraphComputerGlobals(this);
     }
 
     public com.tinkerpop.gremlin.structure.Vertex getGremlinVertex() {
@@ -65,7 +68,12 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
     public void compute(final Iterable<KryoWritable> messages) {
         if (null == this.gremlinVertex)
             inflateGiraphVertex();
-        this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.computerMemory);
+        this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.globals);
+        this.globals.keys().forEach(key -> {
+            this.gremlinVertex.property(Property.hidden(key), this.globals.get(key));
+        });
+        this.gremlinVertex.property(Property.hidden("runtime"), this.globals.getRuntime());
+        this.gremlinVertex.property(Property.hidden("iteration"), this.globals.getIteration());
     }
 
     ///////////////////////////////////////////////
