@@ -36,6 +36,7 @@ public class GiraphGraphComputer implements GraphComputer {
     public static final String GIRAPH_VERTEX_INPUT_FORMAT_CLASS = "giraph.vertexInputFormatClass";
     public static final String GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS = "giraph.vertexOutputFormatClass";
     public static final String GREMLIN_EXTRA_JOBS_CALCULATOR = "gremlin.extraJobsCalculator";
+    public static final String GREMLIN_DERIVE_GLOBALS = "gremlin.deriveGlobals";
 
     protected final GiraphGraph giraphGraph;
     protected org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
@@ -93,7 +94,8 @@ public class GiraphGraphComputer implements GraphComputer {
                 e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            return new Pair<Graph, Globals>(this.giraphGraph, null);
+            LOGGER.info(new GiraphGraphShellComputerGlobals(this.hadoopConfiguration).keys().toString());
+            return new Pair<Graph, Globals>(this.giraphGraph, new GiraphGraphShellComputerGlobals(this.hadoopConfiguration));
         });
     }
 
