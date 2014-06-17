@@ -90,20 +90,20 @@ public class SequenceGraphStrategy implements GraphStrategy {
         return this.composeStrategyUnaryOperator(s -> s.getElementLabel(ctx));
     }
 
-	@Override
-	public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-		return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
-	}
+    @Override
+    public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
+    }
 
-	@Override
-	public UnaryOperator<Supplier<Map<String, Property>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-		return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
-	}
+    @Override
+    public UnaryOperator<Supplier<Map<String, Property>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
+    }
 
-	@Override
-	public UnaryOperator<Supplier<Map<String, Property>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-		return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
-	}
+    @Override
+    public UnaryOperator<Supplier<Map<String, Property>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getElementId(ctx));
+    }
 
     @Override
     public UnaryOperator<Supplier<Set<String>>> getElementKeys(Strategy.Context<? extends StrategyWrappedElement> ctx) {
@@ -125,36 +125,41 @@ public class SequenceGraphStrategy implements GraphStrategy {
         return this.composeStrategyUnaryOperator(s -> s.getElementHiddenValues(ctx));
     }
 
-	@Override
-	public <V> UnaryOperator<Function<String, V>> getElementValue(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-		return this.composeStrategyUnaryOperator(s -> s.getElementValue(ctx));
-	}
+    @Override
+    public <V> UnaryOperator<Function<String, V>> getElementValue(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getElementValue(ctx));
+    }
 
-	@Override
-	public UnaryOperator<Supplier<Set<String>>> getVariableGetVariablesStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
-		return this.composeStrategyUnaryOperator(s -> s.getVariableGetVariablesStrategy(ctx));
-	}
+    @Override
+    public UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getVariableKeysStrategy(ctx));
+    }
 
-	@Override
-	public <R> UnaryOperator<Function<String, R>> getVariableGetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
-		return this.composeStrategyUnaryOperator(s -> s.getVariableGetStrategy(ctx));
-	}
+    @Override
+    public <R> UnaryOperator<Function<String, R>> getVariableGetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getVariableGetStrategy(ctx));
+    }
 
-	@Override
-	public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
-		return this.composeStrategyUnaryOperator(s -> s.getVariableSetStrategy(ctx));
-	}
+    @Override
+    public <R> UnaryOperator<Function<String, R>> getVariableRemoveStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getVariableRemoveStrategy(ctx));
+    }
 
-	@Override
-	public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
-		return this.composeStrategyUnaryOperator(s -> s.getVariableAsMapStrategy(ctx));
-	}
+    @Override
+    public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getVariableSetStrategy(ctx));
+    }
 
-	@Override
-	public String toString() {
-		return String.join("->", graphStrategySequence.stream().map(Object::toString)
-				.map(String::toLowerCase).collect(Collectors.<String>toList()));
-	}
+    @Override
+    public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+        return this.composeStrategyUnaryOperator(s -> s.getVariableAsMapStrategy(ctx));
+    }
+
+    @Override
+    public String toString() {
+        return String.join("->", graphStrategySequence.stream().map(Object::toString)
+                .map(String::toLowerCase).collect(Collectors.<String>toList()));
+    }
 
     /**
      * Compute a new strategy function from the sequence of supplied {@link GraphStrategy} objects.
@@ -176,7 +181,7 @@ public class SequenceGraphStrategy implements GraphStrategy {
      * @param f a {@link java.util.function.Function} that has the same argument and return type
      * @return a {@link java.util.function.UnaryOperator} of the supplied {@code f}
      */
-    private static <T> UnaryOperator<T> toUnaryOp(final Function<T,T> f) {
+    private static <T> UnaryOperator<T> toUnaryOp(final Function<T, T> f) {
         return new UnaryOperator<T>() {
             @Override
             public T apply(T t) {

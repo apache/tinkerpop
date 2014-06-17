@@ -13,11 +13,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.AnnotationFeatures.FEATURE_ANNOTATIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_COMPUTER;
 import static com.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_PROPERTIES;
@@ -705,17 +706,22 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final GraphComputer.SideEffects sideEffects) {
+        public void setup(final GraphComputer.Globals globals) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.SideEffects sideEffects) {
+        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Globals globals) {
             vertex.property(this.key, this.val);
         }
 
         @Override
-        public boolean terminate(GraphComputer.SideEffects sideEffects) {
+        public boolean terminate(GraphComputer.Globals globals) {
             return true;
+        }
+
+        @Override
+        public Set<String> getSideEffectKeys() {
+            return Collections.emptySet();
         }
 
         @Override
@@ -747,17 +753,22 @@ public class ExceptionConsistencyTest {
         }
 
         @Override
-        public void setup(final GraphComputer.SideEffects sideEffects) {
+        public void setup(final GraphComputer.Globals globals) {
         }
 
         @Override
-        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.SideEffects sideEffects) {
+        public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Globals globals) {
             vertex.bothE().forEach(e -> e.property(this.key, this.val));
         }
 
         @Override
-        public boolean terminate(GraphComputer.SideEffects sideEffects) {
+        public boolean terminate(GraphComputer.Globals globals) {
             return true;
+        }
+
+        @Override
+        public Set<String> getSideEffectKeys() {
+            return Collections.emptySet();
         }
 
         @Override

@@ -17,14 +17,12 @@ import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import com.tinkerpop.gremlin.util.function.TriFunction;
-import org.javatuples.Pair;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;

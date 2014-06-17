@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.structure.util;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
-import com.tinkerpop.gremlin.structure.util.config.YamlConfiguration;
+import com.tinkerpop.gremlin.util.config.YamlConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.MapConfiguration;
@@ -12,7 +12,6 @@ import org.apache.commons.configuration.XMLConfiguration;
 
 import java.io.File;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Factory to construct new {@link com.tinkerpop.gremlin.structure.Graph} instances from a {@link org.apache.commons.configuration.Configuration} object or properties file.
@@ -30,12 +29,9 @@ public class GraphFactory {
      * @return A {@link com.tinkerpop.gremlin.structure.Graph} instance.
      * @throws IllegalArgumentException if {@code configuration} or {@code strategy} are null
      */
-    public static Graph open(final Configuration configuration, final Optional<GraphStrategy> strategy) {
+    public static Graph open(final Configuration configuration, final GraphStrategy strategy) {
         if (null == configuration)
             throw Graph.Exceptions.argumentCanNotBeNull("configuration");
-
-        if (null == strategy)
-            throw Graph.Exceptions.argumentCanNotBeNull("strategy");
 
         final String clazz = configuration.getString("gremlin.graph", null);
         if (null == clazz)
@@ -52,7 +48,7 @@ public class GraphFactory {
         try {
             // will basically use Graph.open(Configuration c) to instantiate, but could
             // technically use any method on any class with the same signature.
-            g = (Graph) graphClass.getMethod("open", Optional.class).invoke(null, Optional.of(configuration));
+            g = (Graph) graphClass.getMethod("open", Configuration.class).invoke(null, configuration);
         } catch (final NoSuchMethodException e1) {
             throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument - [%s] does not seem to have one", clazz));
         } catch (final Exception e2) {
@@ -60,7 +56,7 @@ public class GraphFactory {
         }
 
         final Graph returnedGraph;
-        if (strategy.isPresent()) {
+        if (strategy != null) {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy().setGraphStrategy(strategy);
             returnedGraph = swg;
@@ -71,7 +67,7 @@ public class GraphFactory {
     }
 
     public static Graph open(final Configuration configuration) {
-        return open(configuration, Optional.empty());
+        return open(configuration, null);
     }
 
     /**
@@ -86,9 +82,7 @@ public class GraphFactory {
      * @throws IllegalArgumentException if {@code configurationFile} is null
      */
     public static Graph open(final String configurationFile) {
-        if (null == configurationFile)
-            throw Graph.Exceptions.argumentCanNotBeNull("configurationFile");
-
+        if (null == configurationFile) throw Graph.Exceptions.argumentCanNotBeNull("configurationFile");
         return open(getConfiguration(new File(configurationFile)));
     }
 

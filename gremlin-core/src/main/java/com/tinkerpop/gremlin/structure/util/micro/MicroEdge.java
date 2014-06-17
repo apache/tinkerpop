@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.structure.util.micro;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
+import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;

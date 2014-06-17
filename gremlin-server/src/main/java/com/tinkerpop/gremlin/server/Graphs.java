@@ -5,6 +5,8 @@ import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.Bindings;
+import javax.script.SimpleBindings;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +49,15 @@ public class Graphs {
     public Map<String, Graph> getGraphs() {
         return graphs;
     }
+
+	/**
+	 * Get the graphs list as a set of bindings.
+	 */
+	public Bindings getGraphsAsBindings() {
+		final Bindings bindings = new SimpleBindings();
+		graphs.forEach(bindings::put);
+		return bindings;
+	}
 
     /**
      * Rollback transactions across all {@link com.tinkerpop.gremlin.structure.Graph} objects.

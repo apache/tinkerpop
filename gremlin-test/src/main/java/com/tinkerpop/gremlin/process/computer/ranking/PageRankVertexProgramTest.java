@@ -19,9 +19,9 @@ public class PageRankVertexProgramTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void testPageRank() throws Exception {
-        final Pair<Graph, GraphComputer.SideEffects> pair = g.compute().program(PageRankVertexProgram.create().getConfiguration()).submit().get();
+        final Pair<Graph, GraphComputer.Globals> pair = g.compute().program(PageRankVertexProgram.create().getConfiguration()).submit().get();
         final Graph viewGraph = pair.getValue0();
-        final GraphComputer.SideEffects sideEffects = pair.getValue1();
+        final GraphComputer.Globals globals = pair.getValue1();
         viewGraph.V().forEach(v -> {
             assertTrue(v.keys().contains("name"));
             // TODO: Broken in TinkerGraph
@@ -44,7 +44,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinTest {
             else
                 throw new IllegalStateException("The following vertex should not exist in the graph: " + name);
         });
-        assertEquals(sideEffects.getIteration(), 30);
+        assertEquals(globals.getIteration(), 30);
     }
 
 }

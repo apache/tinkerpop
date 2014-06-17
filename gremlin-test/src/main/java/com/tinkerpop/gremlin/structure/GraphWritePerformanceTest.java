@@ -71,11 +71,6 @@ public class GraphWritePerformanceTest {
     @BenchmarkMethodChart(filePrefix = "io-write")
     @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-io-write")
     public static class WriteToIO extends AbstractGremlinTest {
-
-        public WriteToIO(){
-            super(Optional.empty());
-        }
-
         @Rule
         public TestRule benchmarkRun = new BenchmarkRule();
 

@@ -18,6 +18,8 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
     private final StrategyWrappedGraph strategyWrappedGraph;
 
     public StrategyWrappedProperty(final Property<V> baseProperty, final StrategyWrappedGraph strategyWrappedGraph) {
+		if (baseProperty instanceof StrategyWrapped) throw new IllegalArgumentException(
+				String.format("The property %s is already StrategyWrapped and must be a base Property", baseProperty));
         this.baseProperty = baseProperty;
         this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.strategyWrappedGraph = strategyWrappedGraph;

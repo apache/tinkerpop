@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.util.GraphVariableHelper;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -13,32 +14,30 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TinkerGraphVariables implements Graph.Variables, Serializable {
 
-    private final Graph graph;
-    private final Map<String, Object> variables;
+    private final Map<String, Object> variables = new ConcurrentHashMap<>();
 
-    public TinkerGraphVariables(final Graph graph) {
-        this(graph, new ConcurrentHashMap<>());
+    public TinkerGraphVariables() {
+
     }
 
-    public TinkerGraphVariables(final Graph graph, final Map<String, Object> state) {
-        this.graph = graph;
-        this.variables = state;
-    }
-
-    public Set<String> getVariables() {
+    public Set<String> keys() {
         return this.variables.keySet();
     }
 
-    public <R> R get(final String variable) {
-        return (R) this.variables.get(variable);
+    public <R> R get(final String key) {
+        return (R) this.variables.get(key);
     }
 
-    public void set(final String variable, final Object value) {
-        GraphVariableHelper.validateVariable(variable, value);
-        this.variables.put(variable, value);
+    public <R> R remove(final String key) {
+        return (R) this.variables.remove(key);
     }
 
-    public Graph getGraph() {
-        return this.graph;
+    public void set(final String key, final Object value) {
+        GraphVariableHelper.validateVariable(key, value);
+        this.variables.put(key, value);
+    }
+
+    public String toString() {
+        return StringFactory.graphVariablesString(this);
     }
 }

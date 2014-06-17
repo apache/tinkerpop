@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandlerContext;
 
 /**

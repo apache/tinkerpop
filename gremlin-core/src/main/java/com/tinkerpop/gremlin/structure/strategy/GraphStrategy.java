@@ -50,14 +50,14 @@ public interface GraphStrategy {
     }
 
 	/**
-	 * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#getVariables()}.
+	 * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#keys()}.
 	 *
 	 * @param ctx the context within which this strategy function is called
 	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-	 *         {@link com.tinkerpop.gremlin.structure.Graph.Variables#getVariables()} signature
+	 *         {@link com.tinkerpop.gremlin.structure.Graph.Variables#keys()} signature
 	 *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
 	 */
-	public default UnaryOperator<Supplier<Set<String>>> getVariableGetVariablesStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+	public default UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
 		return UnaryOperator.identity();
 	}
 
@@ -94,6 +94,10 @@ public interface GraphStrategy {
 	public default UnaryOperator<BiConsumer<String,Object>> getVariableSetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
 		return UnaryOperator.identity();
 	}
+
+    public default <R> UnaryOperator<Function<String,R>> getVariableRemoveStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+        return UnaryOperator.identity();
+    }
 
     /**
      * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph#addVertex(Object...)}.

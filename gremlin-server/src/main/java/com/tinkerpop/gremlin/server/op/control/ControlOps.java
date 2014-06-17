@@ -1,17 +1,13 @@
 package com.tinkerpop.gremlin.server.op.control;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.message.ResultType;
+import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import com.tinkerpop.gremlin.groovy.engine.ScriptEngines;
 import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.GremlinExecutor;
-import com.tinkerpop.gremlin.server.GremlinServer;
-import com.tinkerpop.gremlin.server.ScriptEngines;
-import com.tinkerpop.gremlin.server.util.MetricManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +36,7 @@ class ControlOps {
     public static void importOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
         final List<String> l = (List<String>) msg.getArgs().get(Tokens.ARGS_IMPORTS);
-        context.getGremlinExecutor().getSharedScriptEngines().addImports(new HashSet<>(l));
+        context.getGremlinExecutor().getScriptEngines().addImports(new HashSet<>(l));
     }
 
     /**
@@ -50,7 +46,7 @@ class ControlOps {
         final RequestMessage msg = context.getRequestMessage();
         final String infoType = msg.<String>optionalArgs(Tokens.ARGS_INFO_TYPE).get();
         final GremlinExecutor executor = context.getGremlinExecutor();
-        final ScriptEngines scriptEngines = executor.getSharedScriptEngines();
+        final ScriptEngines scriptEngines = executor.getScriptEngines();
 
         final Object infoToShow;
         if (infoType.equals(Tokens.ARGS_INFO_TYPE_DEPDENENCIES))
@@ -77,7 +73,7 @@ class ControlOps {
      */
     public static void resetOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
-        context.getGremlinExecutor().getSharedScriptEngines().reset();
+        context.getGremlinExecutor().getScriptEngines().reset();
         context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS).contents(ResultType.EMPTY).build());
         context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS_TERMINATOR).build());
     }
@@ -93,7 +89,7 @@ class ControlOps {
             final String artifact = c.get(Tokens.ARGS_COORDINATES_ARTIFACT);
             final String version = c.get(Tokens.ARGS_COORDINATES_VERSION);
             logger.info("Loading plugin [group={},artifact={},version={}]", group, artifact, version);
-            context.getGremlinExecutor().getSharedScriptEngines().use(group, artifact, version);
+            context.getGremlinExecutor().getScriptEngines().use(group, artifact, version);
 
             final Map<String, String> coords = new HashMap<String, String>() {{
                 put("group", group);

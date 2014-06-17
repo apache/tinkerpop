@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 
 import java.util.Iterator;
 import java.util.List;
@@ -101,6 +102,11 @@ public class TraversalHelper {
         traversal.getSteps().add(index, step);
         reLabelSteps(traversal);
         reLinkSteps(traversal);
+    }
+
+    public static void replaceStep(final Step removeStep, final Step insertStep, final Traversal traversal) {
+        int index = TraversalHelper.removeStep(removeStep, traversal);
+        TraversalHelper.insertStep(insertStep, index, traversal);
     }
 
     private static void reLabelSteps(final Traversal traversal) {

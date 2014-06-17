@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.FEATURE_STRING_VALUES;
@@ -27,7 +26,7 @@ public class IdGraphStrategyTest {
     public static class DefaultIdGraphStrategyTest extends AbstractGremlinTest {
 
         public DefaultIdGraphStrategyTest() {
-            super(Optional.of((GraphStrategy) new IdGraphStrategy.Builder(idKey).build()));
+            super(new IdGraphStrategy.Builder(idKey).build());
         }
 
         @Test
@@ -110,8 +109,7 @@ public class IdGraphStrategyTest {
 
     public static class VertexIdMakerIdGraphStrategyTest extends AbstractGremlinTest {
         public VertexIdMakerIdGraphStrategyTest() {
-            super(Optional.of((GraphStrategy) new IdGraphStrategy.Builder(idKey)
-                    .vertexIdMaker(() -> "100").build()));
+            super(new IdGraphStrategy.Builder(idKey).vertexIdMaker(() -> "100").build());
         }
 
         @Test
@@ -136,8 +134,7 @@ public class IdGraphStrategyTest {
 
     public static class EdgeIdMakerIdGraphStrategyTest extends AbstractGremlinTest {
         public EdgeIdMakerIdGraphStrategyTest() {
-            super(Optional.of((GraphStrategy) new IdGraphStrategy.Builder(idKey)
-                    .edgeIdMaker(() -> "100").build()));
+            super(new IdGraphStrategy.Builder(idKey).edgeIdMaker(() -> "100").build());
         }
 
         @Test
@@ -163,8 +160,7 @@ public class IdGraphStrategyTest {
 
     public static class VertexIdNotSupportedIdGraphStrategyTest extends AbstractGremlinTest {
         public VertexIdNotSupportedIdGraphStrategyTest() {
-            super(Optional.of((GraphStrategy) new IdGraphStrategy.Builder(idKey)
-                    .supportsVertexId(false).build()));
+            super(new IdGraphStrategy.Builder(idKey).supportsVertexId(false).build());
         }
 
         @Test
@@ -223,8 +219,7 @@ public class IdGraphStrategyTest {
 
     public static class EdgeIdNotSupportedIdGraphStrategyTest extends AbstractGremlinTest {
         public EdgeIdNotSupportedIdGraphStrategyTest() {
-            super(Optional.of((GraphStrategy) new IdGraphStrategy.Builder(idKey)
-                    .supportsEdgeId(false).build()));
+            super(new IdGraphStrategy.Builder(idKey).supportsEdgeId(false).build());
         }
 
         @Test

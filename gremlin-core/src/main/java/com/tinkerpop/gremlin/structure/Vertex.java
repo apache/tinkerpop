@@ -5,13 +5,12 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.function.BiPredicate;
 
 /**
@@ -111,7 +110,6 @@ public interface Vertex extends Element {
         return this.start().has(key, t, value);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> has(final String key, final BiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
     }
@@ -146,7 +144,6 @@ public interface Vertex extends Element {
         return this.start().jump(as, ifPredicate, emitPredicate);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> map(final SFunction<Traverser<Vertex>, E2> function) {
         return this.start().map(function);
     }

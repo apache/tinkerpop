@@ -1,9 +1,9 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
-import com.tinkerpop.gremlin.process.graph.map.MapStep;
-import com.tinkerpop.gremlin.process.graph.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
+import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;

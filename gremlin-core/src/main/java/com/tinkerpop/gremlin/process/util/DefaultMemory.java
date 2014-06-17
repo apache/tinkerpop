@@ -23,7 +23,7 @@ public class DefaultMemory implements Traversal.Memory {
         return null == this.memory ? null : (T) this.memory.get(key);
     }
 
-    public Set<String> getKeys() {
+    public Set<String> keys() {
         return null == this.memory ? Collections.emptySet() : this.memory.keySet();
     }
 

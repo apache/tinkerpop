@@ -1,30 +1,31 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
-import com.tinkerpop.gremlin.process.graph.filter.CyclicPathTest;
-import com.tinkerpop.gremlin.process.graph.filter.DedupTest;
-import com.tinkerpop.gremlin.process.graph.filter.ExceptTest;
-import com.tinkerpop.gremlin.process.graph.filter.FilterTest;
-import com.tinkerpop.gremlin.process.graph.filter.HasTest;
-import com.tinkerpop.gremlin.process.graph.filter.IntervalTest;
-import com.tinkerpop.gremlin.process.graph.filter.RandomTest;
-import com.tinkerpop.gremlin.process.graph.filter.RangeTest;
-import com.tinkerpop.gremlin.process.graph.filter.RetainTest;
-import com.tinkerpop.gremlin.process.graph.filter.SimplePathTest;
-import com.tinkerpop.gremlin.process.graph.map.BackTest;
-import com.tinkerpop.gremlin.process.graph.map.JumpTest;
-import com.tinkerpop.gremlin.process.graph.map.OrderTest;
-import com.tinkerpop.gremlin.process.graph.map.PathTest;
-import com.tinkerpop.gremlin.process.graph.map.SelectTest;
-import com.tinkerpop.gremlin.process.graph.map.TraversalTest;
-import com.tinkerpop.gremlin.process.graph.map.ValuesTest;
-import com.tinkerpop.gremlin.process.graph.sideEffect.AggregateTest;
-import com.tinkerpop.gremlin.process.graph.sideEffect.GroupByTest;
-import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountTest;
-import com.tinkerpop.gremlin.process.graph.sideEffect.LinkTest;
-import com.tinkerpop.gremlin.process.graph.sideEffect.SideEffectTest;
-import com.tinkerpop.gremlin.process.graph.sideEffect.SubGraphTest;
-import com.tinkerpop.gremlin.process.graph.sideEffect.TreeTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.DedupTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
+import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
+import com.tinkerpop.gremlin.process.graph.step.map.JumpTest;
+import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
+import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
+import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
+import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
+import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest;
+import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.LinkTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubGraphTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -67,7 +68,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SimplePathTest.JavaSimplePathTest.class,
             BackTest.JavaBackTest.class,
             JumpTest.JavaJumpTest.class,
-            OrderTest.JavaOrderTest.class,
+			MapTest.JavaMapTest.class,
+			OrderTest.JavaOrderTest.class,
             PathTest.JavaPathTest.class,
             SelectTest.JavaSelectTest.class,
             TraversalTest.JavaTraversalTest.class,
@@ -96,6 +98,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SimplePathTest.class,
             BackTest.class,
             JumpTest.class,
+			MapTest.class,
             OrderTest.class,
             PathTest.class,
             SelectTest.class,

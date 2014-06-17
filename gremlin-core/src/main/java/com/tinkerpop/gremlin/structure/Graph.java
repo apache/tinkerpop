@@ -5,14 +5,12 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.util.FeatureDescriptor;
-import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,53 +26,48 @@ public interface Graph extends AutoCloseable {
     public static final String HIDDEN_PREFIX = "%&%";
 
     /**
-     * Creates a new {@link Graph} instance.  All graphs require that this method be overridden.  It is enforced by the
-     * Blueprints test suite.
+     * Add a {@link Vertex} to a {@code Graph} given an optional series of key/value pairs.  These key/values
+     * must be provided in an even number where the odd numbered arguments are {@link String} key values and the
+     * even numbered arguments are the related property values.  Hidden properties can be set by specifying
+     * the key as {@link Property#hidden}.
      */
-    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
-        throw new UnsupportedOperationException("Implementations must override this method");
-    }
-
-	/**
-	 * Add a {@link Vertex} to a {@code Graph} given an optional series of key/value pairs.  These key/values
-	 * must be provided in an even number where the odd numbered arguments are {@link String} key values and the
-	 * even numbered arguments are the related property values.  Hidden properties can be set by specifying
-	 * the key as {@link Property#hidden}.
-	 */
     public Vertex addVertex(final Object... keyValues);
 
-	/**
-	 * Get a {@link Vertex} given its unique identifier.
-	 * @throws NoSuchElementException if the element is not found.
-	 */
+    /**
+     * Get a {@link Vertex} given its unique identifier.
+     *
+     * @throws NoSuchElementException if the element is not found.
+     */
     public default Vertex v(final Object id) {
         if (null == id) throw Graph.Exceptions.elementNotFound();
         return (Vertex) this.V().has(Element.ID, id).next();
     }
 
-	/**
-	 * Get a {@link Edge} given its unique identifier.
-	 * @throws NoSuchElementException if the element is not found.
-	 */
+    /**
+     * Get a {@link Edge} given its unique identifier.
+     *
+     * @throws NoSuchElementException if the element is not found.
+     */
     public default Edge e(final Object id) {
         if (null == id) throw Graph.Exceptions.elementNotFound();
         return (Edge) this.E().has(Element.ID, id).next();
     }
 
-	/**
-	 * Starts a {@link GraphTraversal} over all vertices.
-	 */
+    /**
+     * Starts a {@link GraphTraversal} over all vertices.
+     */
     public GraphTraversal<Vertex, Vertex> V();
 
-	/**
-	 * Starts a {@link GraphTraversal} over all edges.
-	 */
+    /**
+     * Starts a {@link GraphTraversal} over all edges.
+     */
     public GraphTraversal<Edge, Edge> E();
 
-	/**
-	 * Constructs a new {@link Traversal} over the {@code Graph}
-	 * @param traversalClass a {@link Traversal} implementation to use
-	 */
+    /**
+     * Constructs a new {@link Traversal} over the {@code Graph}
+     *
+     * @param traversalClass a {@link Traversal} implementation to use
+     */
     public default <T extends Traversal> T traversal(final Class<T> traversalClass) {
         try {
             final T t = (T) traversalClass.getMethod(Traversal.OF).invoke(null);
@@ -91,25 +84,25 @@ public interface Graph extends AutoCloseable {
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass);
 
-	/**
-	 * Configure and control the transactions for those graphs that support this feature.
-	 */
+    /**
+     * Configure and control the transactions for those graphs that support this feature.
+     */
     public Transaction tx();
 
     public <V extends Variables> V variables();
 
     public interface Variables {
 
-        public Set<String> getVariables();
+        public Set<String> keys();
 
-        public <R> R get(final String variable);
+        public <R> R get(final String key);
 
-        public void set(final String variable, Object value);
+        public void set(final String key, Object value);
 
-        public Graph getGraph();
+        public <R> R remove(final String key);
 
         public default Map<String, Object> asMap() {
-            final Map<String, Object> map = getVariables().stream()
+            final Map<String, Object> map = keys().stream()
                     .map(key -> Pair.<String, Object>with(key, get(key)))
                     .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
             return Collections.unmodifiableMap(map);
@@ -414,8 +407,8 @@ public interface Graph extends AutoCloseable {
 
         private static final boolean debug = Boolean.parseBoolean(System.getenv().getOrDefault("gremlin.structure.debug", "false"));
 
-        public static UnsupportedOperationException memoryNotSupported() {
-            return new UnsupportedOperationException("Graph does not support graph memory");
+        public static UnsupportedOperationException variablesNotSupported() {
+            return new UnsupportedOperationException("Graph does not support graph variables");
         }
 
         public static UnsupportedOperationException transactionsNotSupported() {

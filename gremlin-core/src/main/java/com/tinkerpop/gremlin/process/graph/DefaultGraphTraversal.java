@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.graph;
 
 import com.tinkerpop.gremlin.process.TraversalEngine;
-import com.tinkerpop.gremlin.process.graph.map.StartStep;
-import com.tinkerpop.gremlin.process.strategy.DedupOptimizerTraversalStrategy;
-import com.tinkerpop.gremlin.process.strategy.IdentityOptimizerTraversalStrategy;
-import com.tinkerpop.gremlin.process.strategy.SideEffectCapTraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.strategy.DedupOptimizerTraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.IdentityOptimizerTraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapTraversalStrategy;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 
 /**

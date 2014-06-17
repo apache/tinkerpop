@@ -19,6 +19,8 @@ public abstract class StrategyWrappedElement implements Element, StrategyWrapped
     private final Strategy.Context<StrategyWrappedElement> elementStrategyContext;
 
     protected StrategyWrappedElement(final Element baseElement, final StrategyWrappedGraph strategyWrappedGraph) {
+		if (baseElement instanceof StrategyWrapped) throw new IllegalArgumentException(
+				String.format("The element %s is already StrategyWrapped and must be a base Element", baseElement));
         this.strategyWrappedGraph = strategyWrappedGraph;
         this.baseElement = baseElement;
         this.elementStrategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);

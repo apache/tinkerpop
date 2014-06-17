@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
-import com.tinkerpop.gremlin.process.util.TraverserSource;
+import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -31,10 +31,11 @@ public class GiraphGraphComputer implements GraphComputer {
     private static final String DOT_JAR = ".jar";
     private static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
 
-    public static final String GREMLIN_INPUT_LOCATION = "gremlin.input.location";
-    public static final String GREMLIN_OUTPUT_LOCATION = "gremlin.output.location";
+    public static final String GREMLIN_INPUT_LOCATION = "gremlin.inputLocation";
+    public static final String GREMLIN_OUTPUT_LOCATION = "gremlin.outputLocation";
     public static final String GIRAPH_VERTEX_INPUT_FORMAT_CLASS = "giraph.vertexInputFormatClass";
     public static final String GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS = "giraph.vertexOutputFormatClass";
+    public static final String GREMLIN_EXTRA_JOBS_CALCULATOR = "gremlin.extraJobsCalculator";
 
     protected final GiraphGraph giraphGraph;
     protected org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
@@ -59,8 +60,8 @@ public class GiraphGraphComputer implements GraphComputer {
         throw new UnsupportedOperationException("GiraphGraphComputer does not support merge computed view as this does not make sense in a Hadoop environment");
     }
 
-    public Future<Pair<Graph, SideEffects>> submit() {
-        return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
+    public Future<Pair<Graph, Globals>> submit() {
+        return CompletableFuture.<Pair<Graph, Globals>>supplyAsync(() -> {
             try {
                 final String bspDirectory = "_bsp"; //"temp-" + UUID.randomUUID().toString();
                 final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
@@ -92,7 +93,7 @@ public class GiraphGraphComputer implements GraphComputer {
                 e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            return new Pair<Graph, SideEffects>(this.giraphGraph, null);
+            return new Pair<Graph, Globals>(this.giraphGraph, null);
         });
     }
 

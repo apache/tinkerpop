@@ -11,7 +11,6 @@ import org.codehaus.groovy.tools.shell.Command;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.codehaus.groovy.tools.shell.InteractiveShellRunner;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -46,7 +44,7 @@ public class Console {
     private static final IO STANDARD_IO = new IO(System.in, System.out, System.err);
     private static final Groovysh GROOVYSH = new Groovysh();
 
-    public Console(final Optional<String> initScriptFile) {
+    public Console(final String initScriptFile) {
         STANDARD_IO.out.println();
         STANDARD_IO.out.println("         \\,,,/");
         STANDARD_IO.out.println("         (o o)");
@@ -81,8 +79,7 @@ public class Console {
         }
 
         GremlinLoader.load();
-        if (initScriptFile.isPresent())
-            initializeShellWithScript(STANDARD_IO, initScriptFile.get());
+        if (initScriptFile != null) initializeShellWithScript(STANDARD_IO, initScriptFile);
 
         try {
             runner.run();
@@ -144,6 +141,6 @@ public class Console {
     }
 
     public static void main(final String[] args) {
-        new Console(args.length == 1 ? Optional.of(args[0]) : Optional.empty());
+        new Console(args.length == 1 ? args[0] : null);
     }
 }

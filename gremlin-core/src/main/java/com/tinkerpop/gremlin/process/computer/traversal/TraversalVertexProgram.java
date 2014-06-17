@@ -10,8 +10,8 @@ import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
-import com.tinkerpop.gremlin.process.graph.map.GraphStep;
-import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
+import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -20,7 +20,9 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -46,6 +48,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     public TraversalVertexProgram() {
     }
 
+    @Override
     public void initialize(final Configuration configuration) {
         try {
             this.trackPaths = configuration.getBoolean(TRACK_PATHS, false);
@@ -56,29 +59,31 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             } else {
                 this.traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, TRAVERSAL_SUPPLIER);
             }
-            this.trackPaths = TraverserTraversalStrategy.trackPaths(this.traversalSupplier.get());
+            this.trackPaths = PathConsumerStrategy.trackPaths(this.traversalSupplier.get());
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
-    public void setup(final GraphComputer.SideEffects sideEffects) {
-        sideEffects.setIfAbsent(VOTE_TO_HALT, true);
+    @Override
+    public void setup(final GraphComputer.Globals globals) {
+        globals.setIfAbsent(VOTE_TO_HALT, true);
     }
 
-    public void execute(final Vertex vertex, final Messenger<M> messenger, GraphComputer.SideEffects sideEffects) {
-        if (sideEffects.isInitialIteration()) {
-            executeFirstIteration(vertex, messenger, sideEffects);
+    @Override
+    public void execute(final Vertex vertex, final Messenger<M> messenger, GraphComputer.Globals globals) {
+        if (globals.isInitialIteration()) {
+            executeFirstIteration(vertex, messenger, globals);
         } else {
-            executeOtherIterations(vertex, messenger, sideEffects);
+            executeOtherIterations(vertex, messenger, globals);
         }
     }
 
-    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.SideEffects sideEffects) {
+    private void executeFirstIteration(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.Globals globals) {
         final Traversal traversal = this.traversalSupplier.get();
         traversal.strategies().applyFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-        startStep.clear();
+        //startStep.clear();
 
         final String future = (traversal.getSteps().size() == 1) ? Traverser.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
         // TODO: Was doing some HasContainer.testAll() stuff prior to the big change (necessary?)
@@ -89,7 +94,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                     new PathTraverser<>(startStep.getAs(), vertex) :
                     new SimpleTraverser<>(vertex);
             traverser.setFuture(future);
-            messenger.sendMessage(vertex, MessageType.Global.of(vertex), TraversalMessage.of(traverser));
+            messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
             voteToHalt.set(false);
         } else if (Edge.class.isAssignableFrom(startStep.returnClass)) {
             vertex.outE().forEach(e -> {
@@ -97,47 +102,60 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                         new PathTraverser<>(startStep.getAs(), e) :
                         new SimpleTraverser<>(e);
                 traverser.setFuture(future);
-                messenger.sendMessage(vertex, MessageType.Global.of(vertex), TraversalMessage.of(traverser));
+                messenger.sendMessage(MessageType.Global.of(vertex), TraversalMessage.of(traverser));
                 voteToHalt.set(false);
             });
         }
-        sideEffects.and(VOTE_TO_HALT, voteToHalt.get());
+        globals.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
-    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.SideEffects sideEffects) {
+    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.Globals globals) {
         if (this.trackPaths) {
             final TraversalPaths tracker = new TraversalPaths(vertex);
-            sideEffects.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, this.traversalSupplier));
+            globals.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(this.global), messenger, tracker, this.traversalSupplier));
             vertex.property(TRAVERSER_TRACKER, tracker);
         } else {
             final TraversalCounters tracker = new TraversalCounters(vertex);
-            sideEffects.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(vertex, this.global), messenger, tracker, this.traversalSupplier));
+            globals.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(this.global), messenger, tracker, this.traversalSupplier));
             vertex.property(TRAVERSER_TRACKER, tracker);
         }
     }
 
-    ////////// GRAPH COMPUTER METHODS
-
-    public boolean terminate(final GraphComputer.SideEffects sideEffects) {
-        final boolean voteToHalt = sideEffects.get(VOTE_TO_HALT);
+    @Override
+    public boolean terminate(final GraphComputer.Globals globals) {
+        final boolean voteToHalt = globals.get(VOTE_TO_HALT);
         if (voteToHalt) {
             return true;
         } else {
-            sideEffects.or(VOTE_TO_HALT, true);
+            globals.or(VOTE_TO_HALT, true);
             return false;
         }
     }
 
+    @Override
     public Class<M> getMessageClass() {
         return (Class) (this.trackPaths ? TraversalPathMessage.class : TraversalCounterMessage.class);
     }
 
+    @Override
     public Map<String, KeyType> getComputeKeys() {
         return VertexProgram.ofComputeKeys(TRAVERSER_TRACKER, KeyType.VARIABLE);
     }
 
+    @Override
+    public Set<String> getSideEffectKeys() {
+        final Set<String> keys = new HashSet<>();
+        keys.add(VOTE_TO_HALT);
+        return keys;
+    }
+
+
     public String toString() {
         return "TraversalVertexProgram" + this.traversalSupplier.get().toString();
+    }
+
+    public SSupplier<Traversal> getTraversalSupplier() {
+        return this.traversalSupplier;
     }
 
     //////////////

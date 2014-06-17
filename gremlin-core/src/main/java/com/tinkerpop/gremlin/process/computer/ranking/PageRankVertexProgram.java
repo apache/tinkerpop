@@ -16,7 +16,9 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,6 +43,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     }
 
+    @Override
     public void initialize(final Configuration configuration) {
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
@@ -48,43 +51,54 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
                 final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, INCIDENT_TRAVERSAL);
-                VertexProgramHelper.verifyReversibility(traversalSupplier);
-                this.messageType = MessageType.Local.of((SSupplier)traversalSupplier);
+                VertexProgramHelper.verifyReversibility(traversalSupplier);  // TODO: Make this take Traversal, not Supplier
+                this.messageType = MessageType.Local.of((SSupplier) traversalSupplier);
             }
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
+    @Override
     public Map<String, KeyType> getComputeKeys() {
         return VertexProgram.ofComputeKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
     }
 
+    @Override
+    public Set<String> getSideEffectKeys() {
+        return Collections.emptySet();
+    }
+
+
+    @Override
     public Class<Double> getMessageClass() {
         return Double.class;
     }
 
-    public void setup(final GraphComputer.SideEffects sideEffects) {
+    @Override
+    public void setup(final GraphComputer.Globals globals) {
 
     }
 
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.SideEffects sideEffects) {
-        if (sideEffects.isInitialIteration()) {
+    @Override
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.Globals globals) {
+        if (globals.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(this.messageType.edges(vertex).count()).doubleValue();
             vertex.property(PAGE_RANK, initialPageRank);
             vertex.property(EDGE_COUNT, edgeCount);
-            messenger.sendMessage(vertex, this.messageType, initialPageRank / edgeCount);
+            messenger.sendMessage(this.messageType, initialPageRank / edgeCount);
         } else {
-            double newPageRank = StreamFactory.stream(messenger.receiveMessages(vertex, this.messageType)).reduce(0.0d, (a, b) -> a + b);
+            double newPageRank = StreamFactory.stream(messenger.receiveMessages(this.messageType)).reduce(0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.property(PAGE_RANK, newPageRank);
-            messenger.sendMessage(vertex, this.messageType, newPageRank / vertex.<Double>property(EDGE_COUNT).orElse(0.0d));
+            messenger.sendMessage(this.messageType, newPageRank / vertex.<Double>property(EDGE_COUNT).orElse(0.0d));
         }
     }
 
-    public boolean terminate(final GraphComputer.SideEffects sideEffects) {
-        return sideEffects.getIteration() >= this.totalIterations;
+    @Override
+    public boolean terminate(final GraphComputer.Globals globals) {
+        return globals.getIteration() >= this.totalIterations;
     }
 
     //////////////////////////////

@@ -17,10 +17,9 @@ import java.util.function.UnaryOperator;
 public interface Strategy  {
 
     /**
-     * Set the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} to utilized in the various Blueprints methods that it supports.  Set to
-     * {@link java.util.Optional#EMPTY} by default.
+     * Set the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} to utilized in the various Blueprints methods that it supports.
      */
-    public void setGraphStrategy(final Optional<GraphStrategy> strategy);
+    public void setGraphStrategy(final GraphStrategy strategy);
 
     /**
      * Gets the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} for the {@link com.tinkerpop.gremlin.structure.Graph}.
@@ -52,20 +51,16 @@ public interface Strategy  {
         private final T current;
 
         public Context(final Graph g, final T current) {
-            this(g, current, Optional.empty());
+            this(g, current, null);
         }
 
-        public Context(final Graph g, final T current, final Optional<Map<String,Object>> environment) {
-            if (null == g)
-                throw Graph.Exceptions.argumentCanNotBeNull("g");
-            if (null == current)
-                throw Graph.Exceptions.argumentCanNotBeNull("current");
-            if (null == environment)
-                throw Graph.Exceptions.argumentCanNotBeNull("environment");
+        public Context(final Graph g, final T current, final Map<String,Object> environment) {
+            if (null == g) throw Graph.Exceptions.argumentCanNotBeNull("g");
+            if (null == current) throw Graph.Exceptions.argumentCanNotBeNull("current");
 
             this.g = g;
             this.current = current;
-            this.environment = environment.orElse(new HashMap<>());
+            this.environment = null == environment ? new HashMap<>() : environment;
         }
 
         public T getCurrent() {
@@ -85,18 +80,16 @@ public interface Strategy  {
      * Basic {@link Strategy} implementation where the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} can be get or set.
      */
     public static class Simple implements Strategy {
-        private Optional<GraphStrategy> strategy = Optional.empty();
+        private GraphStrategy strategy = null;
 
         @Override
-        public void setGraphStrategy(final Optional<GraphStrategy> strategy) {
-            if (null == strategy)
-                throw Graph.Exceptions.argumentCanNotBeNull("strategy");
+        public void setGraphStrategy(final GraphStrategy strategy) {
             this.strategy = strategy;
         }
 
         @Override
         public Optional<GraphStrategy> getGraphStrategy() {
-            return strategy;
+            return Optional.ofNullable(strategy);
         }
     }
 
@@ -104,23 +97,21 @@ public interface Strategy  {
      * A {@link Strategy} implementation where the {@link com.tinkerpop.gremlin.structure.strategy.GraphStrategy} can be get or set as {@link ThreadLocal}.
      */
     public static class Local implements Strategy {
-        private ThreadLocal<Optional<GraphStrategy>> strategy = new ThreadLocal<Optional<GraphStrategy>>(){
+        private ThreadLocal<GraphStrategy> strategy = new ThreadLocal<GraphStrategy>(){
             @Override
-            protected Optional<GraphStrategy> initialValue() {
-                return Optional.empty();
+            protected GraphStrategy initialValue() {
+                return null;
             }
         };
 
         @Override
-        public void setGraphStrategy(final Optional<GraphStrategy> strategy) {
-            if (null == strategy)
-                throw Graph.Exceptions.argumentCanNotBeNull("strategy");
+        public void setGraphStrategy(final GraphStrategy strategy) {
             this.strategy.set(strategy);
         }
 
         @Override
         public Optional<GraphStrategy> getGraphStrategy() {
-            return this.strategy.get();
+            return Optional.ofNullable(this.strategy.get());
         }
     }
 }

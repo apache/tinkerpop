@@ -2,23 +2,24 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
-import com.tinkerpop.gremlin.process.graph.filter.CyclicPathTest;
-import com.tinkerpop.gremlin.process.graph.filter.ExceptTest;
-import com.tinkerpop.gremlin.process.graph.filter.FilterTest;
-import com.tinkerpop.gremlin.process.graph.filter.HasTest;
-import com.tinkerpop.gremlin.process.graph.filter.IntervalTest;
-import com.tinkerpop.gremlin.process.graph.filter.RandomTest;
-import com.tinkerpop.gremlin.process.graph.filter.RetainTest;
-import com.tinkerpop.gremlin.process.graph.filter.SimplePathTest;
-import com.tinkerpop.gremlin.process.graph.map.BackTest;
-import com.tinkerpop.gremlin.process.graph.map.JumpTest;
-import com.tinkerpop.gremlin.process.graph.map.PathTest;
-import com.tinkerpop.gremlin.process.graph.map.SelectTest;
-import com.tinkerpop.gremlin.process.graph.map.TraversalTest;
-import com.tinkerpop.gremlin.process.graph.map.ValuesTest;
-import com.tinkerpop.gremlin.process.graph.sideEffect.GroupByTest;
-import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountTest;
-import com.tinkerpop.gremlin.process.graph.sideEffect.TreeTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
+import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
+import com.tinkerpop.gremlin.process.graph.step.map.JumpTest;
+import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
+import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
+import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
+import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest;
+import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -63,7 +64,8 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             SimplePathTest.JavaComputerSimplePathTest.class,
             BackTest.JavaComputerBackTest.class,
             JumpTest.JavaComputerJumpTest.class,
-            // OrderTest.JavaOrderTest.class
+			MapTest.JavaMapTest.class,
+			// OrderTest.JavaOrderTest.class
             PathTest.JavaComputerPathTest.class,
             SelectTest.JavaComputerSelectTest.class,
             TraversalTest.JavaComputerTraversalTest.class,

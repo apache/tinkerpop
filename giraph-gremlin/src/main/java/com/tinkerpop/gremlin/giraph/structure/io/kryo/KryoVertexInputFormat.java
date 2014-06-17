@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
+import com.tinkerpop.gremlin.giraph.structure.io.GiraphGremlinInputFormat;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexReader;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -12,7 +14,7 @@ import java.util.List;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class KryoVertexInputFormat extends VertexInputFormat {
+public class KryoVertexInputFormat extends VertexInputFormat implements GiraphGremlinInputFormat {
 
     private final KryoInputFormat fileInputFormat;
 
@@ -35,5 +37,9 @@ public class KryoVertexInputFormat extends VertexInputFormat {
             throw new IOException(e);
         }
         return reader;
+    }
+
+    public Class<InputFormat> getInputFormatClass() {
+        return (Class) KryoInputFormat.class;
     }
 }

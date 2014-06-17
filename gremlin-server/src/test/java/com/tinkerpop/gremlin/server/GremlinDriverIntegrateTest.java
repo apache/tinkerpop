@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
@@ -205,4 +206,30 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
         cluster.close();
     }
+
+	@Test
+	public void shouldEventuallySucceedWithRoundRobin() throws Exception {
+		// todo: when we have a config on borrowed connection timeout, set it low here to make the test go faster.
+		final String noGremlinServer = "74.125.225.19";
+		final Cluster cluster = Cluster.create(noGremlinServer).addContactPoint("localhost").build();
+		final Client client = cluster.connect();
+
+		try {
+			// this first attempt will fail because it's sending stuff to a host it can't connect to
+			client.submit("1+1").all().join();
+			fail();
+		} catch (RuntimeException re) {
+			assertTrue(re.getCause().getCause() instanceof TimeoutException);
+		}
+
+		// ensure that connection to server is good - that host should be marked "dead" and remaining
+		// requests should succeed
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+
+		cluster.close();
+	}
 }

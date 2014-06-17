@@ -4,10 +4,8 @@ import com.codahale.metrics.Timer;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.server.Context;
-import com.tinkerpop.gremlin.server.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
-import com.tinkerpop.gremlin.server.ScriptEngines;
 import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -22,11 +20,8 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -49,14 +44,14 @@ final class StandardOps {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
 
-        final CompletableFuture<Object> future = context.getGremlinExecutor().eval(msg, context);
+		final String script = (String) msg.getArgs().get(Tokens.ARGS_GREMLIN);
+		final Optional<String> language = Optional.ofNullable((String) msg.getArgs().get(Tokens.ARGS_LANGUAGE));
+		final Map<String,Object> bindings = Optional.ofNullable((Map<String,Object>) msg.getArgs().get(Tokens.ARGS_BINDINGS)).orElse(new HashMap<>());
+
+		final CompletableFuture<Object> future = context.getGremlinExecutor().eval(script, language, bindings);
         future.handle((v,t) -> timerContext.stop());
-
-        future.thenAccept(o -> {
-            ctx.write(Pair.with(msg, convertToIterator(o)));
-        });
-
-        future.exceptionally(se -> {
+        future.thenAccept(o -> ctx.write(Pair.with(msg, convertToIterator(o))));
+		future.exceptionally(se -> {
             logger.warn(String.format("Exception processing a script on request [%s].", msg), se);
             ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).build());
             return null;

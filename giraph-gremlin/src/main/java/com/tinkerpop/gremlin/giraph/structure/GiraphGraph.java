@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
-import com.tinkerpop.gremlin.giraph.process.graph.map.GiraphGraphStep;
+import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
+import com.tinkerpop.gremlin.giraph.process.graph.strategy.SideEffectReplacementStrategy;
+import com.tinkerpop.gremlin.giraph.process.graph.strategy.ValidateStepsStrategy;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -27,23 +29,27 @@ public class GiraphGraph implements Graph {
     }
 
     public static GiraphGraph open() {
-        return GiraphGraph.open(Optional.empty());
+        return GiraphGraph.open(null);
     }
 
-    public static <G extends Graph> G open(final Optional<Configuration> configuration) {
+    public static <G extends Graph> G open(final Configuration configuration) {
         final GiraphGraph graph = new GiraphGraph();
-        graph.configuration = configuration.orElse(new BaseConfiguration());
+        graph.configuration = Optional.ofNullable(configuration).orElse(new BaseConfiguration());
         return (G) graph;
     }
 
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
+        traversal.strategies().register(new SideEffectReplacementStrategy());
+        traversal.strategies().register(new ValidateStepsStrategy());
         traversal.addStep(new GiraphGraphStep(traversal, Vertex.class));
         return traversal;
     }
 
     public GraphTraversal<Edge, Edge> E() {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
+        traversal.strategies().register(new SideEffectReplacementStrategy());
+        traversal.strategies().register(new ValidateStepsStrategy());
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class));
         return traversal;
     }
@@ -66,7 +72,7 @@ public class GiraphGraph implements Graph {
 
 
     public <V extends Variables> V variables() {
-        throw Exceptions.memoryNotSupported();
+        throw Exceptions.variablesNotSupported();
     }
 
     public String toString() {

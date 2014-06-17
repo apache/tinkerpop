@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerSideEffects;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerGlobals;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
@@ -30,18 +30,10 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
     private VertexProgram vertexProgram;
     private Graph gremlinGraph;
     private com.tinkerpop.gremlin.structure.Vertex gremlinVertex;
-    private GiraphGraphComputerSideEffects computerMemory = new GiraphGraphComputerSideEffects(this);
+    private GiraphGraphComputerGlobals computerMemory = new GiraphGraphComputerGlobals(this);
 
     public GiraphVertex() {
     }
-
-    /*public GiraphVertex(final Graph gremlinGraph,
-                        final com.tinkerpop.gremlin.structure.Vertex gremlinVertex) {
-        this.gremlinGraph = gremlinGraph;
-        this.gremlinVertex = gremlinVertex;
-
-        this.initialize(new LongWritable(Long.valueOf(this.gremlinVertex.id().toString())), this.getTextOfSubGraph(), EmptyOutEdges.instance());
-    }*/
 
     public GiraphVertex(final com.tinkerpop.gremlin.structure.Vertex gremlinVertex) {
         this.gremlinGraph = TinkerGraph.open();
@@ -63,7 +55,7 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
 
     @Override
     public void setConf(final org.apache.giraph.conf.ImmutableClassesGiraphConfiguration configuration) {
-        this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.apacheConfiguration(configuration));
+        this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
     }
 
     public com.tinkerpop.gremlin.structure.Vertex getGremlinVertex() {
@@ -71,7 +63,8 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
     }
 
     public void compute(final Iterable<KryoWritable> messages) {
-        inflateGiraphVertex();
+        if (null == this.gremlinVertex)
+            inflateGiraphVertex();
         this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.computerMemory);
     }
 
@@ -91,17 +84,15 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
     }
 
     private void inflateGiraphVertex() {
-        if (null == this.gremlinVertex) {
-            try {
-                final ByteArrayInputStream bis = new ByteArrayInputStream(this.getValue().getBytes());
-                final KryoReader reader = KryoReader.create().build();
-                this.gremlinGraph = TinkerGraph.open();
-                reader.readGraph(bis, this.gremlinGraph);
-                bis.close();
-                this.gremlinVertex = this.gremlinGraph.v(this.getId().get());
-            } catch (final Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+        try {
+            final ByteArrayInputStream bis = new ByteArrayInputStream(this.getValue().getBytes());
+            final KryoReader reader = KryoReader.create().build();
+            this.gremlinGraph = TinkerGraph.open();
+            reader.readGraph(bis, this.gremlinGraph);
+            bis.close();
+            this.gremlinVertex = this.gremlinGraph.v(this.getId().get());
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 }

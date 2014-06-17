@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * A {@link VertexProgram} represents one component of a distributed graph computation. Each applicable vertex
@@ -29,31 +31,37 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
      * The method is called at the beginning of the computation. The method is global to the {@link GraphComputer}
      * and as such, is not called for each vertex.
      *
-     * @param sideEffects The global GraphMemory of the GraphComputer
+     * @param globals The global GraphMemory of the GraphComputer
      */
-    public void setup(final GraphComputer.SideEffects sideEffects);
+    public void setup(final GraphComputer.Globals globals);
 
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
      *
-     * @param vertex              the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
-     * @param messenger           the messenger that moves data between vertices
-     * @param sideEffects the shared state between all vertices in the computation
+     * @param vertex      the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
+     * @param messenger   the messenger that moves data between vertices
+     * @param globals the shared state between all vertices in the computation
      */
-    public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.SideEffects sideEffects);
+    public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.Globals globals);
 
     /**
      * The method is called at the end of a round to determine if the computation is complete. The method is global
      * to the {@link GraphComputer} and as such, is not called for each {@link com.tinkerpop.gremlin.structure.Vertex}.
      *
-     * @param sideEffects The global {@link com.tinkerpop.gremlin.structure.Graph.Variables} of the {@link GraphComputer}
+     * @param globals The global {@link com.tinkerpop.gremlin.structure.Graph.Variables} of the {@link GraphComputer}
      * @return whether or not to halt the computation
      */
-    public boolean terminate(final GraphComputer.SideEffects sideEffects);
+    public boolean terminate(final GraphComputer.Globals globals);
 
     public Map<String, KeyType> getComputeKeys();
 
+    public Set<String> getSideEffectKeys();
+
     public Class<M> getMessageClass();
+
+    public default Optional<MessageCombiner<M>> getMessageCombiner() {
+        return Optional.empty();
+    }
 
     public static Map<String, KeyType> ofComputeKeys(final Object... computeKeys) {
         if (computeKeys.length % 2 != 0)

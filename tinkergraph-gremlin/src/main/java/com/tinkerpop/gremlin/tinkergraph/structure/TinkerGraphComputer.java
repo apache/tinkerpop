@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import com.tinkerpop.gremlin.process.util.TraverserSource;
+import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -27,8 +27,8 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     private Isolation isolation = Isolation.BSP;
     private Configuration configuration = new BaseConfiguration();
     private final TinkerGraph graph;
-    private final TinkerMessenger messenger = new TinkerMessenger();
-    private final TinkerGraphComputerSideEffects sideEffects = new TinkerGraphComputerSideEffects();
+    private final TinkerGraphComputerGlobals sideEffects = new TinkerGraphComputerGlobals();
+    private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
 
     public TinkerGraphComputer(final TinkerGraph graph) {
@@ -50,7 +50,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         return this;
     }
 
-    public Future<Pair<Graph, SideEffects>> submit() {
+    public Future<Pair<Graph, Globals>> submit() {
         if (this.executed)
             throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();
         else
@@ -59,7 +59,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
         final VertexProgram vertexProgram = VertexProgram.createVertexProgram(this.configuration);
         GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
 
-        return CompletableFuture.<Pair<Graph, SideEffects>>supplyAsync(() -> {
+        return CompletableFuture.<Pair<Graph, Globals>>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
 
             final TinkerGraph g = this.graph;
@@ -67,17 +67,18 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
             g.useGraphView = true;
             // execute the vertex program
             vertexProgram.setup(this.sideEffects);
+
             while (true) {
-                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, this.messenger, this.sideEffects));
+                StreamFactory.parallelStream(g.V()).forEach(vertex -> vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.sideEffects));
                 this.sideEffects.incrIteration();
                 g.graphView.completeIteration();
-                this.messenger.completeIteration();
+                this.messageBoard.completeIteration();
                 if (vertexProgram.terminate(this.sideEffects)) break;
             }
 
             // update runtime and return the newly computed graph
             this.sideEffects.setRuntime(System.currentTimeMillis() - time);
-            return new Pair<Graph, SideEffects>(this.graph, this.sideEffects);
+            return new Pair<Graph, Globals>(this.graph, this.sideEffects);
         });
     }
 

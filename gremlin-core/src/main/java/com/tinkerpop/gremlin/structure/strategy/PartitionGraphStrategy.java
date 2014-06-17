@@ -4,10 +4,10 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
-import com.tinkerpop.gremlin.process.graph.map.GraphStep;
-import com.tinkerpop.gremlin.process.graph.map.VertexStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
+import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
+import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -81,7 +81,7 @@ public class PartitionGraphStrategy implements GraphStrategy {
             final Property<String> p = v.property(this.partitionKey);
             if (!p.isPresent() || !this.readPartitions.contains(p.value())) throw Graph.Exceptions.elementNotFound();
 
-            return new StrategyWrappedVertex(v, ctx.getCurrent());
+            return v;
         };
     }
 
@@ -92,7 +92,7 @@ public class PartitionGraphStrategy implements GraphStrategy {
             final Property<String> p = e.property(this.partitionKey);
             if (!p.isPresent() || !this.readPartitions.contains(p.value())) throw Graph.Exceptions.elementNotFound();
 
-            return new StrategyWrappedEdge(e, ctx.getCurrent());
+            return e;
         };
     }
 

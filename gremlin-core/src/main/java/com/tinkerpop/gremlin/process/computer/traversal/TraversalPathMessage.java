@@ -6,7 +6,8 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.graph.map.GraphStep;
+import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
+import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.MicroPath;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
@@ -43,7 +44,8 @@ public class TraversalPathMessage extends TraversalMessage {
 
         final Traversal traversal = traversalSupplier.get();
         traversal.strategies().applyFinalOptimizers(traversal);
-        ((GraphStep) traversal.getSteps().get(0)).clear();
+        //System.out.println(traversal.strategies().get());
+        ((TraverserSource) traversal.getSteps().get(0)).clear();
 
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
@@ -62,8 +64,9 @@ public class TraversalPathMessage extends TraversalMessage {
                     }
                 } else {
                     final Step step = TraversalHelper.getAs(traverser.getFuture(), traversal);
+                    if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
                     step.addStarts(new SingleIterator(traverser));
-                    if (processStep(step, vertex, messenger, tracker))
+                    if (processStep(step, messenger, tracker))
                         voteToHalt.set(false);
                 }
             });
@@ -82,18 +85,18 @@ public class TraversalPathMessage extends TraversalMessage {
         }
 
         final Step step = TraversalHelper.getAs(this.traverser.getFuture(), traversal);
+        if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
         MapHelper.incr(tracker.getGraphTracks(), this.traverser.get(), this.traverser);
         step.addStarts(new SingleIterator(this.traverser));
-        return processStep(step, vertex, messenger, tracker);
+        return processStep(step, messenger, tracker);
     }
 
-    private static boolean processStep(final Step<?, ?> step, final Vertex vertex, final Messenger messenger, final TraversalPaths tracker) {
+    private static boolean processStep(final Step<?, ?> step, final Messenger messenger, final TraversalPaths tracker) {
         final boolean messageSent = step.hasNext();
         step.forEachRemaining(traverser -> {
             final Object end = traverser.get();
             if (end instanceof Element || end instanceof Property) {
                 messenger.sendMessage(
-                        vertex,
                         MessageType.Global.of(getHostingVertices(end)),
                         TraversalPathMessage.of(traverser));
             } else {

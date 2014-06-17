@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.process.computer.MessageCombiner;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -9,8 +10,7 @@ import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -19,11 +19,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
 
-    // Map<VertexId, MessageQueue>
-    public Map<Object, Queue<M>> sendMessages = new HashMap<>();
-    public Map<Object, Queue<M>> receiveMessages = new HashMap<>();
+    private final Vertex vertex;
+    private final TinkerMessageBoard<M> messageBoard;
+    private final Optional<MessageCombiner<M>> combiner;
 
-    public Iterable<M> receiveMessages(final Vertex vertex, final MessageType messageType) {
+
+    public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard, final Optional<MessageCombiner<M>> combiner) {
+        this.vertex = vertex;
+        this.messageBoard = messageBoard;
+        this.combiner = combiner;
+    }
+
+    public Iterable<M> receiveMessages(final MessageType messageType) {
         if (messageType instanceof MessageType.Local) {
             final MessageType.Local<Object, M> localMessageType = (MessageType.Local) messageType;
             final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
@@ -31,8 +38,8 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
                     .map(e -> {
                         edge[0] = e;
                         return (localMessageType.getDirection().equals(Direction.OUT)) ?
-                                receiveMessages.get(e.outV().id().next()) :
-                                receiveMessages.get(e.inV().id().next());
+                                this.messageBoard.receiveMessages.get(e.outV().id().next()) :
+                                this.messageBoard.receiveMessages.get(e.inV().id().next());
 
                     })
                     .filter(q -> null != q)
@@ -41,33 +48,32 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
 
         } else {
             return StreamFactory.iterable(Arrays.asList(vertex).stream()
-                    .map(v -> this.receiveMessages.get(v.id()))
+                    .map(v -> this.messageBoard.receiveMessages.get(v.id()))
                     .filter(q -> null != q)
                     .flatMap(q -> q.stream()));
         }
     }
 
-    public void sendMessage(final Vertex vertex, final MessageType messageType, final M message) {
+    public void sendMessage(final MessageType messageType, final M message) {
         if (messageType instanceof MessageType.Local) {
-            getMessageList(vertex.id()).add(message);
+            getMessageList(this.vertex.id()).add(message);
         } else {
             ((MessageType.Global) messageType).vertices().forEach(v -> {
-                getMessageList(v.id()).add(message);
+                final Queue<M> queue = getMessageList(v.id());
+                if (this.combiner.isPresent() && !queue.isEmpty()) {
+                    queue.add(this.combiner.get().combine(queue.remove(), message));
+                } else
+                    queue.add(message);
             });
         }
     }
 
     private Queue<M> getMessageList(final Object vertexId) {
-        Queue<M> messages = this.sendMessages.get(vertexId);
+        Queue<M> messages = this.messageBoard.sendMessages.get(vertexId);
         if (null == messages) {
             messages = new ConcurrentLinkedQueue<>();
-            this.sendMessages.put(vertexId, messages);
+            this.messageBoard.sendMessages.put(vertexId, messages);
         }
         return messages;
-    }
-
-    public void completeIteration() {
-        this.receiveMessages = this.sendMessages;
-        this.sendMessages = new HashMap<>();
     }
 }

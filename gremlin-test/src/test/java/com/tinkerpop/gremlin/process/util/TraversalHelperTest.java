@@ -3,10 +3,10 @@ package com.tinkerpop.gremlin.process.util;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
-import com.tinkerpop.gremlin.process.graph.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.map.ElementPropertyStep;
-import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ElementPropertyStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

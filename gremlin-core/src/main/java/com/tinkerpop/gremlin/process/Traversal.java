@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.util.Reversible;
+import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
+import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -43,10 +44,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
         public <T> T get(final String key);
 
-        public Set<String> getKeys();
+        public Set<String> keys();
 
         public default <T> T getOrCreate(final String key, final Supplier<T> orCreate) {
-            if (this.getKeys().contains(key))
+            if (this.keys().contains(key))
                 return this.get(key);
             else {
                 T t = orCreate.get();
@@ -57,6 +58,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     }
 
     /////////
+
+    public default Traversal<S, E> trackPaths() {
+        return (Traversal) this.addStep(new PathIdentityStep<>(this));
+    }
 
     public default Traversal<S, E> reverse() {
         this.getSteps().stream().filter(step -> step instanceof Reversible).forEach(step -> ((Reversible) step).reverse());
@@ -78,7 +83,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Collection<E> fill(final Collection<E> collection) {
         try {
-            while (true) {
+            while (this.hasNext()) {
                 collection.add(this.next());
             }
         } catch (final NoSuchElementException e) {
@@ -88,7 +93,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal iterate() {
         try {
-            while (true) {
+            while (this.hasNext()) {
                 this.next();
             }
         } catch (final NoSuchElementException e) {
@@ -99,7 +104,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
     public default long count() {
         long counter = 0;
         try {
-            while (true) {
+            while (this.hasNext()) {
                 this.next();
                 counter++;
             }
@@ -114,7 +119,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default void forEach(final Consumer<E> consumer) {
         try {
-            while (true) {
+            while (this.hasNext()) {
                 consumer.accept(this.next());
             }
         } catch (final NoSuchElementException e) {

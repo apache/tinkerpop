@@ -92,7 +92,6 @@ IMPORTANT: TinkerPop3 is licensed under the popular link:http://www.apache.org/l
 
 image:tinkerpop-enabled.png[width=135,float=left] When a graph vendor implements the TinkerPop3 structure and process link:http://en.wikipedia.org/wiki/Application_programming_interface[APIs], their technology is considered _TinkerPop3-enabled_ and becomes nearly indistinguishable from any other TinkerPop-enabled graph system save for their respective time and space complexity. The purpose of this documentation is to describe the structure/process dichotomy at length and in doing so, explain how to leverage TinkerPop3 for the sole purpose of vendor-agnostic graph computing. Before deep-diving into the various structure/process APIs, a short introductory review of both is provided.
 
-
 The Graph Structure
 -------------------
 
@@ -169,6 +168,7 @@ assert(g.V().count() == 0)
 assert(g.E().count() == 0)
 // tada!
 
+IMPORTANT: TinkerGraph is not a transactional graph. For more information on transaction handling (for those graph systems that support them) see the section dedicated to <<transactions,transactions>>.
 
 The Graph Process
 -----------------
@@ -180,7 +180,7 @@ image:gremlin-running.png[width=125,float=left] The primary way in which graphs 
  . Move from those friend-vertices to company-vertices via worksFor-edges.
  . Finally, select the name-property value of the current company-vertices. 
 
-Traversals in Gremlin are spawned from either a `Graph`, `Vertex`, or `Edge`. Graph provides two traversal methods.
+Traversals in Gremlin are spawned from either a `Graph`, `Vertex`, or `Edge`. The Graph interface provides two traversal methods.
 
  . `Graph.V()`: generates a traversal starting at all vertices in the graph. 
  . `Graph.E()`: generates a traversal starting at all edges in the graph.
@@ -193,7 +193,7 @@ The return type of `V()` and `E()` is `GraphTraversal`. A GraphTraversal maintai
 
 In fact, all steps in GraphTraversal either extend `MapStep`, `FlatMapStep`, or `FilterStep`.
 
-TIP: `GraphTraversal` is a link:http://en.wikipedia.org/wiki/Monoid[monoid] in that is an algebraic structure that has a single binary operation that is associative. The binary operation is function composition (i.e. method chaining) and its identity is the step `identity()`. This is related to a link:http://en.wikipedia.org/wiki/Monad_(functional_programming)[monad] as popularized by the functional programming community. 
+TIP: `GraphTraversal` is a link:http://en.wikipedia.org/wiki/Monoid[monoid] in that it is an algebraic structure that has a single binary operation that is associative. The binary operation is function composition (i.e. method chaining) and its identity is the step `identity()`. This is related to a link:http://en.wikipedia.org/wiki/Monad_(functional_programming)[monad] as popularized by the functional programming community. 
 
 NOTE: Both map and filter can be represented as flatMap. Map can return an iterator with a single object in it. Filter can return an iterator with a single object in it or no object at all. Thus, flatMap is the most general construct -- "turn the incoming object into an iterator of objects."
 
@@ -303,7 +303,6 @@ A hidden property is a property that is hidden from the various property accesso
 
 The hidden properties API is presented in the example below represented in the Gremlin-Groovy REPL. This REPL is accessible via `bin/gremlin.sh` (or `bin/gremlin.bat` for Windows users).
 
-
 [source,groovy]
 gremlin> g = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
@@ -328,8 +327,32 @@ gremlin> v.property('status')
 Graph Variables
 ---------------
 
-TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value pairs associated with the graph itself. These variables are intended to store metadata about the graph. Examples include: schema information, global permissions data, etc.
+TinkerPop3 introduces the concept of `Graph.Variables`. Variables are key/value pairs associated with the graph itself -- in essence, a `Map<String,Object>`. These variables are intended to store metadata about the graph. Examples include: schema information, global permissions data, system user information, etc. An example of their use is presented below in Gremlin-Groovy:
 
+[source,groovy]
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> g.variables()
+==>variables[size:0]
+gremlin> g.variables().set('systemAdmins',['stephen','peter','pavel'])
+==>null
+gremlin> g.variables().set('systemUsers',['matthias','marko','josh'])
+==>null
+gremlin> g.variables().keys()
+==>systemAdmins
+==>systemUsers
+gremlin> g.variables().get('systemUsers')
+==>matthias
+==>marko
+==>josh
+gremlin> g.variables().remove('systemAdmins')
+==>stephen
+==>peter
+==>pavel
+gremlin> g.variables().keys()
+==>systemUsers
+
+[[transactions]]
 Graph Transactions
 ------------------
 
@@ -406,7 +429,6 @@ gremlin> g.tx().submit{it.addVertex("name","daniel")}.exponentialBackoff(10)
 ----
 
 As shown above, the `submit` method takes a `Function<Graph, R>` which is the unit of work to execute and possibly retry on failure.  The method returns a `Transaction.Workload` object which has a number of default methods for common retry strategies.  It is also possible to supply a custom retry function if a default one does not suit the required purpose.
-
 
 The Traversal API
 =================
@@ -806,12 +828,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
         return Double.class;
     }
 
-    public void setup(final GraphComputer.SideEffects sideEffects) {
+    public void setup(final GraphComputer.Globals globals) {
 
     }
 
-    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.SideEffects sideEffects) { <6>
-        if (sideEffects.isInitialIteration()) { <7>
+    public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.Globals globals) { <6>
+        if (globals.isInitialIteration()) { <7>
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = Long.valueOf(this.messageType.edges(vertex).count()).doubleValue();
             vertex.property(PAGE_RANK, initialPageRank);
@@ -825,8 +847,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
         }
     }
 
-    public boolean terminate(final GraphComputer.SideEffects sideEffects) { <9>
-        return sideEffects.getIteration() >= this.totalIterations;
+    public boolean terminate(final GraphComputer.Globals globals) { <9>
+        return globals.getIteration() >= this.totalIterations;
     }
 }
 ----
@@ -1320,6 +1342,8 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
 
+Note that those connecting to Neo4j Server require use of Neo4j HA.  To configure `Neo4jGraph` for "HA mode", set the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
+
 [[giraph-gremlin]]
 Giraph-Gremlin
 --------------
@@ -1337,6 +1361,15 @@ image:giraph-logo.png[width=75,float=left] link:http://giraph.apache.org[Giraph]
 
 IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see their link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, it is advisable that the reader also familiarize themselves with Giraph as well via their link:http://giraph.apache.org/quick_start.html[Getting Started] page.
 
+Installing Giraph-Gremlin
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To the `.bash_profile` file, add the following environmental variables (of course, be sure the directories are the respective locations on your local machine).
+
+[source,text]
+export GIRAPH_HOME=/usr/local/giraph-1.0.0
+export GIRAPH_GREMLIN_HOME=/Users/marko/software/tinkerpop/tinkerpop3/giraph-gremlin/target/giraph-gremlin-3.0.0-SNAPSHOT-standalone
+
 Properties Files
 ~~~~~~~~~~~~~~~~
 
@@ -1351,7 +1384,7 @@ giraph.vertexOutputFormatClass=
    com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexOutputFormat
 gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 gremlin.traversalSupplierClass=
-   com.tinkerpop.gremlin.giraph.process.graph.examples.TraversalSupplier1
+   com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
 giraph.minWorkers=2
 giraph.maxWorkers=2
 
@@ -1565,3 +1598,10 @@ Conclusion
 ==========
 
 The world that we know, you and me, is but a subset of the world that Gremlin has weaved within The TinkerPop. Gremlin has constructed a fully connected graph and only the subset that makes logical sense to our traversing thoughts is the fragment we have come to know and have come to see one another within. But there are many more out there, within other webs of logics unfathomed. From any thought, every other thought, we come to realize that which is -- The TinkerPop.
+
+Acknowledgements
+================
+
+image::yourkit-logo.png[]
+
+YourKit supports the TinkerPop open source project with its full-featured Java Profiler. YourKit, LLC is the creator of innovative and intelligent tools for profiling Java and .NET applications. YourKit's leading software products: link:http://www.yourkit.com/java/profiler/index.jsp[YourKit Java Profiler] and link:http://www.yourkit.com/.net/profiler/index.jsp[YourKit .NET Profiler]

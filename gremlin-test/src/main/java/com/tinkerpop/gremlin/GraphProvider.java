@@ -8,7 +8,6 @@ import org.apache.commons.configuration.Configuration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Those developing Gremlin implementations must provide a GraphProvider implementation so that the
@@ -30,13 +29,13 @@ public interface GraphProvider {
      * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
      */
     default public Graph openTestGraph(final Configuration config) {
-        return openTestGraph(config, Optional.empty());
+        return openTestGraph(config, null);
     }
 
     /**
      * Creates a new {@link com.tinkerpop.gremlin.structure.Graph} instance from the Configuration object using {@link com.tinkerpop.gremlin.structure.util.GraphFactory}.
      */
-    default public Graph openTestGraph(final Configuration config, final Optional<GraphStrategy> strategy) {
+    default public Graph openTestGraph(final Configuration config, final GraphStrategy strategy) {
         return GraphFactory.open(config, strategy);
     }
 

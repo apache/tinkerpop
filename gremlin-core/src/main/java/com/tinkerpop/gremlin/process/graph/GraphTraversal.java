@@ -6,47 +6,49 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankStep;
-import com.tinkerpop.gremlin.process.graph.filter.CyclicPathStep;
-import com.tinkerpop.gremlin.process.graph.filter.DedupStep;
-import com.tinkerpop.gremlin.process.graph.filter.ExceptStep;
-import com.tinkerpop.gremlin.process.graph.filter.FilterStep;
-import com.tinkerpop.gremlin.process.graph.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.filter.IntervalStep;
-import com.tinkerpop.gremlin.process.graph.filter.RandomStep;
-import com.tinkerpop.gremlin.process.graph.filter.RangeStep;
-import com.tinkerpop.gremlin.process.graph.filter.RetainStep;
-import com.tinkerpop.gremlin.process.graph.filter.SimplePathStep;
-import com.tinkerpop.gremlin.process.graph.map.BackStep;
-import com.tinkerpop.gremlin.process.graph.map.EdgeOtherVertexStep;
-import com.tinkerpop.gremlin.process.graph.map.EdgeVertexStep;
-import com.tinkerpop.gremlin.process.graph.map.ElementPropertyStep;
-import com.tinkerpop.gremlin.process.graph.map.ElementValueStep;
-import com.tinkerpop.gremlin.process.graph.map.ElementValuesStep;
-import com.tinkerpop.gremlin.process.graph.map.FlatMapStep;
-import com.tinkerpop.gremlin.process.graph.map.IdStep;
-import com.tinkerpop.gremlin.process.graph.map.IdentityStep;
-import com.tinkerpop.gremlin.process.graph.map.IntersectStep;
-import com.tinkerpop.gremlin.process.graph.map.JumpStep;
-import com.tinkerpop.gremlin.process.graph.map.LabelStep;
-import com.tinkerpop.gremlin.process.graph.map.MapStep;
-import com.tinkerpop.gremlin.process.graph.map.MatchStep;
-import com.tinkerpop.gremlin.process.graph.map.OrderStep;
-import com.tinkerpop.gremlin.process.graph.map.PathStep;
-import com.tinkerpop.gremlin.process.graph.map.PropertyValueStep;
-import com.tinkerpop.gremlin.process.graph.map.SelectStep;
-import com.tinkerpop.gremlin.process.graph.map.ShuffleStep;
-import com.tinkerpop.gremlin.process.graph.map.UnionStep;
-import com.tinkerpop.gremlin.process.graph.map.VertexStep;
-import com.tinkerpop.gremlin.process.graph.sideEffect.AggregateStep;
-import com.tinkerpop.gremlin.process.graph.sideEffect.GroupByStep;
-import com.tinkerpop.gremlin.process.graph.sideEffect.GroupCountStep;
-import com.tinkerpop.gremlin.process.graph.sideEffect.LinkStep;
-import com.tinkerpop.gremlin.process.graph.sideEffect.SideEffectStep;
-import com.tinkerpop.gremlin.process.graph.sideEffect.SubGraphStep;
-import com.tinkerpop.gremlin.process.graph.sideEffect.TimeLimitStep;
-import com.tinkerpop.gremlin.process.graph.util.Tree;
-import com.tinkerpop.gremlin.process.strategy.TraverserTraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
+import com.tinkerpop.gremlin.process.graph.step.map.BackStep;
+import com.tinkerpop.gremlin.process.graph.step.map.EdgeOtherVertexStep;
+import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ElementPropertyStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ElementValueStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ElementValuesStep;
+import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.map.IntersectStep;
+import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
+import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MatchStep;
+import com.tinkerpop.gremlin.process.graph.step.map.OrderStep;
+import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
+import com.tinkerpop.gremlin.process.graph.step.map.PropertyValueStep;
+import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
+import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
+import com.tinkerpop.gremlin.process.graph.step.map.UnionStep;
+import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.LinkStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubGraphStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
+import com.tinkerpop.gremlin.process.graph.step.util.Tree;
+import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
+import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
+import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -84,6 +86,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final GraphTraversal traversal = new DefaultGraphTraversal<>();
         traversal.addStep(new IdentityStep(traversal));
         return traversal;
+    }
+
+    public default GraphTraversal<S, E> trackPaths() {
+        return (GraphTraversal) this.addStep(new PathIdentityStep<>(this));
     }
 
     ///////////////////// TRANSFORM STEPS /////////////////////
@@ -425,7 +431,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <T> Tree<T> tree(final SFunction... branchFunctions) {
         final Tree<Object> tree = new Tree<>();
         Tree<Object> depth = tree;
-        TraverserTraversalStrategy.doPathTracking(this);
+        PathConsumerStrategy.doPathTracking(this);
         final Step endStep = TraversalHelper.getEnd(this);
         final FunctionRing functionRing = new FunctionRing(branchFunctions);
         try {
@@ -477,5 +483,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, Pair<Vertex, Double>> pageRank(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) {
         return (GraphTraversal) this.addStep(new PageRankStep(this, incidentTraversal));
+    }
+
+    /////////////////////////////////////
+
+    public class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements GraphTraversal<S, E> {
     }
 }
