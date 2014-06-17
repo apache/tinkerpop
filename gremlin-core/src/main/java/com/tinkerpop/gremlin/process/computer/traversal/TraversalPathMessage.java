@@ -44,6 +44,7 @@ public class TraversalPathMessage extends TraversalMessage {
 
         final Traversal traversal = traversalSupplier.get();
         traversal.strategies().applyFinalOptimizers(traversal);
+        //System.out.println(traversal.strategies().get());
         ((TraverserSource) traversal.getSteps().get(0)).clear();
 
 

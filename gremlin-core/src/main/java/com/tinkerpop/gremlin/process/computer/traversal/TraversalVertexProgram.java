@@ -20,7 +20,9 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -81,7 +83,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         final Traversal traversal = this.traversalSupplier.get();
         traversal.strategies().applyFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-        startStep.clear();
+        //startStep.clear();
 
         final String future = (traversal.getSteps().size() == 1) ? Traverser.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
         // TODO: Was doing some HasContainer.testAll() stuff prior to the big change (necessary?)
@@ -138,6 +140,13 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     @Override
     public Map<String, KeyType> getComputeKeys() {
         return VertexProgram.ofComputeKeys(TRAVERSER_TRACKER, KeyType.VARIABLE);
+    }
+
+    @Override
+    public Set<String> getSideEffectKeys() {
+        final Set<String> keys = new HashSet<>();
+        keys.add(VOTE_TO_HALT);
+        return keys;
     }
 
 

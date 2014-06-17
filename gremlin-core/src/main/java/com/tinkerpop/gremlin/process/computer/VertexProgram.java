@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * A {@link VertexProgram} represents one component of a distributed graph computation. Each applicable vertex
@@ -53,6 +54,8 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
     public boolean terminate(final GraphComputer.SideEffects sideEffects);
 
     public Map<String, KeyType> getComputeKeys();
+
+    public Set<String> getSideEffectKeys();
 
     public Class<M> getMessageClass();
 

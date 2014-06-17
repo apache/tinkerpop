@@ -20,8 +20,6 @@ import java.util.Set;
  */
 public class GiraphGraphComputerSideEffects extends MasterCompute implements GraphComputer.SideEffects {
 
-    // TODO: vertex program needs to have ComputeKeys but for master as well.
-
     private final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputerSideEffects.class);
     private VertexProgram vertexProgram;
     private GiraphVertex giraphVertex;
@@ -42,7 +40,9 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Gra
     public void initialize() {
         try {
             this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-            this.registerAggregator("voteToHalt", MemoryAggregator.class);  // TODO: we need to be able to get all sideEffects upfront. :(
+            for (final String key : (Set<String>) this.vertexProgram.getSideEffectKeys()) {
+                this.registerAggregator(key, MemoryAggregator.class);
+            }
             this.vertexProgram.setup(this);
         } catch (Exception e) {
             // do nothing as Giraph has a hard time starting up with random exceptions until ZooKeeper comes online
@@ -69,47 +69,53 @@ public class GiraphGraphComputerSideEffects extends MasterCompute implements Gra
         return Collections.emptySet();
     }
 
-    public <R> R get(final String variable) {
-        final RuleWritable rule = (null == this.giraphVertex) ? this.getAggregatedValue(variable) : this.giraphVertex.getAggregatedValue(variable);
+    public <R> R get(final String key) {
+        final RuleWritable rule = (null == this.giraphVertex) ? this.getAggregatedValue(key) : this.giraphVertex.getAggregatedValue(key);
         return (R) rule.getObject();
     }
 
-    public void set(final String variable, Object value) {
+    public void set(final String key, Object value) {
         if (null == this.giraphVertex)
-            this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.SET, value));
+            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET, value));
         else
-            this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.SET, value));
+            this.giraphVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.SET, value));
     }
 
-    public void setIfAbsent(final String variable, final Object value) {
+    public void setIfAbsent(final String key, final Object value) {
         if (null == this.giraphVertex)
-            this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.SET_IF_ABSENT, value));
+            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET_IF_ABSENT, value));
         else
-            this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.SET_IF_ABSENT, value));
+            this.giraphVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.SET_IF_ABSENT, value));
     }
 
-    public boolean and(final String variable, final boolean bool) {
+    public boolean and(final String key, final boolean bool) {
         if (null == this.giraphVertex) {
-            this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.AND, ((RuleWritable) this.getAggregatedValue(variable)).<Boolean>getObject() && bool));
-            return ((RuleWritable) this.getAggregatedValue(variable)).getObject();
+            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.AND, ((RuleWritable) this.getAggregatedValue(key)).<Boolean>getObject() && bool));
+            return ((RuleWritable) this.getAggregatedValue(key)).getObject();
         } else {
-            this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.AND, bool));
-            return ((RuleWritable) this.giraphVertex.getAggregatedValue(variable)).getObject();
+            this.giraphVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.AND, bool));
+            return ((RuleWritable) this.giraphVertex.getAggregatedValue(key)).getObject();
         }
     }
 
-    public boolean or(final String variable, final boolean bool) {
+    public boolean or(final String key, final boolean bool) {
         if (null == this.giraphVertex) {
-            this.setAggregatedValue(variable, new RuleWritable(RuleWritable.Rule.OR, ((RuleWritable) this.getAggregatedValue(variable)).<Boolean>getObject() || bool));
-            return ((RuleWritable) this.getAggregatedValue(variable)).getObject();
+            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.OR, ((RuleWritable) this.getAggregatedValue(key)).<Boolean>getObject() || bool));
+            return ((RuleWritable) this.getAggregatedValue(key)).getObject();
         } else {
-            this.giraphVertex.aggregate(variable, new RuleWritable(RuleWritable.Rule.OR, bool));
-            return ((RuleWritable) this.giraphVertex.getAggregatedValue(variable)).getObject();
+            this.giraphVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.OR, bool));
+            return ((RuleWritable) this.giraphVertex.getAggregatedValue(key)).getObject();
         }
     }
 
-    public long incr(final String variable, final long delta) {
-        return 1;
+    public long incr(final String key, final long delta) {
+        if (null == this.giraphVertex) {
+            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.INCR, ((RuleWritable) this.getAggregatedValue(key)).<Long>getObject() + delta));
+            return ((RuleWritable) this.getAggregatedValue(key)).getObject();
+        } else {
+            this.giraphVertex.aggregate(key, new RuleWritable(RuleWritable.Rule.INCR, delta));
+            return ((RuleWritable) this.giraphVertex.getAggregatedValue(key)).getObject();
+        }
     }
 
     public void write(final DataOutput output) {

@@ -51,9 +51,9 @@ public interface GraphComputer extends TraversalEngine {
 
         public Set<String> getVariables();
 
-        public <R> R get(final String variable);
+        public <R> R get(final String key);
 
-        public void set(final String variable, Object value);
+        public void set(final String key, Object value);
 
         public default Map<String, Object> asMap() {
             final Map<String, Object> map = getVariables().stream()
@@ -66,13 +66,13 @@ public interface GraphComputer extends TraversalEngine {
 
         public long getRuntime();
 
-        public void setIfAbsent(final String variable, final Object value);
+        public void setIfAbsent(final String key, final Object value);
 
-        public long incr(final String variable, final long delta);
+        public long incr(final String key, final long delta);
 
-        public boolean and(final String variable, final boolean bool);
+        public boolean and(final String key, final boolean bool);
 
-        public boolean or(final String variable, final boolean bool);
+        public boolean or(final String key, final boolean bool);
 
         public default boolean isInitialIteration() {
             return this.getIteration() == 0;

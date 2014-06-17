@@ -23,4 +23,5 @@ public class SideEffectReplacementStrategy implements TraversalStrategy.FinalTra
                     TraversalHelper.replaceStep(step, new GiraphGroupCountStep(traversal, ((GroupCountStep) step).functionRing.functions), traversal);
                 });
     }
+
 }

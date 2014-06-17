@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.giraph.structure;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.giraph.process.graph.strategy.SideEffectReplacementStrategy;
+import com.tinkerpop.gremlin.giraph.process.graph.strategy.ValidateStepsStrategy;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -40,6 +41,7 @@ public class GiraphGraph implements Graph {
     public GraphTraversal<Vertex, Vertex> V() {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
         traversal.strategies().register(new SideEffectReplacementStrategy());
+        traversal.strategies().register(new ValidateStepsStrategy());
         traversal.addStep(new GiraphGraphStep(traversal, Vertex.class));
         return traversal;
     }
@@ -47,6 +49,7 @@ public class GiraphGraph implements Graph {
     public GraphTraversal<Edge, Edge> E() {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
         traversal.strategies().register(new SideEffectReplacementStrategy());
+        traversal.strategies().register(new ValidateStepsStrategy());
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class));
         return traversal;
     }

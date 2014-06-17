@@ -16,7 +16,9 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -49,7 +51,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
                 final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, INCIDENT_TRAVERSAL);
-                VertexProgramHelper.verifyReversibility(traversalSupplier);
+                VertexProgramHelper.verifyReversibility(traversalSupplier);  // TODO: Make this take Traversal, not Supplier
                 this.messageType = MessageType.Local.of((SSupplier) traversalSupplier);
             }
         } catch (final Exception e) {
@@ -61,6 +63,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     public Map<String, KeyType> getComputeKeys() {
         return VertexProgram.ofComputeKeys(PAGE_RANK, KeyType.VARIABLE, EDGE_COUNT, KeyType.CONSTANT);
     }
+
+    @Override
+    public Set<String> getSideEffectKeys() {
+        return Collections.emptySet();
+    }
+
 
     @Override
     public Class<Double> getMessageClass() {
