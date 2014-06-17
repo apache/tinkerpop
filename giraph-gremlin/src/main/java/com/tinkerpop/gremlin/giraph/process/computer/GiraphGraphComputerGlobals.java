@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -23,7 +23,8 @@ public class GiraphGraphComputerGlobals extends MasterCompute implements GraphCo
     private final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputerGlobals.class);
     private VertexProgram vertexProgram;
     private GiraphVertex giraphVertex;
-    private long runtime = System.currentTimeMillis();
+    //private long runtime = System.currentTimeMillis();
+    private Set<String> globalKeys;
 
     public GiraphGraphComputerGlobals() {
         this.giraphVertex = null;
@@ -34,18 +35,26 @@ public class GiraphGraphComputerGlobals extends MasterCompute implements GraphCo
     public GiraphGraphComputerGlobals(final GiraphVertex giraphVertex) {
         this.giraphVertex = giraphVertex;
         this.initialize();
-
     }
 
     public void initialize() {
-        try {
-            this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
-            for (final String key : (Set<String>) this.vertexProgram.getSideEffectKeys()) {
-                this.registerAggregator(key, MemoryAggregator.class);
+        if (null == this.giraphVertex) {  // master compute node
+            try {
+                this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
+                this.globalKeys = new HashSet<String>(this.vertexProgram.getGlobalKeys());
+                for (final String key : (Set<String>) this.vertexProgram.getGlobalKeys()) {
+                    this.registerAggregator(key, MemoryAggregator.class); // TODO: Why does PersistentAggregator not work?
+                }
+                this.registerPersistentAggregator("runtime", MemoryAggregator.class);
+                this.setIfAbsent("runtime", System.currentTimeMillis());
+                this.vertexProgram.setup(this);
+            } catch (final Exception e) {
+                LOGGER.error(e.getMessage(), e);
+                // do nothing as Giraph has a hard time starting up with random exceptions until ZooKeeper comes online
             }
-            this.vertexProgram.setup(this);
-        } catch (Exception e) {
-            // do nothing as Giraph has a hard time starting up with random exceptions until ZooKeeper comes online
+        } else {  // local vertex aggregator
+            this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.giraphVertex.getConf()));
+            this.globalKeys = new HashSet<String>(this.vertexProgram.getGlobalKeys());
         }
     }
 
@@ -62,11 +71,11 @@ public class GiraphGraphComputerGlobals extends MasterCompute implements GraphCo
     }
 
     public long getRuntime() {
-        return System.currentTimeMillis() - this.runtime;
+        return System.currentTimeMillis() - this.<Long>get("runtime");
     }
 
     public Set<String> keys() {
-        return Collections.emptySet();
+        return this.globalKeys;
     }
 
     public <R> R get(final String key) {

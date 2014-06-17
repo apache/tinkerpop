@@ -143,7 +143,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     }
 
     @Override
-    public Set<String> getSideEffectKeys() {
+    public Set<String> getGlobalKeys() {
         final Set<String> keys = new HashSet<>();
         keys.add(VOTE_TO_HALT);
         return keys;

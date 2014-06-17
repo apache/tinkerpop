@@ -65,7 +65,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public Set<String> getSideEffectKeys() {
+    public Set<String> getGlobalKeys() {
         return Collections.emptySet();
     }
 
