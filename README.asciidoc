@@ -6,7 +6,7 @@ image:https://raw.githubusercontent.com/tinkerpop/tinkerpop3/master/docs/static/
  * Build Project: `mvn clean install`
  * Build AsciiDocs: `mvn process-resources -Dasciidoc`
  * Deploy AsciiDocs: `mvn deploy -Dasciidoc`
- * Deploy JavaDocs: `mvn deploy -Djavadocs`
+ * Deploy JavaDocs: `mvn deploy -Djavadoc-upload`
 
 [source,bash]
 ----
