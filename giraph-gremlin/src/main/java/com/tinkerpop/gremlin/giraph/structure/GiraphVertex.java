@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputerGlobals;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
+import com.tinkerpop.gremlin.giraph.process.computer.GlobalsMapReduce;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
@@ -69,11 +71,13 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
         if (null == this.gremlinVertex)
             inflateGiraphVertex();
         this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.globals);
-        this.globals.keys().forEach(key -> {
-            this.gremlinVertex.property(Property.hidden(key), this.globals.get(key));
-        });
-        this.gremlinVertex.property(Property.hidden("runtime"), this.globals.getRuntime());
-        this.gremlinVertex.property(Property.hidden("iteration"), this.globals.getIteration());
+        if (this.getConf().getBoolean(GiraphGraphComputer.GREMLIN_DERIVE_GLOBALS, false)) {
+            this.globals.keys().forEach(key -> {
+                this.gremlinVertex.property(Property.hidden(key), this.globals.get(key));
+            });
+            this.gremlinVertex.property(Property.hidden(GlobalsMapReduce.RUNTIME), this.globals.getRuntime());
+            this.gremlinVertex.property(Property.hidden(GlobalsMapReduce.ITERATION), this.globals.getIteration());
+        }
     }
 
     ///////////////////////////////////////////////
