@@ -94,7 +94,8 @@ public class GiraphGraphComputer implements GraphComputer {
                 e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            LOGGER.info(new GiraphGraphShellComputerGlobals(this.hadoopConfiguration).keys().toString());
+            // LOGGER.info(new GiraphGraphShellComputerGlobals(this.hadoopConfiguration).asMap().toString());
+            // TODO: Should point to the manipulated graph
             return new Pair<Graph, Globals>(this.giraphGraph, new GiraphGraphShellComputerGlobals(this.hadoopConfiguration));
         });
     }

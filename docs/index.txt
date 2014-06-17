@@ -447,24 +447,7 @@ The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` whi
 Graph Traversal Steps
 ---------------------
 
-A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A list of all the steps are provided below along with a description.
-
-. Transform: S &rarr; E
- * `map(function)`: apply the provided function to S and emit the result as E.
- * `flatMap(function)`: apply the provided function to S and iterate the return iterator as a stream of E objects.
- * `identity`: emit S as E directly.
- * `out(string…)`: the S vertex is mapped to its string[]-adjacent E vertices.
- * ... 
-. Filter: S &rarr; S &cup; &empty;
- * `filter(predicate)`: apply the predicate to S and if true, emit S else emit nothing.
- * `dedup`: if S has not been seen before emit it, else do not emit it.
- * ...
-. SideEffect: S &rarr; S
- * `sideEffect(consumer)`: apply the consumer to S and then emit S.
- * …
-. Branch: S &rarr; S
- * `jump(string)` : teleport S to the labeled string-labeled step in the traversal.
- * ...
+A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, or an Edge. A list of all the steps are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/current/com/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. A few of the more interesting/complex steps are discussed in the following subsections.
 
 [[jump-step]]
 Jump Step
@@ -1185,7 +1168,7 @@ $bin/gremlin-server.sh config/gremlin-server-min.yaml
 [INFO] GremlinServer -
          \,,,/
          (o o)
------oOOo-(_)-oOOo-----
+-----oOOo-(3)-oOOo-----
 
 [INFO] GremlinServer - Configuring Gremlin Server from config/gremlin-server-min.yaml
 [INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=com.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
@@ -1342,7 +1325,7 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
 
-Note that those connecting to Neo4j Server require use of Neo4j HA.  To configure `Neo4jGraph` for "HA mode", set the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
+Note that those connecting to Neo4j Server require use of Neo4j HA. To configure `Neo4jGraph` for "HA mode", set the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
 
 [[giraph-gremlin]]
 Giraph-Gremlin
@@ -1376,10 +1359,10 @@ Properties Files
 The `GiraphGraphComputer` makes use of a properties file much like any other `GraphComputer`. However, given the relationship to Hadoop which is property heavy, it is important to look at a particular properties file. The properties file below is located at `conf/giraph-graphson.properties'.
 
 [source,text]
-gremlin.input.location=tinkerpop-classic-adjlist.ldjson
+gremlin.inputLocation=tinkerpop-classic-adjlist.ldjson
 giraph.vertexInputFormatClass=
    com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat
-gremlin.output.location=output
+gremlin.outputLocation=output
 giraph.vertexOutputFormatClass=
    com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexOutputFormat
 gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
@@ -1392,9 +1375,9 @@ NOTE: The extension `ldjson` refers to link:http://en.wikipedia.org/wiki/Line_De
 
 A review of the properties above are discussed below.
 
- * `gremlin.input.location`: the location of the input file(s) for Giraph to read the graph from
+ * `gremlin.inputLocation`: the location of the input file(s) for Giraph to read the graph from
  * `giraph.vertexInputFormatClass`: the format that the input file(s) are represented in
- * `gremlin.output.location`: the location to write the final Giraph graph to
+ * `gremlin.outputLocation`: the location to write the final Giraph graph to
  * `giraph.vertexOutputFormatClass`: the format that the output file(s) should be represented in
  * `gremlin.vertexProgram`: the `VertexProgram` to disseminate to all vertices in the `GiraphGraph`
  * `gremlin.traversalSupplierClass`: for `TraversalVertexProgram`, the location of the Gremlin traversal to use

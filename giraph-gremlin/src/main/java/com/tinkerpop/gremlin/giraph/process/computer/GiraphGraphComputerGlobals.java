@@ -23,7 +23,6 @@ public class GiraphGraphComputerGlobals extends MasterCompute implements GraphCo
     private final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputerGlobals.class);
     private VertexProgram vertexProgram;
     private GiraphVertex giraphVertex;
-    //private long runtime = System.currentTimeMillis();
     private Set<String> globalKeys;
 
     public GiraphGraphComputerGlobals() {
@@ -45,8 +44,8 @@ public class GiraphGraphComputerGlobals extends MasterCompute implements GraphCo
                 for (final String key : (Set<String>) this.vertexProgram.getGlobalKeys()) {
                     this.registerAggregator(key, MemoryAggregator.class); // TODO: Why does PersistentAggregator not work?
                 }
-                this.registerPersistentAggregator("runtime", MemoryAggregator.class);
-                this.setIfAbsent("runtime", System.currentTimeMillis());
+                this.registerPersistentAggregator(GlobalsMapReduce.RUNTIME, MemoryAggregator.class);
+                this.setIfAbsent(GlobalsMapReduce.RUNTIME, System.currentTimeMillis());
                 this.vertexProgram.setup(this);
             } catch (final Exception e) {
                 LOGGER.error(e.getMessage(), e);
@@ -71,7 +70,7 @@ public class GiraphGraphComputerGlobals extends MasterCompute implements GraphCo
     }
 
     public long getRuntime() {
-        return System.currentTimeMillis() - this.<Long>get("runtime");
+        return System.currentTimeMillis() - this.<Long>get(GlobalsMapReduce.RUNTIME);
     }
 
     public Set<String> keys() {
