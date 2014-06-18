@@ -19,9 +19,7 @@ public class SideEffectReplacementStrategy implements TraversalStrategy.FinalTra
         ((List<Step>) traversal.getSteps()).stream()
                 .filter(step -> step instanceof GroupCountStep)
                 .collect(Collectors.<Step>toList())
-                .forEach(step -> {
-                    TraversalHelper.replaceStep(step, new GiraphGroupCountStep(traversal, ((GroupCountStep) step).functionRing.functions), traversal);
-                });
+                .forEach(step -> TraversalHelper.replaceStep(step, new GiraphGroupCountStep(traversal, (GroupCountStep) step), traversal));
     }
 
 }

@@ -16,6 +16,10 @@ public abstract interface Property<V> {
         return Graph.HIDDEN_PREFIX.concat(key);
     }
 
+    public static String unHide(final String key) {
+        return key.startsWith(Graph.HIDDEN_PREFIX) ? key.substring(Graph.HIDDEN_PREFIX.length()) : key;
+    }
+
     public String key();
 
     public V value() throws NoSuchElementException;

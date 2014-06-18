@@ -24,6 +24,7 @@ import org.apache.hadoop.io.Text;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -53,7 +54,7 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
             final Edge gremlinEdge = otherVertex.addEdge(edge.label(), vertex);
             edge.properties().forEach((k, v) -> gremlinEdge.property(k, v.value()));
         });
-        this.initialize(new LongWritable(Long.valueOf(this.gremlinVertex.id().toString())), this.getTextOfSubGraph(), EmptyOutEdges.instance());
+        this.initialize(new LongWritable(Long.valueOf(this.gremlinVertex.id().toString())), this.deflateGiraphVertex(), EmptyOutEdges.instance());
     }
 
     @Override
@@ -82,7 +83,7 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
 
     ///////////////////////////////////////////////
 
-    private Text getTextOfSubGraph() {
+    private Text deflateGiraphVertex() {
         try {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final KryoWriter writer = KryoWriter.create().build();

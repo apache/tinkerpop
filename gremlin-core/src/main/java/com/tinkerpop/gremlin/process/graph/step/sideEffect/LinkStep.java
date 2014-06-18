@@ -5,14 +5,13 @@ import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.graph.marker.UnBulkable;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LinkStep extends FilterStep<Vertex> implements PathConsumer, Reversible, UnBulkable {
+public class LinkStep extends FilterStep<Vertex> implements PathConsumer, Reversible {
 
     public Direction direction;
     public String label;

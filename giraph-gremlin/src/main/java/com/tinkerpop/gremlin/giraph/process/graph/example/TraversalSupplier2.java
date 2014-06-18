@@ -9,6 +9,6 @@ import com.tinkerpop.gremlin.util.function.SSupplier;
  */
 public class TraversalSupplier2 implements SSupplier<Traversal> {
     public Traversal get() {
-        return GiraphGraph.open().V().<String>value("name").map(s -> s.get().length()).groupCount();
+        return GiraphGraph.open().V().<String>value("name").map(s -> s.get().length()).groupCount(i -> i + 100);
     }
 }

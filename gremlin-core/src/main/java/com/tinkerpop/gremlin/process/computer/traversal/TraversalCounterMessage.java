@@ -5,12 +5,12 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
+import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
+import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
+import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
-import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
-import com.tinkerpop.gremlin.process.graph.marker.UnBulkable;
-import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -74,18 +74,10 @@ public class TraversalCounterMessage extends TraversalMessage {
             } else {
                 final Step step = TraversalHelper.getAs(traverser.getFuture(), traversal);
                 if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
-                if (step instanceof UnBulkable) {
-                    for (int i = 0; i < counts; i++) {
-                        step.addStarts(new SingleIterator(traverser));
-                    }
-                    if (processStep(step, localCounts, 1l))
-                        voteToHalt.set(false);
-                } else {
-                    step.addStarts(new SingleIterator(traverser));
-                    if (processStep(step, localCounts, counts))
-                        voteToHalt.set(false);
-                }
-
+                if (step instanceof Bulkable) ((Bulkable) step).setCurrentBulkCount(counts);
+                step.addStarts(new SingleIterator(traverser));
+                if (processStep(step, localCounts, counts))
+                    voteToHalt.set(false);
             }
         });
 
@@ -118,15 +110,9 @@ public class TraversalCounterMessage extends TraversalMessage {
         MapHelper.incr(tracker.getGraphTracks(), this.traverser, this.counter);
 
         if (step instanceof VertexCentric) ((VertexCentric) step).setCurrentVertex(vertex);
-        if (step instanceof UnBulkable) {
-            for (int i = 0; i < this.counter; i++) {
-                step.addStarts(new SingleIterator(this.traverser));
-            }
-            return processStep(step, localCounts, 1l);
-        } else {
-            step.addStarts(new SingleIterator(this.traverser));
-            return processStep(step, localCounts, this.counter);
-        }
+        if (step instanceof Bulkable) ((Bulkable) step).setCurrentBulkCount(this.counter);
+        step.addStarts(new SingleIterator(this.traverser));
+        return processStep(step, localCounts, this.counter);
     }
 
     private static boolean processStep(final Step<?, ?> step, final Map<Traverser, Long> localCounts, final long counter) {
