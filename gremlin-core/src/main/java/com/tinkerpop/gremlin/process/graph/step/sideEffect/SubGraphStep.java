@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.marker.UnBulkable;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -24,7 +23,7 @@ import java.util.stream.Stream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubGraphStep<S> extends FilterStep<S> implements SideEffectCapable, PathConsumer, Reversible, UnBulkable {
+public class SubGraphStep<S> extends FilterStep<S> implements SideEffectCapable, PathConsumer, Reversible {
     private final Graph subgraph;
     private final Map<Object, Vertex> idMap;
     private final Set<Object> edgesAdded;
