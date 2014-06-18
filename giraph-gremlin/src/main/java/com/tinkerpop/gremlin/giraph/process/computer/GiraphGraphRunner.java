@@ -38,6 +38,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
     public static final String GLOBALS = "globals";
 
     private static final Logger LOGGER = Logger.getLogger(GiraphGraphRunner.class);
+    public static final String GIRAPH_GREMLIN_JOB_PREFIX = "GiraphGremlin: ";
 
 
     public GiraphGraphRunner(final org.apache.hadoop.conf.Configuration hadoopConfiguration) {
@@ -53,13 +54,12 @@ public class GiraphGraphRunner extends Configured implements Tool {
     public int run(final String[] args) {
         try {
             final VertexProgram vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.giraphConfiguration));
-            final GiraphJob job = new GiraphJob(this.giraphConfiguration,
-                    "GiraphGremlin: " + vertexProgram);
+            final GiraphJob job = new GiraphJob(this.giraphConfiguration, GIRAPH_GREMLIN_JOB_PREFIX + vertexProgram);
             //job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
             FileInputFormat.setInputPaths(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_INPUT_LOCATION)));
             FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
             FileInputFormat.setInputPathFilter(job.getInternalJob(), FileOnlyPathFilter.class);
-            LOGGER.info("Job name: " + "GiraphGremlin: " + vertexProgram);
+            LOGGER.info(GIRAPH_GREMLIN_JOB_PREFIX + vertexProgram);
             job.run(true);
             // calculate global variables
             if (this.giraphConfiguration.getBoolean(GiraphGraphComputer.GREMLIN_DERIVE_GLOBALS, false)) {
@@ -68,7 +68,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
                 globalKeys.add(GlobalsMapReduce.ITERATION);
                 this.giraphConfiguration.setStrings(GlobalsMapReduce.GREMLIN_GLOBAL_KEYS, (String[]) globalKeys.toArray(new String[globalKeys.size()]));
                 final Job globalDerivationJob = new GlobalsMapReduce().createJob(this.giraphConfiguration);
-                LOGGER.info("Job name: " + globalDerivationJob.getJobName());
+                LOGGER.info(GIRAPH_GREMLIN_JOB_PREFIX + globalDerivationJob.getJobName());
                 globalDerivationJob.waitForCompletion(true);
             }
             // do extra map reduce jobs if necessary
@@ -77,7 +77,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
 
                 final List<Job> extendedJobs = calculator.getConstructor().newInstance().deriveExtraJobs(this.giraphConfiguration);
                 for (final Job extendedJob : extendedJobs) {
-                    LOGGER.info("Job name: " + extendedJob.getJobName());
+                    LOGGER.info(GIRAPH_GREMLIN_JOB_PREFIX + extendedJob.getJobName());
                     extendedJob.waitForCompletion(true);
                 }
             }
