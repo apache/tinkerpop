@@ -50,8 +50,7 @@ public class ScriptEngines {
 	/**
 	 * Evaluate a script with {@code Bindings} for a particular language.
 	 */
-	public Object eval(final String script, final Bindings bindings, final String language)
-			throws ScriptException {
+	public Object eval(final String script, final Bindings bindings, final String language) throws ScriptException {
 		if (!scriptEngines.containsKey(language))
 			throw new IllegalArgumentException("Language [%s] not supported");
 
@@ -59,8 +58,6 @@ public class ScriptEngines {
 			awaitControlOp();
 			evaluationCount.incrementAndGet();
 			return scriptEngines.get(language).eval(script, bindings);
-		} catch (Exception ex) {
-			throw ex;
 		} finally {
 			evaluationCount.decrementAndGet();
 		}
@@ -77,8 +74,6 @@ public class ScriptEngines {
 		try {
 			evaluationCount.incrementAndGet();
 			return scriptEngines.get(language).eval(reader, bindings);
-		} catch (Exception ex) {
-			throw ex;
 		} finally {
 			evaluationCount.decrementAndGet();
 		}
@@ -97,8 +92,6 @@ public class ScriptEngines {
 
 			final ScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports).orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported"));
 			scriptEngines.put(language, scriptEngine);
-		} catch (Exception ex) {
-			throw ex;
 		} finally {
 			controlOperationExecuting = false;
 		}
@@ -114,8 +107,6 @@ public class ScriptEngines {
 
 		try {
 			getDependencyManagers().forEach(dm -> dm.addImports(imports));
-		} catch (Exception ex) {
-			throw ex;
 		} finally {
 			controlOperationExecuting = false;
 		}
@@ -131,8 +122,6 @@ public class ScriptEngines {
 
 		try {
 			getDependencyManagers().forEach(dm -> dm.use(group, artifact, version));
-		} catch (Exception ex) {
-			throw ex;
 		} finally {
 			controlOperationExecuting = false;
 		}
@@ -147,8 +136,6 @@ public class ScriptEngines {
 
 		try {
 			getDependencyManagers().forEach(DependencyManager::reset);
-		} catch (Exception ex) {
-			throw ex;
 		} finally {
 			controlOperationExecuting = false;
 			this.initializer.accept(this);
@@ -159,7 +146,7 @@ public class ScriptEngines {
 	 * List dependencies for those {@code ScriptEngine} objects that implement the {@link DependencyManager} interface.
 	 */
 	public Map<String, List<Map>> dependencies() {
-		final Map m = new HashMap();
+		final Map<String, List<Map>> m = new HashMap<>();
 		scriptEngines.entrySet().stream()
 				.filter(kv -> kv.getValue() instanceof DependencyManager)
 				.forEach(kv -> m.put(kv.getKey(), Arrays.asList(((DependencyManager) kv.getValue()).dependencies())));
@@ -167,7 +154,7 @@ public class ScriptEngines {
 	}
 
 	public Map<String, List<Map>> imports() {
-		final Map m = new HashMap();
+		final Map<String, List<Map>> m = new HashMap<>();
 		scriptEngines.entrySet().stream()
 				.filter(kv -> kv.getValue() instanceof DependencyManager)
 				.forEach(kv -> m.put(kv.getKey(), Arrays.asList(((DependencyManager) kv.getValue()).imports())));
@@ -179,7 +166,7 @@ public class ScriptEngines {
 	 */
 	private Set<DependencyManager> getDependencyManagers() {
 		return scriptEngines.entrySet().stream()
-				.map(kv -> kv.getValue())
+				.map(Map.Entry::getValue)
 				.filter(se -> se instanceof DependencyManager)
 				.map(se -> (DependencyManager) se)
 				.collect(Collectors.<DependencyManager>toSet());
@@ -195,7 +182,7 @@ public class ScriptEngines {
 		while(controlOperationExecuting) {
 			try {
 				Thread.sleep(5);
-			} catch (Exception ex) {
+			} catch (Exception ignored) {
 
 			}
 		}
@@ -205,7 +192,7 @@ public class ScriptEngines {
 		while(evaluationCount.get() > 0) {
 			try {
 				Thread.sleep(5);
-			} catch (Exception ex) {
+			} catch (Exception ignored) {
 
 			}
 		}
