@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.FileOnlyPathFilter;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
@@ -121,7 +122,7 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
     public Job createJob(final Configuration configuration) throws IOException {
         final Configuration newConfiguration = new Configuration(configuration);
         newConfiguration.set("gremlin.groupCountStep.variable", this.variable);
-        final Job job = new Job(newConfiguration, this.toString() + ":SideEffect");
+        final Job job = new Job(newConfiguration, GiraphGraphRunner.GIRAPH_GREMLIN_JOB_PREFIX + this.toString() + "[SideEffect Calculation]");
         job.setJarByClass(GiraphGraph.class);
         job.setMapperClass(GiraphGroupCountStep.Map.class);
         job.setCombinerClass(GiraphGroupCountStep.Combiner.class);

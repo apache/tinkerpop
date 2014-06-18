@@ -62,7 +62,7 @@ public class GlobalsMapReduce implements JobCreator {
     }
 
     public Job createJob(final Configuration configuration) throws IOException {
-        final Job job = new Job(configuration, "Globals Derivation");
+        final Job job = new Job(configuration, GiraphGraphRunner.GIRAPH_GREMLIN_JOB_PREFIX + "Globals Calculation");
         job.setJarByClass(GiraphGraph.class);
         job.setMapperClass(GlobalsMapReduce.Map.class);
         job.setCombinerClass(GlobalsMapReduce.Combiner.class);

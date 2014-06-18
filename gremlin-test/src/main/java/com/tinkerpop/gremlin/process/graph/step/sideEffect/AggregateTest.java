@@ -78,4 +78,19 @@ public abstract class AggregateTest extends AbstractGremlinTest {
             return g.V().aggregate("a", v -> v.value("name")).iterate().memory().get("a");
         }
     }
+
+    /*public static class JavaComputerAggregateTest extends AggregateTest {
+
+        public Traversal<Vertex, Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Object v1Id) {
+            return g.v(v1Id).with("x", new HashSet<>()).aggregate("x").out("created").in("created").except("x");
+        }
+
+        public List<String> get_g_V_valueXnameX_aggregateXaX_iterate_getXaX() {
+            return g.V().value("name").aggregate("x").iterate().memory().get("x");
+        }
+
+        public List<String> get_g_V_aggregateXa_nameX_iterate_getXaX() {
+            return g.V().aggregate("a", v -> v.value("name")).iterate().memory().get("a");
+        }
+    }*/
 }
