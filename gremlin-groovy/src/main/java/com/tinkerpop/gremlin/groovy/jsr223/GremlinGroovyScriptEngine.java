@@ -52,7 +52,6 @@ import java.util.stream.Stream;
  */
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager {
 
-	// todo: how to set these from Gremlin Server
 	public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
 	public static final String REFERENCE_TYPE_PHANTOM = "phantom";
 	public static final String REFERENCE_TYPE_WEAK = "weak";
