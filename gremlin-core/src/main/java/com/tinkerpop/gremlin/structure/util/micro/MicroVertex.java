@@ -48,11 +48,11 @@ public class MicroVertex extends MicroElement implements Vertex {
         throw new IllegalStateException();
     }
 
-    public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 
-    public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 

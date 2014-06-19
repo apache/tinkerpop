@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.util.subgraph;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -18,31 +19,17 @@ public class SubGraphEdge implements Edge {
     private final Function<Edge, Boolean> edgeCriterion;
 
     public SubGraphEdge(final Edge baseEdge,
-						final Function<Vertex, Boolean> vertexCriterion,
-						final Function<Edge, Boolean> edgeCriterion) {
+                        final Function<Vertex, Boolean> vertexCriterion,
+                        final Function<Edge, Boolean> edgeCriterion) {
         this.baseEdge = baseEdge;
         this.vertexCriterion = vertexCriterion;
         this.edgeCriterion = edgeCriterion;
     }
 
     @Override
-    public GraphTraversal<Edge, Vertex> inV() {
+    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
         return edgeCriterion.apply(baseEdge)
-                ? new SubGraphTraversal<>(baseEdge.inV(), vertexCriterion, edgeCriterion, true)
-                : new GraphTraversal.EmptyGraphTraversal<>();
-    }
-
-    @Override
-    public GraphTraversal<Edge, Vertex> outV() {
-        return edgeCriterion.apply(baseEdge)
-                ? new SubGraphTraversal<>(baseEdge.outV(), vertexCriterion, edgeCriterion, true)
-                : new GraphTraversal.EmptyGraphTraversal<>();
-    }
-
-    @Override
-    public GraphTraversal<Edge, Vertex> bothV() {
-        return edgeCriterion.apply(baseEdge)
-                ? new SubGraphTraversal<>(baseEdge.bothV(), vertexCriterion, edgeCriterion, true)
+                ? new SubGraphTraversal<>(baseEdge.toV(direction), vertexCriterion, edgeCriterion, true)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 

@@ -119,7 +119,7 @@ class GroovyTraversalTestImpl extends TraversalTest {
         g.v(v4Id).bothE.has('weight', T.lt, 1.0f).otherV
     }
 
-    public Traversal<Vertex, Vertex> get_g_v1_forV_XOUT_knowsX(final Object v1Id) {
-        return g.v(v1Id).forV(Direction.OUT, 'knows');
+    public Traversal<Vertex, Vertex> get_g_v1_to_XOUT_knowsX(final Object v1Id) {
+        return g.v(v1Id).to(Direction.OUT, 'knows');
     }
 }

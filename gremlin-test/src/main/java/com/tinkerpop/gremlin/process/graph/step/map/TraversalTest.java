@@ -82,7 +82,7 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(final Object v4Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_forV_XOUT_knowsX(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_to_XOUT_knowsX(final Object v1Id);
 
     // VERTEX ADJACENCY
 
@@ -488,8 +488,8 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_v1_forV_XOUT_knowsX() {
-        final Iterator<Vertex> step = get_g_v1_forV_XOUT_knowsX(convertToVertexId("marko"));
+    public void g_v1_to_XOUT_knowsX() {
+        final Iterator<Vertex> step = get_g_v1_to_XOUT_knowsX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         int counter = 0;
         while (step.hasNext()) {
@@ -617,8 +617,8 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             return g.v(v1Id).out().value("name");
         }
 
-        public Traversal<Vertex, Vertex> get_g_v1_forV_XOUT_knowsX(final Object v1Id) {
-            return g.v(v1Id).forV(Direction.OUT, "knows");
+        public Traversal<Vertex, Vertex> get_g_v1_to_XOUT_knowsX(final Object v1Id) {
+            return g.v(v1Id).to(Direction.OUT, "knows");
         }
     }
 
@@ -737,8 +737,8 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
             return g.v(v1Id).out().<String>value("name").submit(g.compute());
         }
 
-        public Traversal<Vertex, Vertex> get_g_v1_forV_XOUT_knowsX(final Object v1Id) {
-            return g.v(v1Id).forV(Direction.OUT, "knows").submit(g.compute());
+        public Traversal<Vertex, Vertex> get_g_v1_to_XOUT_knowsX(final Object v1Id) {
+            return g.v(v1Id).to(Direction.OUT, "knows").submit(g.compute());
         }
     }
 }

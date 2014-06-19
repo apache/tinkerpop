@@ -35,18 +35,18 @@ public class SubGraphVertex implements Vertex {
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
         return vertexCriterion.apply(baseVertex)
                 ? new SubGraphTraversal<>(
-                new SubGraphEdgeToVertexTraversal(baseVertex.forE(direction, branchFactor, labels), baseVertex, edgeCriterion, direction.opposite()),
+                new SubGraphEdgeToVertexTraversal(baseVertex.toE(direction, branchFactor, labels), baseVertex, edgeCriterion, direction.opposite()),
                 vertexCriterion, edgeCriterion, true)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 
     @Override
-    public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
         return vertexCriterion.apply(baseVertex)
-                ? new SubGraphTraversal<>(baseVertex.forE(direction, branchFactor, labels), vertexCriterion, edgeCriterion, false)
+                ? new SubGraphTraversal<>(baseVertex.toE(direction, branchFactor, labels), vertexCriterion, edgeCriterion, false)
                 : new GraphTraversal.EmptyGraphTraversal<>();
     }
 

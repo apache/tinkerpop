@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.tinkergraph.structure;
 import com.tinkerpop.gremlin.process.computer.MessageCombiner;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -37,10 +36,7 @@ public class TinkerMessenger<M extends Serializable> implements Messenger<M> {
             return StreamFactory.iterable(StreamFactory.stream(localMessageType.edges(vertex).reverse())
                     .map(e -> {
                         edge[0] = e;
-                        return (localMessageType.getDirection().equals(Direction.OUT)) ?
-                                this.messageBoard.receiveMessages.get(e.outV().id().next()) :
-                                this.messageBoard.receiveMessages.get(e.inV().id().next());
-
+                        return this.messageBoard.receiveMessages.get(e.toV(localMessageType.getDirection()).id().next());
                     })
                     .filter(q -> null != q)
                     .flatMap(q -> q.stream())

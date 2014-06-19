@@ -50,21 +50,9 @@ public class MicroEdge extends MicroElement implements Edge {
         return new MicroEdge(edge);
     }
 
-    public GraphTraversal<Edge, Vertex> inV() {
+    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
         final GraphTraversal traversal = this.start();
-        traversal.addStep(new MicroEdgeVertexStep(traversal, Direction.IN));
-        return traversal;
-    }
-
-    public GraphTraversal<Edge, Vertex> outV() {
-        final GraphTraversal traversal = this.start();
-        traversal.addStep(new MicroEdgeVertexStep(traversal, Direction.OUT));
-        return traversal;
-    }
-
-    public GraphTraversal<Edge, Vertex> bothV() {
-        final GraphTraversal traversal = this.start();
-        traversal.addStep(new MicroEdgeVertexStep(traversal, Direction.BOTH));
+        traversal.addStep(new MicroEdgeVertexStep(traversal, direction));
         return traversal;
     }
 

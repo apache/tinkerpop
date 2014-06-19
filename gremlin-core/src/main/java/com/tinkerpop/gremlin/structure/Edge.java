@@ -32,13 +32,21 @@ public interface Edge extends Element {
 
     public static final String DEFAULT_LABEL = "edge";
 
-    public GraphTraversal<Edge, Vertex> inV();
-
-    public GraphTraversal<Edge, Vertex> outV();
-
-    public GraphTraversal<Edge, Vertex> bothV();
+    public GraphTraversal<Edge, Vertex> toV(final Direction direction);
 
     // element steps ///////////////////////////////////////////////////////////
+
+    public default GraphTraversal<Edge, Vertex> inV() {
+        return this.toV(Direction.IN);
+    }
+
+    public default GraphTraversal<Edge, Vertex> outV() {
+        return this.toV(Direction.OUT);
+    }
+
+    public default GraphTraversal<Edge, Vertex> bothV() {
+        return this.toV(Direction.BOTH);
+    }
 
     // TODO: test
     public default GraphTraversal<Edge, Edge> aggregate(final String variable, final SFunction... preAggregateFunctions) {

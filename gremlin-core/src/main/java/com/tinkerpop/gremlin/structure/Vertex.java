@@ -37,68 +37,68 @@ public interface Vertex extends Element {
      * retrieved off of a vertex. All other steps are derivatives of this and thus, defaulted in Vertex.
      */
 
-    public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels);
+    public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels);
 
-    public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels);
+    public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels);
 
     /**
      * The following steps are Vertex specific and have default implementations based on the vendor implementations above.
      */
 
-    public default GraphTraversal<Vertex, Vertex> forV(final Direction direction, final String... labels) {
-        return this.forV(direction, Integer.MAX_VALUE, labels);
+    public default GraphTraversal<Vertex, Vertex> to(final Direction direction, final String... labels) {
+        return this.to(direction, Integer.MAX_VALUE, labels);
     }
 
-    public default GraphTraversal<Vertex, Edge> forE(final Direction direction, final String... labels) {
-        return this.forE(direction, Integer.MAX_VALUE, labels);
+    public default GraphTraversal<Vertex, Edge> toE(final Direction direction, final String... labels) {
+        return this.toE(direction, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
-        return this.forV(Direction.OUT, branchFactor, labels);
+        return this.to(Direction.OUT, branchFactor, labels);
     }
 
     public default GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
-        return this.forV(Direction.IN, branchFactor, labels);
+        return this.to(Direction.IN, branchFactor, labels);
     }
 
     public default GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
-        return this.forV(Direction.BOTH, branchFactor, labels);
+        return this.to(Direction.BOTH, branchFactor, labels);
     }
 
     public default GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
-        return this.forE(Direction.OUT, branchFactor, labels);
+        return this.toE(Direction.OUT, branchFactor, labels);
     }
 
     public default GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
-        return this.forE(Direction.IN, branchFactor, labels);
+        return this.toE(Direction.IN, branchFactor, labels);
     }
 
     public default GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
-        return this.forE(Direction.BOTH, branchFactor, labels);
+        return this.toE(Direction.BOTH, branchFactor, labels);
     }
 
     public default GraphTraversal<Vertex, Vertex> out(final String... labels) {
-        return this.forV(Direction.OUT, Integer.MAX_VALUE, labels);
+        return this.to(Direction.OUT, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<Vertex, Vertex> in(final String... labels) {
-        return this.forV(Direction.IN, Integer.MAX_VALUE, labels);
+        return this.to(Direction.IN, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<Vertex, Vertex> both(final String... labels) {
-        return this.forV(Direction.BOTH, Integer.MAX_VALUE, labels);
+        return this.to(Direction.BOTH, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<Vertex, Edge> outE(final String... labels) {
-        return this.forE(Direction.OUT, Integer.MAX_VALUE, labels);
+        return this.toE(Direction.OUT, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<Vertex, Edge> inE(final String... labels) {
-        return this.forE(Direction.IN, Integer.MAX_VALUE, labels);
+        return this.toE(Direction.IN, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<Vertex, Edge> bothE(final String... labels) {
-        return this.forE(Direction.BOTH, Integer.MAX_VALUE, labels);
+        return this.toE(Direction.BOTH, Integer.MAX_VALUE, labels);
     }
 
     /**

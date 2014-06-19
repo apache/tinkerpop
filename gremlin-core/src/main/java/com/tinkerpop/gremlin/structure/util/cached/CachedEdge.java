@@ -21,7 +21,7 @@ public class CachedEdge extends CachedElement implements Edge {
     private CachedVertex inVertex;
 
     public CachedEdge(final Object id, final String label, final Map<String, Object> properties,
-					  final Map<String, Object> hiddenProperties,
+                      final Map<String, Object> hiddenProperties,
                       final Pair<Object, String> outV, final Pair<Object, String> inV) {
         super(id, label, properties, hiddenProperties);
         this.outVertex = new CachedVertex(outV.getValue0(), outV.getValue1());
@@ -37,23 +37,9 @@ public class CachedEdge extends CachedElement implements Edge {
     }
 
     @Override
-    public GraphTraversal<Edge, Vertex> inV() {
+    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
         final GraphTraversal traversal = this.start();
-        traversal.addStep(new CachedEdgeVertexStep(traversal, Direction.IN));
-        return traversal;
-    }
-
-    @Override
-    public GraphTraversal<Edge, Vertex> outV() {
-        final GraphTraversal traversal = this.start();
-        traversal.addStep(new CachedEdgeVertexStep(traversal, Direction.OUT));
-        return traversal;
-    }
-
-    @Override
-    public GraphTraversal<Edge, Vertex> bothV() {
-        final GraphTraversal traversal = this.start();
-        traversal.addStep(new CachedEdgeVertexStep(traversal, Direction.BOTH));
+        traversal.addStep(new CachedEdgeVertexStep(traversal, direction));
         return traversal;
     }
 

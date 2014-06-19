@@ -35,23 +35,9 @@ public class Neo4jEdge extends Neo4jElement implements Edge {
     }
 
     @Override
-    public GraphTraversal<Edge, Vertex> inV() {
+    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
         final GraphTraversal traversal = this.start();
-        traversal.addStep(new Neo4jEdgeVertexStep(traversal, this.graph, Direction.IN));
-        return traversal;
-    }
-
-    @Override
-    public GraphTraversal<Edge, Vertex> outV() {
-        final GraphTraversal traversal = this.start();
-        traversal.addStep(new Neo4jEdgeVertexStep(traversal, this.graph, Direction.OUT));
-        return traversal;
-    }
-
-    @Override
-    public GraphTraversal<Edge, Vertex> bothV() {
-        final GraphTraversal traversal = this.start();
-        traversal.addStep(new Neo4jEdgeVertexStep(traversal, this.graph, Direction.BOTH));
+        traversal.addStep(new Neo4jEdgeVertexStep(traversal, this.graph, direction));
         return traversal;
     }
 

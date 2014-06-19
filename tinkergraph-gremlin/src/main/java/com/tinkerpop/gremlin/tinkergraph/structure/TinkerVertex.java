@@ -95,13 +95,13 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
-    public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
         final GraphTraversal<Vertex, Vertex> traversal = this.start();
         traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, direction, branchFactor, labels));
         return traversal;
     }
 
-    public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
         final GraphTraversal traversal = this.start();
         traversal.addStep(new TinkerVertexStep(traversal, Edge.class, direction, branchFactor, labels));
         return traversal;

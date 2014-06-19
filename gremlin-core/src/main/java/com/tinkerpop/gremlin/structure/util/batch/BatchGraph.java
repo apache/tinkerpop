@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.structure.util.batch;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -444,12 +444,12 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
+        public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
+        public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
@@ -472,18 +472,8 @@ public class BatchGraph<T extends Graph> implements Graph {
     private class BatchEdge implements Edge {
 
         @Override
-        public GraphTraversal<Edge, Vertex> inV() {
-            return getWrappedEdge().inV();
-        }
-
-        @Override
-        public GraphTraversal<Edge, Vertex> outV() {
-            return getWrappedEdge().outV();
-        }
-
-        @Override
-        public GraphTraversal<Edge, Vertex> bothV() {
-            return getWrappedEdge().bothV();
+        public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
+            return getWrappedEdge().toV(direction);
         }
 
         @Override

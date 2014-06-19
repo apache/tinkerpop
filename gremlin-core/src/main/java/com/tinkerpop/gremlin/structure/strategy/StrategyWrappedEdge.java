@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
@@ -21,15 +22,7 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
         return this.baseEdge;
     }
 
-    public GraphTraversal<Edge, Vertex> inV() {
-        return applyStrategy(this.baseEdge.inV());
-    }
-
-    public GraphTraversal<Edge, Vertex> outV() {
-        return applyStrategy(this.baseEdge.outV());
-    }
-
-    public GraphTraversal<Edge, Vertex> bothV() {
-        return applyStrategy(this.baseEdge.bothV());
+    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
+        return applyStrategy(this.baseEdge.toV(direction));
     }
 }

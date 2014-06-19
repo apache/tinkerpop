@@ -34,13 +34,13 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
-        return applyStrategy(this.baseVertex.forV(direction, branchFactor, labels));
+    public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
+        return applyStrategy(this.baseVertex.to(direction, branchFactor, labels));
     }
 
     @Override
-    public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
-        return applyStrategy(this.baseVertex.forE(direction, branchFactor, labels));
+    public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
+        return applyStrategy(this.baseVertex.toE(direction, branchFactor, labels));
     }
 
     @Override

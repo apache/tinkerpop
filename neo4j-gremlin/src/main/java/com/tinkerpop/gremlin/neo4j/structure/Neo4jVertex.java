@@ -58,7 +58,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex {
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
         this.graph.tx().readWrite();
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
@@ -67,7 +67,7 @@ public class Neo4jVertex extends Neo4jElement implements Vertex {
     }
 
     @Override
-    public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
         this.graph.tx().readWrite();
         final GraphTraversal<Vertex, Edge> traversal = new DefaultGraphTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
