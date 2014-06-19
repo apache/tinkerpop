@@ -61,10 +61,6 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
         this.reduceFunction = groupByStep.reduceFunction;
         this.setPredicate(traverser -> {
             doGroup(traverser.get(), this.groupMap, this.keyFunction, this.valueFunction);
-            /*if (null != reduceFunction && !this.getPreviousStep().hasNext()) {
-                doReduce(this.groupMap, this.reduceMap, this.reduceFunction);
-                this.traversal.memory().set(this.variable, this.reduceMap);
-            }*/
             return true;
         });
     }
@@ -82,19 +78,9 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
             values = new ArrayList<>();
             groupMap.put(key, values);
         }
-        GiraphGroupByStep.addValue(value, values);
-    }
-
-    /*private static <K, V, R> void doReduce(final Map<K, Collection<V>> groupMap, final Map<K, R> reduceMap, final SFunction<Collection<V>, R> reduceFunction) {
-        groupMap.forEach((k, vv) -> {
-            reduceMap.put(k, (R) reduceFunction.apply(vv));
-        });
-    }*/
-
-    public static void addValue(final Object value, final Collection values) {
         if (value instanceof Iterator) {
             while (((Iterator) value).hasNext()) {
-                values.add(((Iterator) value).next());
+                values.add(((Iterator<V>) value).next());
             }
         } else {
             values.add(value);

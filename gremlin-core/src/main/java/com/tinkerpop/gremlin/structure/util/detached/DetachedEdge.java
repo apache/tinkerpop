@@ -48,7 +48,7 @@ public class DetachedEdge extends DetachedElement implements Edge {
     @Override
     public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
         final GraphTraversal traversal = this.start();
-        traversal.addStep(new CachedEdgeVertexStep(traversal, direction));
+        traversal.addStep(new DetachedEdgeVertexStep(traversal, direction));
         return traversal;
     }
 
@@ -71,8 +71,8 @@ public class DetachedEdge extends DetachedElement implements Edge {
         return new DetachedEdge(edge);
     }
 
-    class CachedEdgeVertexStep extends EdgeVertexStep {
-        public CachedEdgeVertexStep(final Traversal traversal, final Direction direction) {
+    class DetachedEdgeVertexStep extends EdgeVertexStep {
+        public DetachedEdgeVertexStep(final Traversal traversal, final Direction direction) {
             super(traversal, direction);
             this.setFunction(traverser -> {
                 final List<Vertex> vertices = new ArrayList<>();

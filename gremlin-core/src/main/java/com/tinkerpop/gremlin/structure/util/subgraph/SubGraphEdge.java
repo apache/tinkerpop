@@ -64,8 +64,7 @@ public class SubGraphEdge implements Edge {
     }
 
     @Override
-    public <V> Property<V> property(final String key,
-                                    final V value) {
+    public <V> Property<V> property(final String key, final V value) {
         return baseEdge.property(key, value);
     }
 }
