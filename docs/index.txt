@@ -1160,7 +1160,12 @@ Gremlin Server provides a way to remotely execute Gremlin scripts against one or
 
 NOTE: Gremlin Server is essentially the replacement for link:http://rexster.tinkerpop.com[Rexster].
 
-Communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and exposes a custom subprotocol for interacting with the server.  The most direct way to get started with Gremlin Server is to issue it some remote Gremlin scripts from the Gremlin Console.  To do that, first start Gremlin Server:
+Communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and exposes a custom subprotocol for interacting with the server.
+
+Connecting via Console
+~~~~~~~~~~~~~~~~~~~~~~
+
+The most direct way to get started with Gremlin Server is to issue it some remote Gremlin scripts from the Gremlin Console.  To do that, first start Gremlin Server:
 
 [source,text]
 ----
@@ -1258,6 +1263,72 @@ gremlin> m.sort{-it.value}
 <1> Tells Gremlin Server to serialize the results in a way that they can be deserialized back into an `Object` in the Console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
 <2> When the script is executed again, the `class` is no longer shown to be a `java.lang.String`.  It is instead a `java.util.HashMap`.
 <3> The last result of a remote script is always stored in the reserved variable `_l`, which allows access to the `Item` and by virtue of that, the `Map` itself.
+
+Connecting via Java
+~~~~~~~~~~~~~~~~~~~
+
+TinkerPop3 comes equipped with a reference client for Java-based applications.  It is referred to as Gremlin Driver, which enables applications to send requests to Gremlin Server and get back results.
+
+[source,xml]
+----
+<dependency>
+   <groupId>com.tinkerpop</groupId>
+   <artifactId>gremlin-driver</artifactId>
+   <version>3.y.z</version>
+</dependency>
+----
+
+CAUTION: Gremlin Driver is currently under heavy development.  The API and configuration options are subject to drastic and breaking change.
+
+Gremlin code is sent to the server from a `Client` instance.  A `Client` is created as follows:
+
+[source,java]
+----
+Cluster cluster = Cluster.open();  <1>
+Client client = cluster.connect(); <2>
+----
+
+<1> Opens a reference to `localhost` - note that there are many configuration options available in defining a `Cluster` object.
+<2> Creates a `Client` given the configuration options of the `Cluster`.
+
+Once a `Client` instance is ready, it is possible to issue some Gremlin:
+
+[source,java]
+----
+ResultSet results = client.submit("[1,2,3,4]");  <1>
+results.stream().map(i -> i.get(Integer.class) * 2);       <2>
+
+CompletableFuture<List<Item>> results = client.submit("[1,2,3,4]").all();  <3>
+
+CompletableFuture<ResultSet> future = client.submitAsync("[1,2,3,4]"); <4>
+
+Map<String,Object> params = new HashMap<>()
+params.put("x",4)
+client.submit("[1,2,3,x]", params); <5>
+----
+
+<1> Submits a script that simply returns a `List` of integers.  This method blocks until the request is written to the server and a `ResultSet` is constructed.
+<2> Even though the `ResultSet` is constructed, it does not mean that the server has sent back the results (or even evaluated the script potentially).  The `ResultSet` is just a holder that is awaiting the results from the server.  In this case, they are streamed from the server as they arrive.
+<3> Submit a script, get a `ResultSet`, then return a `CompletableFuture` that will be called when all results have been returned.
+<4> Submit a script asynchronously without waiting for the request to be written to the server.
+<5> Parameterized request are considered the most efficient way to send Gremlin to the server as they can be cached, which will boost performance and reduce resources required on the server.
+
+The above examples submit Gremlin `String` values to the server for evaluation.  It is also possible to submit actual Java-based `Traversal` instances:
+
+[source,java]
+----
+public static class RemoteTraversal implements SFunction<Graph, Traversal> {
+    public Traversal apply(final Graph g) {
+        return g.V().out().range(0,9);
+    }
+}
+
+List<Item> results = client.submit(new RemoteTraversal()).all().get();
+----
+
+The code above shows that a `Traversal` instance can be sent for remote execution in Gremlin Server.  This feature is *highly experimental*, but has some interesting implications in that it provides a way to avoid maintaining "fat strings" of Gremlin in the application code base.  While the "fat string" approach can also be avoided by developing a server-side DSL, the sending of an actual `Traversal` provides another method that might provide new and better patterns for developing graph-based applications.
+
+
 
 Implementations
 ===============
