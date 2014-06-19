@@ -6,12 +6,11 @@ import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.message.ResultType;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.cached.CachedEdge;
-import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import io.netty.buffer.ByteBuf;
@@ -108,10 +107,10 @@ public class KryoMessageSerializerV1d0Test {
         final ResponseMessage response = convert(iterable);
         assertCommon(response);
 
-        final List<CachedEdge> edgeList = (List<CachedEdge>) response.getResult();
+        final List<DetachedEdge> edgeList = (List<DetachedEdge>) response.getResult();
         assertEquals(1, edgeList.size());
 
-        final CachedEdge deserialiedEdge = edgeList.get(0);
+        final DetachedEdge deserialiedEdge = edgeList.get(0);
         assertEquals(2l, deserialiedEdge.id());
         assertEquals("test", deserialiedEdge.label());
 
@@ -143,10 +142,10 @@ public class KryoMessageSerializerV1d0Test {
         final ResponseMessage response = convert(list);
         assertCommon(response);
 
-        final List<CachedVertex> vertexList = (List<CachedVertex>) response.getResult();
+        final List<DetachedVertex> vertexList = (List<DetachedVertex>) response.getResult();
         assertEquals(1, vertexList.size());
 
-        final CachedVertex deserializedVertex = vertexList.get(0);
+        final DetachedVertex deserializedVertex = vertexList.get(0);
         assertEquals(0l, deserializedVertex.id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.label());
 

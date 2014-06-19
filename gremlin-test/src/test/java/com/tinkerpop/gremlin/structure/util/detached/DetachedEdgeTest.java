@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util.micro;
+package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -13,10 +13,9 @@ import static org.mockito.Mockito.when;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+public class DetachedEdgeTest {
 
-public class MicroEdgeTest {
-
-    private MicroEdge me;
+    private DetachedEdge me;
 
     @Before
     public void setup() {
@@ -33,21 +32,21 @@ public class MicroEdgeTest {
         when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
         when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
-        this.me = MicroEdge.deflate(e);
+        this.me = DetachedEdge.detach(e);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullElement() {
-        MicroEdge.deflate(null);
+        DetachedEdge.detach(null);
     }
 
     @Test
     public void shouldConstructMicroEdge() {
         assertEquals("3", this.me.id());
         assertEquals("knows", this.me.label());
-        assertEquals(MicroVertex.class, this.me.outV().next().getClass());
+        assertEquals(DetachedVertex.class, this.me.outV().next().getClass());
         assertEquals("1", this.me.outV().id().next());
-        assertEquals(MicroVertex.class, this.me.inV().next().getClass());
+        assertEquals(DetachedVertex.class, this.me.inV().next().getClass());
         assertEquals("2", this.me.inV().id().next());
     }
 
@@ -66,7 +65,7 @@ public class MicroEdgeTest {
         when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
         when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
-        final MicroEdge me1 = MicroEdge.deflate(e);
+        final DetachedEdge me1 = DetachedEdge.detach(e);
         assertTrue(me1.equals(this.me));
     }
 
@@ -85,7 +84,7 @@ public class MicroEdgeTest {
         when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
         when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
 
-        final MicroEdge me1 = MicroEdge.deflate(e);
+        final DetachedEdge me1 = DetachedEdge.detach(e);
         assertFalse(me1.equals(this.me));
     }
 
@@ -94,10 +93,10 @@ public class MicroEdgeTest {
         this.me.property("test", "test");
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    /*@Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowGetProperty() {
         this.me.property("test");
-    }
+    }*/
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowRemove() {

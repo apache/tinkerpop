@@ -17,8 +17,7 @@ import com.tinkerpop.gremlin.structure.io.util.IoVertex;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
-import com.tinkerpop.gremlin.structure.util.cached.CachedElement;
-import com.tinkerpop.gremlin.structure.util.micro.MicroElement;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
@@ -46,15 +45,14 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         // graph structure
         imports.add(Graph.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphStrategy.class.getPackage().getName() + DOT_STAR);
-		imports.add(GraphFactory.class.getPackage().getName() + DOT_STAR);
-		imports.add(BatchGraph.class.getPackage().getName() + DOT_STAR);
-		imports.add(CachedElement.class.getPackage().getName() + DOT_STAR);
-		imports.add(MicroElement.class.getPackage().getName() + DOT_STAR);
+        imports.add(GraphFactory.class.getPackage().getName() + DOT_STAR);
+        imports.add(BatchGraph.class.getPackage().getName() + DOT_STAR);
+        imports.add(DetachedElement.class.getPackage().getName() + DOT_STAR);
 
-		// graph process
-		imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
+        // graph process
+        imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
 
-		// tinkergraph
+        // tinkergraph
         imports.add(TinkerGraph.class.getPackage().getName() + DOT_STAR);
 
         // IO packages
@@ -64,11 +62,11 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(KryoReader.class.getPackage().getName() + DOT_STAR);
         imports.add(IoVertex.class.getPackage().getName() + DOT_STAR);
 
-		// driver
-		imports.add(Cluster.class.getPackage().getName() + DOT_STAR);
-		imports.add(ConnectionException.class.getPackage().getName() + DOT_STAR);
-		imports.add(RequestMessage.class.getPackage().getName() + DOT_STAR);
-		imports.add(SerTokens.class.getPackage().getName() + DOT_STAR);
+        // driver
+        imports.add(Cluster.class.getPackage().getName() + DOT_STAR);
+        imports.add(ConnectionException.class.getPackage().getName() + DOT_STAR);
+        imports.add(RequestMessage.class.getPackage().getName() + DOT_STAR);
+        imports.add(SerTokens.class.getPackage().getName() + DOT_STAR);
 
         // algorithms
         imports.add(AbstractGenerator.class.getPackage().getName() + DOT_STAR);
@@ -77,8 +75,8 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(Grape.class.getCanonicalName());
         imports.add(JsonBuilder.class.getPackage().getName() + DOT_STAR);
 
-		// external
-		imports.add(Configuration.class.getPackage().getName() + DOT_STAR);
+        // external
+        imports.add(Configuration.class.getPackage().getName() + DOT_STAR);
 
         staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);

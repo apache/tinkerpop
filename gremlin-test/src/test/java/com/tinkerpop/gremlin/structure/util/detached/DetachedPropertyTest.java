@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util.micro;
+package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
@@ -14,33 +14,35 @@ import static org.mockito.Mockito.when;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class MicroPropertyTest {
+public class DetachedPropertyTest {
 
-    private MicroProperty mp;
+    private DetachedProperty mp;
 
     @Before
     public void setup() {
         final Vertex v = mock(Vertex.class);
         when(v.id()).thenReturn("1");
+        when(v.label()).thenReturn("person");
 
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k");
         when(p.getElement()).thenReturn(v);
         when(p.value()).thenReturn("val");
 
-        this.mp = MicroProperty.deflate(p);
+
+        this.mp = DetachedProperty.detach(p);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullProperty() {
-        MicroProperty.deflate(null);
+        DetachedProperty.detach(null);
     }
 
     @Test
     public void shouldConstructMicroPropertyWithPropertyFromVertex() {
         assertEquals("k", mp.key());
         assertEquals("val", mp.value());
-        assertEquals(MicroVertex.class, mp.getElement().getClass());
+        assertEquals(DetachedVertex.class, mp.getElement().getClass());
     }
 
     @Test
@@ -48,18 +50,25 @@ public class MicroPropertyTest {
         final Vertex v1 = mock(Vertex.class);
         final Vertex v2 = mock(Vertex.class);
         final Edge e = mock(Edge.class);
+        when(e.id()).thenReturn("14");
+        when(e.label()).thenReturn("knows");
         when(e.outV()).thenReturn(new SingleGraphTraversal(v1));
         when(e.inV()).thenReturn(new SingleGraphTraversal(v2));
+
+        when(v1.id()).thenReturn("1");
+        when(v1.label()).thenReturn("person");
+        when(v2.id()).thenReturn("2");
+        when(v2.label()).thenReturn("person");
 
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k");
         when(p.getElement()).thenReturn(e);
         when(p.value()).thenReturn("val");
 
-        final MicroProperty mp = MicroProperty.deflate(p);
+        final DetachedProperty mp = DetachedProperty.detach(p);
         assertEquals("k", mp.key());
         assertEquals("val", mp.value());
-        assertEquals(MicroEdge.class, mp.getElement().getClass());
+        assertEquals(DetachedEdge.class, mp.getElement().getClass());
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -71,12 +80,13 @@ public class MicroPropertyTest {
     public void shouldBeEqualsProperties() {
         final Vertex v = mock(Vertex.class);
         when(v.id()).thenReturn("1");
+        when(v.label()).thenReturn("person");
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k");
         when(p.getElement()).thenReturn(v);
         when(p.value()).thenReturn("val");
 
-        final MicroProperty mp2 = MicroProperty.deflate(p);
+        final DetachedProperty mp2 = DetachedProperty.detach(p);
 
         assertTrue(mp2.equals(this.mp));
     }
@@ -85,12 +95,13 @@ public class MicroPropertyTest {
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentElement() {
         final Vertex v = mock(Vertex.class);
         when(v.id()).thenReturn("2");
+        when(v.label()).thenReturn("person");
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k");
         when(p.getElement()).thenReturn(v);
         when(p.value()).thenReturn("val");
 
-        final MicroProperty mp2 = MicroProperty.deflate(p);
+        final DetachedProperty mp2 = DetachedProperty.detach(p);
 
         assertFalse(mp2.equals(this.mp));
     }
@@ -99,12 +110,13 @@ public class MicroPropertyTest {
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentKey() {
         final Vertex v = mock(Vertex.class);
         when(v.id()).thenReturn("1");
+        when(v.label()).thenReturn("person");
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k1");
         when(p.getElement()).thenReturn(v);
         when(p.value()).thenReturn("val");
 
-        final MicroProperty mp2 = MicroProperty.deflate(p);
+        final DetachedProperty mp2 = DetachedProperty.detach(p);
 
         assertFalse(mp2.equals(this.mp));
     }
@@ -113,12 +125,13 @@ public class MicroPropertyTest {
     public void shouldNotBeEqualsPropertiesAsThereIsDifferentValue() {
         final Vertex v = mock(Vertex.class);
         when(v.id()).thenReturn("1");
+        when(v.label()).thenReturn("person");
         final Property p = mock(Property.class);
         when(p.key()).thenReturn("k");
         when(p.getElement()).thenReturn(v);
         when(p.value()).thenReturn("val1");
 
-        final MicroProperty mp2 = MicroProperty.deflate(p);
+        final DetachedProperty mp2 = DetachedProperty.detach(p);
 
         assertFalse(mp2.equals(this.mp));
     }

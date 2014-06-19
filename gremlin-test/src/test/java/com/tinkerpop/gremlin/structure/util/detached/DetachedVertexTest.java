@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.structure.util.micro;
+package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
@@ -8,12 +8,13 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
-public class MicroVertexTest {
 
-    private MicroVertex mv;
+/**
+ *  @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+public class DetachedVertexTest {
+
+    private DetachedVertex mv;
 
     @Before
     public void setup() {
@@ -21,12 +22,12 @@ public class MicroVertexTest {
         when(v.id()).thenReturn("1");
         when(v.label()).thenReturn("l");
 
-        this.mv = MicroVertex.deflate(v);
+        this.mv = DetachedVertex.detach(v);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotConstructWithNullElement() {
-        MicroVertex.deflate(null);
+        DetachedVertex.detach(null);
     }
 
     @Test
@@ -41,7 +42,7 @@ public class MicroVertexTest {
         when(v.id()).thenReturn("1");
         when(v.label()).thenReturn("l");
 
-        final MicroVertex mv1 = MicroVertex.deflate(v);
+        final DetachedVertex mv1 = DetachedVertex.detach(v);
         assertTrue(mv1.equals(this.mv));
     }
 
@@ -51,7 +52,7 @@ public class MicroVertexTest {
         when(v.id()).thenReturn("2");
         when(v.label()).thenReturn("l");
 
-        final MicroVertex mv1 = MicroVertex.deflate(v);
+        final DetachedVertex mv1 = DetachedVertex.detach(v);
         assertFalse(mv1.equals(this.mv));
     }
 
@@ -65,10 +66,10 @@ public class MicroVertexTest {
         this.mv.property("test", "test");
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    /*@Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowGetProperty() {
         this.mv.property("test");
-    }
+    }*/
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldNotAllowRemove() {

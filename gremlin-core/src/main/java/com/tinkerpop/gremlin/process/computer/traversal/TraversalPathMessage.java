@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.util.MapHelper;
-import com.tinkerpop.gremlin.process.util.MicroPath;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
@@ -29,7 +29,7 @@ public class TraversalPathMessage extends TraversalMessage {
 
     private TraversalPathMessage(final Traverser traverser) {
         super(traverser);
-        this.traverser.setPath(MicroPath.deflate(this.traverser.getPath()));
+        this.traverser.setPath(DetachedPath.detach(this.traverser.getPath()));
     }
 
     public static TraversalPathMessage of(final Traverser traverser) {
@@ -58,7 +58,7 @@ public class TraversalPathMessage extends TraversalMessage {
             traversers.forEach(traverser -> {
                 if (traverser.isDone()) {
                     if (object instanceof Path) {
-                        MapHelper.incr(tracker.getDoneObjectTracks(), MicroPath.deflate(((Path) object)), traverser);
+                        MapHelper.incr(tracker.getDoneObjectTracks(), DetachedPath.detach(((Path) object)), traverser);
                     } else {
                         MapHelper.incr(tracker.getDoneObjectTracks(), object, traverser);
                     }
@@ -101,7 +101,7 @@ public class TraversalPathMessage extends TraversalMessage {
                         TraversalPathMessage.of(traverser));
             } else {
                 if (end instanceof Path) {
-                    MapHelper.incr(tracker.getObjectTracks(), MicroPath.deflate(((Path) end)), traverser);
+                    MapHelper.incr(tracker.getObjectTracks(), DetachedPath.detach(((Path) end)), traverser);
                 } else {
                     MapHelper.incr(tracker.getObjectTracks(), end, traverser);
                 }

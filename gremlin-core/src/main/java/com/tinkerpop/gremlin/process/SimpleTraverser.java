@@ -4,9 +4,9 @@ package com.tinkerpop.gremlin.process;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.micro.MicroEdge;
-import com.tinkerpop.gremlin.structure.util.micro.MicroProperty;
-import com.tinkerpop.gremlin.structure.util.micro.MicroVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -87,22 +87,22 @@ public class SimpleTraverser<T> implements Traverser<T> {
 
     public Traverser<T> deflate() {
         if (this.t instanceof Vertex) {
-            this.t = (T) MicroVertex.deflate((Vertex) this.t);
+            this.t = (T) DetachedVertex.detach((Vertex) this.t);
         } else if (this.t instanceof Edge) {
-            this.t = (T) MicroEdge.deflate((Edge) this.t);
+            this.t = (T) DetachedEdge.detach((Edge) this.t);
         } else if (this.t instanceof Property) {
-            this.t = (T) MicroProperty.deflate((Property) this.t);
+            this.t = (T) DetachedProperty.detach((Property) this.t);
         }
         return this;
     }
 
     public Traverser<T> inflate(final Vertex vertex) {
-        if (this.t instanceof MicroVertex) {
-            this.t = (T) ((MicroVertex) this.t).inflate(vertex);
-        } else if (this.t instanceof MicroEdge) {
-            this.t = (T) ((MicroEdge) this.t).inflate(vertex);
-        } else if (this.t instanceof MicroProperty) {
-            this.t = (T) ((MicroProperty) this.t).inflate(vertex);
+        if (this.t instanceof DetachedVertex) {
+            this.t = (T) ((DetachedVertex) this.t).attach(vertex);
+        } else if (this.t instanceof DetachedEdge) {
+            this.t = (T) ((DetachedEdge) this.t).attach(vertex);
+        } else if (this.t instanceof DetachedProperty) {
+            this.t = (T) ((DetachedProperty) this.t).attach(vertex);
         }
         return this;
     }

@@ -8,8 +8,8 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IoEdge;
 import com.tinkerpop.gremlin.structure.io.util.IoVertex;
-import com.tinkerpop.gremlin.structure.util.cached.CachedEdge;
-import com.tinkerpop.gremlin.structure.util.cached.CachedVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.javatuples.Pair;
 
 /**
@@ -20,7 +20,7 @@ import org.javatuples.Pair;
 class ElementSerializer {
     /**
      * Serializes any Vertex implementation encountered to an {@link com.tinkerpop.gremlin.structure.io.util.IoEdge} and deserializes it out to a
-     * {@link com.tinkerpop.gremlin.structure.util.cached.CachedEdge}.
+     * {@link com.tinkerpop.gremlin.structure.util.detached.DetachedEdge}.
      *
      * @author Stephen Mallette (http://stephen.genoprime.com)
      */
@@ -33,14 +33,14 @@ class ElementSerializer {
         @Override
         public Edge read(final Kryo kryo, final Input input, final Class<Edge> edgeClass) {
             final IoEdge ioe = (IoEdge) kryo.readClassAndObject(input);
-            return new CachedEdge(ioe.id, ioe.label, ioe.properties, ioe.hiddenProperties,
+            return new DetachedEdge(ioe.id, ioe.label, ioe.properties, ioe.hiddenProperties,
                     Pair.with(ioe.outV, ioe.outVLabel), Pair.with(ioe.inV, ioe.inVLabel));
         }
     }
 
     /**
      * Serializes any Vertex implementation encountered to an {@link com.tinkerpop.gremlin.structure.io.util.IoVertex} and deserializes it out to a
-     * {@link com.tinkerpop.gremlin.structure.util.cached.CachedVertex}.
+     * {@link com.tinkerpop.gremlin.structure.util.detached.DetachedVertex}.
      *
      * @author Stephen Mallette (http://stephen.genoprime.com)
      */
@@ -56,7 +56,7 @@ class ElementSerializer {
         @Override
         public Vertex read(final Kryo kryo, final Input input, final Class<Vertex> vertexClass) {
             final IoVertex iov = (IoVertex) kryo.readClassAndObject(input);
-            return new CachedVertex(iov.id, iov.label, iov.properties, iov.hiddenProperties);
+            return new DetachedVertex(iov.id, iov.label, iov.properties, iov.hiddenProperties);
         }
     }
 }

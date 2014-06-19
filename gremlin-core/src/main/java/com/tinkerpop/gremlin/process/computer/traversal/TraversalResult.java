@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.process.computer.traversal;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
-import com.tinkerpop.gremlin.process.util.MicroPath;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -59,8 +59,8 @@ public class TraversalResult<T> implements Iterator<T> {
                             final List list = new ArrayList();
                             tracker.getDoneObjectTracks().entrySet().stream().forEach(entry -> {
                                 entry.getValue().forEach(traverser -> {
-                                    if (entry.getKey() instanceof MicroPath) {
-                                        list.add(((MicroPath) entry.getKey()).inflate(this.graph));
+                                    if (entry.getKey() instanceof DetachedPath) {
+                                        list.add(((DetachedPath) entry.getKey()).attach(this.graph));
                                     } else {
                                         list.add(entry.getKey());
                                     }
