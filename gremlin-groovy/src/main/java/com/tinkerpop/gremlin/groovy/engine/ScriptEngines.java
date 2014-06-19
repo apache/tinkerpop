@@ -205,7 +205,7 @@ public class ScriptEngines {
 			// gremlin-groovy gets special initialization for custom imports and such.  could implement this more
 			// generically with the DependencyManager interface, but going to wait to see how other ScriptEngines
 			// develop for TinkerPop3 before committing too deeply here to any specific way of doing this.
-			return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(1500,
+			return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(
 					new DefaultImportCustomizerProvider(imports, staticImports)));
 		} else {
 			final ScriptEngineManager manager = new ScriptEngineManager();

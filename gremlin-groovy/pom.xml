@@ -46,11 +46,6 @@
             <artifactId>jline</artifactId>
             <version>2.11</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>12.0</version>
-        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>junit</groupId>

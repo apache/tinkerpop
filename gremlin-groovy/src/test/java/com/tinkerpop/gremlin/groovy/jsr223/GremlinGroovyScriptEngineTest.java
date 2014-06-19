@@ -49,7 +49,7 @@ public class GremlinGroovyScriptEngineTest {
 
 	@Test
 	public void shouldLoadImports() throws Exception {
-		final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(100, new NoImportCustomizerProvider());
+		final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
 		try {
 			engineNoImports.eval("Vertex.class.getName()");
 			fail("Should have thrown an exception because no imports were supplied");
@@ -57,7 +57,7 @@ public class GremlinGroovyScriptEngineTest {
 			assertTrue(se instanceof ScriptException);
 		}
 
-		final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine(100, new DefaultImportCustomizerProvider());
+		final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
 		assertEquals(Vertex.class.getName(), engineWithImports.eval("Vertex.class.getName()"));
 		assertEquals(2l, engineWithImports.eval("TinkerFactory.createClassic().V.has('age',T.gt,30).count()"));
 		assertEquals(Direction.IN, engineWithImports.eval("Direction.IN"));
@@ -158,7 +158,7 @@ public class GremlinGroovyScriptEngineTest {
 	}
 
 	@Test
-	@org.junit.Ignore
+	@org.junit.Ignore("Run as needed.")
 	public void shouldNotBlowTheHeapParameterized() throws ScriptException {
 		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
 		final Graph g = TinkerFactory.createClassic();
@@ -185,13 +185,11 @@ public class GremlinGroovyScriptEngineTest {
 			}
 		} catch (OutOfMemoryError oome) {
 			fail("Blew the heap - the cache should prevent this from happening.");
-		} finally {
-			System.out.println(engine.stats());
 		}
 	}
 
 	@Test
-	@org.junit.Ignore("Run this test as needed - it slows the build terribly")
+	@org.junit.Ignore("Run this test as needed - takes too long for normal execution")
 	public void shouldNotBlowTheHeapUnparameterized() throws ScriptException {
 		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
 		long notParameterizedStartTime = System.currentTimeMillis();
@@ -206,30 +204,44 @@ public class GremlinGroovyScriptEngineTest {
 			}
 		} catch (OutOfMemoryError oome) {
 			fail("Blew the heap - the cache should prevent this from happening.");
-		} finally {
-			System.out.println(engine.stats());
 		}
 	}
 
 	@Test
 	public void shouldEvalGlobalClosuresEvenAfterEvictionOfClass() throws ScriptException {
-		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(2);
+		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
 		final Graph g = TinkerFactory.createClassic();
 
 		final Bindings bindings = engine.createBindings();
 		bindings.put("g", g);
 
-		// cache as global closure
+		// strong referenced global closure
 		engine.eval("def isVadas(v){v.value('name')=='vadas'}", bindings);
 		assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
-		assertEquals(0, engine.stats().evictionCount());
 
-		// evict
+		// phantom referenced global closure
+		bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_PHANTOM);
 		engine.eval("def isMarko(v){v.value('name')=='marko'}", bindings);
-		assertEquals(true, engine.eval("isMarko(g.v(1))", bindings));
-		assertEquals(2, engine.stats().evictionCount());
 
-		// isVadas class was evicted, but isVadas is still in the global closure cache
+		try {
+			engine.eval("isMarko(g.v(1))", bindings);
+			fail("the isMarko function should not be present");
+		} catch (Exception ex) {
+
+		}
+
+		assertEquals(true, engine.eval("def isMarko(v){v.value('name')=='marko'}; isMarko(g.v(1))", bindings));
+
+		try {
+			engine.eval("isMarko(g.v(1))", bindings);
+			fail("the isMarko function should not be present");
+		} catch (Exception ex) {
+
+		}
+
+		bindings.remove(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE);
+
+		// isVadas class was a hard reference so it should still be hanging about
 		assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
 	}
 
@@ -240,6 +252,7 @@ public class GremlinGroovyScriptEngineTest {
 
 		final Bindings bindings = engine.createBindings();
 		bindings.put("g", g);
+		bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
 
 		// this works on its own when the function and the line that uses it is in one "script".  this is the
 		// current workaround
@@ -259,6 +272,7 @@ public class GremlinGroovyScriptEngineTest {
 		}
 
 		// now...define the function separately on its own in one script
+		bindings.remove("#jsr223.groovy.engine.keep.globals");
 		engine.eval("def isVadas(v){v.value('name')=='vadas'}", bindings);
 
 		// make sure the function works on its own...no problem
@@ -308,58 +322,24 @@ public class GremlinGroovyScriptEngineTest {
 	}
 
 	@Test
-	public void shouldCacheScriptsInLruFashion() throws Exception {
-		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(2);
-		assertEquals(2, engine.eval("1+1"));
-		assertEquals(3, engine.eval("1+2"));
-		assertEquals(2, engine.stats().loadCount());
-		assertEquals(2, engine.stats().missCount());
-		assertEquals(0, engine.stats().hitCount());
-		assertEquals(0, engine.stats().evictionCount());
-
-		assertEquals(2, engine.eval("1+1"));
-		assertEquals(3, engine.eval("1+2"));
-		assertEquals(2, engine.stats().loadCount());
-		assertEquals(2, engine.stats().missCount());
-		assertEquals(2, engine.stats().hitCount());
-		assertEquals(0, engine.stats().evictionCount());
-
-		// since 1+1 was last touched cache should evict 1+2
-		assertEquals(2, engine.eval("1+1"));
-		assertEquals(4, engine.eval("1+3"));
-		assertEquals(3, engine.stats().loadCount());
-		assertEquals(3, engine.stats().missCount());
-		assertEquals(3, engine.stats().hitCount());
-		assertEquals(1, engine.stats().evictionCount());
-
-		assertEquals(2, engine.eval("1+1"));
-		assertEquals(4, engine.eval("1+3"));
-		assertEquals(3, engine.stats().loadCount());
-		assertEquals(3, engine.stats().missCount());
-		assertEquals(5, engine.stats().hitCount());
-		assertEquals(1, engine.stats().evictionCount());
-
-		assertEquals(2, engine.eval("1+1"));
-		assertEquals(3, engine.eval("1+2"));
-		assertEquals(4, engine.stats().loadCount());
-		assertEquals(4, engine.stats().missCount());
-		assertEquals(6, engine.stats().hitCount());
-		assertEquals(2, engine.stats().evictionCount());
-	}
-
-	@Test
-	public void shouldBeOkToNotClearEngineScopeOnEviction() throws Exception {
-		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(1);
+	public void shouldClearEngineScopeOnReset() throws Exception {
+		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
 		engine.eval("x = { y -> y + 1}");
 		Bindings b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
 		assertTrue(b.containsKey("x"));
 		assertEquals(2, ((Closure) b.get("x")).call(1));
 
-		// should evict the closure defined to x but it should remain accessible in the context
-		assertEquals(2, engine.eval("x(1)"));
+		// should clear the bindings
+		engine.reset();
+		try {
+			engine.eval("x(1)");
+			fail("Bindings should have been cleared.");
+		} catch (Exception ex) {
+
+		}
+
 		b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
-		assertTrue(b.containsKey("x"));
-		assertEquals(2, ((Closure) b.get("x")).call(1));
+		assertFalse(b.containsKey("x"));
 
 		// redefine x
 		engine.eval("x = { y -> y + 2}");

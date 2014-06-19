@@ -1,9 +1,5 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.CacheStats;
-import com.google.common.cache.LoadingCache;
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
@@ -17,6 +13,7 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.jsr223.GroovyCompiledScript;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
@@ -24,6 +21,7 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.codehaus.groovy.syntax.SyntaxException;
+import org.codehaus.groovy.util.ReferenceBundle;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
@@ -35,37 +33,43 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * This implementation maps the native GroovyScriptEngine to work correctly with JSR223.
- * This code was adapted from the ScriptEngine project at Google (Apache2 licensed).
- * Thank you for the code as this mapping is complex and I'm glad someone already did it.
+ * This {@code ScriptEngine} implementation is heavily adapted from the {@code GroovyScriptEngineImpl} to include
+ * some additional functionality.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager {
+
+	public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
+	public static final String REFERENCE_TYPE_PHANTOM = "phantom";
+	public static final String REFERENCE_TYPE_WEAK = "weak";
+	public static final String REFERENCE_TYPE_SOFT = "soft";
+	public static final String REFERENCE_TYPE_HARD = "hard";
+
 	private static final Pattern patternImportStatic = Pattern.compile("\\Aimport\\sstatic.*");
 
-	public static final int DEFAULT_CACHE_SIZE = 1500;
-	public static final int DEFAULT_CONCURRENCY_LEVEL = 1;
+	/**
+	 * Script to generated Class map.
+	 */
+	private ManagedConcurrentValueMap<String, Class> classMap = new ManagedConcurrentValueMap<>(ReferenceBundle.getSoftBundle());
 
-	private LoadingCache<String, Class> classMap;
-	private ConcurrentMap<String, MethodClosure> globalClosures = new ConcurrentHashMap<>();
+	/**
+	 * Global closures map - this is used to simulate a single global functions namespace
+	 */
+	private ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<>(ReferenceBundle.getHardBundle());
+
 	protected GremlinGroovyClassLoader loader;
 
 	private AtomicLong counter = new AtomicLong(0l);
@@ -85,44 +89,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 	private ImportCustomizerProvider importCustomizerProvider;
 
 	public GremlinGroovyScriptEngine() {
-		this(DEFAULT_CACHE_SIZE);
+		this(new DefaultImportCustomizerProvider());
 	}
 
-	public GremlinGroovyScriptEngine(final int cacheSize) {
-		this(cacheSize, new DefaultImportCustomizerProvider());
-	}
-
-	public GremlinGroovyScriptEngine(final int cacheSize,
-									 final ImportCustomizerProvider importCustomizerProvider) {
-		this(cacheSize, importCustomizerProvider, DEFAULT_CONCURRENCY_LEVEL);
-	}
-
-	public GremlinGroovyScriptEngine(final int cacheSize,
-									 final ImportCustomizerProvider importCustomizerProvider,
-									 final int concurrencyLevel) {
+	public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider) {
 		GremlinLoader.load();
-
 		this.importCustomizerProvider = importCustomizerProvider;
 		createClassLoader();
-
-		this.classMap = CacheBuilder.newBuilder()
-				.maximumSize(cacheSize)
-				.concurrencyLevel(concurrencyLevel)
-				.recordStats()
-				.removalListener(objectObjectRemovalNotification -> {
-					final Class c = (Class) objectObjectRemovalNotification.getValue();
-					loader.removeClassCacheEntry(c.getName());
-
-					// no need to clear bindings reference to evicted classes - somehow they stay "loaded".
-					// see GremlinGroovyScriptEngineTest.shouldBeOkToNoClearEngineScopeOnEviction()
-					//this.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
-				})
-				.build(new CacheLoader<String, Class>() {
-					@Override
-					public Class load(final String s) throws Exception {
-						return loader.parseClass(s, generateScriptName());
-					}
-				});
 	}
 
 	@Override
@@ -192,14 +165,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
 		// must clear the local cache here because the the classloader has been reset.  therefore, classes previously
 		// referenced before that might not have evaluated might cleanly evaluate now.
+		this.classMap.clear();
 		this.globalClosures.clear();
-		this.classMap.invalidateAll();
 
 		this.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
-	}
-
-	public CacheStats stats() {
-		return classMap.stats();
 	}
 
 	public Object eval(final Reader reader, final ScriptContext context) throws ScriptException {
@@ -208,15 +177,28 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
 	public Object eval(final String script, final ScriptContext context) throws ScriptException {
 		try {
-			return eval(classMap.get(script), context);
-		} catch (ExecutionException ee) {
-			if (ee.getCause() instanceof SyntaxException) {
-				final SyntaxException syntaxExeption = (SyntaxException) ee.getCause();
-				throw new ScriptException(syntaxExeption.getMessage(), syntaxExeption.getSourceLocator(), syntaxExeption.getLine());
-			} else if (ee.getCause() instanceof IOException)
-				throw new ScriptException((IOException) ee.getCause());
-			else
-				throw new ScriptException(ee);
+			final String val = (String) context.getAttribute(KEY_REFERENCE_TYPE, ScriptContext.ENGINE_SCOPE);
+			ReferenceBundle bundle = ReferenceBundle.getHardBundle();
+			if (val != null && val.length() > 0) {
+				if (val.equalsIgnoreCase(REFERENCE_TYPE_SOFT)) {
+					bundle = ReferenceBundle.getSoftBundle();
+				} else if (val.equalsIgnoreCase(REFERENCE_TYPE_WEAK)) {
+					bundle = ReferenceBundle.getWeakBundle();
+				} else if (val.equalsIgnoreCase(REFERENCE_TYPE_PHANTOM)) {
+					bundle = ReferenceBundle.getPhantomBundle();
+				}
+			}
+			globalClosures.setBundle(bundle);
+		} catch (ClassCastException cce) { /*ignore.*/ }
+
+		try {
+			final Class clazz = getScriptClass(script);
+			if (null == clazz) throw new ScriptException("Script class is null");
+			return eval(clazz, context);
+		} catch (SyntaxException e) {
+			throw new ScriptException(e.getMessage(), e.getSourceLocator(), e.getLine());
+		} catch (Exception e) {
+			throw new ScriptException(e);
 		}
 	}
 
@@ -237,15 +219,14 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
 	public CompiledScript compile(final String scriptSource) throws ScriptException {
 		try {
-			return new GroovyCompiledScript(this, classMap.get(scriptSource));
-		} catch (ExecutionException ee) {
-			if (ee.getCause() instanceof SyntaxException) {
-				final SyntaxException syntaxExeption = (SyntaxException) ee.getCause();
-				throw new ScriptException(syntaxExeption.getMessage(), syntaxExeption.getSourceLocator(), syntaxExeption.getLine());
-			} else if (ee.getCause() instanceof IOException)
-				throw new ScriptException((IOException) ee.getCause());
-			else
-				throw new ScriptException(ee);
+			return new GroovyCompiledScript(this, getScriptClass(scriptSource));
+		} catch (SyntaxException e) {
+			throw new ScriptException(e.getMessage(),
+					e.getSourceLocator(), e.getLine());
+		} catch (IOException e) {
+			throw new ScriptException(e);
+		} catch (CompilationFailedException ee) {
+			throw new ScriptException(ee);
 		}
 	}
 
@@ -265,15 +246,23 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 		}
 	}
 
-	public Object getInterface(final Class clasz) {
-		return makeInterface(null, clasz);
+	public <T> T getInterface(final Class<T> clazz) {
+		return makeInterface(null, clazz);
 	}
 
-	public Object getInterface(final Object thiz, final Class clasz) {
-		if (thiz == null)
-			throw new IllegalArgumentException("Script object can not be null");
-		else
-			return makeInterface(thiz, clasz);
+	public <T> T getInterface(final Object thiz, final Class<T> clazz) {
+		if (null == thiz)  throw new IllegalArgumentException("script object is null");
+
+		return makeInterface(thiz, clazz);
+	}
+
+	Class getScriptClass(final String script) throws SyntaxException, CompilationFailedException,IOException {
+		Class clazz = classMap.get(script);
+		if (clazz != null)  return clazz;
+
+		clazz = loader.parseClass(script, generateScriptName());
+		classMap.put(script, clazz);
+		return clazz;
 	}
 
 	Object eval(final Class scriptClass, final ScriptContext context) throws ScriptException {
@@ -304,13 +293,11 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
 		try {
 			final Script scriptObject = InvokerHelper.createScript(scriptClass, binding);
-			final Map<String, MethodClosure> closures = new HashMap<>();
 			Stream.of(scriptClass.getMethods()).forEach(m -> {
 				final String name = m.getName();
-				closures.put(name, new MethodClosure(scriptObject, name));
+				globalClosures.put(name, new MethodClosure(scriptObject, name));
 			});
 
-			globalClosures.putAll(closures);
 			final MetaClass oldMetaClass = scriptObject.getMetaClass();
 			scriptObject.setMetaClass(new DelegatingMetaClass(oldMetaClass) {
 				public Object invokeMethod(Object object, String name, Object args) {
@@ -391,16 +378,14 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 		return SCRIPT + counter.incrementAndGet() + DOT_GROOVY;
 	}
 
-	private Object makeInterface(final Object obj, final Class clazz) {
-		if (clazz == null || !clazz.isInterface()) {
-			throw new IllegalArgumentException("interface Class expected");
-		} else {
-			return Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, new InvocationHandler() {
-				public Object invoke(Object proxy, Method m, Object args[]) throws Throwable {
-					return invokeImpl(obj, m.getName(), args);
-				}
-			});
-		}
+	@SuppressWarnings("unchecked")
+	private <T> T makeInterface(final Object obj, final Class<T> clazz) {
+		if (null == clazz || !clazz.isInterface())  throw new IllegalArgumentException("interface Class expected");
+
+		return (T) Proxy.newProxyInstance(
+				clazz.getClassLoader(),
+				new Class[]{clazz},
+				(proxy, m, args) -> invokeImpl(obj, m.getName(), args));
 	}
 
 	protected ClassLoader getParentLoader() {
