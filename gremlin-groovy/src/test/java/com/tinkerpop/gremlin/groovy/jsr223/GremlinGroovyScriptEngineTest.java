@@ -113,7 +113,6 @@ public class GremlinGroovyScriptEngineTest {
 						else
 							assertNotNull(result);
 					} catch (ScriptException e) {
-						//System.out.println(e);
 						assertFalse(true);
 					}
 					latch.countDown();
