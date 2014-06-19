@@ -23,9 +23,9 @@ import static org.junit.Assume.assumeTrue;
  */
 public abstract class HasNotTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(Object v1Id, String prop);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_hasNotXprop(final Object v1Id, final String prop);
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_hasNotXprop(String prop);
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String prop);
 
     @Test
     @LoadGraphWith(CLASSIC)

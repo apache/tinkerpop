@@ -26,9 +26,9 @@ import static org.junit.Assume.assumeTrue;
  */
 public abstract class HasTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_hasXkeyX(Object v1Id, String key);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_hasXkeyX(final Object v1Id, final String key);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_hasXname_markoX(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_markoX();
 
@@ -36,13 +36,13 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXblahX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(Object v1Id, Object v2Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id,final  Object v2Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X();
 
-    public abstract Traversal<Edge, Edge> get_g_e7_hasXlabelXknowsX(Object e7Id);
+    public abstract Traversal<Edge, Edge> get_g_e7_hasXlabelXknowsX(final Object e7Id);
 
     public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknowsX();
 

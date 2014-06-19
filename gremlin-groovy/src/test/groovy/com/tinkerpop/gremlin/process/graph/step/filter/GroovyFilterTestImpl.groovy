@@ -26,7 +26,7 @@ class GroovyFilterTestImpl extends FilterTest {
     }
 
     @Override
-    public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(Object v1Id) {
+    public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(final Object v1Id) {
         g.v(v1Id).filter { it.get()['age',0] > 30 }
     }
 

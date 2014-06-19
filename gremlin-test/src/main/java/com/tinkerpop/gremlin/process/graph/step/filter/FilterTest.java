@@ -164,7 +164,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         }
 
 		@Override
-        public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(final Object v1Id) {
             return g.v(v1Id).filter(v -> v.get().<Integer>property("age").orElse(0) > 30);
         }
 
@@ -214,7 +214,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         }
 
 		@Override
-        public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(final Object v1Id) {
             return g.v(v1Id).filter(v -> v.get().<Integer>property("age").orElse(0) > 30).submit(g.compute());
         }
 
