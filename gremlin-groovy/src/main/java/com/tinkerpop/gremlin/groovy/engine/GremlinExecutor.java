@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
+import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -195,6 +196,10 @@ public class GremlinExecutor {
 					try {
 						final Bindings bindings = new SimpleBindings();
 						bindings.putAll(this.globalBindings);
+
+						// evaluate init scripts with hard reference so as to ensure it doesn't get garbage collected
+						bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_HARD);
+
 						se.eval(p.getValue1(), bindings, language);
 						logger.info("Initialized {} ScriptEngine with {}", language, p.getValue0());
 					} catch (ScriptException sx) {

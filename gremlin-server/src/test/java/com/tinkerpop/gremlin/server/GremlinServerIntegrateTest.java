@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.Item;
 import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
+import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import io.netty.channel.ChannelException;
 import org.junit.Ignore;
@@ -14,7 +15,9 @@ import org.junit.rules.TestName;
 
 import java.net.ConnectException;
 import java.nio.channels.ClosedChannelException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -88,6 +91,29 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+	@Test
+	public void shouldGarbageCollectPhantomButNotHard() throws Exception {
+		final Cluster cluster = Cluster.open();
+		final Client client = cluster.connect();
+
+		assertEquals(2, client.submit("sum(1,1)").all().join().get(0).getInt());
+		assertEquals(0, client.submit("def subtract(x,y){x-y};subtract(1,1)").all().join().get(0).getInt());
+		assertEquals(0, client.submit("subtract(1,1)").all().join().get(0).getInt());
+
+		final Map<String,Object> bindings = new HashMap<>();
+		bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_PHANTOM);
+		assertEquals(4, client.submit("def multiply(x,y){x*y};multiply(2,2)", bindings).all().join().get(0).getInt());
+
+		try {
+			client.submit("multiply(2,2)").all().join().get(0).getInt();
+			fail("Should throw an exception since reference is phantom.");
+		} catch (RuntimeException re) {
+
+		} finally {
+			cluster.close();
+		}
+	}
+
     @Test
     public void shouldReceiveFailureOnBadSerialization() throws Exception {
         final Cluster cluster = Cluster.create("localhost").serializer(Serializers.JSON_V1D0).build();
@@ -104,8 +130,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @Ignore("Fix in netty 4.0.20.final.")
+    @Ignore
     public void shouldBlockRequestWhenTooBig() throws Exception {
+		// todo: Fix in netty 4.0.20.final.
+
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
