@@ -36,6 +36,15 @@ public class KryoWritable<T> implements Writable {
         return this.t;
     }
 
+    public void set(final T t) {
+        this.t = t;
+    }
+
+    @Override
+    public String toString() {
+        return this.t.toString();
+    }
+
     public void readFields(final DataInput input) {
         try {
             final int objectLength = input.readInt();

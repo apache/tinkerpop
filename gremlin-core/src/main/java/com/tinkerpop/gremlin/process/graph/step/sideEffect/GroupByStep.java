@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
@@ -16,17 +16,18 @@ import java.util.Map;
  */
 public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable, Reversible {
 
-    public Map<K, Collection<V>> groupMap;
+    public final Map<K, Collection<V>> groupMap;
     public final Map<K, R> reduceMap;
     public final SFunction<S, K> keyFunction;
     public final SFunction<S, V> valueFunction;
     public final SFunction<Collection<V>, R> reduceFunction;
+    public final String variable;
 
-    public GroupByStep(final Traversal traversal, final Map<K, Collection<V>> groupMap, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
+    public GroupByStep(final Traversal traversal, final String variable, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
         super(traversal);
-        this.groupMap = groupMap;
+        this.variable = variable;
+        this.groupMap = traversal.memory().getOrCreate(this.variable, HashMap<K, Collection<V>>::new);
         this.reduceMap = new HashMap<>();
-        this.traversal.memory().set(CAP_VARIABLE, this.groupMap);
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction == null ? s -> (V) s : valueFunction;
         this.reduceFunction = reduceFunction;
@@ -34,14 +35,10 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
             doGroup(traverser.get(), this.groupMap, this.keyFunction, this.valueFunction);
             if (null != reduceFunction && !this.getPreviousStep().hasNext()) {
                 doReduce(this.groupMap, this.reduceMap, this.reduceFunction);
-                this.traversal.memory().set(CAP_VARIABLE, this.reduceMap);
+                this.traversal.memory().set(this.variable, this.reduceMap);
             }
             return true;
         });
-    }
-
-    public GroupByStep(final Traversal traversal, final String variable, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
-        this(traversal, traversal.memory().getOrCreate(variable, HashMap<K, Collection<V>>::new), keyFunction, valueFunction, reduceFunction);
     }
 
     private static <S, K, V> void doGroup(final S s, final Map<K, Collection<V>> groupMap, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction) {

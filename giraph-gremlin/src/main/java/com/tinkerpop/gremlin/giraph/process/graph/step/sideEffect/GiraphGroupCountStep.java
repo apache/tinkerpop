@@ -39,10 +39,12 @@ import java.util.HashMap;
  */
 public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, JobCreator {
 
-    public java.util.Map<Object, Long> groupCountMap;
-    public FunctionRing<S, ?> functionRing;
+    private static final String GREMLIN_GROUP_COUNT_VARIABLE = "gremlin.groupCount.variable";
+
+    private java.util.Map<Object, Long> groupCountMap;
+    public final FunctionRing<S, ?> functionRing;
     public Vertex vertex;
-    public String variable;
+    public final String variable;
     private long bulkCount = 1l;
 
     public GiraphGroupCountStep(final Traversal traversal, final GroupCountStep groupCountStep) {
@@ -73,11 +75,12 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
 
         @Override
         public void setup(final Mapper<NullWritable, GiraphVertex, Text, LongWritable>.Context context) {
-            this.variable = context.getConfiguration().get("gremlin.groupCountStep.variable", "null");
+            this.variable = context.getConfiguration().get(GREMLIN_GROUP_COUNT_VARIABLE, "null");
         }
 
         @Override
         public void map(final NullWritable key, final GiraphVertex value, final Mapper<NullWritable, GiraphVertex, Text, LongWritable>.Context context) throws IOException, InterruptedException {
+            // TODO: Kryo is serializing the Map<Object,Long> as a Map<Object,Integer>
             final HashMap<Object, Integer> tempMap = value.getGremlinVertex().<HashMap<Object, Integer>>property(Property.hidden(this.variable)).orElse(new HashMap<>());
             tempMap.forEach((k, v) -> {
                 this.textWritable.set(null == k ? "null" : k.toString());
@@ -88,20 +91,6 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
                     throw new RuntimeException(e.getMessage(), e);
                 }
             });
-        }
-    }
-
-    public static class Combiner extends Reducer<Text, LongWritable, Text, LongWritable> {
-        private final LongWritable longWritable = new LongWritable();
-
-        @Override
-        public void reduce(final Text key, final Iterable<LongWritable> values, final Reducer<Text, LongWritable, Text, LongWritable>.Context context) throws IOException, InterruptedException {
-            long totalCount = 0;
-            for (final LongWritable token : values) {
-                totalCount = totalCount + token.get();
-            }
-            this.longWritable.set(totalCount);
-            context.write(key, this.longWritable);
         }
     }
 
@@ -121,16 +110,17 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
 
     public Job createJob(final Configuration configuration) throws IOException {
         final Configuration newConfiguration = new Configuration(configuration);
-        newConfiguration.set("gremlin.groupCountStep.variable", this.variable);
+        newConfiguration.set(GREMLIN_GROUP_COUNT_VARIABLE, this.variable);
+
         final Job job = new Job(newConfiguration, GiraphGraphRunner.GIRAPH_GREMLIN_JOB_PREFIX + this.toString() + "[SideEffect Calculation]");
         job.setJarByClass(GiraphGraph.class);
-        job.setMapperClass(GiraphGroupCountStep.Map.class);
-        job.setCombinerClass(GiraphGroupCountStep.Combiner.class);
-        job.setReducerClass(GiraphGroupCountStep.Reduce.class);
+        job.setMapperClass(Map.class);
+        job.setCombinerClass(Reduce.class);
+        job.setReducerClass(Reduce.class);
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(LongWritable.class);
         job.setOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(LongWritable.class);
+        job.setOutputValueClass(LongWritable.class);
         job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) newConfiguration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
         job.setOutputFormatClass(TextOutputFormat.class);
         FileInputFormat.setInputPaths(job, new Path(newConfiguration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));

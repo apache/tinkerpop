@@ -11,7 +11,9 @@ import com.tinkerpop.gremlin.process.graph.step.filter.DedupStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
@@ -24,7 +26,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.ElementValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ElementValuesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IntersectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
 import com.tinkerpop.gremlin.process.graph.step.map.LabelStep;
@@ -41,6 +42,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.LinkStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubGraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
@@ -48,7 +50,6 @@ import com.tinkerpop.gremlin.process.graph.step.util.Tree;
 import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
 import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
-import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -68,7 +69,6 @@ import org.javatuples.Pair;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -375,7 +375,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
-        return (GraphTraversal) this.addStep(new GroupByStep(this, new HashMap<Object, Collection<Object>>(), keyFunction, (SFunction) valueFunction, (SFunction) reduceFunction));
+        return (GraphTraversal) this.addStep(new GroupByStep(this, SideEffectCapable.CAP_VARIABLE, keyFunction, (SFunction) valueFunction, (SFunction) reduceFunction));
     }
 
     public default GraphTraversal<S, E> groupCount(final String variable, final SFunction<E, ?>... preGroupFunctions) {
@@ -383,7 +383,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> groupCount(final SFunction<E, ?>... preGroupFunctions) {
-        return (GraphTraversal) this.addStep(new GroupCountStep<>(this, new HashMap<Object, Long>(), preGroupFunctions));
+        return (GraphTraversal) this.addStep(new GroupCountStep<>(this, SideEffectCapable.CAP_VARIABLE, preGroupFunctions));
     }
 
     public default GraphTraversal<S, Vertex> linkIn(final String label, final String as) {

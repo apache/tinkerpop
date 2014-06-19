@@ -18,23 +18,19 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
 
     public final Map<Object, Long> groupCountMap;
     public FunctionRing<S, ?> functionRing;
-    public String variable = CAP_VARIABLE;
+    public final String variable;
     private long bulkCount = 1l;
 
-    public GroupCountStep(final Traversal traversal, final Map<Object, Long> groupCountMap, final SFunction<S, ?>... preGroupFunctions) {
+    public GroupCountStep(final Traversal traversal, final String variable, final SFunction<S, ?>... preGroupFunctions) {
         super(traversal);
         this.functionRing = new FunctionRing<>(preGroupFunctions);
-        this.groupCountMap = groupCountMap;
+        this.variable = variable;
+        this.groupCountMap = traversal.memory().getOrCreate(variable, HashMap<Object, Long>::new);
         this.traversal.memory().set(this.variable, this.groupCountMap);
         this.setPredicate(traverser -> {
             MapHelper.incr(this.groupCountMap, this.functionRing.next().apply(traverser.get()), this.bulkCount);
             return true;
         });
-    }
-
-    public GroupCountStep(final Traversal traversal, final String variable, final SFunction<S, ?>... preGroupFunctions) {
-        this(traversal, traversal.memory().getOrCreate(variable, HashMap<Object, Long>::new), preGroupFunctions);
-        this.variable = variable;
     }
 
     public void setCurrentBulkCount(final long bulkCount) {

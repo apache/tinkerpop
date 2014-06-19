@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.giraph.process.graph.strategy;
 
+import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGroupByStep;
 import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphGroupCountStep;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -20,6 +22,11 @@ public class SideEffectReplacementStrategy implements TraversalStrategy.FinalTra
                 .filter(step -> step instanceof GroupCountStep)
                 .collect(Collectors.<Step>toList())
                 .forEach(step -> TraversalHelper.replaceStep(step, new GiraphGroupCountStep(traversal, (GroupCountStep) step), traversal));
+
+        ((List<Step>) traversal.getSteps()).stream()
+                .filter(step -> step instanceof GroupByStep)
+                .collect(Collectors.<Step>toList())
+                .forEach(step -> TraversalHelper.replaceStep(step, new GiraphGroupByStep(traversal, (GroupByStep) step), traversal));
     }
 
 }
