@@ -40,6 +40,7 @@ import java.util.function.Function;
 public class Neo4jGraph implements Graph {
     private GraphDatabaseService rawGraph;
 
+	// todo: configuration for auto-list conversion.
     private static final String CONFIG_DIRECTORY = "gremlin.neo4j.directory";
 	private static final String CONFIG_HA = "gremlin.neo4j.ha";
     private static final String CONFIG_CONF = "gremlin.neo4j.conf";
