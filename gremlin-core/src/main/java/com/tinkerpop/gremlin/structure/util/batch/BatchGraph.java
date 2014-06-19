@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -443,62 +444,12 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
+        public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> out(final String... labels) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> in(final String... labels) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> both(final String... labels) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Edge> outE(final String... labels) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Edge> inE(final String... labels) {
-            throw retrievalNotSupported();
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Edge> bothE(final String... labels) {
+        public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 

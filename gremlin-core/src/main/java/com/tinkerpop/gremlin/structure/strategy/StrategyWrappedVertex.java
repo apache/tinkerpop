@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SConsumer;
@@ -33,63 +34,13 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
-        return applyStrategy(this.baseVertex.out(branchFactor, labels));
+    public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
+        return applyStrategy(this.baseVertex.forV(direction, branchFactor, labels));
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
-        return applyStrategy(this.baseVertex.in(branchFactor, labels));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
-        return applyStrategy(this.baseVertex.both(branchFactor, labels));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
-        return applyStrategy(this.baseVertex.outE(branchFactor, labels));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
-        return applyStrategy(this.baseVertex.inE(branchFactor, labels));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
-        return applyStrategy(this.baseVertex.bothE(branchFactor, labels));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> out(final String... labels) {
-        return applyStrategy(this.baseVertex.out(labels));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> in(final String... labels) {
-        return applyStrategy(this.baseVertex.in(labels));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> both(final String... labels) {
-        return this.baseVertex.both(labels);
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> outE(final String... labels) {
-        return applyStrategy(this.baseVertex.outE(labels));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> inE(final String... labels) {
-        return applyStrategy(this.baseVertex.inE(labels));
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> bothE(final String... labels) {
-        return applyStrategy(this.baseVertex.bothE(labels));
+    public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
+        return applyStrategy(this.baseVertex.forE(direction, branchFactor, labels));
     }
 
     @Override

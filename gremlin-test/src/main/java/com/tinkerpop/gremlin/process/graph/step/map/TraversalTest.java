@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -80,6 +81,8 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_v4_bothE_otherV(final Object v4Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(final Object v4Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_v1_forV_XOUT_knowsX(final Object v1Id);
 
     // VERTEX ADJACENCY
 
@@ -483,6 +486,24 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
         assertEquals(3, names.size());
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v1_forV_XOUT_knowsX() {
+        final Iterator<Vertex> step = get_g_v1_forV_XOUT_knowsX(convertToVertexId("marko"));
+        System.out.println("Testing: " + step);
+        int counter = 0;
+        while (step.hasNext()) {
+            counter++;
+            Vertex vertex = step.next();
+            String name = vertex.value("name");
+            assertTrue(name.equals("vadas") ||
+                    name.equals("josh"));
+        }
+        assertEquals(2, counter);
+        assertFalse(step.hasNext());
+
+    }
+
     public static class JavaTraversalTest extends TraversalTest {
         public JavaTraversalTest() {
             requiresGraphComputer = false;
@@ -594,6 +615,10 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id) {
             return g.v(v1Id).out().value("name");
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_forV_XOUT_knowsX(final Object v1Id) {
+            return g.v(v1Id).forV(Direction.OUT, "knows");
         }
     }
 
@@ -710,6 +735,10 @@ public abstract class TraversalTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, String> get_g_v1_out_valueXnameX(final Object v1Id) {
             return g.v(v1Id).out().<String>value("name").submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_forV_XOUT_knowsX(final Object v1Id) {
+            return g.v(v1Id).forV(Direction.OUT, "knows").submit(g.compute());
         }
     }
 }

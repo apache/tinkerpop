@@ -58,56 +58,20 @@ public class Neo4jVertex extends Neo4jElement implements Vertex {
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
         this.graph.tx().readWrite();
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new Neo4jVertexStep(this.graph, traversal, Vertex.class, Direction.OUT, branchFactor, labels));
+        traversal.addStep(new Neo4jVertexStep(this.graph, traversal, Vertex.class, direction, branchFactor, labels));
         return traversal;
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
-        this.graph.tx().readWrite();
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new Neo4jVertexStep(this.graph, traversal, Vertex.class, Direction.IN, branchFactor, labels));
-        return traversal;
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
-        this.graph.tx().readWrite();
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new Neo4jVertexStep(this.graph, traversal, Vertex.class, Direction.BOTH, branchFactor, labels));
-        return traversal;
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
         this.graph.tx().readWrite();
         final GraphTraversal<Vertex, Edge> traversal = new DefaultGraphTraversal<>();
         traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new Neo4jVertexStep(this.graph, traversal, Edge.class, Direction.OUT, branchFactor, labels));
-        return traversal;
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
-        this.graph.tx().readWrite();
-        final GraphTraversal<Vertex, Edge> traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new Neo4jVertexStep(this.graph, traversal, Edge.class, Direction.IN, branchFactor, labels));
-        return traversal;
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
-        this.graph.tx().readWrite();
-        final GraphTraversal<Vertex, Edge> traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new Neo4jVertexStep(this.graph, traversal, Edge.class, Direction.BOTH, branchFactor, labels));
+        traversal.addStep(new Neo4jVertexStep(this.graph, traversal, Edge.class, direction, branchFactor, labels));
         return traversal;
     }
 

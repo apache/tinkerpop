@@ -20,7 +20,6 @@ import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerVertexStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.ClearTraverserSourceStrategy;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepTraversalStrategy;
 
 import java.util.HashMap;
@@ -96,39 +95,15 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
-    public GraphTraversal<Vertex, Vertex> out(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
         final GraphTraversal<Vertex, Vertex> traversal = this.start();
-        traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, Direction.OUT, branchFactor, labels));
+        traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, direction, branchFactor, labels));
         return traversal;
     }
 
-    public GraphTraversal<Vertex, Vertex> in(final int branchFactor, final String... labels) {
-        final GraphTraversal<Vertex, Vertex> traversal = this.start();
-        traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, Direction.IN, branchFactor, labels));
-        return traversal;
-    }
-
-    public GraphTraversal<Vertex, Vertex> both(final int branchFactor, final String... labels) {
-        final GraphTraversal<Vertex, Vertex> traversal = this.start();
-        traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, Direction.BOTH, branchFactor, labels));
-        return traversal;
-    }
-
-    public GraphTraversal<Vertex, Edge> outE(final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
         final GraphTraversal traversal = this.start();
-        traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.OUT, branchFactor, labels));
-        return traversal;
-    }
-
-    public GraphTraversal<Vertex, Edge> inE(final int branchFactor, final String... labels) {
-        final GraphTraversal traversal = this.start();
-        traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.IN, branchFactor, labels));
-        return traversal;
-    }
-
-    public GraphTraversal<Vertex, Edge> bothE(final int branchFactor, final String... labels) {
-        final GraphTraversal traversal = this.start();
-        traversal.addStep(new TinkerVertexStep(traversal, Edge.class, Direction.BOTH, branchFactor, labels));
+        traversal.addStep(new TinkerVertexStep(traversal, Edge.class, direction, branchFactor, labels));
         return traversal;
     }
 }

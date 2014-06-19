@@ -2,7 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.map
 
 import com.tinkerpop.gremlin.process.T
 import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest
+import com.tinkerpop.gremlin.structure.Direction
 import com.tinkerpop.gremlin.structure.Edge
 import com.tinkerpop.gremlin.structure.Vertex
 
@@ -117,5 +117,9 @@ class GroovyTraversalTestImpl extends TraversalTest {
 
     public Traversal<Vertex, Vertex> get_g_v4_bothE_hasXweight_lt_1X_otherV(final Object v4Id) {
         g.v(v4Id).bothE.has('weight', T.lt, 1.0f).otherV
+    }
+
+    public Traversal<Vertex, Vertex> get_g_v1_forV_XOUT_knowsX(final Object v1Id) {
+        return g.v(v1Id).forV(Direction.OUT, 'knows');
     }
 }

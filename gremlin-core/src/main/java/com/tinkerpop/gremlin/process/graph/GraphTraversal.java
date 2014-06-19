@@ -118,52 +118,68 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new IdentityStep<>(this));
     }
 
+    public default GraphTraversal<S, Vertex> forV(final Direction direction, final int branchFactor, final String... labels) {
+        return (GraphTraversal) this.addStep(new VertexStep(this, Vertex.class, direction, branchFactor, labels));
+    }
+
+    public default GraphTraversal<S, Vertex> forV(final Direction direction, final String... labels) {
+        return this.forV(direction, Integer.MAX_VALUE, labels);
+    }
+
     public default GraphTraversal<S, Vertex> out(final int branchFactor, final String... labels) {
-        return (GraphTraversal) this.addStep(new VertexStep(this, Vertex.class, Direction.OUT, branchFactor, labels));
+        return this.forV(Direction.OUT, branchFactor, labels);
     }
 
     public default GraphTraversal<S, Vertex> out(final String... labels) {
-        return this.out(Integer.MAX_VALUE, labels);
+        return this.forV(Direction.OUT, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<S, Vertex> in(final int branchFactor, final String... labels) {
-        return (GraphTraversal) this.addStep(new VertexStep(this, Vertex.class, Direction.IN, branchFactor, labels));
+        return this.forV(Direction.IN, branchFactor, labels);
     }
 
     public default GraphTraversal<S, Vertex> in(final String... labels) {
-        return this.in(Integer.MAX_VALUE, labels);
+        return this.forV(Direction.IN, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<S, Vertex> both(final int branchFactor, final String... labels) {
-        return (GraphTraversal) this.addStep(new VertexStep(this, Vertex.class, Direction.BOTH, branchFactor, labels));
+        return this.forV(Direction.BOTH, branchFactor, labels);
     }
 
     public default GraphTraversal<S, Vertex> both(final String... labels) {
-        return this.both(Integer.MAX_VALUE, labels);
+        return this.forV(Direction.BOTH, Integer.MAX_VALUE, labels);
+    }
+
+    public default GraphTraversal<S, Edge> forE(final Direction direction, final int branchFactor, final String... labels) {
+        return (GraphTraversal) this.addStep(new VertexStep(this, Edge.class, direction, branchFactor, labels));
+    }
+
+    public default GraphTraversal<S, Edge> forE(final Direction direction, final String... labels) {
+        return this.forE(direction, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<S, Edge> outE(final int branchFactor, final String... labels) {
-        return (GraphTraversal) this.addStep(new VertexStep(this, Edge.class, Direction.OUT, branchFactor, labels));
+        return this.forE(Direction.OUT, branchFactor, labels);
     }
 
     public default GraphTraversal<S, Edge> outE(final String... labels) {
-        return this.outE(Integer.MAX_VALUE, labels);
+        return this.forE(Direction.OUT, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<S, Edge> inE(final int branchFactor, final String... labels) {
-        return (GraphTraversal) this.addStep(new VertexStep(this, Edge.class, Direction.IN, branchFactor, labels));
+        return this.forE(Direction.IN, branchFactor, labels);
     }
 
     public default GraphTraversal<S, Edge> inE(final String... labels) {
-        return this.inE(Integer.MAX_VALUE, labels);
+        return this.forE(Direction.IN, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<S, Edge> bothE(final int branchFactor, final String... labels) {
-        return (GraphTraversal) this.addStep(new VertexStep(this, Edge.class, Direction.BOTH, branchFactor, labels));
+        return this.forE(Direction.BOTH, branchFactor, labels);
     }
 
     public default GraphTraversal<S, Edge> bothE(final String... labels) {
-        return this.bothE(Integer.MAX_VALUE, labels);
+        return this.forE(Direction.BOTH, Integer.MAX_VALUE, labels);
     }
 
     public default GraphTraversal<S, Vertex> inV() {
