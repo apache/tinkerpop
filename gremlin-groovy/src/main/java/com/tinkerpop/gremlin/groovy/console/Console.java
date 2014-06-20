@@ -75,6 +75,8 @@ public class Console {
 
         GremlinLoader.load();
 
+		// if plugins were added via :use command (or manually copied to the path) then this will try to find
+		// plugins and load them
 		ServiceLoader.load(GremlinPlugin.class, GROOVYSH.getInterp().getClassLoader()).forEach(plugin -> {
 			if (!loadedPlugins.contains(plugin.getName())) {
 				plugin.pluginTo(new ConsolePluginAcceptor(GROOVYSH));
