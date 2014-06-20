@@ -37,6 +37,8 @@ class UseCommand extends ComplexCommandSupport {
         return msgs
     }
 
+    // todo: add "uninstall" option
+
     def Object do_install = { List<String> arguments ->
         final def dep = createDependencyRecord(arguments)
         final def pluginsThatNeedRestart = grabDeps(dep)
