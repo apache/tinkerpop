@@ -3,6 +3,8 @@ package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
+import com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat;
+import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat;
 import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
@@ -25,6 +27,8 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
     private static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT + GiraphGraph.class.getPackage().getName() + DOT_STAR);
         add(IMPORT + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT + KryoVertexInputFormat.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT + GraphSONVertexInputFormat.class.getPackage().getName() + DOT_STAR);
         add("import org.apache.hadoop.hdfs.*");
         add("import org.apache.hadoop.conf.*");
         add("import org.apache.hadoop.fs.*");
@@ -64,12 +68,9 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
         return Optional.of(new HashSet<>(Arrays.asList(new Artifact("org.apache.hadoop", "hadoop-core", "1.2.1"))));
     }
 
-	@Override
-	public Optional<RemoteAcceptor> remoteAcceptor() {
-		return Optional.of(new GiraphRemoteAcceptor());
-	}
-
-	// TODO: Add support for Hadoop HDFS interactions like in Faunus
-    // TODO: https://github.com/thinkaurelius/faunus/blob/master/src/main/groovy/com/thinkaurelius/faunus/tinkerpop/gremlin/loaders/HadoopLoader.groovy
+    @Override
+    public Optional<RemoteAcceptor> remoteAcceptor() {
+        return Optional.of(new GiraphRemoteAcceptor());
+    }
 
 }
