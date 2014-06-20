@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.map
 
 import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.step.map.MapTest
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**

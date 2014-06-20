@@ -1,27 +1,26 @@
 package com.tinkerpop.gremlin.groovy.console.commands
 
-import com.tinkerpop.gremlin.groovy.plugin.Artifact
-
-import java.nio.file.FileSystems
-import java.nio.file.StandardCopyOption
-import java.nio.file.FileSystem
 import com.tinkerpop.gremlin.groovy.console.ConsolePluginAcceptor
+import com.tinkerpop.gremlin.groovy.console.Mediator
+import com.tinkerpop.gremlin.groovy.plugin.Artifact
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import groovy.grape.Grape
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
+import java.nio.file.FileSystems
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class UseCommand extends ComplexCommandSupport {
-    private final Set<String> loadedPlugins
+    private final Mediator mediator
 
-    public UseCommand(final Groovysh shell, final Set<String> loadedPlugins) {
+    public UseCommand(final Groovysh shell, final Mediator mediator) {
         super(shell, ":use", ":u", ["install", "now"], "now")
-        this.loadedPlugins = loadedPlugins
+        this.mediator = mediator
     }
 
     def Object do_now = { List<String> arguments ->
@@ -37,6 +36,7 @@ class UseCommand extends ComplexCommandSupport {
         return msgs
     }
 
+    // todo: add "list" option
     // todo: add "uninstall" option
 
     def Object do_install = { List<String> arguments ->
@@ -70,12 +70,12 @@ class UseCommand extends ComplexCommandSupport {
         // note that the service loader utilized the classloader from the groovy shell as shell class are available
         // from within there given loading through Grape.
         ServiceLoader.load(GremlinPlugin.class, shell.getInterp().getClassLoader()).forEach { plugin ->
-            if (!loadedPlugins.contains(plugin.name)) {
+            if (!mediator.loadedPlugins.containsKey(plugin.name)) {
                 if (plugin.requireRestart())
                     pluginsThatNeedRestart<<plugin.name
                 else {
                     plugin.pluginTo(new ConsolePluginAcceptor(shell))
-                    loadedPlugins.add(plugin.name)
+                    mediator.loadedPlugins.put(plugin.name, plugin)
                 }
 
                 if (plugin.additionalDependencies().isPresent())

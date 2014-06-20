@@ -36,4 +36,6 @@ public interface GremlinPlugin {
 	 * dependencies should be specified here so that the plugin host can grab them too.
 	 */
 	public default Optional<Set<Artifact>> additionalDependencies() { return Optional.empty(); }
+
+	public default Optional<RemoteAcceptor> remoteAcceptor() { return Optional.empty(); }
 }

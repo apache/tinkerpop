@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.groovy.console;
 
+import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.console.commands.RemoteCommand;
 import com.tinkerpop.gremlin.groovy.console.commands.SubmitCommand;
 import com.tinkerpop.gremlin.groovy.console.commands.UseCommand;
-import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import jline.console.history.FileHistory;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -18,9 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.HashSet;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,8 +31,6 @@ public class Console {
         // this is necessary so that terminal doesn't lose focus to AWT
         System.setProperty("java.awt.headless", "true");
     }
-
-    private static final Set<String> loadedPlugins = new HashSet<>();
 
     private static final String HISTORY_FILE = ".gremlin_groovy_history";
     private static final String STANDARD_INPUT_PROMPT = "gremlin> ";
@@ -51,7 +47,7 @@ public class Console {
         STANDARD_IO.out.println("-----oOOo-(3)-oOOo-----");
 
         final Mediator mediator = new Mediator();
-        GROOVYSH.register(new UseCommand(GROOVYSH, loadedPlugins));
+        GROOVYSH.register(new UseCommand(GROOVYSH, mediator));
         GROOVYSH.register(new RemoteCommand(GROOVYSH, mediator));
         GROOVYSH.register(new SubmitCommand(GROOVYSH, mediator));
 
@@ -78,9 +74,9 @@ public class Console {
 		// if plugins were added via :use command (or manually copied to the path) then this will try to find
 		// plugins and load them
 		ServiceLoader.load(GremlinPlugin.class, GROOVYSH.getInterp().getClassLoader()).forEach(plugin -> {
-			if (!loadedPlugins.contains(plugin.getName())) {
+			if (!mediator.loadedPlugins.containsKey(plugin.getName())) {
 				plugin.pluginTo(new ConsolePluginAcceptor(GROOVYSH));
-				loadedPlugins.add(plugin.getName());
+				mediator.loadedPlugins.put(plugin.getName(), plugin);
 
 				STANDARD_IO.out.println("loaded: " + plugin.getName());
 			}

@@ -1,9 +1,8 @@
 package com.tinkerpop.gremlin.groovy.console.commands
 
-import com.tinkerpop.gremlin.driver.Cluster
-import com.tinkerpop.gremlin.driver.MessageSerializer
-import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
+import com.tinkerpop.gremlin.groovy.console.DriverRemoteAcceptor
 import com.tinkerpop.gremlin.groovy.console.Mediator
+import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
@@ -14,37 +13,16 @@ import org.codehaus.groovy.tools.shell.Groovysh
  */
 class RemoteCommand extends ComplexCommandSupport {
     private final Mediator mediator
-    private Cluster currentCluster
-    private Cluster.Builder lastBuilder
-
-    private static final String TOKEN_TEXT = "text"
-    private static final String TOKEN_OBJECTS = "objects"
-    private static final String TOKEN_CUSTOM = "custom"
-
-    private static final Map<String, MessageSerializer> serializers = [:].withDefault {null}
-    private static final MessageSerializer AS_OBJECTS = new KryoMessageSerializerV1d0()
-    private static final MessageSerializer AS_TEXT = new KryoMessageSerializerV1d0()
-
-    private String serializerType = TOKEN_TEXT
-
-    static {
-        AS_OBJECTS.configure([serializeResultToString: "false"])
-        AS_TEXT.configure([serializeResultToString: "true"])
-
-        serializers[TOKEN_TEXT] = AS_TEXT
-        serializers[TOKEN_OBJECTS] = AS_OBJECTS
-    }
 
     public RemoteCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":remote", ":rem", ["current", "connect", "as", "timeout"], "current")
+        super(shell, ":remote", ":rem", ["current", "connect", "list", "next", "prev"], "current")
         this.mediator = mediator
-
-        // initialize with a localhost connection. uses toString serialization by default which lets everything
-        // come back over the wire which is easy/nice for beginners
-        lastBuilder = Cluster.create().addContactPoint("localhost").serializer(AS_TEXT)
-        makeCluster()
     }
 
+    // todo: add a select option
+    // todo: add a way to name remotes
+
+    /*
     def Object do_timeout = { List<String> arguments ->
         final String errorMessage = "the timeout option expects a positive integer representing milliseconds or 'max' as an argument"
         if (arguments.size() != 1) return errorMessage
@@ -58,65 +36,44 @@ class RemoteCommand extends ComplexCommandSupport {
             return errorMessage
         }
     }
+    */
 
     def Object do_connect = { List<String> arguments ->
-        Cluster.Builder builder
-        final String line = String.join(" ", arguments)
+        if (arguments.size() == 0) return "define the remote to configured (e.g. server)"
 
-        try {
-            final InetAddress addy = InetAddress.getByName(line)
-            builder = Cluster.create(addy.getHostAddress())
-        } catch (UnknownHostException e) {
-            // not a hostname - try to treat it as a property file
-            try {
-                builder = Cluster.create(new File(line))
-            } catch (FileNotFoundException fnfe) {
-                return "the 'connect' option must be a resolvable host or a configuration file";
-            }
+        def remote
+        if (arguments[0] == "server") {
+            // assume a remote gremlin server
+            remote = new DriverRemoteAcceptor(shell)
+        } else {
+            if (!mediator.loadedPlugins.containsKey(arguments[0])) return "no plugin named ${arguments[0]}"
+            def plugin = mediator.loadedPlugins[arguments[0]]
+            def Optional<RemoteAcceptor> remoteAcceptor = plugin.remoteAcceptor()
+            if (!remoteAcceptor.isPresent()) return "${arguments[0]} does not accept remote configuration"
+
+            remote = remoteAcceptor.get()
         }
 
-        lastBuilder = builder
-        makeCluster()
+        mediator.addRemote(remote)
 
-        return String.format("connected - " + currentCluster)
-    }
-
-    def Object do_as = { List<String> arguments ->
-        if (!(arguments.first() in [TOKEN_CUSTOM, TOKEN_OBJECTS, TOKEN_TEXT]))
-            return "the 'as' option expects '$TOKEN_TEXT', '$TOKEN_OBJECTS', or '$TOKEN_CUSTOM' as an argument"
-
-        this.serializerType = arguments.first()
-        if (serializerType == TOKEN_CUSTOM) {
-            if (arguments.size() != 2) return "when specifying '$TOKEN_CUSTOM' a ${MessageSerializer.class.getSimpleName()} instance should be specified after it"
-
-            final String serializerBinding = arguments.get(1)
-            final def suspectedSerializer = this.variables[serializerBinding]
-
-            if (null == suspectedSerializer) return "$serializerBinding is not a variable instantiated in the console"
-            if (!(suspectedSerializer instanceof MessageSerializer)) return "$serializerBinding is not a ${MessageSerializer.class.getSimpleName()} instance"
-
-            serializers[TOKEN_CUSTOM] = suspectedSerializer
-        }
-
-        makeCluster()
-
-        return resultsAsMessage()
+        return remote.connect(arguments.tail())
     }
 
     def Object do_current = {
-        final resultsAs = resultsAsMessage()
-        return "remote - $resultsAs [${currentCluster}]"
+        return "remote - ${mediator.currentRemote()}"
     }
 
-    private def makeCluster() {
-        lastBuilder.serializer(serializers[serializerType])
-        if (currentCluster != null) currentCluster.close()
-        currentCluster = lastBuilder.build();
-        currentCluster.init()
-        this.mediator.clusterSelected(currentCluster);
+    def Object do_next = {
+        mediator.nextRemote()
     }
 
-    private def String resultsAsMessage() {
-        return "results as $serializerType"
+    def Object do_prev = {
+        mediator.previousRemote()
+    }
+
+    def Object do_list = {
+        def copy = []
+        mediator.remotes.eachWithIndex{remote, i -> copy << (mediator.position == i ? "*" : "") + i + " - " + remote.toString()}
+        return copy
     }
 }

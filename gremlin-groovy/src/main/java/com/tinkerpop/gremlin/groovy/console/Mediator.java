@@ -1,56 +1,58 @@
 package com.tinkerpop.gremlin.groovy.console;
 
-import com.tinkerpop.gremlin.driver.Client;
-import com.tinkerpop.gremlin.driver.Cluster;
-import com.tinkerpop.gremlin.driver.Item;
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Mediator {
-
-    private Cluster cluster = null;
+	public final Map<String,GremlinPlugin> loadedPlugins = new HashMap<>();
+    public final List<RemoteAcceptor> remotes = new ArrayList<>();
     public int remoteTimeout = 180000;
+	public int position;
 
-    public void clusterSelected(final Cluster cluster) {
-        this.close();
-        this.cluster = cluster;
-        this.cluster.init();
+    public RemoteAcceptor currentRemote() {
+        return remotes.get(position);
     }
 
-    public boolean isClusterConfigured() {
-        return cluster != null;
-    }
+	public void addRemote(final RemoteAcceptor remote) {
+		remotes.add(remote);
+		position = remotes.size() - 1;
+	}
 
-    public List<Item> submit(final String gremlin) throws Exception {
-        final Client client = cluster.connect();
-        try {
-            return client.submit(gremlin).all().get(remoteTimeout, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException toe) {
-            throw new RuntimeException("request timed out while processing - increase the timeout with the :remote command");
-        } finally {
-            try {
-                client.close();
-            } catch (Exception ex) {
-                // empty
-            }
-        }
-    }
+	public RemoteAcceptor nextRemote() {
+		position++;
+		if (position >= remotes.size())
+			position = 0;
+		return currentRemote();
+	}
 
-    public String clusterInfo() {
-        return this.cluster.toString();
+	public RemoteAcceptor previousRemote() {
+		position--;
+		if (position < 0)
+			position = remotes.size() - 1;
+		return currentRemote();
+	}
+
+    public Object submit(final List<String> args) throws Exception {
+        return currentRemote().submit(args);
     }
 
     public CompletableFuture<Void> close() {
-        if (this.cluster != null)
-            return this.cluster.closeAsync();
+        remotes.forEach(remote -> {
+			try {
+				remote.close();
+			} catch (Exception ignored) {
 
+			}
+		});
         return CompletableFuture.completedFuture(null);
     }
 

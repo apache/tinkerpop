@@ -1,10 +1,8 @@
 package com.tinkerpop.gremlin
 
-import com.tinkerpop.gremlin.structure.Graph
 import groovy.grape.Grape
-import org.codehaus.groovy.jsr223.GroovyCompiledScript
-import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl
+import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.MethodClosure
 import org.codehaus.groovy.util.ManagedConcurrentValueMap
 import org.codehaus.groovy.util.ReferenceBundle

@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.filter
 
 import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**

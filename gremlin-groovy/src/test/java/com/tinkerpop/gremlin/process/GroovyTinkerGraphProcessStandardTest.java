@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.process;
 
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
-import com.tinkerpop.gremlin.groovy.GremlinLoader;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.commons.configuration.Configuration;

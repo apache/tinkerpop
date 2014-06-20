@@ -1,8 +1,9 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
+import org.junit.Test;
+
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,8 +15,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
-
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

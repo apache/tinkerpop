@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.filter
 
 import com.tinkerpop.gremlin.process.Traversal
-import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest
 import com.tinkerpop.gremlin.structure.Vertex
 
 /**
