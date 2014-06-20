@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 
 import javax.script.ScriptException;
 import java.util.Arrays;
@@ -62,7 +63,12 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
         return Optional.of(new HashSet<>(Arrays.asList(new Artifact("org.apache.hadoop", "hadoop-core", "1.2.1"))));
     }
 
-    // TODO: Add support for Hadoop HDFS interactions like in Faunus
+	@Override
+	public Optional<RemoteAcceptor> remoteAcceptor() {
+		return Optional.of(new GiraphRemoteAcceptor());
+	}
+
+	// TODO: Add support for Hadoop HDFS interactions like in Faunus
     // TODO: https://github.com/thinkaurelius/faunus/blob/master/src/main/groovy/com/thinkaurelius/faunus/tinkerpop/gremlin/loaders/HadoopLoader.groovy
 
 }
