@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
 
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
@@ -9,7 +10,6 @@ import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import javax.script.ScriptException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -23,6 +23,7 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
 
     private static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT + GiraphGraph.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
         add("import org.apache.hadoop.hdfs.*");
         add("import org.apache.hadoop.conf.*");
         add("import org.apache.hadoop.fs.*");
@@ -31,7 +32,7 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
         add("import org.apache.hadoop.io.compress.*");
         add("import org.apache.hadoop.mapreduce.lib.input.*");
         add("import org.apache.hadoop.mapreduce.lib.output.*");
-		add("import org.apache.log4j.*");
+        add("import org.apache.log4j.*");
     }};
 
     @Override
@@ -43,7 +44,7 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
     public void pluginTo(final PluginAcceptor pluginAcceptor) {
         pluginAcceptor.addImports(IMPORTS);
         try {
-			pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", org.apache.hadoop.mapred.JobClient.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", org.apache.hadoop.mapred.JobClient.class.getName()));
             pluginAcceptor.eval("hdfs = org.apache.hadoop.fs.FileSystem.get(new org.apache.hadoop.conf.Configuration())");
             pluginAcceptor.eval("local = org.apache.hadoop.fs.FileSystem.getLocal(new org.apache.hadoop.conf.Configuration())");
         } catch (final ScriptException e) {
@@ -51,17 +52,17 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
         }
     }
 
-	@Override
-	public boolean requireRestart() {
-		return true;
-	}
+    @Override
+    public boolean requireRestart() {
+        return true;
+    }
 
-	@Override
-	public Optional<Set<Artifact>> additionalDependencies() {
-		return Optional.of(new HashSet<>(Arrays.asList(new Artifact("org.apache.hadoop", "hadoop-core", "1.2.1"))));
-	}
+    @Override
+    public Optional<Set<Artifact>> additionalDependencies() {
+        return Optional.of(new HashSet<>(Arrays.asList(new Artifact("org.apache.hadoop", "hadoop-core", "1.2.1"))));
+    }
 
-	// TODO: Add support for Hadoop HDFS interactions like in Faunus
+    // TODO: Add support for Hadoop HDFS interactions like in Faunus
     // TODO: https://github.com/thinkaurelius/faunus/blob/master/src/main/groovy/com/thinkaurelius/faunus/tinkerpop/gremlin/loaders/HadoopLoader.groovy
 
 }
