@@ -16,6 +16,10 @@
             <outputDirectory>/config</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>src/main/ext</directory>
+            <outputDirectory>/ext</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>../data</directory>
             <outputDirectory>/data</outputDirectory>
         </fileSet>

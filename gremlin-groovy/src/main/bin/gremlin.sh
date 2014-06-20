@@ -13,6 +13,15 @@ case `uname` in
     CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /:/g')
 esac
 
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+CP=$CP:$(find -L $DIR/../ext/ -name "*.jar" | tr '\n' ':')
+
 export CLASSPATH="${CLASSPATH:-}:$CP"
 
 # Find Java

@@ -20,10 +20,10 @@
             <directory>target/${project.artifactId}-${project.version}-standalone/data</directory>
             <outputDirectory>data</outputDirectory>
         </fileSet>
-        <!--<fileSet>
-            <directory>target/apidocs</directory>
-            <outputDirectory>doc/javadoc</outputDirectory>
-        </fileSet>-->
+        <fileSet>
+            <directory>target/${project.artifactId}-${project.version}-standalone/ext</directory>
+            <outputDirectory>ext</outputDirectory>
+        </fileSet>
         <fileSet>
             <directory>target/${project.artifactId}-${project.version}-standalone/lib</directory>
             <outputDirectory>lib</outputDirectory>
