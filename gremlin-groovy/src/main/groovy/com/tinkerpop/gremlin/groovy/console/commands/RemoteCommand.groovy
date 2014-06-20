@@ -15,7 +15,7 @@ class RemoteCommand extends ComplexCommandSupport {
     private final Mediator mediator
 
     public RemoteCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":remote", ":rem", ["current", "connect", "list", "next", "prev"], "current")
+        super(shell, ":remote", ":rem", ["current", "connect", "config", "list", "next", "prev"], "current")
         this.mediator = mediator
     }
 
@@ -57,6 +57,10 @@ class RemoteCommand extends ComplexCommandSupport {
         mediator.addRemote(remote)
 
         return remote.connect(arguments.tail())
+    }
+
+    def Object do_config = { List<String> arguments ->
+        return mediator.currentRemote().configure(arguments)
     }
 
     def Object do_current = {
