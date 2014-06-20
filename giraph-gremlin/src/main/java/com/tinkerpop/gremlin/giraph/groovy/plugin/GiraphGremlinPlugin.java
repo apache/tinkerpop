@@ -31,6 +31,7 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
         add("import org.apache.hadoop.io.compress.*");
         add("import org.apache.hadoop.mapreduce.lib.input.*");
         add("import org.apache.hadoop.mapreduce.lib.output.*");
+		add("import org.apache.log4j.*");
     }};
 
     @Override
@@ -42,6 +43,7 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
     public void pluginTo(final PluginAcceptor pluginAcceptor) {
         pluginAcceptor.addImports(IMPORTS);
         try {
+			pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", org.apache.hadoop.mapred.JobClient.class.getName()));
             pluginAcceptor.eval("hdfs = org.apache.hadoop.fs.FileSystem.get(new org.apache.hadoop.conf.Configuration())");
             pluginAcceptor.eval("local = org.apache.hadoop.fs.FileSystem.getLocal(new org.apache.hadoop.conf.Configuration())");
         } catch (final ScriptException e) {
