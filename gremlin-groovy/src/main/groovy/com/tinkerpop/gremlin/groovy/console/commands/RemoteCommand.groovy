@@ -19,22 +19,6 @@ class RemoteCommand extends ComplexCommandSupport {
         this.mediator = mediator
     }
 
-    /*
-    def Object do_timeout = { List<String> arguments ->
-        final String errorMessage = "the timeout option expects a positive integer representing milliseconds or 'max' as an argument"
-        if (arguments.size() != 1) return errorMessage
-        try {
-            final int to = arguments.get(0).equals("max") ? Integer.MAX_VALUE : Integer.parseInt(arguments.get(0))
-            if (to <= 0) return errorMessage
-
-            mediator.remoteTimeout = to
-            return "set remote timeout to ${to}ms"
-        } catch (Exception ex) {
-            return errorMessage
-        }
-    }
-    */
-
     def Object do_connect = { List<String> arguments ->
         if (arguments.size() == 0) return "define the remote to configured (e.g. server)"
 

@@ -20,6 +20,10 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
     private Cluster currentCluster
     private Cluster.Builder lastBuilder
 
+    private int timeout = 30000
+
+    private static final String TOKEN_TIMEOUT = "timeout"
+    private static final String TOKEN_AS = "as"
     private static final String TOKEN_TEXT = "text"
     private static final String TOKEN_OBJECTS = "objects"
     private static final String TOKEN_CUSTOM = "custom"
@@ -31,8 +35,6 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
     private String serializerType = TOKEN_TEXT
 
     private final Groovysh shell;
-
-    // todo: work on configure of TO
 
     static {
         AS_OBJECTS.configure([serializeResultToString: "false"])
@@ -77,20 +79,37 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object configure(final List<String> args) {
-        if (!(args.first() in [TOKEN_CUSTOM, TOKEN_OBJECTS, TOKEN_TEXT]))
-            return "the 'as' option expects '$TOKEN_TEXT', '$TOKEN_OBJECTS', or '$TOKEN_CUSTOM' as an argument"
+        final def option = args.size() == 0 ? "" : args[0]
+        if (!(option in [TOKEN_AS, TOKEN_TIMEOUT]))
+            return "the 'config' option expects one of ['$TOKEN_AS', '$TOKEN_TIMEOUT'] as an argument"
 
-        this.serializerType = args.first()
-        if (serializerType == TOKEN_CUSTOM) {
-            if (args.size() != 2) return "when specifying '$TOKEN_CUSTOM' a ${MessageSerializer.class.getSimpleName()} instance should be specified after it"
+        final def arguments = args.tail()
 
-            final String serializerBinding = args.get(1)
-            final def suspectedSerializer = args[serializerBinding]
+        if (option == TOKEN_AS) {
+            this.serializerType = arguments[0]
+            if (serializerType == TOKEN_CUSTOM) {
+                if (arguments.size() != 2) return "when specifying '$TOKEN_CUSTOM' a ${MessageSerializer.class.getSimpleName()} instance should be specified after it"
 
-            if (null == suspectedSerializer) return "$serializerBinding is not a variable instantiated in the console"
-            if (!(suspectedSerializer instanceof MessageSerializer)) return "$serializerBinding is not a ${MessageSerializer.class.getSimpleName()} instance"
+                final String serializerBinding = arguments.get(1)
+                final def suspectedSerializer = arguments[serializerBinding]
 
-            serializers[TOKEN_CUSTOM] = suspectedSerializer
+                if (null == suspectedSerializer) return "$serializerBinding is not a variable instantiated in the console"
+                if (!(suspectedSerializer instanceof MessageSerializer)) return "$serializerBinding is not a ${MessageSerializer.class.getSimpleName()} instance"
+
+                serializers[TOKEN_CUSTOM] = suspectedSerializer
+            }
+        } else if (option == TOKEN_TIMEOUT) {
+            final String errorMessage = "the timeout option expects a positive integer representing milliseconds or 'max' as an argument"
+            if (arguments.size() != 1) return errorMessage
+            try {
+                final int to = arguments.get(0).equals("max") ? Integer.MAX_VALUE : Integer.parseInt(arguments.get(0))
+                if (to <= 0) return errorMessage
+
+                timeout = to
+                return "set remote timeout to ${to}ms"
+            } catch (Exception ignored) {
+                return errorMessage
+            }
         }
 
         makeCluster()
@@ -129,7 +148,7 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
     private def List<Item> send(final String gremlin) {
         final Client client = currentCluster.connect();
         try {
-            return client.submit(gremlin).all().get(30000, TimeUnit.MILLISECONDS);
+            return client.submit(gremlin).all().get(timeout, TimeUnit.MILLISECONDS);
         } catch (TimeoutException toe) {
             throw new RuntimeException("request timed out while processing - increase the timeout with the :remote command");
         } finally {
