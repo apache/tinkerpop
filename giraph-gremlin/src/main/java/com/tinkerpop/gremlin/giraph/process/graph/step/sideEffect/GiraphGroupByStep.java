@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
-import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.computer.util.FileOnlyPathFilter;
@@ -164,7 +163,7 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
         if (null != this.reduceFunction)
             ConfUtil.setByteArray(newConfiguration, GREMLIN_GROUP_BY_REDUCE_FUNCTION, Serializer.serializeObject(this.reduceFunction));
 
-        final Job job = new Job(newConfiguration, GiraphGraphRunner.GIRAPH_GREMLIN_JOB_PREFIX + this.toString() + "[SideEffect Calculation]");
+        final Job job = new Job(newConfiguration, GiraphGraphComputer.GIRAPH_GREMLIN_JOB_PREFIX + this.toString() + "[SideEffect Calculation]");
         job.setJarByClass(GiraphGraph.class);
         job.setMapperClass(Map.class);
         job.setCombinerClass(Combiner.class);

@@ -27,6 +27,10 @@ import java.util.concurrent.Future;
  */
 public class GiraphGraphComputer implements GraphComputer {
 
+    public static final String GRAPH = "graph";
+    public static final String GLOBALS = "globals";
+
+    public static final String GIRAPH_GREMLIN_JOB_PREFIX = "GiraphGremlin: ";
     private static final String GIRAPH_GREMLIN_HOME = "GIRAPH_GREMLIN_HOME";
     private static final String DOT_JAR = ".jar";
     private static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);

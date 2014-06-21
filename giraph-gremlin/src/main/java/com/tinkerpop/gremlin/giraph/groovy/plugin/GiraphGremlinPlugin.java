@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
 
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
+import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat;
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat;
@@ -9,6 +10,8 @@ import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import org.apache.giraph.job.GiraphJob;
+import org.apache.hadoop.mapred.JobClient;
 
 import javax.script.ScriptException;
 import java.util.Arrays;
@@ -49,7 +52,9 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
     public void pluginTo(final PluginAcceptor pluginAcceptor) {
         pluginAcceptor.addImports(IMPORTS);
         try {
-            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", org.apache.hadoop.mapred.JobClient.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", JobClient.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphGraphRunner.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphJob.class.getName()));
             pluginAcceptor.eval("com.tinkerpop.gremlin.giraph.groovy.plugin.HadoopLoader.load()");
             pluginAcceptor.eval("hdfs = org.apache.hadoop.fs.FileSystem.get(new org.apache.hadoop.conf.Configuration())");
             pluginAcceptor.eval("local = org.apache.hadoop.fs.FileSystem.getLocal(new org.apache.hadoop.conf.Configuration())");

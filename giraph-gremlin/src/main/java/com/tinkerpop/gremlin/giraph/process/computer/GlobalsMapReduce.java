@@ -62,7 +62,7 @@ public class GlobalsMapReduce implements JobCreator {
     }
 
     public Job createJob(final Configuration configuration) throws IOException {
-        final Job job = new Job(configuration, GiraphGraphRunner.GIRAPH_GREMLIN_JOB_PREFIX + "Globals Calculation");
+        final Job job = new Job(configuration, GiraphGraphComputer.GIRAPH_GREMLIN_JOB_PREFIX + "Globals Calculation");
         job.setJarByClass(GiraphGraph.class);
         job.setMapperClass(GlobalsMapReduce.Map.class);
         job.setCombinerClass(GlobalsMapReduce.Combiner.class);
@@ -74,7 +74,7 @@ public class GlobalsMapReduce implements JobCreator {
         job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) configuration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
         job.setOutputFormatClass(TextOutputFormat.class);
         FileInputFormat.setInputPaths(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
-        FileOutputFormat.setOutputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphRunner.GLOBALS));
+        FileOutputFormat.setOutputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.GLOBALS));
         FileInputFormat.setInputPathFilter(job, FileOnlyPathFilter.class);
         return job;
     }

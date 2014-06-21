@@ -34,6 +34,12 @@ public class TraversalExtraJobsCalculator implements ExtraJobsCalculator {
                     }
                 }
             });
+            // TODO: Dah.. GraphSON.
+            /*try {
+                jobs.add(new TraversalResultMapReduce().createJob(configuration));
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }*/
         } else throw new IllegalStateException("The provided vertex program is not a TraversalVertexProgram");
         return jobs;
     }
