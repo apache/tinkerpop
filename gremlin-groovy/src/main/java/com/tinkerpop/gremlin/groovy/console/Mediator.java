@@ -27,6 +27,12 @@ public class Mediator {
 		position = remotes.size() - 1;
 	}
 
+	public RemoteAcceptor removeCurrent() {
+		final RemoteAcceptor toRemove = remotes.remove(position);
+		position = 0;
+		return toRemove;
+	}
+
 	public RemoteAcceptor nextRemote() {
 		position++;
 		if (position >= remotes.size())

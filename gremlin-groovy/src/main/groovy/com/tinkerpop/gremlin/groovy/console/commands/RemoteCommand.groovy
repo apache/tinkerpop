@@ -15,7 +15,7 @@ class RemoteCommand extends ComplexCommandSupport {
     private final Mediator mediator
 
     public RemoteCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":remote", ":rem", ["current", "connect", "config", "list", "next", "prev", "choose"], "current")
+        super(shell, ":remote", ":rem", ["current", "connect", "config", "list", "next", "prev", "choose", "close"], "current")
         this.mediator = mediator
     }
 
@@ -81,5 +81,11 @@ class RemoteCommand extends ComplexCommandSupport {
         def copy = []
         mediator.remotes.eachWithIndex{remote, i -> copy << (mediator.position == i ? "*" : "") + i + " - " + remote.toString()}
         return copy
+    }
+
+    def Object do_close = {
+        def removed = mediator.removeCurrent()
+        removed.close()
+        return "removed - $removed"
     }
 }
