@@ -52,22 +52,24 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object connect(final List<String> args) {
-        Cluster.Builder builder
         final String line = String.join(" ", args)
-
-        try {
-            final InetAddress addy = InetAddress.getByName(line)
-            builder = Cluster.create(addy.getHostAddress())
-        } catch (UnknownHostException e) {
-            // not a hostname - try to treat it as a property file
+        if (line.isEmpty()) {
+            Cluster.Builder builder
             try {
-                builder = Cluster.create(new File(line))
-            } catch (FileNotFoundException ignored) {
-                return "the 'connect' option must be a resolvable host or a configuration file";
+                final InetAddress addy = InetAddress.getByName(line)
+                builder = Cluster.create(addy.getHostAddress())
+                lastBuilder = builder
+            } catch (UnknownHostException e) {
+                // not a hostname - try to treat it as a property file
+                try {
+                    builder = Cluster.create(new File(line))
+                    lastBuilder = builder
+                } catch (FileNotFoundException ignored) {
+                    return "the 'connect' option must be a resolvable host or a configuration file";
+                }
             }
         }
 
-        lastBuilder = builder
         makeCluster()
 
         return String.format("connected - " + currentCluster)
