@@ -52,12 +52,12 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
     public void initialize(final Configuration configuration) {
         try {
             this.trackPaths = configuration.getBoolean(TRACK_PATHS, false);
-            if (configuration.containsKey(TRAVERSAL_SUPPLIER_CLASS)) {
+            if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
+                this.traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, TRAVERSAL_SUPPLIER);
+            } else {
                 final Class<SSupplier<Traversal>> traversalSupplierClass =
                         (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
                 this.traversalSupplier = traversalSupplierClass.getConstructor().newInstance();
-            } else {
-                this.traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, TRAVERSAL_SUPPLIER);
             }
             this.trackPaths = PathConsumerStrategy.trackPaths(this.traversalSupplier.get());
         } catch (final Exception e) {

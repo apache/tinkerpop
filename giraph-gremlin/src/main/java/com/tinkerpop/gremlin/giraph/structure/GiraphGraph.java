@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
+import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.giraph.process.graph.strategy.SideEffectReplacementStrategy;
 import com.tinkerpop.gremlin.giraph.process.graph.strategy.ValidateStepsStrategy;
@@ -14,6 +15,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.giraph.io.VertexInputFormat;
+import org.apache.giraph.io.VertexOutputFormat;
 
 import java.util.Optional;
 
@@ -76,10 +79,14 @@ public class GiraphGraph implements Graph {
     }
 
     public String toString() {
-        return StringFactory.graphString(this,
-                this.configuration.getString(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS) +
-                        " -> " +
-                        this.configuration.getString(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS));
+        final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.configuration);
+        final String fromString = this.configuration.containsKey(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS) ?
+                hadoopConfiguration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getSimpleName() :
+                "noInput";
+        final String toString = this.configuration.containsKey(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS) ?
+                hadoopConfiguration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS, VertexOutputFormat.class).getSimpleName() :
+                "noOutput";
+        return StringFactory.graphString(this, fromString + "->" + toString);
     }
 
     public void close() {
