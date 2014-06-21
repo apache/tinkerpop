@@ -15,7 +15,6 @@ import java.util.concurrent.CompletableFuture;
 public class Mediator {
 	public final Map<String,GremlinPlugin> loadedPlugins = new HashMap<>();
     public final List<RemoteAcceptor> remotes = new ArrayList<>();
-    public int remoteTimeout = 180000;
 	public int position;
 
     public RemoteAcceptor currentRemote() {

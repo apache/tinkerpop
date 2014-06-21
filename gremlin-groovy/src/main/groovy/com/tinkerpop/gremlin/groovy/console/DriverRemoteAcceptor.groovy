@@ -20,7 +20,7 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
     private Cluster currentCluster
     private Cluster.Builder lastBuilder
 
-    private int timeout = 30000
+    private int timeout = 180000
 
     private static final String TOKEN_TIMEOUT = "timeout"
     private static final String TOKEN_AS = "as"
