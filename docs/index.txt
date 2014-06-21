@@ -1216,12 +1216,12 @@ $ bin/gremlin.sh
 gremlin>
 ----
 
-When the console starts, it is preconfigured to connect to a remote Gremlin Server listening on `localhost` at port `8182`:
+The console has the notion of a "remote", which represents a place a script will be sent from the console to be evaluated elsewhere in some other context (e.g. Gremlin Server, Hadoop, etc.).  To create a remote in the console, do the following:
 
 [source,groovy]
 ----
-gremlin> :remote
-==>remote - results as text [localhost/127.0.0.1:8182]
+gremlin> :remote connect server
+==>connected - localhost/127.0.0.1:8182
 ----
 
 The `:remote` command shown above displays the current status of the remote connection.  This command can also be used to configure a new connection and change other related settings.  To actually send a script to the server a different command is required:
@@ -1246,8 +1246,8 @@ The `:>` command, which is a shorthand for `:submit`, sends the script to the se
 
 [source,groovy]
 ----
-gremlin> :remote as objects <1>
-==>results as objects
+gremlin> :remote config as objects <1>
+==>gremlin server - results as objects
 gremlin> :> g.E.label.groupCount() <2>
 ==>Item{resultItem={dependsOn=1, created=5, uses=2} class=java.util.HashMap}
 gremlin> m = _l[0].get(Map.class) <3>
