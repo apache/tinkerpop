@@ -15,12 +15,9 @@ class RemoteCommand extends ComplexCommandSupport {
     private final Mediator mediator
 
     public RemoteCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":remote", ":rem", ["current", "connect", "config", "list", "next", "prev"], "current")
+        super(shell, ":remote", ":rem", ["current", "connect", "config", "list", "next", "prev", "choose"], "current")
         this.mediator = mediator
     }
-
-    // todo: add a select option
-    // todo: add a way to name remotes
 
     /*
     def Object do_timeout = { List<String> arguments ->
@@ -60,18 +57,39 @@ class RemoteCommand extends ComplexCommandSupport {
     }
 
     def Object do_config = { List<String> arguments ->
+        if (mediator.remotes.size() == 0) return "please add a remote first with [connect]"
         return mediator.currentRemote().configure(arguments)
     }
 
     def Object do_current = {
+        if (mediator.remotes.size() == 0) return "please add a remote first with [connect]"
         return "remote - ${mediator.currentRemote()}"
     }
 
+    def Object do_choose = { List<String> arguments ->
+        if (mediator.remotes.size() == 0) return "please add a remote first with [connect]"
+        if (arguments.size() != 1) return "specify the numeric index of the remote"
+
+        def pos
+        try {
+            pos = Integer.parseInt(arguments.first())
+        } catch (Exception ex) {
+            return "index must be an integer value"
+        }
+
+        if (pos >= mediator.remotes.size() || pos < 0) return "index is out of range - use [list] to see indices available"
+
+        mediator.position = pos
+        return mediator.currentRemote()
+    }
+
     def Object do_next = {
+        if (mediator.remotes.size() == 0) return "please add a remote first with [connect]"
         mediator.nextRemote()
     }
 
     def Object do_prev = {
+        if (mediator.remotes.size() == 0) return "please add a remote first with [connect]"
         mediator.previousRemote()
     }
 
