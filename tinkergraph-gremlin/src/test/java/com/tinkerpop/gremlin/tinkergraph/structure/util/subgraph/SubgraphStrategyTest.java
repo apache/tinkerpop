@@ -5,16 +5,11 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
 import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
-import com.tinkerpop.gremlin.structure.strategy.SubGraphGraphStrategy;
-import com.tinkerpop.gremlin.structure.util.subgraph.SubGraph;
+import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategy;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static org.junit.Assert.assertEquals;
@@ -23,7 +18,7 @@ import static org.junit.Assert.assertEquals;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubGraphTest {
+public class SubgraphStrategyTest {
 
     @Test
     public void testVertexCriterion() throws Exception {
@@ -32,7 +27,7 @@ public class SubGraphTest {
         final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
         final Predicate<Edge> edgeCriterion = edge -> true;
 
-        final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
@@ -112,7 +107,7 @@ public class SubGraphTest {
         final Predicate<Vertex> vertexCriterion = vertex -> true;
         final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
-        final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
@@ -197,7 +192,7 @@ public class SubGraphTest {
         final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
         final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 9 && (int) edge.id() <= 11;
 
-        final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
@@ -270,7 +265,7 @@ public class SubGraphTest {
         final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
         final Predicate<Edge> edgeCriterion = edge -> true;
 
-        final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
@@ -284,7 +279,7 @@ public class SubGraphTest {
         final Predicate<Vertex> vertexCriterion = vertex -> true;
         final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
-        final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
