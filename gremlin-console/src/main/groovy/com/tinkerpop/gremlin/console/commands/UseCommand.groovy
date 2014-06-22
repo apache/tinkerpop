@@ -1,7 +1,7 @@
-package com.tinkerpop.gremlin.groovy.console.commands
+package com.tinkerpop.gremlin.console.commands
 
-import com.tinkerpop.gremlin.groovy.console.ConsolePluginAcceptor
-import com.tinkerpop.gremlin.groovy.console.Mediator
+import com.tinkerpop.gremlin.console.ConsolePluginAcceptor
+import com.tinkerpop.gremlin.console.Mediator
 import com.tinkerpop.gremlin.groovy.plugin.Artifact
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import groovy.grape.Grape

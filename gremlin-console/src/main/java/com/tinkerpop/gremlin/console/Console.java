@@ -1,10 +1,9 @@
-package com.tinkerpop.gremlin.groovy.console;
+package com.tinkerpop.gremlin.console;
 
-import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
-import com.tinkerpop.gremlin.groovy.console.commands.RemoteCommand;
-import com.tinkerpop.gremlin.groovy.console.commands.SubmitCommand;
-import com.tinkerpop.gremlin.groovy.console.commands.UseCommand;
+import com.tinkerpop.gremlin.console.commands.RemoteCommand;
+import com.tinkerpop.gremlin.console.commands.SubmitCommand;
+import com.tinkerpop.gremlin.console.commands.UseCommand;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import jline.console.history.FileHistory;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -55,7 +54,7 @@ public class Console {
         GROOVYSH.setResultHook(new NullResultHookClosure(GROOVYSH));
 
         // add the default imports
-        new DefaultImportCustomizerProvider().getAllImports().stream().map(i -> IMPORT_SPACE + i).forEach(GROOVYSH::execute);
+        new ConsoleImportCustomizerProvider().getAllImports().stream().map(i -> IMPORT_SPACE + i).forEach(GROOVYSH::execute);
 
         GROOVYSH.setResultHook(new ResultHookClosure(GROOVYSH, STANDARD_IO, buildResultPrompt()));
 

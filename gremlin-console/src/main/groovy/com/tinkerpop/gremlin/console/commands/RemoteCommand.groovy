@@ -1,7 +1,7 @@
-package com.tinkerpop.gremlin.groovy.console.commands
+package com.tinkerpop.gremlin.console.commands
 
-import com.tinkerpop.gremlin.groovy.console.DriverRemoteAcceptor
-import com.tinkerpop.gremlin.groovy.console.Mediator
+import com.tinkerpop.gremlin.console.DriverRemoteAcceptor
+import com.tinkerpop.gremlin.console.Mediator
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh

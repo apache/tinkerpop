@@ -1,10 +1,6 @@
 package com.tinkerpop.gremlin.groovy;
 
 import com.tinkerpop.gremlin.algorithm.generator.AbstractGenerator;
-import com.tinkerpop.gremlin.driver.Cluster;
-import com.tinkerpop.gremlin.driver.exception.ConnectionException;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
-import com.tinkerpop.gremlin.driver.ser.SerTokens;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -61,12 +57,6 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GraphSONReader.class.getPackage().getName() + DOT_STAR);
         imports.add(KryoReader.class.getPackage().getName() + DOT_STAR);
         imports.add(IoVertex.class.getPackage().getName() + DOT_STAR);
-
-        // driver
-        imports.add(Cluster.class.getPackage().getName() + DOT_STAR);
-        imports.add(ConnectionException.class.getPackage().getName() + DOT_STAR);
-        imports.add(RequestMessage.class.getPackage().getName() + DOT_STAR);
-        imports.add(SerTokens.class.getPackage().getName() + DOT_STAR);
 
         // algorithms
         imports.add(AbstractGenerator.class.getPackage().getName() + DOT_STAR);

@@ -1,6 +1,6 @@
-package com.tinkerpop.gremlin.groovy.console.commands;
+package com.tinkerpop.gremlin.console.commands;
 
-import com.tinkerpop.gremlin.groovy.console.Mediator;
+import com.tinkerpop.gremlin.console.Mediator;
 import org.codehaus.groovy.tools.shell.CommandSupport;
 import org.codehaus.groovy.tools.shell.Groovysh;
 

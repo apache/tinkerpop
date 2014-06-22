@@ -44,7 +44,7 @@ if [ -z "${SCRIPT_DEBUG:-}" ]; then
 fi
 
 # Process options
-MAIN_CLASS=com.tinkerpop.gremlin.groovy.console.Console
+MAIN_CLASS=com.tinkerpop.gremlin.console.Console
 while getopts "elv" opt; do
     case "$opt" in
     e) MAIN_CLASS=com.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor

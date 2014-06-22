@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.groovy.console;
+package com.tinkerpop.gremlin.console;
 
 import groovy.lang.Closure;
 import org.codehaus.groovy.tools.shell.IO;

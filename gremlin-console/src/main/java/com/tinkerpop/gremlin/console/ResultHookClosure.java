@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.groovy.console;
+package com.tinkerpop.gremlin.console;
 
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import groovy.lang.Closure;
