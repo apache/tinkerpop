@@ -11,6 +11,8 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -25,16 +27,14 @@ public class SubGraphTest {
 
     @Test
     public void testVertexCriterion() throws Exception {
-		final Graph g = TinkerFactory.createClassic();
+        Graph g = TinkerFactory.createClassic();
 
-		final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() < 4;
-		final Predicate<Edge> edgeCriterion = edge -> true;
+        final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
+        final Predicate<Edge> edgeCriterion = edge -> true;
 
-        //SubGraph sg = new SubGraph(g, vertexCriterion, edgeCriterion);
-
-		final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
-		final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
-		sg.strategy().setGraphStrategy(strategyToTest);
+        final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        sg.strategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
         assertEquals(6, g.V().count());
@@ -45,42 +45,76 @@ public class SubGraphTest {
         assertEquals(6, g.E().count());
         assertEquals(2, sg.E().count());
 
-		final Vertex v1_g = g.v(1);
-		final Vertex v1_sg = sg.v(1);
-        assertEquals(2, v1_g.out("knows").count());
-        assertEquals(1, v1_sg.out("knows").count());
+        // from vertex
 
-        assertEquals(2, g.v(1).out("knows").count());
-        assertEquals(1, sg.v(1).out("knows").count());
+        assertEquals(2, g.v(4).outE().count());
+        assertEquals(2, sg.v(4).outE().count());
+        assertEquals(2, g.v(4).out().count());
+        assertEquals(2, sg.v(4).out().count());
 
-        assertEquals(2, g.v(1).outE("knows").count());
-        assertEquals(1, sg.v(1).outE("knows").count());
+        assertEquals(1, g.v(4).inE().count());
+        assertEquals(0, sg.v(4).inE().count());
+        assertEquals(1, g.v(4).in().count());
+        assertEquals(0, sg.v(4).in().count());
+
+        assertEquals(3, g.v(4).bothE().count());
+        assertEquals(2, sg.v(4).bothE().count());
+        assertEquals(3, g.v(4).both().count());
+        assertEquals(2, sg.v(4).both().count());
+
+        // with label
+
+        assertEquals(2, g.v(4).outE("created").count());
+        assertEquals(2, sg.v(4).outE("created").count());
+        assertEquals(2, g.v(4).out("created").count());
+        assertEquals(2, sg.v(4).out("created").count());
+        assertEquals(2, g.v(4).bothE("created").count());
+        assertEquals(2, sg.v(4).bothE("created").count());
+        assertEquals(2, g.v(4).both("created").count());
+        assertEquals(2, sg.v(4).both("created").count());
+
+        assertEquals(1, g.v(4).inE("knows").count());
+        assertEquals(0, sg.v(4).inE("knows").count());
+        assertEquals(1, g.v(4).in("knows").count());
+        assertEquals(0, sg.v(4).in("knows").count());
+        assertEquals(1, g.v(4).bothE("knows").count());
+        assertEquals(0, sg.v(4).bothE("knows").count());
+        assertEquals(1, g.v(4).both("knows").count());
+        assertEquals(0, sg.v(4).both("knows").count());
+
+        // with label and branch factor
+
+        assertEquals(1, g.v(4).outE(1, "created").count());
+        assertEquals(1, sg.v(4).outE(1, "created").count());
+        assertEquals(1, g.v(4).out(1, "created").count());
+        assertEquals(1, sg.v(4).out(1, "created").count());
+        assertEquals(1, g.v(4).bothE(1, "created").count());
+        assertEquals(1, sg.v(4).bothE(1, "created").count());
+        assertEquals(1, g.v(4).both(1, "created").count());
+        assertEquals(1, sg.v(4).both(1, "created").count());
+
+        // from edge
+
+        assertEquals(2, g.e(11).bothV().count());
+        assertEquals(2, sg.e(11).bothV().count());
+
+        assertEquals(2, g.e(12).bothV().count());
+        assertEquals(1, sg.e(12).bothV().count());
+
+        assertEquals(2, g.e(7).bothV().count());
+        assertEquals(0, sg.e(7).bothV().count());
     }
 
     @Test
     public void testEdgeCriterion() throws Exception {
-        final Set<Integer> includedEdgeIds = new HashSet<>();
-        includedEdgeIds.add(8);
-        includedEdgeIds.add(9);
-        includedEdgeIds.add(10);
-
         Graph g = TinkerFactory.createClassic();
 
-        //*
-        Function<Vertex, Boolean> vertexCriterion = vertex -> true;
-        Function<Edge, Boolean> edgeCriterion = edge -> includedEdgeIds.contains((int) edge.id());
-
-        SubGraph sg = new SubGraph(g, vertexCriterion, edgeCriterion);
-        //*/
-
-        /*
         final Predicate<Vertex> vertexCriterion = vertex -> true;
-		final Predicate<Edge> edgeCriterion = edge -> includedEdgeIds.contains((int) edge.id());
+        final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
-        final Optional<GraphStrategy> strategyToTest = Optional.<GraphStrategy>of(new SubgraphStrategy(vertexCriterion, edgeCriterion));
+        final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
-        //*/
 
         // all vertices are here
         assertEquals(6, g.V().count());
@@ -98,5 +132,162 @@ public class SubGraphTest {
         assertEquals(1, sg.v(1).out("knows").count());
         assertEquals(2, g.v(4).out("created").count());
         assertEquals(1, sg.v(4).out("created").count());
+
+        // from vertex
+
+        assertEquals(2, g.v(4).outE().count());
+        assertEquals(1, sg.v(4).outE().count());
+        assertEquals(2, g.v(4).out().count());
+        assertEquals(1, sg.v(4).out().count());
+
+        assertEquals(1, g.v(4).inE().count());
+        assertEquals(1, sg.v(4).inE().count());
+        assertEquals(1, g.v(4).in().count());
+        assertEquals(1, sg.v(4).in().count());
+
+        assertEquals(3, g.v(4).bothE().count());
+        assertEquals(2, sg.v(4).bothE().count());
+        assertEquals(3, g.v(4).both().count());
+        assertEquals(2, sg.v(4).both().count());
+
+        // with label
+
+        assertEquals(2, g.v(4).outE("created").count());
+        assertEquals(1, sg.v(4).outE("created").count());
+        assertEquals(2, g.v(4).out("created").count());
+        assertEquals(1, sg.v(4).out("created").count());
+        assertEquals(2, g.v(4).bothE("created").count());
+        assertEquals(1, sg.v(4).bothE("created").count());
+        assertEquals(2, g.v(4).both("created").count());
+        assertEquals(1, sg.v(4).both("created").count());
+
+        assertEquals(1, g.v(4).inE("knows").count());
+        assertEquals(1, sg.v(4).inE("knows").count());
+        assertEquals(1, g.v(4).in("knows").count());
+        assertEquals(1, sg.v(4).in("knows").count());
+        assertEquals(1, g.v(4).bothE("knows").count());
+        assertEquals(1, sg.v(4).bothE("knows").count());
+        assertEquals(1, g.v(4).both("knows").count());
+        assertEquals(1, sg.v(4).both("knows").count());
+
+        // with branch factor
+
+        assertEquals(1, g.v(4).bothE(1).count());
+        assertEquals(1, sg.v(4).bothE(1).count());
+        assertEquals(1, g.v(4).both(1).count());
+        assertEquals(1, sg.v(4).both(1).count());
+        assertEquals(1, g.v(4).bothE(1, "knows", "created").count());
+        assertEquals(1, sg.v(4).bothE(1, "knows", "created").count());
+        assertEquals(1, g.v(4).both(1, "knows", "created").count());
+        assertEquals(1, sg.v(4).both(1, "knows", "created").count());
+
+        // from edge
+
+        assertEquals(2, g.e(8).bothV().count());
+        assertEquals(2, sg.e(8).bothV().count());
+
+        assertEquals(3, g.e(8).outV().outE().count());
+        assertEquals(2, sg.e(8).outV().outE().count());
+    }
+
+    @Test
+    public void testMixedCriteria() throws Exception {
+        Graph g = TinkerFactory.createClassic();
+
+        final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
+        final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 9 && (int) edge.id() <= 11;
+
+        final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        sg.strategy().setGraphStrategy(strategyToTest);
+
+        // three vertices are included in the subgraph
+        assertEquals(6, g.V().count());
+        assertEquals(3, sg.V().count());
+
+        // three edges are explicitly included, but one is missing its out-vertex due to the vertex criteria
+        assertEquals(6, g.E().count());
+        assertEquals(2, sg.E().count());
+
+        // from vertex
+
+        assertEquals(2, g.v(4).outE().count());
+        assertEquals(2, sg.v(4).outE().count());
+        assertEquals(2, g.v(4).out().count());
+        assertEquals(2, sg.v(4).out().count());
+
+        assertEquals(1, g.v(4).inE().count());
+        assertEquals(0, sg.v(4).inE().count());
+        assertEquals(1, g.v(4).in().count());
+        assertEquals(0, sg.v(4).in().count());
+
+        assertEquals(3, g.v(4).bothE().count());
+        assertEquals(2, sg.v(4).bothE().count());
+        assertEquals(3, g.v(4).both().count());
+        assertEquals(2, sg.v(4).both().count());
+
+        // with label
+
+        assertEquals(2, g.v(4).outE("created").count());
+        assertEquals(2, sg.v(4).outE("created").count());
+        assertEquals(2, g.v(4).out("created").count());
+        assertEquals(2, sg.v(4).out("created").count());
+        assertEquals(2, g.v(4).bothE("created").count());
+        assertEquals(2, sg.v(4).bothE("created").count());
+        assertEquals(2, g.v(4).both("created").count());
+        assertEquals(2, sg.v(4).both("created").count());
+
+        assertEquals(1, g.v(4).inE("knows").count());
+        assertEquals(0, sg.v(4).inE("knows").count());
+        assertEquals(1, g.v(4).in("knows").count());
+        assertEquals(0, sg.v(4).in("knows").count());
+        assertEquals(1, g.v(4).bothE("knows").count());
+        assertEquals(0, sg.v(4).bothE("knows").count());
+        assertEquals(1, g.v(4).both("knows").count());
+        assertEquals(0, sg.v(4).both("knows").count());
+
+        // with branch factor
+
+        assertEquals(1, g.v(4).bothE(1).count());
+        assertEquals(1, sg.v(4).bothE(1).count());
+        assertEquals(1, g.v(4).both(1).count());
+        assertEquals(1, sg.v(4).both(1).count());
+        assertEquals(1, g.v(4).bothE(1, "knows", "created").count());
+        assertEquals(1, sg.v(4).bothE(1, "knows", "created").count());
+        assertEquals(1, g.v(4).both(1, "knows", "created").count());
+        assertEquals(1, sg.v(4).both(1, "knows", "created").count());
+
+        // from edge
+
+        assertEquals(2, g.e(9).bothV().count());
+        assertEquals(1, sg.e(9).bothV().count());
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetExcludedVertex() throws Exception {
+        Graph g = TinkerFactory.createClassic();
+
+        final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
+        final Predicate<Edge> edgeCriterion = edge -> true;
+
+        final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        sg.strategy().setGraphStrategy(strategyToTest);
+
+        sg.e(1);
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetExcludedEdge() throws Exception {
+        Graph g = TinkerFactory.createClassic();
+
+        final Predicate<Vertex> vertexCriterion = vertex -> true;
+        final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
+
+        final GraphStrategy strategyToTest = new SubGraphGraphStrategy(vertexCriterion, edgeCriterion);
+        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        sg.strategy().setGraphStrategy(strategyToTest);
+
+        sg.e(7);
     }
 }
