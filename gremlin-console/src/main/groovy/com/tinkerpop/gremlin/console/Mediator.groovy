@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class Mediator {
-    public final Map<String,GremlinPlugin> loadedPlugins = [:]
+    public final Map<String,PluggedIn> loadedPlugins = [:]
     public final List<RemoteAcceptor> remotes = []
     public int position
 

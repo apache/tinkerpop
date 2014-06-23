@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.console.commands
 
 import com.tinkerpop.gremlin.console.ConsolePluginAcceptor
 import com.tinkerpop.gremlin.console.Mediator
+import com.tinkerpop.gremlin.console.PluggedIn
 import com.tinkerpop.gremlin.groovy.plugin.Artifact
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import groovy.grape.Grape
@@ -25,7 +26,7 @@ class UseCommand extends ComplexCommandSupport {
 
     def Object do_now = { List<String> arguments ->
         final def dep = createDependencyRecord(arguments)
-        final def pluginsThatNeedRestart = grabDeps(dep)
+        final def pluginsThatNeedRestart = grabDeps(dep, false)
         final def msgs = ["loaded: " + arguments]
         if (pluginsThatNeedRestart.size() > 0) {
             msgs << "The following plugins may not function properly unless they are 'installed':"
@@ -36,15 +37,13 @@ class UseCommand extends ComplexCommandSupport {
         return msgs
     }
 
-    // todo: add "uninstall" option
-
     def do_list = { List<String> arguments ->
-        return mediator.loadedPlugins.collect { k, v -> k}
+        return mediator.loadedPlugins.collect { k, v -> k + (v.installed ? "[installed]" : "") }
     }
 
     def Object do_install = { List<String> arguments ->
         final def dep = createDependencyRecord(arguments)
-        final def pluginsThatNeedRestart = grabDeps(dep)
+        final def pluginsThatNeedRestart = grabDeps(dep, true)
 
         final def dependencyLocations = Grape.resolve([classLoader:shell.getInterp().getClassLoader()], null, dep)
 
@@ -64,7 +63,7 @@ class UseCommand extends ComplexCommandSupport {
         return "loaded: " + arguments + (pluginsThatNeedRestart.size() == 0 ? "" : " - restart the console to use $pluginsThatNeedRestart")
     }
 
-    private def grabDeps(final Map<String, Object> map) {
+    private def grabDeps(final Map<String, Object> map, final boolean installed) {
         Grape.grab(map)
 
         def pluginsThatNeedRestart = [] as Set
@@ -78,7 +77,7 @@ class UseCommand extends ComplexCommandSupport {
                     pluginsThatNeedRestart<<plugin.name
                 else {
                     plugin.pluginTo(new ConsolePluginAcceptor(shell))
-                    mediator.loadedPlugins.put(plugin.name, plugin)
+                    mediator.loadedPlugins.put(plugin.name, new PluggedIn(plugin, installed))
                 }
 
                 if (plugin.additionalDependencies().isPresent())
