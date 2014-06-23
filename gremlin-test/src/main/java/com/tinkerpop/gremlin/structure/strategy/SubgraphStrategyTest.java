@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubGraphStrategyTest extends AbstractGremlinTest {
+public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -24,7 +24,7 @@ public class SubGraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
         final Predicate<Edge> edgeCriterion = edge -> true;
 
-        final GraphStrategy strategyToTest = new SubGraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
@@ -104,7 +104,7 @@ public class SubGraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Vertex> vertexCriterion = vertex -> true;
         final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
-        final GraphStrategy strategyToTest = new SubGraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
@@ -189,7 +189,7 @@ public class SubGraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
         final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 9 && (int) edge.id() <= 11;
 
-        final GraphStrategy strategyToTest = new SubGraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
@@ -262,7 +262,7 @@ public class SubGraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
         final Predicate<Edge> edgeCriterion = edge -> true;
 
-        final GraphStrategy strategyToTest = new SubGraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
@@ -276,7 +276,7 @@ public class SubGraphStrategyTest extends AbstractGremlinTest {
         final Predicate<Vertex> vertexCriterion = vertex -> true;
         final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
-        final GraphStrategy strategyToTest = new SubGraphStrategy(vertexCriterion, edgeCriterion);
+        final GraphStrategy strategyToTest = new SubgraphStrategy(vertexCriterion, edgeCriterion);
         final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
