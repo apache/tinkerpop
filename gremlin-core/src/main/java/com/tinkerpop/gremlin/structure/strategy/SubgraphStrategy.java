@@ -32,19 +32,19 @@ import java.util.function.UnaryOperator;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphStrategy implements GraphStrategy {
+public class SubGraphStrategy implements GraphStrategy {
 
     private final Predicate<Vertex> vertexPredicate;
     private final Predicate<Edge> edgePredicate;
 
-    public SubgraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
+    public SubGraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
         this.vertexPredicate = vertexPredicate;
         this.edgePredicate = edgePredicate;
     }
 
     @Override
     public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
-        traversal.strategies().register(new SubgraphGraphTraversalStrategy());
+        traversal.strategies().register(new SubGraphGraphTraversalStrategy());
         return traversal;
     }
 
@@ -91,10 +91,10 @@ public class SubgraphStrategy implements GraphStrategy {
 
     @Override
     public String toString() {
-        return SubgraphStrategy.class.getSimpleName();
+        return SubGraphStrategy.class.getSimpleName();
     }
 
-    public class SubgraphGraphTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+    public class SubGraphGraphTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
         public void apply(final Traversal traversal) {
             // modify the traversal by appending filters after some steps, replacing others
