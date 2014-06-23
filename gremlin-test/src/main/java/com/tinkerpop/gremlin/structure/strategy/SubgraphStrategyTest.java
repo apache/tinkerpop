@@ -1,29 +1,26 @@
-package com.tinkerpop.gremlin.tinkergraph.structure.util.subgraph;
+package com.tinkerpop.gremlin.structure.strategy;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
+import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.strategy.GraphStrategy;
-import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraph;
-import com.tinkerpop.gremlin.structure.strategy.SubgraphStrategy;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
+import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphStrategyTest {
+public class SubgraphStrategyTest extends AbstractGremlinTest {
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void testVertexCriterion() throws Exception {
-        Graph g = TinkerFactory.createClassic();
-
         final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
         final Predicate<Edge> edgeCriterion = edge -> true;
 
@@ -101,8 +98,8 @@ public class SubgraphStrategyTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void testEdgeCriterion() throws Exception {
-        Graph g = TinkerFactory.createClassic();
 
         final Predicate<Vertex> vertexCriterion = vertex -> true;
         final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
@@ -186,8 +183,8 @@ public class SubgraphStrategyTest {
     }
 
     @Test
+    @LoadGraphWith(CLASSIC)
     public void testMixedCriteria() throws Exception {
-        Graph g = TinkerFactory.createClassic();
 
         final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
         final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 9 && (int) edge.id() <= 11;
@@ -259,8 +256,8 @@ public class SubgraphStrategyTest {
     }
 
     @Test(expected = NoSuchElementException.class)
+    @LoadGraphWith(CLASSIC)
     public void testGetExcludedVertex() throws Exception {
-        Graph g = TinkerFactory.createClassic();
 
         final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
         final Predicate<Edge> edgeCriterion = edge -> true;
@@ -273,8 +270,8 @@ public class SubgraphStrategyTest {
     }
 
     @Test(expected = NoSuchElementException.class)
+    @LoadGraphWith(CLASSIC)
     public void testGetExcludedEdge() throws Exception {
-        Graph g = TinkerFactory.createClassic();
 
         final Predicate<Vertex> vertexCriterion = vertex -> true;
         final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
