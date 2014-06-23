@@ -1110,6 +1110,7 @@ A Graph Strategy provides a way to expand, inspect or otherwise alter the behavi
 * `PartitionGraphStrategy` - enables support for logical graph partitioning where the `Graph` can be blinded to different parts of the total graph
 * `ReadOnlyGraphStrategy` - prevents writing to the `Graph`
 * `SequenceGraphStrategy` - apply multiple `GraphStrategy` implementations in sequenced ordered to a single `Graph` instance
+* `SubgraphStrategy` - create a logical subgraph which selectively includes vertices and edges of a `Graph` according to provided criteria
 
 NOTE: TinkerPop2 had the notion of "Graph Wrappers" which decorated standard `Graph` implementations with additional features.  A Graph strategy is generally analogous to that capability.
 
