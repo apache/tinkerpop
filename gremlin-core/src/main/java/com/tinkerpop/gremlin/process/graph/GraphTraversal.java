@@ -44,7 +44,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.LinkStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.TmpStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.util.Tree;
 import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
@@ -363,11 +363,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> subGraph(final Graph g, final SPredicate<Edge> includeEdge) {
-        return (GraphTraversal) this.addStep(new TmpStep<>(this, g, null, null, includeEdge));
+        return (GraphTraversal) this.addStep(new SubgraphStep<>(this, g, null, null, includeEdge));
     }
 
     public default GraphTraversal<S, E> subGraph(final Graph g, final Set<Object> edgeIdHolder, final Map<Object, Vertex> vertexMap, final SPredicate<Edge> includeEdge) {
-        return (GraphTraversal) this.addStep(new TmpStep<>(this, g, edgeIdHolder, vertexMap, includeEdge));
+        return (GraphTraversal) this.addStep(new SubgraphStep<>(this, g, edgeIdHolder, vertexMap, includeEdge));
     }
 
     public default GraphTraversal<S, E> aggregate(final String variable, final SFunction<E, ?>... preAggregateFunctions) {

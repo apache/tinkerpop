@@ -486,7 +486,7 @@ The first time through the jump-sequence, the vertices lop, vadas, and josh are 
 The jump()-step highlights one of the major benefits of `Traverser<T>` in TinkerPop3: the ability to arbitrarily take a traverser and place it anywhere in the Traversal step-sequence. Because a traverser maintains all the metadata associated with its particular walk, and no step maintains state information about a traverser, traverses can be moved between traversal steps as necessary without ill-effects.
 
 [[subgraph-step]]
-SubGraph Step
+Subgraph Step
 ~~~~~~~~~~~~~
 
 Extracting a portion of a graph from a larger one for analysis, visualization or other purposes is a fairly common use case for graph analysts and developers. The Subgraph Step provides a way to produce an edge-induced subgraph from virtually any traversal.  The following code shows how to produce the "knows" subgraph:

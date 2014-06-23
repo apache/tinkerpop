@@ -18,7 +18,7 @@ import static org.junit.Assert.fail;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class TmpTest extends AbstractGremlinTest {
+public abstract class SubgraphTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX(final Object v1Id, final Graph subGraph);
 
     public abstract Traversal<Vertex, String> get_g_E_subgraphXcreatedX(final Graph subGraph);
@@ -63,7 +63,7 @@ public abstract class TmpTest extends AbstractGremlinTest {
         graphProvider.clear(subgraph, config);
     }
 
-    public static class JavaSideEffectTest extends TmpTest {
+    public static class JavaSideEffectTest extends SubgraphTest {
         public Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX(final Object v1Id, final Graph subGraph) {
             return g.v(v1Id).outE().subGraph(subGraph, e -> e.label().equals("knows")).value("name");
         }
