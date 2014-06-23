@@ -18,5 +18,5 @@ class SubmitCommand extends CommandSupport {
     }
 
     @Override
-    public Object execute(final List<String> arguments) { return mediator.currentRemote().submit(arguments) }
+    def Object execute(final List<String> arguments) { return mediator.currentRemote().submit(arguments) }
 }
