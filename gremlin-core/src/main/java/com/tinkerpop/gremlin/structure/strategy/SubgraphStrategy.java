@@ -32,12 +32,12 @@ import java.util.function.UnaryOperator;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphStrategy implements GraphStrategy {
+public class SubGraphStrategy implements GraphStrategy {
 
     private final Predicate<Vertex> vertexPredicate;
     private final Predicate<Edge> edgePredicate;
 
-    public SubgraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
+    public SubGraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
         this.vertexPredicate = vertexPredicate;
         this.edgePredicate = edgePredicate;
     }
@@ -91,7 +91,7 @@ public class SubgraphStrategy implements GraphStrategy {
 
     @Override
     public String toString() {
-        return SubgraphStrategy.class.getSimpleName();
+        return SubGraphStrategy.class.getSimpleName();
     }
 
     public class SubgraphGraphTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
