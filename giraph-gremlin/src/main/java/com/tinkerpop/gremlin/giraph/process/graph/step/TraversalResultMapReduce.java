@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.giraph.process.graph.step;
 import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
-import com.tinkerpop.gremlin.giraph.process.computer.util.FileOnlyPathFilter;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounters;
@@ -96,7 +95,6 @@ public class TraversalResultMapReduce implements JobCreator {
         job.setOutputFormatClass(TextOutputFormat.class);
         FileInputFormat.setInputPaths(job, new Path(newConfiguration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
         FileOutputFormat.setOutputPath(job, new Path(newConfiguration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/traversalResult"));
-        FileInputFormat.setInputPathFilter(job, FileOnlyPathFilter.class);
         return job;
     }
 }

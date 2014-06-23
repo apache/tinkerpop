@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.giraph.process.ExtraJobsCalculator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
-import com.tinkerpop.gremlin.giraph.process.computer.util.FileOnlyPathFilter;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
@@ -51,8 +50,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
             final GiraphJob job = new GiraphJob(this.giraphConfiguration, GiraphGraphComputer.GIRAPH_GREMLIN_JOB_PREFIX + vertexProgram);
             //job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
             FileInputFormat.setInputPaths(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_INPUT_LOCATION)));
-            FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
-            FileInputFormat.setInputPathFilter(job.getInternalJob(), FileOnlyPathFilter.class);
+            FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(this.giraphConfiguration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.G));
             LOGGER.info(GiraphGraphComputer.GIRAPH_GREMLIN_JOB_PREFIX + vertexProgram);
             job.run(true);
             // calculate global variables

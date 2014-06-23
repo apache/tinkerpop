@@ -24,12 +24,13 @@ import org.apache.hadoop.io.Text;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoWritable> {
+
+    //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
 
     private VertexProgram vertexProgram;
     private Graph gremlinGraph;

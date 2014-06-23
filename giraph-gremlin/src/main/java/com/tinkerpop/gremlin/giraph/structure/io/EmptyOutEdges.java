@@ -23,12 +23,12 @@ public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
     }
 
     @Override
-    public void initialize(Iterable<Edge<LongWritable, NullWritable>> edges) {
+    public void initialize(final Iterable<Edge<LongWritable, NullWritable>> edges) {
 
     }
 
     @Override
-    public void initialize(int capacity) {
+    public void initialize(final int capacity) {
 
     }
 
@@ -38,13 +38,11 @@ public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
     }
 
     @Override
-    public void add(Edge<LongWritable, NullWritable> edge) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void add(final Edge<LongWritable, NullWritable> edge) {
     }
 
     @Override
-    public void remove(LongWritable targetVertexId) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void remove(final LongWritable targetVertexId) {
     }
 
     @Override
@@ -58,12 +56,12 @@ public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
     }
 
     @Override
-    public void write(DataOutput dataOutput) throws IOException {
-        dataOutput.write('e');
+    public void write(final DataOutput dataOutput) throws IOException {
+        // dataOutput.write('e');
     }
 
     @Override
-    public void readFields(DataInput dataInput) throws IOException {
-        dataInput.readByte();
+    public void readFields(final DataInput dataInput) throws IOException {
+        // dataInput.readByte();
     }
 }

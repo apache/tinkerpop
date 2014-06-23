@@ -140,5 +140,4 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
             return false;
         }
     }
-
 }

@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.giraph.process.computer;
 
 import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
-import com.tinkerpop.gremlin.giraph.process.computer.util.FileOnlyPathFilter;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.structure.Property;
@@ -73,9 +72,9 @@ public class GlobalsMapReduce implements JobCreator {
         job.setMapOutputValueClass(Text.class);
         job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) configuration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
         job.setOutputFormatClass(TextOutputFormat.class);
-        FileInputFormat.setInputPaths(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)));
+        FileInputFormat.setInputPaths(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.G));
         FileOutputFormat.setOutputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.GLOBALS));
-        FileInputFormat.setInputPathFilter(job, FileOnlyPathFilter.class);
+        //FileInputFormat.setInputPathFilter(job, FileOnlyPathFilter.class);
         return job;
     }
 }

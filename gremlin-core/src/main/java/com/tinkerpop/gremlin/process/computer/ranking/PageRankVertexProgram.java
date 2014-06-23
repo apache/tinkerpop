@@ -148,11 +148,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
     public Features getFeatures() {
         return new Features() {
-
+            @Override
             public boolean requiresLocalMessageTypes() {
                 return true;
             }
 
+            @Override
             public boolean requiresVertexPropertyAddition() {
                 return true;
             }

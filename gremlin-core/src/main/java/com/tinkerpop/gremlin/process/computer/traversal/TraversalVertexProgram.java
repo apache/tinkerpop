@@ -32,6 +32,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class TraversalVertexProgram<M extends TraversalMessage> implements VertexProgram<M> {
 
     private MessageType.Global global = MessageType.Global.of();
+    // TODO: if not an adjacent traversal, use Local message types
+    // TODO: a dual messaging system
 
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalSupplier";
     public static final String TRAVERSAL_SUPPLIER_CLASS = "gremlin.traversalSupplierClass";
@@ -151,11 +153,25 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
 
     public String toString() {
-        return "TraversalVertexProgram" + this.traversalSupplier.get().toString();
+        return this.getClass().getSimpleName() + this.traversalSupplier.get().toString();
     }
 
     public SSupplier<Traversal> getTraversalSupplier() {
         return this.traversalSupplier;
+    }
+
+    public Features getFeatures() {
+        return new Features() {
+            @Override
+            public boolean requiresGlobalMessageTypes() {
+                return true;
+            }
+
+            @Override
+            public boolean requiresVertexPropertyAddition() {
+                return true;
+            }
+        };
     }
 
     //////////////
@@ -189,4 +205,5 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
             return this.configuration;
         }
     }
+
 }
