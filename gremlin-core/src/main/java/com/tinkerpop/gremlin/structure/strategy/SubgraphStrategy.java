@@ -119,19 +119,19 @@ public class SubGraphStrategy implements GraphStrategy {
 
             for (int pos : replacePositions) {
                 VertexStep other = (VertexStep) traversalSteps.get(pos);
-                TraversalHelper.replaceStep(traversalSteps.get(pos), new SubgraphVertexStep(other), traversal);
+                TraversalHelper.replaceStep(traversalSteps.get(pos), new SubGraphVertexStep(other), traversal);
             }
 
             Collections.reverse(insertAfterPositions);
             for (int pos : insertAfterPositions) {
-                TraversalHelper.insertStep(new SubgraphFilterStep(traversal), pos + 1, traversal);
+                TraversalHelper.insertStep(new SubGraphFilterStep(traversal), pos + 1, traversal);
             }
         }
     }
 
-    private class SubgraphFilterStep extends FilterStep<Element> implements Reversible {
+    private class SubGraphFilterStep extends FilterStep<Element> implements Reversible {
 
-        public SubgraphFilterStep(final Traversal traversal) {
+        public SubGraphFilterStep(final Traversal traversal) {
             super(traversal);
             this.setPredicate(traverser -> testElement(traverser.get()));
         }
@@ -141,15 +141,15 @@ public class SubGraphStrategy implements GraphStrategy {
         }
     }
 
-    private class SubgraphVertexStep<E extends Element> extends FlatMapStep<Vertex, E> { // TODO: implement Reversible
+    private class SubGraphVertexStep<E extends Element> extends FlatMapStep<Vertex, E> { // TODO: implement Reversible
 
         private final Direction direction;
 
-        public SubgraphVertexStep(final VertexStep<E> other) {
+        public SubGraphVertexStep(final VertexStep<E> other) {
             this(other.getTraversal(), other.returnClass, other.direction, other.branchFactor, other.labels);
         }
 
-        public SubgraphVertexStep(final Traversal traversal,
+        public SubGraphVertexStep(final Traversal traversal,
                                   final Class<E> returnClass,
                                   final Direction direction,
                                   final int branchFactor,
