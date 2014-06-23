@@ -19,7 +19,7 @@ class UseCommand extends ComplexCommandSupport {
     private final Mediator mediator
 
     public UseCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":use", ":u", ["install", "now"], "now")
+        super(shell, ":use", ":u", ["install", "now", "list"], "now")
         this.mediator = mediator
     }
 
@@ -36,8 +36,11 @@ class UseCommand extends ComplexCommandSupport {
         return msgs
     }
 
-    // todo: add "list" option
     // todo: add "uninstall" option
+
+    def do_list = { List<String> arguments ->
+        return mediator.loadedPlugins.collect { k, v -> k}
+    }
 
     def Object do_install = { List<String> arguments ->
         final def dep = createDependencyRecord(arguments)
