@@ -37,10 +37,9 @@ class Console {
 
     public Console(final String initScriptFile) {
         io.out.println()
-        io.out.println("                 :'`:,")
-        io.out.println("         \\,,,/     :<")
-        io.out.println("         (o o)   :,,:'")
-        io.out.println("─────oOOo-( )-oOOo─────")
+        io.out.println("         \\,,,/")
+        io.out.println("         (o o)")
+        io.out.println("─────oOOo-(3)-oOOo─────")
 
         final Mediator mediator = new Mediator()
         groovy.register(new UseCommand(groovy, mediator))
