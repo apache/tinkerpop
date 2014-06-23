@@ -23,14 +23,14 @@ import java.util.stream.Stream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubGraphStep<S> extends FilterStep<S> implements SideEffectCapable, PathConsumer, Reversible {
+public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable, PathConsumer, Reversible {
     private final Graph subgraph;
     private final Map<Object, Vertex> idMap;
     private final Set<Object> edgesAdded;
 
 	// todo: add support for side-effecting out an edge list.
 
-    public SubGraphStep(final Traversal traversal, final Graph subgraph,
+    public SubgraphStep(final Traversal traversal, final Graph subgraph,
                         final Set<Object> edgeIdHolder,
                         final Map<Object, Vertex> vertexMap,
                         final SPredicate<Edge> includeEdge) {
