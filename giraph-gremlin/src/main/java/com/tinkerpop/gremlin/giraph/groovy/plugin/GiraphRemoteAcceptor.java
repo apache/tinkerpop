@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.groovy.plugin;
 
 import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
-import com.tinkerpop.gremlin.giraph.hdfs.NoUnderscoreFilter;
+import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter;
 import com.tinkerpop.gremlin.giraph.hdfs.TextFileLineIterator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
@@ -92,7 +92,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
                 //final Path traversalResultOutput = new Path(output + "/" + "traversalResult");
                 if (fs.exists(capOutput)) {
                     final LinkedList<Path> paths = new LinkedList<>();
-                    paths.addAll(HDFSTools.getAllFilePaths(fs, capOutput, NoUnderscoreFilter.instance()));
+                    paths.addAll(HDFSTools.getAllFilePaths(fs, capOutput, HiddenFileFilter.instance()));
                     return Optional.of(new TextFileLineIterator(fs, paths, 25));
                 } /*else if (fs.exists(traversalResultOutput)) {
                     final LinkedList<Path> paths = new LinkedList<>();

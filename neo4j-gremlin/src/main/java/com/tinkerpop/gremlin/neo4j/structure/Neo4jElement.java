@@ -56,7 +56,7 @@ abstract class Neo4jElement implements Element {
     public Map<String, Property> hiddens() {
         this.graph.tx().readWrite();
         return hiddenKeys().stream()
-                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.rawElement.getProperty(Property.hidden(key)))))
+                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.rawElement.getProperty(Graph.Key.hidden(key)))))
                 .collect(Collectors.toMap(kv -> kv.getValue0(), kv -> kv.getValue1()));
     }
 
@@ -65,7 +65,7 @@ abstract class Neo4jElement implements Element {
         this.graph.tx().readWrite();
         final Set<String> keys = new HashSet<>();
         for (final String key : this.rawElement.getPropertyKeys()) {
-            if (!key.startsWith(Graph.HIDDEN_PREFIX))
+            if (!key.startsWith(Graph.Key.HIDDEN_PREFIX))
                 keys.add(key);
         }
         return keys;
@@ -76,7 +76,7 @@ abstract class Neo4jElement implements Element {
         this.graph.tx().readWrite();
         final Set<String> keys = new HashSet<>();
         for (final String key : this.rawElement.getPropertyKeys()) {
-            if (key.startsWith(Graph.HIDDEN_PREFIX))
+            if (key.startsWith(Graph.Key.HIDDEN_PREFIX))
                 keys.add(ElementHelper.removeHiddenPrefix(key));
         }
         return keys;

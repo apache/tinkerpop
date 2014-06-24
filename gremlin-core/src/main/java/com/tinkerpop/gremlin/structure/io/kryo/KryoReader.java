@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
@@ -375,7 +374,7 @@ public class KryoReader implements GraphReader {
 		final int numberOfHiddens = input.readInt();
 		IntStream.range(0, numberOfHiddens).forEach(i -> {
 			final String key = input.readString();
-			elementArgs.add(Property.hidden(key));
+			elementArgs.add(Graph.Key.hidden(key));
 			elementArgs.add(kryo.readClassAndObject(input));
 		});
     }

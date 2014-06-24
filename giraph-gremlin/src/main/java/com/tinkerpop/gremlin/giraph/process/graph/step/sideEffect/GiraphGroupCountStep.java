@@ -14,7 +14,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MapHelper;
-import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
@@ -60,8 +60,8 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(Property.hidden(this.variable)).orElse(new HashMap<>());
-        vertex.property(Property.hidden(this.variable), this.groupCountMap);
+        this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
+        vertex.property(Graph.Key.hidden(this.variable), this.groupCountMap);
     }
 
     public static class Map extends Mapper<NullWritable, GiraphVertex, Text, LongWritable> {
@@ -79,7 +79,7 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
         @Override
         public void map(final NullWritable key, final GiraphVertex value, final Mapper<NullWritable, GiraphVertex, Text, LongWritable>.Context context) throws IOException, InterruptedException {
             // TODO: Kryo is serializing the Map<Object,Long> as a Map<Object,Integer>
-            final HashMap<Object, Integer> tempMap = value.getGremlinVertex().<HashMap<Object, Integer>>property(Property.hidden(this.variable)).orElse(new HashMap<>());
+            final HashMap<Object, Integer> tempMap = value.getGremlinVertex().<HashMap<Object, Integer>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
             tempMap.forEach((k, v) -> {
                 this.textWritable.set(null == k ? "null" : k.toString());
                 this.longWritable.set((long) v);

@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.IoTest;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
@@ -69,8 +68,8 @@ public class TinkerGraphTest implements Serializable {
         g.createIndex("name", Vertex.class);
         final Vertex marko = g.addVertex("name", "marko", "age", 33, "blah", "bloop");
         final Vertex stephen = g.addVertex("name", "stephen", "id", 12, "blah", "bloop");
-        stephen.property(Property.hidden("name"), "stephen");
-        assertEquals("stephen", stephen.property(Property.hidden("name")).value());
+        stephen.property(Graph.Key.hidden("name"), "stephen");
+        assertEquals("stephen", stephen.property(Graph.Key.hidden("name")).value());
         final Random r = new Random();
         Stream.generate(() -> g.addVertex(r.nextBoolean() + "1", r.nextInt(), "name", r.nextInt())).limit(100000).count();
         assertEquals(100002, g.vertices.size());

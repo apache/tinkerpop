@@ -11,7 +11,6 @@ import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoWriter;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -75,10 +74,10 @@ public class GiraphVertex extends Vertex<LongWritable, Text, NullWritable, KryoW
         this.vertexProgram.execute(this.gremlinVertex, new GiraphMessenger(this, messages), this.globals);
         if (this.getConf().getBoolean(GiraphGraphComputer.GREMLIN_DERIVE_GLOBALS, false)) {
             this.globals.keys().forEach(key -> {
-                this.gremlinVertex.property(Property.hidden(key), this.globals.get(key));
+                this.gremlinVertex.property(Graph.Key.hidden(key), this.globals.get(key));
             });
-            this.gremlinVertex.property(Property.hidden(GlobalsMapReduce.RUNTIME), this.globals.getRuntime());
-            this.gremlinVertex.property(Property.hidden(GlobalsMapReduce.ITERATION), this.globals.getIteration());
+            this.gremlinVertex.property(Graph.Key.hidden(GlobalsMapReduce.RUNTIME), this.globals.getRuntime());
+            this.gremlinVertex.property(Graph.Key.hidden(GlobalsMapReduce.ITERATION), this.globals.getIteration());
         }
     }
 

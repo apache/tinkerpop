@@ -91,7 +91,7 @@ public abstract class DetachedElement implements Element {
         if (null == this.properties)
             throw new IllegalStateException("Properties were assigned to this detached element:" + this);
         this.properties.forEach((key, property) -> {
-            if (!key.startsWith(Graph.HIDDEN_PREFIX))
+            if (!key.startsWith(Graph.Key.HIDDEN_PREFIX))
                 temp.put(key, property);
         });
         return temp;
@@ -102,7 +102,7 @@ public abstract class DetachedElement implements Element {
         if (null == this.properties)
             throw new IllegalStateException("Properties were assigned to this detached element:" + this);
         this.properties.forEach((key, property) -> {
-            if (key.startsWith(Graph.HIDDEN_PREFIX))
+            if (key.startsWith(Graph.Key.HIDDEN_PREFIX))
                 temp.put(key, property);
         });
         return temp;

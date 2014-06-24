@@ -36,7 +36,7 @@ public class TextFileLineIterator implements Iterator<String> {
     public TextFileLineIterator(final FileSystem fs, final FileStatus[] statuses, final long totalLines) throws IOException {
         this.fs = fs;
         this.totalLines = totalLines;
-        this.paths = new LinkedList<Path>();
+        this.paths = new LinkedList<>();
         for (final FileStatus status : statuses) {
             this.paths.add(status.getPath());
         }

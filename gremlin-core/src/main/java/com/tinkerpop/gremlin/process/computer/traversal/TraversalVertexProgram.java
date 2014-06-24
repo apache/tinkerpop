@@ -13,7 +13,7 @@ import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
 import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -41,7 +41,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     private static final String TRACK_PATHS = "gremlin.traversalVertexProgram.trackPaths";
     private static final String VOTE_TO_HALT = "voteToHalt";
-    public static final String TRAVERSER_TRACKER = Property.hidden("gremlin.traversalVertexProgram.traverserTracker");
+    public static final String TRAVERSER_TRACKER = Graph.Key.hidden("gremlin.traversalVertexProgram.traverserTracker");
 
     private SSupplier<Traversal> traversalSupplier;
     private boolean trackPaths = false;

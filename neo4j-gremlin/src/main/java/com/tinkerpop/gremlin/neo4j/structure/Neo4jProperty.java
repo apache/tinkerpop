@@ -43,7 +43,7 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
     }
 
     public boolean isHidden() {
-        return this.key.startsWith(Graph.HIDDEN_PREFIX);
+        return this.key.startsWith(Graph.Key.HIDDEN_PREFIX);
     }
 
     public String toString() {

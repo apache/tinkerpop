@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -134,7 +133,7 @@ public class JsonMessageSerializerV1d0Test {
     public void serializeHiddenProperties() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex("abc", 123);
-        v.property(Property.hidden("hidden"), "stephen");
+        v.property(Graph.Key.hidden("hidden"), "stephen");
 
         final Iterable iterable = g.V().toList();
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.create(msg).result(iterable).build());

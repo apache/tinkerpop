@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 /**
@@ -46,7 +45,7 @@ public class TinkerFactory {
 		variables.set("name", "modern");
 		variables.set("year", 2014);
 
-		final String aclPropertyKey = Property.hidden("acl");
+		final String aclPropertyKey = Graph.Key.hidden("acl");
 		final Vertex marko = g.addVertex(Element.ID, 1, Element.LABEL, "person", "name", "marko", aclPropertyKey, "rw");
 		final Vertex stephen = g.addVertex(Element.ID, 7, Element.LABEL, "person", "name", "stephen", aclPropertyKey, "rw");
 		final Vertex matthias = g.addVertex(Element.ID, 8, Element.LABEL, "person", "name", "matthias", aclPropertyKey, "r");

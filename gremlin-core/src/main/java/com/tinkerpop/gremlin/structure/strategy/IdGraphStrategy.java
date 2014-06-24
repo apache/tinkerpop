@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure.strategy;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -126,7 +127,7 @@ public class IdGraphStrategy implements GraphStrategy {
 
     /**
      * Gets the property name of the key used to lookup graph elements.  This is a "hidden" key created by
-     * {@link com.tinkerpop.gremlin.structure.Property#hidden(String)}.  Use this value to create an index in the underlying graph instance.
+     * {@link com.tinkerpop.gremlin.structure.Graph.Key#hidden(String)}.  Use this value to create an index in the underlying graph instance.
      */
     public String getIdKey() {
         return this.idKey;
@@ -182,7 +183,7 @@ public class IdGraphStrategy implements GraphStrategy {
             if (!this.supportsEdgeId && !this.supportsVertexId)
                 throw new IllegalStateException("Since supportsEdgeId and supportsVertexId are false, there is no need to use IdGraphStrategy");
 
-            final String keyForId = this.hiddenIdKey ? Property.hidden(this.idKey) : this.idKey;
+            final String keyForId = this.hiddenIdKey ? Graph.Key.hidden(this.idKey) : this.idKey;
             return new IdGraphStrategy(keyForId, this.vertexIdSupplier, this.edgeIdSupplier,
                     this.supportsVertexId, this.supportsEdgeId);
         }

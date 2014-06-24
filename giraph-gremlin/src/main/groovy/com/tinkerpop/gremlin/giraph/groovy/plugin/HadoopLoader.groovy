@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.groovy.plugin
 
 import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools
-import com.tinkerpop.gremlin.giraph.hdfs.NoUnderscoreFilter
+import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter
 import com.tinkerpop.gremlin.giraph.hdfs.TextFileLineIterator
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.*
@@ -63,7 +63,7 @@ class HadoopLoader {
             final FileSystem local = FileSystem.getLocal(new Configuration());
             final FSDataOutputStream outA = local.create(new Path(to));
 
-            HDFSTools.getAllFilePaths(fs, new Path(from), NoUnderscoreFilter.instance()).each {
+            HDFSTools.getAllFilePaths(fs, new Path(from), HiddenFileFilter.instance()).each {
                 final FSDataInputStream inA = fs.open(it);
                 IOUtils.copyBytes(inA, outA, 8192);
                 inA.close();
@@ -74,7 +74,7 @@ class HadoopLoader {
         FileSystem.metaClass.head = { final String path, final long totalLines ->
             final FileSystem fs = (FileSystem) delegate;
             final List<Path> paths = new LinkedList<Path>();
-            paths.addAll(HDFSTools.getAllFilePaths(fs, new Path(path), NoUnderscoreFilter.instance()));
+            paths.addAll(HDFSTools.getAllFilePaths(fs, new Path(path), HiddenFileFilter.instance()));
             if (paths.isEmpty())
                 return Collections.emptyList();
             else

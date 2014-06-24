@@ -21,8 +21,8 @@ import java.util.List;
  */
 public class HDFSTools {
 
-    private static final String FOWARD_SLASH = "/";
-    private static final String FOWARD_ASTERISK = "/*";
+    private static final String FORWARD_SLASH = "/";
+    private static final String FORWARD_ASTERISK = "/*";
 
     protected HDFSTools() {
     }
@@ -37,13 +37,13 @@ public class HDFSTools {
 
     public static List<Path> getAllFilePaths(final FileSystem fs, Path path, final PathFilter filter) throws IOException {
         if (null == path) path = fs.getHomeDirectory();
-        if (path.toString().equals(FOWARD_SLASH)) path = new Path("");
+        if (path.toString().equals(FORWARD_SLASH)) path = new Path("");
 
         final List<Path> paths = new ArrayList<Path>();
         if (fs.isFile(path))
             paths.add(path);
         else {
-            for (final FileStatus status : fs.globStatus(new Path(path + FOWARD_ASTERISK), filter)) {
+            for (final FileStatus status : fs.globStatus(new Path(path + FORWARD_ASTERISK), filter)) {
                 final Path next = status.getPath();
                 paths.addAll(getAllFilePaths(fs, next, filter));
             }
@@ -61,9 +61,9 @@ public class HDFSTools {
             final Path outPath = new Path(out);
             if (!fs.exists(outPath))
                 fs.mkdirs(outPath);
-            for (final Path path : FileUtil.stat2Paths(fs.globStatus(new Path(in + FOWARD_ASTERISK)))) {
+            for (final Path path : FileUtil.stat2Paths(fs.globStatus(new Path(in + FORWARD_ASTERISK)))) {
                 if (path.getName().endsWith(compressedFileSuffix))
-                    HDFSTools.decompressFile(fs, path.toString(), outPath.toString() + FOWARD_SLASH + path.getName().split("\\.")[0], deletePrevious);
+                    HDFSTools.decompressFile(fs, path.toString(), outPath.toString() + FORWARD_SLASH + path.getName().split("\\.")[0], deletePrevious);
             }
         }
     }

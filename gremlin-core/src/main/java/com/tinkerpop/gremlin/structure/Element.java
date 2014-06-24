@@ -79,13 +79,13 @@ public abstract interface Element {
 
 	/**
 	 * Get a {@link Property} for the {@code Element} given its key.  Hidden properties can be retrieved by specifying
-	 * the key as {@link Property#hidden}.
+	 * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hidden}.
 	 */
     public <V> Property<V> property(final String key);
 
 	/**
 	 * Add or set a property value for the {@code Element} given its key.  Hidden properties can be set by specifying
-	 * the key as {@link Property#hidden}.
+	 * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hidden}.
 	 */
     public <V> Property<V> property(final String key, final V value);
 
@@ -93,7 +93,7 @@ public abstract interface Element {
 	 * Set a series of properties on the {@code Element} by specifying a series of key/value pairs.  These key/values
 	 * must be provided in an even number where the odd numbered arguments are {@link String} key values and the
 	 * even numbered arguments are the related property values.  Hidden properties can be set by specifying
-	 * the key as {@link Property#hidden}.
+	 * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hidden}.
 	 */
     public default void properties(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);

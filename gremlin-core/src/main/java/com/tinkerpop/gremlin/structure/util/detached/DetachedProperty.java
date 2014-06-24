@@ -56,7 +56,7 @@ public class DetachedProperty<V> implements Property, Serializable {
     }
 
     public boolean isHidden() {
-        return this.key.startsWith(Graph.HIDDEN_PREFIX);
+        return this.key.startsWith(Graph.Key.HIDDEN_PREFIX);
     }
 
     public String key() {

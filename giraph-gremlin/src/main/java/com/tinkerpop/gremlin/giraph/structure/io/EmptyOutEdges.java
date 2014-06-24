@@ -24,17 +24,14 @@ public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
 
     @Override
     public void initialize(final Iterable<Edge<LongWritable, NullWritable>> edges) {
-
     }
 
     @Override
     public void initialize(final int capacity) {
-
     }
 
     @Override
     public void initialize() {
-
     }
 
     @Override
@@ -57,11 +54,9 @@ public class EmptyOutEdges implements OutEdges<LongWritable, NullWritable> {
 
     @Override
     public void write(final DataOutput dataOutput) throws IOException {
-        // dataOutput.write('e');
     }
 
     @Override
     public void readFields(final DataInput dataInput) throws IOException {
-        // dataInput.readByte();
     }
 }

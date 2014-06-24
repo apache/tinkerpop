@@ -12,14 +12,6 @@ import java.util.function.Supplier;
  */
 public abstract interface Property<V> {
 
-    public static String hidden(final String key) {
-        return Graph.HIDDEN_PREFIX.concat(key);
-    }
-
-    public static String unHide(final String key) {
-        return key.startsWith(Graph.HIDDEN_PREFIX) ? key.substring(Graph.HIDDEN_PREFIX.length()) : key;
-    }
-
     public String key();
 
     public V value() throws NoSuchElementException;

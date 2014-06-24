@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
-import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -64,8 +64,8 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        this.groupMap = vertex.<java.util.Map<K, Collection<V>>>property(Property.hidden(this.variable)).orElse(new HashMap<>());
-        vertex.property(Property.hidden(this.variable), this.groupMap);
+        this.groupMap = vertex.<java.util.Map<K, Collection<V>>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
+        vertex.property(Graph.Key.hidden(this.variable), this.groupMap);
     }
 
     private static <S, K, V> void doGroup(final S s, final java.util.Map<K, Collection<V>> groupMap, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction) {
@@ -97,7 +97,7 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
 
         @Override
         public void map(final NullWritable key, final GiraphVertex value, final Mapper<NullWritable, GiraphVertex, Text, KryoWritable>.Context context) throws IOException, InterruptedException {
-            final HashMap<Object, Collection> tempMap = value.getGremlinVertex().<HashMap<Object, Collection>>property(Property.hidden(this.variable)).orElse(new HashMap<>());
+            final HashMap<Object, Collection> tempMap = value.getGremlinVertex().<HashMap<Object, Collection>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
             tempMap.forEach((k, v) -> {
                 this.textWritable.set(null == k ? "null" : k.toString());
                 this.kryoWritable.set(v);

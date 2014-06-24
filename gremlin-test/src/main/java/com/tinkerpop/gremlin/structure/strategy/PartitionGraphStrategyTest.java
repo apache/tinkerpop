@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -14,7 +13,7 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class PartitionGraphStrategyTest extends AbstractGremlinTest {
-	private static final String partition = Property.hidden("partition");
+	private static final String partition = Graph.Key.hidden("partition");
 
 	public PartitionGraphStrategyTest() {
 		super(new PartitionGraphStrategy(partition, "A"));

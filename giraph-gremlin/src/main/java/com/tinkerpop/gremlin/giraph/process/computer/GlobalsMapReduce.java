@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
@@ -36,7 +37,7 @@ public class GlobalsMapReduce implements JobCreator {
         public void map(final NullWritable key, final GiraphVertex value, final Mapper<NullWritable, GiraphVertex, Text, Text>.Context context) throws IOException, InterruptedException {
             final String[] globalKeys = context.getConfiguration().getStrings(GREMLIN_GLOBAL_KEYS);
             for (final String globalKey : globalKeys) {
-                final Property property = value.getGremlinVertex().property(Property.hidden(globalKey));
+                final Property property = value.getGremlinVertex().property(Graph.Key.hidden(globalKey));
                 if (property.isPresent()) {
                     this.keyWritable.set(globalKey);
                     this.valueWritable.set(property.value().toString());
@@ -74,7 +75,6 @@ public class GlobalsMapReduce implements JobCreator {
         job.setOutputFormatClass(TextOutputFormat.class);
         FileInputFormat.setInputPaths(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.G));
         FileOutputFormat.setOutputPath(job, new Path(configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.GLOBALS));
-        //FileInputFormat.setInputPathFilter(job, FileOnlyPathFilter.class);
         return job;
     }
 }

@@ -40,7 +40,7 @@ abstract class TinkerElement implements Element, Serializable {
     public Map<String, Property> hiddens() {
         final Map<String, Property> temp = new HashMap<>();
         this.properties.forEach((key, property) -> {
-            if (key.startsWith(Graph.HIDDEN_PREFIX))
+            if (key.startsWith(Graph.Key.HIDDEN_PREFIX))
                 temp.put(ElementHelper.removeHiddenPrefix(key), property);
         });
         return temp;
@@ -49,7 +49,7 @@ abstract class TinkerElement implements Element, Serializable {
     public Map<String, Property> properties() {
         final Map<String, Property> temp = new HashMap<>();
         this.properties.forEach((key, property) -> {
-            if (!key.startsWith(Graph.HIDDEN_PREFIX))
+            if (!key.startsWith(Graph.Key.HIDDEN_PREFIX))
                 temp.put(key, property);
         });
         return temp;

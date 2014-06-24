@@ -23,13 +23,28 @@ import java.util.stream.Collectors;
  */
 public interface Graph extends AutoCloseable {
 
-    public static final String HIDDEN_PREFIX = "%&%";
+    public class Key {
+
+        public static final String HIDDEN_PREFIX = "%&%";
+
+        public static final String hidden(final String key) {
+            return HIDDEN_PREFIX.concat(key);
+        }
+
+        public static final String unHide(final String key) {
+            return key.startsWith(HIDDEN_PREFIX) ? key.substring(HIDDEN_PREFIX.length()) : key;
+        }
+
+        public static final boolean isHidden(final String key) {
+            return key.startsWith(HIDDEN_PREFIX);
+        }
+    }
 
     /**
      * Add a {@link Vertex} to a {@code Graph} given an optional series of key/value pairs.  These key/values
      * must be provided in an even number where the odd numbered arguments are {@link String} key values and the
      * even numbered arguments are the related property values.  Hidden properties can be set by specifying
-     * the key as {@link Property#hidden}.
+     * the key as {@link com.tinkerpop.gremlin.structure.Graph.Key#hidden}.
      */
     public Vertex addVertex(final Object... keyValues);
 
