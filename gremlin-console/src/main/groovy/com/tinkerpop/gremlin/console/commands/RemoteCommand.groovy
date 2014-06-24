@@ -28,7 +28,7 @@ class RemoteCommand extends ComplexCommandSupport {
             remote = new DriverRemoteAcceptor(shell)
         } else {
             if (!mediator.loadedPlugins.containsKey(arguments[0])) return "no plugin named ${arguments[0]}"
-            def plugin = mediator.loadedPlugins[arguments[0]]
+            def plugin = mediator.loadedPlugins[arguments[0]].plugin
             def Optional<RemoteAcceptor> remoteAcceptor = plugin.remoteAcceptor()
             if (!remoteAcceptor.isPresent()) return "${arguments[0]} does not accept remote configuration"
 
