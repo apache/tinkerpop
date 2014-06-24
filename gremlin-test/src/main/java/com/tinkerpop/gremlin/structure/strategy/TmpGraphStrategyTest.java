@@ -16,16 +16,16 @@ import static org.junit.Assert.assertEquals;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubGraphStrategyTest extends AbstractGremlinTest {
+public class TmpGraphStrategyTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void testVertexCriterion() throws Exception {
-        final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
-        final Predicate<Edge> edgeCriterion = edge -> true;
+        Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
+        Predicate<Edge> edgeCriterion = edge -> true;
 
-        final GraphStrategy strategyToTest = new SubGraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        GraphStrategy strategyToTest = new TmpStrategy(vertexCriterion, edgeCriterion);
+        StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
@@ -101,11 +101,11 @@ public class SubGraphStrategyTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void testEdgeCriterion() throws Exception {
 
-        final Predicate<Vertex> vertexCriterion = vertex -> true;
-        final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
+        Predicate<Vertex> vertexCriterion = vertex -> true;
+        Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
-        final GraphStrategy strategyToTest = new SubGraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        GraphStrategy strategyToTest = new TmpStrategy(vertexCriterion, edgeCriterion);
+        StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
         // all vertices are here
@@ -186,11 +186,11 @@ public class SubGraphStrategyTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void testMixedCriteria() throws Exception {
 
-        final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
-        final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 9 && (int) edge.id() <= 11;
+        Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
+        Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 9 && (int) edge.id() <= 11;
 
-        final GraphStrategy strategyToTest = new SubGraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        GraphStrategy strategyToTest = new TmpStrategy(vertexCriterion, edgeCriterion);
+        StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
         // three vertices are included in the subgraph
@@ -259,11 +259,11 @@ public class SubGraphStrategyTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void testGetExcludedVertex() throws Exception {
 
-        final Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
-        final Predicate<Edge> edgeCriterion = edge -> true;
+        Predicate<Vertex> vertexCriterion = vertex -> (int) vertex.id() >= 3 && (int) vertex.id() <= 5;
+        Predicate<Edge> edgeCriterion = edge -> true;
 
-        final GraphStrategy strategyToTest = new SubGraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        GraphStrategy strategyToTest = new TmpStrategy(vertexCriterion, edgeCriterion);
+        StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
         sg.e(1);
@@ -273,11 +273,11 @@ public class SubGraphStrategyTest extends AbstractGremlinTest {
     @LoadGraphWith(CLASSIC)
     public void testGetExcludedEdge() throws Exception {
 
-        final Predicate<Vertex> vertexCriterion = vertex -> true;
-        final Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
+        Predicate<Vertex> vertexCriterion = vertex -> true;
+        Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
 
-        final GraphStrategy strategyToTest = new SubGraphStrategy(vertexCriterion, edgeCriterion);
-        final StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+        GraphStrategy strategyToTest = new TmpStrategy(vertexCriterion, edgeCriterion);
+        StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
         sg.strategy().setGraphStrategy(strategyToTest);
 
         sg.e(7);

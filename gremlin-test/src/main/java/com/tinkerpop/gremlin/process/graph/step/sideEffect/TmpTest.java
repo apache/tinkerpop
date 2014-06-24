@@ -18,10 +18,10 @@ import static org.junit.Assert.fail;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class SubGraphTest extends AbstractGremlinTest {
-    public abstract Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX(final Object v1Id, final Graph subGraph);
+public abstract class TmpTest extends AbstractGremlinTest {
+    public abstract Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX(final Object v1Id, final Graph subgraph);
 
-    public abstract Traversal<Vertex, String> get_g_E_subgraphXcreatedX(final Graph subGraph);
+    public abstract Traversal<Vertex, String> get_g_E_subgraphXcreatedX(final Graph subgraph);
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -63,13 +63,13 @@ public abstract class SubGraphTest extends AbstractGremlinTest {
         graphProvider.clear(subgraph, config);
     }
 
-    public static class JavaSideEffectTest extends SubGraphTest {
-        public Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX(final Object v1Id, final Graph subGraph) {
-            return g.v(v1Id).outE().subGraph(subGraph, e -> e.label().equals("knows")).value("name");
+    public static class JavaSideEffectTest extends TmpTest {
+        public Traversal<Vertex, String> get_g_v1_outE_subgraphXknowsX(final Object v1Id, final Graph subgraph) {
+            return g.v(v1Id).outE().subgraph(subgraph, e -> e.label().equals("knows")).value("name");
         }
 
-        public Traversal<Vertex, String> get_g_E_subgraphXcreatedX(final Graph subGraph) {
-            return g.V().inE().subGraph(subGraph, e -> e.label().equals("created")).value("name");
+        public Traversal<Vertex, String> get_g_E_subgraphXcreatedX(final Graph subgraph) {
+            return g.V().inE().subgraph(subgraph, e -> e.label().equals("created")).value("name");
         }
     }
 }
