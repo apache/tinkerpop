@@ -1419,11 +1419,11 @@ IMPORTANT: image:hadoop-logo-notext.png[width=100,float=left] This section assum
 Installing Giraph-Gremlin
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To the `.bash_profile` file, add the following environmental variables (of course, be sure the directories are the respective locations on your local machine).
+To the `.bash_profile` file, add the following environmental variables (of course, be sure the directories are the respective locations on the local machine).
 
 [source,text]
 export GIRAPH_HOME=/usr/local/giraph-1.0.0
-export GIRAPH_GREMLIN_HOME=/Users/marko/software/tinkerpop/tinkerpop3/giraph-gremlin/target/giraph-gremlin-3.0.0-SNAPSHOT-standalone
+export GIRAPH_GREMLIN_HOME=/usr/local/giraph-gremlin-3.0.0
 
 Properties Files
 ~~~~~~~~~~~~~~~~
@@ -1432,14 +1432,13 @@ The `GiraphGraphComputer` makes use of a properties file much like any other `Gr
 
 [source,text]
 gremlin.inputLocation=tinkerpop-classic-adjlist.ldjson
-giraph.vertexInputFormatClass=
-   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat
+giraph.vertexInputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat
 gremlin.outputLocation=output
-giraph.vertexOutputFormatClass=
-   com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexOutputFormat
+giraph.vertexOutputFormatClass=com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexOutputFormat
 gremlin.vertexProgram=com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
-gremlin.traversalSupplierClass=
-   com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
+gremlin.traversalSupplierClass=com.tinkerpop.gremlin.giraph.process.graph.example.TraversalSupplier1
+gremlin.extraJobsCalculator=com.tinkerpop.gremlin.giraph.process.TraversalExtraJobsCalculator
+gremlin.deriveGlobals=false
 giraph.minWorkers=2
 giraph.maxWorkers=2
 
@@ -1453,6 +1452,9 @@ A review of the properties above are discussed below.
  * `giraph.vertexOutputFormatClass`: the format that the output file(s) should be represented in
  * `gremlin.vertexProgram`: the `VertexProgram` to disseminate to all vertices in the `GiraphGraph`
  * `gremlin.traversalSupplierClass`: for `TraversalVertexProgram`, the location of the Gremlin traversal to use
+  * This is only required if using GiraphGremlin programmatically versus via the Gremlin Console
+ * `gremlin.extraJobsCalculator`: the class to use to determine if extra MapReduce jobs are required of the computation
+ * `gremlin.deriveGlobal`: whether or not `Globals` are yielded (requires an extra MapReduce job if true)
  * `giraph.minWorkers`: the minimum number of parallel workers to execute the vertices of the graph
  * `giraph.maxWorkers`: the maximum number of parallel workers to execute the vertices of the graph
 
@@ -1460,7 +1462,7 @@ IMPORTANT: The maximum number of workers can be no larger than the number of map
 
 The above properties file states:
 
-	The location of the graph is tinkerpop-classic-adjlist.ldjson. Interpret that file using GraphSONVertexInputFormat. Execute the TraversalVertexProgram on all vertices of the graph using the traversal defined in TraversalSupplier1. Write the computed on GiraphGraph to output/ as a GraphSONOutputFormat. Use 2 workers (thus, 3 map-slots) to execute the job.
+	The location of the graph is tinkerpop-classic-adjlist.ldjson. Interpret that file using GraphSONVertexInputFormat. Execute the TraversalVertexProgram on all vertices of the graph using the traversal defined in TraversalSupplier1. Write the computed on GiraphGraph to output/ using the GraphSONOutputFormat. Use 2 workers (thus, 3 map-slots) to execute the job.
  
 Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Giraph-Gremlin job on the respective Hadoop cluster.
 
@@ -1468,7 +1470,7 @@ Along with the properties above, the numerous link:http://hadoop.apache.org/docs
 Running a Giraph-Gremlin Job
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The properties file in the previous section stated the `gremlin.input.location` to be `tinkerpop-classic-adjlist.ldjson`. This means that this file will be looked for on link:http://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system[HDFS]. Therefore, the file must be put into the filesystem.
+The properties file in the previous section stated the `gremlin.inputLocation` to be `tinkerpop-classic-adjlist.ldjson`. This means that this file will be looked for on link:http://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system[HDFS]. Therefore, the file must be put into the filesystem.
 
 [source,bash]
 $ hadoop fs -copyFromLocal data/tinkerpop-classic-adjlist.ldjson tinkerpop-classic-adjlist.ldjson
@@ -1490,79 +1492,83 @@ To execute this traversal from the command line, use `GiraphGraphRunner` as foll
 
 [source,bash]
 $ hadoop jar target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner conf/giraph-graphson.properties
-14/05/26 12:11:35 WARN mapred.JobClient: Use GenericOptionsParser for parsing the arguments. Applications should implement Tool for the same.
-14/05/26 12:11:35 INFO mapred.JobClient: Running job: job_201405261209_0001
-14/05/26 12:11:36 INFO mapred.JobClient:  map 0% reduce 0%
-14/05/26 12:11:57 INFO mapred.JobClient:  map 33% reduce 0%
-14/05/26 12:11:58 INFO mapred.JobClient:  map 66% reduce 0%
-14/05/26 12:11:59 INFO mapred.JobClient:  map 100% reduce 0%
-14/05/26 12:11:59 INFO mapred.JobClient: Job complete: job_201405261209_0001
-14/05/26 12:11:59 INFO mapred.JobClient: Counters: 32
-14/05/26 12:11:59 INFO mapred.JobClient:   Map-Reduce Framework
-14/05/26 12:11:59 INFO mapred.JobClient:     Spilled Records=0
-14/05/26 12:11:59 INFO mapred.JobClient:     Map input records=3
-14/05/26 12:11:59 INFO mapred.JobClient:     SPLIT_RAW_BYTES=132
-14/05/26 12:11:59 INFO mapred.JobClient:     Map output records=0
-14/05/26 12:11:59 INFO mapred.JobClient:     Total committed heap usage (bytes)=347078656
-14/05/26 12:11:59 INFO mapred.JobClient:   Giraph Timers
-14/05/26 12:11:59 INFO mapred.JobClient:     Total (milliseconds)=2718
-14/05/26 12:11:59 INFO mapred.JobClient:     Superstep 2 (milliseconds)=58
-14/05/26 12:11:59 INFO mapred.JobClient:     Shutdown (milliseconds)=361
-14/05/26 12:11:59 INFO mapred.JobClient:     Superstep 1 (milliseconds)=130
-14/05/26 12:11:59 INFO mapred.JobClient:     Input superstep (milliseconds)=886
-14/05/26 12:11:59 INFO mapred.JobClient:     Superstep 0 (milliseconds)=317
-14/05/26 12:11:59 INFO mapred.JobClient:     Setup (milliseconds)=882
-14/05/26 12:11:59 INFO mapred.JobClient:     Superstep 3 (milliseconds)=47
-14/05/26 12:11:59 INFO mapred.JobClient:     Superstep 4 (milliseconds)=33
-14/05/26 12:11:59 INFO mapred.JobClient:   File Input Format Counters
-14/05/26 12:11:59 INFO mapred.JobClient:     Bytes Read=0
-14/05/26 12:11:59 INFO mapred.JobClient:   Giraph Stats
-14/05/26 12:11:59 INFO mapred.JobClient:     Aggregate finished vertices=0
-14/05/26 12:11:59 INFO mapred.JobClient:     Aggregate edges=0
-14/05/26 12:11:59 INFO mapred.JobClient:     Sent messages=0
-14/05/26 12:11:59 INFO mapred.JobClient:     Current workers=2
-14/05/26 12:11:59 INFO mapred.JobClient:     Last checkpointed superstep=0
-14/05/26 12:11:59 INFO mapred.JobClient:     Current master task partition=0
-14/05/26 12:11:59 INFO mapred.JobClient:     Superstep=5
-14/05/26 12:11:59 INFO mapred.JobClient:     Aggregate vertices=6
-14/05/26 12:11:59 INFO mapred.JobClient:   FileSystemCounters
-14/05/26 12:11:59 INFO mapred.JobClient:     HDFS_BYTES_READ=2519
-14/05/26 12:11:59 INFO mapred.JobClient:     FILE_BYTES_WRITTEN=235461
-14/05/26 12:11:59 INFO mapred.JobClient:     HDFS_BYTES_WRITTEN=3354
-14/05/26 12:11:59 INFO mapred.JobClient:   Job Counters
-14/05/26 12:11:59 INFO mapred.JobClient:     Launched map tasks=3
-14/05/26 12:11:59 INFO mapred.JobClient:     SLOTS_MILLIS_REDUCES=0
-14/05/26 12:11:59 INFO mapred.JobClient:     SLOTS_MILLIS_MAPS=28105
-14/05/26 12:11:59 INFO mapred.JobClient:   File Output Format Counters
-14/05/26 12:11:59 INFO mapred.JobClient:     Bytes Written=0
+14/06/24 08:16:19 INFO computer.GiraphGraphRunner: GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, VertexStep, VertexStep, ElementValueStep]
+14/06/24 08:16:19 INFO mapred.JobClient: Running job: job_201406231706_0015
+14/06/24 08:16:20 INFO mapred.JobClient:  map 0% reduce 0%
+14/06/24 08:16:41 INFO mapred.JobClient:  map 33% reduce 0%
+14/06/24 08:16:42 INFO mapred.JobClient:  map 100% reduce 0%
+14/06/24 08:16:43 INFO mapred.JobClient: Job complete: job_201406231706_0015
+14/06/24 08:16:43 INFO mapred.JobClient: Counters: 32
+14/06/24 08:16:43 INFO mapred.JobClient:   Map-Reduce Framework
+14/06/24 08:16:43 INFO mapred.JobClient:     Spilled Records=0
+14/06/24 08:16:43 INFO mapred.JobClient:     Map input records=3
+14/06/24 08:16:43 INFO mapred.JobClient:     SPLIT_RAW_BYTES=132
+14/06/24 08:16:43 INFO mapred.JobClient:     Map output records=0
+14/06/24 08:16:43 INFO mapred.JobClient:     Total committed heap usage (bytes)=351272960
+14/06/24 08:16:43 INFO mapred.JobClient:   Giraph Timers
+14/06/24 08:16:43 INFO mapred.JobClient:     Total (milliseconds)=2897
+14/06/24 08:16:43 INFO mapred.JobClient:     Superstep 2 (milliseconds)=67
+14/06/24 08:16:43 INFO mapred.JobClient:     Shutdown (milliseconds)=356
+14/06/24 08:16:43 INFO mapred.JobClient:     Superstep 1 (milliseconds)=134
+14/06/24 08:16:43 INFO mapred.JobClient:     Input superstep (milliseconds)=1014
+14/06/24 08:16:43 INFO mapred.JobClient:     Superstep 0 (milliseconds)=298
+14/06/24 08:16:43 INFO mapred.JobClient:     Setup (milliseconds)=947
+14/06/24 08:16:43 INFO mapred.JobClient:     Superstep 3 (milliseconds)=43
+14/06/24 08:16:43 INFO mapred.JobClient:     Superstep 4 (milliseconds)=35
+14/06/24 08:16:43 INFO mapred.JobClient:   File Input Format Counters
+14/06/24 08:16:43 INFO mapred.JobClient:     Bytes Read=0
+14/06/24 08:16:43 INFO mapred.JobClient:   Giraph Stats
+14/06/24 08:16:43 INFO mapred.JobClient:     Aggregate finished vertices=0
+14/06/24 08:16:43 INFO mapred.JobClient:     Aggregate edges=0
+14/06/24 08:16:43 INFO mapred.JobClient:     Sent messages=0
+14/06/24 08:16:43 INFO mapred.JobClient:     Current workers=2
+14/06/24 08:16:43 INFO mapred.JobClient:     Last checkpointed superstep=0
+14/06/24 08:16:43 INFO mapred.JobClient:     Current master task partition=0
+14/06/24 08:16:43 INFO mapred.JobClient:     Superstep=5
+14/06/24 08:16:43 INFO mapred.JobClient:     Aggregate vertices=6
+14/06/24 08:16:43 INFO mapred.JobClient:   FileSystemCounters
+14/06/24 08:16:43 INFO mapred.JobClient:     HDFS_BYTES_READ=2488
+14/06/24 08:16:43 INFO mapred.JobClient:     FILE_BYTES_WRITTEN=235290
+14/06/24 08:16:43 INFO mapred.JobClient:     HDFS_BYTES_WRITTEN=3318
+14/06/24 08:16:43 INFO mapred.JobClient:   Job Counters
+14/06/24 08:16:43 INFO mapred.JobClient:     Launched map tasks=3
+14/06/24 08:16:43 INFO mapred.JobClient:     SLOTS_MILLIS_REDUCES=0
+14/06/24 08:16:43 INFO mapred.JobClient:     Total time spent by all reduces waiting after reserving slots (ms)=0
+14/06/24 08:16:43 INFO mapred.JobClient:     SLOTS_MILLIS_MAPS=29890
+14/06/24 08:16:43 INFO mapred.JobClient:     Total time spent by all maps waiting after reserving slots (ms)=0
+14/06/24 08:16:43 INFO mapred.JobClient:   File Output Format Counters
+14/06/24 08:16:43 INFO mapred.JobClient:     Bytes Written=0
 
 IMPORTANT: The only way to currently execute a Giraph-Gremlin job is via the terminal (as demonstrated above) or programmatically via Java or Groovy. Direct Gremlin-Groovy support via `:remote` should be coming soon.
 
 Understanding the Output
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-When job completes, the output is written to `gremlin.output.location` which was defined in the properties file as `output`. Realize that Hadoop will write the output according to the number of workers. Given that there were 2 workers, there are two files in `output`.
+When job completes, the output is written to `gremlin.outputLocation` which was defined in the properties file as `output`. Realize that Hadoop will write the output according to the number of workers. Given that there were 2 workers, there are two files in `output`. Also, realize the output is the graph which, in the traversal is the hidden memory variables `~g`.
 
 [source,bash]
-$ hadoop fs -ls output
+$ hadoop fs -ls /user/marko/output/
+Found 1 items
+drwxr-xr-x   - marko supergroup          0 2014-06-24 09:03 /user/marko/output/~g
+$ hadoop fs -ls /user/marko/output/~g
 Found 4 items
--rw-r--r--   1 marko supergroup          0 2014-05-27 09:51 /user/marko/output/_SUCCESS
-drwxr-xr-x   - marko supergroup          0 2014-05-27 09:50 /user/marko/output/_logs
--rw-r--r--   1 marko supergroup       1840 2014-05-27 09:50 /user/marko/output/part-m-00001
--rw-r--r--   1 marko supergroup       1514 2014-05-27 09:50 /user/marko/output/part-m-00002
+-rw-r--r--   1 marko supergroup          0 2014-06-24 09:03 /user/marko/output/~g/_SUCCESS
+drwxr-xr-x   - marko supergroup          0 2014-06-24 09:03 /user/marko/output/~g/_logs
+-rw-r--r--   1 marko supergroup       1820 2014-06-24 09:03 /user/marko/output/~g/part-m-00001
+-rw-r--r--   1 marko supergroup       1498 2014-06-24 09:03 /user/marko/output/~g/part-m-00002
 
 The part-files can merged out of HDFS and into a single file on the local drive  using `-getmerge`.
 
 [source,bash]
-$ hadoop fs -getmerge output tinkerpop-classic-adjlist-2.ldjson
+$ hadoop fs -cat output/~g/*
 
 [source,js]
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"marko","age":29}}
-{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"vadas","age":27}}
-{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"lop","lang":"java"}}
-{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"josh","age":32}}
-{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"ripple","lang":"java"}}
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","hiddens":{},"properties":{"name":"peter","age":35}}
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":0,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":2,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":3,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"properties":{"name":"marko","age":29}}
+{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":0,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{"ripple":1},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{"ripple":1}}},"properties":{"name":"ripple","lang":"java"}}
+{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":0,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":1,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":2,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{"lop":1},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{"lop":1}}},"properties":{"name":"lop","lang":"java"}}
+{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"properties":{"name":"josh","age":32}}
+{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"properties":{"name":"vadas","age":27}}
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"properties":{"name":"peter","age":35}}
 
 Looking particularly at the lop-vertex:
 
@@ -1603,6 +1609,127 @@ gremlin> g.V.out.out.name
 ==>lop
 
 IMPORTANT: GraphSON is a verbose I/O format. It is useful for demonstrations because it is a human-readable format, but in practice is not used for large-scale computations. Instead, <<gremlin-kryo,GremlinKryo>> is used.
+
+Using the Gremlin Console
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The example in the previous section was using a static Java `SSupplier<Traversal>`. This is the method to use when programmatically interacting with Giraph-Gremlin. However, it is also possible to use Giraph-Gremin via the Gremlin Console. For more information no the HDFS methods available through the Gremlin-Server console plugin, please see linkHDFSTools]
+
+
+
+[source,text]
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+─────oOOo-(3)-oOOo─────
+gremlin> :use install com.tinkerpop giraph-gremlin 3.x.y
+==>loaded: [com.tinkerpop, giraph-gremlin, 3.x.y] - restart the console to use [giraph]
+gremlin> :q
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+─────oOOo-(3)-oOOo─────
+loaded: giraph
+gremlin> :remote connect giraph ../giraph-gremlin/conf/giraph-graphson.properties
+==>giraphgraph[GraphSONVertexInputFormat->GraphSONVertexOutputFormat]
+gremlin> :> g.V.groupBy{it.value('name')[1]}{it.value('name')}
+INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep]
+WARN  org.apache.hadoop.mapred.JobClient  - Use GenericOptionsParser for parsing the arguments. Applications should implement Tool for the same.
+INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201406231706_0017
+INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
+INFO  org.apache.hadoop.mapred.JobClient  -  map 66% reduce 0%
+INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 0%
+INFO  org.apache.hadoop.mapred.JobClient  - Job complete: job_201406231706_0017
+INFO  org.apache.hadoop.mapred.JobClient  - Counters: 31
+INFO  org.apache.hadoop.mapred.JobClient  -   Map-Reduce Framework
+INFO  org.apache.hadoop.mapred.JobClient  -     Spilled Records=0
+INFO  org.apache.hadoop.mapred.JobClient  -     Map input records=3
+INFO  org.apache.hadoop.mapred.JobClient  -     SPLIT_RAW_BYTES=132
+INFO  org.apache.hadoop.mapred.JobClient  -     Map output records=0
+INFO  org.apache.hadoop.mapred.JobClient  -     Total committed heap usage (bytes)=243793920
+INFO  org.apache.hadoop.mapred.JobClient  -   Giraph Timers
+INFO  org.apache.hadoop.mapred.JobClient  -     Total (milliseconds)=7131
+INFO  org.apache.hadoop.mapred.JobClient  -     Superstep 2 (milliseconds)=56
+INFO  org.apache.hadoop.mapred.JobClient  -     Shutdown (milliseconds)=315
+INFO  org.apache.hadoop.mapred.JobClient  -     Superstep 1 (milliseconds)=115
+INFO  org.apache.hadoop.mapred.JobClient  -     Input superstep (milliseconds)=5404
+INFO  org.apache.hadoop.mapred.JobClient  -     Superstep 0 (milliseconds)=262
+INFO  org.apache.hadoop.mapred.JobClient  -     Setup (milliseconds)=923
+INFO  org.apache.hadoop.mapred.JobClient  -     Superstep 3 (milliseconds)=54
+INFO  org.apache.hadoop.mapred.JobClient  -   File Input Format Counters
+INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Read=0
+INFO  org.apache.hadoop.mapred.JobClient  -   Giraph Stats
+INFO  org.apache.hadoop.mapred.JobClient  -     Aggregate finished vertices=0
+INFO  org.apache.hadoop.mapred.JobClient  -     Aggregate edges=0
+INFO  org.apache.hadoop.mapred.JobClient  -     Sent messages=0
+INFO  org.apache.hadoop.mapred.JobClient  -     Current workers=2
+INFO  org.apache.hadoop.mapred.JobClient  -     Last checkpointed superstep=0
+INFO  org.apache.hadoop.mapred.JobClient  -     Current master task partition=0
+INFO  org.apache.hadoop.mapred.JobClient  -     Superstep=4
+INFO  org.apache.hadoop.mapred.JobClient  -     Aggregate vertices=6
+INFO  org.apache.hadoop.mapred.JobClient  -   FileSystemCounters
+INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_READ=2488
+INFO  org.apache.hadoop.mapred.JobClient  -     FILE_BYTES_WRITTEN=239055
+INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_WRITTEN=3504
+INFO  org.apache.hadoop.mapred.JobClient  -   Job Counters
+INFO  org.apache.hadoop.mapred.JobClient  -     Launched map tasks=3
+INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_REDUCES=0
+INFO  org.apache.hadoop.mapred.JobClient  -     Total time spent by all reduces waiting after reserving slots (ms)=0
+INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_MAPS=41383
+INFO  org.apache.hadoop.mapred.JobClient  -     Total time spent by all maps waiting after reserving slots (ms)=0
+INFO  org.apache.hadoop.mapred.JobClient  -   File Output Format Counters
+INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Written=0
+INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner  - GiraphGremlin: GiraphGroupByStep[SideEffect Calculation]
+INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201406231706_0018
+INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
+INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 0%
+INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 33%
+INFO  org.apache.hadoop.mapred.JobClient  -  map 100% reduce 100%
+INFO  org.apache.hadoop.mapred.JobClient  - Job complete: job_201406231706_0018
+INFO  org.apache.hadoop.mapred.JobClient  - Counters: 26
+INFO  org.apache.hadoop.mapred.JobClient  -   Map-Reduce Framework
+INFO  org.apache.hadoop.mapred.JobClient  -     Spilled Records=12
+INFO  org.apache.hadoop.mapred.JobClient  -     Map output materialized bytes=238
+INFO  org.apache.hadoop.mapred.JobClient  -     Reduce input records=6
+INFO  org.apache.hadoop.mapred.JobClient  -     Map input records=6
+INFO  org.apache.hadoop.mapred.JobClient  -     SPLIT_RAW_BYTES=240
+INFO  org.apache.hadoop.mapred.JobClient  -     Map output bytes=214
+INFO  org.apache.hadoop.mapred.JobClient  -     Reduce shuffle bytes=238
+INFO  org.apache.hadoop.mapred.JobClient  -     Reduce input groups=4
+INFO  org.apache.hadoop.mapred.JobClient  -     Combine output records=6
+INFO  org.apache.hadoop.mapred.JobClient  -     Reduce output records=4
+INFO  org.apache.hadoop.mapred.JobClient  -     Map output records=6
+INFO  org.apache.hadoop.mapred.JobClient  -     Combine input records=6
+INFO  org.apache.hadoop.mapred.JobClient  -     Total committed heap usage (bytes)=592445440
+INFO  org.apache.hadoop.mapred.JobClient  -   File Input Format Counters
+INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Read=3504
+INFO  org.apache.hadoop.mapred.JobClient  -   FileSystemCounters
+INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_READ=3744
+INFO  org.apache.hadoop.mapred.JobClient  -     FILE_BYTES_WRITTEN=245666
+INFO  org.apache.hadoop.mapred.JobClient  -     FILE_BYTES_READ=232
+INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_WRITTEN=52
+INFO  org.apache.hadoop.mapred.JobClient  -   Job Counters
+INFO  org.apache.hadoop.mapred.JobClient  -     Launched map tasks=2
+INFO  org.apache.hadoop.mapred.JobClient  -     Launched reduce tasks=1
+INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_REDUCES=8511
+INFO  org.apache.hadoop.mapred.JobClient  -     Total time spent by all reduces waiting after reserving slots (ms)=0
+INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_MAPS=7723
+INFO  org.apache.hadoop.mapred.JobClient  -     Total time spent by all maps waiting after reserving slots (ms)=0
+INFO  org.apache.hadoop.mapred.JobClient  -     Data-local map tasks=2
+INFO  org.apache.hadoop.mapred.JobClient  -   File Output Format Counters
+INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Written=52
+==>giraphgraph[GraphSONVertexInputFormat->GraphSONVertexOutputFormat]
+gremlin> hdfs.ls('output')
+==>rwxr-xr-x marko supergroup 0 (D) ~cap
+==>rwxr-xr-x marko supergroup 0 (D) ~g
+gremlin> hdfs.head('output/~cap')
+==>a	[marko, vadas]
+==>e	[peter]
+==>i	[ripple]
+==>o	[lop, josh]
+gremlin>
 
 A PageRank Example
 ~~~~~~~~~~~~~~~~~~
