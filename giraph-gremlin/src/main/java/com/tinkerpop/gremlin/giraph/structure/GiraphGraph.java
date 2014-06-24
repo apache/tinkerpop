@@ -86,7 +86,7 @@ public class GiraphGraph implements Graph {
         final String toString = this.configuration.containsKey(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS) ?
                 hadoopConfiguration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS, VertexOutputFormat.class).getSimpleName() :
                 "noOutput";
-        return StringFactory.graphString(this, fromString + "->" + toString);
+        return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase());
     }
 
     public void close() {

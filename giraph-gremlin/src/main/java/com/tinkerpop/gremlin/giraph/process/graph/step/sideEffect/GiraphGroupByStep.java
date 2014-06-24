@@ -8,14 +8,16 @@ import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.util.Serializer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
@@ -42,7 +44,7 @@ import java.util.List;
 public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable, Reversible, VertexCentric, JobCreator {
 
     private static final String GREMLIN_GROUP_BY_VARIABLE = "gremlin.groupBy.variable";
-    private static final String GREMLIN_GROUP_BY_REDUCE_FUNCTION = "gremlin.groupBy.reduceFunction";
+    private static final String GREMLIN_GROUP_BY_AS = "gremlin.groupBy.as";
 
     public java.util.Map<K, Collection<V>> groupMap;
     public final java.util.Map<K, R> reduceMap;
@@ -132,14 +134,12 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
         @Override
         public void setup(final Reducer<Text, KryoWritable, Text, KryoWritable>.Context context) throws IOException {
             try {
-                final String[] stringsOfFunction = context.getConfiguration().getStrings(GREMLIN_GROUP_BY_REDUCE_FUNCTION, null);
-                if (null != stringsOfFunction)
-                    this.reduceFunction = (SFunction) Serializer.deserializeObject(ConfUtil.getByteArray(context.getConfiguration(), GREMLIN_GROUP_BY_REDUCE_FUNCTION));
+                final Traversal traversal = (Traversal) VertexProgramHelper.deserializeSupplier(ConfUtil.makeApacheConfiguration(context.getConfiguration()), TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
+                this.reduceFunction = ((GroupByStep) TraversalHelper.getAs(context.getConfiguration().get(GREMLIN_GROUP_BY_AS), traversal)).reduceFunction;
             } catch (Exception e) {
                 throw new IOException(e.getMessage(), e);
             }
         }
-
 
         @Override
         public void reduce(final Text key, final Iterable<KryoWritable> values, final Reducer<Text, KryoWritable, Text, KryoWritable>.Context context) throws IOException, InterruptedException {
@@ -160,9 +160,7 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
     public Job createJob(final Configuration configuration) throws IOException {
         final Configuration newConfiguration = new Configuration(configuration);
         newConfiguration.set(GREMLIN_GROUP_BY_VARIABLE, this.variable);
-        if (null != this.reduceFunction)
-            ConfUtil.setByteArray(newConfiguration, GREMLIN_GROUP_BY_REDUCE_FUNCTION, Serializer.serializeObject(this.reduceFunction));
-
+        newConfiguration.set(GREMLIN_GROUP_BY_AS, this.getAs());
         final Job job = new Job(newConfiguration, GiraphGraphComputer.GIRAPH_GREMLIN_JOB_PREFIX + this.toString() + "[SideEffect Calculation]");
         job.setJarByClass(GiraphGraph.class);
         job.setMapperClass(Map.class);

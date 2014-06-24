@@ -1627,7 +1627,7 @@ $ bin/gremlin.sh
 ─────oOOo-(3)-oOOo─────
 loaded: giraph
 gremlin> :remote connect giraph ../giraph-gremlin/conf/giraph-graphson.properties
-==>giraphgraph[GraphSONVertexInputFormat->GraphSONVertexOutputFormat]
+==>giraphgraph[graphsonvertexinputformat->graphsonvertexoutputformat]
 gremlin> :> g.V.groupBy{it.value('name')[1]}{it.value('name')}
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner  - GiraphGremlin: TraversalVertexProgram[GiraphGraphStep, GroupByStep]
 WARN  org.apache.hadoop.mapred.JobClient  - Use GenericOptionsParser for parsing the arguments. Applications should implement Tool for the same.
@@ -1710,7 +1710,7 @@ INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_MAPS=7723
 INFO  org.apache.hadoop.mapred.JobClient  -     Data-local map tasks=2
 INFO  org.apache.hadoop.mapred.JobClient  -   File Output Format Counters
 INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Written=52
-==>giraphgraph[GraphSONVertexInputFormat->GraphSONVertexOutputFormat]
+==>giraphgraph[graphsonvertexinputformat->graphsonvertexoutputformat]
 gremlin> hdfs.ls('output')
 ==>rwxr-xr-x marko supergroup 0 (D) ~cap
 ==>rwxr-xr-x marko supergroup 0 (D) ~g
