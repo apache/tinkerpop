@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
  */
 class PluggedIn {
     private final GremlinPlugin plugin
-    private final boolean installed = false
+    private boolean installed = false
 
     public PluggedIn(final GremlinPlugin plugin, final boolean installed) {
         this.plugin = plugin
