@@ -17,6 +17,6 @@ class GroovyAggregateTestImpl extends AggregateTest {
     }
 
     public List<String> get_g_V_aggregateXa_nameX_iterate_getXaX() {
-        g.V.aggregate('a') { it['name'] }.iterate().memory().get('a')
+        g.V.aggregate('a') { it.value('name') }.iterate().memory().get('a')
     }
 }

@@ -227,15 +227,15 @@ gremlin> marko.out('knows').name <2>
 .The Name of The People That Marko Knows
 image::tinkerpop-classic-ex1.png[width=500]
 
-Again, all steps extend either map, flatMap, or filter. Thus, the traversal above can be written in its generic form below. Note the Gremlin-Groovy syntax convention of `v['name']`. This is Groovy syntactic sugar that resolved to `v.value('name')`. In the next section, the `it.get()` will be explained as this is an important feature of TinkerPop3 that is not available in previous versions of TinkerPop. 
+Again, all steps extend either map, flatMap, or filter. Thus, the traversal above can be written in its generic form below. In the next section, the `it.get()` will be explained as this is an important feature of TinkerPop3 that is not available in previous versions of TinkerPop. 
 
 IMPORTANT: The steps map, flatMap, and filter take a link:http://en.wikipedia.org/wiki/Anonymous_function[lambda function] (i.e. an anonymous function or closure). For map, the function must return an object. For flatMap, the function must return an iterator of objects. For filter, the function is a predicate that returns either true or false. The lambdas introduced by Java8 are supported in TinkerPop3.
 
 [source,groovy]
 marko
-  .filter{it.get()['name'] == 'marko'}
+  .filter{it.get().value('name') == 'marko'}
   .flatMap{it.get().out('knows')}
-  .map{it.get()['name']}
+  .map{it.get().value('name')}
 ==>vadas
 ==>josh
 
@@ -243,9 +243,9 @@ Finally, as a strictly academic exercise, the traversal can be written completel
 
 [source,groovy]
 marko
-  .flatMap{it.get()['name'] == 'marko' ? [it.get()].iterator() : [].iterator()}
+  .flatMap{it.get().value('name') == 'marko' ? [it.get()].iterator() : [].iterator()}
   .flatMap{it.get().out('knows')}
-  .flatMap{[it.get()['name']].iterator()}
+  .flatMap{[it.get().value('name')].iterator()}
 ==>vadas
 ==>josh
 
@@ -1613,9 +1613,7 @@ IMPORTANT: GraphSON is a verbose I/O format. It is useful for demonstrations bec
 Using the Gremlin Console
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The example in the previous section was using a static Java `SSupplier<Traversal>`. This is the method to use when programmatically interacting with Giraph-Gremlin. However, it is also possible to use Giraph-Gremin via the Gremlin Console. For more information no the HDFS methods available through the Gremlin-Server console plugin, please see linkHDFSTools]
-
-
+The example in the previous section was using a static Java `SSupplier<Traversal>`. This is the method to use when programmatically interacting with Giraph-Gremlin. However, it is also possible to use Giraph-Gremin via the Gremlin Console.
 
 [source,text]
 $ bin/gremlin.sh
@@ -1730,6 +1728,20 @@ gremlin> hdfs.head('output/~cap')
 ==>i	[ripple]
 ==>o	[lop, josh]
 gremlin>
+
+IMPORTANT: When using Giraph-Gremlin from the Gremlin console, the only language subset supported is Gremlin-Groovy.
+
+A list of the HDFS methods available are itemized below:
+ * `hdfs.ls(String path)`: list the contents of the supplied directory  
+ * `hdfs.cp(String from, String to)`: copy the specified path to the specified path
+ * `hdfs.exists(String path)`: whether the specification path exists
+ * `hdfs.rm(String path)`: remove the specified path
+ * `hdfs.rmr(String path)`: remove the specified path with recursion
+ * `hdfs.copyToLocal(String from, String to)`: copy the specified path to the specified local path
+ * `hdfs.copyFromLocat(String from, String to)`: copy the specified local path to the specified path
+ * `hdfs.mergeToLocal(String from, String to)`: merge the files at path to the specified local path
+ * `hdfs.head(String path)`: display the data in the path
+ * `hdfs.head(String path, long lineCount)`: display only the first lineCount data in the path
 
 A PageRank Example
 ~~~~~~~~~~~~~~~~~~

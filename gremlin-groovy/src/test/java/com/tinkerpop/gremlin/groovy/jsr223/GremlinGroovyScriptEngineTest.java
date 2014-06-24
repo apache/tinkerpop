@@ -84,10 +84,10 @@ public class GremlinGroovyScriptEngineTest {
 
 		assertEquals(engine.eval("g.E.has('weight',f).next()", bindings), g.e(7));
 		assertEquals(engine.eval("g.V.has('name',s).next()", bindings), g.v(1));
-		assertEquals(engine.eval("g.V.sideEffect{it.property('bbb',it.name=='marko')}.iterate();g.V.has('bbb',b).next()", bindings), g.v(1));
-		assertEquals(engine.eval("g.V.sideEffect{it.property('iii',it.name=='marko'?1:0)}.iterate();g.V.has('iii',i).next()", bindings), g.v(1));
-		assertEquals(engine.eval("g.V.sideEffect{it.property('lll',it.name=='marko'?100l:0l)}.iterate();g.V.has('lll',l).next()", bindings), g.v(1));
-		assertEquals(engine.eval("g.V.sideEffect{it.property('ddd',it.name=='marko'?1.55555d:0)}.iterate();g.V.has('ddd',d).next()", bindings), g.v(1));
+		assertEquals(engine.eval("g.V.sideEffect{it.property('bbb',it.value('name')=='marko')}.iterate();g.V.has('bbb',b).next()", bindings), g.v(1));
+		assertEquals(engine.eval("g.V.sideEffect{it.property('iii',it.value('name')=='marko'?1:0)}.iterate();g.V.has('iii',i).next()", bindings), g.v(1));
+		assertEquals(engine.eval("g.V.sideEffect{it.property('lll',it.value('name')=='marko'?100l:0l)}.iterate();g.V.has('lll',l).next()", bindings), g.v(1));
+		assertEquals(engine.eval("g.V.sideEffect{it.property('ddd',it.value('name')=='marko'?1.55555d:0)}.iterate();g.V.has('ddd',d).next()", bindings), g.v(1));
 	}
 
 	@Test

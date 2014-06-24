@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 class GroovyGroupCountTestImpl extends GroupCountTest {
 
     public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX() {
-        g.V.out('created').groupCount { it['name'] }
+        g.V.out('created').groupCount { it.value('name') }
     }
 
     public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount() {
@@ -17,6 +17,6 @@ class GroovyGroupCountTestImpl extends GroupCountTest {
     }
 
     public Map<Object, Long> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_iterate_getXaX() {
-        g.V.as('x').out.groupCount('a') { it['name'] }.jump('x') { it.loops < 2 }.iterate().memory().get('a')
+        g.V.as('x').out.groupCount('a') { it.value('name') }.jump('x') { it.loops < 2 }.iterate().memory().get('a')
     }
 }
