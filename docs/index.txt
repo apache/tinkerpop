@@ -497,7 +497,7 @@ gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> sg = TinkerGraph.open() <1>
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> g.E.subGraph(sg, {it.label == 'knows'}) <2>
+gremlin> g.E.subgraph(sg, {it.label == 'knows'}) <2>
 ==>tinkergraph[vertices:3 edges:2]
 gremlin> sg.E <3>
 ==>e[7][1-knows->2]
@@ -516,7 +516,7 @@ gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> sg = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> g.v(3).as('a').inE.outV.jump('a'){it.loops<3}{true}.subGraph(sg, {true})   <1>
+gremlin> g.v(3).as('a').inE.outV.jump('a'){it.loops<3}{true}.subgraph(sg, {true})   <1>
 ==>tinkergraph[vertices:4 edges:4]
 gremlin> sg.E
 ==>e[8][1-knows->4]
