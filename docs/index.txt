@@ -497,7 +497,7 @@ gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> sg = TinkerGraph.open() <1>
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> g.E.subgraph(sg, {it.label == 'knows'}) <2>
+gremlin> g.E.subGraph(sg, {it.label == 'knows'}) <2>
 ==>tinkergraph[vertices:3 edges:2]
 gremlin> sg.E <3>
 ==>e[7][1-knows->2]
@@ -516,7 +516,7 @@ gremlin> g = TinkerFactory.createClassic()
 ==>tinkergraph[vertices:6 edges:6]
 gremlin> sg = TinkerGraph.open()
 ==>tinkergraph[vertices:0 edges:0]
-gremlin> g.v(3).as('a').inE.outV.jump('a'){it.loops<3}{true}.subgraph(sg, {true})   <1>
+gremlin> g.v(3).as('a').inE.outV.jump('a'){it.loops<3}{true}.subGraph(sg, {true})   <1>
 ==>tinkergraph[vertices:4 edges:4]
 gremlin> sg.E
 ==>e[8][1-knows->4]
@@ -1533,9 +1533,7 @@ $ hadoop jar target/giraph-gremlin-3.0.0-SNAPSHOT-job.jar com.tinkerpop.gremlin.
 14/06/24 08:16:43 INFO mapred.JobClient:   Job Counters
 14/06/24 08:16:43 INFO mapred.JobClient:     Launched map tasks=3
 14/06/24 08:16:43 INFO mapred.JobClient:     SLOTS_MILLIS_REDUCES=0
-14/06/24 08:16:43 INFO mapred.JobClient:     Total time spent by all reduces waiting after reserving slots (ms)=0
 14/06/24 08:16:43 INFO mapred.JobClient:     SLOTS_MILLIS_MAPS=29890
-14/06/24 08:16:43 INFO mapred.JobClient:     Total time spent by all maps waiting after reserving slots (ms)=0
 14/06/24 08:16:43 INFO mapred.JobClient:   File Output Format Counters
 14/06/24 08:16:43 INFO mapred.JobClient:     Bytes Written=0
 
@@ -1557,12 +1555,9 @@ drwxr-xr-x   - marko supergroup          0 2014-06-24 09:03 /user/marko/output/~
 -rw-r--r--   1 marko supergroup       1820 2014-06-24 09:03 /user/marko/output/~g/part-m-00001
 -rw-r--r--   1 marko supergroup       1498 2014-06-24 09:03 /user/marko/output/~g/part-m-00002
 
-The part-files can merged out of HDFS and into a single file on the local drive  using `-getmerge`.
 
 [source,bash]
 $ hadoop fs -cat output/~g/*
-
-[source,js]
 {"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":0,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":2,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":3,"label":"knows","type":"edge","outV":1,"hiddens":{},"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{}}},"properties":{"name":"marko","age":29}}
 {"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":0,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{"ripple":1},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{"ripple":1}}},"properties":{"name":"ripple","lang":"java"}}
 {"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":0,"label":"created","type":"edge","outV":1,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":1,"label":"created","type":"edge","outV":4,"hiddens":{},"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":2,"label":"created","type":"edge","outV":6,"hiddens":{},"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","hiddens":{"gremlin.traversalVertexProgram.traverserTracker":{"previousObjectTracks":{"lop":1},"graphTracks":{},"objectTracks":{},"doneGraphTracks":{},"doneObjectTracks":{"lop":1}}},"properties":{"name":"lop","lang":"java"}}
@@ -1616,6 +1611,7 @@ Using the Gremlin Console
 The example in the previous section was using a static Java `SSupplier<Traversal>`. This is the method to use when programmatically interacting with Giraph-Gremlin. However, it is also possible to use Giraph-Gremin via the Gremlin Console.
 
 [source,text]
+----
 $ bin/gremlin.sh
 
          \,,,/
@@ -1674,9 +1670,7 @@ INFO  org.apache.hadoop.mapred.JobClient  -     HDFS_BYTES_WRITTEN=3504
 INFO  org.apache.hadoop.mapred.JobClient  -   Job Counters
 INFO  org.apache.hadoop.mapred.JobClient  -     Launched map tasks=3
 INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_REDUCES=0
-INFO  org.apache.hadoop.mapred.JobClient  -     Total time spent by all reduces waiting after reserving slots (ms)=0
 INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_MAPS=41383
-INFO  org.apache.hadoop.mapred.JobClient  -     Total time spent by all maps waiting after reserving slots (ms)=0
 INFO  org.apache.hadoop.mapred.JobClient  -   File Output Format Counters
 INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Written=0
 INFO  com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner  - GiraphGremlin: GiraphGroupByStep[SideEffect Calculation]
@@ -1712,9 +1706,7 @@ INFO  org.apache.hadoop.mapred.JobClient  -   Job Counters
 INFO  org.apache.hadoop.mapred.JobClient  -     Launched map tasks=2
 INFO  org.apache.hadoop.mapred.JobClient  -     Launched reduce tasks=1
 INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_REDUCES=8511
-INFO  org.apache.hadoop.mapred.JobClient  -     Total time spent by all reduces waiting after reserving slots (ms)=0
 INFO  org.apache.hadoop.mapred.JobClient  -     SLOTS_MILLIS_MAPS=7723
-INFO  org.apache.hadoop.mapred.JobClient  -     Total time spent by all maps waiting after reserving slots (ms)=0
 INFO  org.apache.hadoop.mapred.JobClient  -     Data-local map tasks=2
 INFO  org.apache.hadoop.mapred.JobClient  -   File Output Format Counters
 INFO  org.apache.hadoop.mapred.JobClient  -     Bytes Written=52
@@ -1728,10 +1720,12 @@ gremlin> hdfs.head('output/~cap')
 ==>i	[ripple]
 ==>o	[lop, josh]
 gremlin>
+----
 
 IMPORTANT: When using Giraph-Gremlin from the Gremlin console, the only language subset supported is Gremlin-Groovy.
 
 A list of the HDFS methods available are itemized below:
+
  * `hdfs.ls(String path)`: list the contents of the supplied directory  
  * `hdfs.cp(String from, String to)`: copy the specified path to the specified path
  * `hdfs.exists(String path)`: whether the specification path exists
