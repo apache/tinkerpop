@@ -17,6 +17,17 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.codehaus.groovy.modules.http-builder</groupId>
+            <artifactId>http-builder</artifactId>
+            <version>0.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>com.tinkerpop</groupId>
             <artifactId>gremlin-driver</artifactId>
             <version>${project.version}</version>
