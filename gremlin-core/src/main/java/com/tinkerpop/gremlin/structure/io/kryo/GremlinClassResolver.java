@@ -39,16 +39,17 @@ class GremlinClassResolver implements ClassResolver {
     private Class memoizedClass;
     private Registration memoizedClassValue;
 
-    public void setKryo (Kryo kryo) {
+    public void setKryo(Kryo kryo) {
         this.kryo = kryo;
     }
 
     public Registration register(final Registration registration) {
-        if (null == registration) throw new IllegalArgumentException("registration cannot be null.");
+        if (null == registration) throw new IllegalArgumentException("Registration cannot be null.");
         if (registration.getId() != NAME) idToRegistration.put(registration.getId(), registration);
 
         classToRegistration.put(registration.getType(), registration);
-        if (registration.getType().isPrimitive()) classToRegistration.put(getWrapperClass(registration.getType()), registration);
+        if (registration.getType().isPrimitive())
+            classToRegistration.put(getWrapperClass(registration.getType()), registration);
         return registration;
     }
 
@@ -129,7 +130,7 @@ class GremlinClassResolver implements ClassResolver {
         return registration;
     }
 
-    protected Registration readName (final Input input) {
+    protected Registration readName(final Input input) {
         final int nameId = input.readVarInt(true);
         if (nameIdToClass == null) nameIdToClass = new IntMap();
         Class type = nameIdToClass.get(nameId);
@@ -155,7 +156,7 @@ class GremlinClassResolver implements ClassResolver {
         return nameToClass != null ? nameToClass.get(className) : null;
     }
 
-    public void reset () {
+    public void reset() {
         if (!kryo.isRegistrationRequired()) {
             if (classToNameId != null) classToNameId.clear();
             if (nameIdToClass != null) nameIdToClass.clear();

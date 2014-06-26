@@ -40,18 +40,34 @@ abstract class TinkerElement implements Element, Serializable {
     public Map<String, Property> hiddens() {
         final Map<String, Property> temp = new HashMap<>();
         this.properties.forEach((key, property) -> {
-            if (key.startsWith(Graph.Key.HIDDEN_PREFIX))
-                temp.put(ElementHelper.removeHiddenPrefix(key), property);
+            if (Graph.Key.isHidden(key))
+                temp.put(Graph.Key.unHide(key), property);
         });
+        if (this.graph.useGraphView) {
+            this.graph.graphView.computeKeys.keySet().forEach(key -> {
+                if (Graph.Key.isHidden(key)) {
+                    final Property property = this.graph.graphView.getProperty(this, key);
+                    if (property.isPresent()) temp.put(Graph.Key.unHide(key), property);
+                }
+            });
+        }
         return temp;
     }
 
     public Map<String, Property> properties() {
         final Map<String, Property> temp = new HashMap<>();
         this.properties.forEach((key, property) -> {
-            if (!key.startsWith(Graph.Key.HIDDEN_PREFIX))
+            if (!Graph.Key.isHidden(key))
                 temp.put(key, property);
         });
+        if (this.graph.useGraphView) {
+            this.graph.graphView.computeKeys.keySet().forEach(key -> {
+                if (!Graph.Key.isHidden(key)) {
+                    final Property property = this.graph.graphView.getProperty(this, key);
+                    if (property.isPresent()) temp.put(key, property);
+                }
+            });
+        }
         return temp;
     }
 

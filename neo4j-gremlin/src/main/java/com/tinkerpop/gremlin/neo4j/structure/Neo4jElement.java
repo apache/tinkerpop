@@ -65,7 +65,7 @@ abstract class Neo4jElement implements Element {
         this.graph.tx().readWrite();
         final Set<String> keys = new HashSet<>();
         for (final String key : this.rawElement.getPropertyKeys()) {
-            if (!key.startsWith(Graph.Key.HIDDEN_PREFIX))
+            if (!Graph.Key.isHidden(key))
                 keys.add(key);
         }
         return keys;
@@ -76,8 +76,8 @@ abstract class Neo4jElement implements Element {
         this.graph.tx().readWrite();
         final Set<String> keys = new HashSet<>();
         for (final String key : this.rawElement.getPropertyKeys()) {
-            if (key.startsWith(Graph.Key.HIDDEN_PREFIX))
-                keys.add(ElementHelper.removeHiddenPrefix(key));
+            if (Graph.Key.isHidden(key))
+                keys.add(Graph.Key.unHide(key));
         }
         return keys;
     }

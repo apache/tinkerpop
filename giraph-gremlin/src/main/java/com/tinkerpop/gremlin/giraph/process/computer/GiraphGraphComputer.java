@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
-import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -51,7 +50,7 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public GraphComputer isolation(final Isolation isolation) {
-        if (isolation.equals(Isolation.DIRTY_BSP))
+        if (!isolation.equals(Isolation.BSP))
             throw GraphComputer.Exceptions.isolationNotSupported(isolation);
         return this;
     }
@@ -105,7 +104,6 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        ((TraverserSource) traversal.getSteps().get(0)).clear();
         return new TraversalResult<>(this.giraphGraph, () -> traversal);
     }
 }

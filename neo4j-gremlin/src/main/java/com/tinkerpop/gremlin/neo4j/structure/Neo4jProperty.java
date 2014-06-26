@@ -31,7 +31,7 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
     }
 
     public String key() {
-        return ElementHelper.removeHiddenPrefix(this.key);
+        return Graph.Key.unHide(this.key);
     }
 
     public V value() {
@@ -43,7 +43,7 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
     }
 
     public boolean isHidden() {
-        return this.key.startsWith(Graph.Key.HIDDEN_PREFIX);
+        return Graph.Key.isHidden(this.key);
     }
 
     public String toString() {

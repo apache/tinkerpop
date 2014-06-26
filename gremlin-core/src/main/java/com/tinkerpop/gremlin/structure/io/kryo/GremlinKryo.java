@@ -7,7 +7,11 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.DefaultStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
+import com.tinkerpop.gremlin.process.PathTraverser;
+import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounters;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalPaths;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -56,7 +60,7 @@ public final class GremlinKryo {
 
     private GremlinKryo(final List<Triplet<Class, Serializer, Integer>> serializationList,
                         final HeaderWriter headerWriter,
-                        final HeaderReader headerReader){
+                        final HeaderReader headerReader) {
         this.serializationList = serializationList;
         this.headerWriter = headerWriter;
         this.headerReader = headerReader;
@@ -133,12 +137,12 @@ public final class GremlinKryo {
          * this function is useful when versions require backward compatibility or other more complex checks.  This
          * function is only used if the {@link #extendedVersion(byte)} is set to something other than its default.
          */
-        public Builder compliant(final BiPredicate<Byte,Byte> compliant);
+        public Builder compliant(final BiPredicate<Byte, Byte> compliant);
 
         public GremlinKryo build();
     }
 
-    public enum Version  {
+    public enum Version {
         V_1_0_0(BuilderV1d0.class);
 
         private final Class<? extends Builder> builder;
@@ -169,9 +173,9 @@ public final class GremlinKryo {
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is Collections.singleton=54.
+         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is TraversalPaths=58.
          */
-        private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class,Serializer, Integer>>() {{
+        private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class, Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
             add(Triplet.<Class, Serializer, Integer>with(char[].class, null, 26));
             add(Triplet.<Class, Serializer, Integer>with(short[].class, null, 27));
@@ -217,6 +221,12 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(UUID.class, new UUIDSerializer(), 17));
             add(Triplet.<Class, Serializer, Integer>with(Vertex.class, new ElementSerializer.VertexSerializer(), 18));
             add(Triplet.<Class, Serializer, Integer>with(VertexTerminator.class, null, 13));
+
+            // recently added for GraphTraversal in OLAP
+            add(Triplet.<Class, Serializer, Integer>with(SimpleTraverser.class, null, 55));
+            add(Triplet.<Class, Serializer, Integer>with(PathTraverser.class, null, 56));
+            add(Triplet.<Class, Serializer, Integer>with(TraversalCounters.class, null, 57));
+            add(Triplet.<Class, Serializer, Integer>with(TraversalPaths.class, null, 58));
         }};
 
         private static final byte major = 1;
@@ -238,7 +248,7 @@ public final class GremlinKryo {
         public Builder addCustom(final Class... custom) {
             if (custom != null && custom.length > 0)
                 serializationList.addAll(Arrays.asList(custom).stream()
-                        .map(c->Triplet.<Class, Serializer, Integer>with(c, null, currentSerializationId.getAndIncrement()))
+                        .map(c -> Triplet.<Class, Serializer, Integer>with(c, null, currentSerializationId.getAndIncrement()))
                         .collect(Collectors.<Triplet<Class, Serializer, Integer>>toList()));
             return this;
         }
@@ -250,7 +260,7 @@ public final class GremlinKryo {
         public Builder addCustom(final Pair<Class, Serializer>... custom) {
             if (custom != null && custom.length > 0) {
                 serializationList.addAll(Arrays.asList(custom).stream()
-                        .map(c-> Triplet.<Class, Serializer, Integer>with(c.getValue0(), c.getValue1(), currentSerializationId.getAndIncrement()))
+                        .map(c -> Triplet.<Class, Serializer, Integer>with(c.getValue0(), c.getValue1(), currentSerializationId.getAndIncrement()))
                         .collect(Collectors.<Triplet<Class, Serializer, Integer>>toList()));
             }
 

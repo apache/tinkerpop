@@ -14,12 +14,15 @@ import java.util.Map;
  */
 public class TraversalPaths implements Serializable {
 
-    protected final Map<Object, List<Traverser>> previousObjectTracks;
+    protected Map<Object, List<Traverser>> previousObjectTracks;
     protected final Map<Object, List<Traverser>> graphTracks = new HashMap<>();
     protected final Map<Object, List<Traverser>> objectTracks = new HashMap<>();
 
     protected final Map<Object, List<Traverser>> doneGraphTracks = new HashMap<>();
     protected final Map<Object, List<Traverser>> doneObjectTracks = new HashMap<>();
+
+    public TraversalPaths() {
+    }
 
     public TraversalPaths(final Vertex vertex) {
         final Property<TraversalPaths> tracker = vertex.property(TraversalVertexProgram.TRAVERSER_TRACKER);

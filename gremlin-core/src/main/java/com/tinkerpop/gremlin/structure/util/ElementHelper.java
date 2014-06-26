@@ -27,10 +27,6 @@ import java.util.stream.Stream;
  */
 public class ElementHelper {
 
-    public static String removeHiddenPrefix(final String key) {
-        return key.startsWith(Graph.Key.HIDDEN_PREFIX) ? key.substring(Graph.Key.HIDDEN_PREFIX.length()) : key;
-    }
-
     public static Vertex getOrAddVertex(final Graph graph, final Object id, final String label) {
         try {
             return graph.v(id);

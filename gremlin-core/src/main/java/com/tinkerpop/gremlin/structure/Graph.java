@@ -25,7 +25,7 @@ public interface Graph extends AutoCloseable {
 
     public class Key {
 
-        public static final String HIDDEN_PREFIX = "%&%";
+        private static final String HIDDEN_PREFIX = "%&%";
 
         public static final String hidden(final String key) {
             return HIDDEN_PREFIX.concat(key);

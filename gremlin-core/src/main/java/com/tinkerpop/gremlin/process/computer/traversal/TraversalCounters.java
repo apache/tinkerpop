@@ -13,12 +13,15 @@ import java.util.Map;
  */
 public class TraversalCounters implements Serializable {
 
-    protected final Map<Traverser, Long> previousObjectTracks;
+    protected Map<Traverser, Long> previousObjectTracks;
     protected final Map<Traverser, Long> graphTracks = new HashMap<>();
     protected final Map<Traverser, Long> objectTracks = new HashMap<>();
 
     protected final Map<Traverser, Long> doneGraphTracks = new HashMap<>();
     protected final Map<Traverser, Long> doneObjectTracks = new HashMap<>();
+
+    public TraversalCounters() {
+    }
 
     public TraversalCounters(final Vertex vertex) {
         final Property<TraversalCounters> tracker = vertex.property(TraversalVertexProgram.TRAVERSER_TRACKER);
@@ -44,6 +47,18 @@ public class TraversalCounters implements Serializable {
     public Map<Traverser, Long> getPreviousObjectTracks() {
         return this.previousObjectTracks;
     }
+
+    /*public static class TraversalCountersSerializer<T> extends Serializer<T> {
+        @Override
+        public void write(final Kryo kryo, final Output output, final T traversalCounters) {
+            kryo.writeClassAndObject(output, traversalCounters);
+        }
+
+        @Override
+        public T read(final Kryo kryo, final Input input, final Class<T> traversalCounters) {
+            return (T) kryo.readClassAndObject(input);
+        }
+    }*/
 }
 
 
