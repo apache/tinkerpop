@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.strategy.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
@@ -71,12 +71,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     public boolean equals(final Object object) {
         return object instanceof Iterator && TraversalHelper.areEqual(this, (Iterator) object);
-    }
-
-    public Traversal<S, E> submit(final TraversalEngine engine) {
-        final Traversal<S, E> traversal = new DefaultTraversal<>();
-        traversal.addStep(new StartStep<>(traversal, engine.execute(this)));
-        return traversal;
     }
 
     private final void doFinalOptimization() {

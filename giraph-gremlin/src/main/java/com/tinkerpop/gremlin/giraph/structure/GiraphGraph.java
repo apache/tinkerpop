@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -45,17 +46,9 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
     public GraphTraversal<Vertex, Vertex> V() {
-        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>() {
-            public GraphTraversal<Object, Vertex> submit(final TraversalEngine engine) {
-                if (engine instanceof GraphComputer) {
-                    ((TraverserSource) this.getSteps().get(0)).clear();
-                }
-                return super.submit(engine);
-            }
-        };
-
+        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
         traversal.strategies().register(new SideEffectReplacementStrategy());
-        traversal.strategies().register(new ValidateStepsStrategy());
+        //traversal.strategies().register(new ValidateStepsStrategy());
         traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, ConfUtil.makeHadoopConfiguration(this.configuration)));
         return traversal;
     }
@@ -63,17 +56,17 @@ public class GiraphGraph implements Graph, Serializable {
     public GraphTraversal<Edge, Edge> E() {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
         traversal.strategies().register(new SideEffectReplacementStrategy());
-        traversal.strategies().register(new ValidateStepsStrategy());
+        //traversal.strategies().register(new ValidateStepsStrategy());
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class, ConfUtil.makeHadoopConfiguration(this.configuration)));
         return traversal;
     }
 
-    /*public Vertex v(final Object id) {
-        this.V().has(Element.ID,id).next()
-    }*/
+    public Vertex v(final Object id) {
+        return new GiraphVertex(this.V().<Vertex>has(Element.ID, id).next(), this);
+    }
 
     public Edge e(final Object id) {
-        throw Exceptions.edgeLookupsNotSupported();
+        return new GiraphEdge(this.E().<Edge>has(Element.ID, id).next(), this);
     }
 
     public Vertex addVertex(final Object... keyValues) {

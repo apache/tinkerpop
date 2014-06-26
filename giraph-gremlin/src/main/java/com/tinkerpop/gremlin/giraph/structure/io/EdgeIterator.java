@@ -1,11 +1,12 @@
 package com.tinkerpop.gremlin.giraph.structure.io;
 
+import com.google.common.collect.Iterators;
 import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
 import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.Edge;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.conf.Configuration;
@@ -22,12 +23,12 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexIterator implements Iterator<Vertex> {
+public class EdgeIterator implements Iterator<Edge> {
 
     private final Queue<VertexReader> readers = new LinkedList<>();
-    private Vertex nextVertex = null;
+    private Iterator<Edge> edgeIterator = Iterators.emptyIterator();
 
-    public VertexIterator(final VertexInputFormat inputFormat, final Configuration configuration) {
+    public EdgeIterator(final VertexInputFormat inputFormat, final Configuration configuration) {
         try {
             final String graphPath = configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.G;
             HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(graphPath), new HiddenFileFilter()).forEach(path -> {
@@ -42,21 +43,19 @@ public class VertexIterator implements Iterator<Vertex> {
         }
     }
 
-    public Vertex next() {
+    public Edge next() {
         try {
-            if (this.nextVertex != null) {
-                Vertex temp = this.nextVertex;
-                this.nextVertex = null;
-                return temp;
-            } else {
-                while (!this.readers.isEmpty()) {
-                    if (this.readers.peek().nextVertex())
-                        return ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getGremlinVertex();
-                    else
-                        this.readers.remove();
+            while (true) {
+                if (this.edgeIterator.hasNext())
+                    return this.edgeIterator.next();
+                if (this.readers.isEmpty())
+                    throw FastNoSuchElementException.instance();
+                if (this.readers.peek().nextVertex()) {
+                    this.edgeIterator = ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getGremlinVertex().outE();
+                } else {
+                    this.readers.remove();
                 }
             }
-            throw FastNoSuchElementException.instance();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -64,19 +63,19 @@ public class VertexIterator implements Iterator<Vertex> {
 
     public boolean hasNext() {
         try {
-            if (null != this.nextVertex) return true;
-            else {
-                while (!this.readers.isEmpty()) {
-                    if (this.readers.peek().nextVertex()) {
-                        this.nextVertex = ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getGremlinVertex();
-                        return true;
-                    } else
-                        this.readers.remove();
+            while (true) {
+                if (this.edgeIterator.hasNext())
+                    return true;
+                if (this.readers.isEmpty())
+                    return false;
+                if (this.readers.peek().nextVertex()) {
+                    this.edgeIterator = ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getGremlinVertex().outE();
+                } else {
+                    this.readers.remove();
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-        return false;
     }
 }

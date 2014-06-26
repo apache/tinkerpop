@@ -18,10 +18,4 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
         this.traversalStrategies.register(new IdentityOptimizerTraversalStrategy());
         this.traversalStrategies.register(new SideEffectCapTraversalStrategy());
     }
-
-    public GraphTraversal<S, E> submit(final TraversalEngine engine) {
-        final GraphTraversal<S, E> traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new StartStep<>(traversal, engine.execute(this)));
-        return traversal;
-    }
 }

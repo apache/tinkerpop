@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
@@ -88,18 +88,18 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
         }
     }
 
-    public static class Map extends Mapper<NullWritable, GiraphVertex, Text, KryoWritable> {
+    public static class Map extends Mapper<NullWritable, GiraphInternalVertex, Text, KryoWritable> {
         private final Text textWritable = new Text();
         private final KryoWritable kryoWritable = new KryoWritable();
         private String variable;
 
         @Override
-        public void setup(final Mapper<NullWritable, GiraphVertex, Text, KryoWritable>.Context context) {
+        public void setup(final Mapper<NullWritable, GiraphInternalVertex, Text, KryoWritable>.Context context) {
             this.variable = context.getConfiguration().get(GREMLIN_GROUP_BY_VARIABLE, "null");
         }
 
         @Override
-        public void map(final NullWritable key, final GiraphVertex value, final Mapper<NullWritable, GiraphVertex, Text, KryoWritable>.Context context) throws IOException, InterruptedException {
+        public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, Text, KryoWritable>.Context context) throws IOException, InterruptedException {
             final HashMap<Object, Collection> tempMap = value.getGremlinVertex().<HashMap<Object, Collection>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
             tempMap.forEach((k, v) -> {
                 this.textWritable.set(null == k ? "null" : k.toString());

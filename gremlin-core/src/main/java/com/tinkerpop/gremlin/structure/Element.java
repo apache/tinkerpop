@@ -128,6 +128,14 @@ public abstract interface Element {
         public static IllegalStateException elementHasAlreadyBeenRemovedOrDoesNotExist(final Class<? extends Element> type, final Object id) {
             return new IllegalStateException(String.format("The %s with id [%s] has already been removed or does not exist", type.getClass().getSimpleName(), id));
         }
+
+        public static IllegalStateException propertyAdditionNotSupported() {
+            return new IllegalStateException("Property additions are not supported");
+        }
+
+        public static IllegalStateException propertyRemovalNotSupported() {
+            return new IllegalStateException("Property removal are not supported");
+        }
     }
 
 }

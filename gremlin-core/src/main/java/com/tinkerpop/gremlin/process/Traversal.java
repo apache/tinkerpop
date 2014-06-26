@@ -1,7 +1,9 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -30,7 +32,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public List<Step> getSteps();
 
-    public Traversal<S, E> submit(final TraversalEngine engine);
+    public default Traversal<S, E> submit(final TraversalEngine engine) {
+        final Traversal<S, E> traversal = new DefaultTraversal<>();
+        traversal.addStep(new StartStep<>(traversal, engine.execute(this)));
+        return traversal;
+    }
 
     /*public static Traversal of() {
         Traversal traversal = new DefaultTraversal<>();

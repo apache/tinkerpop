@@ -17,7 +17,7 @@ import java.util.function.BiPredicate;
  * A {@link Vertex} maintains pointers to both a set of incoming and outgoing {@link Edge} objects. The outgoing edges
  * are those edges for  which the {@link Vertex} is the tail. The incoming edges are those edges for which the
  * {@link Vertex} is the head.
- * <p/>
+ * <p>
  * Diagrammatically:
  * <pre>
  * ---inEdges---> vertex ---outEdges--->.
@@ -201,6 +201,14 @@ public interface Vertex extends Element {
     public static class Exceptions {
         public static UnsupportedOperationException userSuppliedIdsNotSupported() {
             return new UnsupportedOperationException("Vertex does not support user supplied identifiers");
+        }
+
+        public static IllegalStateException vertexRemovalNotSupported() {
+            return new IllegalStateException("Vertex removal are not supported");
+        }
+
+        public static IllegalStateException edgeAdditionsNotSupported() {
+            return new IllegalStateException("Edge additions not supported");
         }
     }
 }

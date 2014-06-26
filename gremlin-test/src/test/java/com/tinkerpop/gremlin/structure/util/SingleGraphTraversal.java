@@ -49,7 +49,7 @@ public class SingleGraphTraversal<S> implements GraphTraversal<S, S> {
     }
 
     @Override
-    public Traversal<S, S> submit(TraversalEngine engine) {
+    public GraphTraversal<S, S> submit(TraversalEngine engine) {
         return null;
     }
 

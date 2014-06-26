@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.giraph.process.computer;
 import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import org.apache.giraph.io.VertexInputFormat;
@@ -29,12 +29,12 @@ public class GlobalsMapReduce implements JobCreator {
     public static final String RUNTIME = "runtime";
     public static final String ITERATION = "iteration";
 
-    public static class Map extends Mapper<NullWritable, GiraphVertex, Text, Text> {
+    public static class Map extends Mapper<NullWritable, GiraphInternalVertex, Text, Text> {
         private final Text keyWritable = new Text();
         private final Text valueWritable = new Text();
 
         @Override
-        public void map(final NullWritable key, final GiraphVertex value, final Mapper<NullWritable, GiraphVertex, Text, Text>.Context context) throws IOException, InterruptedException {
+        public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, Text, Text>.Context context) throws IOException, InterruptedException {
             final String[] globalKeys = context.getConfiguration().getStrings(GREMLIN_GLOBAL_KEYS);
             for (final String globalKey : globalKeys) {
                 final Property property = value.getGremlinVertex().property(Graph.Key.hidden(globalKey));

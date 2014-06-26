@@ -19,7 +19,7 @@ import java.util.function.BiPredicate;
  * {@link Vertex} (out {@link Vertex}) and which {@link Vertex} is the head {@link Vertex}
  * (in {@link Vertex}). The {@link Edge} {@code label} determines the type of relationship that exists between the
  * two vertices.
- * <p/>
+ * <p>
  * Diagrammatically:
  * <pre>
  * outVertex ---label---> inVertex.
@@ -157,6 +157,10 @@ public interface Edge extends Element {
 
         public static UnsupportedOperationException userSuppliedIdsNotSupported() {
             return new UnsupportedOperationException("Edge does not support user supplied identifiers");
+        }
+
+        public static IllegalStateException edgeRemovalNotSupported() {
+            return new IllegalStateException("Edge removal are not supported");
         }
     }
 }

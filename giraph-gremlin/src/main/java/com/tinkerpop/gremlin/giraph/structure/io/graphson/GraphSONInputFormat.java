@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.graphson;
 
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -17,13 +17,13 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class GraphSONInputFormat extends FileInputFormat<NullWritable, GiraphVertex> implements Configurable {
+public class GraphSONInputFormat extends FileInputFormat<NullWritable, GiraphInternalVertex> implements Configurable {
 
     private Configuration config;
 
     @Override
-    public RecordReader<NullWritable, GiraphVertex> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
-        RecordReader<NullWritable, GiraphVertex> reader = new GraphSONRecordReader();
+    public RecordReader<NullWritable, GiraphInternalVertex> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
+        RecordReader<NullWritable, GiraphInternalVertex> reader = new GraphSONRecordReader();
         reader.initialize(split, context);
         return reader;
     }

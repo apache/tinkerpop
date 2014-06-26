@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -13,11 +13,11 @@ import java.io.Serializable;
  */
 public class GiraphMessenger implements Messenger<Serializable> {
 
-    private final GiraphVertex giraphVertex;
+    private final GiraphInternalVertex giraphInternalVertex;
     private final Iterable<KryoWritable> messages;
 
-    public GiraphMessenger(final GiraphVertex giraphVertex, final Iterable<KryoWritable> messages) {
-        this.giraphVertex = giraphVertex;
+    public GiraphMessenger(final GiraphInternalVertex giraphInternalVertex, final Iterable<KryoWritable> messages) {
+        this.giraphInternalVertex = giraphInternalVertex;
         this.messages = messages;
     }
 
@@ -28,12 +28,12 @@ public class GiraphMessenger implements Messenger<Serializable> {
     public void sendMessage(final MessageType messageType, final Serializable message) {
         if (messageType instanceof MessageType.Local) {
             final MessageType.Local<Object, Double> localMessageType = (MessageType.Local) messageType;
-            localMessageType.vertices(this.giraphVertex.getGremlinVertex()).forEach(v ->
-                    this.giraphVertex.sendMessage(new LongWritable(Long.valueOf(v.id().toString())), new KryoWritable(message)));
+            localMessageType.vertices(this.giraphInternalVertex.getGremlinVertex()).forEach(v ->
+                    this.giraphInternalVertex.sendMessage(new LongWritable(Long.valueOf(v.id().toString())), new KryoWritable(message)));
         } else {
             final MessageType.Global globalMessageType = (MessageType.Global) messageType;
             globalMessageType.vertices().forEach(v ->
-                    this.giraphVertex.sendMessage(new LongWritable(Long.valueOf(v.id().toString())), new KryoWritable(message)));
+                    this.giraphInternalVertex.sendMessage(new LongWritable(Long.valueOf(v.id().toString())), new KryoWritable(message)));
         }
     }
 }

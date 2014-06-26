@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.javatuples.Pair;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -74,13 +75,13 @@ public abstract class DetachedElement implements Element {
         return this.label;
     }
 
-    public Property property(final String key, final Object value) {
+    public <V> Property<V> property(final String key, final V value) {
         throw new UnsupportedOperationException("Detached elements are readonly: " + this);
     }
 
     public <V> Property<V> property(final String key) {
         if (null == this.properties)
-            throw new IllegalStateException("Properties were assigned to this detached element:" + this);
+            return Property.empty();
         else {
             return this.properties.containsKey(key) ? this.properties.get(key) : Property.empty();
         }
@@ -89,7 +90,7 @@ public abstract class DetachedElement implements Element {
     public Map<String, Property> properties() {
         final Map<String, Property> temp = new HashMap<>();
         if (null == this.properties)
-            throw new IllegalStateException("Properties were assigned to this detached element:" + this);
+            return Collections.EMPTY_MAP;
         this.properties.forEach((key, property) -> {
             if (!Graph.Key.isHidden(key))
                 temp.put(key, property);
@@ -100,7 +101,7 @@ public abstract class DetachedElement implements Element {
     public Map<String, Property> hiddens() {
         final Map<String, Property> temp = new HashMap<>();
         if (null == this.properties)
-            throw new IllegalStateException("Properties were assigned to this detached element:" + this);
+            return Collections.EMPTY_MAP;
         this.properties.forEach((key, property) -> {
             if (Graph.Key.isHidden(key))
                 temp.put(key, property);

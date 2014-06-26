@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.ranking.PageRankStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathStep;
@@ -36,6 +37,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.PathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.PropertyValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
+import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
@@ -48,7 +50,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.util.Tree;
 import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
-import com.tinkerpop.gremlin.process.util.EmptyTraversal;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -85,6 +86,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public static GraphTraversal of() {
         final GraphTraversal traversal = new DefaultGraphTraversal<>();
         traversal.addStep(new IdentityStep(traversal));
+        return traversal;
+    }
+
+    public default GraphTraversal<S, E> submit(final TraversalEngine engine) {
+        final GraphTraversal<S, E> traversal = new DefaultGraphTraversal<>();
+        traversal.addStep(new StartStep<>(traversal, engine.execute(this)));
         return traversal;
     }
 
@@ -503,10 +510,5 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, Pair<Vertex, Double>> pageRank(final SSupplier<Traversal<Vertex, Edge>> incidentTraversal) {
         return (GraphTraversal) this.addStep(new PageRankStep(this, incidentTraversal));
-    }
-
-    /////////////////////////////////////
-
-    public class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implements GraphTraversal<S, E> {
     }
 }

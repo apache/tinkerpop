@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.giraph.process;
 
 import com.tinkerpop.gremlin.giraph.GiraphGremlinGraphProvider;
 import com.tinkerpop.gremlin.process.ProcessComputerStandardSuite;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
@@ -11,5 +12,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ProcessComputerStandardSuite.class)
 @ProcessComputerStandardSuite.GraphProviderClass(GiraphGremlinGraphProvider.class)
+@Ignore
 public class GiraphGremlinProcessComputerStandardTest {
 }

@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.giraph.process.computer;
 import com.tinkerpop.gremlin.giraph.process.ExtraJobsCalculator;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
@@ -38,7 +38,7 @@ public class GiraphGraphRunner extends Configured implements Tool {
         this.giraphConfiguration = new GiraphConfiguration();
         hadoopConfiguration.forEach(entry -> this.giraphConfiguration.set(entry.getKey(), entry.getValue()));
         this.giraphConfiguration.setMasterComputeClass(GiraphGraphComputerGlobals.class);
-        this.giraphConfiguration.setVertexClass(GiraphVertex.class);
+        this.giraphConfiguration.setVertexClass(GiraphInternalVertex.class);
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
         this.giraphConfiguration.setClass("giraph.vertexIdClass", LongWritable.class, LongWritable.class);
         this.giraphConfiguration.setClass("giraph.vertexValueClass", Text.class, Text.class);

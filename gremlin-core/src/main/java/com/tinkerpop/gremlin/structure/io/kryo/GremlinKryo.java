@@ -7,6 +7,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.DefaultStreamFactory;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
+import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.T;
@@ -18,6 +19,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.util.IoEdge;
 import com.tinkerpop.gremlin.structure.io.util.IoVertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -173,7 +175,7 @@ public final class GremlinKryo {
 
         /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
-         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is TraversalPaths=58.
+         * int, Integer, float, Float, long, Long, short, Short, String, void. Current max is DetachedPath=60.
          */
         private final List<Triplet<Class, Serializer, Integer>> serializationList = new ArrayList<Triplet<Class, Serializer, Integer>>() {{
             add(Triplet.<Class, Serializer, Integer>with(byte[].class, null, 25));
@@ -227,6 +229,8 @@ public final class GremlinKryo {
             add(Triplet.<Class, Serializer, Integer>with(PathTraverser.class, null, 56));
             add(Triplet.<Class, Serializer, Integer>with(TraversalCounters.class, null, 57));
             add(Triplet.<Class, Serializer, Integer>with(TraversalPaths.class, null, 58));
+            add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
+            add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
         }};
 
         private static final byte major = 1;

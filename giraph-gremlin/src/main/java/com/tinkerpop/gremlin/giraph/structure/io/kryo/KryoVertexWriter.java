@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexWriter;
 import org.apache.hadoop.io.NullWritable;
@@ -14,7 +14,7 @@ import java.io.IOException;
  */
 public class KryoVertexWriter extends VertexWriter {
     private final KryoOutputFormat outputFormat;
-    private RecordWriter<NullWritable, GiraphVertex> recordWriter;
+    private RecordWriter<NullWritable, GiraphInternalVertex> recordWriter;
 
     public KryoVertexWriter() {
         outputFormat = new KryoOutputFormat();
@@ -29,6 +29,6 @@ public class KryoVertexWriter extends VertexWriter {
     }
 
     public void writeVertex(Vertex vertex) throws IOException, InterruptedException {
-        recordWriter.write(NullWritable.get(), (GiraphVertex) vertex);
+        recordWriter.write(NullWritable.get(), (GiraphInternalVertex) vertex);
     }
 }

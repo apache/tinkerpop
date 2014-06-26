@@ -56,6 +56,13 @@ public class ExceptionCoverageTest {
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#isolationNotSupported");
             add("com.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#computerHasAlreadyBeenSubmittedAVertexProgram");
+
+            add("com.tinkerpop.gremlin.structure.Element$Exceptions#propertyAdditionNotSupported");
+            add("com.tinkerpop.gremlin.structure.Element$Exceptions#propertyRemovalNotSupported");
+            add("com.tinkerpop.gremlin.structure.Vertex$Exceptions#vertexRemovalNotSupported");
+            add("com.tinkerpop.gremlin.structure.Vertex$Exceptions#edgeAdditionsNotSupported");
+            add("com.tinkerpop.gremlin.structure.Edge$Exceptions#edgeRemovalNotSupported");
+
         }};
 
         // implemented exceptions are the classes that potentially contains exception consistency checks.

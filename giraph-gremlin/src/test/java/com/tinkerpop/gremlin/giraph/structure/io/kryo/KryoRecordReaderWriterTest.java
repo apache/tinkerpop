@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.hadoop.conf.Configuration;
@@ -56,7 +56,7 @@ public class KryoRecordReaderWriterTest {
                 float progress = reader.getProgress();
                 assertTrue(progress >= lastProgress);
                 assertEquals(NullWritable.class, reader.getCurrentKey().getClass());
-                GiraphVertex v = (GiraphVertex) reader.getCurrentValue();
+                GiraphInternalVertex v = (GiraphInternalVertex) reader.getCurrentValue();
                 writer.write(NullWritable.get(), v);
 
                 Vertex vertex = v.getGremlinVertex();

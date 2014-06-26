@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -18,7 +18,7 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class KryoRecordReader extends RecordReader<NullWritable, GiraphVertex> {
+public class KryoRecordReader extends RecordReader<NullWritable, GiraphInternalVertex> {
 
     private VertexStreamIterator vertexStreamIterator;
     private FSDataInputStream inputStream;
@@ -44,10 +44,7 @@ public class KryoRecordReader extends RecordReader<NullWritable, GiraphVertex> {
         FileSystem fs = file.getFileSystem(job);
         inputStream = fs.open(split.getPath());
         inputStream.seek(start);
-
-        KryoReader reader = KryoReader.create().build();
-
-        vertexStreamIterator = new VertexStreamIterator(inputStream, reader);
+        vertexStreamIterator = new VertexStreamIterator(inputStream, KryoReader.create().build());
     }
 
     @Override
@@ -70,8 +67,8 @@ public class KryoRecordReader extends RecordReader<NullWritable, GiraphVertex> {
     }
 
     @Override
-    public GiraphVertex getCurrentValue() {
-        return new GiraphVertex(vertexStreamIterator.next());
+    public GiraphInternalVertex getCurrentValue() {
+        return new GiraphInternalVertex(vertexStreamIterator.next());
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io;
 
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -17,7 +17,7 @@ import java.io.IOException;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public abstract class CommonOutputFormat extends FileOutputFormat<NullWritable, GiraphVertex> {
+public abstract class CommonOutputFormat extends FileOutputFormat<NullWritable, GiraphInternalVertex> {
 
     // copied from FaunusFileOutputFormat
     protected DataOutputStream getDataOuputStream(final TaskAttemptContext job) throws IOException, InterruptedException {

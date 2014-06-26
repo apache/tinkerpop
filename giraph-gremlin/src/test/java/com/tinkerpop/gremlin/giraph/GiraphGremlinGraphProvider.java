@@ -1,11 +1,13 @@
 package com.tinkerpop.gremlin.giraph;
 
 import com.tinkerpop.gremlin.AbstractGraphProvider;
+import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
+import com.tinkerpop.gremlin.giraph.structure.io.GiraphGremlinInputFormat;
+import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoInputFormat;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.commons.configuration.Configuration;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,9 +18,18 @@ public class GiraphGremlinGraphProvider extends AbstractGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName) {
-        // todo: when tinkergraph has persistence this will need to change to ensure unique graphs are generated...now it's all in memory
         return new HashMap<String, Object>() {{
-            put("gremlin.graph", TinkerGraph.class.getName());
+            put("gremlin.graph", GiraphGraph.class.getName());
+            put("giraph.vertexInputFormatClass", "com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat");
+            put("giraph.vertexOutputFormatClass", "com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexOutputFormat");
+            put("giraph.minWorkers", "1");
+            put("giraph.maxWorkers", "1");
+            put("giraph.SplitMasterWorker", "false");
+            //baseConfiguration.setProperty("giraph.localTestMode", "true");
+            put("gremlin.extraJobsCalculator", "com.tinkerpop.gremlin.giraph.process.TraversalExtraJobsCalculator");
+            put("giraph.zkJar", GiraphGremlinInputFormat.class.getResource("zookeeper-3.3.3.jar").getPath());
+            put("gremlin.inputLocation", KryoInputFormat.class.getResource("tinkerpop-classic-vertices.gio").getPath());
+            put("gremlin.outputLocation", "giraph-gremlin/target/test-output");
         }};
     }
 
@@ -26,11 +37,10 @@ public class GiraphGremlinGraphProvider extends AbstractGraphProvider {
     public void clear(final Graph g, final Configuration configuration) throws Exception {
         if (g != null)
             g.close();
+    }
 
-        if (configuration.containsKey("gremlin.tg.directory")) {
-            // this is a non-in-memory configuration so blow away the directory
-            final File graphDirectory = new File(configuration.getString("gremlin.tg.directory"));
-            graphDirectory.delete();
-        }
+    @Override
+    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
+
     }
 }

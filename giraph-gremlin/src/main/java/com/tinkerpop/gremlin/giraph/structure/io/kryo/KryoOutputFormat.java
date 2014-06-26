@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure.io.kryo;
 
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.CommonOutputFormat;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
@@ -15,11 +15,11 @@ import java.io.IOException;
 public class KryoOutputFormat extends CommonOutputFormat {
 
     @Override
-    public RecordWriter<NullWritable, GiraphVertex> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
+    public RecordWriter<NullWritable, GiraphInternalVertex> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
         return new KryoRecordWriter(getDataOuputStream(job));
     }
 
-    public RecordWriter<NullWritable, GiraphVertex> getRecordWriter(final TaskAttemptContext job,
+    public RecordWriter<NullWritable, GiraphInternalVertex> getRecordWriter(final TaskAttemptContext job,
                                                                     final DataOutputStream outputStream) throws IOException, InterruptedException {
         return new KryoRecordWriter(outputStream);
     }

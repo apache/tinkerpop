@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounters;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.util.StreamFactory;
@@ -28,7 +28,7 @@ import java.io.IOException;
  */
 public class TraversalResultMapReduce implements JobCreator {
 
-    public static class Map extends Mapper<NullWritable, GiraphVertex, Text, LongWritable> {
+    public static class Map extends Mapper<NullWritable, GiraphInternalVertex, Text, LongWritable> {
         private final Text textWritable = new Text();
         private final LongWritable longWritable = new LongWritable();
 
@@ -38,7 +38,7 @@ public class TraversalResultMapReduce implements JobCreator {
         }*/
 
         @Override
-        public void map(final NullWritable key, final GiraphVertex value, final Mapper<NullWritable, GiraphVertex, Text, LongWritable>.Context context) throws IOException, InterruptedException {
+        public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, Text, LongWritable>.Context context) throws IOException, InterruptedException {
             //TODO: determine track paths
             StreamFactory.stream(value.getGremlinVertex())
                     .map(v -> v.<TraversalCounters>property(TraversalVertexProgram.TRAVERSER_TRACKER).orElse(null))

@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
+import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
@@ -65,7 +65,7 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
         vertex.property(Graph.Key.hidden(this.variable), this.groupCountMap);
     }
 
-    public static class Map extends Mapper<NullWritable, GiraphVertex, Text, LongWritable> {
+    public static class Map extends Mapper<NullWritable, GiraphInternalVertex, Text, LongWritable> {
         //private HashMap<Object, Long> map = new HashMap<>();
         //private int mapSpillOver = 1000;
         private final Text textWritable = new Text();
@@ -73,12 +73,12 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
         private String variable;
 
         @Override
-        public void setup(final Mapper<NullWritable, GiraphVertex, Text, LongWritable>.Context context) {
+        public void setup(final Mapper<NullWritable, GiraphInternalVertex, Text, LongWritable>.Context context) {
             this.variable = context.getConfiguration().get(GREMLIN_GROUP_COUNT_VARIABLE, "null");
         }
 
         @Override
-        public void map(final NullWritable key, final GiraphVertex value, final Mapper<NullWritable, GiraphVertex, Text, LongWritable>.Context context) throws IOException, InterruptedException {
+        public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, Text, LongWritable>.Context context) throws IOException, InterruptedException {
             // TODO: Kryo is serializing the Map<Object,Long> as a Map<Object,Integer>
             final HashMap<Object, Integer> tempMap = value.getGremlinVertex().<HashMap<Object, Integer>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
             tempMap.forEach((k, v) -> {
