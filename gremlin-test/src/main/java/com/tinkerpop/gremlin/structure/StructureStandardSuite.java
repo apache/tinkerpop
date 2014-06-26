@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.strategy.IdGraphStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.PartitionGraphStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.ReadOnlyGraphStrategyTest;
 import com.tinkerpop.gremlin.structure.strategy.SequenceGraphStrategyTest;
+import com.tinkerpop.gremlin.structure.strategy.StrategyWrappedGraphTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -61,6 +62,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
         PropertyTest.class,
         ReadOnlyGraphStrategyTest.class,
         SequenceGraphStrategyTest.class,
+		StrategyWrappedGraphTest.class,
         TransactionTest.class,
         VertexTest.class
     };
