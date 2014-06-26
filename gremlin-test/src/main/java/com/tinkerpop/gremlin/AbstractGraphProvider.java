@@ -1,9 +1,14 @@
 package com.tinkerpop.gremlin;
 
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.io.GraphReader;
+import com.tinkerpop.gremlin.structure.io.kryo.KryoReader;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
@@ -40,7 +45,16 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         return conf;
     }
 
-    protected static void deleteDirectory(final File directory) {
+	@Override
+	public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
+		try {
+			readIntoGraph(g, loadGraphWith.value().location());
+		} catch (IOException ioe) {
+			throw new RuntimeException("Graph could not be loaded with data for test.");
+		}
+	}
+
+	protected static void deleteDirectory(final File directory) {
         if (directory.exists()) {
             for (File file : directory.listFiles()) {
                 if (file.isDirectory()) {
@@ -71,4 +85,11 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         final File root = new File(clsPath.substring(0, clsPath.length() - clsUri.length()));
         return new File(root.getParentFile(), "test-data");
     }
+
+	protected static void readIntoGraph(final Graph g, final String path) throws IOException {
+		final GraphReader reader = KryoReader.create().setWorkingDirectory(File.separator + "tmp").build();
+		try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
+			reader.readGraph(stream, g);
+		}
+	}
 }

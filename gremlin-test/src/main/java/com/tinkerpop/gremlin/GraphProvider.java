@@ -107,4 +107,12 @@ public interface GraphProvider {
         return newGraphConfiguration(graphName, new HashMap<>());
     }
 
+	/**
+	 * Tests are annotated with a {@link com.tinkerpop.gremlin.LoadGraphWith} annotation. These annotations tell
+	 * the test what kind of data to preload into the graph instance.  It is up to the implementation to load the
+	 * graph with the data specified by that annotation.
+	 * @param g the {@link Graph} instance to load data into constructed by this {@code GraphProvider}
+	 * @param loadGraphWith the annotation for the currently running test
+	 */
+	public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith);
 }
