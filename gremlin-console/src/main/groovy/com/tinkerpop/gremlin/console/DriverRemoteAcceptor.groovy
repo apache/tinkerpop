@@ -55,7 +55,7 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object connect(final List<String> args) {
         final String line = String.join(" ", args)
-        if (line.isEmpty()) {
+        if (!line.isEmpty()) {
             Cluster.Builder builder
             try {
                 final InetAddress addy = InetAddress.getByName(line)
