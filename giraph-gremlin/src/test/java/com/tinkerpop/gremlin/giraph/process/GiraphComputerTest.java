@@ -48,6 +48,7 @@ public class GiraphComputerTest {
     }
 
     @Test
+	@Ignore
     public void shouldSerializeTraversalCountersAndItDoes() throws Exception {
         // read the graph normally from data/ directory
         Graph g = TinkerGraph.open();

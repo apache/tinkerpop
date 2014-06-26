@@ -1221,7 +1221,7 @@ The console has the notion of a "remote", which represents a place a script will
 
 [source,groovy]
 ----
-gremlin> :remote connect server
+gremlin> :remote connect server config/remote.yaml
 ==>connected - localhost/127.0.0.1:8182
 ----
 
@@ -1243,15 +1243,18 @@ gremlin> :> g.E.label.groupCount()
 ==>Item{resultItem={dependsOn=1, created=5, uses=2} class=java.lang.String}
 ----
 
-The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Item` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  As was stated earlier, the `:remote` command can be used to configure the connection to Gremlin Server.  One of the options available is to have results returned as `objects` instead of `text`:
+The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Item` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  A different configuration of the `:remote` is required to get the results back as "objects":
 
 [source,groovy]
 ----
-gremlin> :remote config as objects <1>
-==>gremlin server - results as objects
-gremlin> :> g.E.label.groupCount() <2>
+gremlin> :remote connect server config/remote-objects.yaml <1>
+==>connected - localhost/127.0.0.1:8182
+gremlin> :remote list <2>
+==>0 - gremlin server - [localhost/127.0.0.1:8182]
+==>*1 - gremlin server - [localhost/127.0.0.1:8182]
+gremlin> :> g.E.label.groupCount() <3>
 ==>Item{resultItem={dependsOn=1, created=5, uses=2} class=java.util.HashMap}
-gremlin> m = _l[0].get(Map.class) <3>
+gremlin> m = _l[0].get(Map.class) <4>
 ==>dependsOn=1
 ==>created=5
 ==>uses=2
@@ -1261,9 +1264,10 @@ gremlin> m.sort{-it.value}
 ==>dependsOn=1
 ----
 
-<1> Tells Gremlin Server to serialize the results in a way that they can be deserialized back into an `Object` in the Console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
-<2> When the script is executed again, the `class` is no longer shown to be a `java.lang.String`.  It is instead a `java.util.HashMap`.
-<3> The last result of a remote script is always stored in the reserved variable `_l`, which allows access to the `Item` and by virtue of that, the `Map` itself.
+<1> This configuration file specifies that results should be deserialized back into an `Object` in the Console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
+<2> There are now two configured remote connections.  The one marked by an asterisk is the one that was just created and denotes the current one that `:sumbit` will react to.
+<3> When the script is executed again, the `class` is no longer shown to be a `java.lang.String`.  It is instead a `java.util.HashMap`.
+<4> The last result of a remote script is always stored in the reserved variable `_l`, which allows access to the `Item` and by virtue of that, the `Map` itself.
 
 Connecting via Java
 ~~~~~~~~~~~~~~~~~~~
