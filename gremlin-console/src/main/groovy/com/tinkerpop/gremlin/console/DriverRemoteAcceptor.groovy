@@ -91,7 +91,7 @@ class DriverRemoteAcceptor implements RemoteAcceptor {
                 if (arguments.size() != 2) return "when specifying '$TOKEN_CUSTOM' a ${MessageSerializer.class.getSimpleName()} instance should be specified after it"
 
                 final String serializerBinding = arguments.get(1)
-                final def suspectedSerializer = arguments[serializerBinding]
+                final def suspectedSerializer = shell.getInterp().getContext().getProperty(serializerBinding)
 
                 if (null == suspectedSerializer) return "$serializerBinding is not a variable instantiated in the console"
                 if (!(suspectedSerializer instanceof MessageSerializer)) return "$serializerBinding is not a ${MessageSerializer.class.getSimpleName()} instance"
