@@ -268,14 +268,21 @@ public class GremlinServer {
                     logger.warn("Could not find configured serializer class - {} - it will not be available", config.className);
                     return Optional.<MessageSerializer>empty();
                 }  catch (Exception ex) {
-                    logger.warn("Cound not instantiate configured serializer class - {} - it will not be available.", config.className);
+                    logger.warn("Could not instantiate configured serializer class - {} - it will not be available.", config.className);
                     return Optional.<MessageSerializer>empty();
                 }
             }).filter(Optional::isPresent).map(o->o.get()).flatMap(serializer ->
                     Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Pair.with(mimeType, serializer))
             ).forEach(pair -> {
-                logger.info("Configured {} with {}", pair.getValue0(), pair.getValue1().getClass().getName());
-                serializers.put(pair.getValue0().toString(), pair.<MessageSerializer>getValue1());
+				final String mimeType = pair.getValue0().toString();
+				final MessageSerializer serializer = pair.getValue1();
+				if (serializers.containsKey(mimeType))
+					logger.warn("{} already has {} configured.  It will not be replaced by {}. Check configuration for serializer duplication or other issues.",
+							mimeType, serializers.get(mimeType).getClass().getName(), serializer.getClass().getName());
+				else {
+					logger.info("Configured {} with {}", mimeType, pair.getValue1().getClass().getName());
+					serializers.put(mimeType, serializer);
+				}
             });
 
             if (serializers.size() == 0) {
