@@ -5,21 +5,24 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class GiraphElement implements Element {
+public abstract class GiraphElement implements Element, Serializable {
 
-    protected final Element element;
-    protected final GiraphGraph graph;
+    protected Element element;
+    protected GiraphGraph graph;
+
+    protected GiraphElement() {
+    }
 
     protected GiraphElement(final Element element, final GiraphGraph graph) {
         this.element = element;
         this.graph = graph;
     }
-
 
     public Object id() {
         return this.element.id();

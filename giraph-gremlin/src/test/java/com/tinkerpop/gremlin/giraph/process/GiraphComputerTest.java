@@ -32,11 +32,12 @@ public class GiraphComputerTest {
     @Ignore
     public void shouldSerializeTraversalCountersAndItDoesNot() {
         final GiraphGraph g = GiraphGraph.open(baseConfiguration);
-        g.getConfiguration().getKeys().forEachRemaining(key -> System.out.println(key + "--" + g.getConfiguration().getString(key)));
+        g.V().out().out().value("name").forEach(System.out::println);
+        /*g.variables().<Configuration>get(GiraphGraph.CONFIGURATION).getKeys().forEachRemaining(key -> System.out.println(key + "--" +  g.variables().<Configuration>get(GiraphGraph.CONFIGURATION).getString(key)));
         g.V().out().value("name").submit(g.compute()).forEach(System.out::println);
         final GiraphGraph h = g.getOutputGraph();
-        h.getConfiguration().getKeys().forEachRemaining(key -> System.out.println(key + "--" + h.getConfiguration().getString(key)));
-        h.V().out().forEach(System.out::println);
+        h.variables().<Configuration>get(GiraphGraph.CONFIGURATION).getKeys().forEachRemaining(key -> System.out.println(key + "--" +  h.variables().<Configuration>get(GiraphGraph.CONFIGURATION).getString(key)));
+        h.V().out().forEach(System.out::println);*/
 
 
     }

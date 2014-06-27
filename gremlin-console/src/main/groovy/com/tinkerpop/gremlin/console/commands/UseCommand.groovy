@@ -45,7 +45,7 @@ class UseCommand extends ComplexCommandSupport {
         final def dep = createDependencyRecord(arguments)
         final def pluginsThatNeedRestart = grabDeps(dep, true)
 
-        final def dependencyLocations = Grape.resolve([classLoader:shell.getInterp().getClassLoader()], null, dep)
+        final def dependencyLocations = Grape.resolve([classLoader: shell.getInterp().getClassLoader()], null, dep)
 
         def fileSep = System.getProperty("file.separator")
         def extClassPath = System.getProperty("user.dir") + fileSep + "ext" + fileSep + (String) dep.module
@@ -74,7 +74,7 @@ class UseCommand extends ComplexCommandSupport {
         ServiceLoader.load(GremlinPlugin.class, shell.getInterp().getClassLoader()).forEach { plugin ->
             if (!mediator.loadedPlugins.containsKey(plugin.name)) {
                 if (plugin.requireRestart())
-                    pluginsThatNeedRestart<<plugin.name
+                    pluginsThatNeedRestart << plugin.name
                 else {
                     plugin.init(shell, io)
                     plugin.pluginTo(new ConsolePluginAcceptor(shell))

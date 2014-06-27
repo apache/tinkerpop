@@ -34,10 +34,6 @@ public class GiraphGraphComputer implements GraphComputer {
     private static final String DOT_JAR = ".jar";
     private static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
 
-    public static final String GREMLIN_INPUT_LOCATION = "gremlin.inputLocation";
-    public static final String GREMLIN_OUTPUT_LOCATION = "gremlin.outputLocation";
-    public static final String GIRAPH_VERTEX_INPUT_FORMAT_CLASS = "giraph.vertexInputFormatClass";
-    public static final String GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS = "giraph.vertexOutputFormatClass";
     public static final String GREMLIN_EXTRA_JOBS_CALCULATOR = "gremlin.extraJobsCalculator";
     public static final String GREMLIN_DERIVE_GLOBALS = "gremlin.deriveGlobals";
 
@@ -69,7 +65,7 @@ public class GiraphGraphComputer implements GraphComputer {
             try {
                 final String bspDirectory = "_bsp"; //"temp-" + UUID.randomUUID().toString();
                 final FileSystem fs = FileSystem.get(this.hadoopConfiguration);
-                fs.delete(new Path(this.hadoopConfiguration.get(GREMLIN_OUTPUT_LOCATION)), true);
+                fs.delete(new Path(this.hadoopConfiguration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION)), true);
                 final String giraphGremlinHome = System.getenv(GIRAPH_GREMLIN_HOME);
                 if (null == giraphGremlinHome)
                     throw new RuntimeException("Please set $GIRAPH_GREMLIN_HOME to the location of giraph-gremlin");

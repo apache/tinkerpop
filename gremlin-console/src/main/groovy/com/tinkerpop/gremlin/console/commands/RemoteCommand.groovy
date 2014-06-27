@@ -82,7 +82,7 @@ class RemoteCommand extends ComplexCommandSupport {
 
     def Object do_list = {
         def copy = []
-        mediator.remotes.eachWithIndex{remote, i -> copy << (mediator.position == i ? "*" : "") + i + " - " + remote.toString()}
+        mediator.remotes.eachWithIndex { remote, i -> copy << (mediator.position == i ? "*" : "") + i + " - " + remote.toString() }
         return copy
     }
 

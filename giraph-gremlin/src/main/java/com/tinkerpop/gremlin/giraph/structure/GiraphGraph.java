@@ -26,10 +26,16 @@ import java.util.Optional;
  */
 public class GiraphGraph implements Graph, Serializable {
 
-    protected SConfiguration configuration;
+    public static final String CONFIGURATION = "configuration";
+    public static final String GREMLIN_INPUT_LOCATION = "gremlin.inputLocation";
+    public static final String GREMLIN_OUTPUT_LOCATION = "gremlin.outputLocation";
+    public static final String GIRAPH_VERTEX_INPUT_FORMAT_CLASS = "giraph.vertexInputFormatClass";
+    public static final String GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS = "giraph.vertexOutputFormatClass";
 
-    private GiraphGraph() {
+    protected final GiraphGraphVariables variables;
 
+    private GiraphGraph(final Configuration configuration) {
+        this.variables = new GiraphGraphVariables(new GiraphConfiguration(configuration));
     }
 
     public static GiraphGraph open() {
@@ -37,8 +43,7 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
     public static <G extends Graph> G open(final Configuration configuration) {
-        final GiraphGraph graph = new GiraphGraph();
-        graph.configuration = new SConfiguration(Optional.ofNullable(configuration).orElse(new BaseConfiguration()));
+        final GiraphGraph graph = new GiraphGraph(Optional.ofNullable(configuration).orElse(new BaseConfiguration()));
         return (G) graph;
     }
 
@@ -47,14 +52,16 @@ public class GiraphGraph implements Graph, Serializable {
         traversal.strategies().register(new SideEffectReplacementStrategy());
         //traversal.strategies().register(new ValidateStepsStrategy());
         traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, this));
+        traversal.memory().set(Key.hidden("g"), this);
         return traversal;
     }
 
     public GraphTraversal<Edge, Edge> E() {
-        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
+        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>();
         traversal.strategies().register(new SideEffectReplacementStrategy());
         //traversal.strategies().register(new ValidateStepsStrategy());
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class, this));
+        traversal.memory().set(Key.hidden("g"), this);
         return traversal;
     }
 
@@ -71,45 +78,48 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
-        return (C) new GiraphGraphComputer(this, this.configuration);
+        return (C) new GiraphGraphComputer(this, this.getConfiguration());
     }
 
 
-    public <V extends Variables> V variables() {
-        throw Exceptions.variablesNotSupported();
+    public GiraphGraphVariables variables() {
+        return this.variables;
     }
 
     public String toString() {
-        final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.configuration);
-        final String fromString = this.configuration.containsKey(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS) ?
-                hadoopConfiguration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getSimpleName() :
+        final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.getConfiguration());
+        final String fromString = this.getConfiguration().containsKey(GIRAPH_VERTEX_INPUT_FORMAT_CLASS) ?
+                hadoopConfiguration.getClass(GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getSimpleName() :
                 "none";
-        final String toString = this.configuration.containsKey(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS) ?
-                hadoopConfiguration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS, VertexOutputFormat.class).getSimpleName() :
+        final String toString = this.getConfiguration().containsKey(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS) ?
+                hadoopConfiguration.getClass(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS, VertexOutputFormat.class).getSimpleName() :
                 "none";
         return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase());
     }
 
     public void close() {
-        this.configuration.clear();
+        this.getConfiguration().clear();
     }
 
     public Transaction tx() {
         throw Exceptions.transactionsNotSupported();
     }
 
-    public Configuration getConfiguration() {
-        return this.configuration;
-    }
-
     public GiraphGraph getOutputGraph() {
         final Configuration conf = new BaseConfiguration();
-        this.configuration.getKeys().forEachRemaining(key -> conf.setProperty(key, this.configuration.getString(key)));
-        if (this.configuration.containsKey(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)) {
-            conf.setProperty(GiraphGraphComputer.GREMLIN_INPUT_LOCATION, this.configuration.getString(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION));
+        this.getConfiguration().getKeys().forEachRemaining(key -> {
+            try {
+                conf.setProperty(key, this.getConfiguration().getString(key));
+            } catch (Exception e) {
+                // do nothing for serialization problems
+            }
+        });
+        if (this.getConfiguration().containsKey(GREMLIN_OUTPUT_LOCATION)) {
+            conf.setProperty(GREMLIN_INPUT_LOCATION, this.getConfiguration().getString(GREMLIN_OUTPUT_LOCATION));
         }
-        if (this.configuration.containsKey(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS)) {
-            conf.setProperty(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, this.configuration.getString(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS).replace("OutputFormat", "InputFormat"));
+        if (this.getConfiguration().containsKey(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS)) {
+            // TODO: Is this sufficient?
+            conf.setProperty(GIRAPH_VERTEX_INPUT_FORMAT_CLASS, this.getConfiguration().getString(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS).replace("OutputFormat", "InputFormat"));
         }
         return GiraphGraph.open(conf);
     }
@@ -126,5 +136,9 @@ public class GiraphGraph implements Graph, Serializable {
                 };
             }
         };
+    }
+
+    private Configuration getConfiguration() {
+        return this.variables().get(CONFIGURATION);
     }
 }

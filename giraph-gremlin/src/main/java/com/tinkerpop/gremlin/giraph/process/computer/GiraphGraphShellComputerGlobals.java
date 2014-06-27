@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -28,7 +29,7 @@ public class GiraphGraphShellComputerGlobals implements GraphComputer.Globals {
 
     public GiraphGraphShellComputerGlobals(final Configuration configuration) {
         try {
-            final String globalLocation = configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION, null);
+            final String globalLocation = configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION, null);
             if (null != globalLocation) {
                 for (final String line : this.readLines(new Path(globalLocation + "/" + GiraphGraphComputer.GLOBALS), configuration)) {
                     this.globals.put(line.split("\t")[0], line.split("\t")[1]);

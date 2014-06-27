@@ -28,7 +28,7 @@ import org.junit.runners.model.RunnerBuilder;
  * implementation.  This specialized test suite and runner is for use by Blueprints implementers to test their
  * Graph implementations.  The StructureStandardSuite ensures consistency and validity of the implementations that they
  * test.
- * <p/>
+ * <p>
  * To use the ProcessComputerStandardSuite define a class in a test module.  Simple naming would expect the name of the
  * implementation followed by "ProcessComputerStandardSuite".  This class should be annotated as follows (note that the "Suite"
  * implements ProcessComputerStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
@@ -52,9 +52,9 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            CyclicPathTest.JavaComputerCyclicPathTest.class,
+            // TODO: CyclicPathTest.JavaComputerCyclicPathTest.class,
             // DedupTest.JavaComputerDedupTest.class,  TODO: Makes no sense in GraphComputer
-            ExceptTest.JavaComputerExceptTest.class,
+            //TODO: ExceptTest.JavaComputerExceptTest.class,
             FilterTest.JavaComputerFilterTest.class,
             HasTest.JavaComputerHasTest.class,
             IntervalTest.JavaComputerIntervalTest.class,
@@ -64,8 +64,8 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             SimplePathTest.JavaComputerSimplePathTest.class,
             BackTest.JavaComputerBackTest.class,
             JumpTest.JavaComputerJumpTest.class,
-			MapTest.JavaMapTest.class,
-			// OrderTest.JavaOrderTest.class
+            MapTest.JavaMapTest.class,
+            // OrderTest.JavaOrderTest.class
             PathTest.JavaComputerPathTest.class,
             SelectTest.JavaComputerSelectTest.class,
             TraversalTest.JavaComputerTraversalTest.class,

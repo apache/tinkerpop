@@ -18,6 +18,10 @@ public class Path {
     protected List<String> asLabels = new ArrayList<>();
     protected List<Object> objects = new ArrayList<>();
 
+    protected Path() {
+
+    }
+
     public Path(final Object... asObjects) {
         if (asObjects.length % 2 != 0)
             throw new IllegalArgumentException("The provided array must be a multiple of two");

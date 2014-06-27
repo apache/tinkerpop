@@ -12,6 +12,8 @@ import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.mapred.JobClient;
+import org.codehaus.groovy.tools.shell.Groovysh;
+import org.codehaus.groovy.tools.shell.IO;
 
 import javax.script.ScriptException;
 import java.util.Arrays;
@@ -26,6 +28,8 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
 
     private static final String IMPORT = "import ";
     private static final String DOT_STAR = ".*";
+
+    private Groovysh shell;
 
     private static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT + GiraphGraph.class.getPackage().getName() + DOT_STAR);
@@ -75,7 +79,13 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
 
     @Override
     public Optional<RemoteAcceptor> remoteAcceptor() {
-        return Optional.of(new GiraphRemoteAcceptor());
+        return Optional.of(new GiraphRemoteAcceptor(this.shell));
     }
+
+    @Override
+    public void init(final Groovysh shell, final IO io) {
+        this.shell = shell;
+    }
+
 
 }
