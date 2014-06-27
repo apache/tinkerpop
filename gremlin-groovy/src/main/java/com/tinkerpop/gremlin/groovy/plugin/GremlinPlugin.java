@@ -40,6 +40,8 @@ public interface GremlinPlugin {
 	 */
 	public default Optional<Set<Artifact>> additionalDependencies() { return Optional.empty(); }
 
+	// todo: revisit these Console only features below? maybe a different interface to implement to keep things separate?
+
 	/**
 	 * Allows a plugin to utilize features of the {@code :remote} and {@code :submit} commands of the Gremlin Console.
 	 * This method does not need to be implemented if the plugin is not meant for the Console for some reason or
