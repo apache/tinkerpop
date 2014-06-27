@@ -71,6 +71,7 @@ class Console {
         // plugins and load them
         ServiceLoader.load(GremlinPlugin.class, groovy.getInterp().getClassLoader()).each { plugin ->
             if (!mediator.loadedPlugins.containsKey(plugin.getName())) {
+                plugin.init(groovy, io)
                 plugin.pluginTo(new ConsolePluginAcceptor(groovy))
                 mediator.loadedPlugins.put(plugin.getName(), new PluggedIn(plugin, true))
 
