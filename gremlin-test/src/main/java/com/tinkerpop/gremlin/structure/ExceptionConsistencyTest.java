@@ -758,7 +758,7 @@ public class ExceptionConsistencyTest {
 
         @Override
         public void execute(final Vertex vertex, final Messenger messenger, final GraphComputer.Globals globals) {
-            vertex.bothE().forEach(e -> e.property(this.key, this.val));
+            vertex.bothE().forEach(e -> e.<String>property(this.key, this.val));
         }
 
         @Override

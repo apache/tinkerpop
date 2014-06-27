@@ -32,6 +32,4 @@ public class GraphsTest {
         assertTrue(m.containsKey("g"));
         assertTrue(m.get("g") instanceof TinkerGraph);
     }
-
-    //TODO: test commit/rollbackall
 }
