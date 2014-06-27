@@ -17,6 +17,9 @@
             <directory>src</directory>
         </fileSet>
         <fileSet>
+            <directory>config</directory>
+        </fileSet>
+        <fileSet>
             <directory>target/${project.artifactId}-${project.version}-standalone/data</directory>
             <outputDirectory>data</outputDirectory>
         </fileSet>
