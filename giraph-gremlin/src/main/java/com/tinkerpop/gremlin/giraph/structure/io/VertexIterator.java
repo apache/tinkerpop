@@ -3,9 +3,11 @@ package com.tinkerpop.gremlin.giraph.structure.io;
 import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
 import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
+import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
+import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
-import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.conf.Configuration;
@@ -22,15 +24,18 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexIterator implements Iterator<Vertex> {
+public class VertexIterator implements Iterator<GiraphVertex> {
 
     private final Queue<VertexReader> readers = new LinkedList<>();
-    private Vertex nextVertex = null;
+    private GiraphVertex nextVertex = null;
+    private final GiraphGraph graph;
 
-    public VertexIterator(final VertexInputFormat inputFormat, final Configuration configuration) {
+    public VertexIterator(final GiraphGraph graph) {
+        this.graph = graph;
         try {
-            final String graphPath = configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.G;
-            HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(graphPath), new HiddenFileFilter()).forEach(path -> {
+            final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.getConfiguration());
+            final VertexInputFormat inputFormat = (VertexInputFormat) configuration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getConstructor().newInstance();
+            HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(configuration.get(GiraphGraphComputer.GREMLIN_INPUT_LOCATION)), new HiddenFileFilter()).forEach(path -> {
                 try {
                     this.readers.add(inputFormat.createVertexReader(new FileSplit(path, 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(new Configuration(), new TaskAttemptID())));
                 } catch (Exception e) {
@@ -38,20 +43,21 @@ public class VertexIterator implements Iterator<Vertex> {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            // TODO: This is really weird
+            // e.printStackTrace();
         }
     }
 
-    public Vertex next() {
+    public GiraphVertex next() {
         try {
             if (this.nextVertex != null) {
-                Vertex temp = this.nextVertex;
+                final GiraphVertex temp = this.nextVertex;
                 this.nextVertex = null;
                 return temp;
             } else {
                 while (!this.readers.isEmpty()) {
                     if (this.readers.peek().nextVertex())
-                        return ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getGremlinVertex();
+                        return new GiraphVertex(((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getGremlinVertex(), this.graph);
                     else
                         this.readers.remove();
                 }
@@ -68,7 +74,7 @@ public class VertexIterator implements Iterator<Vertex> {
             else {
                 while (!this.readers.isEmpty()) {
                     if (this.readers.peek().nextVertex()) {
-                        this.nextVertex = ((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getGremlinVertex();
+                        this.nextVertex = new GiraphVertex(((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getGremlinVertex(), this.graph);
                         return true;
                     } else
                         this.readers.remove();

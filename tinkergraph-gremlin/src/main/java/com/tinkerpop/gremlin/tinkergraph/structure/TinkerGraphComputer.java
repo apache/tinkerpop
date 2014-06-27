@@ -4,7 +4,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
 import com.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -37,7 +37,7 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
         ((TraverserSource) traversal.getSteps().get(0)).clear();
-        return new TraversalResult<>(this.graph, () -> traversal);
+        return new TraversalVertexProgramIterator<>(this.graph, () -> traversal);
     }
 
     public GraphComputer isolation(final Isolation isolation) {

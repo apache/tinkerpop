@@ -4,12 +4,9 @@ import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.giraph.process.graph.strategy.SideEffectReplacementStrategy;
-import com.tinkerpop.gremlin.giraph.process.graph.strategy.ValidateStepsStrategy;
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -29,7 +26,7 @@ import java.util.Optional;
  */
 public class GiraphGraph implements Graph, Serializable {
 
-    private SConfiguration configuration;
+    protected SConfiguration configuration;
 
     private GiraphGraph() {
 
@@ -49,7 +46,7 @@ public class GiraphGraph implements Graph, Serializable {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
         traversal.strategies().register(new SideEffectReplacementStrategy());
         //traversal.strategies().register(new ValidateStepsStrategy());
-        traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, ConfUtil.makeHadoopConfiguration(this.configuration)));
+        traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, this));
         return traversal;
     }
 
@@ -57,7 +54,7 @@ public class GiraphGraph implements Graph, Serializable {
         final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
         traversal.strategies().register(new SideEffectReplacementStrategy());
         //traversal.strategies().register(new ValidateStepsStrategy());
-        traversal.addStep(new GiraphGraphStep(traversal, Edge.class, ConfUtil.makeHadoopConfiguration(this.configuration)));
+        traversal.addStep(new GiraphGraphStep(traversal, Edge.class, this));
         return traversal;
     }
 
@@ -99,6 +96,22 @@ public class GiraphGraph implements Graph, Serializable {
 
     public Transaction tx() {
         throw Exceptions.transactionsNotSupported();
+    }
+
+    public Configuration getConfiguration() {
+        return this.configuration;
+    }
+
+    public GiraphGraph getOutputGraph() {
+        final Configuration conf = new BaseConfiguration();
+        this.configuration.getKeys().forEachRemaining(key -> conf.setProperty(key, this.configuration.getString(key)));
+        if (this.configuration.containsKey(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION)) {
+            conf.setProperty(GiraphGraphComputer.GREMLIN_INPUT_LOCATION, this.configuration.getString(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION));
+        }
+        if (this.configuration.containsKey(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS)) {
+            conf.setProperty(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, this.configuration.getString(GiraphGraphComputer.GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS).replace("OutputFormat", "InputFormat"));
+        }
+        return GiraphGraph.open(conf);
     }
 
     public Features getFeatures() {

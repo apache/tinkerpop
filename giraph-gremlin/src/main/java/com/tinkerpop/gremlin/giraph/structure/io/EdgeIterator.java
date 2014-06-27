@@ -4,6 +4,9 @@ import com.google.common.collect.Iterators;
 import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
 import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
+import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.structure.GiraphEdge;
+import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -23,15 +26,18 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EdgeIterator implements Iterator<Edge> {
+public class EdgeIterator implements Iterator<GiraphEdge> {
 
     private final Queue<VertexReader> readers = new LinkedList<>();
     private Iterator<Edge> edgeIterator = Iterators.emptyIterator();
+    private final GiraphGraph graph;
 
-    public EdgeIterator(final VertexInputFormat inputFormat, final Configuration configuration) {
+    public EdgeIterator(final GiraphGraph graph) {
+        this.graph = graph;
         try {
-            final String graphPath = configuration.get(GiraphGraphComputer.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.G;
-            HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(graphPath), new HiddenFileFilter()).forEach(path -> {
+            final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.getConfiguration());
+            final VertexInputFormat inputFormat = (VertexInputFormat) configuration.getClass(GiraphGraphComputer.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getConstructor().newInstance();
+            HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(configuration.get(GiraphGraphComputer.GREMLIN_INPUT_LOCATION)), new HiddenFileFilter()).forEach(path -> {
                 try {
                     this.readers.add(inputFormat.createVertexReader(new FileSplit(path, 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(new Configuration(), new TaskAttemptID())));
                 } catch (Exception e) {
@@ -39,15 +45,16 @@ public class EdgeIterator implements Iterator<Edge> {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            // TODO: This is really weird
+            // e.printStackTrace();
         }
     }
 
-    public Edge next() {
+    public GiraphEdge next() {
         try {
             while (true) {
                 if (this.edgeIterator.hasNext())
-                    return this.edgeIterator.next();
+                    return new GiraphEdge(this.edgeIterator.next(), this.graph);
                 if (this.readers.isEmpty())
                     throw FastNoSuchElementException.instance();
                 if (this.readers.peek().nextVertex()) {

@@ -9,7 +9,7 @@
     <key id="name" for="node" attr.name="name" attr.type="string"/>
     <key id="age" for="node" attr.name="age" attr.type="int"/>
     <key id="lang" for="node" attr.name="lang" attr.type="string"/>
-    <graph id="G" edgedefault="directed">
+    <originalGraph id="G" edgedefault="directed">
         <node id="1">
             <data key="name">marko</data>
             <data key="age">29</data>
@@ -64,5 +64,5 @@
             <data key="weight">0.2</data>
             <data key="labelE">created</data>
         </edge>
-    </graph>
+    </originalGraph>
 </graphml>

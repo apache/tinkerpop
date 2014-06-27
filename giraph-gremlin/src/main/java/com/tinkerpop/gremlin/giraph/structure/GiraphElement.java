@@ -51,4 +51,8 @@ public abstract class GiraphElement implements Element {
     public <V> Property<V> property(final String key, final V value) {
         throw Element.Exceptions.propertyAdditionNotSupported();
     }
+
+    public String toString() {
+        return this.element.toString();
+    }
 }
