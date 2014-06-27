@@ -76,6 +76,7 @@ class UseCommand extends ComplexCommandSupport {
                 if (plugin.requireRestart())
                     pluginsThatNeedRestart<<plugin.name
                 else {
+                    plugin.init(shell, io)
                     plugin.pluginTo(new ConsolePluginAcceptor(shell))
                     mediator.loadedPlugins.put(plugin.name, new PluggedIn(plugin, installed))
                 }
