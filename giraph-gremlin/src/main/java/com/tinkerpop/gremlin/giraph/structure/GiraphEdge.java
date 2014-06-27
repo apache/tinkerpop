@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
+import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphEdgeVertexStep;
+import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 /**
@@ -16,10 +18,17 @@ public class GiraphEdge extends GiraphElement implements Edge {
     }
 
     public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
-        return this.start().toV(direction);
+        final GraphTraversal traversal = this.start();
+        return (GraphTraversal) traversal.addStep(new GiraphEdgeVertexStep(traversal, this.graph, direction));
+
     }
 
     public GraphTraversal<Edge, Edge> start() {
-        return this.graph.E().has(Element.ID, this.id());
+        final GraphTraversal traversal = new DefaultGraphTraversal<>();
+        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
+    }
+
+    public Edge getRawEdge() {
+        return (Edge) this.element;
     }
 }

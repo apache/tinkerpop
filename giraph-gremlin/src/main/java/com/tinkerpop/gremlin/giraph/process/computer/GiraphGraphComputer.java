@@ -3,7 +3,7 @@ package com.tinkerpop.gremlin.giraph.process.computer;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalResult;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -98,12 +98,13 @@ public class GiraphGraphComputer implements GraphComputer {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             // LOGGER.info(new GiraphGraphShellComputerGlobals(this.hadoopConfiguration).asMap().toString());
-            // TODO: Should point to the manipulated graph
-            return new Pair<Graph, Globals>(this.giraphGraph, new GiraphGraphShellComputerGlobals(this.hadoopConfiguration));
+            return new Pair<Graph, Globals>(this.giraphGraph.getOutputGraph(), new GiraphGraphShellComputerGlobals(this.hadoopConfiguration));
         });
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        return new TraversalResult<>(this.giraphGraph, () -> traversal);
+        return new TraversalVertexProgramIterator<>(this.giraphGraph, () -> traversal);
     }
+
+
 }
