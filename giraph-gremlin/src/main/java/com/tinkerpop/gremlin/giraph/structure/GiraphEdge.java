@@ -17,6 +17,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 
 import java.io.Serializable;
 
@@ -28,7 +29,7 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable {
     protected GiraphEdge() {
     }
 
-    public GiraphEdge(final Edge edge, final GiraphGraph graph) {
+    public GiraphEdge(final TinkerEdge edge, final GiraphGraph graph) {
         super(edge, graph);
     }
 
@@ -58,7 +59,7 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable {
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
-    public Edge getBaseEdge() {
-        return (Edge) this.element;
+    public TinkerEdge getTinkerEdge() {
+        return (TinkerEdge) this.element;
     }
 }

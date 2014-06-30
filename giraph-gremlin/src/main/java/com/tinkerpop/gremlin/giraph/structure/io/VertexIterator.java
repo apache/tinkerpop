@@ -36,7 +36,7 @@ public class VertexIterator implements Iterator<GiraphVertex> {
             final VertexInputFormat inputFormat = (VertexInputFormat) configuration.getClass(GiraphGraph.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getConstructor().newInstance();
             HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(configuration.get(GiraphGraph.GREMLIN_INPUT_LOCATION)), new HiddenFileFilter()).forEach(path -> {
                 try {
-                    this.readers.add(inputFormat.createVertexReader(new FileSplit(path, 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(new Configuration(), new TaskAttemptID())));
+                    this.readers.add(inputFormat.createVertexReader(new FileSplit(path, 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
@@ -56,7 +56,7 @@ public class VertexIterator implements Iterator<GiraphVertex> {
             } else {
                 while (!this.readers.isEmpty()) {
                     if (this.readers.peek().nextVertex())
-                        return new GiraphVertex(((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getGremlinVertex(), this.graph);
+                        return new GiraphVertex(((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getTinkerVertex(), this.graph);
                     else
                         this.readers.remove();
                 }
@@ -73,7 +73,7 @@ public class VertexIterator implements Iterator<GiraphVertex> {
             else {
                 while (!this.readers.isEmpty()) {
                     if (this.readers.peek().nextVertex()) {
-                        this.nextVertex = new GiraphVertex(((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getGremlinVertex(), this.graph);
+                        this.nextVertex = new GiraphVertex(((GiraphInternalVertex) this.readers.peek().getCurrentVertex()).getTinkerVertex(), this.graph);
                         return true;
                     } else
                         this.readers.remove();

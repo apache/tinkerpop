@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -53,6 +54,14 @@ public abstract class GiraphElement implements Element, Serializable {
 
     public <V> Property<V> property(final String key, final V value) {
         throw Element.Exceptions.propertyAdditionNotSupported();
+    }
+
+    public boolean equals(final Object object) {
+        return ElementHelper.areEqual(this, object);
+    }
+
+    public int hashCode() {
+        return this.element.hashCode();
     }
 
     public String toString() {

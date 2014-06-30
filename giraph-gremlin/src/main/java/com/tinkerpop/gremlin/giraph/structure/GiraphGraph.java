@@ -66,11 +66,11 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
     public Vertex v(final Object id) {
-        return new GiraphVertex(this.V().<Vertex>has(Element.ID, id).next(), this);
+        return this.V().<Vertex>has(Element.ID, id).next();
     }
 
     public Edge e(final Object id) {
-        return new GiraphEdge(this.E().<Edge>has(Element.ID, id).next(), this);
+        return this.E().<Edge>has(Element.ID, id).next();
     }
 
     public Vertex addVertex(final Object... keyValues) {

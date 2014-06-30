@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import com.tinkerpop.gremlin.util.function.QuintFunction;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 import org.apache.hadoop.io.NullWritable;
@@ -50,13 +51,12 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, GiraphInter
         final TriFunction<Object, String, Object[], Vertex> vertexMaker = (id, label, props) -> createVertex(g, id, label, props);
         final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker = (id, outId, inId, label, props) -> createEdge(g, id, outId, inId, label, props);
 
-        Vertex v;
+        final TinkerVertex v;
         try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
-            v = this.graphSONReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
+            v = (TinkerVertex) this.graphSONReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker);
         }
 
         this.vertex = new GiraphInternalVertex(v);
-
         return true;
     }
 

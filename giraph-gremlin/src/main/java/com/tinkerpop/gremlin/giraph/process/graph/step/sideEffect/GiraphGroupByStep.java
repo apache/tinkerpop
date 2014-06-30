@@ -100,7 +100,7 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
 
         @Override
         public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, Text, KryoWritable>.Context context) throws IOException, InterruptedException {
-            final HashMap<Object, Collection> tempMap = value.getGremlinVertex().<HashMap<Object, Collection>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
+            final HashMap<Object, Collection> tempMap = value.getTinkerVertex().<HashMap<Object, Collection>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
             tempMap.forEach((k, v) -> {
                 this.textWritable.set(null == k ? "null" : k.toString());
                 this.kryoWritable.set(v);

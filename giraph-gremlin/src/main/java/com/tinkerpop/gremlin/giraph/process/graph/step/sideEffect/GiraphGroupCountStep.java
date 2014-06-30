@@ -80,7 +80,7 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
         @Override
         public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, Text, LongWritable>.Context context) throws IOException, InterruptedException {
             // TODO: Kryo is serializing the Map<Object,Long> as a Map<Object,Integer>
-            final HashMap<Object, Integer> tempMap = value.getGremlinVertex().<HashMap<Object, Integer>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
+            final HashMap<Object, Integer> tempMap = value.getTinkerVertex().<HashMap<Object, Integer>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
             tempMap.forEach((k, v) -> {
                 this.textWritable.set(null == k ? "null" : k.toString());
                 this.longWritable.set((long) v);

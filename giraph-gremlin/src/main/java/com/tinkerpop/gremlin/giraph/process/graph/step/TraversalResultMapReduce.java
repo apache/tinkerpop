@@ -39,7 +39,7 @@ public class TraversalResultMapReduce implements JobCreator {
         @Override
         public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, Text, LongWritable>.Context context) throws IOException, InterruptedException {
             //TODO: determine track paths
-            StreamFactory.stream(value.getGremlinVertex())
+            StreamFactory.stream(value.getTinkerVertex())
                     .map(v -> v.<TraversalCounters>property(TraversalVertexProgram.TRAVERSER_TRACKER).orElse(null))
                     .filter(tracker -> null != tracker)
                     .forEach(tracker -> {

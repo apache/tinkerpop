@@ -37,7 +37,7 @@ public class GlobalsMapReduce implements JobCreator {
         public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, Text, Text>.Context context) throws IOException, InterruptedException {
             final String[] globalKeys = context.getConfiguration().getStrings(GREMLIN_GLOBAL_KEYS);
             for (final String globalKey : globalKeys) {
-                final Property property = value.getGremlinVertex().property(Graph.Key.hidden(globalKey));
+                final Property property = value.getTinkerVertex().property(Graph.Key.hidden(globalKey));
                 if (property.isPresent()) {
                     this.keyWritable.set(globalKey);
                     this.valueWritable.set(property.value().toString());

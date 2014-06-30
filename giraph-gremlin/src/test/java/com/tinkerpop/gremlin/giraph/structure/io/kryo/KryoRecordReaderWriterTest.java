@@ -59,7 +59,7 @@ public class KryoRecordReaderWriterTest {
                 GiraphInternalVertex v = (GiraphInternalVertex) reader.getCurrentValue();
                 writer.write(NullWritable.get(), v);
 
-                Vertex vertex = v.getGremlinVertex();
+                Vertex vertex = v.getTinkerVertex();
                 assertEquals(String.class, vertex.id().getClass());
 
                 Object value = vertex.property("name");

@@ -19,7 +19,7 @@ public class GiraphEdgeVertexStep extends EdgeVertexStep {
         this.setFunction(traverser -> {
             final Edge edge = traverser.get();
             return edge instanceof GiraphEdge ?
-                    (Iterator) ((GiraphEdge) edge).getBaseEdge().flatMap(e -> e.get().toV(direction)).map(v -> graph.v(v.get().id())) :
+                    (Iterator) ((GiraphEdge) edge).getTinkerEdge().flatMap(e -> e.get().toV(direction)).map(v -> graph.v(v.get().id())) :
                     (Iterator) edge.toV(direction);
         });
     }
