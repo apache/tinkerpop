@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.console
+package com.tinkerpop.gremlin.console.plugin
 
 import com.tinkerpop.gremlin.driver.Client
 import com.tinkerpop.gremlin.driver.Cluster
