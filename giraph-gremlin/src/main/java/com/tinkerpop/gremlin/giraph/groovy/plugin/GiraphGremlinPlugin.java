@@ -6,14 +6,12 @@ import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphRunner;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.io.graphson.GraphSONVertexInputFormat;
 import com.tinkerpop.gremlin.giraph.structure.io.kryo.KryoVertexInputFormat;
+import com.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.Artifact;
-import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.mapred.JobClient;
-import org.codehaus.groovy.tools.shell.Groovysh;
-import org.codehaus.groovy.tools.shell.IO;
 
 import javax.script.ScriptException;
 import java.util.Arrays;
@@ -24,12 +22,10 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGremlinPlugin implements GremlinPlugin {
+public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
 
     private static final String IMPORT = "import ";
     private static final String DOT_STAR = ".*";
-
-    private Groovysh shell;
 
     private static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT + GiraphGraph.class.getPackage().getName() + DOT_STAR);
@@ -81,11 +77,4 @@ public class GiraphGremlinPlugin implements GremlinPlugin {
     public Optional<RemoteAcceptor> remoteAcceptor() {
         return Optional.of(new GiraphRemoteAcceptor(this.shell));
     }
-
-    @Override
-    public void init(final Groovysh shell, final IO io) {
-        this.shell = shell;
-    }
-
-
 }

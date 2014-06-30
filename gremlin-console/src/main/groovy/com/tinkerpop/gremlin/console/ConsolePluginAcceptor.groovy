@@ -2,21 +2,34 @@ package com.tinkerpop.gremlin.console
 
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor
 import org.codehaus.groovy.tools.shell.Groovysh
+import org.codehaus.groovy.tools.shell.IO
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class ConsolePluginAcceptor implements PluginAcceptor {
 
-    private final Groovysh shell;
+    public static final String ENVIRONMENT_SHELL = "ConsolePluginAcceptor.shell"
+    public static final String ENVIRONMENT_IO = "ConsolePluginAcceptor.io"
 
-    public ConsolePluginAcceptor(final Groovysh shell)  { this.shell = shell }
+    private final Groovysh shell
+    private final IO io;
+
+    public ConsolePluginAcceptor(final Groovysh shell, final IO io)  {
+        this.shell = shell
+        this.io = io
+    }
 
     @Override
-    public void addImports(final Set<String> importStatements) {
+    void addImports(final Set<String> importStatements) {
         importStatements.each { this.shell.execute(it) }
     }
 
     @Override
-    public Object eval(final String script) throws javax.script.ScriptException { return this.shell.execute(script) }
+    Object eval(final String script) throws javax.script.ScriptException { return this.shell.execute(script) }
+
+    @Override
+    Map<String, Object> environment() {
+        return [(ENVIRONMENT_IO):io, (ENVIRONMENT_SHELL): shell]
+    }
 }

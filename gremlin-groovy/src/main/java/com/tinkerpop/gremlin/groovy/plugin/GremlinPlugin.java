@@ -1,8 +1,5 @@
 package com.tinkerpop.gremlin.groovy.plugin;
 
-import org.codehaus.groovy.tools.shell.Groovysh;
-import org.codehaus.groovy.tools.shell.IO;
-
 import java.util.Optional;
 import java.util.Set;
 
@@ -40,18 +37,10 @@ public interface GremlinPlugin {
 	 */
 	public default Optional<Set<Artifact>> additionalDependencies() { return Optional.empty(); }
 
-	// todo: revisit these Console only features below? maybe a different interface to implement to keep things separate?
-
 	/**
 	 * Allows a plugin to utilize features of the {@code :remote} and {@code :submit} commands of the Gremlin Console.
 	 * This method does not need to be implemented if the plugin is not meant for the Console for some reason or
 	 * if it does not intend to take advantage of those commands.
 	 */
 	public default Optional<RemoteAcceptor> remoteAcceptor() { return Optional.empty(); }
-
-	/**
-	 * Called once on initialization of the plugin to the Gremlin Console. No need to implement this if the Plugin is
-	 * not meant for the console or if the variables being passed to the plugin are not useful.
-	 */
-	public default void init(final Groovysh shell, final IO io) { }
 }

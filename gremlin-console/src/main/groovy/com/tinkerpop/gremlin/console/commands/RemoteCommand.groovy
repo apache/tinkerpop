@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.console.commands
 
 import com.tinkerpop.gremlin.console.DriverRemoteAcceptor
-import com.tinkerpop.gremlin.console.GephiRemoteAcceptor
+import com.tinkerpop.gremlin.console.plugin.GephiRemoteAcceptor
 import com.tinkerpop.gremlin.console.Mediator
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
@@ -27,8 +27,6 @@ class RemoteCommand extends ComplexCommandSupport {
         if (arguments[0] == "server") {
             // assume a remote gremlin server
             remote = new DriverRemoteAcceptor(shell)
-        } else if (arguments[0] == "gephi") {
-            remote = new GephiRemoteAcceptor(shell, io)
         } else {
             if (!mediator.loadedPlugins.containsKey(arguments[0])) return "no plugin named ${arguments[0]}"
             def plugin = mediator.loadedPlugins[arguments[0]].plugin

@@ -1,6 +1,8 @@
 package com.tinkerpop.gremlin.groovy.plugin;
 
 import javax.script.ScriptException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,4 +19,11 @@ public interface PluginAcceptor {
      * Evaluate a script in the {@code PluginAcceptor}.
      */
     public Object eval(final String script) throws ScriptException;
+
+	/**
+	 * Returns a map of implementation specific variables that can be referenced by the plugin. Those writing
+	 * plugins should examine the details of the various {@code PluginAcceptor} implementations for the variables
+	 * that they pass, as they may provide important information useful to the plugin itself.
+	 */
+	public default Map<String,Object> environment() { return Collections.emptyMap(); }
 }
