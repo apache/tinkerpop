@@ -11,7 +11,7 @@ public final class FunctionUtils {
     private FunctionUtils() {
     }
 
-    public static <T, U> Function<T,U> wrapFunction(final ThrowingFunction<T, U> functionThatThrows) {
+    public static <T, U> Function<T, U> wrapFunction(final ThrowingFunction<T, U> functionThatThrows) {
         return (a) -> {
             try {
                 return functionThatThrows.apply(a);

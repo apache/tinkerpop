@@ -36,7 +36,7 @@ public class LongIDVertexCache implements VertexCache {
 
     @Override
     public void set(final Vertex vertex, final Object externalId) {
-        setId(vertex,externalId);
+        setId(vertex, externalId);
     }
 
     @Override
@@ -67,8 +67,7 @@ public class LongIDVertexCache implements VertexCache {
          * is an {@code instanceof Vertex}, then replace it in the map with
          * {@link Vertex#id()}. Otherwise, do nothing. Always returns true.
          *
-         * @param l
-         *            Colt long list element
+         * @param l Colt long list element
          * @return true
          */
         @Override

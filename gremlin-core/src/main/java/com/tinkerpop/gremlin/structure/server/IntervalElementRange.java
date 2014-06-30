@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.structure.Element;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IntervalElementRange<U extends Comparable<U>, E extends Element> implements ElementRange<U, E>{
+public class IntervalElementRange<U extends Comparable<U>, E extends Element> implements ElementRange<U, E> {
 
     /**
      * Generated uid on Dec 10 2013
@@ -68,7 +68,7 @@ public class IntervalElementRange<U extends Comparable<U>, E extends Element> im
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IntervalElementRange<?,?> that = (IntervalElementRange<?,?>) o;
+        IntervalElementRange<?, ?> that = (IntervalElementRange<?, ?>) o;
 
         if (priority != that.priority) return false;
         if (!elementType.equals(that.elementType)) return false;

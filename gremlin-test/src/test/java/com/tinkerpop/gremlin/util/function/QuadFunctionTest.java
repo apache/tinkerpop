@@ -12,14 +12,14 @@ import static org.junit.Assert.assertEquals;
 public class QuadFunctionTest {
     @Test
     public void shouldApplyCurrentFunctionAndThenAnotherSuppliedOne() {
-        final QuadFunction<String, String, String, String, String> f = (a,b,c,d) -> a + b + c + d;
+        final QuadFunction<String, String, String, String, String> f = (a, b, c, d) -> a + b + c + d;
         final UnaryOperator<String> after = (s) -> s + "last";
         assertEquals("1234last", f.andThen(after).apply("1", "2", "3", "4"));
     }
 
     @Test(expected = NullPointerException.class)
     public void shouldThrowIfAfterFunctionIsNull() {
-        final QuadFunction<String, String, String, String, String> f = (a,b,c,d) -> a + b + c;
+        final QuadFunction<String, String, String, String, String> f = (a, b, c, d) -> a + b + c;
         f.andThen(null);
     }
 }

@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 
 
 /**
- *  @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DetachedVertexTest {
 

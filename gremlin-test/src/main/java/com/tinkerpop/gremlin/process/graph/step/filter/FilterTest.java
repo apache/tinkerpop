@@ -32,9 +32,9 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
 
-	public abstract Traversal<Edge, Edge> get_g_E_filterXfalseX();
+    public abstract Traversal<Edge, Edge> get_g_E_filterXfalseX();
 
-	public abstract Traversal<Edge, Edge> get_g_E_filterXtrueX();
+    public abstract Traversal<Edge, Edge> get_g_E_filterXtrueX();
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -51,7 +51,7 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         final Iterator<Vertex> traversal = get_g_V_filterXtrueX();
         System.out.println("Testing: " + traversal);
         int counter = 0;
-		final Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
             vertices.add(traversal.next());
@@ -118,62 +118,62 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         assertEquals(vertices.size(), 2);
     }
 
-	@Test
-	@LoadGraphWith(CLASSIC)
-	public void g_E_filterXfalseX() {
-		final Iterator<Edge> traversal = get_g_E_filterXfalseX();
-		System.out.println("Testing: " + traversal);
-		assertFalse(traversal.hasNext());
-		assertFalse(traversal.hasNext());
-	}
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_E_filterXfalseX() {
+        final Iterator<Edge> traversal = get_g_E_filterXfalseX();
+        System.out.println("Testing: " + traversal);
+        assertFalse(traversal.hasNext());
+        assertFalse(traversal.hasNext());
+    }
 
-	@Test
-	@LoadGraphWith(CLASSIC)
-	public void g_E_filterXtrueX() {
-		final Iterator<Edge> traversal = get_g_E_filterXtrueX();
-		System.out.println("Testing: " + traversal);
-		int counter = 0;
-		final Set<Edge> edges = new HashSet<>();
-		while (traversal.hasNext()) {
-			counter++;
-			edges.add(traversal.next());
-		}
-		assertEquals(6, counter);
-		assertEquals(6, edges.size());
-		assertFalse(traversal.hasNext());
-	}
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_E_filterXtrueX() {
+        final Iterator<Edge> traversal = get_g_E_filterXtrueX();
+        System.out.println("Testing: " + traversal);
+        int counter = 0;
+        final Set<Edge> edges = new HashSet<>();
+        while (traversal.hasNext()) {
+            counter++;
+            edges.add(traversal.next());
+        }
+        assertEquals(6, counter);
+        assertEquals(6, edges.size());
+        assertFalse(traversal.hasNext());
+    }
 
     public static class JavaFilterTest extends FilterTest {
         public JavaFilterTest() {
             this.requiresGraphComputer = false;
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
             return g.V().filter(v -> false);
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXtrueX() {
             return g.V().filter(v -> true);
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
             return g.V().filter(v -> v.get().<String>property("lang").orElse("none").equals("java"));
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(final Object v1Id) {
             return g.v(v1Id).filter(v -> v.get().<Integer>property("age").orElse(0) > 30);
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id) {
             return g.v(v1Id).out().filter(v -> v.get().<Integer>property("age").orElse(0) > 30);
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
             return g.V().filter(v -> {
                 final String name = v.get().value("name");
@@ -181,16 +181,16 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
             });
         }
 
-		@Override
-		public Traversal<Edge, Edge> get_g_E_filterXfalseX() {
-			return g.E().filter(e -> false);
-		}
+        @Override
+        public Traversal<Edge, Edge> get_g_E_filterXfalseX() {
+            return g.E().filter(e -> false);
+        }
 
-		@Override
-		public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
-			return g.E().filter(e -> true);
-		}
-	}
+        @Override
+        public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
+            return g.E().filter(e -> true);
+        }
+    }
 
     public static class JavaComputerFilterTest extends FilterTest {
 
@@ -198,42 +198,42 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
             this.requiresGraphComputer = true;
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXfalseX() {
             return g.V().filter(v -> false).submit(g.compute());
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXtrueX() {
             return g.V().filter(v -> true).submit(g.compute());
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_filterXlang_eq_javaX() {
             return g.V().filter(v -> v.get().<String>property("lang").orElse("none").equals("java")).submit(g.compute());
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_filterXage_gt_30X(final Object v1Id) {
             return g.v(v1Id).filter(v -> v.get().<Integer>property("age").orElse(0) > 30).submit(g.compute());
         }
 
-		@Override
+        @Override
         public Traversal<Vertex, Vertex> get_g_v1_out_filterXage_gt_30X(final Object v1Id) {
             return g.v(v1Id).out().filter(v -> v.get().<Integer>property("age").orElse(0) > 30).submit(g.compute());
         }
 
-		@Override
-		public Traversal<Edge, Edge> get_g_E_filterXfalseX() {
-			return g.E().filter(v -> false).submit(g.compute());
-		}
+        @Override
+        public Traversal<Edge, Edge> get_g_E_filterXfalseX() {
+            return g.E().filter(v -> false).submit(g.compute());
+        }
 
-		@Override
-		public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
-			return g.E().filter(v -> true).submit(g.compute());
-		}
+        @Override
+        public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
+            return g.E().filter(v -> true).submit(g.compute());
+        }
 
-		public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
+        public Traversal<Vertex, Vertex> get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX() {
             return g.V().filter(v -> {
                 final String name = v.get().value("name");
                 return name.startsWith("m") || name.startsWith("p");

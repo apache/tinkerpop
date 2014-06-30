@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
-<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd">
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd">
     <key id="age" for="node" attr.name="age" attr.type="int"></key>
     <key id="labelV" for="node" attr.name="labelV" attr.type="string"></key>
     <key id="lang" for="node" attr.name="lang" attr.type="string"></key>

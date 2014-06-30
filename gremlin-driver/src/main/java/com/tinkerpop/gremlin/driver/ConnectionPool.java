@@ -62,14 +62,14 @@ class ConnectionPool {
 
         final List<Connection> l = new ArrayList<>(minPoolSize);
 
-		try {
-			for (int i = 0; i < minPoolSize; i++)
-				l.add(new Connection(host.getWebSocketUri(), this, cluster, settings.maxInProcessPerConnection));
-		} catch (Exception re) {
-			// ok if we don't get it initialized here - when a request is attempted in a connection from the
-			// pool it will try to create new connections as needed.
-			logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, l.size());
-		}
+        try {
+            for (int i = 0; i < minPoolSize; i++)
+                l.add(new Connection(host.getWebSocketUri(), this, cluster, settings.maxInProcessPerConnection));
+        } catch (Exception re) {
+            // ok if we don't get it initialized here - when a request is attempted in a connection from the
+            // pool it will try to create new connections as needed.
+            logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, l.size());
+        }
 
         this.connections = new CopyOnWriteArrayList<>(l);
         this.open = new AtomicInteger(connections.size());
@@ -82,15 +82,15 @@ class ConnectionPool {
     }
 
     public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
-		logger.debug("Borrowing connection from pool on {} - timeout in {} {}", host, timeout, unit);
+        logger.debug("Borrowing connection from pool on {} - timeout in {} {}", host, timeout, unit);
 
         if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
 
         final Connection leastUsedConn = selectLeastUsed();
 
         if (connections.isEmpty()) {
-			logger.debug("Tried to borrow connection but the pool was empty for {} - scheduling pool creation and waiting for connection", host);
-			for (int i = 0; i < minPoolSize; i++) {
+            logger.debug("Tried to borrow connection but the pool was empty for {} - scheduling pool creation and waiting for connection", host);
+            for (int i = 0; i < minPoolSize; i++) {
                 scheduledForCreation.incrementAndGet();
                 newConnection();
             }
@@ -98,52 +98,53 @@ class ConnectionPool {
             return waitForConnection(timeout, unit);
         }
 
-		if (null == leastUsedConn) {
-			if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
-			logger.debug("Pool was initialized but a connection could not be selected earlier - waiting for connection on {}", host);
-			return waitForConnection(timeout, unit);
-		}
+        if (null == leastUsedConn) {
+            if (isClosed())
+                throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+            logger.debug("Pool was initialized but a connection could not be selected earlier - waiting for connection on {}", host);
+            return waitForConnection(timeout, unit);
+        }
 
         // if the number in flight on the least used connection exceeds the max allowed and the pool size is
         // not at maximum then consider opening a connection
-		final int currentPoolSize = connections.size();
+        final int currentPoolSize = connections.size();
         if (leastUsedConn.inFlight.get() >= maxSimultaneousRequestsPerConnection && currentPoolSize < maxPoolSize) {
-			logger.debug("Least used {} on {} exceeds maxSimultaneousRequestsPerConnection but pool size {} < maxPoolSize - consider new connection",
-						leastUsedConn, host, currentPoolSize);
-			considerNewConnection();
-		}
+            logger.debug("Least used {} on {} exceeds maxSimultaneousRequestsPerConnection but pool size {} < maxPoolSize - consider new connection",
+                    leastUsedConn, host, currentPoolSize);
+            considerNewConnection();
+        }
 
-		while (true) {
-			final int inFlight = leastUsedConn.inFlight.get();
-			final int availableInProcess = leastUsedConn.availableInProcess();
+        while (true) {
+            final int inFlight = leastUsedConn.inFlight.get();
+            final int availableInProcess = leastUsedConn.availableInProcess();
 
-			// if the number in flight starts to exceed what's available for this connection, then we need
-			// to wait for a connection to become available.
-			if (inFlight >= leastUsedConn.availableInProcess()) {
-				logger.debug("Least used connection selected from pool for {} but inFlight [{}] >= availableInProcess [{}] - wait",
-						host, inFlight, availableInProcess);
-				return waitForConnection(timeout, unit);
-			}
+            // if the number in flight starts to exceed what's available for this connection, then we need
+            // to wait for a connection to become available.
+            if (inFlight >= leastUsedConn.availableInProcess()) {
+                logger.debug("Least used connection selected from pool for {} but inFlight [{}] >= availableInProcess [{}] - wait",
+                        host, inFlight, availableInProcess);
+                return waitForConnection(timeout, unit);
+            }
 
-			if (leastUsedConn.inFlight.compareAndSet(inFlight, inFlight + 1)) {
-				logger.debug("Return least used {} on {}", leastUsedConn, host);
-				return leastUsedConn;
-			}
-		}
+            if (leastUsedConn.inFlight.compareAndSet(inFlight, inFlight + 1)) {
+                logger.debug("Return least used {} on {}", leastUsedConn, host);
+                return leastUsedConn;
+            }
+        }
     }
 
     public void returnConnection(final Connection connection) throws ConnectionException {
-		logger.debug("Attempting to return {} on {}", connection, host);
+        logger.debug("Attempting to return {} on {}", connection, host);
         if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
 
         int inFlight = connection.inFlight.decrementAndGet();
         if (connection.isDead()) {
-			logger.debug("Marking {} as dead", this.host);
-			considerUnavailable();
-			closeAsync();
+            logger.debug("Marking {} as dead", this.host);
+            considerUnavailable();
+            closeAsync();
         } else {
             if (bin.contains(connection) && inFlight == 0) {
-				logger.debug("{} is already in the bin and it has no inflight requests so it is safe to close", connection);
+                logger.debug("{} is already in the bin and it has no inflight requests so it is safe to close", connection);
                 if (bin.remove(connection))
                     connection.closeAsync();
                 return;
@@ -153,17 +154,17 @@ class ConnectionPool {
             // isn't busy. replace a connection that has a low available in process count which likely means that
             // it's backing up with requests that might never have returned. if neither of these scenarios are met
             // then let the world know the connection is available.
-			final int poolSize = connections.size();
-			final int availableInProcess = connection.availableInProcess();
+            final int poolSize = connections.size();
+            final int availableInProcess = connection.availableInProcess();
             if (poolSize > minPoolSize && inFlight <= minSimultaneousRequestsPerConnection) {
-				logger.debug("On {} pool size of {} > minPoolSize {} and inFlight of {} <= minSimultaneousRequestsPerConnection {} so destroy {}",
-						host, poolSize, minPoolSize, inFlight, minSimultaneousRequestsPerConnection, connection);
-				destroyConnection(connection);
-			} else if (connection.availableInProcess() < minInProcess) {
-				logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection);
-				replaceConnection(connection);
-			} else
-				announceAvailableConnection();
+                logger.debug("On {} pool size of {} > minPoolSize {} and inFlight of {} <= minSimultaneousRequestsPerConnection {} so destroy {}",
+                        host, poolSize, minPoolSize, inFlight, minSimultaneousRequestsPerConnection, connection);
+                destroyConnection(connection);
+            } else if (connection.availableInProcess() < minInProcess) {
+                logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection);
+                replaceConnection(connection);
+            } else
+                announceAvailableConnection();
         }
     }
 
@@ -174,7 +175,7 @@ class ConnectionPool {
     public CompletableFuture<Void> closeAsync() {
         logger.info("Signalled closing of connection pool on {} with core size of {}", host, minPoolSize);
 
-		CompletableFuture<Void> future = closeFuture.get();
+        CompletableFuture<Void> future = closeFuture.get();
         if (future != null)
             return future;
 
@@ -199,7 +200,7 @@ class ConnectionPool {
     }
 
     private void replaceConnection(final Connection connection) {
-		logger.debug("Replace {}", connection);
+        logger.debug("Replace {}", connection);
 
         open.decrementAndGet();
         considerNewConnection();
@@ -207,11 +208,11 @@ class ConnectionPool {
     }
 
     private void considerNewConnection() {
-		logger.debug("Considering new connection on {} where pool size is {}", host, connections.size());
+        logger.debug("Considering new connection on {} where pool size is {}", host, connections.size());
         while (true) {
             int inCreation = scheduledForCreation.get();
 
-			logger.debug("There are {} connections scheduled for creation on {}", inCreation, host);
+            logger.debug("There are {} connections scheduled for creation on {}", inCreation, host);
 
             // don't create more than one at a time
             if (inCreation >= 1)
@@ -225,14 +226,14 @@ class ConnectionPool {
 
     private void newConnection() {
         cluster.executor().submit(() -> {
-			addConnectionIfUnderMaximum();
-			scheduledForCreation.decrementAndGet();
-			return null;
+            addConnectionIfUnderMaximum();
+            scheduledForCreation.decrementAndGet();
+            return null;
         });
     }
 
     private boolean addConnectionIfUnderMaximum() {
-        while(true) {
+        while (true) {
             int opened = open.get();
             if (opened >= maxPoolSize)
                 return false;
@@ -252,7 +253,7 @@ class ConnectionPool {
     }
 
     private boolean destroyConnection(final Connection connection) {
-		while(true) {
+        while (true) {
             int opened = open.get();
             if (opened <= minPoolSize)
                 return false;
@@ -272,7 +273,7 @@ class ConnectionPool {
         if (connection.inFlight.get() == 0 && bin.remove(connection))
             connection.closeAsync();
 
-		logger.debug("{} destroyed", connection);
+        logger.debug("{} destroyed", connection);
     }
 
     private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
@@ -287,68 +288,69 @@ class ConnectionPool {
                 to = 0;
             }
 
-            if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+            if (isClosed())
+                throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
 
             final Connection leastUsed = selectLeastUsed();
             if (leastUsed != null) {
                 while (true) {
                     final int inFlight = leastUsed.inFlight.get();
-					final int availableInProcess = leastUsed.availableInProcess();
+                    final int availableInProcess = leastUsed.availableInProcess();
                     if (inFlight >= availableInProcess) {
-						logger.debug("Least used {} on {} has requests inFlight [{}] >= availableInProcess [{}] - may timeout waiting for connection",
-								leastUsed, host, inFlight, availableInProcess);
-						break;
-					}
+                        logger.debug("Least used {} on {} has requests inFlight [{}] >= availableInProcess [{}] - may timeout waiting for connection",
+                                leastUsed, host, inFlight, availableInProcess);
+                        break;
+                    }
 
                     if (leastUsed.inFlight.compareAndSet(inFlight, inFlight + 1)) {
-						logger.debug("Return least used {} on {} after waiting", leastUsed, host);
-						return leastUsed;
-					}
+                        logger.debug("Return least used {} on {} after waiting", leastUsed, host);
+                        return leastUsed;
+                    }
                 }
             }
 
             remaining = to - TimeUtil.timeSince(start, unit);
-			logger.debug("Continue to wait for connection on {} if {} > 0", remaining);
+            logger.debug("Continue to wait for connection on {} if {} > 0", remaining);
         } while (remaining > 0);
 
-		logger.debug("Timed-out waiting for connection on {} - possibly unavailable", host);
+        logger.debug("Timed-out waiting for connection on {} - possibly unavailable", host);
 
-		// if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
-		// either way supply a function to reconnect
-		this.considerUnavailable();
+        // if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
+        // either way supply a function to reconnect
+        this.considerUnavailable();
 
         throw new TimeoutException();
     }
 
-	private void considerUnavailable() {
-		// todo: need to abstract the host availability function a bit - this is kinda rigid
-		// called when a connection is "dead" right now such that a "dead" connection means the host is basically
-		// "dead".  that's probably ok for now, but this decision should likely be more flexibile.
-		host.makeUnavailable(this::tryReconnect);
+    private void considerUnavailable() {
+        // todo: need to abstract the host availability function a bit - this is kinda rigid
+        // called when a connection is "dead" right now such that a "dead" connection means the host is basically
+        // "dead".  that's probably ok for now, but this decision should likely be more flexibile.
+        host.makeUnavailable(this::tryReconnect);
 
-		// let the load-balancer know that the host is acting poorly
-		this.cluster.loadBalancingStrategy().onUnavailable(host);
+        // let the load-balancer know that the host is acting poorly
+        this.cluster.loadBalancingStrategy().onUnavailable(host);
 
-	}
+    }
 
-	private boolean tryReconnect(final Host h) {
-		logger.debug("Trying to re-establish connection on {}", host);
+    private boolean tryReconnect(final Host h) {
+        logger.debug("Trying to re-establish connection on {}", host);
 
-		try {
+        try {
 
-			connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
-			this.open.set(connections.size());
+            connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
+            this.open.set(connections.size());
 
-			// host is reconnected and a connection is now available
-			this.cluster.loadBalancingStrategy().onAvailable(host);
-			return true;
-		} catch (Exception ex) {
-			return false;
-		}
-	}
+            // host is reconnected and a connection is now available
+            this.cluster.loadBalancingStrategy().onAvailable(host);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
 
     private void announceAvailableConnection() {
-		logger.debug("Announce connection available on {}", host);
+        logger.debug("Announce connection available on {}", host);
 
         if (waiter == 0)
             return;
@@ -375,7 +377,7 @@ class ConnectionPool {
     }
 
     private void awaitAvailableConnection(long timeout, TimeUnit unit) throws InterruptedException {
-		logger.debug("Wait {} {} for an available connection on {} with {}", timeout, unit, host, Thread.currentThread());
+        logger.debug("Wait {} {} for an available connection on {} with {}", timeout, unit, host, Thread.currentThread());
 
         waitLock.lock();
         waiter++;
@@ -404,7 +406,7 @@ class ConnectionPool {
         final StringBuilder sb = new StringBuilder("ConnectionPool (");
         sb.append(host);
         sb.append(") - ");
-        connections.forEach(c-> {
+        connections.forEach(c -> {
             sb.append(c);
             sb.append(",");
         });

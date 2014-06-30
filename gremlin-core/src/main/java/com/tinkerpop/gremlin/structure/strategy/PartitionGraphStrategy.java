@@ -64,9 +64,9 @@ public class PartitionGraphStrategy implements GraphStrategy {
         this.readPartitions.add(readPartition);
     }
 
-	public void clearReadPartitions() {
-		this.readPartitions.clear();
-	}
+    public void clearReadPartitions() {
+        this.readPartitions.clear();
+    }
 
     @Override
     public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
@@ -114,10 +114,10 @@ public class PartitionGraphStrategy implements GraphStrategy {
         };
     }
 
-	@Override
-	public String toString() {
-		return PartitionGraphStrategy.class.getSimpleName();
-	}
+    @Override
+    public String toString() {
+        return PartitionGraphStrategy.class.getSimpleName();
+    }
 
     /**
      * Analyzes the traversal and injects the partition logic after every access to a vertex or edge.  The partition
@@ -140,7 +140,8 @@ public class PartitionGraphStrategy implements GraphStrategy {
             final List<?> traversalSteps = traversal.getSteps();
             for (int ix = 0; ix < traversalSteps.size(); ix++) {
                 final int pos = ix;
-                if (stepsToLookFor.stream().anyMatch(c -> c.isAssignableFrom(traversalSteps.get(pos).getClass()))) positions.add(ix);
+                if (stepsToLookFor.stream().anyMatch(c -> c.isAssignableFrom(traversalSteps.get(pos).getClass())))
+                    positions.add(ix);
             }
 
             Collections.reverse(positions);

@@ -11,10 +11,10 @@ import java.util.Arrays;
 public class VertexTerminator {
     public static final VertexTerminator INSTANCE = new VertexTerminator();
 
-	public final byte[] terminal;
+    public final byte[] terminal;
 
     private VertexTerminator() {
-		terminal = ByteBuffer.allocate(8).putLong(4185403236219066774L).array();
+        terminal = ByteBuffer.allocate(8).putLong(4185403236219066774L).array();
     }
 
     @Override
@@ -29,8 +29,8 @@ public class VertexTerminator {
         return true;
     }
 
-	@Override
-	public int hashCode() {
-		return Arrays.hashCode(terminal);
-	}
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(terminal);
+    }
 }

@@ -54,7 +54,7 @@ public class MemoryTest {
         @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = Graph.Features.VariableFeatures.FEATURE_STRING_VALUES)
         public void testNone() {
             final Graph.Variables variables = g.variables();
-            final Map<String,Object> mapOfAnnotations = variables.asMap();
+            final Map<String, Object> mapOfAnnotations = variables.asMap();
             assertNotNull(mapOfAnnotations);
             assertEquals(0, mapOfAnnotations.size());
             try {

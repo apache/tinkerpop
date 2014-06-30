@@ -89,7 +89,7 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals(1, deserializedMap.get("x"));
         assertEquals("some", deserializedMap.get("y"));
 
-        final Map<String,String> deserializedInnerMap = (Map<String,String>) deserializedMap.get("z");
+        final Map<String, String> deserializedInnerMap = (Map<String, String>) deserializedMap.get("z");
         assertEquals(1, deserializedInnerMap.size());
         assertEquals("b", deserializedInnerMap.get("a"));
     }
@@ -149,7 +149,7 @@ public class KryoMessageSerializerV1d0Test {
         assertEquals(0l, deserializedVertex.id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.label());
 
-        final Map<String,Property> properties = deserializedVertex.properties();
+        final Map<String, Property> properties = deserializedVertex.properties();
         assertEquals(1, properties.size());
 
         final List<Object> deserializedInnerList = (List<Object>) properties.get("friends").value();
@@ -172,7 +172,7 @@ public class KryoMessageSerializerV1d0Test {
         final ResponseMessage response = convert(map);
         assertCommon(response);
 
-        final Map<Vertex, Integer> deserializedMap = (Map<Vertex,Integer>) response.getResult();
+        final Map<Vertex, Integer> deserializedMap = (Map<Vertex, Integer>) response.getResult();
         assertEquals(1, deserializedMap.size());
 
         final Vertex deserializedMarko = deserializedMap.keySet().iterator().next();

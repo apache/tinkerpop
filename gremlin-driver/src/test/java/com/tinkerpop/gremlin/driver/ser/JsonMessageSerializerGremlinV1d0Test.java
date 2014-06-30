@@ -89,7 +89,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         assertEquals(1, deserializedMap.get("x"));
         assertEquals("some", deserializedMap.get("y"));
 
-        final Map<String,String> deserializedInnerMap = (Map<String,String>) deserializedMap.get("z");
+        final Map<String, String> deserializedInnerMap = (Map<String, String>) deserializedMap.get("z");
         assertEquals(1, deserializedInnerMap.size());
         assertEquals("b", deserializedInnerMap.get("a"));
     }
@@ -107,10 +107,10 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(iterable);
         assertCommon(response);
 
-        final List<Map<String,Object>> edgeList = (List<Map<String,Object>>) response.getResult();
+        final List<Map<String, Object>> edgeList = (List<Map<String, Object>>) response.getResult();
         assertEquals(1, edgeList.size());
 
-        final Map<String,Object> deserializedEdge = edgeList.get(0);
+        final Map<String, Object> deserializedEdge = edgeList.get(0);
         assertEquals(e.id(), deserializedEdge.get(GraphSONTokens.ID));
         assertEquals(v1.id(), deserializedEdge.get(GraphSONTokens.OUT));
         assertEquals(v2.id(), deserializedEdge.get(GraphSONTokens.IN));
@@ -119,7 +119,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         assertEquals(e.label(), deserializedEdge.get(GraphSONTokens.LABEL));
         assertEquals(GraphSONTokens.EDGE, deserializedEdge.get(GraphSONTokens.TYPE));
 
-        final Map<String,Object> properties = (Map<String,Object>) deserializedEdge.get(GraphSONTokens.PROPERTIES);
+        final Map<String, Object> properties = (Map<String, Object>) deserializedEdge.get(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
         assertEquals(123, properties.get("abc"));
 
@@ -145,14 +145,14 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(list);
         assertCommon(response);
 
-        final List<Map<String,Object>> vertexList = (List<Map<String,Object>>) response.getResult();
+        final List<Map<String, Object>> vertexList = (List<Map<String, Object>>) response.getResult();
         assertEquals(1, vertexList.size());
 
-        final Map<String,Object> deserializedVertex = vertexList.get(0);
+        final Map<String, Object> deserializedVertex = vertexList.get(0);
         assertEquals(0l, deserializedVertex.get(GraphSONTokens.ID));
         assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.get(GraphSONTokens.LABEL));
 
-        final Map<String,Object> properties = (Map<String,Object>) deserializedVertex.get(GraphSONTokens.PROPERTIES);
+        final Map<String, Object> properties = (Map<String, Object>) deserializedVertex.get(GraphSONTokens.PROPERTIES);
         assertEquals(1, properties.size());
 
         final List<Object> deserializedInnerList = (List<Object>) properties.get("friends");
@@ -175,7 +175,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(map);
         assertCommon(response);
 
-        final Map<String, Integer> deserializedMap = (Map<String,Integer>) response.getResult();
+        final Map<String, Integer> deserializedMap = (Map<String, Integer>) response.getResult();
         assertEquals(1, deserializedMap.size());
 
         // with no embedded types the key (which is a vertex) simply serializes out to an id

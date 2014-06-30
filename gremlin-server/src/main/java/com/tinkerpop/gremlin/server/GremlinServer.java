@@ -185,25 +185,25 @@ public class GremlinServer {
             final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
             this.gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, threadFactory);
 
-			logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
+            logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
-			final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.create()
-					.scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
-					.afterFailure((b,e) -> graphs.get().rollbackAll())
-					.afterSuccess(b -> graphs.get().commitAll())
-					.beforeEval(b -> graphs.get().rollbackAll())
-					.afterTimeout(b -> graphs.get().rollbackAll())
-					.use(settings.use)
-					.globalBindings(graphs.get().getGraphsAsBindings())
-					.executorService(gremlinGroup)
-					.scheduledExecutorService(scheduledExecutorService);
+            final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.create()
+                    .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
+                    .afterFailure((b, e) -> graphs.get().rollbackAll())
+                    .afterSuccess(b -> graphs.get().commitAll())
+                    .beforeEval(b -> graphs.get().rollbackAll())
+                    .afterTimeout(b -> graphs.get().rollbackAll())
+                    .use(settings.use)
+                    .globalBindings(graphs.get().getGraphsAsBindings())
+                    .executorService(gremlinGroup)
+                    .scheduledExecutorService(scheduledExecutorService);
 
-			settings.scriptEngines.forEach((k,v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts));
-			this.gremlinExecutor = gremlinExecutorBuilder.build();
+            settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts));
+            this.gremlinExecutor = gremlinExecutorBuilder.build();
 
-			logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
+            logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
 
-			this.sslEngine = settings.optionalSsl().isPresent() && settings.ssl.enabled ? Optional.ofNullable(createSslEngine()) : Optional.empty();
+            this.sslEngine = settings.optionalSsl().isPresent() && settings.ssl.enabled ? Optional.ofNullable(createSslEngine()) : Optional.empty();
         }
 
         @Override
@@ -267,22 +267,22 @@ public class GremlinServer {
                 } catch (ClassNotFoundException cnfe) {
                     logger.warn("Could not find configured serializer class - {} - it will not be available", config.className);
                     return Optional.<MessageSerializer>empty();
-                }  catch (Exception ex) {
+                } catch (Exception ex) {
                     logger.warn("Could not instantiate configured serializer class - {} - it will not be available.", config.className);
                     return Optional.<MessageSerializer>empty();
                 }
-            }).filter(Optional::isPresent).map(o->o.get()).flatMap(serializer ->
-                    Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Pair.with(mimeType, serializer))
+            }).filter(Optional::isPresent).map(o -> o.get()).flatMap(serializer ->
+                            Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Pair.with(mimeType, serializer))
             ).forEach(pair -> {
-				final String mimeType = pair.getValue0().toString();
-				final MessageSerializer serializer = pair.getValue1();
-				if (serializers.containsKey(mimeType))
-					logger.warn("{} already has {} configured.  It will not be replaced by {}. Check configuration for serializer duplication or other issues.",
-							mimeType, serializers.get(mimeType).getClass().getName(), serializer.getClass().getName());
-				else {
-					logger.info("Configured {} with {}", mimeType, pair.getValue1().getClass().getName());
-					serializers.put(mimeType, serializer);
-				}
+                final String mimeType = pair.getValue0().toString();
+                final MessageSerializer serializer = pair.getValue1();
+                if (serializers.containsKey(mimeType))
+                    logger.warn("{} already has {} configured.  It will not be replaced by {}. Check configuration for serializer duplication or other issues.",
+                            mimeType, serializers.get(mimeType).getClass().getName(), serializer.getClass().getName());
+                else {
+                    logger.info("Configured {} with {}", mimeType, pair.getValue1().getClass().getName());
+                    serializers.put(mimeType, serializer);
+                }
             });
 
             if (serializers.size() == 0) {

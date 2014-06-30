@@ -23,7 +23,7 @@ public class RequestMessage {
     private final String processor;
     private final Map<String, Object> args;
 
-    private RequestMessage(final UUID requestId, final String op, final String processor, final Map<String,Object> args) {
+    private RequestMessage(final UUID requestId, final String op, final String processor, final Map<String, Object> args) {
         this.requestId = requestId;
         this.op = op;
         this.processor = processor;

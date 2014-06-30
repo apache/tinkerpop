@@ -20,7 +20,7 @@ public class KryoOutputFormat extends CommonOutputFormat {
     }
 
     public RecordWriter<NullWritable, GiraphInternalVertex> getRecordWriter(final TaskAttemptContext job,
-                                                                    final DataOutputStream outputStream) throws IOException, InterruptedException {
+                                                                            final DataOutputStream outputStream) throws IOException, InterruptedException {
         return new KryoRecordWriter(outputStream);
     }
 }

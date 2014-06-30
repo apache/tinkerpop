@@ -7,5 +7,5 @@ import java.util.Iterator;
  */
 public interface TraversalEngine {
 
-    public <E> Iterator<E> execute(final Traversal<?,E> traversal);
+    public <E> Iterator<E> execute(final Traversal<?, E> traversal);
 }

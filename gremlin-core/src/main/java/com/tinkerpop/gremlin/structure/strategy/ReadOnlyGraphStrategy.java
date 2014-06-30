@@ -36,12 +36,14 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
         return readOnlyBiFunction();
     }
 
-	@Override
-	public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-		return (f) -> (t) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
-	}
+    @Override
+    public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return (f) -> (t) -> {
+            throw Exceptions.graphUsesReadOnlyStrategy();
+        };
+    }
 
-	@Override
+    @Override
     public UnaryOperator<Supplier<Void>> getRemoveElementStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return readOnlySupplier();
     }
@@ -51,35 +53,45 @@ public class ReadOnlyGraphStrategy implements GraphStrategy {
         return readOnlySupplier();
     }
 
-	@Override
-	public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
-		return (f) -> (k,v) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
-	}
+    @Override
+    public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+        return (f) -> (k, v) -> {
+            throw Exceptions.graphUsesReadOnlyStrategy();
+        };
+    }
 
-	@Override
-	public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
-		return (f) -> () -> Collections.unmodifiableMap(f.get());
-	}
+    @Override
+    public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+        return (f) -> () -> Collections.unmodifiableMap(f.get());
+    }
 
-	@Override
-	public String toString() {
-		return ReadOnlyGraphStrategy.class.getSimpleName().toLowerCase();
-	}
+    @Override
+    public String toString() {
+        return ReadOnlyGraphStrategy.class.getSimpleName().toLowerCase();
+    }
 
     public static <T> UnaryOperator<Supplier<T>> readOnlySupplier() {
-        return (f) -> () -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
+        return (f) -> () -> {
+            throw Exceptions.graphUsesReadOnlyStrategy();
+        };
     }
 
     public static <T, U> UnaryOperator<Function<T, U>> readOnlyFunction() {
-        return (f) -> (t) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
+        return (f) -> (t) -> {
+            throw Exceptions.graphUsesReadOnlyStrategy();
+        };
     }
 
     public static <T, U> UnaryOperator<BiFunction<T, U, Property<U>>> readOnlyBiFunction() {
-        return (f) -> (t,u) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
+        return (f) -> (t, u) -> {
+            throw Exceptions.graphUsesReadOnlyStrategy();
+        };
     }
 
     public static <T, U, V, W> UnaryOperator<TriFunction<T, U, V, W>> readOnlyTriFunction() {
-        return (f) -> (t, u, v) -> { throw Exceptions.graphUsesReadOnlyStrategy(); };
+        return (f) -> (t, u, v) -> {
+            throw Exceptions.graphUsesReadOnlyStrategy();
+        };
     }
 
     public static class Exceptions {

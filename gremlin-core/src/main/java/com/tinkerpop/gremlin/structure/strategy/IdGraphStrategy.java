@@ -22,11 +22,11 @@ import java.util.function.UnaryOperator;
 /**
  * A {@link GraphStrategy} implementation which enables custom element IDs even for those graphs which don't
  * otherwise support them.
- * <p/>
+ * <p>
  * For those graphs which support vertex indices but not edge indices (or vice versa), the strategy can be configured
  * to use custom IDs only for vertices or only for edges.  ID generation is also configurable via ID {@link Supplier}
  * functions.
- * <p/>
+ * <p>
  * If the {@link IdGraphStrategy} is used in combination with a sequence of other strategies and when ID assignment
  * is enabled for an element, calls to strategies following this one are not made.  It is important to consider that
  * aspect of its operation when doing strategy composition.  Typically, the {@link IdGraphStrategy} should be
@@ -60,7 +60,7 @@ public class IdGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> (keyValues) ->  {
+        return (f) -> (keyValues) -> {
             throwIfIdKeyIsSet(Vertex.class, ElementHelper.getKeys(keyValues));
             return f.apply(this.injectId(supportsVertexId, keyValues, vertexIdSupplier).toArray());
         };
@@ -81,7 +81,7 @@ public class IdGraphStrategy implements GraphStrategy {
 
     @Override
     public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return supportsEdgeId ?  (f) -> (id) -> (Edge) ctx.getBaseGraph().E().has(idKey, id).next() : UnaryOperator.identity();
+        return supportsEdgeId ? (f) -> (id) -> (Edge) ctx.getBaseGraph().E().has(idKey, id).next() : UnaryOperator.identity();
     }
 
     @Override
@@ -94,22 +94,22 @@ public class IdGraphStrategy implements GraphStrategy {
     public <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return (f) -> (k, v) -> {
             throwIfIdKeyIsSet(ctx.getCurrent().getClass(), k);
-            return f.apply(k,v);
+            return f.apply(k, v);
         };
     }
 
-	@Override
-	public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-		return (f) -> (kvs) -> {
-			throwIfIdKeyIsSet(ctx.getCurrent().getClass(), ElementHelper.getKeys(kvs));
-			f.accept(kvs);
-		};
-	}
+    @Override
+    public UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return (f) -> (kvs) -> {
+            throwIfIdKeyIsSet(ctx.getCurrent().getClass(), ElementHelper.getKeys(kvs));
+            f.accept(kvs);
+        };
+    }
 
-	@Override
-	public String toString() {
-		return String.format("%s[%s]", IdGraphStrategy.class.getSimpleName(), idKey).toLowerCase();
-	}
+    @Override
+    public String toString() {
+        return String.format("%s[%s]", IdGraphStrategy.class.getSimpleName(), idKey).toLowerCase();
+    }
 
     private void throwIfIdKeyIsSet(final Class<? extends Element> element, final String k) {
         if (supportsAnId(element) && this.idKey.equals(k))

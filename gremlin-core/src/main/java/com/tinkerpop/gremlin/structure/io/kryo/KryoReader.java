@@ -67,37 +67,37 @@ public class KryoReader implements GraphReader {
                              final TriFunction<Object, String, Object[], Vertex> vertexMaker,
                              final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
-		return readVertex(directionRequested, vertexMaker, edgeMaker, input);
+        return readVertex(directionRequested, vertexMaker, edgeMaker, input);
     }
 
-	@Override
-	public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-							   			 final TriFunction<Object, String, Object[], Vertex> vertexMaker,
-							   			 final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-		final Input input = new Input(inputStream);
-		return new Iterator<Vertex>() {
-			@Override
-			public boolean hasNext() {
-				return !input.eof();
-			}
+    @Override
+    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+                                         final TriFunction<Object, String, Object[], Vertex> vertexMaker,
+                                         final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+        final Input input = new Input(inputStream);
+        return new Iterator<Vertex>() {
+            @Override
+            public boolean hasNext() {
+                return !input.eof();
+            }
 
-			@Override
-			public Vertex next() {
-				try {
-					final Vertex v = readVertex(direction, vertexMaker, edgeMaker, input);
+            @Override
+            public Vertex next() {
+                try {
+                    final Vertex v = readVertex(direction, vertexMaker, edgeMaker, input);
 
-					// read the vertex terminator
-					kryo.readClassAndObject(input);
+                    // read the vertex terminator
+                    kryo.readClassAndObject(input);
 
-					return v;
-				} catch (Exception ex) {
-					throw new RuntimeException(ex);
-				}
-			}
-		};
-	}
+                    return v;
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        };
+    }
 
-	@Override
+    @Override
     public Vertex readVertex(final InputStream inputStream, final TriFunction<Object, String, Object[], Vertex> vertexMaker) throws IOException {
         return readVertex(inputStream, null, vertexMaker, null);
     }
@@ -190,55 +190,55 @@ public class KryoReader implements GraphReader {
         }
     }
 
-	private Vertex readVertex(final Direction directionRequested, final TriFunction<Object, String, Object[], Vertex> vertexMaker,
-							  final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker, final Input input) throws IOException {
-		if (null != directionRequested && null == edgeMaker)
-			throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
+    private Vertex readVertex(final Direction directionRequested, final TriFunction<Object, String, Object[], Vertex> vertexMaker,
+                              final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker, final Input input) throws IOException {
+        if (null != directionRequested && null == edgeMaker)
+            throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
 
-		this.headerReader.read(kryo, input);
+        this.headerReader.read(kryo, input);
 
-		final List<Object> vertexArgs = new ArrayList<>();
+        final List<Object> vertexArgs = new ArrayList<>();
 
-		final Object vertexId = kryo.readClassAndObject(input);
-		final String label = input.readString();
+        final Object vertexId = kryo.readClassAndObject(input);
+        final String label = input.readString();
 
-		readElementProperties(input, vertexArgs);
-		final Vertex v = vertexMaker.apply(vertexId, label, vertexArgs.toArray());
+        readElementProperties(input, vertexArgs);
+        final Vertex v = vertexMaker.apply(vertexId, label, vertexArgs.toArray());
 
-		final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
-		if (!streamContainsEdgesInSomeDirection && directionRequested != null)
-			throw new IllegalStateException(String.format("The direction %s was requested but no attempt was made to serialize edges into this stream", directionRequested));
+        final boolean streamContainsEdgesInSomeDirection = input.readBoolean();
+        if (!streamContainsEdgesInSomeDirection && directionRequested != null)
+            throw new IllegalStateException(String.format("The direction %s was requested but no attempt was made to serialize edges into this stream", directionRequested));
 
-		// if there are edges in the stream and the direction is not present then the rest of the stream is
-		// simply ignored
-		if (directionRequested != null) {
-			final Direction directionsInStream = kryo.readObject(input, Direction.class);
-			if (directionsInStream != Direction.BOTH && directionsInStream != directionRequested)
-				throw new IllegalStateException(String.format("Stream contains %s edges, but requesting %s", directionsInStream, directionRequested));
+        // if there are edges in the stream and the direction is not present then the rest of the stream is
+        // simply ignored
+        if (directionRequested != null) {
+            final Direction directionsInStream = kryo.readObject(input, Direction.class);
+            if (directionsInStream != Direction.BOTH && directionsInStream != directionRequested)
+                throw new IllegalStateException(String.format("Stream contains %s edges, but requesting %s", directionsInStream, directionRequested));
 
-			final Direction firstDirection = kryo.readObject(input, Direction.class);
-			if (firstDirection == Direction.OUT && (directionRequested == Direction.BOTH || directionRequested == Direction.OUT))
-				readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, v.id(), vId, l, properties));
-			else {
-				// requested direction in, but BOTH must be serialized so skip this.  the illegalstateexception
-				// prior to this IF should  have caught a problem where IN is not supported at all
-				if (firstDirection == Direction.OUT && directionRequested == Direction.IN)
-					skipEdges(input);
-			}
+            final Direction firstDirection = kryo.readObject(input, Direction.class);
+            if (firstDirection == Direction.OUT && (directionRequested == Direction.BOTH || directionRequested == Direction.OUT))
+                readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, v.id(), vId, l, properties));
+            else {
+                // requested direction in, but BOTH must be serialized so skip this.  the illegalstateexception
+                // prior to this IF should  have caught a problem where IN is not supported at all
+                if (firstDirection == Direction.OUT && directionRequested == Direction.IN)
+                    skipEdges(input);
+            }
 
-			if (directionRequested == Direction.BOTH || directionRequested == Direction.IN) {
-				// if the first direction was OUT then it was either read or skipped.  in that case, the marker
-				// of the stream is currently ready to read the IN direction. otherwise it's in the perfect place
-				// to start reading edges
-				if (firstDirection == Direction.OUT)
-					kryo.readObject(input, Direction.class);
+            if (directionRequested == Direction.BOTH || directionRequested == Direction.IN) {
+                // if the first direction was OUT then it was either read or skipped.  in that case, the marker
+                // of the stream is currently ready to read the IN direction. otherwise it's in the perfect place
+                // to start reading edges
+                if (firstDirection == Direction.OUT)
+                    kryo.readObject(input, Direction.class);
 
-				readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, vId, v.id(), l, properties));
-			}
-		}
+                readEdges(input, (eId, vId, l, properties) -> edgeMaker.apply(eId, vId, v.id(), l, properties));
+            }
+        }
 
-		return v;
-	}
+        return v;
+    }
 
     private void readEdges(final Input input, final QuadConsumer<Object, Object, String, Object[]> edgeMaker) {
         if (input.readBoolean()) {
@@ -273,12 +273,12 @@ public class KryoReader implements GraphReader {
                     kryo.readClassAndObject(input);
                 });
 
-				// read hidden count so we know how many properties to skip
-				final int numberOfHiddens = input.readInt();
-				IntStream.range(0, numberOfHiddens).forEach(i -> {
-					input.readString();
-					kryo.readClassAndObject(input);
-				});
+                // read hidden count so we know how many properties to skip
+                final int numberOfHiddens = input.readInt();
+                IntStream.range(0, numberOfHiddens).forEach(i -> {
+                    input.readString();
+                    kryo.readClassAndObject(input);
+                });
 
                 // next in/out id to skip
                 inOrOutId = kryo.readClassAndObject(input);
@@ -300,7 +300,7 @@ public class KryoReader implements GraphReader {
             // label
             output.writeString(input.readString());
 
-			// standard properties
+            // standard properties
             final int props = input.readInt();
             output.writeInt(props);
             IntStream.range(0, props).forEach(i -> {
@@ -311,16 +311,16 @@ public class KryoReader implements GraphReader {
                 kryo.writeClassAndObject(output, kryo.readClassAndObject(input));
             });
 
-			// hidden properties
-			final int hiddens = input.readInt();
-			output.writeInt(hiddens);
-			IntStream.range(0, hiddens).forEach(i -> {
-				// key
-				output.writeString(input.readString());
+            // hidden properties
+            final int hiddens = input.readInt();
+            output.writeInt(hiddens);
+            IntStream.range(0, hiddens).forEach(i -> {
+                // key
+                output.writeString(input.readString());
 
-				// value
-				kryo.writeClassAndObject(output, kryo.readClassAndObject(input));
-			});
+                // value
+                kryo.writeClassAndObject(output, kryo.readClassAndObject(input));
+            });
 
             // next inId or terminator
             inId = kryo.readClassAndObject(input);
@@ -368,15 +368,15 @@ public class KryoReader implements GraphReader {
         IntStream.range(0, numberOfProperties).forEach(i -> {
             final String key = input.readString();
             elementArgs.add(key);
-			elementArgs.add(kryo.readClassAndObject(input));
+            elementArgs.add(kryo.readClassAndObject(input));
         });
 
-		final int numberOfHiddens = input.readInt();
-		IntStream.range(0, numberOfHiddens).forEach(i -> {
-			final String key = input.readString();
-			elementArgs.add(Graph.Key.hidden(key));
-			elementArgs.add(kryo.readClassAndObject(input));
-		});
+        final int numberOfHiddens = input.readInt();
+        IntStream.range(0, numberOfHiddens).forEach(i -> {
+            final String key = input.readString();
+            elementArgs.add(Graph.Key.hidden(key));
+            elementArgs.add(kryo.readClassAndObject(input));
+        });
     }
 
     private void deleteTempFileSilently() {

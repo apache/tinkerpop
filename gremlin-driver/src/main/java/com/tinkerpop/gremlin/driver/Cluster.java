@@ -30,8 +30,8 @@ public class Cluster {
 
     private Cluster(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
                     final int nioPoolSize, final int workerPoolSize,
-					final Settings.ConnectionPoolSettings connectionPoolSettings,
-					final LoadBalancingStrategy loadBalancingStrategy) {
+                    final Settings.ConnectionPoolSettings connectionPoolSettings,
+                    final LoadBalancingStrategy loadBalancingStrategy) {
         this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize, connectionPoolSettings, loadBalancingStrategy);
     }
 
@@ -77,11 +77,11 @@ public class Cluster {
         if (addresses.size() > 1)
             addresses.stream().skip(1).forEach(builder::addContactPoint);
 
-		try {
-			builder.serializer(settings.serializer.create());
-		} catch (Exception ex) {
-			throw new IllegalStateException("Could not establish serializer - " + ex.getMessage());
-		}
+        try {
+            builder.serializer(settings.serializer.create());
+        } catch (Exception ex) {
+            throw new IllegalStateException("Could not establish serializer - " + ex.getMessage());
+        }
 
         return builder;
     }
@@ -124,7 +124,7 @@ public class Cluster {
         return manager.serializer;
     }
 
-	ScheduledExecutorService executor() {
+    ScheduledExecutorService executor() {
         return manager.executor;
     }
 
@@ -132,9 +132,9 @@ public class Cluster {
         return manager.connectionPoolSettings;
     }
 
-	LoadBalancingStrategy loadBalancingStrategy() {
-		return manager.loadBalancingStrategy;
-	}
+    LoadBalancingStrategy loadBalancingStrategy() {
+        return manager.loadBalancingStrategy;
+    }
 
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
@@ -148,7 +148,7 @@ public class Cluster {
         private int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
         private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
-		private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
+        private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
 
         private Builder() {
             // empty to prevent direct instantiation
@@ -222,12 +222,12 @@ public class Cluster {
             return this;
         }
 
-		public Builder loadBalancingStrategy(final LoadBalancingStrategy loadBalancingStrategy) {
-			this.loadBalancingStrategy = loadBalancingStrategy;
-			return this;
-		}
+        public Builder loadBalancingStrategy(final LoadBalancingStrategy loadBalancingStrategy) {
+            this.loadBalancingStrategy = loadBalancingStrategy;
+            return this;
+        }
 
-		public Builder addContactPoint(final String address) {
+        public Builder addContactPoint(final String address) {
             try {
                 this.addresses.add(InetAddress.getByName(address));
                 return this;
@@ -261,7 +261,7 @@ public class Cluster {
             connectionPoolSettings.maxSize = this.maxConnectionPoolSize;
             connectionPoolSettings.minSize = this.minConnectionPoolSize;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
-					connectionPoolSettings, loadBalancingStrategy);
+                    connectionPoolSettings, loadBalancingStrategy);
         }
     }
 
@@ -289,21 +289,21 @@ public class Cluster {
         private final Factory factory;
         private final MessageSerializer serializer;
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
-		private final LoadBalancingStrategy loadBalancingStrategy;
+        private final LoadBalancingStrategy loadBalancingStrategy;
 
         private final ScheduledExecutorService executor;
 
         private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
                         final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings,
-						final LoadBalancingStrategy loadBalancingStrategy) {
-			this.loadBalancingStrategy = loadBalancingStrategy;
+                        final LoadBalancingStrategy loadBalancingStrategy) {
+            this.loadBalancingStrategy = loadBalancingStrategy;
             this.clusterInfo = new ClusterInfo(Cluster.this);
             this.contactPoints = contactPoints;
             this.connectionPoolSettings = connectionPoolSettings;
             this.factory = new Factory(nioPoolSize);
             this.serializer = serializer;
-            this.executor =  Executors.newScheduledThreadPool(workerPoolSize,
-					new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
+            this.executor = Executors.newScheduledThreadPool(workerPoolSize,
+                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
         }
 
         synchronized void init() {

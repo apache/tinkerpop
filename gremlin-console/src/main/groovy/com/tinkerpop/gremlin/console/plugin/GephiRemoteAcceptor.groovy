@@ -54,7 +54,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
         if (args[0] == "host")
             host = args[1]
-        else if (args[0] == "port"){
+        else if (args[0] == "port") {
             try {
                 port = Integer.parseInt(args[1])
             } catch (Exception ex) {
@@ -63,7 +63,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         } else if (args[0] == "workspace")
             workspace = args[1]
         else
-            return  "expects [host <hostname>|port <port number>|workspace <name>]"
+            return "expects [host <hostname>|port <port number>|workspace <name>]"
 
         return "connection to Gephi - http://$host:$port/$workspace"
     }
@@ -75,7 +75,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         if (o instanceof Graph) {
             clearGraph()
             def g = (Graph) o
-            g.V().sideEffect{addVertexToGephi(it.get())}.iterate()
+            g.V().sideEffect { addVertexToGephi(it.get()) }.iterate()
         }
     }
 
@@ -89,7 +89,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         props.put('label', v.label())
 
         // only add if it does not exist in graph already
-        if (!getFromGephiGraph([operation:"getNode", id: v.id().toString()]).isPresent())
+        if (!getFromGephiGraph([operation: "getNode", id: v.id().toString()]).isPresent())
             updateGephiGraph([an: [(v.id().toString()): props]])
 
         if (!ignoreEdges) {
@@ -115,12 +115,12 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     def clearGraph() {
-        updateGephiGraph([dn: [filter:"ALL"]])
+        updateGephiGraph([dn: [filter: "ALL"]])
     }
 
     def getFromGephiGraph(def Map queryArgs) {
         def http = new HTTPBuilder("http://$host:$port/")
-        def resp = http.get(path: "/$workspace", query:queryArgs).getText()
+        def resp = http.get(path: "/$workspace", query: queryArgs).getText()
 
         // gephi streaming plugin does not set the content type or respect the Accept header - treat as text
         if (resp.isEmpty())
@@ -131,6 +131,6 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
     def updateGephiGraph(def Map postBody) {
         def http = new HTTPBuilder("http://$host:$port/")
-        http.post(path: "/$workspace", requestContentType: JSON, body:postBody, query:[format: "JSON", operation: "updateGraph"])
+        http.post(path: "/$workspace", requestContentType: JSON, body: postBody, query: [format: "JSON", operation: "updateGraph"])
     }
 }

@@ -393,7 +393,7 @@ public class ElementHelperTest {
 
     @Test
     public void shouldGetPairs() {
-        final List<Pair<String,Object>> pairs = ElementHelper.asPairs("1", "this", "2", 6l, "3", "other", "4", 1);
+        final List<Pair<String, Object>> pairs = ElementHelper.asPairs("1", "this", "2", 6l, "3", "other", "4", 1);
         assertEquals(4, pairs.size());
         assertEquals("1", pairs.get(0).getValue0());
         assertEquals("this", pairs.get(0).getValue1());
@@ -407,7 +407,7 @@ public class ElementHelperTest {
 
     @Test
     public void shouldGetMap() {
-        final Map<String,Object> map = ElementHelper.asMap("1", "this", "2", 6l, "3", "other", "4", 1);
+        final Map<String, Object> map = ElementHelper.asMap("1", "this", "2", 6l, "3", "other", "4", 1);
         assertEquals(4, map.size());
         assertEquals("this", map.get("1"));
         assertEquals(6l, map.get("2"));
@@ -430,7 +430,7 @@ public class ElementHelperTest {
 
     @Test
     public void shouldUpsertKeyValueByAddingIt() {
-        final Object[] oldKvs = new Object[] { "k", "v" };
+        final Object[] oldKvs = new Object[]{"k", "v"};
         final Object[] newKvs = ElementHelper.upsert(oldKvs, "k1", "v1");
         assertEquals(4, newKvs.length);
         assertEquals("k1", newKvs[2]);
@@ -439,7 +439,7 @@ public class ElementHelperTest {
 
     @Test
     public void shouldUpsertKeyValueByUpdatingIt() {
-        final Object[] oldKvs = new Object[] { "k", "v", "k1", "v0" };
+        final Object[] oldKvs = new Object[]{"k", "v", "k1", "v0"};
         final Object[] newKvs = ElementHelper.upsert(oldKvs, "k1", "v1");
         assertEquals(4, newKvs.length);
         assertEquals("v1", newKvs[3]);

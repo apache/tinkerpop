@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class JumpTest extends AbstractGremlinProcessTest {
-    public abstract Traversal<Vertex,String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -40,7 +40,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
-        public Traversal<Vertex,String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
             return g.v(v1Id).as("x").out().jump("x", h -> h.getLoops() < 2).value("name");
         }
     }
@@ -50,7 +50,7 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
-        public Traversal<Vertex,String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX(final Object v1Id) {
             // todo: this test does not yet pass
             return g.v(v1Id).identity().as("x").out().jump("x", h -> h.getLoops() < 2).<String>value("name").submit(g.compute());
             //return g.V().has(Element.ID, v1Id).identity().as("x").out().jump("x", h -> h.getLoops() < 2).<String>value("name").submit(g.compute());

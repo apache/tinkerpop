@@ -47,7 +47,8 @@ public class GraphSONObjectMapper extends ObjectMapper {
         private boolean normalize = false;
         private boolean embedTypes = false;
 
-        private Builder() {}
+        private Builder() {
+        }
 
         /**
          * Supply a custom module for serialization/deserialization.

@@ -63,20 +63,20 @@ public class GraphMLReader implements GraphReader {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
-	@Override
-	public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-							   			 final TriFunction<Object, String, Object[], Vertex> vertexMaker,
-							   			 final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
-		throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
-	}
+    @Override
+    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+                                         final TriFunction<Object, String, Object[], Vertex> vertexMaker,
+                                         final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
 
-	@Override
+    @Override
     public Edge readEdge(final InputStream inputStream, final QuintFunction<Object, Object, Object, String, Object[], Edge> edgeMaker) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
     @Override
-    public void readGraph(final InputStream graphInputStream,final Graph graphToWriteTo) throws IOException {
+    public void readGraph(final InputStream graphInputStream, final Graph graphToWriteTo) throws IOException {
         try {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
 
@@ -233,7 +233,8 @@ public class GraphMLReader implements GraphReader {
         private String vertexLabelKey = GraphMLTokens.LABEL_V;
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
 
-        private Builder() {}
+        private Builder() {
+        }
 
         public Builder vertexIdKey(final String vertexIdKey) {
             this.vertexIdKey = vertexIdKey;

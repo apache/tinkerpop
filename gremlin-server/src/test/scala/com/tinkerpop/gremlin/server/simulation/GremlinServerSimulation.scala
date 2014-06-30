@@ -24,14 +24,18 @@ class GremlinServerSimulation extends Simulation {
   }
 
   val scn = scenario("Gremlin Server Test").randomSwitch(
-    50 -> repeat(100) { exec(addition) },
-    50 -> repeat(200) { exec(addition) }
+    50 -> repeat(100) {
+      exec(addition)
+    },
+    50 -> repeat(200) {
+      exec(addition)
+    }
   )
 
   setUp(
     scn.inject(
       //constantRate(100 userPerSec) during(100 seconds))
-      split(1000 users).into(ramp(100 users) over(25 seconds)).separatedBy(1 seconds))
+      split(1000 users).into(ramp(100 users) over (25 seconds)).separatedBy(1 seconds))
   ).assertions(global.responseTime.max.lessThan(250), global.successfulRequests.percent.greaterThan(95))
 }
 

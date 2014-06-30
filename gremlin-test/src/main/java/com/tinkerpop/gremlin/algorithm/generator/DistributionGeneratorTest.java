@@ -66,7 +66,7 @@ public class DistributionGeneratorTest {
                     distributionGeneratorTest(g2, generator1);
 
                     same = same(g1, g2);
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     throw ex;
                 } finally {
                     graphProvider.clear(g1, configuration1);
@@ -78,10 +78,10 @@ public class DistributionGeneratorTest {
 
         private DistributionGenerator.Builder makeGenerator(final Graph g) {
             return DistributionGenerator.create(g)
-                                .label("knows")
-                                .outDistribution(outDistribution)
-                                .inDistribution(inDistribution)
-                                .expectedNumEdges(numberOfVertices * 10);
+                    .label("knows")
+                    .outDistribution(outDistribution)
+                    .inDistribution(inDistribution)
+                    .expectedNumEdges(numberOfVertices * 10);
         }
 
         @Test
@@ -98,7 +98,7 @@ public class DistributionGeneratorTest {
 
                 // ensure that every vertex has the same number of edges between graphs.
                 assertTrue(same(g, g1));
-            } catch(Exception ex) {
+            } catch (Exception ex) {
                 throw ex;
             } finally {
                 graphProvider.clear(g1, configuration);

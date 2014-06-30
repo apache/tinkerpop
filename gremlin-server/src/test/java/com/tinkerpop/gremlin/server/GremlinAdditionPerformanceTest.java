@@ -57,7 +57,7 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
     @BenchmarkOptions(benchmarkRounds = 20, warmupRounds = 1, concurrency = BenchmarkOptions.CONCURRENCY_AVAILABLE_CORES)
     @Test
     public void webSocketsGremlinConcurrentAlternateSerialization() throws Exception {
-        final Serializers[] mimes = new Serializers[] {Serializers.JSON, Serializers.JSON_V1D0, Serializers.KRYO_V1D0};
+        final Serializers[] mimes = new Serializers[]{Serializers.JSON, Serializers.JSON_V1D0, Serializers.KRYO_V1D0};
         final Serializers mimeType = mimes[rand.nextInt(3)];
         System.out.println(mimeType);
         final Cluster cluster = Cluster.create("localhost")

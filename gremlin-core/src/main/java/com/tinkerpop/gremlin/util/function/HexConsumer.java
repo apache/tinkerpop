@@ -6,7 +6,7 @@ import java.util.Objects;
  * Represents an operation that accepts two input arguments and returns no result. This is the quad-arity
  * specialization of {@link java.util.function.Consumer}. Unlike most other functional interfaces,
  * {@link HexConsumer} is expected to operate via side-effects.
- * <p/>
+ * <p>
  * This is a functional interface whose functional method is
  * {@link #accept(Object, Object, Object, Object, Object, Object)}.
  *
@@ -16,10 +16,9 @@ import java.util.Objects;
  * @param <D> the type of the fourth argument to the operation
  * @param <E> the type of the fifth argument to the operation
  * @param <F> the type of the sixth argument to the operation
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface HexConsumer<A,B,C,D,E,F> {
+public interface HexConsumer<A, B, C, D, E, F> {
 
     /**
      * Performs this operation on the given arguments.

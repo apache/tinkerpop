@@ -68,17 +68,17 @@ public class GraphMLWriter implements GraphWriter {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
-	@Override
-	public void writeVertices(OutputStream outputStream, Traversal<?, Vertex> traversal, Direction direction) throws IOException {
-		throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
-	}
+    @Override
+    public void writeVertices(OutputStream outputStream, Traversal<?, Vertex> traversal, Direction direction) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
 
-	@Override
-	public void writeVertices(OutputStream outputStream, Traversal<?, Vertex> traversal) throws IOException {
-		throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
-	}
+    @Override
+    public void writeVertices(OutputStream outputStream, Traversal<?, Vertex> traversal) throws IOException {
+        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+    }
 
-	/**
+    /**
      * Write the data in a Graph to a GraphML OutputStream.
      *
      * @param outputStream the GraphML OutputStream to write the Graph data to
@@ -355,7 +355,8 @@ public class GraphMLWriter implements GraphWriter {
         private String edgeLabelKey = GraphMLTokens.LABEL_E;
         private String vertexLabelKey = GraphMLTokens.LABEL_V;
 
-        private Builder() {}
+        private Builder() {
+        }
 
         /**
          * Normalized output is deterministic with respect to the order of elements and properties in the resulting

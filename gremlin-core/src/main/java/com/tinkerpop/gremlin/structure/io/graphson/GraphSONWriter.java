@@ -52,35 +52,35 @@ public class GraphSONWriter implements GraphWriter {
         this.mapper.writeValue(outputStream, e);
     }
 
-	@Override
-	public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
-		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-		while (traversal.hasNext()) {
-			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-				writeVertex(baos, traversal.next(), direction);
-				writer.write(new String(baos.toByteArray()));
-				writer.newLine();
-			}
-		}
+    @Override
+    public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
+        final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+        while (traversal.hasNext()) {
+            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                writeVertex(baos, traversal.next(), direction);
+                writer.write(new String(baos.toByteArray()));
+                writer.newLine();
+            }
+        }
 
-		writer.flush();
-	}
+        writer.flush();
+    }
 
-	@Override
-	public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
-		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-		while (traversal.hasNext()) {
-			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-				writeVertex(baos, traversal.next());
-				writer.write(new String(baos.toByteArray()));
-				writer.newLine();
-			}
-		}
+    @Override
+    public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
+        final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+        while (traversal.hasNext()) {
+            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                writeVertex(baos, traversal.next());
+                writer.write(new String(baos.toByteArray()));
+                writer.newLine();
+            }
+        }
 
-		writer.flush();
-	}
+        writer.flush();
+    }
 
-	public static Builder create() {
+    public static Builder create() {
         return new Builder();
     }
 
@@ -90,7 +90,8 @@ public class GraphSONWriter implements GraphWriter {
         private SimpleModule custom = null;
         private boolean embedTypes = false;
 
-        private Builder() {}
+        private Builder() {
+        }
 
         /**
          * Supply a custom module for serialization/deserialization.

@@ -45,7 +45,7 @@ public class VertexStreamIteratorTest {
                 String name = v.<String>property("name").value();
                 //System.out.println("name: " + name);
                 if (name.equals("ripple")) {
-                     found = true;
+                    found = true;
                     assertEquals(1, count(v.in().toList()));
                     assertEquals(0, count(v.out().toList()));
                 }

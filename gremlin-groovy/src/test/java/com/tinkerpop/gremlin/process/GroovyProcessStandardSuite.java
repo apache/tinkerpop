@@ -53,7 +53,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovySimplePathTestImpl.class,
             GroovyBackTestImpl.class,
             GroovyJumpTestImpl.class,
-			GroovyMapTestImpl.class,
+            GroovyMapTestImpl.class,
             GroovyOrderTestImpl.class,
             GroovyPathTestImpl.class,
             GroovySelectTestImpl.class,

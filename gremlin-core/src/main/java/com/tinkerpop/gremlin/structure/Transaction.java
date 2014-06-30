@@ -124,7 +124,7 @@ public interface Transaction extends Closeable {
         MANUAL {
             @Override
             public void accept(final Transaction transaction) {
-                if(transaction.isOpen()) throw Exceptions.openTransactionsOnClose();
+                if (transaction.isOpen()) throw Exceptions.openTransactionsOnClose();
             }
         }
     }

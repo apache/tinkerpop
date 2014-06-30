@@ -20,13 +20,13 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class SelectTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id);
+    public abstract Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id);
 
-    public abstract Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id);
+    public abstract Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id);
 
-    public abstract Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id);
+    public abstract Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id);
 
-    public abstract Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id);
+    public abstract Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -98,19 +98,19 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
-        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select();
         }
 
-        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).value("name"));
         }
 
-        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"));
         }
 
-        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).value("name"));
         }
     }
@@ -120,20 +120,20 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
-        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select().submit(g.compute());
         }
 
-        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXnameX(final Object v1Id) {
             // TODO: Micro elements do not store properties
             return g.v(v1Id).as("a").out("knows").as("b").select(v -> ((Vertex) v).value("name")); //.submit(g.compute());
         }
 
-        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXaX(final Object v1Id) {
             return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a")).submit(g.compute());
         }
 
-        public Traversal<Vertex,Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
+        public Traversal<Vertex, Path> get_g_v1_asXaX_outXknowsX_asXbX_selectXa_nameX(final Object v1Id) {
             // TODO: Micro elements do not store properties
             return g.v(v1Id).as("a").out("knows").as("b").select(As.of("a"), v -> ((Vertex) v).value("name"));  // .submit(g.compute());
         }

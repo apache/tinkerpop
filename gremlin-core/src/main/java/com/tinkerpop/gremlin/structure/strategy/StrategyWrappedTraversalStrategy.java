@@ -39,7 +39,8 @@ public class StrategyWrappedTraversalStrategy implements TraversalStrategy.Final
         final List<?> traversalSteps = traversal.getSteps();
         for (int ix = 0; ix < traversalSteps.size(); ix++) {
             final int pos = ix;
-            if (stepsToLookFor.stream().anyMatch(c -> c.isAssignableFrom(traversalSteps.get(pos).getClass()))) positions.add(ix);
+            if (stepsToLookFor.stream().anyMatch(c -> c.isAssignableFrom(traversalSteps.get(pos).getClass())))
+                positions.add(ix);
         }
 
         Collections.reverse(positions);

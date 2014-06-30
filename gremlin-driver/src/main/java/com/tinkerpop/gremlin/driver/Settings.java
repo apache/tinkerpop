@@ -40,7 +40,7 @@ class Settings {
         final Constructor constructor = new Constructor(Settings.class);
         final TypeDescription settingsDescription = new TypeDescription(Settings.class);
         settingsDescription.putListPropertyType("hosts", String.class);
-		settingsDescription.putListPropertyType("serializers", SerializerSettings.class);
+        settingsDescription.putListPropertyType("serializers", SerializerSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
         final Yaml yaml = new Yaml(constructor);
@@ -56,15 +56,15 @@ class Settings {
         public int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
     }
 
-	public static class SerializerSettings {
-		public String className = JsonMessageSerializerV1d0.class.getCanonicalName();
-		public Map<String, Object> config = null;
+    public static class SerializerSettings {
+        public String className = JsonMessageSerializerV1d0.class.getCanonicalName();
+        public Map<String, Object> config = null;
 
-		public MessageSerializer create() throws Exception {
-			final Class clazz = Class.forName(className);
-			final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
-			Optional.ofNullable(config).ifPresent(serializer::configure);
-			return serializer;
-		}
-	}
+        public MessageSerializer create() throws Exception {
+            final Class clazz = Class.forName(className);
+            final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
+            Optional.ofNullable(config).ifPresent(serializer::configure);
+            return serializer;
+        }
+    }
 }

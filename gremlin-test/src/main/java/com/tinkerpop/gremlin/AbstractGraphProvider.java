@@ -45,16 +45,16 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         return conf;
     }
 
-	@Override
-	public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
-		try {
-			readIntoGraph(g, loadGraphWith.value().location());
-		} catch (IOException ioe) {
-			throw new RuntimeException("Graph could not be loaded with data for test.");
-		}
-	}
+    @Override
+    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith) {
+        try {
+            readIntoGraph(g, loadGraphWith.value().location());
+        } catch (IOException ioe) {
+            throw new RuntimeException("Graph could not be loaded with data for test.");
+        }
+    }
 
-	protected static void deleteDirectory(final File directory) {
+    protected static void deleteDirectory(final File directory) {
         if (directory.exists()) {
             for (File file : directory.listFiles()) {
                 if (file.isDirectory()) {
@@ -86,10 +86,10 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         return new File(root.getParentFile(), "test-data");
     }
 
-	protected static void readIntoGraph(final Graph g, final String path) throws IOException {
-		final GraphReader reader = KryoReader.create().setWorkingDirectory(File.separator + "tmp").build();
-		try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
-			reader.readGraph(stream, g);
-		}
-	}
+    protected static void readIntoGraph(final Graph g, final String path) throws IOException {
+        final GraphReader reader = KryoReader.create().setWorkingDirectory(File.separator + "tmp").build();
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
+            reader.readGraph(stream, g);
+        }
+    }
 }

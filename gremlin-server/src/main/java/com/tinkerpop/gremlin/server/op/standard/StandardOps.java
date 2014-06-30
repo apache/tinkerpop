@@ -44,14 +44,14 @@ final class StandardOps {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
 
-		final String script = (String) msg.getArgs().get(Tokens.ARGS_GREMLIN);
-		final Optional<String> language = Optional.ofNullable((String) msg.getArgs().get(Tokens.ARGS_LANGUAGE));
-		final Map<String,Object> bindings = Optional.ofNullable((Map<String,Object>) msg.getArgs().get(Tokens.ARGS_BINDINGS)).orElse(new HashMap<>());
+        final String script = (String) msg.getArgs().get(Tokens.ARGS_GREMLIN);
+        final Optional<String> language = Optional.ofNullable((String) msg.getArgs().get(Tokens.ARGS_LANGUAGE));
+        final Map<String, Object> bindings = Optional.ofNullable((Map<String, Object>) msg.getArgs().get(Tokens.ARGS_BINDINGS)).orElse(new HashMap<>());
 
-		final CompletableFuture<Object> future = context.getGremlinExecutor().eval(script, language, bindings);
-        future.handle((v,t) -> timerContext.stop());
+        final CompletableFuture<Object> future = context.getGremlinExecutor().eval(script, language, bindings);
+        future.handle((v, t) -> timerContext.stop());
         future.thenAccept(o -> ctx.write(Pair.with(msg, convertToIterator(o))));
-		future.exceptionally(se -> {
+        future.exceptionally(se -> {
             logger.warn(String.format("Exception processing a script on request [%s].", msg), se);
             ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_SCRIPT_EVALUATION).result(se.getMessage()).build());
             return null;
@@ -65,7 +65,7 @@ final class StandardOps {
         final CompletableFuture<Traversal> future = CompletableFuture.supplyAsync(() -> {
             try {
                 // todo: maybe this should always eval out in the scriptengine - basically a sandbox
-                final Map<String,Object> args = msg.getArgs();
+                final Map<String, Object> args = msg.getArgs();
                 final SFunction<Graph, Traversal> traversal = (SFunction<Graph, Traversal>) Serializer.deserializeObject((byte[]) args.get(Tokens.ARGS_GREMLIN));
 
                 // previously validated that the graph was present

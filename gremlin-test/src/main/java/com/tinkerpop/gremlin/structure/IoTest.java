@@ -405,8 +405,8 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(e.keys().size() + e.hiddenKeys().size(), properties.length / 2);
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5f, properties[1]);
-							assertEquals(Graph.Key.hidden("acl"), properties[2]);
-							assertEquals("rw", properties[3]);
+                            assertEquals(Graph.Key.hidden("acl"), properties[2]);
+                            assertEquals("rw", properties[3]);
 
                             called.set(true);
 
@@ -439,11 +439,11 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(v1.id().toString(), outId.toString()); // lossy
                             assertEquals(v2.id().toString(), inId.toString());  // lossy
                             assertEquals(e.label(), label);
-							assertEquals(e.keys().size() + e.hiddenKeys().size(), properties.length / 2);
-							assertEquals("weight", properties[0]);
-							assertEquals(0.5d, properties[1]); //lossy
-							assertEquals(Graph.Key.hidden("acl"), properties[2]);
-							assertEquals("rw", properties[3]);
+                            assertEquals(e.keys().size() + e.hiddenKeys().size(), properties.length / 2);
+                            assertEquals("weight", properties[0]);
+                            assertEquals(0.5d, properties[1]); //lossy
+                            assertEquals(Graph.Key.hidden("acl"), properties[2]);
+                            assertEquals("rw", properties[3]);
 
                             called.set(true);
 
@@ -481,11 +481,11 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(v1.id(), outId);
                             assertEquals(v2.id(), inId);
                             assertEquals(e.label(), label);
-							assertEquals(e.keys().size() + e.hiddenKeys().size(), properties.length / 2);
-							assertEquals("weight", properties[0]);
-							assertEquals(0.5f, properties[1]);
-							assertEquals(Graph.Key.hidden("acl"), properties[2]);
-							assertEquals("rw", properties[3]);
+                            assertEquals(e.keys().size() + e.hiddenKeys().size(), properties.length / 2);
+                            assertEquals("weight", properties[0]);
+                            assertEquals(0.5f, properties[1]);
+                            assertEquals(Graph.Key.hidden("acl"), properties[2]);
+                            assertEquals("rw", properties[3]);
 
                             called.set(true);
 
@@ -586,7 +586,7 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1);
 
-			final AtomicBoolean called = new AtomicBoolean(false);
+            final AtomicBoolean called = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
@@ -603,13 +603,13 @@ public class IoTest extends AbstractGremlinTest {
 
                             assertEquals(2, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
-							assertEquals(v1.hiddenValues().get("acl"), m.get(Graph.Key.hidden("acl")).toString());
+                            assertEquals(v1.hiddenValues().get("acl"), m.get(Graph.Key.hidden("acl")).toString());
 
-							called.set(true);
+                            called.set(true);
                             return mock(Vertex.class);
                         });
             }
-			assertTrue(called.get());
+            assertTrue(called.get());
         }
     }
 
@@ -652,127 +652,127 @@ public class IoTest extends AbstractGremlinTest {
         }
     }
 
-	@Test
-	@FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-	@FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
-	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-	@LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-	public void shouldReadWriteVerticesNoEdgesToKryoManual() throws Exception {
-		try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-			final KryoWriter writer = KryoWriter.create().build();
-			writer.writeVertices(os, g.V().has("age", T.gt, 30));
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    public void shouldReadWriteVerticesNoEdgesToKryoManual() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = KryoWriter.create().build();
+            writer.writeVertices(os, g.V().has("age", T.gt, 30));
 
-			final AtomicInteger called = new AtomicInteger(0);
-			final KryoReader reader = KryoReader.create()
-					.setWorkingDirectory(File.separator + "tmp").build();
+            final AtomicInteger called = new AtomicInteger(0);
+            final KryoReader reader = KryoReader.create()
+                    .setWorkingDirectory(File.separator + "tmp").build();
 
-			try (final VertexByteArrayInputStream vbais = new VertexByteArrayInputStream(new ByteArrayInputStream(os.toByteArray()))) {
-				reader.readVertex(new ByteArrayInputStream(vbais.readVertexBytes().toByteArray()),
-						(vertexId, label, properties) -> {
-							called.incrementAndGet();
-							return mock(Vertex.class);
-						});
+            try (final VertexByteArrayInputStream vbais = new VertexByteArrayInputStream(new ByteArrayInputStream(os.toByteArray()))) {
+                reader.readVertex(new ByteArrayInputStream(vbais.readVertexBytes().toByteArray()),
+                        (vertexId, label, properties) -> {
+                            called.incrementAndGet();
+                            return mock(Vertex.class);
+                        });
 
-				reader.readVertex(new ByteArrayInputStream(vbais.readVertexBytes().toByteArray()),
-						(vertexId, label, properties) -> {
-							called.incrementAndGet();
-							return mock(Vertex.class);
-						});
-			}
+                reader.readVertex(new ByteArrayInputStream(vbais.readVertexBytes().toByteArray()),
+                        (vertexId, label, properties) -> {
+                            called.incrementAndGet();
+                            return mock(Vertex.class);
+                        });
+            }
 
-			assertEquals(2, called.get());
-		}
-	}
+            assertEquals(2, called.get());
+        }
+    }
 
-	@Test
-	@FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-	@FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
-	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-	@LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-	public void shouldReadWriteVerticesNoEdgesToKryo() throws Exception {
-		try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-			final KryoWriter writer = KryoWriter.create().build();
-			writer.writeVertices(os, g.V().has("age", T.gt, 30));
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    public void shouldReadWriteVerticesNoEdgesToKryo() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final KryoWriter writer = KryoWriter.create().build();
+            writer.writeVertices(os, g.V().has("age", T.gt, 30));
 
-			final AtomicInteger called = new AtomicInteger(0);
-			final KryoReader reader = KryoReader.create()
-					.setWorkingDirectory(File.separator + "tmp").build();
+            final AtomicInteger called = new AtomicInteger(0);
+            final KryoReader reader = KryoReader.create()
+                    .setWorkingDirectory(File.separator + "tmp").build();
 
-			try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-				final Iterator<Vertex> itty = reader.readVertices(bais,
-						null,
-						(vertexId, label, properties) -> {
-							called.incrementAndGet();
-							return mock(Vertex.class);
-						}, null);
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                final Iterator<Vertex> itty = reader.readVertices(bais,
+                        null,
+                        (vertexId, label, properties) -> {
+                            called.incrementAndGet();
+                            return mock(Vertex.class);
+                        }, null);
 
-				assertNotNull(itty.next());
-				assertNotNull(itty.next());
-				assertFalse(itty.hasNext());
-			}
+                assertNotNull(itty.next());
+                assertNotNull(itty.next());
+                assertFalse(itty.hasNext());
+            }
 
-			assertEquals(2, called.get());
-		}
-	}
+            assertEquals(2, called.get());
+        }
+    }
 
-	@Test
-	@FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-	@LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-	public void shouldReadWriteVerticesNoEdgesToGraphSONManual() throws Exception {
-		try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-			final GraphSONWriter writer = GraphSONWriter.create().build();
-			writer.writeVertices(os, g.V().has("age", T.gt, 30));
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    public void shouldReadWriteVerticesNoEdgesToGraphSONManual() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.create().build();
+            writer.writeVertices(os, g.V().has("age", T.gt, 30));
 
-			final AtomicInteger called = new AtomicInteger(0);
-			final GraphSONReader reader = GraphSONReader.create().build();
-			final BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray())));
-			String line = br.readLine();
-			reader.readVertex(new ByteArrayInputStream(line.getBytes()),
-					(vertexId, label, properties) -> {
-						called.incrementAndGet();
-						return mock(Vertex.class);
-					});
+            final AtomicInteger called = new AtomicInteger(0);
+            final GraphSONReader reader = GraphSONReader.create().build();
+            final BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray())));
+            String line = br.readLine();
+            reader.readVertex(new ByteArrayInputStream(line.getBytes()),
+                    (vertexId, label, properties) -> {
+                        called.incrementAndGet();
+                        return mock(Vertex.class);
+                    });
 
-			line = br.readLine();
-			reader.readVertex(new ByteArrayInputStream(line.getBytes()),
-					(vertexId, label, properties) -> {
-						called.incrementAndGet();
-						return mock(Vertex.class);
-					});
+            line = br.readLine();
+            reader.readVertex(new ByteArrayInputStream(line.getBytes()),
+                    (vertexId, label, properties) -> {
+                        called.incrementAndGet();
+                        return mock(Vertex.class);
+                    });
 
-			assertEquals(2, called.get());
-		}
-	}
+            assertEquals(2, called.get());
+        }
+    }
 
-	@Test
-	@FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-	@FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-	@LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-	public void shouldReadWriteVerticesNoEdgesToGraphSON() throws Exception {
-		try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-			final GraphSONWriter writer = GraphSONWriter.create().build();
-			writer.writeVertices(os, g.V().has("age", T.gt, 30));
+    @Test
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+    public void shouldReadWriteVerticesNoEdgesToGraphSON() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = GraphSONWriter.create().build();
+            writer.writeVertices(os, g.V().has("age", T.gt, 30));
 
-			final AtomicInteger called = new AtomicInteger(0);
-			final GraphSONReader reader = GraphSONReader.create().build();
-			final Iterator<Vertex> itty = reader.readVertices(new ByteArrayInputStream(os.toByteArray()), null,
-					(vertexId, label, properties) -> {
-						called.incrementAndGet();
-						return mock(Vertex.class);
-					}, null);
+            final AtomicInteger called = new AtomicInteger(0);
+            final GraphSONReader reader = GraphSONReader.create().build();
+            final Iterator<Vertex> itty = reader.readVertices(new ByteArrayInputStream(os.toByteArray()), null,
+                    (vertexId, label, properties) -> {
+                        called.incrementAndGet();
+                        return mock(Vertex.class);
+                    }, null);
 
-			assertNotNull(itty.next());
-			assertNotNull(itty.next());
-			assertFalse(itty.hasNext());
-			assertEquals(2, called.get());
-		}
-	}
+            assertNotNull(itty.next());
+            assertNotNull(itty.next());
+            assertFalse(itty.hasNext());
+            assertEquals(2, called.get());
+        }
+    }
 
 
-	@Test
+    @Test
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexAnnotationFeatures.class, feature = Graph.Features.VertexAnnotationFeatures.FEATURE_ANNOTATIONS)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
@@ -786,8 +786,8 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.OUT);
 
-			final AtomicBoolean calledVertex = new AtomicBoolean(false);
-			final AtomicBoolean calledEdge = new AtomicBoolean(false);
+            final AtomicBoolean calledVertex = new AtomicBoolean(false);
+            final AtomicBoolean calledEdge = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
@@ -806,7 +806,7 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
 
-							calledVertex.set(true);
+                            calledVertex.set(true);
                             final Vertex vsub1 = mock(Vertex.class);
                             when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
@@ -820,14 +820,14 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5f, properties[1]);
 
-							calledEdge.set(true);
+                            calledEdge.set(true);
 
                             return null;
                         });
             }
 
-			assertTrue(calledVertex.get());
-			assertTrue(calledEdge.get());
+            assertTrue(calledVertex.get());
+            assertTrue(calledEdge.get());
         }
     }
 
@@ -898,8 +898,8 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.IN);
 
-			final AtomicBoolean calledVertex = new AtomicBoolean(false);
-			final AtomicBoolean calledEdge = new AtomicBoolean(false);
+            final AtomicBoolean calledVertex = new AtomicBoolean(false);
+            final AtomicBoolean calledEdge = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
@@ -919,7 +919,7 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
 
-							calledVertex.set(true);
+                            calledVertex.set(true);
 
                             final Vertex vsub1 = mock(Vertex.class);
                             when(vsub1.id()).thenReturn(v1.id());
@@ -934,14 +934,14 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals("weight", properties[0]);
                             assertEquals(0.5f, properties[1]);
 
-							calledEdge.set(true);
+                            calledEdge.set(true);
 
                             return null;
                         });
             }
 
-			assertTrue(calledVertex.get());
-			assertTrue(calledEdge.get());
+            assertTrue(calledVertex.get());
+            assertTrue(calledEdge.get());
         }
     }
 
@@ -1015,8 +1015,8 @@ public class IoTest extends AbstractGremlinTest {
             writer.writeVertex(os, v1, Direction.BOTH);
 
             final AtomicBoolean calledVertex = new AtomicBoolean(false);
-			final AtomicBoolean calledEdge1 = new AtomicBoolean(false);
-			final AtomicBoolean calledEdge2 = new AtomicBoolean(false);
+            final AtomicBoolean calledEdge1 = new AtomicBoolean(false);
+            final AtomicBoolean calledEdge2 = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
@@ -1038,7 +1038,7 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
 
-							calledVertex.set(true);
+                            calledVertex.set(true);
 
                             final Vertex vsub1 = mock(Vertex.class);
                             when(vsub1.id()).thenReturn(v1.id());
@@ -1053,7 +1053,7 @@ public class IoTest extends AbstractGremlinTest {
                                 assertEquals("weight", properties[0]);
                                 assertEquals(0.5f, properties[1]);
 
-								calledEdge1.set(true);
+                                calledEdge1.set(true);
                             } else if (edgeId.equals(e2.id())) {
                                 assertEquals(v1.id(), outId);
                                 assertEquals(v2.id(), inId);
@@ -1062,7 +1062,7 @@ public class IoTest extends AbstractGremlinTest {
                                 assertEquals("weight", properties[0]);
                                 assertEquals(1.0f, properties[1]);
 
-								calledEdge2.set(true);
+                                calledEdge2.set(true);
                             } else {
                                 fail("An edge id generated that does not exist");
                             }
@@ -1071,9 +1071,9 @@ public class IoTest extends AbstractGremlinTest {
                         });
             }
 
-			assertTrue(calledVertex.get());
-			assertTrue(calledEdge1.get());
-			assertTrue(calledEdge2.get());
+            assertTrue(calledVertex.get());
+            assertTrue(calledEdge1.get());
+            assertTrue(calledEdge2.get());
         }
     }
 
@@ -1092,7 +1092,7 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.BOTH);
 
-			final AtomicBoolean calledVertex = new AtomicBoolean(false);
+            final AtomicBoolean calledVertex = new AtomicBoolean(false);
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
@@ -1103,7 +1103,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             assertEquals(v1.label(), label);
 
-							calledVertex.set(true);
+                            calledVertex.set(true);
 
                             final Vertex vsub1 = mock(Vertex.class);
                             when(vsub1.id()).thenReturn(v1.id());
@@ -1111,7 +1111,7 @@ public class IoTest extends AbstractGremlinTest {
                         });
             }
 
-			assertTrue(calledVertex.get());
+            assertTrue(calledVertex.get());
         }
     }
 
@@ -1274,8 +1274,8 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.BOTH);
 
-			final AtomicBoolean vertexCalled = new AtomicBoolean(false);
-			final AtomicBoolean edge1Called = new AtomicBoolean(false);
+            final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+            final AtomicBoolean edge1Called = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
@@ -1295,7 +1295,7 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
 
-							vertexCalled.set(true);
+                            vertexCalled.set(true);
 
                             final Vertex vsub1 = mock(Vertex.class);
                             when(vsub1.id()).thenReturn(v1.id());
@@ -1310,7 +1310,7 @@ public class IoTest extends AbstractGremlinTest {
                                 assertEquals("weight", properties[0]);
                                 assertEquals(0.5f, properties[1]);
 
-								edge1Called.set(true);
+                                edge1Called.set(true);
                             } else {
                                 fail("An edge id generated that does not exist");
                             }
@@ -1319,8 +1319,8 @@ public class IoTest extends AbstractGremlinTest {
                         });
             }
 
-			assertTrue(vertexCalled.get());
-			assertTrue(edge1Called.get());
+            assertTrue(vertexCalled.get());
+            assertTrue(edge1Called.get());
         }
     }
 
@@ -1400,8 +1400,8 @@ public class IoTest extends AbstractGremlinTest {
             final KryoWriter writer = KryoWriter.create().build();
             writer.writeVertex(os, v1, Direction.BOTH);
 
-			final AtomicBoolean vertexCalled = new AtomicBoolean(false);
-			final AtomicBoolean edgeCalled = new AtomicBoolean(false);
+            final AtomicBoolean vertexCalled = new AtomicBoolean(false);
+            final AtomicBoolean edgeCalled = new AtomicBoolean(false);
 
             final KryoReader reader = KryoReader.create()
                     .setWorkingDirectory(File.separator + "tmp").build();
@@ -1421,9 +1421,9 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(1, m.size());
                             assertEquals(v1.value("name"), m.get("name").toString());
 
-							vertexCalled.set(true);
+                            vertexCalled.set(true);
 
-							final Vertex vsub1 = mock(Vertex.class);
+                            final Vertex vsub1 = mock(Vertex.class);
                             when(vsub1.id()).thenReturn(v1.id());
                             return vsub1;
                         },
@@ -1436,7 +1436,7 @@ public class IoTest extends AbstractGremlinTest {
                                 assertEquals("weight", properties[0]);
                                 assertEquals(1.0f, properties[1]);
 
-								edgeCalled.set(true);
+                                edgeCalled.set(true);
                             } else {
                                 fail("An edge id generated that does not exist");
                             }
@@ -1445,8 +1445,8 @@ public class IoTest extends AbstractGremlinTest {
                         });
             }
 
-			assertTrue(vertexCalled.get());
-			assertTrue(edgeCalled.get());
+            assertTrue(vertexCalled.get());
+            assertTrue(edgeCalled.get());
         }
     }
 
@@ -1620,8 +1620,8 @@ public class IoTest extends AbstractGremlinTest {
         assertFalse(itty1.hasNext());
         assertEquals("person", v1.label());
         assertEquals(1, v1.keys().size());
-		assertEquals(1, v1.hiddenKeys().size());
-		assertEquals("rw", v1.hiddens().get("acl").value());
+        assertEquals(1, v1.hiddenKeys().size());
+        assertEquals("rw", v1.hiddens().get("acl").value());
         if (g1.getFeatures().vertex().supportsUserSuppliedIds())
             assertEquals(1, v1.id());
     }

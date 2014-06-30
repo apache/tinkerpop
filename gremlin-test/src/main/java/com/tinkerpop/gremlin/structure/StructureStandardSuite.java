@@ -22,16 +22,16 @@ import java.util.stream.Stream;
  * implementation.  This specialized test suite and runner is for use by Blueprints implementers to test their
  * Graph implementations.  The ProcessStandardSuite ensures consistency and validity of the implementations that they
  * test.
- * <p/>
+ * <p>
  * To use the StructureStandardSuite define a class in a test module.  Simple naming would expect the name of the
  * implementation followed by "StructureStandardSuite".  This class should be annotated as follows (note that the "Suite"
  * implements StructureStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class
  * file):
  * <code>
  *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  * @RunWith(StructureStandardSuite.class)
- * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class)
- * public class MsAccessBlueprintsTest implements GraphProvider {
+ * @BlueprintsSuite.GraphProviderClass(MsAccessBlueprintsTest.class) public class MsAccessBlueprintsTest implements GraphProvider {
  * }
  * </code>
  * Implementing {@link com.tinkerpop.gremlin.GraphProvider} provides a way for the StructureStandardSuite to
@@ -40,31 +40,29 @@ import java.util.stream.Stream;
  * <br/>
  * Set the {@code gremlin.structure.tests} environment variable to a comma separated list of test classes to execute.
  * This setting can be helpful to restrict execution of tests to specific ones being focused on during development.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StructureStandardSuite extends AbstractGremlinSuite {
 
     private static final Class<?>[] allTests = new Class<?>[]{
-        BatchTest.class,
-        CommunityGeneratorTest.class,
-        DistributionGeneratorTest.class,
-        EdgeTest.class,
-        ExceptionConsistencyTest.class,
-        FeatureSupportTest.class,
-        GraphTest.class,
-        GraphComputerTest.class,
-        GraphConstructionTest.class,
-        IdGraphStrategyTest.class,
-        IoTest.class,
-        MemoryTest.class,
-        PartitionGraphStrategyTest.class,
-        PropertyTest.class,
-        ReadOnlyGraphStrategyTest.class,
-        SequenceGraphStrategyTest.class,
-		StrategyWrappedGraphTest.class,
-        TransactionTest.class,
-        VertexTest.class
+            BatchTest.class,
+            CommunityGeneratorTest.class,
+            DistributionGeneratorTest.class,
+            EdgeTest.class,
+            ExceptionConsistencyTest.class,
+            FeatureSupportTest.class,
+            GraphTest.class,
+            GraphComputerTest.class,
+            GraphConstructionTest.class,
+            IdGraphStrategyTest.class,
+            IoTest.class,
+            MemoryTest.class,
+            PartitionGraphStrategyTest.class,
+            PropertyTest.class,
+            ReadOnlyGraphStrategyTest.class,
+            SequenceGraphStrategyTest.class,
+            StrategyWrappedGraphTest.class,
+            TransactionTest.class,
+            VertexTest.class
     };
 
     /*
@@ -86,7 +84,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             testsToExecute = allTests;
         else {
             final List<String> filters = Arrays.asList(override.split(","));
-            final List<Class<?>> allowed = Stream.of(allTests).filter(c-> filters.contains(c.getSimpleName()))
+            final List<Class<?>> allowed = Stream.of(allTests).filter(c -> filters.contains(c.getSimpleName()))
                     .collect(Collectors.toList());
             testsToExecute = allowed.toArray(new Class<?>[allowed.size()]);
         }

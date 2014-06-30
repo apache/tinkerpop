@@ -38,9 +38,9 @@ public interface VertexProgram<M extends Serializable> extends Serializable {
     /**
      * This method denotes the main body of computation that is executed on each vertex in the graph.
      *
-     * @param vertex      the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
-     * @param messenger   the messenger that moves data between vertices
-     * @param globals the shared state between all vertices in the computation
+     * @param vertex    the {@link com.tinkerpop.gremlin.structure.Vertex} to execute the {@link VertexProgram} on
+     * @param messenger the messenger that moves data between vertices
+     * @param globals   the shared state between all vertices in the computation
      */
     public void execute(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.Globals globals);
 

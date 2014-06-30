@@ -20,7 +20,7 @@ public abstract class AbstractGenerator implements Generator {
     protected final Graph g;
     private final String label;
     private final Optional<Consumer<Edge>> edgeProcessor;
-    private final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexProcessor;
+    private final Optional<BiConsumer<Vertex, Map<String, Object>>> vertexProcessor;
     protected final Supplier<Long> seedSupplier;
 
     /**
@@ -30,10 +30,10 @@ public abstract class AbstractGenerator implements Generator {
      * @param label           Label for the generated edges
      * @param edgeProcessor   {@link java.util.function.Consumer} to use for annotating newly generated edges.
      * @param vertexProcessor {@link java.util.function.Consumer} to use for annotating process vertices.
-     * @param seedGenerator A {@link java.util.function.Supplier} function to provide seeds to {@link java.util.Random}
+     * @param seedGenerator   A {@link java.util.function.Supplier} function to provide seeds to {@link java.util.Random}
      */
     AbstractGenerator(final Graph g, final String label, final Optional<Consumer<Edge>> edgeProcessor,
-                      final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexProcessor,
+                      final Optional<BiConsumer<Vertex, Map<String, Object>>> vertexProcessor,
                       final Supplier<Long> seedGenerator) {
         this.g = g;
         this.label = label;
@@ -56,7 +56,7 @@ public abstract class AbstractGenerator implements Generator {
     public abstract static class AbstractGeneratorBuilder<T extends AbstractGeneratorBuilder> {
         protected String label;
         protected Optional<Consumer<Edge>> edgeProcessor = Optional.empty();
-        protected Optional<BiConsumer<Vertex,Map<String,Object>>> vertexProcessor = Optional.empty();
+        protected Optional<BiConsumer<Vertex, Map<String, Object>>> vertexProcessor = Optional.empty();
         protected Supplier<Long> seedSupplier = System::currentTimeMillis;
         private final Class<T> extendingClass;
 
@@ -78,7 +78,7 @@ public abstract class AbstractGenerator implements Generator {
         /**
          * The function supplied here may be called more than once per vertex depending on the implementation.
          */
-        public T vertexProcessor(final BiConsumer<Vertex,Map<String,Object>> vertexProcessor) {
+        public T vertexProcessor(final BiConsumer<Vertex, Map<String, Object>> vertexProcessor) {
             this.vertexProcessor = Optional.ofNullable(vertexProcessor);
             return extendingClass.cast(this);
         }

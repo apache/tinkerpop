@@ -15,10 +15,10 @@ public class HexConsumerTest {
     @Test
     public void shouldApplyCurrentFunctionAndThenAnotherSuppliedOne() {
         final List<String> l = new ArrayList<>();
-        final HexConsumer<String, String, String, String, String, String> f = (a,b,c,d,e,g) -> l.add("first");
-        final HexConsumer<String, String, String, String, String, String> after = (a,b,c,d,e,g) -> l.add("second");
+        final HexConsumer<String, String, String, String, String, String> f = (a, b, c, d, e, g) -> l.add("first");
+        final HexConsumer<String, String, String, String, String, String> after = (a, b, c, d, e, g) -> l.add("second");
 
-        f.andThen(after).accept("a","b","c","d","e","f");
+        f.andThen(after).accept("a", "b", "c", "d", "e", "f");
 
         assertEquals(2, l.size());
         assertEquals("first", l.get(0));
@@ -28,18 +28,20 @@ public class HexConsumerTest {
     @Test(expected = NullPointerException.class)
     public void shouldThrowIfAfterFunctionIsNull() {
         final List<String> l = new ArrayList<>();
-        final HexConsumer<String, String, String, String, String, String> f = (a,b,c,d,e,g) -> l.add("second");
+        final HexConsumer<String, String, String, String, String, String> f = (a, b, c, d, e, g) -> l.add("second");
         f.andThen(null);
     }
 
     @Test
     public void shouldNotApplySecondIfFirstFails() {
         final List<String> l = new ArrayList<>();
-        final HexConsumer<String, String, String, String, String, String> f = (a,b,c,d,e,g) -> { throw new RuntimeException(); };
-        final HexConsumer<String, String, String, String, String, String> after = (a,b,c,d,e,g) -> l.add("second");
+        final HexConsumer<String, String, String, String, String, String> f = (a, b, c, d, e, g) -> {
+            throw new RuntimeException();
+        };
+        final HexConsumer<String, String, String, String, String, String> after = (a, b, c, d, e, g) -> l.add("second");
 
         try {
-            f.andThen(after).accept("a","b","c","d","e","f");
+            f.andThen(after).accept("a", "b", "c", "d", "e", "f");
             fail("Should have throw an exception");
         } catch (RuntimeException re) {
             assertEquals(0, l.size());

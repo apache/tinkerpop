@@ -16,7 +16,7 @@ public class CompareTest {
 
     @Parameterized.Parameters(name = "{index}: {0}.test({1},{2}) = {3}")
     public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][] {
+        return Arrays.asList(new Object[][]{
                 {Compare.EQUAL, null, null, true},
                 {Compare.EQUAL, null, 1, false},
                 {Compare.EQUAL, 1, null, false},

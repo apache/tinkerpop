@@ -233,7 +233,7 @@ public class VertexTest extends AbstractGremlinTest {
     @Test
     public void shouldReturnEmptyMapIfNoProperties() {
         final Vertex v = g.addVertex();
-        final Map<String,Property> m = v.properties();
+        final Map<String, Property> m = v.properties();
         assertNotNull(m);
         assertEquals(0, m.size());
     }

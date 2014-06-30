@@ -51,7 +51,7 @@ class Connection {
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
-    public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster, final int maxInProcess)  {
+    public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster, final int maxInProcess) {
         this.uri = uri;
         this.cluster = cluster;
         this.pool = pool;
@@ -72,9 +72,9 @@ class Connection {
 
             logger.info("Created new connection for {}", uri);
         } catch (InterruptedException ie) {
-			logger.debug("Error opening connection on {}", uri);
+            logger.debug("Error opening connection on {}", uri);
 
-			throw new RuntimeException(ie);
+            throw new RuntimeException(ie);
         }
     }
 
@@ -129,24 +129,24 @@ class Connection {
         final Connection thisConnection = this;
         final ChannelPromise promise = channel.newPromise()
                 .addListener(f -> {
-					if (!f.isSuccess()) {
-						logger.debug(String.format("Write on connection %s failed", thisConnection), f.cause());
-						thisConnection.isDead = true;
-						thisConnection.returnToPool();
-						future.completeExceptionally(f.cause());
-					} else {
-						final LinkedBlockingQueue<ResponseMessage> responseQueue = new LinkedBlockingQueue<>();
-						final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
-						readCompleted.thenAcceptAsync(v -> {
-							thisConnection.returnToPool();
-							if (isClosed() && pending.isEmpty())
-								shutdown(closeFuture.get());
-						});
-						final ResponseQueue handler = new ResponseQueue(responseQueue, readCompleted);
-						pending.put(requestMessage.getRequestId(), handler);
-						final ResultSet resultSet = new ResultSet(handler, cluster.executor());
-						future.complete(resultSet);
-					}
+                    if (!f.isSuccess()) {
+                        logger.debug(String.format("Write on connection %s failed", thisConnection), f.cause());
+                        thisConnection.isDead = true;
+                        thisConnection.returnToPool();
+                        future.completeExceptionally(f.cause());
+                    } else {
+                        final LinkedBlockingQueue<ResponseMessage> responseQueue = new LinkedBlockingQueue<>();
+                        final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
+                        readCompleted.thenAcceptAsync(v -> {
+                            thisConnection.returnToPool();
+                            if (isClosed() && pending.isEmpty())
+                                shutdown(closeFuture.get());
+                        });
+                        final ResponseQueue handler = new ResponseQueue(responseQueue, readCompleted);
+                        pending.put(requestMessage.getRequestId(), handler);
+                        final ResultSet resultSet = new ResultSet(handler, cluster.executor());
+                        future.complete(resultSet);
+                    }
                 });
         channel.writeAndFlush(requestMessage, promise);
         return promise;
@@ -176,7 +176,7 @@ class Connection {
 
     @Override
     public String toString() {
-		return String.format("Connection{isDead=%s, inFlight=%s, pending=%s}", isDead, inFlight, pending.size());
+        return String.format("Connection{isDead=%s, inFlight=%s, pending=%s}", isDead, inFlight, pending.size());
     }
 
     class ClientPipelineInitializer extends ChannelInitializer<SocketChannel> {
@@ -188,8 +188,8 @@ class Connection {
 
         public ClientPipelineInitializer() {
             handler = new Handler.WebSocketClientHandler(
-                          WebSocketClientHandshakerFactory.newHandshaker(
-                              Connection.this.uri, WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, 1280000));
+                    WebSocketClientHandshakerFactory.newHandshaker(
+                            Connection.this.uri, WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, 1280000));
         }
 
         @Override

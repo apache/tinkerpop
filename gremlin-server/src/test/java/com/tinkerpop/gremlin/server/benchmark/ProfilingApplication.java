@@ -44,7 +44,7 @@ import java.util.stream.IntStream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProfilingApplication {
-    public static void main (final String[] args) {
+    public static void main(final String[] args) {
 
         try {
             final String url = "ws://54.198.44.194:8182/gremlin";
@@ -88,16 +88,16 @@ public class ProfilingApplication {
                                         uri, WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, 1280000));
 
                 b.group(group)
-                    .channel(NioSocketChannel.class)
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
-                            final ChannelPipeline pipeline = ch.pipeline();
-                            pipeline.addLast("http-codec", new HttpClientCodec());
-                            pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-                            pipeline.addLast("ws-handler", handler);
-                        }
-                    });
+                        .channel(NioSocketChannel.class)
+                        .handler(new ChannelInitializer<SocketChannel>() {
+                            @Override
+                            public void initChannel(SocketChannel ch) throws Exception {
+                                final ChannelPipeline pipeline = ch.pipeline();
+                                pipeline.addLast("http-codec", new HttpClientCodec());
+                                pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
+                                pipeline.addLast("ws-handler", handler);
+                            }
+                        });
 
                 final Channel ch = b.connect(uri.getHost(), uri.getPort()).sync().channel();
                 handler.handshakeFuture().addListener(future -> {

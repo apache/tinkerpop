@@ -41,28 +41,28 @@ public class Client {
         if (initialized)
             return this;
 
-		if (logger.isDebugEnabled()) logger.debug("Initializing client on cluster [{}]", cluster);
+        if (logger.isDebugEnabled()) logger.debug("Initializing client on cluster [{}]", cluster);
 
         cluster.init();
         cluster.getClusterInfo().allHosts().forEach(host -> {
-			try {
-				// todo: construction of ConnectionPool really shouldn't throw an exception...it should just come up as a dead host
-				hostConnectionPools.put(host, new ConnectionPool(host, cluster));
+            try {
+                // todo: construction of ConnectionPool really shouldn't throw an exception...it should just come up as a dead host
+                hostConnectionPools.put(host, new ConnectionPool(host, cluster));
 
-				// added a new host to the cluster so let the load-balancer know
-				this.cluster.loadBalancingStrategy().onNew(host);
-			} catch (Exception ex) {
-				// catch connection errors and prevent them from failing the creation
-				logger.warn("Could not initialize connection pool for {}", host);
-			}
-		});
+                // added a new host to the cluster so let the load-balancer know
+                this.cluster.loadBalancingStrategy().onNew(host);
+            } catch (Exception ex) {
+                // catch connection errors and prevent them from failing the creation
+                logger.warn("Could not initialize connection pool for {}", host);
+            }
+        });
 
         initialized = true;
         return this;
     }
 
     public ResultSet submit(final String gremlin) {
-        return submit(gremlin, (Map<String,Object>) null);
+        return submit(gremlin, (Map<String, Object>) null);
     }
 
     public ResultSet submit(final String gremlin, final Map<String, Object> parameters) {
@@ -103,7 +103,7 @@ public class Client {
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin) {
-        return submitAsync(gremlin, (Map<String,Object>) null);
+        return submitAsync(gremlin, (Map<String, Object>) null);
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
@@ -118,22 +118,22 @@ public class Client {
 
         final CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-		final Host bestHost = this.cluster.loadBalancingStrategy().select(msg).next();
+        final Host bestHost = this.cluster.loadBalancingStrategy().select(msg).next();
         final ConnectionPool pool = hostConnectionPools.get(bestHost);
-		try {
+        try {
             // the connection is returned to the pool once the response has been completed...see Connection.write()
-			// the connection may be returned to the pool with the host being marked as "unavailable"
-			final Connection connection = pool.borrowConnection(3000, TimeUnit.MILLISECONDS);  // todo: configuration
+            // the connection may be returned to the pool with the host being marked as "unavailable"
+            final Connection connection = pool.borrowConnection(3000, TimeUnit.MILLISECONDS);  // todo: configuration
             connection.write(msg, future);
             return future;
         } catch (TimeoutException toe) {
-			// there was a timeout borrowing a connection
-			throw new RuntimeException(toe);
+            // there was a timeout borrowing a connection
+            throw new RuntimeException(toe);
         } catch (ConnectionException ce) {
-			throw new RuntimeException(ce);
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		} finally {
+            throw new RuntimeException(ce);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
             if (logger.isDebugEnabled()) logger.debug("Submitted {} to - {}", msg, pool);
         }
     }

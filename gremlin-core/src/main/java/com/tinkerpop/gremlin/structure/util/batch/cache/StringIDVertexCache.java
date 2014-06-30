@@ -39,7 +39,7 @@ public class StringIDVertexCache implements VertexCache {
 
     @Override
     public void set(final Vertex vertex, final Object externalId) {
-        setId(vertex,externalId);
+        setId(vertex, externalId);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class StringIDVertexCache implements VertexCache {
             final Object o = map.get(id);
             assert null != o;
             if (o instanceof Vertex) {
-                Vertex v = (Vertex)o;
+                Vertex v = (Vertex) o;
                 map.put(id, v.id());
             }
         }

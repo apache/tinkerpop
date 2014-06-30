@@ -91,28 +91,28 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-	@Test
-	public void shouldGarbageCollectPhantomButNotHard() throws Exception {
-		final Cluster cluster = Cluster.open();
-		final Client client = cluster.connect();
+    @Test
+    public void shouldGarbageCollectPhantomButNotHard() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
 
-		assertEquals(2, client.submit("sum(1,1)").all().join().get(0).getInt());
-		assertEquals(0, client.submit("def subtract(x,y){x-y};subtract(1,1)").all().join().get(0).getInt());
-		assertEquals(0, client.submit("subtract(1,1)").all().join().get(0).getInt());
+        assertEquals(2, client.submit("sum(1,1)").all().join().get(0).getInt());
+        assertEquals(0, client.submit("def subtract(x,y){x-y};subtract(1,1)").all().join().get(0).getInt());
+        assertEquals(0, client.submit("subtract(1,1)").all().join().get(0).getInt());
 
-		final Map<String,Object> bindings = new HashMap<>();
-		bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_PHANTOM);
-		assertEquals(4, client.submit("def multiply(x,y){x*y};multiply(2,2)", bindings).all().join().get(0).getInt());
+        final Map<String, Object> bindings = new HashMap<>();
+        bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_PHANTOM);
+        assertEquals(4, client.submit("def multiply(x,y){x*y};multiply(2,2)", bindings).all().join().get(0).getInt());
 
-		try {
-			client.submit("multiply(2,2)").all().join().get(0).getInt();
-			fail("Should throw an exception since reference is phantom.");
-		} catch (RuntimeException re) {
+        try {
+            client.submit("multiply(2,2)").all().join().get(0).getInt();
+            fail("Should throw an exception since reference is phantom.");
+        } catch (RuntimeException re) {
 
-		} finally {
-			cluster.close();
-		}
-	}
+        } finally {
+            cluster.close();
+        }
+    }
 
     @Test
     public void shouldReceiveFailureOnBadSerialization() throws Exception {
@@ -132,7 +132,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @Ignore
     public void shouldBlockRequestWhenTooBig() throws Exception {
-		// todo: Fix in netty 4.0.20.final.
+        // todo: Fix in netty 4.0.20.final.
 
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
@@ -148,25 +148,25 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-	@Test
-	public void shouldFailOnDeadHost() throws Exception {
-		final Cluster cluster = Cluster.create("localhost").serializer(Serializers.JSON_V1D0).build();
-		final Client client = cluster.connect();
+    @Test
+    public void shouldFailOnDeadHost() throws Exception {
+        final Cluster cluster = Cluster.create("localhost").serializer(Serializers.JSON_V1D0).build();
+        final Client client = cluster.connect();
 
-		// ensure that connection to server is good
-		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        // ensure that connection to server is good
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
 
-		// kill the server which will make the client mark the host as unavailable
-		this.stopServer();
+        // kill the server which will make the client mark the host as unavailable
+        this.stopServer();
 
-		try {
-			// try to re-issue a request now that the server is down
-			client.submit("1+1").all().join();
-			fail();
-		} catch (RuntimeException re) {
-			assertTrue(re.getCause().getCause() instanceof ClosedChannelException);
-		} finally {
-			cluster.close();
-		}
-	}
+        try {
+            // try to re-issue a request now that the server is down
+            client.submit("1+1").all().join();
+            fail();
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getCause() instanceof ClosedChannelException);
+        } finally {
+            cluster.close();
+        }
+    }
 }

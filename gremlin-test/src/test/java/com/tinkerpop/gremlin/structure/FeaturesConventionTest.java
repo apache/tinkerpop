@@ -30,7 +30,7 @@ public class FeaturesConventionTest {
 
     @Parameterized.Parameters(name = "{index}: {0}.test() = follows conventions")
     public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][] {
+        return Arrays.asList(new Object[][]{
                 {Graph.Features.AnnotationFeatures.class},
                 {Graph.Features.EdgeFeatures.class},
                 {Graph.Features.EdgePropertyFeatures.class},

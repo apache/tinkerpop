@@ -29,9 +29,9 @@ class Console {
     private static final String STANDARD_RESULT_PROMPT = "==>"
     private static final String IMPORT_SPACE = "import "
     private static final String NULL = "null"
-    
+
     private Iterator tempIterator = Collections.emptyIterator()
-    
+
     private final IO io = new IO(System.in, System.out, System.err)
     private final Groovysh groovy = new Groovysh()
 
@@ -51,7 +51,7 @@ class Console {
 
         // add the default imports
         new ConsoleImportCustomizerProvider().getAllImports().stream()
-                .collect{ IMPORT_SPACE + it }.each{ groovy.execute(it) }
+                .collect { IMPORT_SPACE + it }.each { groovy.execute(it) }
 
         groovy.setResultHook(handleResultIterate)
 
@@ -96,7 +96,7 @@ class Console {
         }
     }
 
-    private def handlePrompt = {STANDARD_INPUT_PROMPT }
+    private def handlePrompt = { STANDARD_INPUT_PROMPT }
 
     private def handleResultShowNothing = { args -> null }
 
@@ -107,7 +107,7 @@ class Console {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e)
         }
-        
+
         while (true) {
             if (this.tempIterator.hasNext()) {
                 while (this.tempIterator.hasNext()) {
@@ -179,8 +179,8 @@ class Console {
             return groovyshellProperty
 
         final String groovyshellEnv = System.getenv("GREMLIN_PROMPT")
-        if (groovyshellEnv  != null)
-            return  groovyshellEnv
+        if (groovyshellEnv != null)
+            return groovyshellEnv
 
         return STANDARD_RESULT_PROMPT
     }

@@ -22,7 +22,7 @@ class GraphSONSerializerProvider extends DefaultSerializerProvider {
     }
 
     protected GraphSONSerializerProvider(final SerializerProvider src,
-                                        final SerializationConfig config, final SerializerFactory f) {
+                                         final SerializationConfig config, final SerializerFactory f) {
         super(src, config, f);
     }
 
@@ -33,7 +33,7 @@ class GraphSONSerializerProvider extends DefaultSerializerProvider {
 
     @Override
     public GraphSONSerializerProvider createInstance(final SerializationConfig config,
-                                                    final SerializerFactory jsf) {
+                                                     final SerializerFactory jsf) {
         return new GraphSONSerializerProvider(this, config, jsf);
     }
 }

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
+
 import static com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 
 import com.tinkerpop.gremlin.util.function.FunctionUtils;
@@ -353,7 +354,7 @@ public class TransactionTest extends AbstractGremlinTest {
         AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
 
         // this tx will work
-        g.tx().submit(grx->graph.addVertex()).fireAndForget();
+        g.tx().submit(grx -> graph.addVertex()).fireAndForget();
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
 
         // make sure a commit happened and a new tx started
@@ -379,7 +380,7 @@ public class TransactionTest extends AbstractGremlinTest {
         AbstractGremlinSuite.assertVertexEdgeCounts(0, 0);
 
         // this tx will work
-        g.tx().submit(grx->graph.addVertex()).oneAndDone();
+        g.tx().submit(grx -> graph.addVertex()).oneAndDone();
         AbstractGremlinSuite.assertVertexEdgeCounts(1, 0);
 
         // make sure a commit happened and a new tx started

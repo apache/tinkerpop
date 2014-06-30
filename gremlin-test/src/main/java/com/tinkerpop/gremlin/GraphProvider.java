@@ -91,7 +91,7 @@ public interface GraphProvider {
      * "blueprints.graph" setting which should be defined by the implementer. It should provide a
      * {@link org.apache.commons.configuration.Configuration} that will generate a graph unique to that {@code graphName}.
      *
-     * @param graphName a unique test graph name
+     * @param graphName              a unique test graph name
      * @param configurationOverrides Settings to override defaults with.
      */
     public Configuration newGraphConfiguration(final String graphName, final Map<String, Object> configurationOverrides);
@@ -107,12 +107,13 @@ public interface GraphProvider {
         return newGraphConfiguration(graphName, new HashMap<>());
     }
 
-	/**
-	 * Tests are annotated with a {@link com.tinkerpop.gremlin.LoadGraphWith} annotation. These annotations tell
-	 * the test what kind of data to preload into the graph instance.  It is up to the implementation to load the
-	 * graph with the data specified by that annotation.
-	 * @param g the {@link Graph} instance to load data into constructed by this {@code GraphProvider}
-	 * @param loadGraphWith the annotation for the currently running test
-	 */
-	public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith);
+    /**
+     * Tests are annotated with a {@link com.tinkerpop.gremlin.LoadGraphWith} annotation. These annotations tell
+     * the test what kind of data to preload into the graph instance.  It is up to the implementation to load the
+     * graph with the data specified by that annotation.
+     *
+     * @param g             the {@link Graph} instance to load data into constructed by this {@code GraphProvider}
+     * @param loadGraphWith the annotation for the currently running test
+     */
+    public void loadGraphData(final Graph g, final LoadGraphWith loadGraphWith);
 }

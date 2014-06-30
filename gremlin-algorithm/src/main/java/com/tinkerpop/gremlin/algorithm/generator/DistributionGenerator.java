@@ -31,7 +31,7 @@ public class DistributionGenerator extends AbstractGenerator {
     private final boolean allowLoops;
 
     private DistributionGenerator(final Graph g, final String label, final Optional<Consumer<Edge>> edgeProcessor,
-                                  final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexProcessor,
+                                  final Optional<BiConsumer<Vertex, Map<String, Object>>> vertexProcessor,
                                   final Supplier<Long> seedGenerator, final Iterable<Vertex> out,
                                   final Iterable<Vertex> in, final int expectedNumEdges,
                                   final Distribution outDistribution, final Distribution inDistribution,
@@ -53,7 +53,7 @@ public class DistributionGenerator extends AbstractGenerator {
         for (Vertex v : out) {
             processVertex(v, Collections.EMPTY_MAP);
             final int degree = this.outDistribution.nextValue(outRandom);
-            IntStream.range(0, degree).forEach(i->outStubs.add(v));
+            IntStream.range(0, degree).forEach(i -> outStubs.add(v));
         }
 
         outRandom = new Random(seed);
@@ -143,7 +143,8 @@ public class DistributionGenerator extends AbstractGenerator {
         }
 
         public DistributionGenerator build() {
-            if (null == outDistribution) throw new IllegalStateException("Must set out-distribution before generating edges");
+            if (null == outDistribution)
+                throw new IllegalStateException("Must set out-distribution before generating edges");
             final Distribution outDist = outDistribution.initialize(SizableIterable.sizeOf(out), expectedNumEdges);
             Distribution inDist;
             if (null == inDistribution) {

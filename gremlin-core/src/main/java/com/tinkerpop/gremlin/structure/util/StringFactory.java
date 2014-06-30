@@ -70,7 +70,7 @@ public class StringFactory {
     }
 
     public static String graphVariablesString(final Graph.Variables variables) {
-        return  "variables" + L_BRACKET + "size:" + variables.keys().size() + R_BRACKET;
+        return "variables" + L_BRACKET + "size:" + variables.keys().size() + R_BRACKET;
     }
 
     public static String featureString(final Graph.Features features) {

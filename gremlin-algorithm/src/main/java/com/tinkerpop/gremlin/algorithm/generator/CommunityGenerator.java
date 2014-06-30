@@ -39,7 +39,7 @@ public class CommunityGenerator extends AbstractGenerator {
     private final Random random;
 
     private CommunityGenerator(final Graph g, final String label, final Optional<Consumer<Edge>> edgeProcessor,
-                               final Optional<BiConsumer<Vertex,Map<String,Object>>> vertexProcessor,
+                               final Optional<BiConsumer<Vertex, Map<String, Object>>> vertexProcessor,
                                final Supplier<Long> seedGenerator, final Distribution communitySize,
                                final Distribution edgeDegree, final double crossCommunityPercentage,
                                final Iterable<Vertex> vertices, final int expectedNumCommunities,
@@ -203,7 +203,8 @@ public class CommunityGenerator extends AbstractGenerator {
         }
 
         public CommunityGenerator build() {
-            if (null == communitySize) throw new IllegalStateException("Need to initialize community size distribution");
+            if (null == communitySize)
+                throw new IllegalStateException("Need to initialize community size distribution");
             if (null == edgeDegree) throw new IllegalStateException("Need to initialize degree distribution");
             return new CommunityGenerator(this.g, this.label, this.edgeProcessor, this.vertexProcessor, this.seedSupplier,
                     this.communitySize, this.edgeDegree, crossCommunityPercentage, vertices,

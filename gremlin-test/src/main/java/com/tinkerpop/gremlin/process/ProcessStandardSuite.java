@@ -34,7 +34,7 @@ import org.junit.runners.model.RunnerBuilder;
  * implementation.  This specialized test suite and runner is for use by Blueprints implementers to test their
  * Graph implementations.  The StructureStandardSuite ensures consistency and validity of the implementations that they
  * test.
- * <p/>
+ * <p>
  * To use the ProcessStandardSuite define a class in a test module.  Simple naming would expect the name of the
  * implementation followed by "ProcessStandardSuite".  This class should be annotated as follows (note that the "Suite"
  * implements ProcessStandardSuite.GraphProvider as a convenience only...it could be implemented in a separate class file):
@@ -68,8 +68,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SimplePathTest.JavaSimplePathTest.class,
             BackTest.JavaBackTest.class,
             JumpTest.JavaJumpTest.class,
-			MapTest.JavaMapTest.class,
-			OrderTest.JavaOrderTest.class,
+            MapTest.JavaMapTest.class,
+            OrderTest.JavaOrderTest.class,
             PathTest.JavaPathTest.class,
             SelectTest.JavaSelectTest.class,
             TraversalTest.JavaTraversalTest.class,
@@ -98,7 +98,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SimplePathTest.class,
             BackTest.class,
             JumpTest.class,
-			MapTest.class,
+            MapTest.class,
             OrderTest.class,
             PathTest.class,
             SelectTest.class,

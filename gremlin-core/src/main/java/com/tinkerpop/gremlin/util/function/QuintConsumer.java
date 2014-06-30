@@ -6,7 +6,7 @@ import java.util.Objects;
  * Represents an operation that accepts two input arguments and returns no result. This is the quad-arity
  * specialization of {@link java.util.function.Consumer}. Unlike most other functional interfaces,
  * {@link QuintConsumer} is expected to operate via side-effects.
- * <p/>
+ * <p>
  * This is a functional interface whose functional method is {@link #accept(Object, Object, Object, Object, Object)}.
  *
  * @param <A> the type of the first argument to the operation
@@ -14,10 +14,9 @@ import java.util.Objects;
  * @param <C> the type of the third argument to the operation
  * @param <D> the type of the fourth argument to the operation
  * @param <E> the type of the fifth argument to the operation
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface QuintConsumer<A,B,C,D,E> {
+public interface QuintConsumer<A, B, C, D, E> {
 
     /**
      * Performs this operation on the given arguments.

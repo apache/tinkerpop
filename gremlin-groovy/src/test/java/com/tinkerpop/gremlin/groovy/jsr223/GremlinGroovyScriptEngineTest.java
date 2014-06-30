@@ -36,319 +36,319 @@ import static org.junit.Assert.fail;
  */
 public class GremlinGroovyScriptEngineTest {
 
-	@Test
-	public void shouldDoSomeGremlin() throws Exception {
-		final ScriptEngine engine = new GremlinGroovyScriptEngine();
-		final List list = new ArrayList();
-		engine.put("g", TinkerFactory.createClassic());
-		engine.put("list", list);
-		assertEquals(list.size(), 0);
-		engine.eval("g.v(1).out.fill(list)");
-		assertEquals(list.size(), 3);
-	}
+    @Test
+    public void shouldDoSomeGremlin() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine();
+        final List list = new ArrayList();
+        engine.put("g", TinkerFactory.createClassic());
+        engine.put("list", list);
+        assertEquals(list.size(), 0);
+        engine.eval("g.v(1).out.fill(list)");
+        assertEquals(list.size(), 3);
+    }
 
-	@Test
-	public void shouldLoadImports() throws Exception {
-		final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
-		try {
-			engineNoImports.eval("Vertex.class.getName()");
-			fail("Should have thrown an exception because no imports were supplied");
-		} catch (Exception se) {
-			assertTrue(se instanceof ScriptException);
-		}
+    @Test
+    public void shouldLoadImports() throws Exception {
+        final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        try {
+            engineNoImports.eval("Vertex.class.getName()");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
 
-		final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
-		assertEquals(Vertex.class.getName(), engineWithImports.eval("Vertex.class.getName()"));
-		assertEquals(2l, engineWithImports.eval("TinkerFactory.createClassic().V.has('age',T.gt,30).count()"));
-		assertEquals(Direction.IN, engineWithImports.eval("Direction.IN"));
-		assertEquals(Direction.OUT, engineWithImports.eval("Direction.OUT"));
-		assertEquals(Direction.BOTH, engineWithImports.eval("Direction.BOTH"));
-	}
+        final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
+        assertEquals(Vertex.class.getName(), engineWithImports.eval("Vertex.class.getName()"));
+        assertEquals(2l, engineWithImports.eval("TinkerFactory.createClassic().V.has('age',T.gt,30).count()"));
+        assertEquals(Direction.IN, engineWithImports.eval("Direction.IN"));
+        assertEquals(Direction.OUT, engineWithImports.eval("Direction.OUT"));
+        assertEquals(Direction.BOTH, engineWithImports.eval("Direction.BOTH"));
+    }
 
-	@Test
-	public void shouldProperlyHandleBindings() throws Exception {
-		final TinkerGraph g = TinkerFactory.createClassic();
-		final ScriptEngine engine = new GremlinGroovyScriptEngine();
-		assertTrue(engine.eval("g = TinkerFactory.createClassic()") instanceof TinkerGraph);
-		assertTrue(engine.get("g") instanceof TinkerGraph);
-		assertEquals(g.v(1), engine.eval("g.v(1)"));
+    @Test
+    public void shouldProperlyHandleBindings() throws Exception {
+        final TinkerGraph g = TinkerFactory.createClassic();
+        final ScriptEngine engine = new GremlinGroovyScriptEngine();
+        assertTrue(engine.eval("g = TinkerFactory.createClassic()") instanceof TinkerGraph);
+        assertTrue(engine.get("g") instanceof TinkerGraph);
+        assertEquals(g.v(1), engine.eval("g.v(1)"));
 
-		final Bindings bindings = engine.createBindings();
-		bindings.put("g", g);
-		bindings.put("s", "marko");
-		bindings.put("f", 0.5f);
-		bindings.put("i", 1);
-		bindings.put("b", true);
-		bindings.put("l", 100l);
-		bindings.put("d", 1.55555d);
+        final Bindings bindings = engine.createBindings();
+        bindings.put("g", g);
+        bindings.put("s", "marko");
+        bindings.put("f", 0.5f);
+        bindings.put("i", 1);
+        bindings.put("b", true);
+        bindings.put("l", 100l);
+        bindings.put("d", 1.55555d);
 
-		assertEquals(engine.eval("g.E.has('weight',f).next()", bindings), g.e(7));
-		assertEquals(engine.eval("g.V.has('name',s).next()", bindings), g.v(1));
-		assertEquals(engine.eval("g.V.sideEffect{it.property('bbb',it.value('name')=='marko')}.iterate();g.V.has('bbb',b).next()", bindings), g.v(1));
-		assertEquals(engine.eval("g.V.sideEffect{it.property('iii',it.value('name')=='marko'?1:0)}.iterate();g.V.has('iii',i).next()", bindings), g.v(1));
-		assertEquals(engine.eval("g.V.sideEffect{it.property('lll',it.value('name')=='marko'?100l:0l)}.iterate();g.V.has('lll',l).next()", bindings), g.v(1));
-		assertEquals(engine.eval("g.V.sideEffect{it.property('ddd',it.value('name')=='marko'?1.55555d:0)}.iterate();g.V.has('ddd',d).next()", bindings), g.v(1));
-	}
+        assertEquals(engine.eval("g.E.has('weight',f).next()", bindings), g.e(7));
+        assertEquals(engine.eval("g.V.has('name',s).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V.sideEffect{it.property('bbb',it.value('name')=='marko')}.iterate();g.V.has('bbb',b).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V.sideEffect{it.property('iii',it.value('name')=='marko'?1:0)}.iterate();g.V.has('iii',i).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V.sideEffect{it.property('lll',it.value('name')=='marko'?100l:0l)}.iterate();g.V.has('lll',l).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V.sideEffect{it.property('ddd',it.value('name')=='marko'?1.55555d:0)}.iterate();g.V.has('ddd',d).next()", bindings), g.v(1));
+    }
 
-	@Test
-	public void shouldBeThreadSafe() throws Exception {
-		final ScriptEngine engine = new GremlinGroovyScriptEngine();
+    @Test
+    public void shouldBeThreadSafe() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine();
 
-		int runs = 500;
-		final CountDownLatch latch = new CountDownLatch(runs);
-		final List<String> names = Arrays.asList("marko", "peter", "josh", "vadas", "stephen", "pavel", "matthias");
-		final Random random = new Random();
+        int runs = 500;
+        final CountDownLatch latch = new CountDownLatch(runs);
+        final List<String> names = Arrays.asList("marko", "peter", "josh", "vadas", "stephen", "pavel", "matthias");
+        final Random random = new Random();
 
-		for (int i = 0; i < runs; i++) {
-			new Thread() {
-				public void run() {
-					String name = names.get(random.nextInt(names.size() - 1));
-					try {
-						final Bindings bindings = engine.createBindings();
-						bindings.put("g", TinkerFactory.createClassic());
-						bindings.put("name", name);
-						final Object result = engine.eval("t = g.V.has('name',name); if(t.hasNext()) { t.out.count() } else { null }", bindings);
-						if (name.equals("stephen") || name.equals("pavel") || name.equals("matthias"))
-							assertNull(result);
-						else
-							assertNotNull(result);
-					} catch (ScriptException e) {
-						assertFalse(true);
-					}
-					latch.countDown();
-				}
-			}.start();
-		}
-		latch.await();
-	}
+        for (int i = 0; i < runs; i++) {
+            new Thread() {
+                public void run() {
+                    String name = names.get(random.nextInt(names.size() - 1));
+                    try {
+                        final Bindings bindings = engine.createBindings();
+                        bindings.put("g", TinkerFactory.createClassic());
+                        bindings.put("name", name);
+                        final Object result = engine.eval("t = g.V.has('name',name); if(t.hasNext()) { t.out.count() } else { null }", bindings);
+                        if (name.equals("stephen") || name.equals("pavel") || name.equals("matthias"))
+                            assertNull(result);
+                        else
+                            assertNotNull(result);
+                    } catch (ScriptException e) {
+                        assertFalse(true);
+                    }
+                    latch.countDown();
+                }
+            }.start();
+        }
+        latch.await();
+    }
 
-	@Test
-	public void shouldBeThreadSafeOnCompiledScript() throws Exception {
-		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-		final CompiledScript script = engine.compile("t = g.V.has('name',name); if(t.hasNext()) { t.out.count() } else { null }");
+    @Test
+    public void shouldBeThreadSafeOnCompiledScript() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final CompiledScript script = engine.compile("t = g.V.has('name',name); if(t.hasNext()) { t.out.count() } else { null }");
 
-		int runs = 500;
-		final CountDownLatch latch = new CountDownLatch(runs);
-		final List<String> names = Arrays.asList("marko", "peter", "josh", "vadas", "stephen", "pavel", "matthias");
-		final Random random = new Random();
+        int runs = 500;
+        final CountDownLatch latch = new CountDownLatch(runs);
+        final List<String> names = Arrays.asList("marko", "peter", "josh", "vadas", "stephen", "pavel", "matthias");
+        final Random random = new Random();
 
-		for (int i = 0; i < runs; i++) {
-			new Thread() {
-				public void run() {
-					String name = names.get(random.nextInt(names.size() - 1));
-					try {
-						final Bindings bindings = engine.createBindings();
-						bindings.put("g", TinkerFactory.createClassic());
-						bindings.put("name", name);
-						Object result = script.eval(bindings);
-						if (name.equals("stephen") || name.equals("pavel") || name.equals("matthias"))
-							assertNull(result);
-						else
-							assertNotNull(result);
-					} catch (ScriptException e) {
-						//System.out.println(e);
-						assertFalse(true);
-					}
-					latch.countDown();
-				}
-			}.start();
-		}
-		latch.await();
-	}
+        for (int i = 0; i < runs; i++) {
+            new Thread() {
+                public void run() {
+                    String name = names.get(random.nextInt(names.size() - 1));
+                    try {
+                        final Bindings bindings = engine.createBindings();
+                        bindings.put("g", TinkerFactory.createClassic());
+                        bindings.put("name", name);
+                        Object result = script.eval(bindings);
+                        if (name.equals("stephen") || name.equals("pavel") || name.equals("matthias"))
+                            assertNull(result);
+                        else
+                            assertNotNull(result);
+                    } catch (ScriptException e) {
+                        //System.out.println(e);
+                        assertFalse(true);
+                    }
+                    latch.countDown();
+                }
+            }.start();
+        }
+        latch.await();
+    }
 
-	@Test
-	@org.junit.Ignore("Run as needed.")
-	public void shouldNotBlowTheHeapParameterized() throws ScriptException {
-		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-		final Graph g = TinkerFactory.createClassic();
+    @Test
+    @org.junit.Ignore("Run as needed.")
+    public void shouldNotBlowTheHeapParameterized() throws ScriptException {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Graph g = TinkerFactory.createClassic();
 
-		final String[] gremlins = new String[]{
-				"g.v(xxx).out.toList()",
-				"g.v(xxx).in.toList()",
-				"g.v(xxx).out.out.out.toList()",
-				"g.v(xxx).out.groupCount()"
-		};
+        final String[] gremlins = new String[]{
+                "g.v(xxx).out.toList()",
+                "g.v(xxx).in.toList()",
+                "g.v(xxx).out.out.out.toList()",
+                "g.v(xxx).out.groupCount()"
+        };
 
-		long parameterizedStartTime = System.currentTimeMillis();
-		System.out.println("Try to blow the heap with parameterized Gremlin.");
-		try {
-			for (int ix = 0; ix < 50001; ix++) {
-				final Bindings bindings = engine.createBindings();
-				bindings.put("g", g);
-				bindings.put("xxx", ((ix % 4) + 1));
-				engine.eval(gremlins[ix % 4], bindings);
+        long parameterizedStartTime = System.currentTimeMillis();
+        System.out.println("Try to blow the heap with parameterized Gremlin.");
+        try {
+            for (int ix = 0; ix < 50001; ix++) {
+                final Bindings bindings = engine.createBindings();
+                bindings.put("g", g);
+                bindings.put("xxx", ((ix % 4) + 1));
+                engine.eval(gremlins[ix % 4], bindings);
 
-				if (ix > 0 && ix % 5000 == 0) {
-					System.out.println(String.format("%s scripts processed in %s (ms) - rate %s (ms/q).", ix, System.currentTimeMillis() - parameterizedStartTime, Double.valueOf(System.currentTimeMillis() - parameterizedStartTime) / Double.valueOf(ix)));
-				}
-			}
-		} catch (OutOfMemoryError oome) {
-			fail("Blew the heap - the cache should prevent this from happening.");
-		}
-	}
+                if (ix > 0 && ix % 5000 == 0) {
+                    System.out.println(String.format("%s scripts processed in %s (ms) - rate %s (ms/q).", ix, System.currentTimeMillis() - parameterizedStartTime, Double.valueOf(System.currentTimeMillis() - parameterizedStartTime) / Double.valueOf(ix)));
+                }
+            }
+        } catch (OutOfMemoryError oome) {
+            fail("Blew the heap - the cache should prevent this from happening.");
+        }
+    }
 
-	@Test
-	@org.junit.Ignore("Run this test as needed - takes too long for normal execution")
-	public void shouldNotBlowTheHeapUnparameterized() throws ScriptException {
-		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-		long notParameterizedStartTime = System.currentTimeMillis();
-		System.out.println("Try to blow the heap with non-parameterized Gremlin.");
-		try {
-			for (int ix = 0; ix < 15001; ix++) {
-				final Bindings bindings = engine.createBindings();
-				engine.eval(String.format("1+%s", ix), bindings);
-				if (ix > 0 && ix % 5000 == 0) {
-					System.out.println(String.format("%s scripts processed in %s (ms) - rate %s (ms/q).", ix, System.currentTimeMillis() - notParameterizedStartTime, Double.valueOf(System.currentTimeMillis() - notParameterizedStartTime) / Double.valueOf(ix)));
-				}
-			}
-		} catch (OutOfMemoryError oome) {
-			fail("Blew the heap - the cache should prevent this from happening.");
-		}
-	}
+    @Test
+    @org.junit.Ignore("Run this test as needed - takes too long for normal execution")
+    public void shouldNotBlowTheHeapUnparameterized() throws ScriptException {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        long notParameterizedStartTime = System.currentTimeMillis();
+        System.out.println("Try to blow the heap with non-parameterized Gremlin.");
+        try {
+            for (int ix = 0; ix < 15001; ix++) {
+                final Bindings bindings = engine.createBindings();
+                engine.eval(String.format("1+%s", ix), bindings);
+                if (ix > 0 && ix % 5000 == 0) {
+                    System.out.println(String.format("%s scripts processed in %s (ms) - rate %s (ms/q).", ix, System.currentTimeMillis() - notParameterizedStartTime, Double.valueOf(System.currentTimeMillis() - notParameterizedStartTime) / Double.valueOf(ix)));
+                }
+            }
+        } catch (OutOfMemoryError oome) {
+            fail("Blew the heap - the cache should prevent this from happening.");
+        }
+    }
 
-	@Test
-	public void shouldEvalGlobalClosuresEvenAfterEvictionOfClass() throws ScriptException {
-		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-		final Graph g = TinkerFactory.createClassic();
+    @Test
+    public void shouldEvalGlobalClosuresEvenAfterEvictionOfClass() throws ScriptException {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Graph g = TinkerFactory.createClassic();
 
-		final Bindings bindings = engine.createBindings();
-		bindings.put("g", g);
+        final Bindings bindings = engine.createBindings();
+        bindings.put("g", g);
 
-		// strong referenced global closure
-		engine.eval("def isVadas(v){v.value('name')=='vadas'}", bindings);
-		assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
+        // strong referenced global closure
+        engine.eval("def isVadas(v){v.value('name')=='vadas'}", bindings);
+        assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
 
-		// phantom referenced global closure
-		bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_PHANTOM);
-		engine.eval("def isMarko(v){v.value('name')=='marko'}", bindings);
+        // phantom referenced global closure
+        bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_PHANTOM);
+        engine.eval("def isMarko(v){v.value('name')=='marko'}", bindings);
 
-		try {
-			engine.eval("isMarko(g.v(1))", bindings);
-			fail("the isMarko function should not be present");
-		} catch (Exception ex) {
+        try {
+            engine.eval("isMarko(g.v(1))", bindings);
+            fail("the isMarko function should not be present");
+        } catch (Exception ex) {
 
-		}
+        }
 
-		assertEquals(true, engine.eval("def isMarko(v){v.value('name')=='marko'}; isMarko(g.v(1))", bindings));
+        assertEquals(true, engine.eval("def isMarko(v){v.value('name')=='marko'}; isMarko(g.v(1))", bindings));
 
-		try {
-			engine.eval("isMarko(g.v(1))", bindings);
-			fail("the isMarko function should not be present");
-		} catch (Exception ex) {
+        try {
+            engine.eval("isMarko(g.v(1))", bindings);
+            fail("the isMarko function should not be present");
+        } catch (Exception ex) {
 
-		}
+        }
 
-		bindings.remove(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE);
+        bindings.remove(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE);
 
-		// isVadas class was a hard reference so it should still be hanging about
-		assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
-	}
+        // isVadas class was a hard reference so it should still be hanging about
+        assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
+    }
 
-	@Test
-	public void shouldAllowFunctionsUsedInClosure() throws ScriptException {
-		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-		final Graph g = TinkerFactory.createClassic();
+    @Test
+    public void shouldAllowFunctionsUsedInClosure() throws ScriptException {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Graph g = TinkerFactory.createClassic();
 
-		final Bindings bindings = engine.createBindings();
-		bindings.put("g", g);
-		bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
+        final Bindings bindings = engine.createBindings();
+        bindings.put("g", g);
+        bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
 
-		// this works on its own when the function and the line that uses it is in one "script".  this is the
-		// current workaround
-		assertEquals(g.v(2), engine.eval("def isVadas(v){v.value('name')=='vadas'};g.V.filter{isVadas(it)}.next()", bindings));
+        // this works on its own when the function and the line that uses it is in one "script".  this is the
+        // current workaround
+        assertEquals(g.v(2), engine.eval("def isVadas(v){v.value('name')=='vadas'};g.V.filter{isVadas(it)}.next()", bindings));
 
-		// let's reset this piece and make sure isVadas is not hanging around.
-		engine.reset();
+        // let's reset this piece and make sure isVadas is not hanging around.
+        engine.reset();
 
-		// validate that isVadas throws an exception since it is not defined
-		try {
-			engine.eval("isVadas(g.v(2))", bindings);
+        // validate that isVadas throws an exception since it is not defined
+        try {
+            engine.eval("isVadas(g.v(2))", bindings);
 
-			// fail the test if the above doesn't throw an exception
-			fail();
-		} catch (Exception ex) {
-			// this is good...we want this. it means isVadas isn't hanging about
-		}
+            // fail the test if the above doesn't throw an exception
+            fail();
+        } catch (Exception ex) {
+            // this is good...we want this. it means isVadas isn't hanging about
+        }
 
-		// now...define the function separately on its own in one script
-		bindings.remove("#jsr223.groovy.engine.keep.globals");
-		engine.eval("def isVadas(v){v.value('name')=='vadas'}", bindings);
+        // now...define the function separately on its own in one script
+        bindings.remove("#jsr223.groovy.engine.keep.globals");
+        engine.eval("def isVadas(v){v.value('name')=='vadas'}", bindings);
 
-		// make sure the function works on its own...no problem
-		assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
+        // make sure the function works on its own...no problem
+        assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
 
-		// make sure the function works in a closure...this generates a StackOverflowError
-		assertEquals(g.v(2), engine.eval("g.V.filter{isVadas(it)}.next()", bindings));
-	}
+        // make sure the function works in a closure...this generates a StackOverflowError
+        assertEquals(g.v(2), engine.eval("g.V.filter{isVadas(it)}.next()", bindings));
+    }
 
-	@Test
-	@org.junit.Ignore
-	public void shouldAllowUseOfClasses() throws ScriptException {
-		GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-		final Graph g = TinkerFactory.createClassic();
+    @Test
+    @org.junit.Ignore
+    public void shouldAllowUseOfClasses() throws ScriptException {
+        GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Graph g = TinkerFactory.createClassic();
 
-		final Bindings bindings = engine.createBindings();
-		bindings.put("g", g);
+        final Bindings bindings = engine.createBindings();
+        bindings.put("g", g);
 
-		// works when it's all defined together
-		assertEquals(true, engine.eval("class c { static def isVadas(v){v.value('name')=='vadas'}};c.isVadas(g.v(2))", bindings));
+        // works when it's all defined together
+        assertEquals(true, engine.eval("class c { static def isVadas(v){v.value('name')=='vadas'}};c.isVadas(g.v(2))", bindings));
 
-		// let's reset this piece and make sure isVadas is not hanging around.
-		engine.reset();
+        // let's reset this piece and make sure isVadas is not hanging around.
+        engine.reset();
 
-		// validate that isVadas throws an exception since it is not defined
-		try {
-			engine.eval("c.isVadas(g.v(2))", bindings);
+        // validate that isVadas throws an exception since it is not defined
+        try {
+            engine.eval("c.isVadas(g.v(2))", bindings);
 
-			// fail the test if the above doesn't throw an exception
-			fail("Function should be gone");
-		} catch (Exception ex) {
-			// this is good...we want this. it means isVadas isn't hanging about
-		}
+            // fail the test if the above doesn't throw an exception
+            fail("Function should be gone");
+        } catch (Exception ex) {
+            // this is good...we want this. it means isVadas isn't hanging about
+        }
 
-		// now...define the class separately on its own in one script...
-		// HERE'S an AWKWARD BIT.........
-		// YOU HAVE TO END WITH: null;
-		// ....OR ELSE YOU GET:
-		// javax.script.ScriptException: javax.script.ScriptException:
-		// org.codehaus.groovy.runtime.metaclass.MissingMethodExceptionNoStack: No signature of method: c.main()
-		// is applicable for argument types: ([Ljava.lang.String;) values: [[]]
-		// WOULD BE NICE IF WE DIDN'T HAVE TO DO THAT
-		engine.eval("class c { static def isVadas(v){v.name=='vadas'}};null;", bindings);
+        // now...define the class separately on its own in one script...
+        // HERE'S an AWKWARD BIT.........
+        // YOU HAVE TO END WITH: null;
+        // ....OR ELSE YOU GET:
+        // javax.script.ScriptException: javax.script.ScriptException:
+        // org.codehaus.groovy.runtime.metaclass.MissingMethodExceptionNoStack: No signature of method: c.main()
+        // is applicable for argument types: ([Ljava.lang.String;) values: [[]]
+        // WOULD BE NICE IF WE DIDN'T HAVE TO DO THAT
+        engine.eval("class c { static def isVadas(v){v.name=='vadas'}};null;", bindings);
 
-		// make sure the class works on its own...this generates: groovy.lang.MissingPropertyException: No such property: c for class: Script2
-		assertEquals(true, engine.eval("c.isVadas(g.v(2))", bindings));
-	}
+        // make sure the class works on its own...this generates: groovy.lang.MissingPropertyException: No such property: c for class: Script2
+        assertEquals(true, engine.eval("c.isVadas(g.v(2))", bindings));
+    }
 
-	@Test
-	public void shouldClearEngineScopeOnReset() throws Exception {
-		final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
-		engine.eval("x = { y -> y + 1}");
-		Bindings b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
-		assertTrue(b.containsKey("x"));
-		assertEquals(2, ((Closure) b.get("x")).call(1));
+    @Test
+    public void shouldClearEngineScopeOnReset() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        engine.eval("x = { y -> y + 1}");
+        Bindings b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
+        assertTrue(b.containsKey("x"));
+        assertEquals(2, ((Closure) b.get("x")).call(1));
 
-		// should clear the bindings
-		engine.reset();
-		try {
-			engine.eval("x(1)");
-			fail("Bindings should have been cleared.");
-		} catch (Exception ex) {
+        // should clear the bindings
+        engine.reset();
+        try {
+            engine.eval("x(1)");
+            fail("Bindings should have been cleared.");
+        } catch (Exception ex) {
 
-		}
+        }
 
-		b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
-		assertFalse(b.containsKey("x"));
+        b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
+        assertFalse(b.containsKey("x"));
 
-		// redefine x
-		engine.eval("x = { y -> y + 2}");
-		assertEquals(3, engine.eval("x(1)"));
-		b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
-		assertTrue(b.containsKey("x"));
-		assertEquals(3, ((Closure) b.get("x")).call(1));
-	}
+        // redefine x
+        engine.eval("x = { y -> y + 2}");
+        assertEquals(3, engine.eval("x(1)"));
+        b = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
+        assertTrue(b.containsKey("x"));
+        assertEquals(3, ((Closure) b.get("x")).call(1));
+    }
 
-	@Test
+    @Test
     public void shouldReloadClassLoaderWhileDoingEvalInSeparateThread() throws Exception {
         final AtomicBoolean fail = new AtomicBoolean(false);
         final CountDownLatch latch = new CountDownLatch(1);

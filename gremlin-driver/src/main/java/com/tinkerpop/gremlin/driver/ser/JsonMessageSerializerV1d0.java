@@ -59,7 +59,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     @Override
     public ResponseMessage deserializeResponse(final String msg) throws SerializationException {
         try {
-            final Map<String,Object> responseData = obtainMapper().readValue(msg, mapTypeReference);
+            final Map<String, Object> responseData = obtainMapper().readValue(msg, mapTypeReference);
             return ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                     .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                     .result(responseData.get(SerTokens.TOKEN_RESULT))
@@ -72,7 +72,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     }
 
     @Override
-    public String serializeResponseAsString(final ResponseMessage responseMessage)  throws SerializationException{
+    public String serializeResponseAsString(final ResponseMessage responseMessage) throws SerializationException {
         try {
             final Map<String, Object> result = new HashMap<>();
             result.put(SerTokens.TOKEN_CODE, responseMessage.getCode().getValue());
@@ -88,7 +88,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     }
 
     @Override
-    public RequestMessage deserializeRequest(final String msg)  throws SerializationException {
+    public RequestMessage deserializeRequest(final String msg) throws SerializationException {
         try {
             return obtainMapper().readValue(msg, RequestMessage.class);
         } catch (Exception ex) {
@@ -98,7 +98,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     }
 
     @Override
-    public String serializeRequestAsString(final RequestMessage requestMessage)  throws SerializationException{
+    public String serializeRequestAsString(final RequestMessage requestMessage) throws SerializationException {
         try {
             return obtainMapper().writeValueAsString(requestMessage);
         } catch (Exception ex) {

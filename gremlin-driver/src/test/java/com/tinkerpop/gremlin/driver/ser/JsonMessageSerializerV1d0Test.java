@@ -129,7 +129,7 @@ public class JsonMessageSerializerV1d0Test {
         assertEquals("b", innerJsonObject.optString("a"));
     }
 
-	@Test
+    @Test
     public void serializeHiddenProperties() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex("abc", 123);
@@ -156,13 +156,13 @@ public class JsonMessageSerializerV1d0Test {
         assertNotNull(properties);
 
         assertEquals(123, properties.getInt("abc"));
-		assertEquals(1, properties.length());
+        assertEquals(1, properties.length());
 
-		final JSONObject hiddens = vertexAsJson.optJSONObject(GraphSONTokens.HIDDENS);
-		assertNotNull(hiddens);
+        final JSONObject hiddens = vertexAsJson.optJSONObject(GraphSONTokens.HIDDENS);
+        assertNotNull(hiddens);
 
-		assertEquals("stephen", hiddens.getString("hidden"));
-		assertEquals(1, hiddens.length());
+        assertEquals("stephen", hiddens.getString("hidden"));
+        assertEquals(1, hiddens.length());
     }
 
     @Test

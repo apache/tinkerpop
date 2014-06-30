@@ -6,7 +6,7 @@ import java.util.function.Function;
 /**
  * Represents a function that accepts four arguments and produces a result. This is the arity-4 specialization of
  * Function.
- * <p/>
+ * <p>
  * This is a functional interface whose functional method is apply(Object, Object, Object).
  *
  * @param <A> the type of the first argument in the function
@@ -15,11 +15,10 @@ import java.util.function.Function;
  * @param <D> the type of the fourth argument in the function
  * @param <E> the type of the fifth argument in the function
  * @param <R> the type of the result of the function
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @FunctionalInterface
-public interface QuintFunction<A,B,C,D,E,R> {
+public interface QuintFunction<A, B, C, D, E, R> {
 
     /**
      * Applies this function to the given arguments.
@@ -39,7 +38,7 @@ public interface QuintFunction<A,B,C,D,E,R> {
      * function.
      *
      * @param after the function to apply after this function is applied
-     * @param <V> the type of the output of the {@code after} function, and of the composed function
+     * @param <V>   the type of the output of the {@code after} function, and of the composed function
      * @return a composed function that first applies this function and then applies the {@code after} function.
      * @throws NullPointerException if {@code after} is null
      */

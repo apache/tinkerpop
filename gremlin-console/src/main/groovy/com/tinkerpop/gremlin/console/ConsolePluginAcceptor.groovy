@@ -15,7 +15,7 @@ class ConsolePluginAcceptor implements PluginAcceptor {
     private final Groovysh shell
     private final IO io;
 
-    public ConsolePluginAcceptor(final Groovysh shell, final IO io)  {
+    public ConsolePluginAcceptor(final Groovysh shell, final IO io) {
         this.shell = shell
         this.io = io
     }
@@ -26,7 +26,7 @@ class ConsolePluginAcceptor implements PluginAcceptor {
     }
 
     @Override
-    Map<String,Object> getBindings() {
+    Map<String, Object> getBindings() {
         return Collections.unmodifiableMap(shell.interp.context.variables)
     }
 
@@ -40,6 +40,6 @@ class ConsolePluginAcceptor implements PluginAcceptor {
 
     @Override
     Map<String, Object> environment() {
-        return [(ENVIRONMENT_IO):io, (ENVIRONMENT_SHELL): shell]
+        return [(ENVIRONMENT_IO): io, (ENVIRONMENT_SHELL): shell]
     }
 }

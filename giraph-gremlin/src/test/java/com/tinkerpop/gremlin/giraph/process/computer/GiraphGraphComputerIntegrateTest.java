@@ -13,7 +13,7 @@ public class GiraphGraphComputerIntegrateTest {
 
     @Test
     public void testPlay() throws IOException {
-        Configuration x= new Configuration();
+        Configuration x = new Configuration();
         x.iterator().forEachRemaining(System.out::println);
 
        /* File f = new File("target");

@@ -21,7 +21,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinResponseEncoder extends MessageToMessageEncoder<ResponseMessage>  {
+public class GremlinResponseEncoder extends MessageToMessageEncoder<ResponseMessage> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinResponseEncoder.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 

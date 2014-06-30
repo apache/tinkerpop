@@ -14,13 +14,13 @@ public abstract class IoElement {
     public Object id;
     public String label;
     public Map properties;
-	public Map hiddenProperties;
+    public Map hiddenProperties;
 
     protected static <T extends IoElement, E extends Element> T from(final E element, final T ioe) {
         ioe.id = element.id();
         ioe.label = element.label();
         ioe.properties = element.values();
-		ioe.hiddenProperties = element.hiddenValues();
+        ioe.hiddenProperties = element.hiddenValues();
 
         return ioe;
     }

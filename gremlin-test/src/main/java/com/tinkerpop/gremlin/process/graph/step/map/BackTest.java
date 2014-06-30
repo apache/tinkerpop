@@ -96,7 +96,7 @@ public abstract class BackTest extends AbstractGremlinProcessTest {
         System.out.println("Testing: " + step);
         assertTrue(step.hasNext());
         assertTrue(step.hasNext());
-		final Edge edge = step.next();
+        final Edge edge = step.next();
         assertEquals("knows", edge.label());
         assertEquals(Float.valueOf(1.0f), edge.<Float>value("weight"));
         assertFalse(step.hasNext());

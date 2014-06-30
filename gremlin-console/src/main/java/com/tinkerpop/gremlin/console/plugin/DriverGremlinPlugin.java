@@ -10,16 +10,16 @@ import java.util.Optional;
  */
 public class DriverGremlinPlugin extends AbstractGremlinPlugin {
 
-	public DriverGremlinPlugin() {
-	}
+    public DriverGremlinPlugin() {
+    }
 
-	@Override
-	public String getName() {
-		return "server";
-	}
+    @Override
+    public String getName() {
+        return "server";
+    }
 
-	@Override
-	public Optional<RemoteAcceptor> remoteAcceptor() {
-		return Optional.of(new DriverRemoteAcceptor(shell));
-	}
+    @Override
+    public Optional<RemoteAcceptor> remoteAcceptor() {
+        return Optional.of(new DriverRemoteAcceptor(shell));
+    }
 }

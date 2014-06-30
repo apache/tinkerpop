@@ -23,9 +23,9 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
             final Traverser<S> traverser = this.starts.next();
             final E temp = this.function.apply(traverser);
             if (NO_OBJECT != temp) {
-				final S traverserObj = traverser.get();
+                final S traverserObj = traverser.get();
                 if (traverserObj.getClass().equals(temp.getClass()) && traverserObj.equals(temp)) {
-					// no path extension (i.e. a filter, identity, side-effect)
+                    // no path extension (i.e. a filter, identity, side-effect)
                     if (traverser instanceof PathTraverser && TraversalHelper.isLabeled(this)) {
                         final Traverser<E> sibling = (Traverser<E>) traverser.makeSibling();
                         sibling.getPath().renameLastStep(this.getAs());
@@ -34,7 +34,7 @@ public class MapStep<S, E> extends AbstractStep<S, E> {
                         return (Traverser<E>) traverser.makeSibling();
                 } else
                     return traverser.makeChild(this.getAs(), temp);
-			}
+            }
         }
     }
 

@@ -28,7 +28,7 @@ public class SubgraphStep<S> extends FilterStep<S> implements SideEffectCapable,
     private final Map<Object, Vertex> idMap;
     private final Set<Object> edgesAdded;
 
-	// todo: add support for side-effecting out an edge list.
+    // todo: add support for side-effecting out an edge list.
 
     public SubgraphStep(final Traversal traversal, final Graph subgraph,
                         final Set<Object> edgeIdHolder,

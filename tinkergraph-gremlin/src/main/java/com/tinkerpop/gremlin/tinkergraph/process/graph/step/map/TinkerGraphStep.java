@@ -22,56 +22,56 @@ import java.util.stream.Stream;
  */
 public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
-	private TinkerGraph graph;
-	public final List<HasContainer> hasContainers = new ArrayList<>();
+    private TinkerGraph graph;
+    public final List<HasContainer> hasContainers = new ArrayList<>();
 
-	public TinkerGraphStep(final Traversal traversal, final Class<E> returnClass, final TinkerGraph graph) {
-		super(traversal, returnClass);
-		this.graph = graph;
-		this.generateTraverserIterator(false);
-	}
+    public TinkerGraphStep(final Traversal traversal, final Class<E> returnClass, final TinkerGraph graph) {
+        super(traversal, returnClass);
+        this.graph = graph;
+        this.generateTraverserIterator(false);
+    }
 
-	public void generateTraverserIterator(final boolean trackPaths) {
-		this.starts.clear();
-		if (trackPaths)
-			this.starts.add(new TraverserIterator(this, Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
-		else
-			this.starts.add(new TraverserIterator(Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
+    public void generateTraverserIterator(final boolean trackPaths) {
+        this.starts.clear();
+        if (trackPaths)
+            this.starts.add(new TraverserIterator(this, Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
+        else
+            this.starts.add(new TraverserIterator(Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
 
-	}
+    }
 
-	public void clear() {
-		this.starts.clear();
-	}
+    public void clear() {
+        this.starts.clear();
+    }
 
-	private Iterator<? extends Edge> edges() {
-		final HasContainer indexedContainer = getIndexKey(Edge.class);
-		final Stream<? extends Edge> edgeStream = (null == indexedContainer) ?
-				TinkerHelper.getEdges(this.graph).stream() :
-				TinkerHelper.queryEdgeIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
-		return (Iterator) edgeStream.filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).collect(java.util.stream.Collectors.toList()).iterator();
+    private Iterator<? extends Edge> edges() {
+        final HasContainer indexedContainer = getIndexKey(Edge.class);
+        final Stream<? extends Edge> edgeStream = (null == indexedContainer) ?
+                TinkerHelper.getEdges(this.graph).stream() :
+                TinkerHelper.queryEdgeIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
+        return (Iterator) edgeStream.filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).collect(java.util.stream.Collectors.toList()).iterator();
 
-		// todo: concurrency errors when we maintain laziness
-		//return edgeStream.filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).iterator();
-	}
+        // todo: concurrency errors when we maintain laziness
+        //return edgeStream.filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).iterator();
+    }
 
-	private Iterator<? extends Vertex> vertices() {
-		final HasContainer indexedContainer = getIndexKey(Vertex.class);
-		final Stream<? extends Vertex> vertexStream = (null == indexedContainer) ?
-				TinkerHelper.getVertices(this.graph).stream() :
-				TinkerHelper.queryVertexIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
-		return (Iterator) vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).collect(java.util.stream.Collectors.toList()).iterator();
+    private Iterator<? extends Vertex> vertices() {
+        final HasContainer indexedContainer = getIndexKey(Vertex.class);
+        final Stream<? extends Vertex> vertexStream = (null == indexedContainer) ?
+                TinkerHelper.getVertices(this.graph).stream() :
+                TinkerHelper.queryVertexIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
+        return (Iterator) vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).collect(java.util.stream.Collectors.toList()).iterator();
 
-		// todo: concurrency errors when we maintain laziness
-		// return vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).iterator();
-	}
+        // todo: concurrency errors when we maintain laziness
+        // return vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).iterator();
+    }
 
-	private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
-		final Set<String> indexedKeys = this.graph.getIndexedKeys(indexedClass);
-		return this.hasContainers.stream()
-				.filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
-				.findFirst()
-				.orElseGet(() -> null);
-	}
+    private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
+        final Set<String> indexedKeys = this.graph.getIndexedKeys(indexedClass);
+        return this.hasContainers.stream()
+                .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.EQUAL))
+                .findFirst()
+                .orElseGet(() -> null);
+    }
 
 }

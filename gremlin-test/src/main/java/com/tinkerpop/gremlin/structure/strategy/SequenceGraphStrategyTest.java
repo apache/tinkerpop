@@ -219,7 +219,8 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
                 if (method.getName().equals("applyStrategyToTraversal"))
                     method.invoke(strategy, new DefaultGraphTraversal<>());
                 else
-                    method.invoke(strategy, new Strategy.Context(g, new StrategyWrapped() {}));
+                    method.invoke(strategy, new Strategy.Context(g, new StrategyWrapped() {
+                    }));
 
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -232,13 +233,13 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
         assertEquals(methods.length, spy.getCount());
     }
 
-	@Test
-	public void shouldGenerateToStringProperty() throws Exception {
-		final ReadOnlyGraphStrategy readonly = new ReadOnlyGraphStrategy();
-		final IdGraphStrategy id = new IdGraphStrategy.Builder("key").build();
-		final SequenceGraphStrategy strategy = new SequenceGraphStrategy(readonly, id);
-		assertEquals("readonlygraphstrategy->idgraphstrategy[key]", strategy.toString());
-	}
+    @Test
+    public void shouldGenerateToStringProperty() throws Exception {
+        final ReadOnlyGraphStrategy readonly = new ReadOnlyGraphStrategy();
+        final IdGraphStrategy id = new IdGraphStrategy.Builder("key").build();
+        final SequenceGraphStrategy strategy = new SequenceGraphStrategy(readonly, id);
+        assertEquals("readonlygraphstrategy->idgraphstrategy[key]", strategy.toString());
+    }
 
     public class SpyGraphStrategy implements GraphStrategy {
 
@@ -318,12 +319,12 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
             return spy();
         }
 
-		@Override
-		public UnaryOperator<Supplier<Map<String, Property>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-			return spy();
-		}
+        @Override
+        public UnaryOperator<Supplier<Map<String, Property>>> getElementPropertiesGetter(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
+        }
 
-		@Override
+        @Override
         public UnaryOperator<Supplier<Map<String, Object>>> getElementValues(Strategy.Context<? extends StrategyWrappedElement> ctx) {
             return spy();
         }
@@ -333,42 +334,42 @@ public class SequenceGraphStrategyTest extends AbstractGremlinTest {
             return spy();
         }
 
-		@Override
-		public UnaryOperator<Supplier<Map<String, Property>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-			return spy();
-		}
+        @Override
+        public UnaryOperator<Supplier<Map<String, Property>>> getElementHiddens(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
+        }
 
-		@Override
-		public <V> UnaryOperator<Function<String, V>> getElementValue(Strategy.Context<? extends StrategyWrappedElement> ctx) {
-			return spy();
-		}
+        @Override
+        public <V> UnaryOperator<Function<String, V>> getElementValue(Strategy.Context<? extends StrategyWrappedElement> ctx) {
+            return spy();
+        }
 
-		@Override
-		public UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
-			return spy();
-		}
+        @Override
+        public UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+            return spy();
+        }
 
-		@Override
-		public <R> UnaryOperator<Function<String, R>> getVariableGetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
-			return spy();
-		}
+        @Override
+        public <R> UnaryOperator<Function<String, R>> getVariableGetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+            return spy();
+        }
 
-		@Override
-		public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
-			return spy();
-		}
+        @Override
+        public UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+            return spy();
+        }
 
         @Override
         public <R> UnaryOperator<Function<String, R>> getVariableRemoveStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
             return spy();
         }
 
-		@Override
-		public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
-			return spy();
-		}
+        @Override
+        public UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(Strategy.Context<StrategyWrappedVariables> ctx) {
+            return spy();
+        }
 
-		@Override
+        @Override
         public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
             spy();
             return traversal;

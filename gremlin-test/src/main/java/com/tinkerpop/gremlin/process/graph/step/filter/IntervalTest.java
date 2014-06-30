@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class IntervalTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -37,7 +37,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = false;
         }
 
-        public Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
             return g.v(v1Id).outE().interval("weight", 0.0f, 0.6f).inV();
         }
     }
@@ -47,7 +47,7 @@ public abstract class IntervalTest extends AbstractGremlinProcessTest {
             requiresGraphComputer = true;
         }
 
-        public Traversal<Vertex,Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_outE_intervalXweight_0_06X_inV(final Object v1Id) {
             return g.v(v1Id).outE().interval("weight", 0.0f, 0.6f).inV().submit(g.compute());
         }
     }

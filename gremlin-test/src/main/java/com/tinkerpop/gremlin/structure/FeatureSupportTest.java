@@ -32,7 +32,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(Enclosed.class)
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-public class FeatureSupportTest  {
+public class FeatureSupportTest {
     private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
 
     public static class FeatureToStringTest extends AbstractGremlinTest {

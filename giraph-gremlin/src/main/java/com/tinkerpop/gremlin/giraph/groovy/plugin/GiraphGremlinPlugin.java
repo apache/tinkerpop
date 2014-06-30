@@ -45,7 +45,9 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
     }};
 
     @Override
-    public String getName() { return "giraph"; }
+    public String getName() {
+        return "giraph";
+    }
 
     @Override
     public void pluginTo(final PluginAcceptor pluginAcceptor) {
@@ -56,15 +58,17 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphJob.class.getName()));
             pluginAcceptor.eval("com.tinkerpop.gremlin.giraph.groovy.plugin.HadoopLoader.load()");
 
-			pluginAcceptor.addBinding("hdfs", FileSystem.get(new Configuration()));
-			pluginAcceptor.addBinding("local", FileSystem.getLocal(new Configuration()));
+            pluginAcceptor.addBinding("hdfs", FileSystem.get(new Configuration()));
+            pluginAcceptor.addBinding("local", FileSystem.getLocal(new Configuration()));
         } catch (final Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
     @Override
-    public boolean requireRestart() { return true; }
+    public boolean requireRestart() {
+        return true;
+    }
 
     @Override
     public Optional<Set<Artifact>> additionalDependencies() {

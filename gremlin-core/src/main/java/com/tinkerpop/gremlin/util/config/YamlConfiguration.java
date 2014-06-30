@@ -85,11 +85,11 @@ public class YamlConfiguration extends AbstractHierarchicalFileConfiguration {
     protected void loadHierarchy(final ConfigurationNode parentNode, final Object obj) {
         final String parentName = parentNode.getName();
         if (obj instanceof Map<?, ?>) {
-            for (Map.Entry<String, Object> entry : ((Map<String, Object>)obj).entrySet()) {
+            for (Map.Entry<String, Object> entry : ((Map<String, Object>) obj).entrySet()) {
                 final Node childNode = new Node(entry.getKey());
 
                 // if parent node is look like "tableS", "userS" or "groupS"
-                if(this.xmlCompatibility && parentName != null && parentName.endsWith("s")) {
+                if (this.xmlCompatibility && parentName != null && parentName.endsWith("s")) {
                     //this is done to have "users.user[@name='smith'] instead of "users.smith"
                     childNode.setName(parentName.substring(0, parentName.length() - 1));
                     childNode.addAttribute(new Node("name", entry.getKey()));
@@ -112,7 +112,7 @@ public class YamlConfiguration extends AbstractHierarchicalFileConfiguration {
     }
 
     protected Object saveHierarchy(final ConfigurationNode parentNode) {
-        if(parentNode.getChildrenCount() == 0)
+        if (parentNode.getChildrenCount() == 0)
             return parentNode.getValue();
 
         if (parentNode.getChildrenCount("item") == parentNode.getChildrenCount()) {
@@ -126,7 +126,7 @@ public class YamlConfiguration extends AbstractHierarchicalFileConfiguration {
             final Map<String, Object> map = new LinkedHashMap<>();
             for (ConfigurationNode childNode : parentNode.getChildren()) {
                 String nodeName = childNode.getName();
-                if(this.xmlCompatibility && childNode.getAttributes("name").size() > 0)
+                if (this.xmlCompatibility && childNode.getAttributes("name").size() > 0)
                     nodeName = String.valueOf(childNode.getAttributes("name").get(0).getValue());
 
 

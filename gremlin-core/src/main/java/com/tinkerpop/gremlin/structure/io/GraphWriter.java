@@ -29,8 +29,8 @@ public interface GraphWriter {
      * Write a vertex to a stream with its associated edges.  Only write edges as defined by the requested direction.
      *
      * @param outputStream The stream to write to.
-     * @param v The vertex to write.
-     * @param direction If direction is null then no edges are written.
+     * @param v            The vertex to write.
+     * @param direction    If direction is null then no edges are written.
      */
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException;
 
@@ -38,38 +38,38 @@ public interface GraphWriter {
      * Write a vertex to a stream without writing its edges.
      *
      * @param outputStream The stream to write to.
-     * @param v The vertex to write.
+     * @param v            The vertex to write.
      */
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException;
 
 
-	/**
-	 * Write a list of vertices from a {@link Traversal} to a stream with its associated edges.  Only write edges as
-	 * defined by the requested direction.
-	 *
-	 * @param outputStream The stream to write to.
-	 * @param traversal A traversal that returns a list of vertices.
-	 * @param direction If direction is null then no edges are written.
-	 */
-	public default void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
-		while (traversal.hasNext()) {
-			writeVertex(outputStream, traversal.next(), direction);
-		}
-	}
+    /**
+     * Write a list of vertices from a {@link Traversal} to a stream with its associated edges.  Only write edges as
+     * defined by the requested direction.
+     *
+     * @param outputStream The stream to write to.
+     * @param traversal    A traversal that returns a list of vertices.
+     * @param direction    If direction is null then no edges are written.
+     */
+    public default void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
+        while (traversal.hasNext()) {
+            writeVertex(outputStream, traversal.next(), direction);
+        }
+    }
 
-	/**
-	 * Write a vertex to a stream without writing its edges.
-	 *
-	 * @param outputStream The stream to write to.
-	 * @param traversal A traversal that returns a list of vertices.
-	 */
-	public default void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
-		while (traversal.hasNext()) {
-			writeVertex(outputStream, traversal.next());
-		}
-	}
+    /**
+     * Write a vertex to a stream without writing its edges.
+     *
+     * @param outputStream The stream to write to.
+     * @param traversal    A traversal that returns a list of vertices.
+     */
+    public default void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
+        while (traversal.hasNext()) {
+            writeVertex(outputStream, traversal.next());
+        }
+    }
 
-	/**
+    /**
      * Write an edge to a stream.
      */
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException;

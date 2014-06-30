@@ -47,7 +47,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     /**
      * Open a new {@link TinkerGraph} instance.
-     * <p/>
+     * <p>
      * <b>Reference Implementation Help:</b> If a {@link com.tinkerpop.gremlin.structure.Graph } implementation does not require a
      * {@link org.apache.commons.configuration.Configuration} (or perhaps has a default configuration) it can choose to implement a zero argument
      * open() method. This is an optional constructor method for TinkerGraph. It is not enforced by the Blueprints
@@ -59,7 +59,7 @@ public class TinkerGraph implements Graph, Serializable {
 
     /**
      * Open a new {@link TinkerGraph} instance.
-     * <p/>
+     * <p>
      * <b>Reference Implementation Help:</b> This method is the one use by the
      * {@link com.tinkerpop.gremlin.structure.util.GraphFactory} to instantiate
      * {@link com.tinkerpop.gremlin.structure.Graph} instances.  This method must be overridden for the Blueprint Test

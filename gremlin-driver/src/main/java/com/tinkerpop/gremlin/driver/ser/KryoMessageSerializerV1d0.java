@@ -32,12 +32,12 @@ import java.util.stream.Collectors;
  */
 public class KryoMessageSerializerV1d0 implements MessageSerializer {
     private GremlinKryo gremlinKryo;
-	private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>(){
-		@Override
-		protected Kryo initialValue() {
-			return gremlinKryo.createKryo();
-		}
-	};
+    private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>() {
+        @Override
+        protected Kryo initialValue() {
+            return gremlinKryo.createKryo();
+        }
+    };
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -95,7 +95,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                     if (split.length != 2)
                         throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>:<serializer-class>", serializerDefinition));
 
-                    className= split[0];
+                    className = split[0];
                     serializerName = Optional.of(split[1]);
                 } else {
                     serializerName = Optional.empty();
@@ -134,13 +134,13 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
     }
 
     @Override
-    public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException{
+    public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
         try {
             final Kryo kryo = kryoThreadLocal.get();
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
-                final Map<String,Object> responseData = (Map<String,Object>) kryo.readClassAndObject(input);
+                final Map<String, Object> responseData = (Map<String, Object>) kryo.readClassAndObject(input);
                 return ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                         .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                         .result(responseData.get(SerTokens.TOKEN_RESULT))
@@ -192,11 +192,11 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
-                final Map<String,Object> requestData = (Map<String,Object>) kryo.readClassAndObject(input);
+                final Map<String, Object> requestData = (Map<String, Object>) kryo.readClassAndObject(input);
                 final RequestMessage.Builder builder = RequestMessage.create((String) requestData.get(SerTokens.TOKEN_OP))
                         .overrideRequestId((UUID) requestData.get(SerTokens.TOKEN_REQUEST))
                         .processor((String) requestData.get(SerTokens.TOKEN_PROCESSOR));
-                final Map<String,Object> args = (Map<String,Object>) requestData.get(SerTokens.TOKEN_ARGS);
+                final Map<String, Object> args = (Map<String, Object>) requestData.get(SerTokens.TOKEN_ARGS);
                 args.forEach(builder::addArg);
                 return builder.build();
             }
@@ -242,17 +242,17 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
         }
     }
 
-	private Object serializeResultToString(final ResponseMessage msg) {
-		if (msg.getResult() == null) return "null";
-		if (msg.getResultType() == ResultType.OBJECT) return msg.getResult().toString();
-		if (msg.getResultType() == ResultType.EMPTY) return "";
+    private Object serializeResultToString(final ResponseMessage msg) {
+        if (msg.getResult() == null) return "null";
+        if (msg.getResultType() == ResultType.OBJECT) return msg.getResult().toString();
+        if (msg.getResultType() == ResultType.EMPTY) return "";
 
-		// the IteratorHandler should return a collection so kep it as such
-		final Object o = msg.getResult();
-		if (o instanceof Collection) {
-			return ((Collection) o).stream().map(Object::toString).collect(Collectors.toList());
-		} else {
-			return o.toString();
-		}
-	}
+        // the IteratorHandler should return a collection so kep it as such
+        final Object o = msg.getResult();
+        if (o instanceof Collection) {
+            return ((Collection) o).stream().map(Object::toString).collect(Collectors.toList());
+        } else {
+            return o.toString();
+        }
+    }
 }

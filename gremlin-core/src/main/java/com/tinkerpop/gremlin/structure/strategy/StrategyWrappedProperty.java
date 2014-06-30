@@ -18,8 +18,8 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
     private final StrategyWrappedGraph strategyWrappedGraph;
 
     public StrategyWrappedProperty(final Property<V> baseProperty, final StrategyWrappedGraph strategyWrappedGraph) {
-		if (baseProperty instanceof StrategyWrapped) throw new IllegalArgumentException(
-				String.format("The property %s is already StrategyWrapped and must be a base Property", baseProperty));
+        if (baseProperty instanceof StrategyWrapped) throw new IllegalArgumentException(
+                String.format("The property %s is already StrategyWrapped and must be a base Property", baseProperty));
         this.baseProperty = baseProperty;
         this.strategyContext = new Strategy.Context<>(strategyWrappedGraph.getBaseGraph(), this);
         this.strategyWrappedGraph = strategyWrappedGraph;
@@ -42,9 +42,9 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
 
     @Override
     public <E extends Element> E getElement() {
-		final Element baseElement = this.baseProperty.getElement();
+        final Element baseElement = this.baseProperty.getElement();
         return (E) (baseElement instanceof Vertex ? new StrategyWrappedVertex((Vertex) baseElement, strategyWrappedGraph) :
-				new StrategyWrappedEdge((Edge) baseElement, strategyWrappedGraph));
+                new StrategyWrappedEdge((Edge) baseElement, strategyWrappedGraph));
     }
 
     @Override
@@ -82,9 +82,9 @@ public class StrategyWrappedProperty<V> implements Property<V>, StrategyWrapped 
                 }).get();
     }
 
-	@Override
-	public String toString() {
-		final GraphStrategy strategy = this.strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
-		return String.format("[%s[%s]]",strategy, baseProperty.toString());
-	}
+    @Override
+    public String toString() {
+        final GraphStrategy strategy = this.strategyWrappedGraph.strategy().getGraphStrategy().orElse(GraphStrategy.DoNothingGraphStrategy.INSTANCE);
+        return String.format("[%s[%s]]", strategy, baseProperty.toString());
+    }
 }

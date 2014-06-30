@@ -166,7 +166,7 @@ public class SequenceGraphStrategy implements GraphStrategy {
      *
      * @param f a {@link java.util.function.Function} that extracts a particular strategy implementation from a {@link GraphStrategy}
      * @return a newly constructed {@link java.util.function.UnaryOperator} that applies each extracted strategy implementation in
-     *         the order supplied
+     * the order supplied
      */
     private UnaryOperator composeStrategyUnaryOperator(final Function<GraphStrategy, UnaryOperator> f) {
         return this.graphStrategySequence.stream().map(f).reduce(null,

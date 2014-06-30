@@ -14,7 +14,10 @@ import com.tinkerpop.gremlin.driver.message.ResponseMessage;
  */
 public interface MessageTextSerializer extends MessageSerializer {
     public String serializeResponseAsString(final ResponseMessage responseMessage) throws SerializationException;
+
     public String serializeRequestAsString(final RequestMessage requestMessage) throws SerializationException;
+
     public RequestMessage deserializeRequest(final String msg) throws SerializationException;
+
     public ResponseMessage deserializeResponse(final String msg) throws SerializationException;
 }

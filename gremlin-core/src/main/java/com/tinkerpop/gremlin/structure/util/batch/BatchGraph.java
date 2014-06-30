@@ -602,12 +602,12 @@ public class BatchGraph<T extends Graph> implements Graph {
          * Sets whether the graph loaded through this instance of {@link BatchGraph} is loaded from scratch
          * (i.e. the wrapped graph is initially empty) or whether graph is loaded incrementally into an
          * existing graph.
-         * <p/>
+         * <p>
          * In the former case, BatchGraph does not need to check for the existence of vertices with the wrapped
          * graph but only needs to consult its own cache which can be significantly faster. In the latter case,
          * the cache is checked first but an additional check against the wrapped graph may be necessary if
          * the vertex does not exist.
-         * <p/>
+         * <p>
          * By default, BatchGraph assumes that the data is loaded from scratch.
          */
         public Builder incrementalLoading(final boolean incrementalLoading) {
@@ -619,12 +619,12 @@ public class BatchGraph<T extends Graph> implements Graph {
          * Sets whether the graph loaded through this instance of {@link BatchGraph} is loaded from scratch
          * (i.e. the wrapped graph is initially empty) or whether graph is loaded incrementally into an
          * existing graph.
-         * <p/>
+         * <p>
          * In the former case, BatchGraph does not need to check for the existence of vertices with the wrapped
          * graph but only needs to consult its own cache which can be significantly faster. In the latter case,
          * the cache is checked first but an additional check against the wrapped graph may be necessary if
          * the vertex does not exist.
-         * <p/>
+         * <p>
          * By default, BatchGraph assumes that the data is loaded from scratch.
          */
         public Builder incrementalLoading(final boolean incrementalLoading,

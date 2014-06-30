@@ -13,6 +13,6 @@ class GroovyDedupTestImpl extends DedupTest {
     }
 
     public Traversal<Vertex, String> get_g_V_both_dedupXlangX_name() {
-        g.V.both.dedup{it.property("lang").orElse(null)}.value("name")
+        g.V.both.dedup { it.property("lang").orElse(null) }.value("name")
     }
 }

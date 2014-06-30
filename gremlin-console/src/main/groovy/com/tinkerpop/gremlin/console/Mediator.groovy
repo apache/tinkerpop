@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class Mediator {
-    public final Map<String,PluggedIn> loadedPlugins = [:]
+    public final Map<String, PluggedIn> loadedPlugins = [:]
     public final List<RemoteAcceptor> remotes = []
     public int position
 
@@ -41,7 +41,7 @@ class Mediator {
     def submit(final List<String> args) throws Exception { return currentRemote().submit(args) }
 
     def CompletableFuture<Void> close() {
-        remotes.each{ remote ->
+        remotes.each { remote ->
             try {
                 remote.close()
             } catch (Exception ignored) {

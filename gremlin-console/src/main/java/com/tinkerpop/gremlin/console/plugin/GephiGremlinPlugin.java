@@ -10,16 +10,16 @@ import java.util.Optional;
  */
 public class GephiGremlinPlugin extends AbstractGremlinPlugin {
 
-	public GephiGremlinPlugin() {
-	}
+    public GephiGremlinPlugin() {
+    }
 
-	@Override
-	public String getName() {
-		return "gephi";
-	}
+    @Override
+    public String getName() {
+        return "gephi";
+    }
 
-	@Override
-	public Optional<RemoteAcceptor> remoteAcceptor() {
-		return Optional.of(new GephiRemoteAcceptor(shell, io));
-	}
+    @Override
+    public Optional<RemoteAcceptor> remoteAcceptor() {
+        return Optional.of(new GephiRemoteAcceptor(shell, io));
+    }
 }

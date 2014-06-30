@@ -12,10 +12,10 @@ public enum Compare implements BiPredicate<Object, Object> {
 
     EQUAL, NOT_EQUAL, GREATER_THAN, GREATER_THAN_EQUAL, LESS_THAN, LESS_THAN_EQUAL;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean test(final Object first, final Object second) {
         switch (this) {
             case EQUAL:
@@ -39,9 +39,9 @@ public enum Compare implements BiPredicate<Object, Object> {
         }
     }
 
-	/**
-	 * Produce the opposite representation of the current {@code Compare} object.
-	 */
+    /**
+     * Produce the opposite representation of the current {@code Compare} object.
+     */
     public Compare opposite() {
         if (this.equals(EQUAL))
             return NOT_EQUAL;
@@ -59,9 +59,9 @@ public enum Compare implements BiPredicate<Object, Object> {
             throw new IllegalStateException("Comparator does not have an opposite");
     }
 
-	/**
-	 * Gets the operator representation of the {@code Compare} object.
-	 */
+    /**
+     * Gets the operator representation of the {@code Compare} object.
+     */
     public String asString() {
         if (this.equals(EQUAL))
             return "=";
@@ -79,9 +79,9 @@ public enum Compare implements BiPredicate<Object, Object> {
             throw new IllegalStateException("Comparator does not have a string representation");
     }
 
-	/**
-	 * Get the {@code Compare} value based on the operator that represents it.
-	 */
+    /**
+     * Get the {@code Compare} value based on the operator that represents it.
+     */
     public static Compare fromString(final String c) {
         if (c.equals("="))
             return EQUAL;

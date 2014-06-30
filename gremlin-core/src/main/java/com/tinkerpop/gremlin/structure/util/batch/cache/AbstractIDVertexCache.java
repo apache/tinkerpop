@@ -51,7 +51,7 @@ abstract class AbstractIDVertexCache implements VertexCache {
             Object o = map.get(id);
             assert null != o;
             if (o instanceof Vertex) {
-                Vertex v = (Vertex)o;
+                Vertex v = (Vertex) o;
                 map.put(id, v.id());
             }
         }

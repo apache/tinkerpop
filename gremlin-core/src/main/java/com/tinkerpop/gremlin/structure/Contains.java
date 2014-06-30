@@ -6,7 +6,7 @@ import java.util.function.BiPredicate;
 /**
  * {@link Contains} is a {@link java.util.function.BiPredicate} that evaluates whether the first object is contained within (or not
  * within) the second collection object. For example:
- * <p/>
+ * <p>
  * <pre>
  * gremlin IN [gremlin, blueprints, furnace] == true
  * gremlin NOT_IN [gremlin, rexster] == false
@@ -20,17 +20,17 @@ public enum Contains implements BiPredicate<Object, Object> {
 
     IN, NOT_IN;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean test(final Object first, final Object second) {
         return this.equals(IN) ? ((Collection) second).contains(first) : !((Collection) second).contains(first);
     }
 
-	/**
-	 * Produce the opposite representation of the current {@code Contains} object.
-	 */
+    /**
+     * Produce the opposite representation of the current {@code Contains} object.
+     */
     public Contains opposite() {
         return this.equals(IN) ? NOT_IN : IN;
     }

@@ -11,23 +11,23 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class NoImportCustomizerProvider implements ImportCustomizerProvider {
-	@Override
-	public ImportCustomizer getImportCustomizer() {
-		return new ImportCustomizer();
-	}
+    @Override
+    public ImportCustomizer getImportCustomizer() {
+        return new ImportCustomizer();
+    }
 
-	@Override
-	public Set<String> getExtraImports() {
-		return Collections.emptySet();
-	}
+    @Override
+    public Set<String> getExtraImports() {
+        return Collections.emptySet();
+    }
 
-	@Override
-	public Set<String> getExtraStaticImports() {
-		return Collections.emptySet();
-	}
+    @Override
+    public Set<String> getExtraStaticImports() {
+        return Collections.emptySet();
+    }
 
-	@Override
-	public Set<String> getImports() {
-		return Collections.emptySet();
-	}
+    @Override
+    public Set<String> getImports() {
+        return Collections.emptySet();
+    }
 }

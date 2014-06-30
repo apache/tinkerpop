@@ -8,7 +8,7 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     private Path path = new Path();
 
     private PathTraverser() {
-       super();
+        super();
     }
 
     public PathTraverser(final T t) {

@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
+public class IteratorHandler extends ChannelOutboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(IteratorHandler.class);
 
     private final Settings settings;
@@ -47,7 +47,8 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
 
                 final EventExecutorGroup executorService = ctx.executor();
                 final Future<?> iteration = executorService.submit((Callable<Void>) () -> {
-                    if (logger.isDebugEnabled()) logger.debug("Preparing to iterate results from - {} - in thread [{}]", requestMessage, Thread.currentThread().getName());
+                    if (logger.isDebugEnabled())
+                        logger.debug("Preparing to iterate results from - {} - in thread [{}]", requestMessage, Thread.currentThread().getName());
 
                     stopWatch.start();
 
@@ -76,7 +77,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter  {
                     return null;
                 });
 
-                iteration.addListener(f->{
+                iteration.addListener(f -> {
                     stopWatch.stop();
 
                     if (!f.isSuccess()) {

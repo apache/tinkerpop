@@ -14,78 +14,78 @@ import java.util.stream.IntStream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProfilingApplication {
-	public static void main(final String[] args) {
-		try {
-			System.out.println("Initializing at: " + System.nanoTime());
+    public static void main(final String[] args) {
+        try {
+            System.out.println("Initializing at: " + System.nanoTime());
 
-			final String host = args.length == 0 ? "localhost" : args[0];
+            final String host = args.length == 0 ? "localhost" : args[0];
 
-			final int clients = 2;
-			final int requests = 10000;
-			final Cluster cluster = Cluster.create(host)
-					.minConnectionPoolSize(64)
-					.maxConnectionPoolSize(128)
-					.nioPoolSize(clients)
-					.workerPoolSize(clients * 4).build();
+            final int clients = 2;
+            final int requests = 10000;
+            final Cluster cluster = Cluster.create(host)
+                    .minConnectionPoolSize(64)
+                    .maxConnectionPoolSize(128)
+                    .nioPoolSize(clients)
+                    .workerPoolSize(clients * 4).build();
 
-			// let all the clients fully init before starting to send messages
-			final CyclicBarrier barrier = new CyclicBarrier(clients);
+            // let all the clients fully init before starting to send messages
+            final CyclicBarrier barrier = new CyclicBarrier(clients);
 
-			final List<Thread> threads = IntStream.range(0, clients).mapToObj(t -> new Thread(() -> {
-				try {
-					final CountDownLatch latch = new CountDownLatch(requests);
+            final List<Thread> threads = IntStream.range(0, clients).mapToObj(t -> new Thread(() -> {
+                try {
+                    final CountDownLatch latch = new CountDownLatch(requests);
 
-					final Client client = cluster.connect();
-					client.init();
+                    final Client client = cluster.connect();
+                    client.init();
 
-					barrier.await();
-					final long start = System.nanoTime();
+                    barrier.await();
+                    final long start = System.nanoTime();
 
-					System.out.println("Executing at [" + t + "]:" + start);
+                    System.out.println("Executing at [" + t + "]:" + start);
 
-					IntStream.range(0, requests).forEach(i -> {
-						client.submitAsync("1+1").thenAccept(r -> r.all()).thenRun(latch::countDown);
-					});
+                    IntStream.range(0, requests).forEach(i -> {
+                        client.submitAsync("1+1").thenAccept(r -> r.all()).thenRun(latch::countDown);
+                    });
 
-					latch.await();
+                    latch.await();
 
-					final long end = System.nanoTime();
-					final long total = end - start;
+                    final long end = System.nanoTime();
+                    final long total = end - start;
 
-					System.out.println("All responses for [" + t + "] are accounted for at: " + end);
+                    System.out.println("All responses for [" + t + "] are accounted for at: " + end);
 
-					final long totalSeconds = Math.round(total / 1000000000d);
-					final long requestCount = requests;
-					final long reqSec = Math.round(requestCount / totalSeconds);
-					System.out.println(String.format("[" + t + "] clients: %s requests: %s time(s): %s req/sec: %s", clients, requestCount, totalSeconds, reqSec));
-				} catch (Exception ex) {
-					ex.printStackTrace();
-					throw new RuntimeException(ex);
-				}
-			})).collect(Collectors.toList());
+                    final long totalSeconds = Math.round(total / 1000000000d);
+                    final long requestCount = requests;
+                    final long reqSec = Math.round(requestCount / totalSeconds);
+                    System.out.println(String.format("[" + t + "] clients: %s requests: %s time(s): %s req/sec: %s", clients, requestCount, totalSeconds, reqSec));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    throw new RuntimeException(ex);
+                }
+            })).collect(Collectors.toList());
 
-			threads.forEach(t -> {
-				try {
-					t.start();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-					throw new RuntimeException(ex);
-				}
-			});
+            threads.forEach(t -> {
+                try {
+                    t.start();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    throw new RuntimeException(ex);
+                }
+            });
 
-			threads.forEach(t -> {
-				try {
-					t.join();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-					throw new RuntimeException(ex);
-				}
-			});
+            threads.forEach(t -> {
+                try {
+                    t.join();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    throw new RuntimeException(ex);
+                }
+            });
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		} finally {
-			System.exit(0);
-		}
-	}
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            System.exit(0);
+        }
+    }
 }

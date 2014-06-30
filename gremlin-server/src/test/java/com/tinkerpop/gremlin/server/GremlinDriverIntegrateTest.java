@@ -48,7 +48,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // todo: consider how to parameterize traversals - is it best done client side during construction or through bindings as a SBiFunction<Graph, Map, Traversal>
 
         public Traversal apply(final Graph g) {
-            return g.V().out().range(0,9);
+            return g.V().out().range(0, 9);
         }
     }
 
@@ -92,12 +92,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertFalse(futureFive.isDone());
         assertEquals("zero", futureZero.get().get(0).getString());
 
-        System.out.println("Eval of 'zero' complete: "  + TimeUtil.millisSince(start));
+        System.out.println("Eval of 'zero' complete: " + TimeUtil.millisSince(start));
 
         assertFalse(futureFive.isDone());
         assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
 
-        System.out.println("Eval of 'five' complete: "  + TimeUtil.millisSince(start));
+        System.out.println("Eval of 'five' complete: " + TimeUtil.millisSince(start));
     }
 
     @Test
@@ -176,7 +176,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldSerializeToStringWhenRequested() throws Exception {
-        final Map<String,Object> m = new HashMap<>();
+        final Map<String, Object> m = new HashMap<>();
         m.put("serializeResultToString", true);
         final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
         serializer.configure(m);
@@ -194,7 +194,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldDeserializeWithCustomClasses() throws Exception {
-        final Map<String,Object> m = new HashMap<>();
+        final Map<String, Object> m = new HashMap<>();
         m.put("custom", Arrays.asList(String.format("%s;%s", JsonBuilder.class.getCanonicalName(), JsonBuilderKryoSerializer.class.getCanonicalName())));
         final KryoMessageSerializerV1d0 serializer = new KryoMessageSerializerV1d0();
         serializer.configure(m);
@@ -207,29 +207,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         cluster.close();
     }
 
-	@Test
-	public void shouldEventuallySucceedWithRoundRobin() throws Exception {
-		// todo: when we have a config on borrowed connection timeout, set it low here to make the test go faster.
-		final String noGremlinServer = "74.125.225.19";
-		final Cluster cluster = Cluster.create(noGremlinServer).addContactPoint("localhost").build();
-		final Client client = cluster.connect();
+    @Test
+    public void shouldEventuallySucceedWithRoundRobin() throws Exception {
+        // todo: when we have a config on borrowed connection timeout, set it low here to make the test go faster.
+        final String noGremlinServer = "74.125.225.19";
+        final Cluster cluster = Cluster.create(noGremlinServer).addContactPoint("localhost").build();
+        final Client client = cluster.connect();
 
-		try {
-			// this first attempt will fail because it's sending stuff to a host it can't connect to
-			client.submit("1+1").all().join();
-			fail();
-		} catch (RuntimeException re) {
-			assertTrue(re.getCause().getCause() instanceof TimeoutException);
-		}
+        try {
+            // this first attempt will fail because it's sending stuff to a host it can't connect to
+            client.submit("1+1").all().join();
+            fail();
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getCause() instanceof TimeoutException);
+        }
 
-		// ensure that connection to server is good - that host should be marked "dead" and remaining
-		// requests should succeed
-		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-		assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        // ensure that connection to server is good - that host should be marked "dead" and remaining
+        // requests should succeed
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
 
-		cluster.close();
-	}
+        cluster.close();
+    }
 }

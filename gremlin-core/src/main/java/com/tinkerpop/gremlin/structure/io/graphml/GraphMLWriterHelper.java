@@ -177,7 +177,7 @@ class GraphMLWriterHelper {
          * ancestors that the element has.</p>
          *
          * @return The number of spaces in each indentation step,
-         *         or 0 or less for no indentation.
+         * or 0 or less for no indentation.
          * @see #setIndentStep(int)
          * @deprecated Only return the length of the indent string.
          */
@@ -235,7 +235,7 @@ class GraphMLWriterHelper {
          * Print indentation for the current level.
          *
          * @throws javax.xml.stream.XMLStreamException If there is an error writing the indentation characters, or if a filter
-         *                            further down the chain raises an exception.
+         *                                             further down the chain raises an exception.
          */
         private void doIndent() throws XMLStreamException {
             if (depth > 0) {

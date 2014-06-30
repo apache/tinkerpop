@@ -103,7 +103,7 @@ public class EdgeTest extends AbstractGremlinTest {
         assertTrue(keys.contains("location"));
         assertTrue(keys.contains("status"));
 
-        final Map<String,Property> m = e.properties();
+        final Map<String, Property> m = e.properties();
         assertEquals(3, m.size());
         assertEquals("name", m.get("name").key());
         assertEquals("location", m.get("location").key());
@@ -119,7 +119,7 @@ public class EdgeTest extends AbstractGremlinTest {
         assertTrue(keys.contains("name"));
         assertTrue(keys.contains("location"));
 
-        e.properties().values().stream().forEach(p->p.remove());
+        e.properties().values().stream().forEach(p -> p.remove());
 
         keys = e.keys();
         assertEquals(0, keys.size());
@@ -134,7 +134,7 @@ public class EdgeTest extends AbstractGremlinTest {
 
         tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(25, 25));
 
-        for(Edge e : g.E().toList()) {
+        for (Edge e : g.E().toList()) {
             e.remove();
             tryCommit(g);
         }
@@ -145,7 +145,7 @@ public class EdgeTest extends AbstractGremlinTest {
     @Test
     public void shouldReturnEmptyMapIfNoProperties() {
         final Vertex v = g.addVertex();
-        final Map<String,Property> m = v.properties();
+        final Map<String, Property> m = v.properties();
         assertNotNull(m);
         assertEquals(0, m.size());
     }

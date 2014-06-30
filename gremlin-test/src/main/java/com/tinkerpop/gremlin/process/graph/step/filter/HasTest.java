@@ -38,7 +38,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_v1_hasXage_gt_30X(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id,final  Object v2Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_out_hasXid_2X(final Object v1Id, final Object v2Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X();
 
@@ -48,7 +48,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Edge, Edge> get_g_E_hasXlabelXknows_createdX();
 
-	public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX();
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -174,17 +174,17 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertEquals(6, counter);
     }
 
-	@Test
-	@LoadGraphWith(CLASSIC)
-	@Ignore
-	public void g_V_hasXname_equalspredicate_markoX() {
-		// todo: doesn't work in graph computer because of lambda
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @Ignore
+    public void g_V_hasXname_equalspredicate_markoX() {
+        // todo: doesn't work in graph computer because of lambda
 
-		final Iterator<Vertex> traversal = get_g_V_hasXname_equalspredicate_markoX();
-		System.out.println("Testing: " + traversal);
-		assertEquals("marko", traversal.next().<String>value("name"));
-		assertFalse(traversal.hasNext());
-	}
+        final Iterator<Vertex> traversal = get_g_V_hasXname_equalspredicate_markoX();
+        System.out.println("Testing: " + traversal);
+        assertEquals("marko", traversal.next().<String>value("name"));
+        assertFalse(traversal.hasNext());
+    }
 
     public static class JavaHasTest extends HasTest {
         public JavaHasTest() {
@@ -235,9 +235,9 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
             return g.E().has("label", T.in, Arrays.asList("knows", "created"));
         }
 
-		public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
-			return g.V().has("name", (v1,v2) -> v1.equals(v2), "marko");
-		}
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
+            return g.V().has("name", (v1, v2) -> v1.equals(v2), "marko");
+        }
     }
 
     public static class JavaComputerHasTest extends HasTest {
@@ -289,8 +289,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
             return g.E().<Edge>has("label", T.in, Arrays.asList("knows", "created")).submit(g.compute());
         }
 
-		public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
-			return g.V().<Vertex>has("age", (v1, v2) -> v1.equals(v2), 30).submit(g.compute());
-		}
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
+            return g.V().<Vertex>has("age", (v1, v2) -> v1.equals(v2), 30).submit(g.compute());
+        }
     }
 }

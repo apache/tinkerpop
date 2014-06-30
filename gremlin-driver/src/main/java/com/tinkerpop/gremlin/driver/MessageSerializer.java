@@ -34,7 +34,7 @@ public interface MessageSerializer {
      * Serialize a {@link ResponseMessage} to a Netty {@code ByteBuf}.
      *
      * @param responseMessage The response message to serialize to bytes.
-     * @param allocator The Netty allocator for the {@code ByteBuf} to return back.
+     * @param allocator       The Netty allocator for the {@code ByteBuf} to return back.
      */
     public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
@@ -42,7 +42,7 @@ public interface MessageSerializer {
      * Serialize a {@link ResponseMessage} to a Netty {@code ByteBuf}.
      *
      * @param requestMessage The request message to serialize to bytes.
-     * @param allocator The Netty allocator for the {@code ByteBuf} to return back.
+     * @param allocator      The Netty allocator for the {@code ByteBuf} to return back.
      */
     public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException;
 
@@ -66,5 +66,6 @@ public interface MessageSerializer {
      * function and it is up to the interface implementation to determine how the configuration will be executed
      * and what its requirements are.
      */
-    public default void configure(final Map<String, Object> config) {}
+    public default void configure(final Map<String, Object> config) {
+    }
 }

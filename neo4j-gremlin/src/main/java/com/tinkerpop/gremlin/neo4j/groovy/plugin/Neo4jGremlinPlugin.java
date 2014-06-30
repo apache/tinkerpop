@@ -12,20 +12,20 @@ import java.util.Set;
  */
 public class Neo4jGremlinPlugin implements GremlinPlugin {
 
-	private static final String IMPORT = "import ";
-	private static final String DOT_STAR = ".*";
+    private static final String IMPORT = "import ";
+    private static final String DOT_STAR = ".*";
 
-	private static final Set<String> IMPORTS = new HashSet<String>() {{
-		add(IMPORT + Neo4jGraph.class.getPackage().getName() + DOT_STAR);
-	}};
+    private static final Set<String> IMPORTS = new HashSet<String>() {{
+        add(IMPORT + Neo4jGraph.class.getPackage().getName() + DOT_STAR);
+    }};
 
-	@Override
-	public String getName() {
-		return "neo4j";
-	}
+    @Override
+    public String getName() {
+        return "neo4j";
+    }
 
-	@Override
-	public void pluginTo(final PluginAcceptor pluginAcceptor) {
-		pluginAcceptor.addImports(IMPORTS);
-	}
+    @Override
+    public void pluginTo(final PluginAcceptor pluginAcceptor) {
+        pluginAcceptor.addImports(IMPORTS);
+    }
 }

@@ -23,7 +23,7 @@ import java.util.function.UnaryOperator;
  * a different {@link Strategy.Context#getCurrent()} object depending on that context (e.g the
  * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)} method will send the instance of
  * the {@link com.tinkerpop.gremlin.structure.Vertex} that was the object of that method call).
- * <p/>
+ * <p>
  * A method will always return a {@link java.util.function.UnaryOperator} where the argument and return value to it is a function with
  * the same signature as the calling method where the strategy logic is being injected.  The argument passed in to
  * this function will be a reference to the original calling function (from an implementation perspective, it might
@@ -31,7 +31,7 @@ import java.util.function.UnaryOperator;
  * operation against the graph).  In constructing the outgoing function to the {@link java.util.function.UnaryOperator}, it should
  * of course match the signature of the original calling function and depending on the functionality,
  * call the original function to trigger a call to the underlying implementation.
- * <p/>
+ * <p>
  * The most simplistic implementation of a strategy method is to simply return a
  * {@link java.util.function.UnaryOperator#identity()} which happens to be the default implementation for all the
  * methods.  By returning the {@code identity} function, the incoming original function is simply returned back
@@ -49,53 +49,53 @@ public interface GraphStrategy {
         return traversal;
     }
 
-	/**
-	 * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#keys()}.
-	 *
-	 * @param ctx the context within which this strategy function is called
-	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-	 *         {@link com.tinkerpop.gremlin.structure.Graph.Variables#keys()} signature
-	 *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
-	 */
-	public default UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
-		return UnaryOperator.identity();
-	}
+    /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#keys()}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.Graph.Variables#keys()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default UnaryOperator<Supplier<Set<String>>> getVariableKeysStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+        return UnaryOperator.identity();
+    }
 
-	/**
-	 * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()}.
-	 *
-	 * @param ctx the context within which this strategy function is called
-	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-	 *         {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()} signature
-	 *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
-	 */
-	public default UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
-		return UnaryOperator.identity();
-	}
+    /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.Graph.Variables#asMap()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default UnaryOperator<Supplier<Map<String, Object>>> getVariableAsMapStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+        return UnaryOperator.identity();
+    }
 
-	/**
-	 * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#get(String)}.
-	 *
-	 * @param ctx the context within which this strategy function is called
-	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with {@link com.tinkerpop.gremlin.structure.Graph.Variables#get(String)} signature
-	 *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
-	 */
-	public default <R> UnaryOperator<Function<String,R>> getVariableGetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
-		return UnaryOperator.identity();
-	}
+    /**
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#get(String)}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with {@link com.tinkerpop.gremlin.structure.Graph.Variables#get(String)} signature
+     * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
+     */
+    public default <R> UnaryOperator<Function<String, R>> getVariableGetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+        return UnaryOperator.identity();
+    }
 
-	/**
-	 * Construct a {@link java.util.function.BiConsumer} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#set(String,Object)}.
-	 *
-	 * @param ctx the context within which this strategy function is called
-	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiConsumer} with {@link com.tinkerpop.gremlin.structure.Graph.Variables#set(String,Object)} signature
-	 *         and returns an enhanced strategy {@link java.util.function.BiConsumer} with the same signature
-	 */
-	public default UnaryOperator<BiConsumer<String,Object>> getVariableSetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
-		return UnaryOperator.identity();
-	}
+    /**
+     * Construct a {@link java.util.function.BiConsumer} that enhances the features of {@link com.tinkerpop.gremlin.structure.Graph.Variables#set(String, Object)}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiConsumer} with {@link com.tinkerpop.gremlin.structure.Graph.Variables#set(String, Object)} signature
+     * and returns an enhanced strategy {@link java.util.function.BiConsumer} with the same signature
+     */
+    public default UnaryOperator<BiConsumer<String, Object>> getVariableSetStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+        return UnaryOperator.identity();
+    }
 
-    public default <R> UnaryOperator<Function<String,R>> getVariableRemoveStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
+    public default <R> UnaryOperator<Function<String, R>> getVariableRemoveStrategy(final Strategy.Context<StrategyWrappedVariables> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -104,9 +104,9 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with {@link com.tinkerpop.gremlin.structure.Graph#addVertex(Object...)} signature
-     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
+     * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
-    public default UnaryOperator<Function<Object[],Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
+    public default UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -116,8 +116,8 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
-     *         {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)} signature
-     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Vertex#addEdge(String, com.tinkerpop.gremlin.structure.Vertex, Object...)} signature
+     * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
     public default UnaryOperator<TriFunction<String, Vertex, Object[], Edge>> getAddEdgeStrategy(final Strategy.Context<StrategyWrappedVertex> ctx) {
         return UnaryOperator.identity();
@@ -128,8 +128,8 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-     *         {@link com.tinkerpop.gremlin.structure.Element#remove()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Element#remove()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default UnaryOperator<Supplier<Void>> getRemoveElementStrategy(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
@@ -140,8 +140,8 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-     *         {@link com.tinkerpop.gremlin.structure.Property#remove()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Property#remove()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default <V> UnaryOperator<Supplier<Void>> getRemovePropertyStrategy(final Strategy.Context<StrategyWrappedProperty<V>> ctx) {
         return UnaryOperator.identity();
@@ -154,8 +154,8 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
-     *         {@link com.tinkerpop.gremlin.structure.Element#property(String)} signature
-     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Element#property(String)} signature
+     * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
     public default <V> UnaryOperator<Function<String, Property<V>>> getElementGetProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
@@ -168,68 +168,68 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.BiFunction} with
-     *         {@link com.tinkerpop.gremlin.structure.Element#property(String,Object)} signature
-     *         and returns an enhanced strategy {@link java.util.function.BiFunction} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Element#property(String, Object)} signature
+     * and returns an enhanced strategy {@link java.util.function.BiFunction} with the same signature
      */
     public default <V> UnaryOperator<BiFunction<String, V, Property<V>>> getElementProperty(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
-	/**
-	 * Construct a {@link java.util.function.Consumer} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#properties(Object...)}.
-	 * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
-	 * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
-	 *
-	 * @param ctx the context within which this strategy function is called
-	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Consumer} with
-	 *         {@link com.tinkerpop.gremlin.structure.Element#properties(Object...)} signature
-	 *         and returns an enhanced strategy {@link java.util.function.Consumer} with the same signature
-	 */
-	public default UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
-		return UnaryOperator.identity();
-	}
+    /**
+     * Construct a {@link java.util.function.Consumer} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#properties(Object...)}.
+     * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
+     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Consumer} with
+     * {@link com.tinkerpop.gremlin.structure.Element#properties(Object...)} signature
+     * and returns an enhanced strategy {@link java.util.function.Consumer} with the same signature
+     */
+    public default UnaryOperator<Consumer<Object[]>> getElementPropertiesSetter(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return UnaryOperator.identity();
+    }
 
-	/**
-	 * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#properties}.
-	 * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
-	 * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
-	 *
-	 * @param ctx the context within which this strategy function is called
-	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-	 *         {@link com.tinkerpop.gremlin.structure.Element#properties} signature
-	 *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
-	 */
-	public default UnaryOperator<Supplier<Map<String, Property>>> getElementPropertiesGetter(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
-		return UnaryOperator.identity();
-	}
+    /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#properties}.
+     * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
+     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.Element#properties} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default UnaryOperator<Supplier<Map<String, Property>>> getElementPropertiesGetter(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return UnaryOperator.identity();
+    }
 
-	/**
-	 * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#properties}.
-	 * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
-	 * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
-	 *
-	 * @param ctx the context within which this strategy function is called
-	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-	 *         {@link com.tinkerpop.gremlin.structure.Element#properties} signature
-	 *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
-	 */
-	public default UnaryOperator<Supplier<Map<String, Property>>> getElementHiddens(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
-		return UnaryOperator.identity();
-	}
+    /**
+     * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#properties}.
+     * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
+     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.Element#properties} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     */
+    public default UnaryOperator<Supplier<Map<String, Property>>> getElementHiddens(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return UnaryOperator.identity();
+    }
 
-	/**
-	 * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#value(String)}.
-	 * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
-	 * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
-	 *
-	 * @param ctx the context within which this strategy function is called
-	 * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-	 *         {@link com.tinkerpop.gremlin.structure.Element#value(String)} signature
-	 *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
-	 */
-	public default <V> UnaryOperator<Function<String, V>> getElementValue(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
-		return UnaryOperator.identity();
-	}
+    /**
+     * Construct a {@link java.util.function.Function} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#value(String)}.
+     * If a strategy must implement different scenarios for a {@link com.tinkerpop.gremlin.structure.Vertex} versus an {@link com.tinkerpop.gremlin.structure.Edge} the implementation
+     * should check for the type of {@link com.tinkerpop.gremlin.structure.Element} on the {@link Strategy.Context}.
+     *
+     * @param ctx the context within which this strategy function is called
+     * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
+     * {@link com.tinkerpop.gremlin.structure.Element#value(String)} signature
+     * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
+     */
+    public default <V> UnaryOperator<Function<String, V>> getElementValue(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+        return UnaryOperator.identity();
+    }
 
     /**
      * Construct a {@link java.util.function.Supplier} that enhances the features of {@link com.tinkerpop.gremlin.structure.Element#id()}.
@@ -238,8 +238,8 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-     *         {@link com.tinkerpop.gremlin.structure.Element#id()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Element#id()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default UnaryOperator<Supplier<Object>> getElementId(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
@@ -252,8 +252,8 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-     *         {@link com.tinkerpop.gremlin.structure.Element#label()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Element#label()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default UnaryOperator<Supplier<String>> getElementLabel(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
@@ -266,8 +266,8 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-     *         {@link com.tinkerpop.gremlin.structure.Element#keys()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Element#keys()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default UnaryOperator<Supplier<Set<String>>> getElementKeys(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
@@ -280,8 +280,8 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-     *         {@link com.tinkerpop.gremlin.structure.Element#hiddenKeys()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Element#hiddenKeys()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
     public default UnaryOperator<Supplier<Set<String>>> getElementHiddenKeys(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
@@ -294,10 +294,10 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-     *         {@link com.tinkerpop.gremlin.structure.Element#values()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Element#values()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<Supplier<Map<String,Object>>> getElementValues(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default UnaryOperator<Supplier<Map<String, Object>>> getElementValues(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -308,10 +308,10 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Supplier} with
-     *         {@link com.tinkerpop.gremlin.structure.Element#hiddenValues()} signature
-     *         and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Element#hiddenValues()} signature
+     * and returns an enhanced strategy {@link java.util.function.Supplier} with the same signature
      */
-    public default UnaryOperator<Supplier<Map<String,Object>>> getElementHiddenValues(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
+    public default UnaryOperator<Supplier<Map<String, Object>>> getElementHiddenValues(final Strategy.Context<? extends StrategyWrappedElement> ctx) {
         return UnaryOperator.identity();
     }
 
@@ -321,8 +321,8 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
-     *         {@link com.tinkerpop.gremlin.structure.Graph#v(Object)} signature
-     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Graph#v(Object)} signature
+     * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
     public default UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
@@ -333,21 +333,22 @@ public interface GraphStrategy {
      *
      * @param ctx the context within which this strategy function is called
      * @return a {@link java.util.function.Function} that accepts a {@link java.util.function.Function} with
-     *         {@link com.tinkerpop.gremlin.structure.Graph#e(Object)} signature
-     *         and returns an enhanced strategy {@link java.util.function.Function} with the same signature
+     * {@link com.tinkerpop.gremlin.structure.Graph#e(Object)} signature
+     * and returns an enhanced strategy {@link java.util.function.Function} with the same signature
      */
     public default UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return UnaryOperator.identity();
     }
 
-	public static class DoNothingGraphStrategy implements GraphStrategy {
-		public static final DoNothingGraphStrategy INSTANCE = new DoNothingGraphStrategy();
+    public static class DoNothingGraphStrategy implements GraphStrategy {
+        public static final DoNothingGraphStrategy INSTANCE = new DoNothingGraphStrategy();
 
-		private DoNothingGraphStrategy() {}
+        private DoNothingGraphStrategy() {
+        }
 
-		@Override
-		public String toString() {
-			return "passthru";
-		}
-	}
+        @Override
+        public String toString() {
+            return "passthru";
+        }
+    }
 }

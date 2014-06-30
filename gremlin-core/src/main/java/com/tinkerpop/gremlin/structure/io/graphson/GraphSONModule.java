@@ -45,7 +45,7 @@ public class GraphSONModule extends SimpleModule {
         }
 
         private void ser(final Edge edge, final JsonGenerator jsonGenerator) throws IOException {
-            final Map<String,Object> m = new HashMap<>();
+            final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, edge.id());
             m.put(GraphSONTokens.LABEL, edge.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
@@ -58,7 +58,7 @@ public class GraphSONModule extends SimpleModule {
             m.put(GraphSONTokens.OUT, outV.id());
             m.put(GraphSONTokens.OUT_LABEL, outV.label());
             m.put(GraphSONTokens.PROPERTIES, edge.values());
-			m.put(GraphSONTokens.HIDDENS, edge.hiddenValues());
+            m.put(GraphSONTokens.HIDDENS, edge.hiddenValues());
 
             jsonGenerator.writeObject(m);
         }
@@ -85,12 +85,12 @@ public class GraphSONModule extends SimpleModule {
 
         private void ser(final Vertex vertex, final JsonGenerator jsonGenerator)
                 throws IOException {
-            final Map<String,Object> m = new HashMap<>();
+            final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, vertex.id());
             m.put(GraphSONTokens.LABEL, vertex.label());
             m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
-            m.put(GraphSONTokens.PROPERTIES,  vertex.values());
-			m.put(GraphSONTokens.HIDDENS, vertex.hiddenValues());
+            m.put(GraphSONTokens.PROPERTIES, vertex.values());
+            m.put(GraphSONTokens.HIDDENS, vertex.hiddenValues());
 
             jsonGenerator.writeObject(m);
         }

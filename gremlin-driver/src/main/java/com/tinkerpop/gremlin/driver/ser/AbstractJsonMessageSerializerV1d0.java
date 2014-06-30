@@ -30,7 +30,8 @@ import java.util.UUID;
 public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerializer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractJsonMessageSerializerV1d0.class);
 
-    protected final TypeReference<Map<String,Object>> mapTypeReference = new TypeReference<Map<String,Object>>(){};
+    protected final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
+    };
 
     abstract ObjectMapper obtainMapper();
 
@@ -96,7 +97,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
         try {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
-            final Map<String,Object> responseData = obtainMapper().readValue(payload, mapTypeReference);
+            final Map<String, Object> responseData = obtainMapper().readValue(payload, mapTypeReference);
             return ResponseMessage.create(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
                     .code(ResultCode.getFromValue((Integer) responseData.get(SerTokens.TOKEN_CODE)))
                     .result(responseData.get(SerTokens.TOKEN_RESULT))

@@ -14,18 +14,18 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinPlugin implements GremlinPlugin {
-	protected IO io;
-	protected Groovysh shell;
+    protected IO io;
+    protected Groovysh shell;
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * This method may be overriden but take care to call this implementation so the shell and io variables get set.
-	 */
-	@Override
-	public void pluginTo(final PluginAcceptor pluginAcceptor) {
-		final Map<String,Object> environment = pluginAcceptor.environment();
-		this.io = (IO) environment.get("ConsolePluginAcceptor.io");
-		this.shell = (Groovysh) environment.get("ConsolePluginAcceptor.shell");
-	}
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This method may be overriden but take care to call this implementation so the shell and io variables get set.
+     */
+    @Override
+    public void pluginTo(final PluginAcceptor pluginAcceptor) {
+        final Map<String, Object> environment = pluginAcceptor.environment();
+        this.io = (IO) environment.get("ConsolePluginAcceptor.io");
+        this.shell = (Groovysh) environment.get("ConsolePluginAcceptor.shell");
+    }
 }

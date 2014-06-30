@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
  */
 public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     private static final GraphStrategy readOnlyGraphStrategy = new ReadOnlyGraphStrategy();
+
     public ReadOnlyGraphStrategyTest() {
     }
 
@@ -39,9 +40,9 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
     public void shouldNotAllowAddEdge() {
         g.addVertex();
         assertException(g -> {
-			final Vertex v = g.V().next();
-			v.addEdge("friend", v);
-		});
+            final Vertex v = g.V().next();
+            v.addEdge("friend", v);
+        });
     }
 
     @Test
@@ -49,9 +50,9 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         final Vertex v = g.addVertex();
         v.addEdge("friend", v);
         assertException(g -> {
-			final Edge e = g.E().next();
-			e.remove();
-		});
+            final Edge e = g.E().next();
+            e.remove();
+        });
     }
 
     @Test
@@ -93,9 +94,9 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("test", p.value());
 
         assertException(g -> {
-			final Property<String> prop = g.V().next().property("test");
-			prop.remove();
-		});
+            final Property<String> prop = g.V().next().property("test");
+            prop.remove();
+        });
     }
 
     @Test
@@ -107,35 +108,35 @@ public class ReadOnlyGraphStrategyTest extends AbstractGremlinTest {
         final Property<String> p = e.property("test");
         assertEquals("test", p.value());
 
-		assertException(g -> {
-			final Property<String> prop = g.E().next().property("test");
-			prop.remove();
-		});
+        assertException(g -> {
+            final Property<String> prop = g.E().next().property("test");
+            prop.remove();
+        });
     }
 
-	@Test
-	@FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
-	public void shouldNotAllowVariableModifications() {
-		assertException(g -> {
-			g.variables().set("will", "not work");
-		});
-	}
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
+    public void shouldNotAllowVariableModifications() {
+        assertException(g -> {
+            g.variables().set("will", "not work");
+        });
+    }
 
-	@Test(expected = UnsupportedOperationException.class)
-	@FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
-	public void shouldNotAllowVariableAsMapModifications() {
-		g.variables().set("will", "be read-only");
-		final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
-		swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
-		swg.variables().asMap().put("will", "not work");
-	}
+    @Test(expected = UnsupportedOperationException.class)
+    @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
+    public void shouldNotAllowVariableAsMapModifications() {
+        g.variables().set("will", "be read-only");
+        final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
+        swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
+        swg.variables().asMap().put("will", "not work");
+    }
 
     private void assertException(final ConsumerThatThrows stt) {
         try {
             final StrategyWrappedGraph swg = new StrategyWrappedGraph(g);
             swg.strategy().setGraphStrategy(readOnlyGraphStrategy);
             stt.accept(swg);
-			fail();
+            fail();
         } catch (Exception ex) {
             final Exception expectedException = ReadOnlyGraphStrategy.Exceptions.graphUsesReadOnlyStrategy();
             assertEquals(expectedException.getClass(), ex.getClass());

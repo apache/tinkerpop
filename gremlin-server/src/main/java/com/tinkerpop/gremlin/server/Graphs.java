@@ -34,7 +34,8 @@ public class Graphs {
             } catch (RuntimeException re) {
                 logger.warn("Graph [{}] configured at [{}] could not be instantiated and will not be available in Gremlin Server.  GraphFactory message: {}",
                         e.getKey(), e.getValue(), re.getMessage());
-                if (logger.isDebugEnabled() && re.getCause() != null) logger.debug("GraphFactory exception", re.getCause());
+                if (logger.isDebugEnabled() && re.getCause() != null)
+                    logger.debug("GraphFactory exception", re.getCause());
             }
         });
         graphs = Collections.unmodifiableMap(m);
@@ -50,20 +51,20 @@ public class Graphs {
         return graphs;
     }
 
-	/**
-	 * Get the graphs list as a set of bindings.
-	 */
-	public Bindings getGraphsAsBindings() {
-		final Bindings bindings = new SimpleBindings();
-		graphs.forEach(bindings::put);
-		return bindings;
-	}
+    /**
+     * Get the graphs list as a set of bindings.
+     */
+    public Bindings getGraphsAsBindings() {
+        final Bindings bindings = new SimpleBindings();
+        graphs.forEach(bindings::put);
+        return bindings;
+    }
 
     /**
      * Rollback transactions across all {@link com.tinkerpop.gremlin.structure.Graph} objects.
      */
     public void rollbackAll() {
-        graphs.entrySet().forEach(e-> {
+        graphs.entrySet().forEach(e -> {
             final Graph g = e.getValue();
             if (g.getFeatures().graph().supportsTransactions())
                 g.tx().rollback();
@@ -74,7 +75,7 @@ public class Graphs {
      * Commit transactions across all {@link com.tinkerpop.gremlin.structure.Graph} objects.
      */
     public void commitAll() {
-        graphs.entrySet().forEach(e->{
+        graphs.entrySet().forEach(e -> {
             final Graph g = e.getValue();
             if (g.getFeatures().graph().supportsTransactions())
                 g.tx().commit();

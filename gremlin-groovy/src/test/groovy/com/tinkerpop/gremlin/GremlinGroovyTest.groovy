@@ -96,7 +96,7 @@ class GremlinGroovyTest {
                 if (args instanceof Object[]) {
                     return invokeMethod(object, name, (Object[]) args);
                 } else {
-                    return invokeMethod(object, name, new Object[1]{args});
+                    return invokeMethod(object, name, new Object[1] { args });
                 }
             }
 

@@ -93,7 +93,8 @@
                                 <include>**/*PerformanceTest.java</include>
                             </includes>
                             <skipTests>${skipPerformanceTests}</skipTests>
-                            <argLine>-Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                            <argLine>-Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
+                                -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                             </argLine>
                             <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                         </configuration>

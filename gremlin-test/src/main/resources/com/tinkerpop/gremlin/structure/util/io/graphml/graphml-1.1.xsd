@@ -64,7 +64,6 @@
     </xs:simpleType>
 
 
-
     <xs:simpleType name="key.type.type" final="#all">
 
         <xs:annotation>
@@ -118,7 +117,7 @@
         </xs:documentation>
     </xs:annotation>
 
-    <xs:simpleType name="graph.order.type"  final="#all">
+    <xs:simpleType name="graph.order.type" final="#all">
 
         <xs:annotation>
             <xs:documentation
@@ -139,7 +138,7 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="graph.nodes.type"  final="#all">
+    <xs:simpleType name="graph.nodes.type" final="#all">
 
         <xs:annotation>
             <xs:documentation
@@ -207,7 +206,7 @@
         <xs:restriction base="xs:nonNegativeInteger"/>
     </xs:simpleType>
 
-    <xs:simpleType name="graph.nodeids.type"  final="#all">
+    <xs:simpleType name="graph.nodeids.type" final="#all">
 
         <xs:annotation>
             <xs:documentation
@@ -227,7 +226,7 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="graph.edgeids.type"  final="#all">
+    <xs:simpleType name="graph.edgeids.type" final="#all">
 
         <xs:annotation>
             <xs:documentation
@@ -276,7 +275,6 @@
         <xs:attribute name="parse.maxindegree" type="graph.maxindegree.type" use="optional"/>
         <xs:attribute name="parse.maxoutdegree" type="graph.maxoutdegree.type" use="optional"/>
     </xs:attributeGroup>
-
 
 
     <xs:annotation>
