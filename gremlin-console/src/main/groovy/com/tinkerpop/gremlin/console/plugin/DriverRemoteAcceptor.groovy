@@ -3,10 +3,8 @@ package com.tinkerpop.gremlin.console.plugin
 import com.tinkerpop.gremlin.driver.Client
 import com.tinkerpop.gremlin.driver.Cluster
 import com.tinkerpop.gremlin.driver.Item
-import com.tinkerpop.gremlin.driver.MessageSerializer
 import com.tinkerpop.gremlin.driver.exception.ResponseException
 import com.tinkerpop.gremlin.driver.message.ResultCode
-import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.codehaus.groovy.tools.shell.Groovysh
 
