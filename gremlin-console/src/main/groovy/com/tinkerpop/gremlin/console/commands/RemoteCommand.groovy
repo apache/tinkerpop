@@ -22,18 +22,12 @@ class RemoteCommand extends ComplexCommandSupport {
     def Object do_connect = { List<String> arguments ->
         if (arguments.size() == 0) return "define the remote to configured (e.g. server)"
 
-        def remote
-        if (arguments[0] == "server") {
-            // assume a remote gremlin server
-            remote = new DriverRemoteAcceptor(shell)
-        } else {
-            if (!mediator.loadedPlugins.containsKey(arguments[0])) return "no plugin named ${arguments[0]}"
-            def plugin = mediator.loadedPlugins[arguments[0]].plugin
-            def Optional<RemoteAcceptor> remoteAcceptor = plugin.remoteAcceptor()
-            if (!remoteAcceptor.isPresent()) return "${arguments[0]} does not accept remote configuration"
+        if (!mediator.loadedPlugins.containsKey(arguments[0])) return "no plugin named ${arguments[0]}"
+        def plugin = mediator.loadedPlugins[arguments[0]].plugin
+        def Optional<RemoteAcceptor> remoteAcceptor = plugin.remoteAcceptor()
+        if (!remoteAcceptor.isPresent()) return "${arguments[0]} does not accept remote configuration"
 
-            remote = remoteAcceptor.get()
-        }
+        def remote = remoteAcceptor.get()
 
         mediator.addRemote(remote)
 
