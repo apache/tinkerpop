@@ -73,7 +73,6 @@ class Console {
             if (!mediator.loadedPlugins.containsKey(plugin.getName())) {
                 plugin.pluginTo(new ConsolePluginAcceptor(groovy, io))
                 mediator.loadedPlugins.put(plugin.getName(), new PluggedIn(plugin, true))
-
                 io.out.println("plugin loaded: " + plugin.getName())
             }
         }

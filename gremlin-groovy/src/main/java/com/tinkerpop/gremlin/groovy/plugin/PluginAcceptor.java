@@ -15,6 +15,16 @@ public interface PluginAcceptor {
      */
     public void addImports(final Set<String> importStatements);
 
+	/**
+	 * Add a variable binding for the plugin host.
+	 */
+	public default void addBinding(final String key, final Object val) {}
+
+	/**
+	 * Gets the list of bindings from the plugin host.  These bindings will represent the "global" binding list.
+	 */
+	public Map<String,Object> getBindings();
+
     /**
      * Evaluate a script in the {@code PluginAcceptor}.
      */

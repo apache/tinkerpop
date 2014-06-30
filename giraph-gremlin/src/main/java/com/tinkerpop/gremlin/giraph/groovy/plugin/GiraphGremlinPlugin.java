@@ -11,9 +11,10 @@ import com.tinkerpop.gremlin.groovy.plugin.Artifact;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.giraph.job.GiraphJob;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.mapred.JobClient;
 
-import javax.script.ScriptException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -44,9 +45,7 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
     }};
 
     @Override
-    public String getName() {
-        return "giraph";
-    }
+    public String getName() { return "giraph"; }
 
     @Override
     public void pluginTo(final PluginAcceptor pluginAcceptor) {
@@ -56,17 +55,16 @@ public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphGraphRunner.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphJob.class.getName()));
             pluginAcceptor.eval("com.tinkerpop.gremlin.giraph.groovy.plugin.HadoopLoader.load()");
-            pluginAcceptor.eval("hdfs = org.apache.hadoop.fs.FileSystem.get(new org.apache.hadoop.conf.Configuration())");
-            pluginAcceptor.eval("local = org.apache.hadoop.fs.FileSystem.getLocal(new org.apache.hadoop.conf.Configuration())");
-        } catch (final ScriptException e) {
+
+			pluginAcceptor.addBinding("hdfs", FileSystem.get(new Configuration()));
+			pluginAcceptor.addBinding("local", FileSystem.getLocal(new Configuration()));
+        } catch (final Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
     @Override
-    public boolean requireRestart() {
-        return true;
-    }
+    public boolean requireRestart() { return true; }
 
     @Override
     public Optional<Set<Artifact>> additionalDependencies() {

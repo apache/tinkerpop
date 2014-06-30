@@ -21,6 +21,16 @@ class ConsolePluginAcceptor implements PluginAcceptor {
     }
 
     @Override
+    void addBinding(final String key, final Object val) {
+        shell.interp.context.setVariable(key, val)
+    }
+
+    @Override
+    Map<String,Object> getBindings() {
+        return Collections.unmodifiableMap(shell.interp.context.variables)
+    }
+
+    @Override
     void addImports(final Set<String> importStatements) {
         importStatements.each { this.shell.execute(it) }
     }
