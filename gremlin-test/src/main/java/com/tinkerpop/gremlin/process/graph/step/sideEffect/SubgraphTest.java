@@ -4,12 +4,14 @@ import com.tinkerpop.gremlin.AbstractGremlinSuite;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Test;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -25,6 +27,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void get_g_v1_outE_subgraphXknowsX() throws Exception {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph");
         graphProvider.clear(config);
@@ -52,6 +55,7 @@ public abstract class SubgraphTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     public void get_g_V_inE_subgraphXcreatedX() throws Exception {
         final Configuration config = graphProvider.newGraphConfiguration("subgraph");
         graphProvider.clear(config);

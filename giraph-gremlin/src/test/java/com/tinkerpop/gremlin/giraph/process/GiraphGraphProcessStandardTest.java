@@ -10,7 +10,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ProcessStandardSuite.class)
 @ProcessStandardSuite.GraphProviderClass(GiraphGraphProvider.class)
-@Ignore
 public class GiraphGraphProcessStandardTest {
 }
 

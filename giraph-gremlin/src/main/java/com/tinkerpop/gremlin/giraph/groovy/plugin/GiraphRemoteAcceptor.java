@@ -38,6 +38,8 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             "import " + GiraphGraph.class.getPackage().getName() + ".*\n" +
                     "g = GiraphGraph.open()\n";
 
+    //TODO: might not always be 'g' cause of the variable bindings
+
     private GiraphGraph graph;
     private Groovysh shell;
 

@@ -215,9 +215,15 @@ public interface Graph extends AutoCloseable {
 
         public interface VertexFeatures extends FeatureSet {
             public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+            public static final String FEATURE_ADD_VERTICES = "AddVertices";
 
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
             public default boolean supportsUserSuppliedIds() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_ADD_VERTICES)
+            public default boolean supportsAddVertices() {
                 return true;
             }
 

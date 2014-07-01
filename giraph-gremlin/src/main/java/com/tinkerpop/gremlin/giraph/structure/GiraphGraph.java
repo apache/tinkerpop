@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.giraph.process.graph.strategy.SideEffectReplacementStrategy;
+import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -48,18 +49,30 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
     public GraphTraversal<Vertex, Vertex> V() {
-        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>();
-        traversal.strategies().register(new SideEffectReplacementStrategy());
-        //traversal.strategies().register(new ValidateStepsStrategy());
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
+            public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
+                if (engine instanceof GraphComputer) {
+                    this.strategies().register(new SideEffectReplacementStrategy());
+                    //this.strategies().register(new ValidateStepsStrategy());
+                }
+                return super.submit(engine);
+            }
+        };
         traversal.addStep(new GiraphGraphStep(traversal, Vertex.class, this));
         traversal.memory().set(Key.hidden("g"), this);
         return traversal;
     }
 
     public GraphTraversal<Edge, Edge> E() {
-        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>();
-        traversal.strategies().register(new SideEffectReplacementStrategy());
-        //traversal.strategies().register(new ValidateStepsStrategy());
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<Edge, Edge>() {
+            public GraphTraversal<Edge, Edge> submit(final TraversalEngine engine) {
+                if (engine instanceof GraphComputer) {
+                    this.strategies().register(new SideEffectReplacementStrategy());
+                    //this.strategies().register(new ValidateStepsStrategy());
+                }
+                return super.submit(engine);
+            }
+        };
         traversal.addStep(new GiraphGraphStep(traversal, Edge.class, this));
         traversal.memory().set(Key.hidden("g"), this);
         return traversal;
@@ -132,6 +145,26 @@ public class GiraphGraph implements Graph, Serializable {
                     @Override
                     public boolean supportsComputer() {
                         return true;
+                    }
+                };
+            }
+
+            @Override
+            public VertexFeatures vertex() {
+                return new VertexFeatures() {
+                    @Override
+                    public boolean supportsAddVertices() {
+                        return false;
+                    }
+                };
+            }
+
+            @Override
+            public EdgeFeatures edge() {
+                return new EdgeFeatures() {
+                    @Override
+                    public boolean supportsAddEdges() {
+                        return false;
                     }
                 };
             }
