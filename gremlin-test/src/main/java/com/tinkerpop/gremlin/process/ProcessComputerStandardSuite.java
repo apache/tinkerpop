@@ -52,20 +52,20 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            // TODO: CyclicPathTest.JavaComputerCyclicPathTest.class,
+            CyclicPathTest.JavaComputerCyclicPathTest.class,
             // DedupTest.JavaComputerDedupTest.class,  TODO: Makes no sense in GraphComputer
-            //TODO: ExceptTest.JavaComputerExceptTest.class,
+            ExceptTest.JavaComputerExceptTest.class,
             FilterTest.JavaComputerFilterTest.class,
             HasTest.JavaComputerHasTest.class,
             IntervalTest.JavaComputerIntervalTest.class,
             RandomTest.JavaComputerRandomTest.class,
-            // RangeTest.JavaComputerRangeTest.class, TODO: Makes no sense in GraphComputer
+            //RangeTest.JavaComputerRangeTest.class, TODO: Makes no sense in GraphComputer
             RetainTest.JavaComputerRetainTest.class,
             SimplePathTest.JavaComputerSimplePathTest.class,
             BackTest.JavaComputerBackTest.class,
             JumpTest.JavaComputerJumpTest.class,
             MapTest.JavaMapTest.class,
-            // OrderTest.JavaOrderTest.class
+            //OrderTest.JavaOrderTest.class
             PathTest.JavaComputerPathTest.class,
             SelectTest.JavaComputerSelectTest.class,
             TraversalTest.JavaComputerTraversalTest.class,
@@ -78,8 +78,6 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
           /*
             // TODO: Be sure to XXComputerXX then class names
             AggregateTest.JavaAggregateTest.class,
-            GroupByTest.JavaGroupByTest.class,
-
             LinkTest.JavaLinkTest.class,
             SideEffectTest.JavaSideEffectTest.class,
             TreeTest.JavaTreeTest.class

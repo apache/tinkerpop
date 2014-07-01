@@ -34,6 +34,10 @@ public class TraversalHelper {
         return steps.size() == 0 ? Optional.empty() : Optional.of(steps.get(steps.size() - 1));
     }
 
+    public static Step getLastStep(final Traversal traversal) {
+        return (Step) traversal.getSteps().get(traversal.getSteps().size() - 1);
+    }
+
     public static <S, E> Step<S, E> getAs(final String as, final Traversal<?, ?> traversal) {
         return (Step) traversal.getSteps().stream()
                 .filter(p -> as.equals(p.getAs()))

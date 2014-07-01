@@ -1,9 +1,13 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
+import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphSideEffectStep;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -99,8 +103,17 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        return new TraversalVertexProgramIterator<>(this.giraphGraph, () -> traversal);
+        if (TraversalHelper.getLastStep(traversal) instanceof SideEffectCapable) {
+            this.program(TraversalVertexProgram.create().traversal(() -> traversal).getConfiguration());
+            try {
+                this.submit().get().getValue0();
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+            traversal.strategies().applyFinalOptimizers(traversal);
+            return (Iterator) Arrays.asList(((GiraphSideEffectStep) TraversalHelper.getLastStep(traversal)).getSideEffect(this.hadoopConfiguration)).iterator();
+        } else {
+            return new TraversalVertexProgramIterator(this.giraphGraph, () -> traversal);
+        }
     }
-
-
 }

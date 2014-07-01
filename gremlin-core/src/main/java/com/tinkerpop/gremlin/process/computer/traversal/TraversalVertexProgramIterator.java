@@ -3,9 +3,9 @@ package com.tinkerpop.gremlin.process.computer.traversal;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 
@@ -19,10 +19,10 @@ import java.util.function.Supplier;
  */
 public class TraversalVertexProgramIterator<T> implements Iterator<T> {
 
-    private Iterator<T> itty;
-    private final Supplier<Traversal> traversalSupplier;
-    private final Graph originalGraph;
-    private final Graph resultantGraph;
+    protected Iterator<T> itty;
+    protected final Supplier<Traversal> traversalSupplier;
+    protected final Graph originalGraph;
+    protected final Graph resultantGraph;
 
     public TraversalVertexProgramIterator(final Graph originalGraph, final SSupplier<Traversal> traversalSupplier) {
         this.traversalSupplier = traversalSupplier;
@@ -49,7 +49,7 @@ public class TraversalVertexProgramIterator<T> implements Iterator<T> {
         return this.traversalSupplier.get().toString();
     }
 
-    private void buildIterator() {
+    protected void buildIterator() {
         if (PathConsumerStrategy.trackPaths(this.traversalSupplier.get())) {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.originalGraph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)

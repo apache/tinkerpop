@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapTraversalStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -53,6 +54,7 @@ public class GiraphGraph implements Graph, Serializable {
             public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
                     this.strategies().register(new SideEffectReplacementStrategy());
+                    this.strategies().unregister(SideEffectCapTraversalStrategy.class);
                     //this.strategies().register(new ValidateStepsStrategy());
                 }
                 return super.submit(engine);
@@ -68,6 +70,7 @@ public class GiraphGraph implements Graph, Serializable {
             public GraphTraversal<Edge, Edge> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
                     this.strategies().register(new SideEffectReplacementStrategy());
+                    this.strategies().unregister(SideEffectCapTraversalStrategy.class);
                     //this.strategies().register(new ValidateStepsStrategy());
                 }
                 return super.submit(engine);
@@ -91,7 +94,7 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
     public <C extends GraphComputer> C compute(final Class<C>... graphComputerClass) {
-        return (C) new GiraphGraphComputer(this, this.getConfiguration());
+        return (C) new GiraphGraphComputer(this, this.variables().getConfiguration());
     }
 
 
@@ -100,18 +103,18 @@ public class GiraphGraph implements Graph, Serializable {
     }
 
     public String toString() {
-        final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.getConfiguration());
-        final String fromString = this.getConfiguration().containsKey(GIRAPH_VERTEX_INPUT_FORMAT_CLASS) ?
+        final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.variables().getConfiguration());
+        final String fromString = this.variables().getConfiguration().containsKey(GIRAPH_VERTEX_INPUT_FORMAT_CLASS) ?
                 hadoopConfiguration.getClass(GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class).getSimpleName() :
                 "none";
-        final String toString = this.getConfiguration().containsKey(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS) ?
+        final String toString = this.variables().getConfiguration().containsKey(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS) ?
                 hadoopConfiguration.getClass(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS, VertexOutputFormat.class).getSimpleName() :
                 "none";
         return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase());
     }
 
     public void close() {
-        this.getConfiguration().clear();
+        this.variables().getConfiguration().clear();
     }
 
     public Transaction tx() {
@@ -120,19 +123,19 @@ public class GiraphGraph implements Graph, Serializable {
 
     public GiraphGraph getOutputGraph() {
         final Configuration conf = new BaseConfiguration();
-        this.getConfiguration().getKeys().forEachRemaining(key -> {
+        this.variables().getConfiguration().getKeys().forEachRemaining(key -> {
             try {
-                conf.setProperty(key, this.getConfiguration().getString(key));
+                conf.setProperty(key, this.variables().getConfiguration().getString(key));
             } catch (Exception e) {
                 // do nothing for serialization problems
             }
         });
-        if (this.getConfiguration().containsKey(GREMLIN_OUTPUT_LOCATION)) {
-            conf.setProperty(GREMLIN_INPUT_LOCATION, this.getConfiguration().getString(GREMLIN_OUTPUT_LOCATION));
+        if (this.variables().getConfiguration().containsKey(GREMLIN_OUTPUT_LOCATION)) {
+            conf.setProperty(GREMLIN_INPUT_LOCATION, this.variables().getConfiguration().getString(GREMLIN_OUTPUT_LOCATION));
         }
-        if (this.getConfiguration().containsKey(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS)) {
+        if (this.variables().getConfiguration().containsKey(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS)) {
             // TODO: Is this sufficient?
-            conf.setProperty(GIRAPH_VERTEX_INPUT_FORMAT_CLASS, this.getConfiguration().getString(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS).replace("OutputFormat", "InputFormat"));
+            conf.setProperty(GIRAPH_VERTEX_INPUT_FORMAT_CLASS, this.variables().getConfiguration().getString(GIRAPH_VERTEX_OUTPUT_FORMAT_CLASS).replace("OutputFormat", "InputFormat"));
         }
         return GiraphGraph.open(conf);
     }
@@ -143,8 +146,13 @@ public class GiraphGraph implements Graph, Serializable {
             public GraphFeatures graph() {
                 return new GraphFeatures() {
                     @Override
-                    public boolean supportsComputer() {
-                        return true;
+                    public boolean supportsTransactions() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean supportsThreadedTransactions() {
+                        return false;
                     }
                 };
             }
@@ -169,9 +177,5 @@ public class GiraphGraph implements Graph, Serializable {
                 };
             }
         };
-    }
-
-    private Configuration getConfiguration() {
-        return this.variables().get(CONFIGURATION);
     }
 }
