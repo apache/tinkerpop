@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.console
 
+import com.tinkerpop.gremlin.console.plugin.PluggedIn
 import com.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 
 import java.util.concurrent.CompletableFuture

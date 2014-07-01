@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.console.commands
 
-import com.tinkerpop.gremlin.console.ConsolePluginAcceptor
+import com.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor
 import com.tinkerpop.gremlin.console.Mediator
-import com.tinkerpop.gremlin.console.PluggedIn
+import com.tinkerpop.gremlin.console.plugin.PluggedIn
 import com.tinkerpop.gremlin.groovy.plugin.Artifact
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import groovy.grape.Grape
