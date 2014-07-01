@@ -91,9 +91,11 @@ public class GremlinServer {
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinGroup, workerGroup);
+            final GremlinChannelInitializer gremlinChannelInitializer = new WebSocketServerInitializer();
+            gremlinChannelInitializer.init(settings, gremlinExecutor, gremlinGroup, graphs.get());
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new WebSocketServerInitializer(this.settings, gremlinExecutor, workerGroup, graphs.get()));
+                    .childHandler(gremlinChannelInitializer);
 
             ch = b.bind(settings.host, settings.port).sync().channel();
             logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
@@ -196,12 +198,6 @@ public class GremlinServer {
     }
 
     private class WebSocketServerInitializer extends AbstractGremlinChannelInitializer {
-        public WebSocketServerInitializer(final Settings settings, final GremlinExecutor gremlinExecutor,
-                                          final EventExecutorGroup gremlinGroup,
-                                          final Graphs graphs) {
-            super(settings, gremlinExecutor, gremlinGroup, graphs);
-        }
-
         @Override
         public void configure(final ChannelPipeline pipeline) {
             if (logger.isDebugEnabled())

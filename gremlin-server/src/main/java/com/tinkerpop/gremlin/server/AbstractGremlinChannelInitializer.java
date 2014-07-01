@@ -2,25 +2,14 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.server.handler.GremlinBinaryRequestDecoder;
-import com.tinkerpop.gremlin.server.handler.GremlinResponseEncoder;
-import com.tinkerpop.gremlin.server.handler.GremlinTextRequestDecoder;
 import com.tinkerpop.gremlin.server.handler.IteratorHandler;
 import com.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import com.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslHandler;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,25 +25,25 @@ import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractGremlinChannelInitializer extends ChannelInitializer<SocketChannel> {
+public abstract class AbstractGremlinChannelInitializer extends ChannelInitializer<SocketChannel> implements GremlinChannelInitializer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinChannelInitializer.class);
-    protected final Settings settings;
-    protected final GremlinExecutor gremlinExecutor;
-    protected final Optional<SSLEngine> sslEngine;
-    protected final Graphs graphs;
-    protected final EventExecutorGroup gremlinGroup;
+    protected Settings settings;
+    protected GremlinExecutor gremlinExecutor;
+    protected Optional<SSLEngine> sslEngine;
+    protected Graphs graphs;
+    protected EventExecutorGroup gremlinGroup;
 
     protected final Map<String, MessageSerializer> serializers = new HashMap<>();
 
-    public AbstractGremlinChannelInitializer(final Settings settings, final GremlinExecutor gremlinExecutor,
-                                             final EventExecutorGroup gremlinGroup,
-                                             final Graphs graphs) {
+    @Override
+    public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
+                     final EventExecutorGroup gremlinGroup,
+                     final Graphs graphs) {
         this.settings = settings;
         this.gremlinExecutor = gremlinExecutor;
         this.graphs = graphs;
@@ -67,14 +56,15 @@ public abstract class AbstractGremlinChannelInitializer extends ChannelInitializ
         this.sslEngine = settings.optionalSsl().isPresent() && settings.ssl.enabled ? Optional.ofNullable(createSslEngine()) : Optional.empty();
     }
 
-    public abstract void configure(final ChannelPipeline pipeline);
-
     @Override
     public void initChannel(final SocketChannel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
 
         sslEngine.ifPresent(ssl -> pipeline.addLast("ssl", new SslHandler(ssl)));
 
+        // the implementation provides the method by which Gremlin Server will process requests.  the end of the
+        // pipeline must decode to an incoming RequestMessage instances and encode to a outgoing ResponseMessage
+        // instance
         configure(pipeline);
 
         pipeline.addLast("op-selector", new OpSelectorHandler(settings, graphs, gremlinExecutor));
@@ -104,7 +94,7 @@ public abstract class AbstractGremlinChannelInitializer extends ChannelInitializ
                 logger.warn("Could not instantiate configured serializer class - {} - it will not be available.", config.className);
                 return Optional.<MessageSerializer>empty();
             }
-        }).filter(Optional::isPresent).map(o -> o.get()).flatMap(serializer ->
+        }).filter(Optional::isPresent).map(Optional::get).flatMap(serializer ->
                         Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Pair.with(mimeType, serializer))
         ).forEach(pair -> {
             final String mimeType = pair.getValue0().toString();
