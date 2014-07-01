@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
+import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.junit.Ignore;
@@ -12,6 +13,7 @@ import org.junit.rules.TestName;
 import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -43,7 +45,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.serializedResponseTimeout = 1;
                 break;
             case "shouldBlockRequestWhenTooBig":
-                settings.maxContentLength = 1;    // todo: get this to work properly
+                settings.maxContentLength = 1024;
                 break;
         }
 
@@ -119,19 +121,21 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @Ignore
     public void shouldBlockRequestWhenTooBig() throws Exception {
-        // todo: Fix in netty 4.0.20.final.
-
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
         try {
-            final String fatty = IntStream.range(0, 65536).mapToObj(String::valueOf).collect(Collectors.joining());
-            client.submit("'" + fatty + "'").all().join();
+            final String fatty = IntStream.range(0, 1024).mapToObj(String::valueOf).collect(Collectors.joining());
+            final CompletableFuture<ResultSet> result = client.submitAsync("'" + fatty + "';'test'");
+            final ResultSet resultSet = result.get();
+            resultSet.all().get();
             fail("Should throw an exception.");
-        } catch (RuntimeException re) {
-            assertTrue(re.getCause().getMessage().equals("Error during serialization: Direct self-reference leading to cycle (through reference chain: java.util.HashMap[\"result\"]->C[\"c\"])"));
+        } catch (Exception re) {
+            // can't seem to catch the server side exception - as the channel is basically closed on this error
+            // can only detect a closed channel and react to that.  in some ways this is a good general piece of
+            // code to have in place, but kinda stinky when you want something specifica about why all went bad
+            assertTrue(re.getCause().getMessage().equals("Error while processing results from channel - check client and server logs for more information"));
         } finally {
             cluster.close();
         }

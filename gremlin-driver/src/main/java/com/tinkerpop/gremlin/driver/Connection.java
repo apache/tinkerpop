@@ -144,11 +144,16 @@ class Connection {
                         });
                         final ResponseQueue handler = new ResponseQueue(responseQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
-                        final ResultSet resultSet = new ResultSet(handler, cluster.executor());
+                        final ResultSet resultSet = new ResultSet(handler, cluster.executor(), channel,
+                                () -> {
+                                    pending.remove(requestMessage.getRequestId());
+                                    return null;
+                                });
                         future.complete(resultSet);
                     }
                 });
         channel.writeAndFlush(requestMessage, promise);
+
         return promise;
     }
 

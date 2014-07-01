@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 class Handler {
     static class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
+        private static final Logger logger = LoggerFactory.getLogger(WebSocketClientHandler.class);
         private final WebSocketClientHandshaker handshaker;
         private ChannelPromise handshakeFuture;
 
@@ -92,12 +93,8 @@ class Handler {
 
         @Override
         public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
-            cause.printStackTrace();
-
-            if (!handshakeFuture.isDone()) {
-                handshakeFuture.setFailure(cause);
-            }
-
+            logger.warn("Exception caught during WebSocket processing - closing connection", cause);
+            if (!handshakeFuture.isDone()) handshakeFuture.setFailure(cause);
             ctx.close();
         }
     }

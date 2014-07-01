@@ -2,12 +2,14 @@ package com.tinkerpop.gremlin.driver;
 
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.util.StreamFactory;
+import io.netty.channel.Channel;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -22,10 +24,15 @@ import java.util.stream.Stream;
 public class ResultSet implements Iterable<Item> {
     private final ResponseQueue responseQueue;
     private final ExecutorService executor;
+    private final Channel channel;
+    private final Supplier<Void> onChannelError;
 
-    public ResultSet(final ResponseQueue responseQueue, final ExecutorService executor) {
+    public ResultSet(final ResponseQueue responseQueue, final ExecutorService executor,
+                     final Channel channel, final Supplier<Void> onChannelError) {
         this.executor = executor;
         this.responseQueue = responseQueue;
+        this.channel = channel;
+        this.onChannelError = onChannelError;
     }
 
     /**
@@ -81,6 +88,11 @@ public class ResultSet implements Iterable<Item> {
 
         return CompletableFuture.supplyAsync(() -> {
             while (!allItemsAvailable() && getAvailableItemCount() < items) {
+                if (!channel.isOpen()) {
+                    onChannelError.get();
+                    throw new RuntimeException("Error while processing results from channel - check client and server logs for more information");
+                }
+
                 try {
                     Thread.sleep(10);
                 } catch (Exception ex) {
