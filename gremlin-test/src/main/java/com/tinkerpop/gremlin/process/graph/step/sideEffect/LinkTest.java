@@ -2,13 +2,16 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import com.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -22,6 +25,7 @@ public abstract class LinkTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_ADD_EDGES)
     public void g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX() {
         final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);

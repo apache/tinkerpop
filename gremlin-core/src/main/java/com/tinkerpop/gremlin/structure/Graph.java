@@ -234,9 +234,15 @@ public interface Graph extends AutoCloseable {
 
         public interface EdgeFeatures extends FeatureSet {
             public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
+            public static final String FEATURE_ADD_EDGES = "AddEdges";
 
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
             public default boolean supportsUserSuppliedIds() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_ADD_EDGES)
+            public default boolean supportsAddEdges() {
                 return true;
             }
 
