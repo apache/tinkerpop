@@ -107,7 +107,7 @@
     <properties>
         <tinkerpop.version>3.0.0-SNAPSHOT</tinkerpop.version>
         <junit.version>4.11</junit.version>
-        <netty.version>4.0.19.Final</netty.version>
+        <netty.version>4.0.21.Final</netty.version>
         <metrics.version>3.0.2</metrics.version>
         <groovy.version>2.3.3</groovy.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
