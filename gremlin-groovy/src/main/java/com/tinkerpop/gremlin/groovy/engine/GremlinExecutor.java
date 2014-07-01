@@ -137,6 +137,14 @@ public class GremlinExecutor {
         return this.scriptEngines;
     }
 
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    public ScheduledExecutorService getScheduledExecutorService() {
+        return scheduledExecutorService;
+    }
+
     private void scheduleTimeout(final CompletableFuture<Object> evaluationFuture, final String script, final AtomicBoolean abort) {
         if (scriptEvaluationTimeout > 0) {
             // Schedule a timeout in the io threadpool for future execution - killing an eval is cheap

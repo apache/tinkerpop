@@ -77,6 +77,10 @@ public class GremlinServer {
     public void run() throws Exception {
         final EventLoopGroup bossGroup = new NioEventLoopGroup(settings.threadPoolBoss);
         final EventLoopGroup workerGroup = new NioEventLoopGroup(settings.threadPoolWorker);
+
+        final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
+        final EventExecutorGroup gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, threadFactory);
+
         try {
             final ServerBootstrap b = new ServerBootstrap();
 
@@ -86,9 +90,10 @@ public class GremlinServer {
             b.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, settings.writeBufferHighWaterMark);
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
+            final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinGroup, workerGroup);
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new WebSocketServerInitializer(this.settings, workerGroup));
+                    .childHandler(new WebSocketServerInitializer(this.settings, gremlinExecutor, workerGroup, graphs.get()));
 
             ch = b.bind(settings.host, settings.port).sync().channel();
             logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
@@ -99,9 +104,36 @@ public class GremlinServer {
 
             ch.closeFuture().sync();
         } finally {
+            gremlinGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+    }
+
+    private GremlinExecutor initializeGremlinExecutor(final EventExecutorGroup gremlinGroup,
+                                                      final ScheduledExecutorService scheduledExecutorService) {
+        // initialize graphs from configuration
+        if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
+
+        logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
+
+        final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.create()
+                .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
+                .afterFailure((b, e) -> graphs.get().rollbackAll())
+                .afterSuccess(b -> graphs.get().commitAll())
+                .beforeEval(b -> graphs.get().rollbackAll())
+                .afterTimeout(b -> graphs.get().rollbackAll())
+                .use(settings.use)
+                .globalBindings(graphs.get().getGraphsAsBindings())
+                .executorService(gremlinGroup)
+                .scheduledExecutorService(scheduledExecutorService);
+
+        settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts));
+        final GremlinExecutor gremlinExecutor = gremlinExecutorBuilder.build();
+
+        logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
+
+        return gremlinExecutor;
     }
 
     /**
@@ -163,55 +195,15 @@ public class GremlinServer {
         logger.info(getHeader());
     }
 
-    private class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
-        private final Settings settings;
-        private final GremlinExecutor gremlinExecutor;
-        private final Optional<SSLEngine> sslEngine;
-
-        private final Map<String, MessageSerializer> serializers = new HashMap<>();
-
-        final EventExecutorGroup gremlinGroup;
-
-        public WebSocketServerInitializer(final Settings settings, final ScheduledExecutorService scheduledExecutorService) {
-            this.settings = settings;
-
-            // instantiate and configure the serializers that gremlin server will use - could error out here
-            // and fail the server startup
-            configureSerializers();
-
-            // initialize graphs from configuration
-            if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
-
-            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-%d").build();
-            this.gremlinGroup = new DefaultEventExecutorGroup(settings.gremlinPool, threadFactory);
-
-            logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
-
-            final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.create()
-                    .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
-                    .afterFailure((b, e) -> graphs.get().rollbackAll())
-                    .afterSuccess(b -> graphs.get().commitAll())
-                    .beforeEval(b -> graphs.get().rollbackAll())
-                    .afterTimeout(b -> graphs.get().rollbackAll())
-                    .use(settings.use)
-                    .globalBindings(graphs.get().getGraphsAsBindings())
-                    .executorService(gremlinGroup)
-                    .scheduledExecutorService(scheduledExecutorService);
-
-            settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts));
-            this.gremlinExecutor = gremlinExecutorBuilder.build();
-
-            logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
-
-            this.sslEngine = settings.optionalSsl().isPresent() && settings.ssl.enabled ? Optional.ofNullable(createSslEngine()) : Optional.empty();
+    private class WebSocketServerInitializer extends AbstractGremlinChannelInitializer {
+        public WebSocketServerInitializer(final Settings settings, final GremlinExecutor gremlinExecutor,
+                                          final EventExecutorGroup gremlinGroup,
+                                          final Graphs graphs) {
+            super(settings, gremlinExecutor, gremlinGroup, graphs);
         }
 
         @Override
-        public void initChannel(final SocketChannel ch) throws Exception {
-            final ChannelPipeline pipeline = ch.pipeline();
-
-            sslEngine.ifPresent(ssl -> pipeline.addLast("ssl", new SslHandler(ssl)));
-
+        public void configure(final ChannelPipeline pipeline) {
             if (logger.isDebugEnabled())
                 pipeline.addLast(new LoggingHandler("log-io", LogLevel.DEBUG));
 
@@ -243,95 +235,6 @@ public class GremlinServer {
 
             if (logger.isDebugEnabled())
                 pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
-
-            pipeline.addLast("op-selector", new OpSelectorHandler(settings, graphs.get(), gremlinExecutor));
-
-            pipeline.addLast(gremlinGroup, "result-iterator-handler", new IteratorHandler(settings));
-            pipeline.addLast(gremlinGroup, "op-executor", new OpExecutorHandler(settings, graphs.get(), gremlinExecutor));
-        }
-
-        private void configureSerializers() {
-            this.settings.serializers.stream().map(config -> {
-                try {
-                    final Class clazz = Class.forName(config.className);
-                    if (!MessageSerializer.class.isAssignableFrom(clazz)) {
-                        logger.warn("The {} serialization class does not implement {} - it will not be available.", config.className, MessageSerializer.class.getCanonicalName());
-                        return Optional.<MessageSerializer>empty();
-                    }
-
-                    final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
-                    if (config.config != null)
-                        serializer.configure(config.config);
-
-                    return Optional.ofNullable(serializer);
-                } catch (ClassNotFoundException cnfe) {
-                    logger.warn("Could not find configured serializer class - {} - it will not be available", config.className);
-                    return Optional.<MessageSerializer>empty();
-                } catch (Exception ex) {
-                    logger.warn("Could not instantiate configured serializer class - {} - it will not be available.", config.className);
-                    return Optional.<MessageSerializer>empty();
-                }
-            }).filter(Optional::isPresent).map(o -> o.get()).flatMap(serializer ->
-                            Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Pair.with(mimeType, serializer))
-            ).forEach(pair -> {
-                final String mimeType = pair.getValue0().toString();
-                final MessageSerializer serializer = pair.getValue1();
-                if (serializers.containsKey(mimeType))
-                    logger.warn("{} already has {} configured.  It will not be replaced by {}. Check configuration for serializer duplication or other issues.",
-                            mimeType, serializers.get(mimeType).getClass().getName(), serializer.getClass().getName());
-                else {
-                    logger.info("Configured {} with {}", mimeType, pair.getValue1().getClass().getName());
-                    serializers.put(mimeType, serializer);
-                }
-            });
-
-            if (serializers.size() == 0) {
-                logger.error("No serializers were successfully configured - server will not start.");
-                throw new RuntimeException("Serialization configuration error.");
-            }
-        }
-
-        private SSLEngine createSslEngine() {
-            try {
-                logger.info("SSL was enabled.  Initializing SSLEngine instance...");
-                final SSLEngine engine = createSSLContext(settings).createSSLEngine();
-                engine.setUseClientMode(false);
-                logger.info("SSLEngine was properly configured and initialized.");
-                return engine;
-            } catch (Exception ex) {
-                logger.warn("SSL could not be enabled.  Check the ssl section of the configuration file.", ex);
-                return null;
-            }
-        }
-
-        private SSLContext createSSLContext(final Settings settings) throws Exception {
-            final Settings.SslSettings sslSettings = settings.ssl;
-
-            TrustManager[] managers = null;
-            if (sslSettings.trustStoreFile != null) {
-                final KeyStore ts = KeyStore.getInstance(Optional.ofNullable(sslSettings.trustStoreFormat).orElseThrow(() -> new IllegalStateException("The trustStoreFormat is not set")));
-                try (final InputStream trustStoreInputStream = new FileInputStream(Optional.ofNullable(sslSettings.trustStoreFile).orElseThrow(() -> new IllegalStateException("The trustStoreFile is not set")))) {
-                    ts.load(trustStoreInputStream, sslSettings.trustStorePassword.toCharArray());
-                }
-
-                final String trustStoreAlgorithm = Optional.ofNullable(sslSettings.trustStoreAlgorithm).orElse(TrustManagerFactory.getDefaultAlgorithm());
-                final TrustManagerFactory tmf = TrustManagerFactory.getInstance(trustStoreAlgorithm);
-                tmf.init(ts);
-                managers = tmf.getTrustManagers();
-            }
-
-            final KeyStore ks = KeyStore.getInstance(Optional.ofNullable(sslSettings.keyStoreFormat).orElseThrow(() -> new IllegalStateException("The keyStoreFormat is not set")));
-            try (final InputStream keyStoreInputStream = new FileInputStream(Optional.ofNullable(sslSettings.keyStoreFile).orElseThrow(() -> new IllegalStateException("The keyStoreFile is not set")))) {
-                ks.load(keyStoreInputStream, sslSettings.keyStorePassword.toCharArray());
-            }
-
-            final String keyManagerAlgorithm = Optional.ofNullable(sslSettings.keyManagerAlgorithm).orElse(KeyManagerFactory.getDefaultAlgorithm());
-            final KeyManagerFactory kmf = KeyManagerFactory.getInstance(keyManagerAlgorithm);
-            kmf.init(ks, Optional.ofNullable(sslSettings.keyManagerPassword).orElseThrow(() -> new IllegalStateException("The keyManagerPassword is not set")).toCharArray());
-
-            final SSLContext serverContext = SSLContext.getInstance("TLS");
-            serverContext.init(kmf.getKeyManagers(), managers, null);
-            return serverContext;
         }
     }
 }
