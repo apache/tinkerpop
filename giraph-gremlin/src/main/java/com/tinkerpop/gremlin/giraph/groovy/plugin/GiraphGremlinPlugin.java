@@ -25,9 +25,6 @@ import java.util.Set;
  */
 public class GiraphGremlinPlugin extends AbstractGremlinPlugin {
 
-    private static final String IMPORT = "import ";
-    private static final String DOT_STAR = ".*";
-
     private static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT + GiraphGraph.class.getPackage().getName() + DOT_STAR);
         add(IMPORT + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);

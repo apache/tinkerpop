@@ -14,6 +14,9 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinPlugin implements GremlinPlugin {
+    protected static final String IMPORT = "import ";
+    protected static final String DOT_STAR = ".*";
+
     protected IO io;
     protected Groovysh shell;
 

@@ -55,8 +55,6 @@ class Console {
         new ConsoleImportCustomizerProvider().getAllImports().stream()
                 .collect { IMPORT_SPACE + it }.each { groovy.execute(it) }
 
-        groovy.setResultHook(handleResultIterate)
-
         final InteractiveShellRunner runner = new InteractiveShellRunner(groovy, handlePrompt)
         runner.setErrorHandler(handleError)
         try {
@@ -78,6 +76,9 @@ class Console {
                 io.out.println("plugin loaded: " + plugin.getName())
             }
         }
+
+        // start iterating results to show as output
+        groovy.setResultHook(handleResultIterate)
 
         if (initScriptFile != null) initializeShellWithScript(initScriptFile)
 
