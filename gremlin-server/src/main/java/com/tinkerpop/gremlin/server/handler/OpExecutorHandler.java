@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.server.handler;
 
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.Context;
 import com.tinkerpop.gremlin.server.Graphs;
 import com.tinkerpop.gremlin.server.Settings;
-import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.server.op.OpProcessorException;
 import com.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import io.netty.channel.ChannelHandlerContext;

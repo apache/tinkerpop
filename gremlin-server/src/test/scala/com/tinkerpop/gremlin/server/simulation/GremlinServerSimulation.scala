@@ -1,15 +1,5 @@
 package com.tinkerpop.gremlin.server.simulation
 
-import io.gatling.core.Predef._
-import scala.concurrent.duration._
-import akka.actor.ActorRef
-import io.gatling.core.action.builder.ActionBuilder
-import io.gatling.core.action.{Chainable, system}
-import bootstrap._
-import assertions._
-import akka.actor.Props
-import io.gatling.core.result.message.{RequestMessage, KO, OK}
-import io.gatling.core.result.writer.DataWriter
 import com.tinkerpop.gremlin.driver.{Client, Cluster}
 
 class GremlinServerSimulation extends Simulation {

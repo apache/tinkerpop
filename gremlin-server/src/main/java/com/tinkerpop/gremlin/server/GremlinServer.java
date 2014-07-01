@@ -1,53 +1,25 @@
 package com.tinkerpop.gremlin.server;
 
-import com.tinkerpop.gremlin.driver.MessageSerializer;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.server.handler.GremlinBinaryRequestDecoder;
-import com.tinkerpop.gremlin.server.handler.GremlinTextRequestDecoder;
-import com.tinkerpop.gremlin.server.handler.GremlinResponseEncoder;
-import com.tinkerpop.gremlin.server.handler.IteratorHandler;
-import com.tinkerpop.gremlin.server.handler.OpExecutorHandler;
-import com.tinkerpop.gremlin.server.handler.OpSelectorHandler;
+import com.tinkerpop.gremlin.server.channel.WebSocketChannelInitializer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Stream;
 
 /**
  * Start and stop Gremlin Server.
@@ -91,7 +63,7 @@ public class GremlinServer {
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinGroup, workerGroup);
-            final GremlinChannelInitializer gremlinChannelInitializer = new WebSocketServerInitializer();
+            final GremlinChannelInitializer gremlinChannelInitializer = new WebSocketChannelInitializer();
             gremlinChannelInitializer.init(settings, gremlinExecutor, gremlinGroup, graphs.get());
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
@@ -195,42 +167,5 @@ public class GremlinServer {
 
     private static void printHeader() {
         logger.info(getHeader());
-    }
-
-    private class WebSocketServerInitializer extends AbstractGremlinChannelInitializer {
-        @Override
-        public void configure(final ChannelPipeline pipeline) {
-            if (logger.isDebugEnabled())
-                pipeline.addLast(new LoggingHandler("log-io", LogLevel.DEBUG));
-
-            logger.debug("HttpRequestDecoder settings - maxInitialLineLength={}, maxHeaderSize={}, maxChunkSize={}",
-                    settings.maxInitialLineLength, settings.maxHeaderSize, settings.maxChunkSize);
-            pipeline.addLast("http-request-decoder", new HttpRequestDecoder(settings.maxInitialLineLength, settings.maxHeaderSize, settings.maxChunkSize));
-
-            if (logger.isDebugEnabled())
-                pipeline.addLast(new LoggingHandler("log-decoder-aggregator", LogLevel.DEBUG));
-
-            logger.debug("HttpObjectAggregator settings - maxContentLength={}, maxAccumulationBufferComponents={}",
-                    settings.maxContentLength, settings.maxAccumulationBufferComponents);
-            final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxContentLength);
-            aggregator.setMaxCumulationBufferComponents(settings.maxAccumulationBufferComponents);
-            pipeline.addLast("aggregator", aggregator);
-
-            if (logger.isDebugEnabled())
-                pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
-
-            pipeline.addLast("http-response-encoder", new HttpResponseEncoder());
-            pipeline.addLast("request-handler", new WebSocketServerProtocolHandler("/gremlin"));
-
-            if (logger.isDebugEnabled())
-                pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
-
-            pipeline.addLast("response-encoder", new GremlinResponseEncoder());
-            pipeline.addLast("request-text-decoder", new GremlinTextRequestDecoder());
-            pipeline.addLast("request-binary-decoder", new GremlinBinaryRequestDecoder(serializers));
-
-            if (logger.isDebugEnabled())
-                pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
-        }
     }
 }
