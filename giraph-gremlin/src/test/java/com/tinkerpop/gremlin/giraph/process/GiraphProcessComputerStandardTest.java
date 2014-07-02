@@ -6,7 +6,7 @@ import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
- * Executes the Standard Gremlin Process Test Suite using TinkerGraph.
+ * Executes the Standard Gremlin Process Test Suite using GiraphGraph.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
