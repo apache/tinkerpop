@@ -50,7 +50,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.util.Tree;
-import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -467,7 +467,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <T> Tree<T> tree(final SFunction... branchFunctions) {
         final Tree<Object> tree = new Tree<>();
         Tree<Object> depth = tree;
-        PathConsumerStrategy.doPathTracking(this);
+        TraverserSourceStrategy.doPathTracking(this);
         final Step endStep = TraversalHelper.getEnd(this);
         final FunctionRing functionRing = new FunctionRing(branchFunctions);
         try {

@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -102,7 +103,7 @@ public class TinkerGraph implements Graph, Serializable {
             public GraphTraversal<Object, Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
                     this.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
-                    //TODO: this.strategies().register(new ClearTraverserSourceStrategy());
+                    this.strategies().unregister(TraverserSourceStrategy.class);
                 }
                 return super.submit(engine);
             }
@@ -118,7 +119,7 @@ public class TinkerGraph implements Graph, Serializable {
             public GraphTraversal<Object, Edge> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
                     this.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
-                    // TODO: this.strategies().register(new ClearTraverserSourceStrategy());
+                    this.strategies().unregister(TraverserSourceStrategy.class);
                 }
                 return super.submit(engine);
             }

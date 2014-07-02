@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.process.computer.Messenger;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
-import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -61,7 +61,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                         (Class) Class.forName(configuration.getProperty(TRAVERSAL_SUPPLIER_CLASS).toString());
                 this.traversalSupplier = traversalSupplierClass.getConstructor().newInstance();
             }
-            this.trackPaths = PathConsumerStrategy.trackPaths(this.traversalSupplier.get());
+            this.trackPaths = TraversalHelper.trackPaths(this.traversalSupplier.get());
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -85,8 +85,6 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         final Traversal traversal = this.traversalSupplier.get();
         traversal.strategies().applyFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
-        startStep.clear();
-
         final String future = (traversal.getSteps().size() == 1) ? Traverser.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
         // TODO: Was doing some HasContainer.testAll() stuff prior to the big change (necessary?)
         // TODO: Make this an optimizer.

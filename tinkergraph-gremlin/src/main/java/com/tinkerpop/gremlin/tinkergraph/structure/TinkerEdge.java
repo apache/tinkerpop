@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -94,7 +95,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
             public GraphTraversal<Edge, Edge> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
                     this.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
-                    // TODO this.strategies().register(new ClearTraverserSourceStrategy());
+                    this.strategies().unregister(TraverserSourceStrategy.class);
                     final String label = this.getSteps().get(0).getAs();
                     TraversalHelper.removeStep(0, this);
                     final Step identityStep = new IdentityStep(this);

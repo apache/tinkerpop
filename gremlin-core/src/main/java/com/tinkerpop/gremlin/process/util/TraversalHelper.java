@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 
 import java.util.Iterator;
@@ -141,5 +142,12 @@ public class TraversalHelper {
         if (TraversalHelper.isLabeled(step))
             builder.append("@").append(step.getAs());
         return builder.toString();
+    }
+
+    public static <S, E> boolean trackPaths(final Traversal<S, E> traversal) {
+        return traversal.getSteps().stream()
+                .filter(step -> step instanceof PathConsumer)
+                .findFirst()
+                .isPresent();
     }
 }
