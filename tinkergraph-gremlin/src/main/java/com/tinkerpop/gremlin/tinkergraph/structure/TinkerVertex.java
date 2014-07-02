@@ -78,8 +78,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
             public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
-                    this.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
-                    this.strategies().unregister(TraverserSourceStrategy.class);
+                    TinkerHelper.prepareTraversalForComputer(this);
                     final String label = this.getSteps().get(0).getAs();
                     TraversalHelper.removeStep(0, this);
                     final Step identityStep = new IdentityStep(this);

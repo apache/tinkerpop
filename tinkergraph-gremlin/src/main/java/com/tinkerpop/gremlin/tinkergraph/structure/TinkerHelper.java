@@ -1,11 +1,14 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
+import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.MultiIterator;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepTraversalStrategy;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.ArrayList;
@@ -138,5 +141,10 @@ public class TinkerHelper {
         if (direction.equals(Direction.IN) | direction.equals(Direction.BOTH))
             vertices.add((TinkerVertex) edge.inVertex);
         return vertices.iterator();
+    }
+
+    public static void prepareTraversalForComputer(final Traversal traversal) {
+        traversal.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
+        traversal.strategies().unregister(TraverserSourceStrategy.class);
     }
 }

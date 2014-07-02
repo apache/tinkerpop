@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
+import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphEdgeVertexStep;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.Step;
@@ -43,6 +44,7 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
             public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
+                    GiraphComputerHelper.prepareTraversalForComputer(this);
                     final String label = this.getSteps().get(0).getAs();
                     TraversalHelper.removeStep(0, this);
                     final Step identityStep = new IdentityStep(this);
