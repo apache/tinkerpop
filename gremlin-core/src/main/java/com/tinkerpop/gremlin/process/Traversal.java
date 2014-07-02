@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 
 import java.io.Serializable;
@@ -75,6 +77,14 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     public default Traversal<S, E> trackPaths() {
         return (Traversal) this.addStep(new PathIdentityStep<>(this));
+    }
+
+    public default <E2> Traversal<S, E2> cap(final String variable) {
+        return (Traversal) this.addStep(new SideEffectCapStep<>(this, variable));
+    }
+
+    public default <E2> Traversal<S, E2> cap() {
+        return this.cap(SideEffectCapable.CAP_KEY);
     }
 
     public default Traversal<S, E> reverse() {

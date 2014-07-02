@@ -38,7 +38,7 @@ public class GiraphGraphVariables implements Graph.Variables, Serializable {
         this.variables.put(key, value);
     }
 
-    public Configuration getConfiguration() {
+    public GiraphConfiguration getConfiguration() {
         return this.get(GiraphGraph.CONFIGURATION);
     }
 

@@ -15,7 +15,7 @@ public class CountStep<S> extends FilterStep<S> implements SideEffectCapable, Re
 
     public CountStep(final Traversal traversal) {
         super(traversal);
-        this.traversal.memory().set(CAP_VARIABLE, this.counter);
+        this.traversal.memory().set(CAP_KEY, this.counter);
         this.setPredicate(traverser -> {
             this.counter = this.counter + this.bulkCount;
             return true;

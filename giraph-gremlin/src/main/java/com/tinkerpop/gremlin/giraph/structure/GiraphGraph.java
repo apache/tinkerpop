@@ -8,7 +8,7 @@ import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapTraversalStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.SideEffectCapStrategy;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -54,7 +54,7 @@ public class GiraphGraph implements Graph, Serializable {
             public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
                     this.strategies().register(new SideEffectReplacementStrategy());
-                    this.strategies().unregister(SideEffectCapTraversalStrategy.class);
+                    this.strategies().unregister(SideEffectCapStrategy.class);
                     //this.strategies().register(new ValidateStepsStrategy());
                 }
                 return super.submit(engine);
@@ -70,7 +70,7 @@ public class GiraphGraph implements Graph, Serializable {
             public GraphTraversal<Edge, Edge> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
                     this.strategies().register(new SideEffectReplacementStrategy());
-                    this.strategies().unregister(SideEffectCapTraversalStrategy.class);
+                    this.strategies().unregister(SideEffectCapStrategy.class);
                     //this.strategies().register(new ValidateStepsStrategy());
                 }
                 return super.submit(engine);

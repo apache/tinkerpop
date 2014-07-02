@@ -375,7 +375,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> cap() {
-        return this.cap(SideEffectCapable.CAP_VARIABLE);
+        return this.cap(SideEffectCapable.CAP_KEY);
     }
 
     public default GraphTraversal<S, E> subgraph(final Graph g, final SPredicate<Edge> includeEdge) {
@@ -411,7 +411,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
-        return (GraphTraversal) this.addStep(new GroupByStep(this, SideEffectCapable.CAP_VARIABLE, keyFunction, (SFunction) valueFunction, (SFunction) reduceFunction));
+        return (GraphTraversal) this.addStep(new GroupByStep(this, SideEffectCapable.CAP_KEY, keyFunction, (SFunction) valueFunction, (SFunction) reduceFunction));
     }
 
     public default GraphTraversal<S, E> groupCount(final String variable, final SFunction<E, ?>... preGroupFunctions) {
@@ -419,7 +419,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> groupCount(final SFunction<E, ?>... preGroupFunctions) {
-        return (GraphTraversal) this.addStep(new GroupCountStep<>(this, SideEffectCapable.CAP_VARIABLE, preGroupFunctions));
+        return (GraphTraversal) this.addStep(new GroupCountStep<>(this, SideEffectCapable.CAP_KEY, preGroupFunctions));
     }
 
     public default GraphTraversal<S, Vertex> linkIn(final String label, final String as) {

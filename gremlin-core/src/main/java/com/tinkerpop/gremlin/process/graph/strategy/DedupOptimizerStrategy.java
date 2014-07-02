@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DedupOptimizerTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class DedupOptimizerStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
     private static final List<Class> BIJECTIVE_PIPES = new ArrayList<Class>(
             Arrays.asList(

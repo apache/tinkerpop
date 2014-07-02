@@ -110,7 +110,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             if (configuration.containsKey(GiraphGraph.GREMLIN_OUTPUT_LOCATION)) {
                 final String output = configuration.getString(GiraphGraph.GREMLIN_OUTPUT_LOCATION);
                 final FileSystem fs = FileSystem.get(ConfUtil.makeHadoopConfiguration(configuration));
-                final Path capOutput = new Path(output + "/" + SideEffectCapable.CAP_VARIABLE);
+                final Path capOutput = new Path(output + "/" + SideEffectCapable.CAP_KEY);
                 //final Path traversalResultOutput = new Path(output + "/" + "traversalResult");
                 if (fs.exists(capOutput)) {
                     final LinkedList<Path> paths = new LinkedList<>();

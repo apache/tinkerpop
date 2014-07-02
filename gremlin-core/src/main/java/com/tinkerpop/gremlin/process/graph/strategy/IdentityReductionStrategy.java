@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IdentityOptimizerTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
+public class IdentityReductionStrategy implements TraversalStrategy.FinalTraversalStrategy {
 
     public void apply(final Traversal traversal) {
         ((List<Step>) traversal.getSteps()).stream()
