@@ -103,7 +103,7 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        if (TraversalHelper.getLastStep(traversal) instanceof SideEffectCapable) {
+        if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable) {
             this.program(TraversalVertexProgram.create().traversal(() -> traversal).getConfiguration());
             try {
                 this.submit().get().getValue0();
@@ -111,7 +111,7 @@ public class GiraphGraphComputer implements GraphComputer {
                 throw new RuntimeException(e.getMessage(), e);
             }
             traversal.strategies().applyFinalOptimizers(traversal);
-            return (Iterator) Arrays.asList(((GiraphSideEffectStep) TraversalHelper.getLastStep(traversal)).getSideEffect(this.hadoopConfiguration)).iterator();
+            return (Iterator) Arrays.asList(((GiraphSideEffectStep) TraversalHelper.getEnd(traversal)).getSideEffect(this.hadoopConfiguration)).iterator();
         } else {
             return new TraversalVertexProgramIterator(this.giraphGraph, () -> traversal);
         }

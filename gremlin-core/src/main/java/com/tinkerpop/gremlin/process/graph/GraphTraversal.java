@@ -44,6 +44,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.LinkStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
@@ -367,6 +368,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> sideEffect(final SConsumer<Traverser<E>> consumer) {
         return (GraphTraversal) this.addStep(new SideEffectStep<>(this, consumer));
+    }
+
+    public default <E2> GraphTraversal<S, E2> cap(final String variable) {
+        return (GraphTraversal) this.addStep(new SideEffectCapStep<>(this, variable));
+    }
+
+    public default <E2> GraphTraversal<S, E2> cap() {
+        return this.cap(SideEffectCapable.CAP_VARIABLE);
     }
 
     public default GraphTraversal<S, E> subgraph(final Graph g, final SPredicate<Edge> includeEdge) {

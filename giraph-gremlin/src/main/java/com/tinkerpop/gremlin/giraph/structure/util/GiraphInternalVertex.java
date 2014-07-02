@@ -77,12 +77,6 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         return this.tinkerVertex;
     }
 
-    public GiraphVertex getGiraphVertex() {
-        return this.giraphVertex;
-    }
-
-
-
     public void compute(final Iterable<KryoWritable> messages) {
         if (null == this.tinkerVertex)
             inflateGiraphVertex();
