@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.channel.WebSocketChannelInitializer;
 import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -123,6 +124,12 @@ public class Settings {
      * become writeable again until the buffer is drained and it drops below this value.
      */
     public int writeBufferLowWaterMark = 1024 * 32;
+
+    /**
+     * The full class name of the {@link com.tinkerpop.gremlin.server.GremlinChannelInitializer} to use in
+     * Gremlin Server.
+     */
+    public String channelizer = WebSocketChannelInitializer.class.getName();
 
     /**
      * Configured metrics for Gremlin Server.
