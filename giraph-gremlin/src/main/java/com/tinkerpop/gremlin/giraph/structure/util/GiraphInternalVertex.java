@@ -48,13 +48,13 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         this.tinkerVertex.properties().forEach((k, v) -> vertex.property(k, v.value()));
         this.tinkerVertex.outE().forEach(edge -> {
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.inV().id().next(), edge.inV().label().next());
-            final TinkerEdge gremlinEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex);
-            edge.properties().forEach((k, v) -> gremlinEdge.property(k, v.value()));
+            final TinkerEdge tinkerEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex);
+            edge.properties().forEach((k, v) -> tinkerEdge.property(k, v.value()));
         });
         this.tinkerVertex.inE().forEach(edge -> {
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.outV().id().next(), edge.outV().label().next());
-            final TinkerEdge gremlinEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex);
-            edge.properties().forEach((k, v) -> gremlinEdge.property(k, v.value()));
+            final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex);
+            edge.properties().forEach((k, v) -> tinkerEdge.property(k, v.value()));
         });
         this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateGiraphVertex(), EmptyOutEdges.instance());
         // TODO? this.tinkerVertex = vertex;
