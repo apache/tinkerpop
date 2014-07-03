@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import com.tinkerpop.gremlin.server.channel.NioChannelInitializer;
 import com.tinkerpop.gremlin.server.channel.WebSocketChannelInitializer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.bootstrap.ServerBootstrap;
@@ -64,6 +65,10 @@ public class GremlinServer {
 
             final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinGroup, workerGroup);
             final GremlinChannelInitializer gremlinChannelInitializer = new WebSocketChannelInitializer();
+
+            // todo: plugin channel initializers
+            // final GremlinChannelInitializer gremlinChannelInitializer = new NioChannelInitializer();
+
             gremlinChannelInitializer.init(settings, gremlinExecutor, gremlinGroup, graphs.get());
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)

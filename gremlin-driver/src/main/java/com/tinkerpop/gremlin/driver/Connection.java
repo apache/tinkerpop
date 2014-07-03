@@ -67,7 +67,10 @@ class Connection {
 
         // todo: blocking
         try {
+            // todo: plugin channel initializers
+            // todo: abstract websocket stuff
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
+            // channel = b.connect(uri.getHost().replace("ws://", "").replace("/gremlin", ""), uri.getPort()).sync().channel();
             initializer.handler.handshakeFuture().sync();
 
             logger.info("Created new connection for {}", uri);
@@ -204,7 +207,15 @@ class Connection {
             pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
             pipeline.addLast("ws-handler", handler);
             pipeline.addLast("gremlin-encoder", new Handler.GremlinRequestEncoder(true, cluster.getSerializer()));
-            pipeline.addLast("gremlin-decoder", new Handler.GremlinResponseDecoder(pending, cluster.getSerializer()));
+            pipeline.addLast("gremlin-decoder", new Handler.WebSocketGremlinResponseDecoder(cluster.getSerializer()));
+            pipeline.addLast("gremlin-handler", new Handler.GremlinResponseHandler(pending));
+
+            // todo: plugin channel initializers
+            /*
+            pipeline.addLast("gremlin-decoder", new Handler.NioGremlinResponseDecoder(cluster.getSerializer()));
+            pipeline.addLast("gremlin-encoder", new Handler.NioGremlinRequestEncoder(true, cluster.getSerializer()));
+            pipeline.addLast("gremlin-handler", new Handler.GremlinResponseHandler(pending));
+             */
         }
     }
 

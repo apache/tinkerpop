@@ -22,13 +22,13 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinBinaryRequestDecoder extends MessageToMessageDecoder<BinaryWebSocketFrame> {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinBinaryRequestDecoder.class);
+public class WsGremlinBinaryRequestDecoder extends MessageToMessageDecoder<BinaryWebSocketFrame> {
+    private static final Logger logger = LoggerFactory.getLogger(WsGremlinBinaryRequestDecoder.class);
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
     private final Map<String, MessageSerializer> serializers;
 
-    public GremlinBinaryRequestDecoder(final Map<String, MessageSerializer> serializers) {
+    public WsGremlinBinaryRequestDecoder(final Map<String, MessageSerializer> serializers) {
         this.serializers = serializers;
     }
 

@@ -12,6 +12,9 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
@@ -25,6 +28,7 @@ import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -35,6 +39,8 @@ import java.util.concurrent.ConcurrentMap;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class Handler {
+    private static final Charset UTF8 = Charset.forName("UTF-8");
+
     static class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
         private static final Logger logger = LoggerFactory.getLogger(WebSocketClientHandler.class);
         private final WebSocketClientHandshaker handshaker;
@@ -99,74 +105,84 @@ class Handler {
         }
     }
 
-    static class GremlinResponseDecoder extends SimpleChannelInboundHandler<WebSocketFrame> {
-        private static final Logger logger = LoggerFactory.getLogger(GremlinResponseDecoder.class);
+    static class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
+        private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
 
-        private final MessageSerializer serializer;
         private final ConcurrentMap<UUID, ResponseQueue> pending;
 
-        public GremlinResponseDecoder(final ConcurrentMap<UUID, ResponseQueue> pending, final MessageSerializer serializer) {
+        public GremlinResponseHandler(final ConcurrentMap<UUID, ResponseQueue> pending) {
             this.pending = pending;
+        }
+
+        @Override
+        protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
+            try {
+                if (response.getCode() == ResultCode.SUCCESS) {
+                    if (response.getResultType() == ResultType.OBJECT)
+                        pending.get(response.getRequestId()).add(response);
+                    else if (response.getResultType() == ResultType.COLLECTION) {
+                        // unrolls the collection into individual response messages to be handled by the queue
+                        final List<Object> listToUnroll = (List<Object>) response.getResult();
+                        final ResponseQueue queue = pending.get(response.getRequestId());
+                        listToUnroll.forEach(item -> queue.add(
+                                ResponseMessage.create(response.getRequestId())
+                                        .result(item).build()));
+                    } else if (response.getResultType() == ResultType.EMPTY) {
+                        // there is nothing to do with ResultType.EMPTY - it will simply be marked complete with
+                        // a success terminator
+                    } else {
+                        logger.warn("Received an invalid ResultType of [{}] - marking request {} as being in error. Please report as this issue.", response.getResultType(), response.getRequestId());
+                        pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
+                    }
+                } else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
+                    pending.remove(response.getRequestId()).markComplete();
+                else
+                    pending.get(response.getRequestId()).markError(new ResponseException(response.getCode(), response.getResult().toString()));
+            } finally {
+                ReferenceCountUtil.release(response);
+            }
+        }
+    }
+
+    static class WebSocketGremlinResponseDecoder extends MessageToMessageDecoder<WebSocketFrame> {
+        private final MessageSerializer serializer;
+
+        public WebSocketGremlinResponseDecoder(final MessageSerializer serializer) {
             this.serializer = serializer;
         }
 
         @Override
-        protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final WebSocketFrame webSocketFrame) throws Exception {
+        protected void decode(final ChannelHandlerContext channelHandlerContext, final WebSocketFrame webSocketFrame, final List<Object> objects) throws Exception {
             try {
                 if (webSocketFrame instanceof BinaryWebSocketFrame) {
                     final BinaryWebSocketFrame tf = (BinaryWebSocketFrame) webSocketFrame;
-                    final ResponseMessage response = serializer.deserializeResponse(tf.content());
-
-                    if (response.getCode() == ResultCode.SUCCESS) {
-                        if (response.getResultType() == ResultType.OBJECT)
-                            pending.get(response.getRequestId()).add(response);
-                        else if (response.getResultType() == ResultType.COLLECTION) {
-                            // unrolls the collection into individual response messages to be handled by the queue
-                            final List<Object> listToUnroll = (List<Object>) response.getResult();
-                            final ResponseQueue queue = pending.get(response.getRequestId());
-                            listToUnroll.forEach(item -> queue.add(
-                                    ResponseMessage.create(response.getRequestId())
-                                            .result(item).build()));
-                        } else if (response.getResultType() == ResultType.EMPTY) {
-                            // there is nothing to do with ResultType.EMPTY - it will simply be marked complete with
-                            // a success terminator
-                        } else {
-                            logger.warn("Received an invalid ResultType of [{}] - marking request {} as being in error. Please report as this issue.", response.getResultType(), response.getRequestId());
-                            pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
-                        }
-                    } else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
-                        pending.remove(response.getRequestId()).markComplete();
-                    else
-                        pending.get(response.getRequestId()).markError(new ResponseException(response.getCode(), response.getResult().toString()));
-                } else if (webSocketFrame instanceof TextWebSocketFrame) {
+                    objects.add(serializer.deserializeResponse(tf.content()));
+                } else {
                     final TextWebSocketFrame tf = (TextWebSocketFrame) webSocketFrame;
                     final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                    final ResponseMessage response = textSerializer.deserializeResponse(tf.text());
-                    if (response.getCode() == ResultCode.SUCCESS) {
-                        if (response.getResultType() == ResultType.OBJECT)
-                            pending.get(response.getRequestId()).add(response);
-                        else if (response.getResultType() == ResultType.COLLECTION) {
-                            // unrolls the collection into individual response messages to be handled by the queue
-                            final List<Object> listToUnroll = (List<Object>) response.getResult();
-                            final ResponseQueue queue = pending.get(response.getRequestId());
-                            listToUnroll.forEach(item -> queue.add(
-                                    ResponseMessage.create(response.getRequestId())
-                                            .result(item).build()));
-                        } else if (response.getResultType() == ResultType.EMPTY) {
-                            // there is nothing to do with ResultType.EMPTY - it will simply be marked complete with
-                            // a success terminator
-                        } else {
-                            logger.warn("Received an invalid ResultType of [{}] - marking request {} as being in error. Please report as this issue.", response.getResultType(), response.getRequestId());
-                            pending.get(response.getRequestId()).markError(new RuntimeException(response.getResult().toString()));
-                        }
-                    } else if (response.getCode() == ResultCode.SUCCESS_TERMINATOR)
-                        pending.remove(response.getRequestId()).markComplete();
-                    else
-                        pending.get(response.getRequestId()).markError(new ResponseException(response.getCode(), response.getResult().toString()));
+                    objects.add(textSerializer.deserializeResponse(tf.text()));
                 }
             } finally {
                 ReferenceCountUtil.release(webSocketFrame);
             }
+        }
+    }
+
+    static class NioGremlinResponseDecoder extends ByteToMessageDecoder {
+        private final MessageSerializer serializer;
+
+        public NioGremlinResponseDecoder(final MessageSerializer serializer) {
+            this.serializer = serializer;
+        }
+
+        @Override
+        protected void decode(final ChannelHandlerContext channelHandlerContext, final ByteBuf byteBuf, final List<Object> objects) throws Exception {
+            // todo: won't decode "text"
+            if (byteBuf.readableBytes() < 1) {
+                return;
+            }
+
+            objects.add(serializer.deserializeResponse(byteBuf));
         }
     }
 
@@ -190,6 +206,33 @@ class Handler {
                 } else {
                     final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
                     objects.add(new TextWebSocketFrame(textSerializer.serializeRequestAsString(requestMessage)));
+                }
+            } catch (Exception ex) {
+                logger.warn(String.format("An error occurred during serialization of this request [%s] - it could not be sent to the server.", requestMessage), ex);
+            }
+        }
+    }
+
+    static class NioGremlinRequestEncoder extends MessageToByteEncoder<Object> {
+        private static final Logger logger = LoggerFactory.getLogger(GremlinRequestEncoder.class);
+        private boolean binaryEncoding = false;
+
+        private final MessageSerializer serializer;
+
+        public NioGremlinRequestEncoder(final boolean binaryEncoding, final MessageSerializer serializer) {
+            this.binaryEncoding = binaryEncoding;
+            this.serializer = serializer;
+        }
+
+        @Override
+        protected void encode(final ChannelHandlerContext channelHandlerContext, final Object msg, final ByteBuf byteBuf) throws Exception {
+            final RequestMessage requestMessage = (RequestMessage) msg;
+            try {
+                if (binaryEncoding) {
+                    byteBuf.writeBytes(serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc()));
+                } else {
+                    final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+                    byteBuf.writeBytes(textSerializer.serializeRequestAsString(requestMessage).getBytes(UTF8));
                 }
             } catch (Exception ex) {
                 logger.warn(String.format("An error occurred during serialization of this request [%s] - it could not be sent to the server.", requestMessage), ex);

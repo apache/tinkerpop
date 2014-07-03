@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinTextRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
+public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {

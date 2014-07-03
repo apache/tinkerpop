@@ -1,12 +1,10 @@
 package com.tinkerpop.gremlin.server.channel;
 
 import com.tinkerpop.gremlin.server.AbstractGremlinChannelInitializer;
-import com.tinkerpop.gremlin.server.handler.GremlinBinaryRequestDecoder;
-import com.tinkerpop.gremlin.server.handler.GremlinResponseEncoder;
-import com.tinkerpop.gremlin.server.handler.GremlinTextRequestDecoder;
-import io.netty.channel.ChannelHandlerContext;
+import com.tinkerpop.gremlin.server.handler.WsGremlinBinaryRequestDecoder;
+import com.tinkerpop.gremlin.server.handler.WsGremlinResponseEncoder;
+import com.tinkerpop.gremlin.server.handler.WsGremlinTextRequestDecoder;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -49,9 +47,9 @@ public class WebSocketChannelInitializer extends AbstractGremlinChannelInitializ
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
 
-        pipeline.addLast("response-encoder", new GremlinResponseEncoder());
-        pipeline.addLast("request-text-decoder", new GremlinTextRequestDecoder());
-        pipeline.addLast("request-binary-decoder", new GremlinBinaryRequestDecoder(serializers));
+        pipeline.addLast("response-encoder", new WsGremlinResponseEncoder());
+        pipeline.addLast("request-text-decoder", new WsGremlinTextRequestDecoder());
+        pipeline.addLast("request-binary-decoder", new WsGremlinBinaryRequestDecoder(serializers));
 
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));

@@ -229,7 +229,7 @@ public class KryoMessageSerializerV1d0 implements MessageSerializer {
                 if (size > Integer.MAX_VALUE)
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
-                encodedMessage = allocator.buffer((int) output.total());
+                encodedMessage = allocator.buffer((int) size);
                 encodedMessage.writeBytes(output.toBytes());
             }
 
