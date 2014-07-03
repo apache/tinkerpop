@@ -3,16 +3,16 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
+import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
-import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES;
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
+import static com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -43,11 +43,11 @@ public abstract class LinkTest extends AbstractGremlinTest {
 
         for (Vertex vertex : cocreators) {
             if (vertex.id().equals(convertToVertexId("marko"))) {
-                assertEquals(vertex.outE("cocreator").count(), 4);
-                assertEquals(vertex.inE("cocreator").count(), 4);
+                assertEquals(vertex.outE("cocreator").count().next(), new Long(4));
+                assertEquals(vertex.inE("cocreator").count().next(), new Long(4));
             } else {
-                assertEquals(vertex.outE("cocreator").count(), 1);
-                assertEquals(vertex.inE("cocreator").count(), 1);
+                assertEquals(vertex.outE("cocreator").count().next(), new Long(1));
+                assertEquals(vertex.inE("cocreator").count().next(), new Long(1));
             }
         }
     }

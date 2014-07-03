@@ -41,6 +41,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.LinkStep;
@@ -98,6 +99,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> trackPaths() {
         return (GraphTraversal) this.addStep(new PathIdentityStep<>(this));
+    }
+
+    public default GraphTraversal<S, Long> count() {
+        return (GraphTraversal) this.addStep(new CountStep<>(this));
     }
 
     ///////////////////// TRANSFORM STEPS /////////////////////

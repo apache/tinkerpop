@@ -268,10 +268,10 @@ public class TransactionTest extends AbstractGremlinTest {
 
         final Thread threadReadBothGraphs = new Thread() {
             public void run() {
-                final long gCounter = g.V().count();
+                final long gCounter = g.V().count().next();
                 assertEquals(1l, gCounter);
 
-                final long g1Counter = g1.V().count();
+                final long g1Counter = g1.V().count().next();
                 assertEquals(0l, g1Counter);
             }
         };
@@ -566,7 +566,7 @@ public class TransactionTest extends AbstractGremlinTest {
                 }
 
                 // reading vertex before tx from other thread is committed...should have zero vertices
-                beforeCommitInOtherThread.set(graph.V().count());
+                beforeCommitInOtherThread.set(graph.V().count().next());
 
                 latchCommit.countDown();
 
@@ -577,7 +577,7 @@ public class TransactionTest extends AbstractGremlinTest {
                 }
 
                 // tx in other thread is committed...should have one vertex
-                afterCommitInOtherThread.set(graph.V().count());
+                afterCommitInOtherThread.set(graph.V().count().next());
             }
         };
 

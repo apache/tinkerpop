@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
-import com.tinkerpop.gremlin.util.StreamFactory;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
@@ -35,10 +34,10 @@ public class AggregateStep<S> extends FlatMapStep<S, S> implements Reversible, B
                 list.add(traverser.get());
                 this.aggregate.add(this.functionRing.next().apply(traverser.get()));
             }
-            StreamFactory.stream(this.getPreviousStep()).forEach(nextHolder -> {
+            this.getPreviousStep().forEachRemaining(previousTraverser -> {
                 for (int i = 0; i < this.bulkCount; i++) {
-                    list.add(nextHolder.get());
-                    this.aggregate.add(this.functionRing.next().apply(nextHolder.get()));
+                    list.add(previousTraverser.get());
+                    this.aggregate.add(this.functionRing.next().apply(previousTraverser.get()));
                 }
             });
             return list.iterator();

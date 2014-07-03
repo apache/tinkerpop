@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -103,7 +104,8 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable) {
+        if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable || TraversalHelper.getEnd(traversal) instanceof CountStep) {
+            System.out.println("HERE!!!!!");
             this.program(TraversalVertexProgram.create().traversal(() -> traversal).getConfiguration());
             try {
                 this.submit().get().getValue0();

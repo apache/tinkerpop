@@ -59,7 +59,7 @@ public class GremlinGroovyScriptEngineTest {
 
         final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
         assertEquals(Vertex.class.getName(), engineWithImports.eval("Vertex.class.getName()"));
-        assertEquals(2l, engineWithImports.eval("TinkerFactory.createClassic().V.has('age',T.gt,30).count()"));
+        assertEquals(2l, engineWithImports.eval("TinkerFactory.createClassic().V.has('age',T.gt,30).count().next()"));
         assertEquals(Direction.IN, engineWithImports.eval("Direction.IN"));
         assertEquals(Direction.OUT, engineWithImports.eval("Direction.OUT"));
         assertEquals(Direction.BOTH, engineWithImports.eval("Direction.BOTH"));

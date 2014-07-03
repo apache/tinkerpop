@@ -17,6 +17,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
@@ -44,7 +45,7 @@ import org.junit.runners.model.RunnerBuilder;
  * instantiate Graph instances from the implementation being tested to inject into tests in the suite.  The
  * ProcessStandardSuite will utilized Features defined in the suite to determine which tests will be executed.
  */
-public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
+public class ProcessComputerSuite extends AbstractGremlinSuite {
 
     // todo: all tests are not currently passing. see specific todos in each test
 
@@ -53,6 +54,8 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+           // CountTest.JavaComputerCountTest.class,
+
             CyclicPathTest.JavaComputerCyclicPathTest.class,
             // DedupTest.JavaComputerDedupTest.class,  TODO: Makes no sense in GraphComputer
             ExceptTest.JavaComputerExceptTest.class,
@@ -72,7 +75,6 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             TraversalTest.JavaComputerTraversalTest.class,
             ValuesTest.JavaComputerValuesTest.class,
             TreeTest.JavaComputerTreeTest.class,
-
             GroupCountTest.JavaComputerGroupCountTest.class,
             GroupByTest.JavaComputerGroupByTest.class,
 
@@ -93,6 +95,7 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
      * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
      */
     protected static final Class<?>[] testsToEnforce = new Class<?>[]{
+           // CountTest.class,
             CyclicPathTest.class,
             ExceptTest.class,
             FilterTest.class,
@@ -112,11 +115,11 @@ public class ProcessComputerStandardSuite extends AbstractGremlinSuite {
             TreeTest.class
     };
 
-    public ProcessComputerStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
+    public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
         super(klass, builder, testsToExecute, testsToEnforce);
     }
 
-    public ProcessComputerStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
+    public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
         super(klass, builder, testsToExecute, testsToEnforce);
     }
 }

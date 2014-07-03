@@ -1,25 +1,46 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
+import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
-import com.tinkerpop.gremlin.process.graph.marker.Reversible;
-import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class CountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable {
+public class CountStep<S> extends MapStep<S, Long> implements Bulkable {
 
-    private long counter = 0l;
+    //private final String COUNT = Graph.Key.hidden("count");
+
     private long bulkCount = 1l;
+    private final AtomicBoolean done = new AtomicBoolean(false);
+    private final AtomicLong counter = new AtomicLong(0l);
 
     public CountStep(final Traversal traversal) {
         super(traversal);
-        this.traversal.memory().set(CAP_KEY, this.counter);
-        this.setPredicate(traverser -> {
-            this.counter = this.counter + this.bulkCount;
-            return true;
+        this.setFunction(traverser -> {
+            this.counter.set(this.counter.get() + this.bulkCount);
+            this.getPreviousStep().forEachRemaining(previousTraverser -> this.counter.set(this.counter.get() + this.bulkCount));
+            return this.counter.get();
         });
+    }
+
+    protected Traverser<Long> processNextStart() {
+        if (!this.done.get()) {
+            this.done.set(true);
+            if (this.starts.hasNext()) {
+                return super.processNextStart();
+            } else {
+                return new SimpleTraverser<>(0l);
+            }
+        } else {
+            throw FastNoSuchElementException.instance();
+        }
     }
 
     public void setCurrentBulkCount(final long bulkCount) {

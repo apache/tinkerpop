@@ -11,10 +11,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -48,7 +45,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
         toRemove.addEdge("likes", g.addVertex("feature", "Strategy"));
 
         assertEquals(1, toRemove.properties().size());
-        assertEquals(1, toRemove.bothE().count());
+        assertEquals(new Long(1), toRemove.bothE().count().next());
         assertFalse(toRemove.property("deleted").isPresent());
 
         swg.v(toRemove.id()).remove();
@@ -56,7 +53,7 @@ public class StrategyWrappedGraphTest extends AbstractGremlinTest {
         final Vertex removed = g.v(toRemove.id());
         assertNotNull(removed);
         assertEquals(1, removed.properties().size());
-        assertEquals(0, removed.bothE().count());
+        assertEquals(new Long(0), removed.bothE().count().next());
         assertTrue(toRemove.property("deleted").isPresent());
     }
 

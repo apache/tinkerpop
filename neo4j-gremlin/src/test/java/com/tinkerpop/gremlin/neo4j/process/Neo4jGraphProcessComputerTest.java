@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.neo4j.process;
 
 import com.tinkerpop.gremlin.neo4j.Neo4jGraphProvider;
-import com.tinkerpop.gremlin.process.ProcessComputerStandardSuite;
+import com.tinkerpop.gremlin.process.ProcessComputerSuite;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
@@ -11,8 +11,8 @@ import org.junit.runner.RunWith;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(ProcessComputerStandardSuite.class)
+@RunWith(ProcessComputerSuite.class)
 @Ignore
-@ProcessComputerStandardSuite.GraphProviderClass(Neo4jGraphProvider.class)
-public class Neo4jGraphProcessComputerStandardTest {
+@ProcessComputerSuite.GraphProviderClass(Neo4jGraphProvider.class)
+public class Neo4jGraphProcessComputerTest {
 }

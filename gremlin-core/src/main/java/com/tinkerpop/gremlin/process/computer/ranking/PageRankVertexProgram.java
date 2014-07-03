@@ -84,7 +84,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     public void execute(final Vertex vertex, Messenger<Double> messenger, final GraphComputer.Globals globals) {
         if (globals.isInitialIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
-            double edgeCount = Long.valueOf(this.messageType.edges(vertex).count()).doubleValue();
+            double edgeCount = Double.valueOf((Long) this.messageType.edges(vertex).count().next());
             vertex.property(PAGE_RANK, initialPageRank);
             vertex.property(EDGE_COUNT, edgeCount);
             messenger.sendMessage(this.messageType, initialPageRank / edgeCount);
