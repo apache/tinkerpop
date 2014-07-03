@@ -38,7 +38,17 @@ public abstract class AbstractGremlinChannelInitializer extends ChannelInitializ
     protected Graphs graphs;
     protected EventExecutorGroup gremlinGroup;
 
+    protected static final String PIPELINE_SSL = "ssl";
+    protected static final String PIPELINE_OP_SELECTOR = "op-selector";
+    protected static final String PIPELINE_RESULT_ITERATOR_HANDLER = "result-iterator-handler";
+    protected static final String PIPELINE_OP_EXECUTOR = "op-executor";
+
     protected final Map<String, MessageSerializer> serializers = new HashMap<>();
+
+    public abstract void configure(final ChannelPipeline pipeline);
+    public void finalize(final ChannelPipeline pipeline) {
+        // do nothing
+    }
 
     @Override
     public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
@@ -60,17 +70,19 @@ public abstract class AbstractGremlinChannelInitializer extends ChannelInitializ
     public void initChannel(final SocketChannel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
 
-        sslEngine.ifPresent(ssl -> pipeline.addLast("ssl", new SslHandler(ssl)));
+        sslEngine.ifPresent(ssl -> pipeline.addLast(PIPELINE_SSL, new SslHandler(ssl)));
 
         // the implementation provides the method by which Gremlin Server will process requests.  the end of the
         // pipeline must decode to an incoming RequestMessage instances and encode to a outgoing ResponseMessage
         // instance
         configure(pipeline);
 
-        pipeline.addLast("op-selector", new OpSelectorHandler(settings, graphs, gremlinExecutor));
+        pipeline.addLast(PIPELINE_OP_SELECTOR, new OpSelectorHandler(settings, graphs, gremlinExecutor));
 
-        pipeline.addLast(gremlinGroup, "result-iterator-handler", new IteratorHandler(settings));
-        pipeline.addLast(gremlinGroup, "op-executor", new OpExecutorHandler(settings, graphs, gremlinExecutor));
+        pipeline.addLast(gremlinGroup, PIPELINE_RESULT_ITERATOR_HANDLER, new IteratorHandler(settings));
+        pipeline.addLast(gremlinGroup, PIPELINE_OP_EXECUTOR, new OpExecutorHandler(settings, graphs, gremlinExecutor));
+
+        finalize(pipeline);
     }
 
     private void configureSerializers() {

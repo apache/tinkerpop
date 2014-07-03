@@ -12,6 +12,4 @@ public interface GremlinChannelInitializer extends ChannelHandler {
     public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
                      final EventExecutorGroup gremlinGroup,
                      final Graphs graphs);
-
-    public void configure(final ChannelPipeline pipeline);
 }
