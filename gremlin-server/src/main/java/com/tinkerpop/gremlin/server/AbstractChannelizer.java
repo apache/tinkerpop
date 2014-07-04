@@ -28,6 +28,14 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
+ * A base implementation for the {@code Channelizer} which does a basic configuration of the the pipeline, one that
+ * is generally common to virtually any Gremlin Server operation (i.e. where the server's purpose is to process
+ * Gremlin scripts).
+ * <br/>
+ * Implementers need only worry about determining how incoming data is converted to a
+ * {@link com.tinkerpop.gremlin.driver.message.RequestMessage} and outgoing data is converted from a
+ * {@link com.tinkerpop.gremlin.driver.message.ResponseMessage} to whatever expected format is needed by the pipeline.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
@@ -45,7 +53,16 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     protected final Map<String, MessageSerializer> serializers = new HashMap<>();
 
+    /**
+     * This method is called from within {@link #initChannel(io.netty.channel.socket.SocketChannel)} just after
+     * the SSL handler is put in the pipeline.  Modify the pipeline as needed here.
+     */
     public abstract void configure(final ChannelPipeline pipeline);
+
+    /**
+     * This method is called after the pipeline is completely configured.  It can be overridden to make any
+     * final changes to the pipeline before it goes into use.
+     */
     public void finalize(final ChannelPipeline pipeline) {
         // do nothing
     }
