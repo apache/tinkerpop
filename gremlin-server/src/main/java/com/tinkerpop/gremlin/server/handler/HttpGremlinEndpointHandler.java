@@ -83,6 +83,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 response.headers().set(CONTENT_TYPE, "application/json");
                 response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 
+                String origin = req.headers().get("Origin");
+                    if (origin != null)
+                response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+            
                 if (!isKeepAlive(req)) {
                     ctx.write(response).addListener(ChannelFutureListener.CLOSE);
                 } else {
