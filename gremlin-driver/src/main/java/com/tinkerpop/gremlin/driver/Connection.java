@@ -58,20 +58,16 @@ class Connection {
         this.maxInProcess = maxInProcess;
 
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
-        final String protocol = uri.getScheme();
-        if (!"ws".equals(protocol))
-            throw new IllegalArgumentException("Unsupported protocol: " + protocol);
 
-        final ClientPipelineInitializer initializer = new ClientPipelineInitializer();
-        b.channel(NioSocketChannel.class).handler(initializer);
+        // todo: dynamically instantiate the channelizer from settings
+        final Channelizer channelizer = new Channelizer.WebSocketChannelizer();
+        channelizer.init(this);
+        b.channel(NioSocketChannel.class).handler(channelizer);
 
         // todo: blocking
         try {
-            // todo: plugin channel initializers
-            // todo: abstract websocket stuff
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
-            // channel = b.connect(uri.getHost().replace("ws://", "").replace("/gremlin", ""), uri.getPort()).sync().channel();
-            initializer.handler.handshakeFuture().sync();
+            channelizer.connected();
 
             logger.info("Created new connection for {}", uri);
         } catch (InterruptedException ie) {
@@ -95,6 +91,18 @@ class Connection {
 
     public boolean isClosed() {
         return closeFuture.get() != null;
+    }
+
+    URI getUri() {
+        return uri;
+    }
+
+    Cluster getCluster() {
+        return cluster;
+    }
+
+    ConcurrentMap<UUID, ResponseQueue> getPending() {
+        return pending;
     }
 
     public CompletableFuture<Void> closeAsync() {
@@ -186,38 +194,4 @@ class Connection {
     public String toString() {
         return String.format("Connection{isDead=%s, inFlight=%s, pending=%s}", isDead, inFlight, pending.size());
     }
-
-    class ClientPipelineInitializer extends ChannelInitializer<SocketChannel> {
-
-        // Connect with V13 (RFC 6455 aka HyBi-17). You can change it to V08 or V00.
-        // If you change it to V00, ping is not supported and remember to change
-        // HttpResponseDecoder to WebSocketHttpResponseDecoder in the pipeline.
-        final Handler.WebSocketClientHandler handler;
-
-        public ClientPipelineInitializer() {
-            handler = new Handler.WebSocketClientHandler(
-                    WebSocketClientHandshakerFactory.newHandshaker(
-                            Connection.this.uri, WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, 1280000));
-        }
-
-        @Override
-        protected void initChannel(final SocketChannel socketChannel) throws Exception {
-            final ChannelPipeline pipeline = socketChannel.pipeline();
-            pipeline.addLast("http-codec", new HttpClientCodec());
-            pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-            pipeline.addLast("ws-handler", handler);
-            pipeline.addLast("gremlin-encoder", new Handler.GremlinRequestEncoder(true, cluster.getSerializer()));
-            pipeline.addLast("gremlin-decoder", new Handler.WebSocketGremlinResponseDecoder(cluster.getSerializer()));
-            pipeline.addLast("gremlin-handler", new Handler.GremlinResponseHandler(pending));
-
-            // todo: plugin channel initializers
-            /*
-            pipeline.addLast("gremlin-decoder", new Handler.NioGremlinResponseDecoder(cluster.getSerializer()));
-            pipeline.addLast("gremlin-encoder", new Handler.NioGremlinRequestEncoder(true, cluster.getSerializer()));
-            pipeline.addLast("gremlin-handler", new Handler.GremlinResponseHandler(pending));
-             */
-        }
-    }
-
-
 }
