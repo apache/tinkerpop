@@ -6,12 +6,9 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -20,7 +17,7 @@ import java.util.function.Function;
 class Host {
     private static final Logger logger = LoggerFactory.getLogger(Host.class);
     private final InetSocketAddress address;
-    private final URI webSocketUri;
+    private final URI hostUri;
     private volatile boolean isAvailable;
     private final Cluster cluster;
 
@@ -29,15 +26,15 @@ class Host {
     public Host(final InetSocketAddress address, final Cluster cluster) {
         this.cluster = cluster;
         this.address = address;
-        this.webSocketUri = makeUriFromAddress(address, false);  // todo: pass down config for ssl
+        this.hostUri = makeUriFromAddress(address, false);  // todo: pass down config for ssl
     }
 
     public InetSocketAddress getAddress() {
         return address;
     }
 
-    public URI getWebSocketUri() {
-        return webSocketUri;
+    public URI getHostUri() {
+        return hostUri;
     }
 
     public boolean isAvailable() {
@@ -78,7 +75,7 @@ class Host {
     public String toString() {
         return "Host{" +
                 "address=" + address +
-                ", webSocketUri=" + webSocketUri +
+                ", hostUri=" + hostUri +
                 '}';
     }
 

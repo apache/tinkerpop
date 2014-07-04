@@ -16,7 +16,7 @@ public class HostTest {
     public void shouldConstructHost() {
         final InetSocketAddress addy = new InetSocketAddress("localhost", 8182);
         final Host host = new Host(addy, Cluster.open());
-        final URI webSocketUri = host.getWebSocketUri();
+        final URI webSocketUri = host.getHostUri();
         assertEquals("ws://localhost:8182/gremlin", webSocketUri.toString());
     }
 

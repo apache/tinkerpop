@@ -64,7 +64,7 @@ class ConnectionPool {
 
         try {
             for (int i = 0; i < minPoolSize; i++)
-                l.add(new Connection(host.getWebSocketUri(), this, cluster, settings.maxInProcessPerConnection));
+                l.add(new Connection(host.getHostUri(), this, cluster, settings.maxInProcessPerConnection));
         } catch (Exception re) {
             // ok if we don't get it initialized here - when a request is attempted in a connection from the
             // pool it will try to create new connections as needed.
@@ -84,7 +84,7 @@ class ConnectionPool {
     public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
         logger.debug("Borrowing connection from pool on {} - timeout in {} {}", host, timeout, unit);
 
-        if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+        if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
         final Connection leastUsedConn = selectLeastUsed();
 
@@ -100,7 +100,7 @@ class ConnectionPool {
 
         if (null == leastUsedConn) {
             if (isClosed())
-                throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+                throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
             logger.debug("Pool was initialized but a connection could not be selected earlier - waiting for connection on {}", host);
             return waitForConnection(timeout, unit);
         }
@@ -135,7 +135,7 @@ class ConnectionPool {
 
     public void returnConnection(final Connection connection) throws ConnectionException {
         logger.debug("Attempting to return {} on {}", connection, host);
-        if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+        if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
         int inFlight = connection.inFlight.decrementAndGet();
         if (connection.isDead()) {
@@ -247,7 +247,7 @@ class ConnectionPool {
             return false;
         }
 
-        connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
+        connections.add(new Connection(host.getHostUri(), this, cluster, settings().maxInProcessPerConnection));
         announceAvailableConnection();
         return true;
     }
@@ -289,7 +289,7 @@ class ConnectionPool {
             }
 
             if (isClosed())
-                throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+                throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
             final Connection leastUsed = selectLeastUsed();
             if (leastUsed != null) {
@@ -338,7 +338,7 @@ class ConnectionPool {
 
         try {
 
-            connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
+            connections.add(new Connection(host.getHostUri(), this, cluster, settings().maxInProcessPerConnection));
             this.open.set(connections.size());
 
             // host is reconnected and a connection is now available
