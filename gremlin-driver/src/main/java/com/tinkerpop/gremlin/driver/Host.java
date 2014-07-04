@@ -53,7 +53,8 @@ class Host {
                 this.cluster.executor().scheduleAtFixedRate(() -> {
                     logger.debug("Trying to reconnect to dead host at {}", this);
                     if (reconnect.apply(this)) reconnected();
-                }, 1000, 1000, TimeUnit.MILLISECONDS));  // todo: configuration
+                }, cluster.connectionPoolSettings().reconnectInitialDelay,
+                        cluster.connectionPoolSettings().reconnectInterval, TimeUnit.MILLISECONDS));
     }
 
     private void reconnected() {

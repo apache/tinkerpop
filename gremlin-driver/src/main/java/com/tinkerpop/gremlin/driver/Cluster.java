@@ -150,6 +150,8 @@ public class Cluster {
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
         private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
+        private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
+        private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
 
         private Builder() {
@@ -241,6 +243,22 @@ public class Cluster {
             return this;
         }
 
+        /**
+         * Time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
+         */
+        public Builder reconnectIntialDelay(final int initialDelay) {
+            this.reconnectInitialDelay = initialDelay;
+            return this;
+        }
+
+        /**
+         * Time in milliseconds to wait between retries when attempting to reconnect to a dead host.
+         */
+        public Builder reconnectInterval(final int interval) {
+            this.reconnectInterval = interval;
+            return this;
+        }
+
         public Builder loadBalancingStrategy(final LoadBalancingStrategy loadBalancingStrategy) {
             this.loadBalancingStrategy = loadBalancingStrategy;
             return this;
@@ -281,6 +299,8 @@ public class Cluster {
             connectionPoolSettings.minSize = this.minConnectionPoolSize;
             connectionPoolSettings.maxWaitForConnection = this.maxWaitForConnection;
             connectionPoolSettings.maxContentLength = this.maxContentLength;
+            connectionPoolSettings.reconnectInitialDelay = this.reconnectInitialDelay;
+            connectionPoolSettings.reconnectInterval = this.reconnectInterval;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy);
         }

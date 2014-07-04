@@ -56,6 +56,8 @@ class Settings {
         public int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
         public int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
         public int maxContentLength = Connection.MAX_CONTENT_LENGTH;
+        public int reconnectInterval = Connection.RECONNECT_INTERVAL;
+        public int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
     }
 
     public static class SerializerSettings {
