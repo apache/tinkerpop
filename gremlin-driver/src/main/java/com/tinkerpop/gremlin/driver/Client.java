@@ -123,7 +123,7 @@ public class Client {
         try {
             // the connection is returned to the pool once the response has been completed...see Connection.write()
             // the connection may be returned to the pool with the host being marked as "unavailable"
-            final Connection connection = pool.borrowConnection(3000, TimeUnit.MILLISECONDS);  // todo: configuration
+            final Connection connection = pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
             connection.write(msg, future);
             return future;
         } catch (TimeoutException toe) {

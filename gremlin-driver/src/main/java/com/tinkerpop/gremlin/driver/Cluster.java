@@ -148,6 +148,7 @@ public class Cluster {
         private int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
         private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
+        private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
 
         private Builder() {
@@ -222,6 +223,11 @@ public class Cluster {
             return this;
         }
 
+        public Builder maxWaitForConnection(final int maxWait) {
+            this.maxWaitForConnection = maxWait;
+            return this;
+        }
+
         public Builder loadBalancingStrategy(final LoadBalancingStrategy loadBalancingStrategy) {
             this.loadBalancingStrategy = loadBalancingStrategy;
             return this;
@@ -260,6 +266,7 @@ public class Cluster {
             connectionPoolSettings.minSimultaneousRequestsPerConnection = this.minSimultaneousRequestsPerConnection;
             connectionPoolSettings.maxSize = this.maxConnectionPoolSize;
             connectionPoolSettings.minSize = this.minConnectionPoolSize;
+            connectionPoolSettings.maxWaitForConnection = this.maxWaitForConnection;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy);
         }

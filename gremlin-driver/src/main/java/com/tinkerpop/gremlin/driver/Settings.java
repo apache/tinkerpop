@@ -54,6 +54,11 @@ class Settings {
         public int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
         public int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         public int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
+
+        /**
+         * The maximum amount of time to wait for a connection to be borrowed from the connection pool.
+         */
+        public int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
     }
 
     public static class SerializerSettings {
