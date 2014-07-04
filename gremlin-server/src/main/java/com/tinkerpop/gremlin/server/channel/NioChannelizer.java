@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class NioChannelizer extends AbstractChannelizer {
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketChannelizer.class);
+    private static final Logger logger = LoggerFactory.getLogger(NioChannelizer.class);
 
     @Override
     public void configure(final ChannelPipeline pipeline) {
