@@ -51,23 +51,22 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
         this.starts.clear();
     }
 
-    private Iterator<Edge> edges() {
+    private Iterator<? extends Edge> edges() {
         this.graph.tx().readWrite();
         final HasContainer indexedContainer = getIndexKey(Edge.class);
-        return (Iterator) ((null == indexedContainer) ?
+        final Stream<? extends Edge> edgeStream = (null == indexedContainer) ?
                 getEdges() :
-                getEdgesUsingIndex(indexedContainer))
-                .filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).collect(Collectors.toList()).iterator();
+                getEdgesUsingIndex(indexedContainer);
+        return edgeStream.filter(v -> HasContainer.testAll((Edge) v, this.hasContainers)).iterator();
     }
 
-    private Iterator<Vertex> vertices() {
+    private Iterator<? extends Vertex> vertices() {
         this.graph.tx().readWrite();
-
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
-        return (Iterator) ((null == indexedContainer) ?
+        final Stream<? extends Vertex> vertexStream = (null == indexedContainer) ?
                 getVertices() :
-                getVerticesUsingIndex(indexedContainer))
-                .filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).collect(Collectors.toList()).iterator();
+                getVerticesUsingIndex(indexedContainer);
+        return vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).iterator();
     }
 
     private Stream<Neo4jVertex> getVertices() {
