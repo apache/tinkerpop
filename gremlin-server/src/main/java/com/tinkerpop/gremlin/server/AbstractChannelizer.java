@@ -30,8 +30,8 @@ import java.util.stream.Stream;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractGremlinChannelInitializer extends ChannelInitializer<SocketChannel> implements GremlinChannelInitializer {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinChannelInitializer.class);
+public abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractChannelizer.class);
     protected Settings settings;
     protected GremlinExecutor gremlinExecutor;
     protected Optional<SSLEngine> sslEngine;

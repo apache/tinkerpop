@@ -1,9 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.server.channel.HttpChannelInitializer;
-import com.tinkerpop.gremlin.server.channel.NioChannelInitializer;
-import com.tinkerpop.gremlin.server.channel.WebSocketChannelInitializer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -65,11 +62,11 @@ public class GremlinServer {
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinGroup, workerGroup);
-            final GremlinChannelInitializer gremlinChannelInitializer = createInitializer(settings);
-            gremlinChannelInitializer.init(settings, gremlinExecutor, gremlinGroup, graphs.get());
+            final Channelizer channelizer = createChannelizer(settings);
+            channelizer.init(settings, gremlinExecutor, gremlinGroup, graphs.get());
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(gremlinChannelInitializer);
+                    .childHandler(channelizer);
 
             ch = b.bind(settings.host, settings.port).sync().channel();
             logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
@@ -90,18 +87,18 @@ public class GremlinServer {
         }
     }
 
-    private static GremlinChannelInitializer createInitializer(final Settings settings) throws Exception {
+    private static Channelizer createChannelizer(final Settings settings) throws Exception {
         try {
             final Class clazz = Class.forName(settings.channelizer);
             final Object o = clazz.newInstance();
-            return (GremlinChannelInitializer) o;
+            return (Channelizer) o;
         } catch (ClassNotFoundException fnfe) {
             logger.error("Could not find {} implementation defined by the 'channelizer' setting as: {}",
-                    GremlinChannelInitializer.class.getName(), settings.channelizer);
+                    Channelizer.class.getName(), settings.channelizer);
             throw new RuntimeException(fnfe);
         } catch (Exception ex) {
             logger.error("Class defined by the 'channelizer' setting as: {} could not be properly instantiated as a {}",
-                    settings.channelizer, GremlinChannelInitializer.class.getName());
+                    settings.channelizer, Channelizer.class.getName());
             throw new RuntimeException(ex);
         }
     }

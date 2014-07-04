@@ -8,7 +8,7 @@ import io.netty.util.concurrent.EventExecutorGroup;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface GremlinChannelInitializer extends ChannelHandler {
+public interface Channelizer extends ChannelHandler {
     public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
                      final EventExecutorGroup gremlinGroup,
                      final Graphs graphs);

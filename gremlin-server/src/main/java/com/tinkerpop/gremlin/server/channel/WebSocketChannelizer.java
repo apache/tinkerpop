@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.server.channel;
 
-import com.tinkerpop.gremlin.server.AbstractGremlinChannelInitializer;
+import com.tinkerpop.gremlin.server.AbstractChannelizer;
 import com.tinkerpop.gremlin.server.handler.WsGremlinBinaryRequestDecoder;
 import com.tinkerpop.gremlin.server.handler.WsGremlinResponseEncoder;
 import com.tinkerpop.gremlin.server.handler.WsGremlinTextRequestDecoder;
@@ -17,8 +17,8 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class WebSocketChannelInitializer extends AbstractGremlinChannelInitializer {
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketChannelInitializer.class);
+public class WebSocketChannelizer extends AbstractChannelizer {
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketChannelizer.class);
 
     @Override
     public void configure(final ChannelPipeline pipeline) {
