@@ -11,9 +11,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
@@ -83,9 +81,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 response.headers().set(CONTENT_TYPE, "application/json");
                 response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 
-                String origin = req.headers().get("Origin");
-                    if (origin != null)
-                response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+                // handle cors business
+                final String origin = req.headers().get(ORIGIN);
+                if (origin != null)
+                    response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
             
                 if (!isKeepAlive(req)) {
                     ctx.write(response).addListener(ChannelFutureListener.CLOSE);
