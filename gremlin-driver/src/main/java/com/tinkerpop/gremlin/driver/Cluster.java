@@ -149,6 +149,7 @@ public class Cluster {
         private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
+        private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
 
         private Builder() {
@@ -223,8 +224,20 @@ public class Cluster {
             return this;
         }
 
+        /**
+         * The maximum amount of time to wait for a connection to be borrowed from the connection pool.
+         */
         public Builder maxWaitForConnection(final int maxWait) {
             this.maxWaitForConnection = maxWait;
+            return this;
+        }
+
+        /**
+         * The maximum size in bytes of any request sent to the server.   This number should not exceed the same
+         * setting defined on the server.
+         */
+        public Builder maxContentLength(final int maxContentLength) {
+            this.maxContentLength = maxContentLength;
             return this;
         }
 
@@ -267,6 +280,7 @@ public class Cluster {
             connectionPoolSettings.maxSize = this.maxConnectionPoolSize;
             connectionPoolSettings.minSize = this.minConnectionPoolSize;
             connectionPoolSettings.maxWaitForConnection = this.maxWaitForConnection;
+            connectionPoolSettings.maxContentLength = this.maxContentLength;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy);
         }

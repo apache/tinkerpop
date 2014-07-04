@@ -45,6 +45,7 @@ class Connection {
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
     public static final int MAX_WAIT_FOR_CONNECTION = 3000;
+    public static final int MAX_CONTENT_LENGTH = 65536;
 
     public final AtomicInteger inFlight = new AtomicInteger(0);
     private volatile boolean isDead = false;

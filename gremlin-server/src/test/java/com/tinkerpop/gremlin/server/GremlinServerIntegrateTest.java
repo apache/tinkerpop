@@ -5,7 +5,6 @@ import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -134,7 +133,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception re) {
             // can't seem to catch the server side exception - as the channel is basically closed on this error
             // can only detect a closed channel and react to that.  in some ways this is a good general piece of
-            // code to have in place, but kinda stinky when you want something specifica about why all went bad
+            // code to have in place, but kinda stinky when you want something specific about why all went bad
             assertTrue(re.getCause().getMessage().equals("Error while processing results from channel - check client and server logs for more information"));
         } finally {
             cluster.close();

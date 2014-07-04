@@ -66,12 +66,13 @@ public interface Channelizer extends ChannelHandler {
             if (!"ws".equals(protocol))
                 throw new IllegalArgumentException("Unsupported protocol: " + protocol);
 
+            final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
             handler = new Handler.WebSocketClientHandler(
                     WebSocketClientHandshakerFactory.newHandshaker(
-                            connection.getUri(), WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, 1280000));
+                            connection.getUri(), WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, maxContentLength));
 
             pipeline.addLast("http-codec", new HttpClientCodec());
-            pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
+            pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
             pipeline.addLast("ws-handler", handler);
             pipeline.addLast("gremlin-encoder", new Handler.GremlinRequestEncoder(true, cluster.getSerializer()));
             pipeline.addLast("gremlin-decoder", new Handler.WebSocketGremlinResponseDecoder(cluster.getSerializer()));
