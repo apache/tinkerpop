@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.ResultSet;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -46,9 +47,28 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldBlockRequestWhenTooBig":
                 settings.maxContentLength = 1024;
                 break;
+            case "shouldBatchResultsByTwos":
+                settings.resultIterationBatchSize = 2;
+                break;
         }
 
         return settings;
+    }
+
+    @Test
+    @Ignore
+    public void shouldBatchResultsByTwos() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        // todo: hard to test, but really should enforce this.  probably need to use something less smart than gremlin driver
+
+        try {
+            final ResultSet resultSet = client.submit("[1,2,3,4,5,6,7,8,9,0]");
+            assertEquals(2, resultSet.awaitItems(1).get().intValue());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
