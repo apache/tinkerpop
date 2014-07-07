@@ -24,27 +24,10 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
         this.labels = labels;
         this.branchFactor = branchFactor;
         this.returnClass = returnClass;
-        if (Vertex.class.isAssignableFrom(this.returnClass)) {
-            this.setFunction(traverser -> {
-                if (this.direction.equals(Direction.OUT)) {
-                    return (Iterator<E>) traverser.get().out(branchFactor, this.labels);
-                } else if (this.direction.equals(Direction.IN)) {
-                    return (Iterator<E>) traverser.get().in(branchFactor, this.labels);
-                } else {
-                    return (Iterator<E>) traverser.get().both(branchFactor, this.labels);
-                }
-            });
-        } else {
-            this.setFunction(traverser -> {
-                if (this.direction.equals(Direction.OUT)) {
-                    return (Iterator<E>) traverser.get().outE(branchFactor, this.labels);
-                } else if (this.direction.equals(Direction.IN)) {
-                    return (Iterator<E>) traverser.get().inE(branchFactor, this.labels);
-                } else {
-                    return (Iterator<E>) traverser.get().bothE(branchFactor, this.labels);
-                }
-            });
-        }
+        if (Vertex.class.isAssignableFrom(this.returnClass))
+            this.setFunction(traverser -> (Iterator<E>) traverser.get().to(this.direction, this.branchFactor, this.labels));
+        else
+            this.setFunction(traverser -> (Iterator<E>) traverser.get().toE(this.direction, this.branchFactor, this.labels));
     }
 
     public void reverse() {
