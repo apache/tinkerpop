@@ -28,7 +28,6 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
     public TinkerGraphStep(final Traversal traversal, final Class<E> returnClass, final TinkerGraph graph) {
         super(traversal, returnClass);
         this.graph = graph;
-        this.generateTraverserIterator(false);
     }
 
     public void generateTraverserIterator(final boolean trackPaths) {
