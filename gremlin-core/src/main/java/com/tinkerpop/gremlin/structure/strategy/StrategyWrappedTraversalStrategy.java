@@ -59,7 +59,7 @@ public class StrategyWrappedTraversalStrategy implements TraversalStrategy.Final
                 else if (o instanceof Property)
                     return new StrategyWrappedProperty((Property) o, graph);
                 else if (o instanceof Graph)
-                    return new StrategyWrappedGraph((Graph) o); // todo why would a Graph be in here???
+                    return new StrategyWrappedGraph((Graph) o);
                 else
                     return o;
             });
