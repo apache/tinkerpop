@@ -152,6 +152,7 @@ public class Cluster {
         private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
         private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
+        private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
 
         private Builder() {
@@ -223,6 +224,14 @@ public class Cluster {
 
         public Builder minConnectionPoolSize(final int minSize) {
             this.minConnectionPoolSize = minSize;
+            return this;
+        }
+
+        /**
+         * Override the server setting that determines how many results are returned per batch.
+         */
+        public Builder resultIterationBatchSize(final int size) {
+            this.resultIterationBatchSize = size;
             return this;
         }
 
@@ -301,6 +310,7 @@ public class Cluster {
             connectionPoolSettings.maxContentLength = this.maxContentLength;
             connectionPoolSettings.reconnectInitialDelay = this.reconnectInitialDelay;
             connectionPoolSettings.reconnectInterval = this.reconnectInterval;
+            connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy);
         }

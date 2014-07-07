@@ -94,7 +94,8 @@ public class Client {
             byte[] bytes = Serializer.serializeObject(traversal);
             final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_TRAVERSE)
                     .add(Tokens.ARGS_GREMLIN, bytes)
-                    .add(Tokens.ARGS_GRAPH_NAME, graph);
+                    .add(Tokens.ARGS_GRAPH_NAME, graph)
+                    .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
             return submitAsync(request.build());
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -107,7 +108,9 @@ public class Client {
     }
 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
-        final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, gremlin);
+        final RequestMessage.Builder request = RequestMessage.create(Tokens.OPS_EVAL)
+                .add(Tokens.ARGS_GREMLIN, gremlin)
+                .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
         Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
         return submitAsync(request.build());
     }

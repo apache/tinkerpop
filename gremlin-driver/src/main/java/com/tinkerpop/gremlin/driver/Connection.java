@@ -48,6 +48,7 @@ class Connection {
     public static final int MAX_CONTENT_LENGTH = 65536;
     public static final int RECONNECT_INITIAL_DELAY = 1000;
     public static final int RECONNECT_INTERVAL = 1000;
+    public static final int RESULT_ITERATION_BATCH_SIZE = 64;
 
     public final AtomicInteger inFlight = new AtomicInteger(0);
     private volatile boolean isDead = false;

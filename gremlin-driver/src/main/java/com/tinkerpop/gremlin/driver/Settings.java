@@ -58,6 +58,7 @@ class Settings {
         public int maxContentLength = Connection.MAX_CONTENT_LENGTH;
         public int reconnectInterval = Connection.RECONNECT_INTERVAL;
         public int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
+        public int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
     }
 
     public static class SerializerSettings {
