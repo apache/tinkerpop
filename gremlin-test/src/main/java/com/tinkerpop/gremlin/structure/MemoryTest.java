@@ -60,7 +60,7 @@ public class MemoryTest {
             try {
                 mapOfAnnotations.put("something", "can't do this");
                 fail("Should not be able to mutate the Map returned from Graph.variables.getAnnotations()");
-            } catch (UnsupportedOperationException uoe) {
+            } catch (UnsupportedOperationException ignored) {
 
             }
         }
@@ -140,22 +140,22 @@ public class MemoryTest {
      */
     @RunWith(Parameterized.class)
     public static class MemoryFeatureSupportTest extends AbstractGremlinTest {
-        private static final Map testMap = new HashMap() {{
+        private static final Map<String,Object> testMap = new HashMap<String,Object>() {{
             put("testString", "try");
             put("testInteger", 123);
         }};
 
-        private static final ArrayList mixedList = new ArrayList() {{
+        private static final ArrayList<Object> mixedList = new ArrayList<Object>() {{
             add("try1");
             add(2);
         }};
 
-        private static final ArrayList uniformStringList = new ArrayList() {{
+        private static final ArrayList<String> uniformStringList = new ArrayList<String>() {{
             add("try1");
             add("try2");
         }};
 
-        private static final ArrayList uniformIntegerList = new ArrayList() {{
+        private static final ArrayList<Integer> uniformIntegerList = new ArrayList<Integer>() {{
             add(100);
             add(200);
             add(300);
@@ -188,13 +188,13 @@ public class MemoryTest {
                     {Graph.Features.VariableFeatures.FEATURE_LONG_VALUES, -10000l},
                     {Graph.Features.VariableFeatures.FEATURE_MAP_VALUES, testMap},
                     {Graph.Features.VariableFeatures.FEATURE_MIXED_LIST_VALUES, mixedList},
-                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new boolean[]{true, false}},
-                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new double[]{1d, 2d}},
-                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new float[]{1f, 2f}},
-                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[]{1, 2}},
-                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new long[]{1l, 2l}},
-                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new String[]{"try1", "try2"}},
-                    {Graph.Features.VariableFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[1]},
+                    {Graph.Features.VariableFeatures.FEATURE_BOOLEAN_ARRAY_VALUES, new boolean[]{true, false}},
+                    {Graph.Features.VariableFeatures.FEATURE_DOUBLE_ARRAY_VALUES, new double[]{1d, 2d}},
+                    {Graph.Features.VariableFeatures.FEATURE_FLOAT_ARRAY_VALUES, new float[]{1f, 2f}},
+                    {Graph.Features.VariableFeatures.FEATURE_INTEGER_ARRAY_VALUES, new int[]{1, 2}},
+                    {Graph.Features.VariableFeatures.FEATURE_LONG_ARRAY_VALUES, new long[]{1l, 2l}},
+                    {Graph.Features.VariableFeatures.FEATURE_STRING_ARRAY_VALUES, new String[]{"try1", "try2"}},
+                    {Graph.Features.VariableFeatures.FEATURE_INTEGER_ARRAY_VALUES, new int[1]},
                     {Graph.Features.VariableFeatures.FEATURE_SERIALIZABLE_VALUES, new MockSerializable("testing")},
                     {Graph.Features.VariableFeatures.FEATURE_STRING_VALUES, "short string"},
                     {Graph.Features.VariableFeatures.FEATURE_UNIFORM_LIST_VALUES, uniformIntegerList},

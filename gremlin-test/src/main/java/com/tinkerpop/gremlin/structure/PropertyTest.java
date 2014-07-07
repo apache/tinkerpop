@@ -21,7 +21,6 @@ import java.util.Map;
 import static com.tinkerpop.gremlin.structure.Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
@@ -79,22 +78,22 @@ public class PropertyTest {
      */
     @RunWith(Parameterized.class)
     public static class PropertyFeatureSupportTest extends AbstractGremlinTest {
-        private static final Map testMap = new HashMap() {{
+        private static final Map<String,Object> testMap = new HashMap<String,Object>() {{
             put("testString", "try");
             put("testInteger", 123);
         }};
 
-        private static final ArrayList mixedList = new ArrayList() {{
+        private static final ArrayList<Object> mixedList = new ArrayList<Object>() {{
             add("try1");
             add(2);
         }};
 
-        private static final ArrayList uniformStringList = new ArrayList() {{
+        private static final ArrayList<String> uniformStringList = new ArrayList<String>() {{
             add("try1");
             add("try2");
         }};
 
-        private static final ArrayList uniformIntegerList = new ArrayList() {{
+        private static final ArrayList<Integer> uniformIntegerList = new ArrayList<Integer>() {{
             add(100);
             add(200);
             add(300);
@@ -127,13 +126,13 @@ public class PropertyTest {
                     {PropertyFeatures.FEATURE_LONG_VALUES, -10000l},
                     {PropertyFeatures.FEATURE_MAP_VALUES, testMap},
                     {PropertyFeatures.FEATURE_MIXED_LIST_VALUES, mixedList},
-                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new boolean[]{true, false}},
-                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new double[]{1d, 2d}},
-                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new float[]{1f, 2f}},
-                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[]{1, 2}},
-                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new long[]{1l, 2l}},
-                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new String[]{"try1", "try2"}},
-                    {PropertyFeatures.FEATURE_PRIMITIVE_ARRAY_VALUES, new int[1]},
+                    {PropertyFeatures.FEATURE_STRING_ARRAY_VALUES, new boolean[]{true, false}},
+                    {PropertyFeatures.FEATURE_DOUBLE_ARRAY_VALUES, new double[]{1d, 2d}},
+                    {PropertyFeatures.FEATURE_FLOAT_ARRAY_VALUES, new float[]{1f, 2f}},
+                    {PropertyFeatures.FEATURE_INTEGER_ARRAY_VALUES, new int[]{1, 2}},
+                    {PropertyFeatures.FEATURE_LONG_ARRAY_VALUES, new long[]{1l, 2l}},
+                    {PropertyFeatures.FEATURE_STRING_ARRAY_VALUES, new String[]{"try1", "try2"}},
+                    {PropertyFeatures.FEATURE_INTEGER_ARRAY_VALUES, new int[1]},
                     {PropertyFeatures.FEATURE_SERIALIZABLE_VALUES, new MockSerializable("testing")},
                     {PropertyFeatures.FEATURE_STRING_VALUES, "short string"},
                     {PropertyFeatures.FEATURE_UNIFORM_LIST_VALUES, uniformIntegerList},

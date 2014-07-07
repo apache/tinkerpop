@@ -480,7 +480,42 @@ public class Neo4jGraph implements Graph {
             }
 
             @Override
-            public boolean supportsPrimitiveArrayValues() {
+            public boolean supportsByteValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsBooleanArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsByteArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsDoubleArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsFloatArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsIntegerArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsLongArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsStringArrayValues() {
                 return false;
             }
 
@@ -537,7 +572,42 @@ public class Neo4jGraph implements Graph {
             }
 
             @Override
-            public boolean supportsPrimitiveArrayValues() {
+            public boolean supportsByteValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsBooleanArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsByteArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsDoubleArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsFloatArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsIntegerArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsLongArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsStringArrayValues() {
                 return false;
             }
 

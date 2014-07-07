@@ -274,11 +274,12 @@ public interface Graph extends AutoCloseable {
              */
             @FeatureDescriptor(name = FEATURE_PROPERTIES)
             public default boolean supportsProperties() {
-                return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
+                return supportsBooleanValues() || supportsByteValues() || supportsDoubleValues() || supportsFloatValues()
                         || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
-                        || supportsMixedListValues() || supportsPrimitiveArrayValues()
-                        || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
-                        || supportsUniformListValues();
+                        || supportsMixedListValues() || supportsSerializableValues()
+                        || supportsStringValues() || supportsUniformListValues() || supportsBooleanArrayValues()
+                        || supportsByteArrayValues() || supportsDoubleArrayValues() || supportsFloatArrayValues()
+                        || supportsIntegerArrayValues() || supportsLongArrayValues() || supportsStringArrayValues();
             }
         }
 
@@ -290,11 +291,12 @@ public interface Graph extends AutoCloseable {
              */
             @FeatureDescriptor(name = FEATURE_VARIABLES)
             public default boolean supportsVariables() {
-                return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
+                return supportsBooleanValues() || supportsByteValues() || supportsDoubleValues() || supportsFloatValues()
                         || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
-                        || supportsMixedListValues() || supportsPrimitiveArrayValues()
-                        || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
-                        || supportsUniformListValues();
+                        || supportsMixedListValues() || supportsSerializableValues()
+                        || supportsStringValues() || supportsUniformListValues() || supportsBooleanArrayValues()
+                        || supportsByteArrayValues() || supportsDoubleArrayValues() || supportsFloatArrayValues()
+                        || supportsIntegerArrayValues() || supportsLongArrayValues() || supportsStringArrayValues();
             }
         }
 
@@ -309,30 +311,43 @@ public interface Graph extends AutoCloseable {
              */
             @FeatureDescriptor(name = FEATURE_ANNOTATIONS)
             public default boolean supportsAnnotations() {
-                return supportsBooleanValues() || supportsDoubleValues() || supportsFloatValues()
+                return supportsBooleanValues() || supportsByteValues() || supportsDoubleValues() || supportsFloatValues()
                         || supportsIntegerValues() || supportsLongValues() || supportsMapValues()
-                        || supportsMixedListValues() || supportsPrimitiveArrayValues()
-                        || supportsPrimitiveArrayValues() || supportsSerializableValues() || supportsStringValues()
-                        || supportsUniformListValues();
+                        || supportsMixedListValues() || supportsSerializableValues()
+                        || supportsStringValues() || supportsUniformListValues() || supportsBooleanArrayValues()
+                        || supportsByteArrayValues() || supportsDoubleArrayValues() || supportsFloatArrayValues()
+                        || supportsIntegerArrayValues() || supportsLongArrayValues() || supportsStringArrayValues();
             }
         }
 
 
         public interface DataTypeFeatures extends FeatureSet {
             public static final String FEATURE_BOOLEAN_VALUES = "BooleanValues";
+            public static final String FEATURE_BYTE_VALUES = "ByteValues";
             public static final String FEATURE_DOUBLE_VALUES = "DoubleValues";
             public static final String FEATURE_FLOAT_VALUES = "FloatValues";
             public static final String FEATURE_INTEGER_VALUES = "IntegerValues";
             public static final String FEATURE_LONG_VALUES = "LongValues";
             public static final String FEATURE_MAP_VALUES = "MapValues";
             public static final String FEATURE_MIXED_LIST_VALUES = "MixedListValues";
-            public static final String FEATURE_PRIMITIVE_ARRAY_VALUES = "PrimitiveArrayValues";
+            public static final String FEATURE_BOOLEAN_ARRAY_VALUES = "BooleanArrayValues";
+            public static final String FEATURE_BYTE_ARRAY_VALUES = "ByteArrayValues";
+            public static final String FEATURE_DOUBLE_ARRAY_VALUES = "DoubleArrayValues";
+            public static final String FEATURE_FLOAT_ARRAY_VALUES = "FloatArrayValues";
+            public static final String FEATURE_INTEGER_ARRAY_VALUES = "IntegerArrayValues";
+            public static final String FEATURE_LONG_ARRAY_VALUES = "LongArrayValues";
             public static final String FEATURE_SERIALIZABLE_VALUES = "SerializableValues";
+            public static final String FEATURE_STRING_ARRAY_VALUES = "StringArrayValues";
             public static final String FEATURE_STRING_VALUES = "StringValues";
             public static final String FEATURE_UNIFORM_LIST_VALUES = "UniformListValues";
 
             @FeatureDescriptor(name = FEATURE_BOOLEAN_VALUES)
             public default boolean supportsBooleanValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_BYTE_VALUES)
+            public default boolean supportsByteValues() {
                 return true;
             }
 
@@ -366,8 +381,38 @@ public interface Graph extends AutoCloseable {
                 return true;
             }
 
-            @FeatureDescriptor(name = FEATURE_PRIMITIVE_ARRAY_VALUES)
-            public default boolean supportsPrimitiveArrayValues() {
+            @FeatureDescriptor(name = FEATURE_BOOLEAN_ARRAY_VALUES)
+            public default boolean supportsBooleanArrayValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_BYTE_ARRAY_VALUES)
+            public default boolean supportsByteArrayValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_DOUBLE_ARRAY_VALUES)
+            public default boolean supportsDoubleArrayValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_FLOAT_ARRAY_VALUES)
+            public default boolean supportsFloatArrayValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_INTEGER_ARRAY_VALUES)
+            public default boolean supportsIntegerArrayValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_STRING_ARRAY_VALUES)
+            public default boolean supportsStringArrayValues() {
+                return true;
+            }
+
+            @FeatureDescriptor(name = FEATURE_LONG_ARRAY_VALUES)
+            public default boolean supportsLongArrayValues() {
                 return true;
             }
 
