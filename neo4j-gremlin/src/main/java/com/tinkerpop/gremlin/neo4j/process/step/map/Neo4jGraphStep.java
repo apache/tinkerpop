@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -35,7 +34,6 @@ public class Neo4jGraphStep<E extends Element> extends GraphStep<E> {
     public Neo4jGraphStep(final Traversal traversal, final Class<E> returnClass, final Neo4jGraph graph) {
         super(traversal, returnClass);
         this.graph = graph;
-        this.generateTraverserIterator(false);
     }
 
     public void generateTraverserIterator(final boolean trackPaths) {

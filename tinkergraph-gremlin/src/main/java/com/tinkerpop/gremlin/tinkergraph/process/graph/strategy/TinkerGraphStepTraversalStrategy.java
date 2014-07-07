@@ -1,11 +1,11 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph.strategy;
 
-import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.filter.IntervalStep;
 import com.tinkerpop.gremlin.process.util.EmptyStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
@@ -17,7 +17,7 @@ public class TinkerGraphStepTraversalStrategy implements TraversalStrategy.Final
 
     public void apply(final Traversal traversal) {
 
-        if (traversal.getSteps().get(0) instanceof TinkerGraphStep) {  // TODO: generalize for searching the whole traversal?
+        if (TraversalHelper.getStart(traversal) instanceof TinkerGraphStep) {  // TODO: generalize for searching the whole traversal?
             final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
             Step currentStep = tinkerGraphStep.getNextStep();
             while (true) {
@@ -37,7 +37,6 @@ public class TinkerGraphStepTraversalStrategy implements TraversalStrategy.Final
                 }
                 currentStep = currentStep.getNextStep();
             }
-            tinkerGraphStep.generateTraverserIterator(false);
         }
     }
 }
