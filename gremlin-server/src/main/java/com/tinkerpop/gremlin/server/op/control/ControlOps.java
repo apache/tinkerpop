@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.driver.message.ResultType;
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.groovy.engine.ScriptEngines;
 import com.tinkerpop.gremlin.server.Context;
+import com.tinkerpop.gremlin.util.Gremlin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,9 +25,7 @@ class ControlOps {
 
     public static void versionOp(final Context context) {
         final RequestMessage msg = context.getRequestMessage();
-
-        // todo: get rid of hard-coding here for the version
-        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS).contents(ResultType.OBJECT).result("3.0.0-SNAPSHOT"));
+        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS).contents(ResultType.OBJECT).result(Gremlin.version()));
         context.getChannelHandlerContext().writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SUCCESS_TERMINATOR).build());
     }
 
