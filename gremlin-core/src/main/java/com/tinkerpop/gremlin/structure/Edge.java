@@ -34,6 +34,10 @@ public interface Edge extends Element {
 
     public GraphTraversal<Edge, Vertex> toV(final Direction direction);
 
+    public default Iterator<Vertex> toVIterator(final Direction direction) {
+        return this.toV(direction);
+    }
+
     // element steps ///////////////////////////////////////////////////////////
 
     public default GraphTraversal<Edge, Vertex> inV() {

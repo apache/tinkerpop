@@ -42,6 +42,19 @@ public interface Vertex extends Element {
     public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels);
 
     /**
+     * An optimization can be provided around just retrieving the Iterator of vertices and edges without the overhead
+     * of creating and optimizing a Traversal.
+     */
+
+    public default Iterator<Edge> toEIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return this.toE(direction, branchFactor, labels);
+    }
+
+    public default Iterator<Vertex> toIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return this.to(direction, branchFactor, labels);
+    }
+
+    /**
      * The following steps are Vertex specific and have default implementations based on the vendor implementations above.
      */
 

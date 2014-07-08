@@ -21,6 +21,7 @@ import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerEdgeVertexStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -49,12 +50,6 @@ public class TinkerEdge extends TinkerElement implements Edge {
             this.graph.edgeIndex.autoUpdate(key, value, oldProperty.isPresent() ? oldProperty.value() : null, this);
             return newProperty;
         }
-    }
-
-    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
-        final GraphTraversal traversal = this.start();
-        traversal.addStep(new TinkerEdgeVertexStep(traversal, direction));
-        return traversal;
     }
 
     public void remove() {
@@ -107,5 +102,15 @@ public class TinkerEdge extends TinkerElement implements Edge {
             }
         };
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
+    }
+
+    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
+        final GraphTraversal traversal = this.start();
+        traversal.addStep(new TinkerEdgeVertexStep(traversal, direction));
+        return traversal;
+    }
+
+    public Iterator<Vertex> toVIterator(final Direction direction) {
+        return (Iterator) TinkerHelper.getVertices(this, direction);
     }
 }

@@ -122,20 +122,20 @@ public class TinkerHelper {
     public static Iterator<TinkerVertex> getVertices(final TinkerVertex vertex, final Direction direction, final String... labels) {
         if (direction != Direction.BOTH) {
             if (direction.equals(Direction.OUT))
-                return (Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, direction, labels)).map(e -> e.inV().next()).iterator();
+                return (Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, direction, labels)).map(e -> e.inVertex).iterator();
             else
-                return (Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, direction, labels)).map(e -> e.outV().next()).iterator();
+                return (Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, direction, labels)).map(e -> e.outVertex).iterator();
 
         } else {
             final MultiIterator<TinkerVertex> vertices = new MultiIterator<>();
-            vertices.addIterator((Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, Direction.OUT, labels)).map(e -> e.inV().next()).iterator());
-            vertices.addIterator((Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, Direction.IN, labels)).map(e -> e.outV().next()).iterator());
+            vertices.addIterator((Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, Direction.OUT, labels)).map(e -> e.inVertex).iterator());
+            vertices.addIterator((Iterator) StreamFactory.stream(TinkerHelper.getEdges(vertex, Direction.IN, labels)).map(e -> e.outVertex).iterator());
             return vertices;
         }
     }
 
     public static Iterator<TinkerVertex> getVertices(final TinkerEdge edge, final Direction direction) {
-        final List<TinkerVertex> vertices = new ArrayList<>();
+        final List<TinkerVertex> vertices = new ArrayList<>(2);
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
             vertices.add((TinkerVertex) edge.outVertex);
         if (direction.equals(Direction.IN) | direction.equals(Direction.BOTH))

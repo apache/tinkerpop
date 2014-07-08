@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
-import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -21,9 +20,10 @@ import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerVertexStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepTraversalStrategy;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -105,5 +105,13 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         final GraphTraversal traversal = this.start();
         traversal.addStep(new TinkerVertexStep(traversal, Edge.class, direction, branchFactor, labels));
         return traversal;
+    }
+
+    public Iterator<Edge> toEIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return (Iterator) StreamFactory.stream(TinkerHelper.getEdges(this, direction, labels)).limit(branchFactor).iterator();
+    }
+
+    public Iterator<Vertex> toIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return (Iterator) StreamFactory.stream(TinkerHelper.getVertices(this, direction, labels)).limit(branchFactor).iterator();
     }
 }

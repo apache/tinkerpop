@@ -17,14 +17,7 @@ public class EdgeVertexStep extends FlatMapStep<Edge, Vertex> implements Reversi
     public EdgeVertexStep(final Traversal traversal, final Direction direction) {
         super(traversal);
         this.direction = direction;
-        this.setFunction(traverser -> {
-            if (this.direction.equals(Direction.IN))
-                return traverser.get().inV();
-            else if (this.direction.equals(Direction.OUT))
-                return traverser.get().outV();
-            else
-                return traverser.get().bothV();
-        });
+        this.setFunction(traverser -> traverser.get().toVIterator(this.direction));
     }
 
     public String toString() {
