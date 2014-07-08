@@ -8,4 +8,5 @@ import com.tinkerpop.gremlin.structure.Graph;
 public interface SideEffectCapable {
 
     public static final String CAP_KEY = Graph.Key.hidden("cap");
+
 }

@@ -36,7 +36,6 @@ public class TinkerGraphComputer implements GraphComputer, TraversalEngine {
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        ((TraverserSource) traversal.getSteps().get(0)).clear();
         return new TraversalVertexProgramIterator<>(this.graph, () -> traversal);
     }
 

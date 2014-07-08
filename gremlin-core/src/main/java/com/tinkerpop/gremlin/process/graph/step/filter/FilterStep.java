@@ -22,7 +22,7 @@ public class FilterStep<S> extends AbstractStep<S, S> {
         this.predicate = predicate;
     }
 
-    public Traverser<S> processNextStart() {
+    protected Traverser<S> processNextStart() {
         while (true) {
             final Traverser<S> traverser = this.starts.next();
             if (this.predicate.test(traverser)) {

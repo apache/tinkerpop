@@ -54,8 +54,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-           // CountTest.JavaComputerCountTest.class,
-
+            CountTest.JavaComputerCountTest.class,
             CyclicPathTest.JavaComputerCyclicPathTest.class,
             // DedupTest.JavaComputerDedupTest.class,  TODO: Makes no sense in GraphComputer
             ExceptTest.JavaComputerExceptTest.class,
@@ -95,7 +94,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
      */
     protected static final Class<?>[] testsToEnforce = new Class<?>[]{
-           // CountTest.class,
+            // CountTest.class,
             CyclicPathTest.class,
             ExceptTest.class,
             FilterTest.class,
