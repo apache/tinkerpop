@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 
+import java.util.Iterator;
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -34,13 +36,23 @@ public class StrategyWrappedVertex extends StrategyWrappedElement implements Ver
     }
 
     @Override
+    public Iterator<Vertex> toIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return this.baseVertex.toIterator(direction, branchFactor, labels);
+    }
+
+    @Override
+    public Iterator<Edge> toEIterator(final Direction direction, final int branchFactor, final String... labels) {
+        return this.baseVertex.toEIterator(direction, branchFactor, labels);
+    }
+
+    @Override
     public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
-        return applyStrategy(this.baseVertex.to(direction, branchFactor, labels));
+        return applyStrategy(this.getBaseVertex().to(direction, branchFactor, labels));
     }
 
     @Override
     public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
-        return applyStrategy(this.baseVertex.toE(direction, branchFactor, labels));
+        return applyStrategy(this.getBaseVertex().toE(direction, branchFactor, labels));
     }
 
     @Override

@@ -33,25 +33,20 @@ public interface Vertex extends Element {
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
     /**
-     * The following steps need to be implemented by the vendor as these these defined how the edges are
+     * The following iterators need to be implemented by the vendor as these these defined how the edges are
      * retrieved off of a vertex. All other steps are derivatives of this and thus, defaulted in Vertex.
      */
 
-    public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels);
+    public Iterator<Edge> toEIterator(final Direction direction, final int branchFactor, final String... labels);
 
-    public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels);
+    public Iterator<Vertex> toIterator(final Direction direction, final int branchFactor, final String... labels);
 
-    /**
-     * An optimization can be provided around just retrieving the Iterator of vertices and edges without the overhead
-     * of creating and optimizing a Traversal.
-     */
-
-    public default Iterator<Edge> toEIterator(final Direction direction, final int branchFactor, final String... labels) {
-        return this.toE(direction, branchFactor, labels);
+    public default GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
+        return this.start().to(direction, branchFactor, labels);
     }
 
-    public default Iterator<Vertex> toIterator(final Direction direction, final int branchFactor, final String... labels) {
-        return this.to(direction, branchFactor, labels);
+    public default GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
+        return this.start().toE(direction, branchFactor, labels);
     }
 
     /**

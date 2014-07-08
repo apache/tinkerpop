@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
@@ -18,7 +19,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerEdgeVertexStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 
 import java.util.Iterator;
@@ -106,7 +106,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
         final GraphTraversal traversal = this.start();
-        traversal.addStep(new TinkerEdgeVertexStep(traversal, direction));
+        traversal.addStep(new EdgeVertexStep(traversal, direction));
         return traversal;
     }
 

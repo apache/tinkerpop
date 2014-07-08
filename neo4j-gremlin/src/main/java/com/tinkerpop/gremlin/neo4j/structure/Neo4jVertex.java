@@ -1,19 +1,18 @@
 package com.tinkerpop.gremlin.neo4j.structure;
 
-import com.tinkerpop.gremlin.neo4j.process.step.map.Neo4jVertexStep;
-import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
+
+import java.util.Iterator;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -58,21 +57,15 @@ public class Neo4jVertex extends Neo4jElement implements Vertex {
     }
 
     @Override
-    public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
+    public Iterator<Vertex> toIterator(final Direction direction, final int branchFactor, final String... labels) {
         this.graph.tx().readWrite();
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new Neo4jVertexStep(this.graph, traversal, Vertex.class, direction, branchFactor, labels));
-        return traversal;
+        return (Iterator) StreamFactory.stream(Neo4jHelper.getVertices(this, direction, labels)).limit(branchFactor).iterator();
     }
 
     @Override
-    public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
+    public Iterator<Edge> toEIterator(final Direction direction, final int branchFactor, final String... labels) {
         this.graph.tx().readWrite();
-        final GraphTraversal<Vertex, Edge> traversal = new DefaultGraphTraversal<>();
-        traversal.addStep(new StartStep<Vertex>(traversal, this));
-        traversal.addStep(new Neo4jVertexStep(this.graph, traversal, Edge.class, direction, branchFactor, labels));
-        return traversal;
+        return (Iterator) StreamFactory.stream(Neo4jHelper.getEdges(this, direction, labels)).limit(branchFactor).iterator();
     }
 
     public Node getRawVertex() {
@@ -82,4 +75,6 @@ public class Neo4jVertex extends Neo4jElement implements Vertex {
     public String toString() {
         return StringFactory.vertexString(this);
     }
+
+
 }

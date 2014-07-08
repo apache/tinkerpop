@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
 import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
-import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphEdgeVertexStep;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.TraversalEngine;
@@ -21,6 +20,7 @@ import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 
 import java.io.Serializable;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,10 +34,8 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable {
         super(edge, graph);
     }
 
-    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
-        final GraphTraversal traversal = this.start();
-        return (GraphTraversal) traversal.addStep(new GiraphEdgeVertexStep(traversal, this.graph, direction));
-
+    public Iterator<Vertex> toVIterator(final Direction direction) {
+        return GiraphHelper.getVertices(this.graph, this, direction);
     }
 
     public GraphTraversal<Edge, Edge> start() {

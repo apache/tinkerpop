@@ -5,6 +5,8 @@ import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Iterator;
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -22,7 +24,11 @@ public class StrategyWrappedEdge extends StrategyWrappedElement implements Edge,
         return this.baseEdge;
     }
 
-    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
+    public Iterator<Vertex> toVIterator(final Direction direction) {
+        return this.baseEdge.toVIterator(direction);
+    }
+
+    public GraphTraversal<Edge,Vertex> toV(final Direction direction) {
         return applyStrategy(this.baseEdge.toV(direction));
     }
 }

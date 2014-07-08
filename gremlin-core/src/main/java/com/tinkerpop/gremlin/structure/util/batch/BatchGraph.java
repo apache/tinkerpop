@@ -444,12 +444,12 @@ public class BatchGraph<T extends Graph> implements Graph {
         }
 
         @Override
-        public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
+        public Iterator<Edge> toEIterator(final Direction direction, final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
+        public Iterator<Vertex> toIterator(final Direction direction, final int branchFactor, final String... labels) {
             throw retrievalNotSupported();
         }
 
@@ -472,8 +472,8 @@ public class BatchGraph<T extends Graph> implements Graph {
     private class BatchEdge implements Edge {
 
         @Override
-        public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
-            return getWrappedEdge().toV(direction);
+        public Iterator<Vertex> toVIterator(final Direction direction) {
+            return getWrappedEdge().toVIterator(direction);
         }
 
         @Override

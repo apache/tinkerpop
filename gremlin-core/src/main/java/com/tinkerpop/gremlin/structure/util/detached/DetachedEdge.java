@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.structure.util.detached;
 
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -46,10 +45,13 @@ public class DetachedEdge extends DetachedElement implements Edge {
     }
 
     @Override
-    public GraphTraversal<Edge, Vertex> toV(final Direction direction) {
-        final GraphTraversal traversal = this.start();
-        traversal.addStep(new DetachedEdgeVertexStep(traversal, direction));
-        return traversal;
+    public Iterator<Vertex> toVIterator(final Direction direction) {
+        final List<Vertex> vertices = new ArrayList<>(2);
+        if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
+            vertices.add(this.outVertex);
+        if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
+            vertices.add(this.inVertex);
+        return vertices.iterator();
     }
 
     public String toString() {
