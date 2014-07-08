@@ -1,8 +1,9 @@
 package com.tinkerpop.gremlin.driver.simple;
 
-import com.tinkerpop.gremlin.driver.Handler;
 import com.tinkerpop.gremlin.driver.MessageSerializer;
-import com.tinkerpop.gremlin.driver.Tokens;
+import com.tinkerpop.gremlin.driver.handler.GremlinRequestEncoder;
+import com.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
+import com.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0;
@@ -53,25 +54,25 @@ public class WebSocketClient implements SimpleClient {
             throw new IllegalArgumentException("Unsupported protocol: " + protocol);
 
         try {
-            final Handler.WebSocketClientHandler wsHandler =
-                    new Handler.WebSocketClientHandler(
+            final WebSocketClientHandler wsHandler =
+                    new WebSocketClientHandler(
                             WebSocketClientHandshakerFactory.newHandshaker(
                                     uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders()));
             final MessageSerializer serializer = new KryoMessageSerializerV1d0();
             b.channel(NioSocketChannel.class)
              .handler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                protected void initChannel(final SocketChannel ch) {
-                    final ChannelPipeline p = ch.pipeline();
-                    p.addLast(
-                            new HttpClientCodec(),
-                            new HttpObjectAggregator(8192),
-                            wsHandler,
-                            new Handler.GremlinRequestEncoder(true, serializer),
-                            new Handler.WebSocketGremlinResponseDecoder(serializer),
-                            callbackResponseHandler);
-                }
-            });
+                 @Override
+                 protected void initChannel(final SocketChannel ch) {
+                     final ChannelPipeline p = ch.pipeline();
+                     p.addLast(
+                             new HttpClientCodec(),
+                             new HttpObjectAggregator(8192),
+                             wsHandler,
+                             new GremlinRequestEncoder(true, serializer),
+                             new WebSocketGremlinResponseDecoder(serializer),
+                             callbackResponseHandler);
+                 }
+             });
 
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
             wsHandler.handshakeFuture().sync();

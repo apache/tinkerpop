@@ -1,5 +1,10 @@
 package com.tinkerpop.gremlin.driver;
 
+import com.tinkerpop.gremlin.driver.handler.GremlinRequestEncoder;
+import com.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
+import com.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
+import com.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
+import com.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -58,7 +63,7 @@ public interface Channelizer extends ChannelHandler {
     }
 
     class WebSocketChannelizer extends AbstractChannelizer {
-        private Handler.WebSocketClientHandler handler;
+        private WebSocketClientHandler handler;
 
         @Override
         public void configure(final ChannelPipeline pipeline) {
@@ -67,15 +72,15 @@ public interface Channelizer extends ChannelHandler {
                 throw new IllegalArgumentException("Unsupported protocol: " + protocol);
 
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
-            handler = new Handler.WebSocketClientHandler(
+            handler = new WebSocketClientHandler(
                     WebSocketClientHandshakerFactory.newHandshaker(
                             connection.getUri(), WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, maxContentLength));
 
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
             pipeline.addLast("ws-handler", handler);
-            pipeline.addLast("gremlin-encoder", new Handler.GremlinRequestEncoder(true, cluster.getSerializer()));
-            pipeline.addLast("gremlin-decoder", new Handler.WebSocketGremlinResponseDecoder(cluster.getSerializer()));
+            pipeline.addLast("gremlin-encoder", new GremlinRequestEncoder(true, cluster.getSerializer()));
+            pipeline.addLast("gremlin-decoder", new WebSocketGremlinResponseDecoder(cluster.getSerializer()));
         }
 
         @Override
@@ -91,8 +96,8 @@ public interface Channelizer extends ChannelHandler {
     class NioChannelizer extends AbstractChannelizer {
         @Override
         public void configure(ChannelPipeline pipeline) {
-            pipeline.addLast("gremlin-decoder", new Handler.NioGremlinResponseDecoder(cluster.getSerializer()));
-            pipeline.addLast("gremlin-encoder", new Handler.NioGremlinRequestEncoder(true, cluster.getSerializer()));
+            pipeline.addLast("gremlin-decoder", new NioGremlinResponseDecoder(cluster.getSerializer()));
+            pipeline.addLast("gremlin-encoder", new NioGremlinRequestEncoder(true, cluster.getSerializer()));
         }
     }
 }
