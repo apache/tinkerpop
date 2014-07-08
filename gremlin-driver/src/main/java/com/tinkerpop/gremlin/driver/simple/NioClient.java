@@ -35,7 +35,7 @@ public class NioClient implements SimpleClient {
     private final CallbackResponseHandler callbackResponseHandler = new CallbackResponseHandler();
 
     public NioClient() {
-        this(URI.create("ws://localhost:8182"));
+        this(URI.create("localhost:8182"));
     }
 
     public NioClient(final URI uri) {
