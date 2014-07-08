@@ -17,6 +17,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
+import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 
 import java.io.Serializable;
@@ -25,7 +26,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphEdge extends GiraphElement implements Edge, Serializable {
+public class GiraphEdge extends GiraphElement implements Edge, Serializable, WrappedEdge<TinkerEdge> {
 
     protected GiraphEdge() {
     }
@@ -34,7 +35,7 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable {
         super(edge, graph);
     }
 
-    public Iterator<Vertex> toVIterator(final Direction direction) {
+    public Iterator<Vertex> vertices(final Direction direction) {
         return GiraphHelper.getVertices(this.graph, this, direction);
     }
 
@@ -59,7 +60,7 @@ public class GiraphEdge extends GiraphElement implements Edge, Serializable {
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
-    public TinkerEdge getTinkerEdge() {
+    public TinkerEdge getBaseEdge() {
         return (TinkerEdge) this.element;
     }
 }

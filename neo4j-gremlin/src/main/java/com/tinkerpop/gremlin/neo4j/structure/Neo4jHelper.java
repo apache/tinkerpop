@@ -36,9 +36,9 @@ public class Neo4jHelper {
     public static Iterator<Neo4jVertex> getVertices(final Neo4jEdge edge, final Direction direction) {
         final List<Neo4jVertex> vertices = new ArrayList<>(2);
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
-            vertices.add(new Neo4jVertex(((Relationship) edge.getRawElement()).getStartNode(), edge.graph));
+            vertices.add(new Neo4jVertex(((Relationship) edge.getBaseEdge()).getStartNode(), edge.graph));
         if (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))
-            vertices.add(new Neo4jVertex(((Relationship) edge.getRawElement()).getEndNode(), edge.graph));
+            vertices.add(new Neo4jVertex(((Relationship) edge.getBaseEdge()).getEndNode(), edge.graph));
         return vertices.iterator();
     }
 
@@ -50,7 +50,7 @@ public class Neo4jHelper {
 
         public Neo4jVertexVertexIterable(final Neo4jVertex vertex, final Direction direction, final String... labels) {
             this.graph = vertex.graph;
-            this.node = vertex.getRawVertex();
+            this.node = vertex.getBaseVertex();
             this.direction = mapDirection(direction);
             this.labels = new DynamicRelationshipType[labels.length];
             for (int i = 0; i < labels.length; i++) {
@@ -90,7 +90,7 @@ public class Neo4jHelper {
 
         public Neo4jVertexEdgeIterable(final Neo4jVertex vertex, final Direction direction, final String... labels) {
             this.graph = vertex.graph;
-            this.node = vertex.getRawVertex();
+            this.node = vertex.getBaseVertex();
             this.direction = mapDirection(direction);
             this.labels = new DynamicRelationshipType[labels.length];
             for (int i = 0; i < labels.length; i++) {

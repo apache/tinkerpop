@@ -110,7 +110,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
         return traversal;
     }
 
-    public Iterator<Vertex> toVIterator(final Direction direction) {
+    public Iterator<Vertex> vertices(final Direction direction) {
         return (Iterator) TinkerHelper.getVertices(this, direction);
     }
 }

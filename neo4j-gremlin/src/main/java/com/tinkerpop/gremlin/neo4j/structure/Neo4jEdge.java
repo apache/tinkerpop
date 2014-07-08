@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
@@ -13,18 +14,18 @@ import java.util.Iterator;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jEdge extends Neo4jElement implements Edge {
+public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relationship> {
 
     public Neo4jEdge(final Relationship relationship, final Neo4jGraph graph) {
         super(graph);
-        this.rawElement = relationship;
+        this.baseElement = relationship;
     }
 
     @Override
     public void remove() {
         this.graph.tx().readWrite();
         try {
-            ((Relationship) rawElement).delete();
+            ((Relationship) baseElement).delete();
         } catch (NotFoundException nfe) {
             // this one happens if the edge is committed
             throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.id());
@@ -35,12 +36,16 @@ public class Neo4jEdge extends Neo4jElement implements Edge {
     }
 
     @Override
-    public Iterator<Vertex> toVIterator(final Direction direction) {
+    public Iterator<Vertex> vertices(final Direction direction) {
         this.graph.tx().readWrite();
         return (Iterator) Neo4jHelper.getVertices(this, direction);
     }
 
     public String toString() {
         return StringFactory.edgeString(this);
+    }
+
+    public Relationship getBaseEdge() {
+        return (Relationship) this.baseElement;
     }
 }

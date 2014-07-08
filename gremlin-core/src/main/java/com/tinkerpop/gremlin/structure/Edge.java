@@ -32,7 +32,7 @@ public interface Edge extends Element {
 
     public static final String DEFAULT_LABEL = "edge";
 
-    public Iterator<Vertex> toVIterator(final Direction direction);
+    public Iterator<Vertex> vertices(final Direction direction);
 
     // element steps ///////////////////////////////////////////////////////////
 

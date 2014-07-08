@@ -43,11 +43,11 @@ public class DetachedVertex extends DetachedElement implements Vertex {
         throw new IllegalStateException();
     }
 
-    public GraphTraversal<Vertex, Edge> toEIterator(final Direction direction, final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 
-    public GraphTraversal<Vertex, Vertex> toIterator(final Direction direction, final int branchFactor, final String... labels) {
+    public GraphTraversal<Vertex, Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
         throw new IllegalStateException();
     }
 

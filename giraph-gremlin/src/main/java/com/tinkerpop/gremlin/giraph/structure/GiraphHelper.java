@@ -15,20 +15,20 @@ public class GiraphHelper {
 
     public static Iterator<Vertex> getVertices(final GiraphGraph graph, final Vertex vertex, final Direction direction, final int branchFactor, final String... labels) {
         return vertex instanceof GiraphVertex ?
-                StreamFactory.stream(((GiraphVertex) vertex).getTinkerVertex().toIterator(direction, branchFactor, labels)).map(v -> graph.v(v.id())).iterator() :
-                (Iterator) vertex.toIterator(direction, branchFactor, labels);
+                StreamFactory.stream(((GiraphVertex) vertex).getBaseVertex().vertices(direction, branchFactor, labels)).map(v -> graph.v(v.id())).iterator() :
+                (Iterator) vertex.vertices(direction, branchFactor, labels);
     }
 
     public static Iterator<Edge> getEdges(final GiraphGraph graph, final Vertex vertex, final Direction direction, final int branchFactor, final String... labels) {
         return vertex instanceof GiraphVertex ?
-                (Iterator) StreamFactory.stream(((GiraphVertex) vertex).getTinkerVertex().toEIterator(direction, branchFactor, labels)).map(e -> new GiraphEdge((TinkerEdge) e, graph)).iterator() :
-                (Iterator) vertex.toEIterator(direction, branchFactor, labels);
+                (Iterator) StreamFactory.stream(((GiraphVertex) vertex).getBaseVertex().edges(direction, branchFactor, labels)).map(e -> new GiraphEdge((TinkerEdge) e, graph)).iterator() :
+                (Iterator) vertex.edges(direction, branchFactor, labels);
 
     }
 
     public static Iterator<Vertex> getVertices(final GiraphGraph graph, final Edge edge, final Direction direction) {
         return edge instanceof GiraphEdge ?
-                ((GiraphEdge) edge).getTinkerEdge().flatMap(e -> e.get().toVIterator(direction)).map(v -> graph.v(v.get().id())) :
+                ((GiraphEdge) edge).getBaseEdge().flatMap(e -> e.get().vertices(direction)).map(v -> graph.v(v.get().id())) :
                 (Iterator) edge.toV(direction);
     }
 }

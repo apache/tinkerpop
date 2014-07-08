@@ -107,11 +107,11 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         return traversal;
     }
 
-    public Iterator<Edge> toEIterator(final Direction direction, final int branchFactor, final String... labels) {
+    public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
         return (Iterator) StreamFactory.stream(TinkerHelper.getEdges(this, direction, labels)).limit(branchFactor).iterator();
     }
 
-    public Iterator<Vertex> toIterator(final Direction direction, final int branchFactor, final String... labels) {
+    public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
         return (Iterator) StreamFactory.stream(TinkerHelper.getVertices(this, direction, labels)).limit(branchFactor).iterator();
     }
 }

@@ -45,7 +45,7 @@ public class DetachedEdge extends DetachedElement implements Edge {
     }
 
     @Override
-    public Iterator<Vertex> toVIterator(final Direction direction) {
+    public Iterator<Vertex> vertices(final Direction direction) {
         final List<Vertex> vertices = new ArrayList<>(2);
         if (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))
             vertices.add(this.outVertex);
@@ -59,7 +59,7 @@ public class DetachedEdge extends DetachedElement implements Edge {
     }
 
     public Edge attach(final Vertex hostVertex) {
-        return StreamFactory.stream((Iterator<Edge>) hostVertex.outE(this.label))
+        return StreamFactory.stream(hostVertex.edges(Direction.OUT, Integer.MAX_VALUE, this.label))
                 .filter(e -> e.id().equals(this.id))
                 .findFirst().orElseThrow(() -> new IllegalStateException("The detached edge could not be be found incident to the provided vertex: " + this));
     }

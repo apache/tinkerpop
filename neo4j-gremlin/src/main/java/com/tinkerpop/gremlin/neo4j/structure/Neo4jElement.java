@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 import org.javatuples.Pair;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
@@ -17,9 +18,9 @@ import java.util.stream.Collectors;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-abstract class Neo4jElement implements Element {
+abstract class Neo4jElement implements Element, WrappedElement<PropertyContainer> {
     protected final Neo4jGraph graph;
-    protected PropertyContainer rawElement;
+    protected PropertyContainer baseElement;
 
     public Neo4jElement(final Neo4jGraph graph) {
         this.graph = graph;
@@ -28,27 +29,27 @@ abstract class Neo4jElement implements Element {
     @Override
     public Object id() {
         this.graph.tx().readWrite();
-        if (this.rawElement instanceof Node)
-            return ((Node) this.rawElement).getId();
+        if (this.baseElement instanceof Node)
+            return ((Node) this.baseElement).getId();
         else
-            return ((Relationship) this.rawElement).getId();
+            return ((Relationship) this.baseElement).getId();
     }
 
     @Override
     public String label() {
         this.graph.tx().readWrite();
         // todo: what to do when there are multiple labels on a vertex!!! harden the approach below
-        if (this.rawElement instanceof Node)
-            return ((Node) this.rawElement).getLabels().iterator().next().name();
+        if (this.baseElement instanceof Node)
+            return ((Node) this.baseElement).getLabels().iterator().next().name();
         else
-            return ((Relationship) this.rawElement).getType().name();
+            return ((Relationship) this.baseElement).getType().name();
     }
 
     @Override
     public Map<String, Property> properties() {
         this.graph.tx().readWrite();
         return keys().stream()
-                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.rawElement.getProperty(key))))
+                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.baseElement.getProperty(key))))
                 .collect(Collectors.toMap(kv -> kv.getValue0(), kv -> kv.getValue1()));
     }
 
@@ -56,7 +57,7 @@ abstract class Neo4jElement implements Element {
     public Map<String, Property> hiddens() {
         this.graph.tx().readWrite();
         return hiddenKeys().stream()
-                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.rawElement.getProperty(Graph.Key.hidden(key)))))
+                .map(key -> Pair.<String, Property>with(key, new Neo4jProperty<>(this, key, this.baseElement.getProperty(Graph.Key.hidden(key)))))
                 .collect(Collectors.toMap(kv -> kv.getValue0(), kv -> kv.getValue1()));
     }
 
@@ -64,7 +65,7 @@ abstract class Neo4jElement implements Element {
     public Set<String> keys() {
         this.graph.tx().readWrite();
         final Set<String> keys = new HashSet<>();
-        for (final String key : this.rawElement.getPropertyKeys()) {
+        for (final String key : this.baseElement.getPropertyKeys()) {
             if (!Graph.Key.isHidden(key))
                 keys.add(key);
         }
@@ -75,7 +76,7 @@ abstract class Neo4jElement implements Element {
     public Set<String> hiddenKeys() {
         this.graph.tx().readWrite();
         final Set<String> keys = new HashSet<>();
-        for (final String key : this.rawElement.getPropertyKeys()) {
+        for (final String key : this.baseElement.getPropertyKeys()) {
             if (Graph.Key.isHidden(key))
                 keys.add(Graph.Key.unHide(key));
         }
@@ -86,8 +87,8 @@ abstract class Neo4jElement implements Element {
     public <V> Property<V> property(final String key) {
         this.graph.tx().readWrite();
 
-        if (this.rawElement.hasProperty(key))
-            return new Neo4jProperty<>(this, key, (V) this.rawElement.getProperty(key));
+        if (this.baseElement.hasProperty(key))
+            return new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key));
         else
             return Property.empty();
     }
@@ -98,7 +99,7 @@ abstract class Neo4jElement implements Element {
         this.graph.tx().readWrite();
 
         try {
-            this.rawElement.setProperty(key, value);
+            this.baseElement.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);
         } catch (IllegalArgumentException iae) {
             throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
@@ -113,7 +114,7 @@ abstract class Neo4jElement implements Element {
         return this.id().hashCode();
     }
 
-    public PropertyContainer getRawElement() {
-        return this.rawElement;
+    public PropertyContainer getBaseElement() {
+        return this.baseElement;
     }
 }
