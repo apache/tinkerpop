@@ -38,10 +38,10 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class Handler {
+public class Handler {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-    static class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
+    public static class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
         private static final Logger logger = LoggerFactory.getLogger(WebSocketClientHandler.class);
         private final WebSocketClientHandshaker handshaker;
         private ChannelPromise handshakeFuture;
@@ -105,7 +105,7 @@ class Handler {
         }
     }
 
-    static class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
+    public static class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
         private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
 
         private final ConcurrentMap<UUID, ResponseQueue> pending;
@@ -144,7 +144,7 @@ class Handler {
         }
     }
 
-    static class WebSocketGremlinResponseDecoder extends MessageToMessageDecoder<WebSocketFrame> {
+    public static class WebSocketGremlinResponseDecoder extends MessageToMessageDecoder<WebSocketFrame> {
         private final MessageSerializer serializer;
 
         public WebSocketGremlinResponseDecoder(final MessageSerializer serializer) {
@@ -168,7 +168,7 @@ class Handler {
         }
     }
 
-    static class NioGremlinResponseDecoder extends ByteToMessageDecoder {
+    public static class NioGremlinResponseDecoder extends ByteToMessageDecoder {
         private final MessageSerializer serializer;
 
         public NioGremlinResponseDecoder(final MessageSerializer serializer) {
@@ -186,7 +186,7 @@ class Handler {
         }
     }
 
-    static class GremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
+    public static class GremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
         private static final Logger logger = LoggerFactory.getLogger(GremlinRequestEncoder.class);
         private boolean binaryEncoding = false;
 
@@ -213,7 +213,7 @@ class Handler {
         }
     }
 
-    static class NioGremlinRequestEncoder extends MessageToByteEncoder<Object> {
+    public static class NioGremlinRequestEncoder extends MessageToByteEncoder<Object> {
         private static final Logger logger = LoggerFactory.getLogger(GremlinRequestEncoder.class);
         private boolean binaryEncoding = false;
 

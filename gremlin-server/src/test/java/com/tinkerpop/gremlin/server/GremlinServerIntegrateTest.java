@@ -3,7 +3,12 @@ package com.tinkerpop.gremlin.server;
 import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.ResultSet;
+import com.tinkerpop.gremlin.driver.Tokens;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
+import com.tinkerpop.gremlin.driver.simple.SimpleClient;
+import com.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -14,6 +19,8 @@ import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -56,18 +63,49 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @Ignore
     public void shouldBatchResultsByTwos() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        // todo: hard to test, but really should enforce this.  probably need to use something less smart than gremlin driver
-
+        final SimpleClient client = new WebSocketClient();
         try {
-            final ResultSet resultSet = client.submit("[1,2,3,4,5,6,7,8,9,0]");
-            assertEquals(2, resultSet.awaitItems(1).get().intValue());
+            final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").build();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final AtomicInteger tries = new AtomicInteger(3);
+            client.submit(request, r -> counter.incrementAndGet());
+
+            // this should not take longer than 300ms - so fail if it does
+            while (tries.get() > 0) {
+                Thread.sleep(100);
+                tries.decrementAndGet();
+            }
+
+            // will return 6 because of the terminator
+            assertEquals(6, counter.get());
         } finally {
-            cluster.close();
+            client.close();
+        }
+    }
+
+    @Test
+    public void shouldBatchResultsByOnesByOverridingFromClientSide() throws Exception {
+        final SimpleClient client = new WebSocketClient();
+        try {
+            final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
+                    .addArg(Tokens.ARGS_BATCH_SIZE, 1).build();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final AtomicInteger tries = new AtomicInteger(3);
+            client.submit(request, r -> counter.incrementAndGet());
+
+            // this should not take longer than 300ms - so fail if it does
+            while (tries.get() > 0) {
+                Thread.sleep(100);
+                tries.decrementAndGet();
+            }
+
+            // will return 11 because of the terminator
+            assertEquals(11, counter.get());
+        } finally {
+            client.close();
         }
     }
 
