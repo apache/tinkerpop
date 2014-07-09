@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.driver.simple;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
-import com.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
 import com.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
+import com.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
 import com.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
