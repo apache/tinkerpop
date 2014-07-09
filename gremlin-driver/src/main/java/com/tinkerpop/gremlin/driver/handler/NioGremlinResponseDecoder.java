@@ -8,8 +8,8 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import java.util.List;
 
 /**
-* @author Stephen Mallette (http://stephen.genoprime.com)
-*/
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
 public class NioGremlinResponseDecoder extends ByteToMessageDecoder {
     private final MessageSerializer serializer;
 
@@ -19,11 +19,7 @@ public class NioGremlinResponseDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final ByteBuf byteBuf, final List<Object> objects) throws Exception {
-        // todo: won't decode "text"
-        if (byteBuf.readableBytes() < 1) {
-            return;
-        }
-
+        if (byteBuf.readableBytes() < 1)  return;
         objects.add(serializer.deserializeResponse(byteBuf));
     }
 }
