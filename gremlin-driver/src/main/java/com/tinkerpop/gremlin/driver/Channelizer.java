@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.driver;
 
-import com.tinkerpop.gremlin.driver.handler.GremlinRequestEncoder;
+import com.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
 import com.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
 import com.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
 import com.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
@@ -79,7 +79,7 @@ public interface Channelizer extends ChannelHandler {
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
             pipeline.addLast("ws-handler", handler);
-            pipeline.addLast("gremlin-encoder", new GremlinRequestEncoder(true, cluster.getSerializer()));
+            pipeline.addLast("gremlin-encoder", new WebSocketGremlinRequestEncoder(true, cluster.getSerializer()));
             pipeline.addLast("gremlin-decoder", new WebSocketGremlinResponseDecoder(cluster.getSerializer()));
         }
 

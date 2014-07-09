@@ -16,13 +16,13 @@ import java.util.List;
 /**
 * @author Stephen Mallette (http://stephen.genoprime.com)
 */
-public class GremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
-    private static final Logger logger = LoggerFactory.getLogger(GremlinRequestEncoder.class);
+public class WebSocketGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketGremlinRequestEncoder.class);
     private boolean binaryEncoding = false;
 
     private final MessageSerializer serializer;
 
-    public GremlinRequestEncoder(final boolean binaryEncoding, final MessageSerializer serializer) {
+    public WebSocketGremlinRequestEncoder(final boolean binaryEncoding, final MessageSerializer serializer) {
         this.binaryEncoding = binaryEncoding;
         this.serializer = serializer;
     }

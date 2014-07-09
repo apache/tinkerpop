@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.driver.simple;
 
 import com.tinkerpop.gremlin.driver.MessageSerializer;
-import com.tinkerpop.gremlin.driver.handler.GremlinRequestEncoder;
+import com.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
 import com.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import com.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -68,7 +68,7 @@ public class WebSocketClient implements SimpleClient {
                              new HttpClientCodec(),
                              new HttpObjectAggregator(8192),
                              wsHandler,
-                             new GremlinRequestEncoder(true, serializer),
+                             new WebSocketGremlinRequestEncoder(true, serializer),
                              new WebSocketGremlinResponseDecoder(serializer),
                              callbackResponseHandler);
                  }
