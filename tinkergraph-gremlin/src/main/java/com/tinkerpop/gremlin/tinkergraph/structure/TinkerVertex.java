@@ -19,6 +19,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
@@ -74,24 +75,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
 
     public GraphTraversal<Vertex, Vertex> start() {
-        final TinkerVertex vertex = this;
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
-            public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
-                if (engine instanceof GraphComputer) {
-                    TinkerHelper.prepareTraversalForComputer(this);
-                    final String label = this.getSteps().get(0).getAs();
-                    TraversalHelper.removeStep(0, this);
-                    final Step identityStep = new IdentityStep(this);
-                    if (TraversalHelper.isLabeled(label))
-                        identityStep.setAs(label);
-
-                    TraversalHelper.insertStep(identityStep, 0, this);
-                    TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, vertex.id())), 0, this);
-                    TraversalHelper.insertStep(new TinkerGraphStep<>(this, Vertex.class, vertex.graph), 0, this);
-                }
-                return super.submit(engine);
-            }
-        };
+        final GraphTraversal<Vertex, Vertex> traversal = new TinkerElementTraversal<>(this);
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
