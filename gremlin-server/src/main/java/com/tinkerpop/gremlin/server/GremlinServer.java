@@ -121,7 +121,7 @@ public class GremlinServer {
                 .executorService(gremlinGroup)
                 .scheduledExecutorService(scheduledExecutorService);
 
-        settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts));
+        settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config));
         final GremlinExecutor gremlinExecutor = gremlinExecutorBuilder.build();
 
         logger.info("Initialized GremlinExecutor and configured ScriptEngines.");

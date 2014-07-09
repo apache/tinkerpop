@@ -213,6 +213,7 @@ public class Settings {
         scriptEngineSettingsDescription.putListPropertyType("imports", String.class);
         scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
         scriptEngineSettingsDescription.putListPropertyType("scripts", String.class);
+        scriptEngineSettingsDescription.putMapPropertyType("config", String.class, Object.class);
         constructor.addTypeDescription(scriptEngineSettingsDescription);
 
         final TypeDescription sslSettings = new TypeDescription(SslSettings.class);
@@ -250,6 +251,7 @@ public class Settings {
         public List<String> imports = new ArrayList<>();
         public List<String> staticImports = new ArrayList<>();
         public List<String> scripts = new ArrayList<>();
+        public Map<String, Object> config = null;
     }
 
     public static class SerializerSettings {

@@ -4,6 +4,7 @@ import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import org.kohsuke.groovy.sandbox.SandboxTransformer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,8 +15,20 @@ public class SecurityCustomizerProvider implements CompilerCustomizerProvider {
 
     private final List<GroovyInterceptor> interceptors;
 
+    public SecurityCustomizerProvider() {
+        this.interceptors = new ArrayList<>();
+    }
+
     public SecurityCustomizerProvider(final GroovyInterceptor... interceptors) {
         this.interceptors = Arrays.asList(interceptors);
+    }
+
+    public void addInterceptor(final GroovyInterceptor interceptor) {
+        this.interceptors.add(interceptor);
+    }
+
+    public void removeInterceptor(final GroovyInterceptor interceptor) {
+        this.interceptors.remove(interceptor);
     }
 
     @Override

@@ -62,6 +62,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private static final Pattern patternImportStatic = Pattern.compile("\\Aimport\\sstatic.*");
 
+    private ThreadLocal<Boolean> registeredSandbox = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
+
     /**
      * Script to generated Class map.
      */
@@ -271,6 +278,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     Class getScriptClass(final String script) throws SyntaxException, CompilationFailedException, IOException {
+        ensureSandbox();
+
         Class clazz = classMap.get(script);
         if (clazz != null) return clazz;
 
@@ -280,6 +289,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     Object eval(final Class scriptClass, final ScriptContext context) throws ScriptException {
+        ensureSandbox();
+
         context.setAttribute("context", context, ScriptContext.ENGINE_SCOPE);
         final Writer writer = context.getWriter();
         context.setAttribute("out", writer instanceof PrintWriter ? writer : new PrintWriter(writer), ScriptContext.ENGINE_SCOPE);
@@ -348,6 +359,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         }
     }
 
+    private void ensureSandbox() {
+        if (securityProvider.isPresent() && !this.registeredSandbox.get()) {
+            this.securityProvider.get().registerInterceptors();
+            this.registeredSandbox.set(true);
+        }
+    }
+
     private Object invokeImpl(final Object thiz, final String name, final Object args[]) throws ScriptException, NoSuchMethodException {
         if (name == null) {
             throw new NullPointerException("Method name can not be null");
@@ -368,9 +386,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         final CompilerConfiguration conf = new CompilerConfiguration();
         conf.addCompilationCustomizers(this.importCustomizerProvider.getCompilationCustomizer());
 
-        if (this.securityProvider.isPresent()) {
+        if (this.securityProvider.isPresent())
             conf.addCompilationCustomizers(this.securityProvider.get().getCompilationCustomizer());
-        }
 
         this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
         this.securityProvider.ifPresent(SecurityCustomizerProvider::registerInterceptors);

@@ -50,6 +50,12 @@
             <groupId>org.kohsuke</groupId>
             <artifactId>groovy-sandbox</artifactId>
             <version>1.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- TESTING -->
         <dependency>

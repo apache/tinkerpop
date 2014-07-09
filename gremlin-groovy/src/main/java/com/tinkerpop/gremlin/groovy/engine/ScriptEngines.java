@@ -1,9 +1,11 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
+import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
+import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +13,8 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,8 +32,8 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ScriptEngines {
-    private static final Logger logger = LoggerFactory.getLogger(ScriptEngines.class);
+public class ScriptEngines implements AutoCloseable {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinExecutor.class);
 
     /**
      * {@code ScriptEngine} objects configured for the server keyed on the language name.
@@ -83,14 +87,15 @@ public class ScriptEngines {
      * Reload a {@code ScriptEngine} with fresh imports.  Waits for any existing script evaluations to complete but
      * then blocks other operations until complete.
      */
-    public void reload(final String language, final Set<String> imports, final Set<String> staticImports) {
+    public void reload(final String language, final Set<String> imports, final Set<String> staticImports, final Map<String,Object> config) {
         signalControlOp();
 
         try {
             if (scriptEngines.containsKey(language))
                 scriptEngines.remove(language);
 
-            final ScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports).orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported"));
+            final ScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports, config)
+                    .orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported"));
             scriptEngines.put(language, scriptEngine);
         } finally {
             controlOperationExecuting = false;
@@ -122,6 +127,22 @@ public class ScriptEngines {
 
         try {
             getDependencyManagers().forEach(dm -> dm.use(group, artifact, version));
+        } finally {
+            controlOperationExecuting = false;
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        signalControlOp();
+
+        try {
+            scriptEngines.values().stream()
+                    .filter(se -> se instanceof Closeable)
+                    .map(se -> (Closeable) se).forEach(c -> {
+                try { c.close(); } catch (IOException ignored) {}
+            });
+            scriptEngines.clear();
         } finally {
             controlOperationExecuting = false;
         }
@@ -200,13 +221,27 @@ public class ScriptEngines {
 
     private static synchronized Optional<ScriptEngine> createScriptEngine(final String language,
                                                                           final Set<String> imports,
-                                                                          final Set<String> staticImports) {
+                                                                          final Set<String> staticImports,
+                                                                          final Map<String,Object> config) {
+        // gremlin-groovy gets special initialization for custom imports and such.  could implement this more
+        // generically with the DependencyManager interface, but going to wait to see how other ScriptEngines
+        // develop for TinkerPop3 before committing too deeply here to any specific way of doing this.
         if (language.equals(gremlinGroovyScriptEngineFactory.getLanguageName())) {
-            // gremlin-groovy gets special initialization for custom imports and such.  could implement this more
-            // generically with the DependencyManager interface, but going to wait to see how other ScriptEngines
-            // develop for TinkerPop3 before committing too deeply here to any specific way of doing this.
+            final String clazz = (String) config.getOrDefault("sandbox", "");
+            SecurityCustomizerProvider securityCustomizerProvider = null;
+            if (!clazz.isEmpty()) {
+                try {
+                    final Class providerClass = Class.forName(clazz);
+                    final GroovyInterceptor interceptor = (GroovyInterceptor) providerClass.newInstance();
+                    securityCustomizerProvider = new SecurityCustomizerProvider(interceptor);
+                } catch (Exception ex) {
+                    logger.warn("Could not instantiate GroovyInterceptor implementation [%s] for the SecurityCustomizerProvider.  It will not be applied.", clazz);
+                    securityCustomizerProvider = null;
+                }
+            }
+
             return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(
-                    new DefaultImportCustomizerProvider(imports, staticImports)));
+                    new DefaultImportCustomizerProvider(imports, staticImports), securityCustomizerProvider));
         } else {
             final ScriptEngineManager manager = new ScriptEngineManager();
             return Optional.ofNullable(manager.getEngineByName(language));

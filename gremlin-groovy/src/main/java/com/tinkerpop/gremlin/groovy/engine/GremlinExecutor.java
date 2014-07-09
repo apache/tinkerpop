@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +44,7 @@ import java.util.function.Consumer;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinExecutor {
+public class GremlinExecutor implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(GremlinExecutor.class);
 
     /**
@@ -145,6 +146,12 @@ public class GremlinExecutor {
         return scheduledExecutorService;
     }
 
+    @Override
+    public void close() throws Exception {
+        // todo: shutdown pools?
+        scriptEngines.close();
+    }
+
     private void scheduleTimeout(final CompletableFuture<Object> evaluationFuture, final String script, final AtomicBoolean abort) {
         if (scriptEvaluationTimeout > 0) {
             // Schedule a timeout in the io threadpool for future execution - killing an eval is cheap
@@ -168,8 +175,10 @@ public class GremlinExecutor {
         final ScriptEngines scriptEngines = new ScriptEngines(se -> {
             for (Map.Entry<String, EngineSettings> config : settings.entrySet()) {
                 final String language = config.getKey();
-                se.reload(language, new HashSet<>(config.getValue().getImports()),
-                        new HashSet<>(config.getValue().getStaticImports()));
+                se.reload(language,
+                        new HashSet<>(config.getValue().getImports()),
+                        new HashSet<>(config.getValue().getStaticImports()),
+                        config.getValue().getConfig());
             }
 
             use.forEach(u -> {
@@ -227,15 +236,16 @@ public class GremlinExecutor {
      * Create a {@code Builder} with the gremlin-groovy ScriptEngine configured.
      */
     public static Builder create() {
-        return new Builder().addEngineSettings("gremlin-groovy", new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        return new Builder().addEngineSettings("gremlin-groovy", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new HashMap<>());
     }
 
     /**
      * Create a {@code Builder} and specify the first ScriptEngine to be included.
      */
     public static Builder create(final String engineName, final List<String> imports,
-                                 final List<String> staticImports, final List<String> scripts) {
-        return new Builder().addEngineSettings(engineName, imports, staticImports, scripts);
+                                 final List<String> staticImports, final List<String> scripts,
+                                 final Map<String,Object> config) {
+        return new Builder().addEngineSettings(engineName, imports, staticImports, scripts, config);
     }
 
     public static class Builder {
@@ -267,14 +277,17 @@ public class GremlinExecutor {
          * @param imports       A list of imports for the engine.
          * @param staticImports A list of static imports for the engine.
          * @param scripts       A list of scripts to execute in the engine to initialize it.
+         * @param config        Custom configuration map for the ScriptEngine
          */
         public Builder addEngineSettings(final String engineName, final List<String> imports,
-                                         final List<String> staticImports, final List<String> scripts) {
+                                         final List<String> staticImports, final List<String> scripts,
+                                         final Map<String,Object> config) {
             if (null == imports) throw new IllegalArgumentException("imports cannot be null");
             if (null == staticImports) throw new IllegalArgumentException("staticImports cannot be null");
             if (null == scripts) throw new IllegalArgumentException("scripts cannot be null");
+            final Map<String,Object> m = null == config ? Collections.emptyMap() : config;
 
-            settings.put(engineName, new EngineSettings(imports, staticImports, scripts));
+            settings.put(engineName, new EngineSettings(imports, staticImports, scripts, m));
             return this;
         }
 
@@ -370,11 +383,14 @@ public class GremlinExecutor {
         private List<String> imports;
         private List<String> staticImports;
         private List<String> scripts;
+        private Map<String,Object> config;
 
-        public EngineSettings(final List<String> imports, final List<String> staticImports, final List<String> scripts) {
+        public EngineSettings(final List<String> imports, final List<String> staticImports,
+                              final List<String> scripts, final Map<String,Object> config) {
             this.imports = imports;
             this.staticImports = staticImports;
             this.scripts = scripts;
+            this.config = config;
         }
 
         private List<String> getImports() {
@@ -387,6 +403,10 @@ public class GremlinExecutor {
 
         private List<String> getScripts() {
             return scripts;
+        }
+
+        public Map<String, Object> getConfig() {
+            return config;
         }
     }
 }
