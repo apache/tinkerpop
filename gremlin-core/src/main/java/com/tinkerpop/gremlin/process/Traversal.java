@@ -54,6 +54,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
         public <T> T get(final String key);
 
+        public <T> T remove(final String key);
+
         public Set<String> keys();
 
         public default <T> T getOrCreate(final String key, final Supplier<T> orCreate) {

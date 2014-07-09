@@ -22,7 +22,7 @@ import java.util.stream.Stream;
  */
 public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
 
-    private TinkerGraph graph;
+    public TinkerGraph graph;
     public final List<HasContainer> hasContainers = new ArrayList<>();
 
     public TinkerGraphStep(final Traversal traversal, final Class<E> returnClass, final TinkerGraph graph) {

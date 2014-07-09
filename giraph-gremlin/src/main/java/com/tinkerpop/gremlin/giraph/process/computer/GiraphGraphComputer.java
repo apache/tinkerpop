@@ -105,7 +105,6 @@ public class GiraphGraphComputer implements GraphComputer {
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
         if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable || TraversalHelper.getEnd(traversal) instanceof CountStep) {
-            System.out.println("HERE!!!!!");
             this.program(TraversalVertexProgram.create().traversal(() -> traversal).getConfiguration());
             try {
                 this.submit().get().getValue0();

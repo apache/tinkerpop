@@ -4,9 +4,13 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.FileInputStream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,6 +41,7 @@ public class TinkerGraphComputerTest {
     }
 
     @Test
+    @Ignore
     public void testOLAPWriteBack() throws Exception {
         Graph g = TinkerFactory.createClassic();
         g.V().pageRank(() -> GraphTraversal.of().out("knows").inE("knows")).forEachRemaining(System.out::println);
@@ -52,5 +57,14 @@ public class TinkerGraphComputerTest {
     public void testPlay() {
         Graph g = TinkerFactory.createClassic();
         g.V().has("name", "josh").out().value("name").reverse().forEachRemaining(System.out::println);
+    }
+
+    @Test
+    @Ignore
+    public void testPlay2() throws Exception {
+        Graph g = TinkerGraph.open();
+        GraphMLReader reader = GraphMLReader.create().build();
+        reader.readGraph(new FileInputStream("data/grateful-dead.xml"), g);
+        g.V().count().submit(g.compute()).forEachRemaining(System.out::println);
     }
 }

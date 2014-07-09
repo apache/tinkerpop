@@ -9,6 +9,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepTraversalStrategy;
 import com.tinkerpop.gremlin.util.StreamFactory;
 
@@ -145,6 +146,8 @@ public class TinkerHelper {
     }
 
     public static void prepareTraversalForComputer(final Traversal traversal) {
+        if (traversal.getSteps().get(0) instanceof TinkerGraphStep)
+            ((TinkerGraphStep) traversal.getSteps().get(0)).graph = null;
         traversal.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
         traversal.strategies().unregister(TraverserSourceStrategy.class);
         traversal.strategies().register(new ComputerCountStrategy());
