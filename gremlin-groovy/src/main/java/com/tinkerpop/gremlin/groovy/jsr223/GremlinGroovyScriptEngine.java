@@ -352,7 +352,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private synchronized void createClassLoader() {
         final CompilerConfiguration conf = new CompilerConfiguration();
-        conf.addCompilationCustomizers(this.importCustomizerProvider.getImportCustomizer());
+        conf.addCompilationCustomizers(this.importCustomizerProvider.getCompilationCustomizer());
         this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
     }
 

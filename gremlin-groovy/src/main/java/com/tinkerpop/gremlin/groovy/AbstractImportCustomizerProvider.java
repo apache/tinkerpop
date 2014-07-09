@@ -20,6 +20,7 @@ import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
+import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import java.util.HashSet;
@@ -79,7 +80,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     }
 
     @Override
-    public ImportCustomizer getImportCustomizer() {
+    public CompilationCustomizer getCompilationCustomizer() {
         final ImportCustomizer ic = new ImportCustomizer();
 
         processImports(ic, imports);

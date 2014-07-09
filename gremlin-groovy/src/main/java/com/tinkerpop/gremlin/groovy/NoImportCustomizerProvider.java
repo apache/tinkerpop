@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.groovy;
 
+import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import java.util.Collections;
@@ -12,7 +13,7 @@ import java.util.Set;
  */
 public class NoImportCustomizerProvider implements ImportCustomizerProvider {
     @Override
-    public ImportCustomizer getImportCustomizer() {
+    public CompilationCustomizer getCompilationCustomizer() {
         return new ImportCustomizer();
     }
 
