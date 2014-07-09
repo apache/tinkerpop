@@ -46,6 +46,11 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.kohsuke</groupId>
+            <artifactId>groovy-sandbox</artifactId>
+            <version>1.6</version>
+        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>junit</groupId>

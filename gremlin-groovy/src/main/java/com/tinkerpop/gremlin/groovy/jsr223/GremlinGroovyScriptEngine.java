@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.groovy.jsr223;
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.GremlinLoader;
 import com.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
+import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import groovy.grape.Grape;
 import groovy.lang.Binding;
@@ -37,6 +38,7 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -50,7 +52,7 @@ import java.util.stream.Stream;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager {
+public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager, AutoCloseable {
 
     public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
     public static final String REFERENCE_TYPE_PHANTOM = "phantom";
@@ -87,14 +89,20 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private static final String GROOVY_LANG_SCRIPT = "groovy.lang.Script";
 
     private ImportCustomizerProvider importCustomizerProvider;
+    private Optional<SecurityCustomizerProvider> securityProvider;
 
     public GremlinGroovyScriptEngine() {
         this(new DefaultImportCustomizerProvider());
     }
 
     public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider) {
+        this(importCustomizerProvider, null);
+    }
+
+    public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider, final SecurityCustomizerProvider securityCustomizerProvider) {
         GremlinLoader.load();
         this.importCustomizerProvider = importCustomizerProvider;
+        this.securityProvider = Optional.ofNullable(securityCustomizerProvider);
         createClassLoader();
     }
 
@@ -160,7 +168,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     @Override
+    public void close() throws Exception {
+        this.securityProvider.ifPresent(SecurityCustomizerProvider::unregisterInterceptors);
+    }
+
+    @Override
     public void reset() {
+        this.securityProvider.ifPresent(SecurityCustomizerProvider::unregisterInterceptors);
         createClassLoader();
 
         // must clear the local cache here because the the classloader has been reset.  therefore, classes previously
@@ -353,7 +367,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private synchronized void createClassLoader() {
         final CompilerConfiguration conf = new CompilerConfiguration();
         conf.addCompilationCustomizers(this.importCustomizerProvider.getCompilationCustomizer());
+
+        if (this.securityProvider.isPresent()) {
+            conf.addCompilationCustomizers(this.securityProvider.get().getCompilationCustomizer());
+        }
+
         this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
+        this.securityProvider.ifPresent(SecurityCustomizerProvider::registerInterceptors);
     }
 
     private Object callGlobal(final String name, final Object args[]) {
