@@ -11,8 +11,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -104,37 +106,28 @@ public class Cluster {
         return create(file).build();
     }
 
-    public ClusterInfo getClusterInfo() {
-        return manager.clusterInfo;
+    public void close() { closeAsync().join(); }
+
+    public CompletableFuture<Void> closeAsync() { return manager.close(); }
+
+    public List<URI> availableHosts() {
+        return Collections.unmodifiableList(getClusterInfo().allHosts().stream()
+                .filter(Host::isAvailable)
+                .map(Host::getHostUri)
+                .collect(Collectors.toList()));
     }
 
-    public void close() {
-        closeAsync().join();
-    }
+    Factory getFactory() { return manager.factory; }
 
-    public CompletableFuture<Void> closeAsync() {
-        return manager.close();
-    }
+    MessageSerializer getSerializer() { return manager.serializer; }
 
-    Factory getFactory() {
-        return manager.factory;
-    }
+    ScheduledExecutorService executor() { return manager.executor; }
 
-    MessageSerializer getSerializer() {
-        return manager.serializer;
-    }
+    Settings.ConnectionPoolSettings connectionPoolSettings() { return manager.connectionPoolSettings; }
 
-    ScheduledExecutorService executor() {
-        return manager.executor;
-    }
+    LoadBalancingStrategy loadBalancingStrategy() { return manager.loadBalancingStrategy; }
 
-    Settings.ConnectionPoolSettings connectionPoolSettings() {
-        return manager.connectionPoolSettings;
-    }
-
-    LoadBalancingStrategy loadBalancingStrategy() {
-        return manager.loadBalancingStrategy;
-    }
+    ClusterInfo getClusterInfo() { return manager.clusterInfo; }
 
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();

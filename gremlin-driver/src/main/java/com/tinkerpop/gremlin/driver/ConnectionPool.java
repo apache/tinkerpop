@@ -65,10 +65,11 @@ class ConnectionPool {
         try {
             for (int i = 0; i < minPoolSize; i++)
                 l.add(new Connection(host.getHostUri(), this, cluster, settings.maxInProcessPerConnection));
-        } catch (Exception re) {
+        } catch (ConnectionException ce) {
             // ok if we don't get it initialized here - when a request is attempted in a connection from the
             // pool it will try to create new connections as needed.
             logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, l.size());
+            considerUnavailable();
         }
 
         this.connections = new CopyOnWriteArrayList<>(l);
@@ -247,7 +248,14 @@ class ConnectionPool {
             return false;
         }
 
-        connections.add(new Connection(host.getHostUri(), this, cluster, settings().maxInProcessPerConnection));
+        try {
+            connections.add(new Connection(host.getHostUri(), this, cluster, settings().maxInProcessPerConnection));
+        } catch (ConnectionException ce) {
+            logger.debug("Connections were under max, but there was an error creating the connection.", ce);
+            considerUnavailable();
+            return false;
+        }
+
         announceAvailableConnection();
         return true;
     }
@@ -323,9 +331,8 @@ class ConnectionPool {
     }
 
     private void considerUnavailable() {
-        // todo: need to abstract the host availability function a bit - this is kinda rigid
         // called when a connection is "dead" right now such that a "dead" connection means the host is basically
-        // "dead".  that's probably ok for now, but this decision should likely be more flexibile.
+        // "dead".  that's probably ok for now, but this decision should likely be more flexible.
         host.makeUnavailable(this::tryReconnect);
 
         // let the load-balancer know that the host is acting poorly

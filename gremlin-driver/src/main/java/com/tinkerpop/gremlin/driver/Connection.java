@@ -56,7 +56,7 @@ class Connection {
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
-    public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster, final int maxInProcess) {
+    public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster, final int maxInProcess) throws ConnectionException {
         this.uri = uri;
         this.cluster = cluster;
         this.pool = pool;
@@ -77,8 +77,7 @@ class Connection {
             logger.info("Created new connection for {}", uri);
         } catch (InterruptedException ie) {
             logger.debug("Error opening connection on {}", uri);
-
-            throw new RuntimeException(ie);
+            throw new ConnectionException(uri, "Could not open connection", ie);
         }
     }
 

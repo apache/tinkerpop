@@ -46,7 +46,7 @@ public class Client {
         cluster.init();
         cluster.getClusterInfo().allHosts().forEach(host -> {
             try {
-                // todo: construction of ConnectionPool really shouldn't throw an exception...it should just come up as a dead host
+                // hosts that don't initialize connection pools will come up as a dead host
                 hostConnectionPools.put(host, new ConnectionPool(host, cluster));
 
                 // added a new host to the cluster so let the load-balancer know
