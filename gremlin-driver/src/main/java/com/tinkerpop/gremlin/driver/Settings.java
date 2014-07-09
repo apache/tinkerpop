@@ -48,6 +48,7 @@ class Settings {
     }
 
     static class ConnectionPoolSettings {
+        public boolean enableSsl = false;
         public int minSize = ConnectionPool.MIN_POOL_SIZE;
         public int maxSize = ConnectionPool.MAX_POOL_SIZE;
         public int minSimultaneousRequestsPerConnection = ConnectionPool.MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION;

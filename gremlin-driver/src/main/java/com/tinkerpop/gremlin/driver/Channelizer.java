@@ -14,7 +14,10 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
@@ -41,6 +44,10 @@ public interface Channelizer extends ChannelHandler {
 
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
 
+        public boolean supportsSsl() {
+            return cluster.connectionPoolSettings().enableSsl;
+        }
+
         public abstract void configure(final ChannelPipeline pipeline);
         public void finalize(final ChannelPipeline pipeline) {
             // do nothing
@@ -56,6 +63,21 @@ public interface Channelizer extends ChannelHandler {
         @Override
         protected void initChannel(final SocketChannel socketChannel) throws Exception {
             final ChannelPipeline pipeline = socketChannel.pipeline();
+            final Optional<SslContext> sslCtx;
+            if (supportsSsl()) {
+                try {
+                    final SelfSignedCertificate ssc = new SelfSignedCertificate();
+                    sslCtx = Optional.of(SslContext.newServerContext(ssc.certificate(), ssc.privateKey()));
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            } else {
+                sslCtx = Optional.empty();
+            }
+
+            if (sslCtx.isPresent()) {
+                pipeline.addLast(sslCtx.get().newHandler(socketChannel.alloc(), connection.getUri().getHost(), connection.getUri().getPort()));
+            }
 
             configure(pipeline);
             pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new Handler.GremlinResponseHandler(pending));
@@ -66,10 +88,19 @@ public interface Channelizer extends ChannelHandler {
         private WebSocketClientHandler handler;
 
         @Override
+        public boolean supportsSsl() {
+            final String scheme = connection.getUri().getScheme();
+            return "wss".equalsIgnoreCase(scheme);
+        }
+
+        @Override
         public void configure(final ChannelPipeline pipeline) {
-            final String protocol = connection.getUri().getScheme();
-            if (!"ws".equals(protocol))
-                throw new IllegalArgumentException("Unsupported protocol: " + protocol);
+            final String scheme = connection.getUri().getScheme();
+            if (!"ws".equalsIgnoreCase(scheme) && !"wss".equalsIgnoreCase(scheme))
+                throw new IllegalStateException("Unsupported scheme (only ws: or wss: supported): " + scheme);
+
+            if (!supportsSsl() && "wss".equalsIgnoreCase(scheme))
+                throw new IllegalStateException("To use wss scheme ensure that enableSsl is set to true in configuration");
 
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
             handler = new WebSocketClientHandler(

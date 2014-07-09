@@ -26,7 +26,7 @@ class Host {
     public Host(final InetSocketAddress address, final Cluster cluster) {
         this.cluster = cluster;
         this.address = address;
-        this.hostUri = makeUriFromAddress(address, false);  // todo: pass down config for ssl
+        this.hostUri = makeUriFromAddress(address, cluster.connectionPoolSettings().enableSsl);
     }
 
     public InetSocketAddress getAddress() {

@@ -146,6 +146,7 @@ public class Cluster {
         private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        private boolean enableSsl = false;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
 
         private Builder() {
@@ -187,6 +188,11 @@ public class Cluster {
 
         public Builder serializer(final MessageSerializer serializer) {
             this.serializer = serializer;
+            return this;
+        }
+
+        public Builder enableSsl(final boolean enable) {
+            this.enableSsl = enable;
             return this;
         }
 
@@ -304,6 +310,7 @@ public class Cluster {
             connectionPoolSettings.reconnectInitialDelay = this.reconnectInitialDelay;
             connectionPoolSettings.reconnectInterval = this.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
+            connectionPoolSettings.enableSsl = this.enableSsl;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy);
         }
