@@ -63,7 +63,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                     + response.content().toString(CharsetUtil.UTF_8) + ')');
         }
 
-        // todo: properly deal with close() - meaning event handler of some sort for the Connection
+        // a close frame doesn't mean much here.  errors raised from closed channels will mark the host as dead
         final WebSocketFrame frame = (WebSocketFrame) msg;
         if (frame instanceof TextWebSocketFrame) {
             ctx.fireChannelRead(frame.retain(2));

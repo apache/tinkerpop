@@ -69,7 +69,6 @@ class Connection {
         channelizer.init(this);
         b.channel(NioSocketChannel.class).handler(channelizer);
 
-        // todo: blocking
         try {
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
             channelizer.connected();
@@ -181,7 +180,6 @@ class Connection {
     }
 
     private void shutdown(final CompletableFuture<Void> future) {
-        // todo: await client side close confirmation?
         channel.writeAndFlush(new CloseWebSocketFrame());
         final ChannelPromise promise = channel.newPromise();
         promise.addListener(f -> {
