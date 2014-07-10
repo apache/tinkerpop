@@ -18,6 +18,10 @@ public abstract class CountTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_count();
 
+    public abstract Traversal<Vertex, Long> get_g_V_out_count();
+
+    public abstract Traversal<Vertex, Long> get_g_V_both_both_count();
+
     public abstract Traversal<Vertex, Long> get_g_V_filterXfalseX_count();
 
     @Test
@@ -27,6 +31,24 @@ public abstract class CountTest extends AbstractGremlinTest {
         System.out.println("Testing: " + traversal);
         assertEquals(new Long(6), traversal.next());
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_out_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_out_count();
+        System.out.println("Testing: " + traversal);
+        assertEquals(new Long(6), traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_both_both_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_both_both_count();
+        System.out.println("Testing: " + traversal);
+        assertEquals(new Long(30), traversal.next());
+//        assertFalse(traversal.hasNext());    TODO: Why does this not work in GraphComputer?
     }
 
     @Test
@@ -44,6 +66,14 @@ public abstract class CountTest extends AbstractGremlinTest {
             return g.V().count();
         }
 
+        public Traversal<Vertex, Long> get_g_V_out_count() {
+            return g.V().out().count();
+        }
+
+        public Traversal<Vertex, Long> get_g_V_both_both_count() {
+            return g.V().both().both().count();
+        }
+
         public Traversal<Vertex, Long> get_g_V_filterXfalseX_count() {
             return g.V().filter(v -> false).count();
         }
@@ -52,6 +82,14 @@ public abstract class CountTest extends AbstractGremlinTest {
     public static class JavaComputerCountTest extends CountTest {
         public Traversal<Vertex, Long> get_g_V_count() {
             return g.V().count().submit(g.compute());
+        }
+
+        public Traversal<Vertex, Long> get_g_V_out_count() {
+            return g.V().out().count().submit(g.compute());
+        }
+
+        public Traversal<Vertex, Long> get_g_V_both_both_count() {
+            return g.V().both().both().count().submit(g.compute());
         }
 
         public Traversal<Vertex, Long> get_g_V_filterXfalseX_count() {

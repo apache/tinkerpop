@@ -48,17 +48,6 @@ public class TraversalCounters implements Serializable {
         return this.previousObjectTracks;
     }
 
-    /*public static class TraversalCountersSerializer<T> extends Serializer<T> {
-        @Override
-        public void write(final Kryo kryo, final Output output, final T traversalCounters) {
-            kryo.writeClassAndObject(output, traversalCounters);
-        }
-
-        @Override
-        public T read(final Kryo kryo, final Input input, final Class<T> traversalCounters) {
-            return (T) kryo.readClassAndObject(input);
-        }
-    }*/
 }
 
 

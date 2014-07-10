@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -16,8 +16,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected String as;
     protected final Traversal traversal;
     protected ExpandableStepIterator<S> starts;
-    private Traverser<E> nextEnd;
-    private boolean available;
+    protected Traverser<E> nextEnd;
+    protected boolean available;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();

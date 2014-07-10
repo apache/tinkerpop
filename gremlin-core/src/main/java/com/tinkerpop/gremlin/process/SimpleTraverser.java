@@ -83,6 +83,7 @@ public class SimpleTraverser<T> implements Traverser<T> {
 
     public int hashCode() {
         return this.t.hashCode();
+        //return this.t.hashCode() + this.getFuture().hashCode() + this.getLoops();
     }
 
     public Traverser<T> deflate() {
@@ -109,5 +110,12 @@ public class SimpleTraverser<T> implements Traverser<T> {
 
     public boolean equals(final Object object) {
         return object instanceof SimpleTraverser && this.t.equals(((SimpleTraverser) object).get());
+        /*if (object instanceof SimpleTraverser) {
+            return ((SimpleTraverser) object).get().equals(this.t) &&
+                    ((SimpleTraverser) object).getFuture().equals(this.getFuture()) &&
+                    ((SimpleTraverser) object).getLoops() == this.getLoops();
+        } else {
+            return false;
+        }*/
     }
 }

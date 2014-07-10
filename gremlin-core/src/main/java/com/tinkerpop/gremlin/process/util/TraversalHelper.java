@@ -37,7 +37,7 @@ public class TraversalHelper {
 
     public static <S, E> Step<S, E> getAs(final String as, final Traversal<?, ?> traversal) {
         return (Step) traversal.getSteps().stream()
-                .filter(p -> as.equals(p.getAs()))
+                .filter(step -> as.equals(step.getAs()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("The provided name does not exist: " + as));
     }

@@ -65,6 +65,9 @@ public class TinkerGraphComputerTest {
         Graph g = TinkerGraph.open();
         GraphMLReader reader = GraphMLReader.create().build();
         reader.readGraph(new FileInputStream("data/grateful-dead.xml"), g);
-        g.V().out().count().submit(g.compute()).forEachRemaining(System.out::println);
+        //g.V().as("x").out().jump("x", t -> t.getLoops() < 2).count().forEachRemaining(System.out::println);
+        g.V().as("x").out().jump("x", t -> t.getLoops() < 3).count().submit(g.compute()).forEachRemaining(System.out::println);
+
+        //g.V().out().count().submit(g.compute()).forEachRemaining(System.out::println);
     }
 }

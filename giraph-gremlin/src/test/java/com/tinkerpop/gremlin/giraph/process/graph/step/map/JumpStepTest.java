@@ -20,7 +20,8 @@ public class JumpStepTest {
         Map<String, Object> configuration = new GiraphGraphProvider().getBaseConfiguration(null);
         configuration.put("gremlin.inputLocation", KryoInputFormat.class.getResource("grateful-dead-vertices.gio").getPath());
         GiraphGraph g = GiraphGraph.open(new MapConfiguration(configuration));
-        //assertEquals(new Long(14465066), g.V().out().out().out().count().submit(g.compute()).next());
+        //System.out.println(g.V().out().out().out().count().submit(g.compute()).next());
+        //System.out.println(g.V().as("x").out().jump("x", t -> t.getLoops() < 3).submit(g.compute()).count().next());
         g.V().as("x").out().jump("x", t -> t.getLoops() < 3).count().submit(g.compute()).forEach(System.out::println);
     }
 }
