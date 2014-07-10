@@ -51,6 +51,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.util.Tree;
 import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
+import com.tinkerpop.gremlin.process.graph.step.map.MatchStepNew;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -254,7 +255,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> match(final String inAs, final String outAs, final Traversal... traversals) {
-        return (GraphTraversal) this.addStep(new MatchStep<>(this, inAs, outAs, traversals));
+        //return (GraphTraversal) this.addStep(new MatchStepNew<S, E2>(this, inAs, traversals));
+        return (GraphTraversal) this.addStep(new MatchStep<S, E2>(this, inAs, outAs, traversals));
     }
 
     public default GraphTraversal<S, Path> select(final List<String> asLabels, SFunction... stepFunctions) {
