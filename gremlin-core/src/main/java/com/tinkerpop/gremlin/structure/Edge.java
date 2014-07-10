@@ -32,9 +32,13 @@ public interface Edge extends Element {
 
     public static final String DEFAULT_LABEL = "edge";
 
-    public GraphTraversal<Edge, Vertex> toV(final Direction direction);
+    public Iterator<Vertex> vertices(final Direction direction);
 
     // element steps ///////////////////////////////////////////////////////////
+
+    public default GraphTraversal<Edge, Vertex> toV(final Direction direction) {
+        return this.start().toV(direction);
+    }
 
     public default GraphTraversal<Edge, Vertex> inV() {
         return this.toV(Direction.IN);

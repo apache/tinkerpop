@@ -1,7 +1,5 @@
 package com.tinkerpop.gremlin.groovy;
 
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
-
 import java.util.Set;
 
 /**
@@ -9,8 +7,7 @@ import java.util.Set;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface ImportCustomizerProvider {
-    ImportCustomizer getImportCustomizer();
+public interface ImportCustomizerProvider extends CompilerCustomizerProvider {
 
     Set<String> getExtraImports();
 

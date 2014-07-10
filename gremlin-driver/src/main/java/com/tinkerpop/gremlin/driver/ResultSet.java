@@ -80,11 +80,12 @@ public class ResultSet implements Iterable<Item> {
     }
 
     /**
-     * Wait for some number of items to be available on the client.
+     * Wait for some number of items to be available on the client. The future will contain the number of items
+     * available which may or may not be the number the caller was waiting for.
      */
-    public CompletableFuture<Void> awaitItems(final int items) {
+    public CompletableFuture<Integer> awaitItems(final int items) {
         if (allItemsAvailable())
-            CompletableFuture.completedFuture(null);
+            CompletableFuture.completedFuture(getAvailableItemCount());
 
         return CompletableFuture.supplyAsync(() -> {
             while (!allItemsAvailable() && getAvailableItemCount() < items) {
@@ -100,7 +101,7 @@ public class ResultSet implements Iterable<Item> {
                 }
             }
 
-            return null;
+            return getAvailableItemCount();
         }, executor);
     }
 

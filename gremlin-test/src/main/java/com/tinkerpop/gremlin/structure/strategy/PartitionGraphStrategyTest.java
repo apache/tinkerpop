@@ -80,7 +80,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         });
 
         strategy.addReadPartition("A");
-        assertEquals(2, g.V().count());
+        assertEquals(new Long(2), g.V().count().next());
     }
 
     @Test
@@ -138,37 +138,37 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         assertTrue(t.strategies().get().stream().anyMatch(o -> o.getClass().equals(PartitionGraphStrategy.PartitionGraphTraversalStrategy.class)));
 
         strategy.clearReadPartitions();
-        assertEquals(0, g.V().count());
-        assertEquals(0, g.E().count());
+        assertEquals(new Long(0), g.V().count().next());
+        assertEquals(new Long(0), g.E().count().next());
 
         strategy.addReadPartition("A");
-        assertEquals(2, g.V().count());
-        assertEquals(1, g.E().count());
-        assertEquals(1, g.v(vA.id()).outE().count());
+        assertEquals(new Long(2), g.V().count().next());
+        assertEquals(new Long(1), g.E().count().next());
+        assertEquals(new Long(1), g.v(vA.id()).outE().count().next());
         assertEquals(eAtoAA.id(), g.v(vA.id()).outE().next().id());
-        assertEquals(1, g.v(vA.id()).out().count());
+        assertEquals(new Long(1), g.v(vA.id()).out().count().next());
         assertEquals(vAA.id(), g.v(vA.id()).out().next().id());
 
         strategy.addReadPartition("B");
-        assertEquals(3, g.V().count());
-        assertEquals(2, g.E().count());
+        assertEquals(new Long(3), g.V().count().next());
+        assertEquals(new Long(2), g.E().count().next());
 
         strategy.addReadPartition("C");
-        assertEquals(4, g.V().count());
-        assertEquals(4, g.E().count());
+        assertEquals(new Long(4), g.V().count().next());
+        assertEquals(new Long(4), g.E().count().next());
 
         strategy.removeReadPartition("A");
         strategy.removeReadPartition("B");
 
-        assertEquals(1, g.V().count());
-        assertEquals(2, g.E().count());
+        assertEquals(new Long(1), g.V().count().next());
+        assertEquals(new Long(2), g.E().count().next());
 
-        assertEquals(2, g.v(vC.id()).inE().count());
-        assertEquals(0, g.v(vC.id()).in().count());
+        assertEquals(new Long(2), g.v(vC.id()).inE().count().next());
+        assertEquals(new Long(0), g.v(vC.id()).in().count().next());
 
         strategy.addReadPartition("B");
-        assertEquals(2, g.v(vC.id()).inE().count());
-        assertEquals(1, g.v(vC.id()).in().count());
+        assertEquals(new Long(2), g.v(vC.id()).inE().count().next());
+        assertEquals(new Long(1), g.v(vC.id()).in().count().next());
         assertEquals(vC.id(), g.e(eBtovC.id()).inV().id().next());
         assertEquals(vB.id(), g.e(eBtovC.id()).outV().id().next());
         assertEquals(vC.id(), g.e(eAtovC.id()).inV().id().next());

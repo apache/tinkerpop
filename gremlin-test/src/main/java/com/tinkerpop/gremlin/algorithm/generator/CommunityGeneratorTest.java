@@ -56,10 +56,10 @@ public class CommunityGeneratorTest {
                 prepareGraph(g1);
                 communityGeneratorTest(g1, null);
 
-                assertTrue(g.E().count() > 0);
-                assertTrue(g.V().count() > 0);
-                assertTrue(g1.E().count() > 0);
-                assertTrue(g1.V().count() > 0);
+                assertTrue(g.E().count().next() > 0);
+                assertTrue(g.V().count().next() > 0);
+                assertTrue(g1.E().count().next() > 0);
+                assertTrue(g1.V().count().next() > 0);
 
                 // don't assert counts of edges...those may be the same, just ensure that not every vertex has the
                 // same number of edges between graphs.  that should make it harder for the test to fail.
@@ -82,10 +82,10 @@ public class CommunityGeneratorTest {
                 prepareGraph(g1);
                 communityGeneratorTest(g1, () -> 123456789l);
 
-                assertTrue(g.E().count() > 0);
-                assertTrue(g.V().count() > 0);
-                assertTrue(g1.E().count() > 0);
-                assertTrue(g1.V().count() > 0);
+                assertTrue(g.E().count().next() > 0);
+                assertTrue(g.V().count().next() > 0);
+                assertTrue(g1.E().count().next() > 0);
+                assertTrue(g1.V().count().next() > 0);
                 assertEquals(g.E().count(), g1.E().count());
 
                 // ensure that every vertex has the same number of edges between graphs.
@@ -119,7 +119,7 @@ public class CommunityGeneratorTest {
                             .seedGenerator(seedGenerator).build();
                     final int numEdges = generator.generate();
                     assertTrue(numEdges > 0);
-                    tryCommit(graph, g -> assertEquals(numEdges, g.E().count()));
+                    tryCommit(graph, g -> assertEquals(new Long(numEdges), g.E().count().next()));
                     generated = true;
                 } catch (IllegalArgumentException iae) {
                     generated = false;
@@ -155,11 +155,11 @@ public class CommunityGeneratorTest {
                     .crossCommunityPercentage(0.0d)
                     .expectedNumCommunities(2)
                     .expectedNumEdges(1000).build();
-            final int edgesGenerated = generator.generate();
+            final long edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {
-                assertEquals(edgesGenerated, g.E().count());
-                assertTrue(g.V().count() > 0);
+                assertEquals(new Long(edgesGenerated), g.E().count().next());
+                assertTrue(g.V().count().next() > 0);
                 assertTrue(g.E().toList().stream().allMatch(e -> e.value("data").equals("test")));
                 assertTrue(g.V().toList().stream().allMatch(
                         v -> v.value("test").equals("data") && v.property("communityIndex").isPresent()

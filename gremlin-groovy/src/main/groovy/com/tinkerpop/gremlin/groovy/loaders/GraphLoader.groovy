@@ -4,6 +4,8 @@ import com.tinkerpop.gremlin.groovy.GremlinLoader
 import com.tinkerpop.gremlin.process.Traverser
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader
+import com.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,5 +46,22 @@ class GraphLoader {
         Traverser.metaClass.propertyMissing = { final String name ->
             return ((Traverser) delegate).get()["$name"];
         }
+
+        // GraphML loading and saving
+        Graph.metaClass.loadGraphML = { final def fileObject ->
+            final GraphMLReader reader = GraphMLReader.create().build();
+            try {
+                reader.readGraph(new URL(fileObject).openStream(), (Graph) delegate);
+            } catch (final MalformedURLException e) {
+                reader.readGraph(new FileInputStream(fileObject), (Graph) delegate)
+            }
+        }
+
+        Graph.metaClass.saveGraphML = { final def fileObject ->
+            final GraphMLWriter writer = GraphMLWriter.create().build();
+            writer.writeGraph(new FileOutputStream(fileObject), (Graph) delegate)
+        }
+
+
     }
 }

@@ -33,7 +33,7 @@ public class GraphSONRecordReaderWriterTest {
         conf.set("fs.file.impl", LocalFileSystem.class.getName());
         conf.set("fs.default.name", "file:///");
 
-        File testFile = new File(this.getClass().getResource("grateful-dead-adjlist.ldjson").getPath());
+        File testFile = new File(this.getClass().getResource("grateful-dead-vertices.ldjson").getPath());
         FileSplit split = new FileSplit(
                 new Path(testFile.getAbsoluteFile().toURI().toString()), 0,
                 testFile.length(), null);

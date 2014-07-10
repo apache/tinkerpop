@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.giraph.structure;
 
+import com.tinkerpop.gremlin.giraph.process.computer.util.GiraphComputerHelper;
 import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphGraphStep;
-import com.tinkerpop.gremlin.giraph.process.graph.step.map.GiraphVertexStep;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -17,14 +17,16 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
+import com.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.io.Serializable;
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphVertex extends GiraphElement implements Vertex, Serializable {
+public class GiraphVertex extends GiraphElement implements Vertex, Serializable, WrappedVertex<TinkerVertex> {
 
     protected GiraphVertex() {
     }
@@ -37,21 +39,19 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable 
         throw Vertex.Exceptions.edgeAdditionsNotSupported();
     }
 
-    public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
-        final GraphTraversal traversal = this.start();
-        return (GraphTraversal) traversal.addStep(new GiraphVertexStep(traversal, this.graph, Vertex.class, direction, branchFactor, labels));
-
+    public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
+        return GiraphHelper.getVertices(this.graph, this, direction, branchFactor, labels);
     }
 
-    public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
-        final GraphTraversal traversal = this.start();
-        return (GraphTraversal) traversal.addStep(new GiraphVertexStep(traversal, this.graph, Edge.class, direction, branchFactor, labels));
+    public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
+        return GiraphHelper.getEdges(this.graph, this, direction, branchFactor, labels);
     }
 
     public GraphTraversal<Vertex, Vertex> start() {
         final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
             public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
                 if (engine instanceof GraphComputer) {
+                    GiraphComputerHelper.prepareTraversalForComputer(this);
                     final String label = this.getSteps().get(0).getAs();
                     TraversalHelper.removeStep(0, this);
                     final Step identityStep = new IdentityStep(this);
@@ -68,7 +68,7 @@ public class GiraphVertex extends GiraphElement implements Vertex, Serializable 
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
-    public TinkerVertex getTinkerVertex() {
+    public TinkerVertex getBaseVertex() {
         return (TinkerVertex) this.element;
     }
 }

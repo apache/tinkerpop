@@ -64,11 +64,12 @@ class ConnectionPool {
 
         try {
             for (int i = 0; i < minPoolSize; i++)
-                l.add(new Connection(host.getWebSocketUri(), this, cluster, settings.maxInProcessPerConnection));
-        } catch (Exception re) {
+                l.add(new Connection(host.getHostUri(), this, cluster, settings.maxInProcessPerConnection));
+        } catch (ConnectionException ce) {
             // ok if we don't get it initialized here - when a request is attempted in a connection from the
             // pool it will try to create new connections as needed.
             logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, l.size());
+            considerUnavailable();
         }
 
         this.connections = new CopyOnWriteArrayList<>(l);
@@ -84,7 +85,7 @@ class ConnectionPool {
     public Connection borrowConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
         logger.debug("Borrowing connection from pool on {} - timeout in {} {}", host, timeout, unit);
 
-        if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+        if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
         final Connection leastUsedConn = selectLeastUsed();
 
@@ -100,7 +101,7 @@ class ConnectionPool {
 
         if (null == leastUsedConn) {
             if (isClosed())
-                throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+                throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
             logger.debug("Pool was initialized but a connection could not be selected earlier - waiting for connection on {}", host);
             return waitForConnection(timeout, unit);
         }
@@ -135,7 +136,7 @@ class ConnectionPool {
 
     public void returnConnection(final Connection connection) throws ConnectionException {
         logger.debug("Attempting to return {} on {}", connection, host);
-        if (isClosed()) throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+        if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
         int inFlight = connection.inFlight.decrementAndGet();
         if (connection.isDead()) {
@@ -247,7 +248,14 @@ class ConnectionPool {
             return false;
         }
 
-        connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
+        try {
+            connections.add(new Connection(host.getHostUri(), this, cluster, settings().maxInProcessPerConnection));
+        } catch (ConnectionException ce) {
+            logger.debug("Connections were under max, but there was an error creating the connection.", ce);
+            considerUnavailable();
+            return false;
+        }
+
         announceAvailableConnection();
         return true;
     }
@@ -289,7 +297,7 @@ class ConnectionPool {
             }
 
             if (isClosed())
-                throw new ConnectionException(host.getWebSocketUri(), host.getAddress(), "Pool is shutdown");
+                throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
             final Connection leastUsed = selectLeastUsed();
             if (leastUsed != null) {
@@ -323,9 +331,8 @@ class ConnectionPool {
     }
 
     private void considerUnavailable() {
-        // todo: need to abstract the host availability function a bit - this is kinda rigid
         // called when a connection is "dead" right now such that a "dead" connection means the host is basically
-        // "dead".  that's probably ok for now, but this decision should likely be more flexibile.
+        // "dead".  that's probably ok for now, but this decision should likely be more flexible.
         host.makeUnavailable(this::tryReconnect);
 
         // let the load-balancer know that the host is acting poorly
@@ -338,7 +345,7 @@ class ConnectionPool {
 
         try {
 
-            connections.add(new Connection(host.getWebSocketUri(), this, cluster, settings().maxInProcessPerConnection));
+            connections.add(new Connection(host.getHostUri(), this, cluster, settings().maxInProcessPerConnection));
             this.open.set(connections.size());
 
             // host is reconnected and a connection is now available

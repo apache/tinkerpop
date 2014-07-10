@@ -16,6 +16,10 @@ class GroovyGroupCountTestImpl extends GroupCountTest {
         g.V.out('created').name.groupCount
     }
 
+    public Traversal<Vertex, Map<Object, Long>> get_g_V_filterXfalseX_groupCount() {
+        g.V.filter { false }.groupCont;
+    }
+
     public Map<Object, Long> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_iterate_getXaX() {
         g.V.as('x').out.groupCount('a') { it.value('name') }.jump('x') { it.loops < 2 }.iterate().memory().get('a')
     }

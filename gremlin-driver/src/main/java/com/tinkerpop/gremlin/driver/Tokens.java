@@ -23,6 +23,7 @@ public class Tokens {
     public static final String ARGS_IMPORTS = "imports";
     public static final String ARGS_INFO_TYPE = "infoType";
     public static final String ARGS_LANGUAGE = "language";
+    public static final String ARGS_BATCH_SIZE = "batchSize";
     public static final String ARGS_VERBOSE = "verbose";
 
     public static final String ARGS_COORDINATES_GROUP = "group";

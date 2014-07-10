@@ -6,8 +6,6 @@ import com.tinkerpop.gremlin.giraph.process.computer.GiraphMessenger;
 import com.tinkerpop.gremlin.giraph.process.computer.GlobalsMapReduce;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
-import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
-import com.tinkerpop.gremlin.giraph.structure.GiraphVertex;
 import com.tinkerpop.gremlin.giraph.structure.io.EmptyOutEdges;
 import com.tinkerpop.gremlin.process.computer.VertexProgram;
 import com.tinkerpop.gremlin.structure.Element;
@@ -38,8 +36,6 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
     private TinkerGraph tinkerGraph;
     private TinkerVertex tinkerVertex;
 
-    private GiraphGraph giraphGraph;
-    private GiraphVertex giraphVertex;
     private GiraphGraphComputerGlobals globals;
 
     public GiraphInternalVertex() {
@@ -52,13 +48,13 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         this.tinkerVertex.properties().forEach((k, v) -> vertex.property(k, v.value()));
         this.tinkerVertex.outE().forEach(edge -> {
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.inV().id().next(), edge.inV().label().next());
-            final TinkerEdge gremlinEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex);
-            edge.properties().forEach((k, v) -> gremlinEdge.property(k, v.value()));
+            final TinkerEdge tinkerEdge = (TinkerEdge) vertex.addEdge(edge.label(), otherVertex);
+            edge.properties().forEach((k, v) -> tinkerEdge.property(k, v.value()));
         });
         this.tinkerVertex.inE().forEach(edge -> {
             final TinkerVertex otherVertex = (TinkerVertex) ElementHelper.getOrAddVertex(this.tinkerGraph, edge.outV().id().next(), edge.outV().label().next());
-            final TinkerEdge gremlinEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex);
-            edge.properties().forEach((k, v) -> gremlinEdge.property(k, v.value()));
+            final TinkerEdge tinkerEdge = (TinkerEdge) otherVertex.addEdge(edge.label(), vertex);
+            edge.properties().forEach((k, v) -> tinkerEdge.property(k, v.value()));
         });
         this.initialize(new LongWritable(Long.valueOf(this.tinkerVertex.id().toString())), this.deflateGiraphVertex(), EmptyOutEdges.instance());
         // TODO? this.tinkerVertex = vertex;
@@ -69,19 +65,11 @@ public class GiraphInternalVertex extends Vertex<LongWritable, Text, NullWritabl
         super.setConf(configuration);
         this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
         this.globals = new GiraphGraphComputerGlobals(this);
-        this.giraphGraph = GiraphGraph.open(ConfUtil.makeApacheConfiguration(configuration));
-        this.giraphVertex = new GiraphVertex(this.tinkerVertex, this.giraphGraph);
     }
 
     public TinkerVertex getTinkerVertex() {
         return this.tinkerVertex;
     }
-
-    public GiraphVertex getGiraphVertex() {
-        return this.giraphVertex;
-    }
-
-
 
     public void compute(final Iterable<KryoWritable> messages) {
         if (null == this.tinkerVertex)

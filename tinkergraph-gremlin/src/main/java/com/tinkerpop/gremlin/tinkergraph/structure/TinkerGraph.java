@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.tinkerpop.gremlin.process.TraversalEngine;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -13,6 +11,7 @@ import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepTraversalStrategy;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
@@ -98,31 +97,14 @@ public class TinkerGraph implements Graph, Serializable {
     }
 
     public GraphTraversal<Vertex, Vertex> V() {
-        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Vertex>() {
-            public GraphTraversal<Object, Vertex> submit(final TraversalEngine engine) {
-                if (engine instanceof GraphComputer) {
-                    this.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
-                    //TODO: this.strategies().register(new ClearTraverserSourceStrategy());
-                }
-                return super.submit(engine);
-            }
-        };
-        traversal.memory().set(Key.hidden("g"), this);    // TODO: is this good?
+        final GraphTraversal traversal = new TinkerGraphTraversal<>();
         traversal.strategies().register(new TinkerGraphStepTraversalStrategy());
         traversal.addStep(new TinkerGraphStep(traversal, Vertex.class, this));
         return traversal;
     }
 
     public GraphTraversal<Edge, Edge> E() {
-        final GraphTraversal traversal = new DefaultGraphTraversal<Object, Edge>() {
-            public GraphTraversal<Object, Edge> submit(final TraversalEngine engine) {
-                if (engine instanceof GraphComputer) {
-                    this.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
-                    // TODO: this.strategies().register(new ClearTraverserSourceStrategy());
-                }
-                return super.submit(engine);
-            }
-        };
+        final GraphTraversal traversal = new TinkerGraphTraversal<>();
         traversal.strategies().register(new TinkerGraphStepTraversalStrategy());
         traversal.addStep(new TinkerGraphStep(traversal, Edge.class, this));
         return traversal;

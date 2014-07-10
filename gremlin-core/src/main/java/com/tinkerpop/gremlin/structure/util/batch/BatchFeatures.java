@@ -154,8 +154,43 @@ class BatchFeatures implements Graph.Features {
         }
 
         @Override
-        public boolean supportsPrimitiveArrayValues() {
-            return baseFeatures.graph().memory().supportsPrimitiveArrayValues();
+        public boolean supportsByteValues() {
+            return baseFeatures.graph().memory().supportsByteValues();
+        }
+
+        @Override
+        public boolean supportsMixedListValues() {
+            return baseFeatures.graph().memory().supportsMixedListValues();
+        }
+
+        @Override
+        public boolean supportsBooleanArrayValues() {
+            return baseFeatures.graph().memory().supportsBooleanArrayValues();
+        }
+
+        @Override
+        public boolean supportsByteArrayValues() {
+            return baseFeatures.graph().memory().supportsByteArrayValues();
+        }
+
+        @Override
+        public boolean supportsDoubleArrayValues() {
+            return baseFeatures.graph().memory().supportsDoubleArrayValues();
+        }
+
+        @Override
+        public boolean supportsFloatArrayValues() {
+            return baseFeatures.graph().memory().supportsFloatArrayValues();
+        }
+
+        @Override
+        public boolean supportsIntegerArrayValues() {
+            return baseFeatures.graph().memory().supportsIntegerArrayValues();
+        }
+
+        @Override
+        public boolean supportsLongArrayValues() {
+            return baseFeatures.graph().memory().supportsLongArrayValues();
         }
 
         @Override

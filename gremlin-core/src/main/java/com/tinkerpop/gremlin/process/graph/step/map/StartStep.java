@@ -21,7 +21,6 @@ public class StartStep<S> extends MapStep<S, S> implements TraverserSource {
         super(traversal);
         this.setFunction(Traverser::get);
         this.start = start;
-        this.generateTraverserIterator(false);
     }
 
     public void clear() {

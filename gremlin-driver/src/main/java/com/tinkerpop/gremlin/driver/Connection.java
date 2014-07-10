@@ -5,17 +5,9 @@ import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
-import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +36,11 @@ class Connection {
 
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
+    public static final int MAX_WAIT_FOR_CONNECTION = 3000;
+    public static final int MAX_CONTENT_LENGTH = 65536;
+    public static final int RECONNECT_INITIAL_DELAY = 1000;
+    public static final int RECONNECT_INTERVAL = 1000;
+    public static final int RESULT_ITERATION_BATCH_SIZE = 64;
 
     public final AtomicInteger inFlight = new AtomicInteger(0);
     private volatile boolean isDead = false;
@@ -51,30 +48,27 @@ class Connection {
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
-    public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster, final int maxInProcess) {
+    public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster, final int maxInProcess) throws ConnectionException {
         this.uri = uri;
         this.cluster = cluster;
         this.pool = pool;
         this.maxInProcess = maxInProcess;
 
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
-        final String protocol = uri.getScheme();
-        if (!"ws".equals(protocol))
-            throw new IllegalArgumentException("Unsupported protocol: " + protocol);
 
-        final ClientPipelineInitializer initializer = new ClientPipelineInitializer();
-        b.channel(NioSocketChannel.class).handler(initializer);
+        // todo: dynamically instantiate the channelizer from settings
+        final Channelizer channelizer = new Channelizer.WebSocketChannelizer();
+        channelizer.init(this);
+        b.channel(NioSocketChannel.class).handler(channelizer);
 
-        // todo: blocking
         try {
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
-            initializer.handler.handshakeFuture().sync();
+            channelizer.connected();
 
             logger.info("Created new connection for {}", uri);
         } catch (InterruptedException ie) {
             logger.debug("Error opening connection on {}", uri);
-
-            throw new RuntimeException(ie);
+            throw new ConnectionException(uri, "Could not open connection", ie);
         }
     }
 
@@ -92,6 +86,18 @@ class Connection {
 
     public boolean isClosed() {
         return closeFuture.get() != null;
+    }
+
+    URI getUri() {
+        return uri;
+    }
+
+    Cluster getCluster() {
+        return cluster;
+    }
+
+    ConcurrentMap<UUID, ResponseQueue> getPending() {
+        return pending;
     }
 
     public CompletableFuture<Void> closeAsync() {
@@ -166,7 +172,6 @@ class Connection {
     }
 
     private void shutdown(final CompletableFuture<Void> future) {
-        // todo: await client side close confirmation?
         channel.writeAndFlush(new CloseWebSocketFrame());
         final ChannelPromise promise = channel.newPromise();
         promise.addListener(f -> {
@@ -183,30 +188,4 @@ class Connection {
     public String toString() {
         return String.format("Connection{isDead=%s, inFlight=%s, pending=%s}", isDead, inFlight, pending.size());
     }
-
-    class ClientPipelineInitializer extends ChannelInitializer<SocketChannel> {
-
-        // Connect with V13 (RFC 6455 aka HyBi-17). You can change it to V08 or V00.
-        // If you change it to V00, ping is not supported and remember to change
-        // HttpResponseDecoder to WebSocketHttpResponseDecoder in the pipeline.
-        final Handler.WebSocketClientHandler handler;
-
-        public ClientPipelineInitializer() {
-            handler = new Handler.WebSocketClientHandler(
-                    WebSocketClientHandshakerFactory.newHandshaker(
-                            Connection.this.uri, WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, 1280000));
-        }
-
-        @Override
-        protected void initChannel(final SocketChannel socketChannel) throws Exception {
-            final ChannelPipeline pipeline = socketChannel.pipeline();
-            pipeline.addLast("http-codec", new HttpClientCodec());
-            pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-            pipeline.addLast("ws-handler", handler);
-            pipeline.addLast("gremlin-encoder", new Handler.GremlinRequestEncoder(true, cluster.getSerializer()));
-            pipeline.addLast("gremlin-decoder", new Handler.GremlinResponseDecoder(pending, cluster.getSerializer()));
-        }
-    }
-
-
 }

@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Map;
@@ -20,6 +21,8 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_groupCountXnameX();
 
     public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount();
+
+    public abstract Traversal<Vertex, Map<Object, Long>> get_g_V_filterXfalseX_groupCount();
 
     public abstract Map<Object, Long> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_iterate_getXaX();
 
@@ -50,6 +53,18 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
     }
 
     @Test
+    @Ignore
+    @LoadGraphWith(CLASSIC)
+    public void g_V_filterXfalseX_groupCount() {
+        final Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_filterXfalseX_groupCount();
+        System.out.println("Testing: " + traversal);
+        final Map<Object, Long> map = traversal.next();
+        assertEquals(map.size(), 0);
+        // TODO: Why is this not correct for GraphComputer?
+        // assertFalse(traversal.hasNext());
+    }
+
+    @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_iterate_getXaX() {
         final Map<Object, Long> map = get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_iterate_getXaX();
@@ -69,6 +84,10 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
             return (Traversal) g.V().out("created").value("name").groupCount();
         }
 
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_filterXfalseX_groupCount() {
+            return (Traversal) g.V().filter(t -> false).groupCount();
+        }
+
         public Map<Object, Long> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_iterate_getXaX() {
             return g.V().as("x").out()
                     .groupCount("a", v -> v.value("name"))
@@ -83,6 +102,10 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
 
         public Traversal<Vertex, Map<Object, Long>> get_g_V_outXcreatedX_name_groupCount() {
             return (Traversal) g.V().out("created").value("name").groupCount().submit(g.compute());
+        }
+
+        public Traversal<Vertex, Map<Object, Long>> get_g_V_filterXfalseX_groupCount() {
+            return (Traversal) g.V().filter(t -> false).groupCount().submit(g.compute());
         }
 
         public Map<Object, Long> get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_iterate_getXaX() {

@@ -4,6 +4,7 @@ threadPoolWorker: 1
 gremlinPool: 8
 scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
+channelizer: com.tinkerpop.gremlin.server.channel.WebSocketChannelizer
 graphs: {
   g: config/tinkergraph-empty.properties}
 use:

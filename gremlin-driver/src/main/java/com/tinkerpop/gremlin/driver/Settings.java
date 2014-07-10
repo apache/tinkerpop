@@ -48,12 +48,18 @@ class Settings {
     }
 
     static class ConnectionPoolSettings {
+        public boolean enableSsl = false;
         public int minSize = ConnectionPool.MIN_POOL_SIZE;
         public int maxSize = ConnectionPool.MAX_POOL_SIZE;
         public int minSimultaneousRequestsPerConnection = ConnectionPool.MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
         public int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
         public int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         public int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
+        public int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
+        public int maxContentLength = Connection.MAX_CONTENT_LENGTH;
+        public int reconnectInterval = Connection.RECONNECT_INTERVAL;
+        public int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
+        public int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
     }
 
     public static class SerializerSettings {

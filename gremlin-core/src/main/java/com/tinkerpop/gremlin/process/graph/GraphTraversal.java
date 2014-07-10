@@ -41,15 +41,17 @@ import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.LinkStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.util.Tree;
-import com.tinkerpop.gremlin.process.graph.strategy.PathConsumerStrategy;
+import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.graph.step.map.MatchStepNew;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
@@ -98,6 +100,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> trackPaths() {
         return (GraphTraversal) this.addStep(new PathIdentityStep<>(this));
+    }
+
+    public default GraphTraversal<S, Long> count() {
+        return (GraphTraversal) this.addStep(new CountStep<>(this));
     }
 
     ///////////////////// TRANSFORM STEPS /////////////////////
@@ -371,6 +377,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new SideEffectStep<>(this, consumer));
     }
 
+    public default <E2> GraphTraversal<S, E2> cap(final String variable) {
+        return (GraphTraversal) this.addStep(new SideEffectCapStep<>(this, variable));
+    }
+
+    public default <E2> GraphTraversal<S, E2> cap() {
+        return this.cap(SideEffectCapable.CAP_KEY);
+    }
+
     public default GraphTraversal<S, E> subgraph(final Graph g, final SPredicate<Edge> includeEdge) {
         return (GraphTraversal) this.addStep(new SubgraphStep<>(this, g, null, null, includeEdge));
     }
@@ -404,7 +418,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> groupBy(final SFunction<E, ?> keyFunction, final SFunction<E, ?> valueFunction, final SFunction<Collection, ?> reduceFunction) {
-        return (GraphTraversal) this.addStep(new GroupByStep(this, SideEffectCapable.CAP_VARIABLE, keyFunction, (SFunction) valueFunction, (SFunction) reduceFunction));
+        return (GraphTraversal) this.addStep(new GroupByStep(this, SideEffectCapable.CAP_KEY, keyFunction, (SFunction) valueFunction, (SFunction) reduceFunction));
     }
 
     public default GraphTraversal<S, E> groupCount(final String variable, final SFunction<E, ?>... preGroupFunctions) {
@@ -412,7 +426,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> groupCount(final SFunction<E, ?>... preGroupFunctions) {
-        return (GraphTraversal) this.addStep(new GroupCountStep<>(this, SideEffectCapable.CAP_VARIABLE, preGroupFunctions));
+        return (GraphTraversal) this.addStep(new GroupCountStep<>(this, SideEffectCapable.CAP_KEY, preGroupFunctions));
     }
 
     public default GraphTraversal<S, Vertex> linkIn(final String label, final String as) {
@@ -460,7 +474,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <T> Tree<T> tree(final SFunction... branchFunctions) {
         final Tree<Object> tree = new Tree<>();
         Tree<Object> depth = tree;
-        PathConsumerStrategy.doPathTracking(this);
+        TraverserSourceStrategy.doPathTracking(this);
         final Step endStep = TraversalHelper.getEnd(this);
         final FunctionRing functionRing = new FunctionRing(branchFunctions);
         try {

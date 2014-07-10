@@ -1612,8 +1612,8 @@ public class IoTest extends AbstractGremlinTest {
                 assertEquals(2014, m.get("year"));
         }
 
-        assertEquals(6, g1.V().count());
-        assertEquals(8, g1.E().count());
+        assertEquals(new Long(6), g1.V().count().next());
+        assertEquals(new Long(8), g1.E().count().next());
 
         final Iterator<Vertex> itty1 = g1.V().has("name", "marko");
         final Vertex v1 = itty1.next();
@@ -1627,8 +1627,8 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     public static void assertClassicGraph(final Graph g1, final boolean lossyForFloat, final boolean lossyForId) {
-        assertEquals(6, g1.V().count());
-        assertEquals(6, g1.E().count());
+        assertEquals(new Long(6), g1.V().count().next());
+        assertEquals(new Long(6), g1.E().count().next());
 
         final Vertex v1 = (Vertex) g1.V().has("name", "marko").next();
         assertEquals(29, v1.<Integer>value("age").intValue());

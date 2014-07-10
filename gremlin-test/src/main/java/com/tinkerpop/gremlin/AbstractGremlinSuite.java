@@ -75,8 +75,8 @@ public abstract class AbstractGremlinSuite extends Suite {
 
     public static Consumer<Graph> assertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
         return (g) -> {
-            assertEquals(expectedVertexCount, g.V().count());
-            assertEquals(expectedEdgeCount, g.E().count());
+            assertEquals(new Long(expectedVertexCount), g.V().count().next());
+            assertEquals(new Long(expectedEdgeCount), g.E().count().next());
         };
     }
 

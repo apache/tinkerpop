@@ -1,13 +1,26 @@
 package com.tinkerpop.gremlin.groovy.engine;
 
+import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
+import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import groovy.lang.Closure;
+import groovy.lang.Script;
 import org.junit.Test;
+import org.kohsuke.groovy.sandbox.GroovyInterceptor;
+import org.kohsuke.groovy.sandbox.GroovyValueFilter;
 
 import javax.script.Bindings;
+import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
@@ -18,6 +31,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -254,10 +268,63 @@ public class GremlinExecutorTest {
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()))
+                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        Collections.emptyMap())
                 .build();
 
         assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());
+    }
+
+    @Test
+    public void shouldSecureAll() throws Exception {
+        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
+        final Map<String,Object> config = new HashMap<>();
+        config.put("sandbox", GremlinGroovyScriptEngineTest.DenyAll.class.getName());
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+                .addEngineSettings("gremlin-groovy",
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        config)
+                .build();
+        try {
+            gremlinExecutor.eval("g = new TinkerGraph()").get();
+            fail("Should have failed security");
+        } catch (Exception se) {
+            assertEquals(SecurityException.class, se.getCause().getCause().getCause().getCause().getClass());
+        } finally {
+            gremlinExecutor.close();
+        }
+    }
+
+    @Test
+    public void shouldSecureSome() throws Exception {
+        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
+        final Map<String,Object> config = new HashMap<>();
+        config.put("sandbox", GremlinGroovyScriptEngineTest.AllowSome.class.getName());
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.create()
+                .addEngineSettings("gremlin-groovy",
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        config)
+                .build();
+        try {
+            gremlinExecutor.eval("g = 'new TinkerGraph()'").get();
+            fail("Should have failed security");
+        } catch (Exception se) {
+            assertEquals(SecurityException.class, se.getCause().getCause().getCause().getCause().getClass());
+        }
+
+        try {
+            final Graph g = (Graph) gremlinExecutor.eval("g = new TinkerGraph()").get();
+            assertNotNull(g);
+            assertEquals(TinkerGraph.class, g.getClass());
+        } catch (Exception ignored) {
+            fail("Should not have tossed an exception");
+        } finally {
+            gremlinExecutor.close();
+        }
     }
 
     @Test
@@ -266,7 +333,8 @@ public class GremlinExecutorTest {
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()))
+                        Arrays.asList(new File(GremlinExecutorTest.class.getResource("GremlinExecutorInit.groovy").toURI()).getAbsolutePath()),
+                        Collections.emptyMap())
                 .build();
 
         assertEquals(2, gremlinExecutor.eval("sum(1,1)").get());

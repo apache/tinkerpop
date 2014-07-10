@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server.handler;
 
+import com.tinkerpop.gremlin.driver.Tokens;
 import com.tinkerpop.gremlin.driver.message.RequestMessage;
 import com.tinkerpop.gremlin.driver.message.ResponseMessage;
 import com.tinkerpop.gremlin.driver.message.ResultCode;
@@ -42,6 +43,9 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                 final Iterator itty = (Iterator) pair.getValue1();
                 final RequestMessage requestMessage = (RequestMessage) pair.getValue0();
 
+                // the batch size can be overriden by the request
+                final int resultIterationBatchSize = (Integer) requestMessage.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);
+
                 // timer for the total serialization time
                 final StopWatch stopWatch = new StopWatch();
 
@@ -52,19 +56,18 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
 
                     stopWatch.start();
 
-                    // todo: allow definition from the client
-                    List<Object> aggregate = new ArrayList<>(settings.resultIterationBatchSize);
+                    List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
                     while (itty.hasNext()) {
                         aggregate.add(itty.next());
 
                         // send back a page of results if batch size is met or if it's the end of the results being
                         // iterated
-                        if (aggregate.size() == settings.resultIterationBatchSize || !itty.hasNext()) {
+                        if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                             ctx.writeAndFlush(ResponseMessage.create(requestMessage)
                                     .code(ResultCode.SUCCESS)
                                     .result(aggregate)
                                     .contents(ResultType.COLLECTION).build());
-                            aggregate = new ArrayList<>(settings.resultIterationBatchSize);
+                            aggregate = new ArrayList<>(resultIterationBatchSize);
                         }
 
                         stopWatch.split();

@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
+import com.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -125,6 +126,12 @@ public class Settings {
     public int writeBufferLowWaterMark = 1024 * 32;
 
     /**
+     * The full class name of the {@link Channelizer} to use in
+     * Gremlin Server.
+     */
+    public String channelizer = WebSocketChannelizer.class.getName();
+
+    /**
      * Configured metrics for Gremlin Server.
      */
     public ServerMetrics metrics = null;
@@ -206,6 +213,7 @@ public class Settings {
         scriptEngineSettingsDescription.putListPropertyType("imports", String.class);
         scriptEngineSettingsDescription.putListPropertyType("staticImports", String.class);
         scriptEngineSettingsDescription.putListPropertyType("scripts", String.class);
+        scriptEngineSettingsDescription.putMapPropertyType("config", String.class, Object.class);
         constructor.addTypeDescription(scriptEngineSettingsDescription);
 
         final TypeDescription sslSettings = new TypeDescription(SslSettings.class);
@@ -243,6 +251,7 @@ public class Settings {
         public List<String> imports = new ArrayList<>();
         public List<String> staticImports = new ArrayList<>();
         public List<String> scripts = new ArrayList<>();
+        public Map<String, Object> config = null;
     }
 
     public static class SerializerSettings {

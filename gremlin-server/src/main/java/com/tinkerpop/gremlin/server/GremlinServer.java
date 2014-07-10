@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.server;
 
 import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import com.tinkerpop.gremlin.server.channel.WebSocketChannelInitializer;
 import com.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -63,11 +62,11 @@ public class GremlinServer {
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinGroup, workerGroup);
-            final GremlinChannelInitializer gremlinChannelInitializer = new WebSocketChannelInitializer();
-            gremlinChannelInitializer.init(settings, gremlinExecutor, gremlinGroup, graphs.get());
+            final Channelizer channelizer = createChannelizer(settings);
+            channelizer.init(settings, gremlinExecutor, gremlinGroup, graphs.get());
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(gremlinChannelInitializer);
+                    .childHandler(channelizer);
 
             ch = b.bind(settings.host, settings.port).sync().channel();
             logger.info("Gremlin Server configured with worker thread pool of {} and boss thread pool of {}",
@@ -78,9 +77,29 @@ public class GremlinServer {
 
             ch.closeFuture().sync();
         } finally {
+            logger.info("Shutting down thread pools");
+
             gremlinGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
+
+            logger.info("Gremlin Server - shutdown complete");
+        }
+    }
+
+    private static Channelizer createChannelizer(final Settings settings) throws Exception {
+        try {
+            final Class clazz = Class.forName(settings.channelizer);
+            final Object o = clazz.newInstance();
+            return (Channelizer) o;
+        } catch (ClassNotFoundException fnfe) {
+            logger.error("Could not find {} implementation defined by the 'channelizer' setting as: {}",
+                    Channelizer.class.getName(), settings.channelizer);
+            throw new RuntimeException(fnfe);
+        } catch (Exception ex) {
+            logger.error("Class defined by the 'channelizer' setting as: {} could not be properly instantiated as a {}",
+                    settings.channelizer, Channelizer.class.getName());
+            throw new RuntimeException(ex);
         }
     }
 
@@ -102,7 +121,7 @@ public class GremlinServer {
                 .executorService(gremlinGroup)
                 .scheduledExecutorService(scheduledExecutorService);
 
-        settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts));
+        settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config));
         final GremlinExecutor gremlinExecutor = gremlinExecutorBuilder.build();
 
         logger.info("Initialized GremlinExecutor and configured ScriptEngines.");

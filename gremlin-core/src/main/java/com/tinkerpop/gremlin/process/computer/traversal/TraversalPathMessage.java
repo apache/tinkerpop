@@ -6,15 +6,14 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.computer.MessageType;
 import com.tinkerpop.gremlin.process.computer.Messenger;
-import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.util.MapHelper;
-import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import com.tinkerpop.gremlin.util.function.SSupplier;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,9 +43,6 @@ public class TraversalPathMessage extends TraversalMessage {
 
         final Traversal traversal = traversalSupplier.get();
         traversal.strategies().applyFinalOptimizers(traversal);
-        //System.out.println(traversal.strategies().get());
-        ((TraverserSource) traversal.getSteps().get(0)).clear();
-
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         messages.forEach(message -> {

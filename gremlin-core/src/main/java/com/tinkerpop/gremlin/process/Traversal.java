@@ -2,7 +2,11 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.PathIdentityStep;
+import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 
 import java.io.Serializable;
@@ -50,6 +54,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
         public <T> T get(final String key);
 
+        public <T> T remove(final String key);
+
         public Set<String> keys();
 
         public default <T> T getOrCreate(final String key, final Supplier<T> orCreate) {
@@ -65,8 +71,27 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
 
     /////////
 
+    public default <E2> Traversal<S, E2> memory(final String key) {
+        final MapStep<S, E2> mapStep = new MapStep<>(this);
+        mapStep.setFunction(t -> this.memory().get(key));
+        this.addStep(mapStep);
+        return (Traversal) this;
+    }
+
     public default Traversal<S, E> trackPaths() {
         return (Traversal) this.addStep(new PathIdentityStep<>(this));
+    }
+
+    public default <E2> Traversal<S, E2> cap(final String variable) {
+        return (Traversal) this.addStep(new SideEffectCapStep<>(this, variable));
+    }
+
+    public default <E2> Traversal<S, E2> cap() {
+        return this.cap(SideEffectCapable.CAP_KEY);
+    }
+
+    public default Traversal<S, Long> count() {
+        return (Traversal) this.addStep(new CountStep<>(this));
     }
 
     public default Traversal<S, E> reverse() {
@@ -105,18 +130,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
         } catch (final NoSuchElementException e) {
         }
         return this;
-    }
-
-    public default long count() {
-        long counter = 0;
-        try {
-            while (this.hasNext()) {
-                this.next();
-                counter++;
-            }
-        } catch (final NoSuchElementException e) {
-        }
-        return counter;
     }
 
     public default Traversal<S, E> getTraversal() {

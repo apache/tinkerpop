@@ -216,8 +216,8 @@ public class GraphTest extends AbstractGremlinTest {
         tryCommit(graph, AbstractGremlinSuite.assertVertexEdgeCounts(4, 4));
 
         for (Vertex v : graph.V().toList()) {
-            assertEquals(1, v.outE().count());
-            assertEquals(1, v.inE().count());
+            assertEquals(new Long(1), v.outE().count().next());
+            assertEquals(new Long(1), v.inE().count().next());
         }
 
         for (Edge x : graph.E().toList()) {
@@ -235,25 +235,25 @@ public class GraphTest extends AbstractGremlinTest {
             assertEquals(c, vc);
             assertEquals(d, vd);
 
-            assertEquals(1, va.inE().count());
-            assertEquals(1, va.outE().count());
-            assertEquals(1, vb.inE().count());
-            assertEquals(1, vb.outE().count());
-            assertEquals(1, vc.inE().count());
-            assertEquals(1, vc.outE().count());
-            assertEquals(1, vd.inE().count());
-            assertEquals(1, vd.outE().count());
+            assertEquals(new Long(1), va.inE().count().next());
+            assertEquals(new Long(1), va.outE().count().next());
+            assertEquals(new Long(1), vb.inE().count().next());
+            assertEquals(new Long(1), vb.outE().count().next());
+            assertEquals(new Long(1), vc.inE().count().next());
+            assertEquals(new Long(1), vc.outE().count().next());
+            assertEquals(new Long(1), vd.inE().count().next());
+            assertEquals(new Long(1), vd.outE().count().next());
 
             final Edge i = a.addEdge(graphProvider.convertLabel("hates"), b);
 
-            assertEquals(1, va.inE().count());
-            assertEquals(2, va.outE().count());
-            assertEquals(2, vb.inE().count());
-            assertEquals(1, vb.outE().count());
-            assertEquals(1, vc.inE().count());
-            assertEquals(1, vc.outE().count());
-            assertEquals(1, vd.inE().count());
-            assertEquals(1, vd.outE().count());
+            assertEquals(new Long(1), va.inE().count().next());
+            assertEquals(new Long(2), va.outE().count().next());
+            assertEquals(new Long(2), vb.inE().count().next());
+            assertEquals(new Long(1), vb.outE().count().next());
+            assertEquals(new Long(1), vc.inE().count().next());
+            assertEquals(new Long(1), vc.outE().count().next());
+            assertEquals(new Long(1), vd.inE().count().next());
+            assertEquals(new Long(1), vd.outE().count().next());
 
             for (Edge x : a.outE().toList()) {
                 assertTrue(x.label().equals(graphProvider.convertId("knows")) || x.label().equals(graphProvider.convertId("hates")));
@@ -381,20 +381,20 @@ public class GraphTest extends AbstractGremlinTest {
             }
         }
 
-        assertEquals(0, start.inE().count());
-        assertEquals(branchSize, start.outE().count());
+        assertEquals(new Long(0), start.inE().count().next());
+        assertEquals(new Long(branchSize), start.outE().count().next());
         for (Edge e : start.outE().toList()) {
             assertEquals(graphProvider.convertId("test1"), e.label());
-            assertEquals(branchSize, e.inV().out().count());
-            assertEquals(1, e.inV().inE().count());
+            assertEquals(new Long(branchSize), e.inV().out().count().next());
+            assertEquals(new Long(1), e.inV().inE().count().next());
             for (Edge f : e.inV().outE().toList()) {
                 assertEquals(graphProvider.convertId("test2"), f.label());
-                assertEquals(branchSize, f.inV().out().count());
-                assertEquals(1, f.inV().in().count());
+                assertEquals(new Long(branchSize), f.inV().out().count().next());
+                assertEquals(new Long(1), f.inV().in().count().next());
                 for (Edge g : f.inV().outE().toList()) {
                     assertEquals(graphProvider.convertId("test3"), g.label());
-                    assertEquals(0, g.inV().out().count());
-                    assertEquals(1, g.inV().in().count());
+                    assertEquals(new Long(0), g.inV().out().count().next());
+                    assertEquals(new Long(1), g.inV().in().count().next());
                 }
             }
         }

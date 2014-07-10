@@ -136,7 +136,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_e7_hasXlabelXknowsX() {
-        System.out.println(convertToEdgeId("marko", "knows", "vadas"));
+        //System.out.println(convertToEdgeId("marko", "knows", "vadas"));
         Iterator<Edge> traversal = get_g_e7_hasXlabelXknowsX(convertToEdgeId("marko", "knows", "vadas"));
         System.out.println("Testing: " + traversal);
         int counter = 0;

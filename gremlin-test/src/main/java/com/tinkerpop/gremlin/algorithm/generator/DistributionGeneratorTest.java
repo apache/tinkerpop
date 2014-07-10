@@ -115,7 +115,7 @@ public class DistributionGeneratorTest {
         private void distributionGeneratorTest(final Graph graph, final DistributionGenerator generator) {
             final int numEdges = generator.generate();
             assertTrue(numEdges > 0);
-            tryCommit(graph, g -> assertEquals(numEdges, g.E().count()));
+            tryCommit(graph, g -> assertEquals(new Long(numEdges), g.E().count().next()));
         }
     }
 
@@ -134,8 +134,8 @@ public class DistributionGeneratorTest {
             final int edgesGenerated = generator.generate();
             assertTrue(edgesGenerated > 0);
             tryCommit(g, g -> {
-                assertEquals(edgesGenerated, g.E().count());
-                assertTrue(g.V().count() > 0);
+                assertEquals(new Long(edgesGenerated), g.E().count().next());
+                assertTrue(g.V().count().next() > 0);
                 assertTrue(g.E().toList().stream().allMatch(e -> e.value("data").equals("test")));
             });
         }

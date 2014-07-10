@@ -1394,7 +1394,7 @@ image:neotech-logo.png[width=150,float=left] link:http://neotechnology.com[Neo T
 
 [source,groovy]
 ----
-gremlin> :use com.tinkerpop.tinkerpop3 neo4j-gremlin x.y.z
+gremlin> :use com.tinkerpop neo4j-gremlin x.y.z
 ==>groovy.grape.Grape, org.apache.commons.configuration.*, com.tinkerpop.gremlin.structure.*, ... com.tinkerpop.gremlin.neo4j.structure.*
 ==>loaded: {disableChecksums=false, module=neo4j-gremlin, autoDownload=true, calleeDepth=4, changing=false, version=3.0.0-SNAPSHOT, group=com.tinkerpop.tinkerpop3}
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')

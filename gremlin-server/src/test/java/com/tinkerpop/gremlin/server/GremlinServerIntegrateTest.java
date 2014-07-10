@@ -3,8 +3,15 @@ package com.tinkerpop.gremlin.server;
 import com.tinkerpop.gremlin.driver.Client;
 import com.tinkerpop.gremlin.driver.Cluster;
 import com.tinkerpop.gremlin.driver.ResultSet;
+import com.tinkerpop.gremlin.driver.Tokens;
+import com.tinkerpop.gremlin.driver.message.RequestMessage;
+import com.tinkerpop.gremlin.driver.message.ResultCode;
 import com.tinkerpop.gremlin.driver.ser.Serializers;
+import com.tinkerpop.gremlin.driver.simple.NioClient;
+import com.tinkerpop.gremlin.driver.simple.SimpleClient;
+import com.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import com.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,6 +21,8 @@ import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -47,10 +56,86 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldBlockRequestWhenTooBig":
                 settings.maxContentLength = 1024;
                 break;
+            case "shouldBatchResultsByTwos":
+                settings.resultIterationBatchSize = 2;
+                break;
+            case "shouldWorkOverNioTransport":
+                settings.channelizer = NioChannelizer.class.getName();
         }
 
         return settings;
     }
+
+    @Test
+    public void shouldBatchResultsByTwos() throws Exception {
+        final SimpleClient client = new WebSocketClient();
+        try {
+            final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").build();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final AtomicInteger tries = new AtomicInteger(3);
+            client.submit(request, r -> counter.incrementAndGet());
+
+            // this should not take longer than 300ms - so fail if it does
+            while (tries.get() > 0) {
+                Thread.sleep(100);
+                tries.decrementAndGet();
+            }
+
+            // will return 6 because of the terminator
+            assertEquals(6, counter.get());
+        } finally {
+            client.close();
+        }
+    }
+
+    @Test
+    public void shouldBatchResultsByOnesByOverridingFromClientSide() throws Exception {
+        final SimpleClient client = new WebSocketClient();
+        try {
+            final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
+                    .addArg(Tokens.ARGS_BATCH_SIZE, 1).build();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final AtomicInteger tries = new AtomicInteger(3);
+            client.submit(request, r -> counter.incrementAndGet());
+
+            // this should not take longer than 300ms - so fail if it does
+            while (tries.get() > 0) {
+                Thread.sleep(100);
+                tries.decrementAndGet();
+            }
+
+            // will return 11 because of the terminator
+            assertEquals(11, counter.get());
+        } finally {
+            client.close();
+        }
+    }
+
+    @Test
+    public void shouldWorkOverNioTransport() throws Exception {
+        final SimpleClient client = new NioClient();
+        try {
+            final RequestMessage request = RequestMessage.create(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").build();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final AtomicInteger tries = new AtomicInteger(3);
+            client.submit(request, r -> counter.incrementAndGet());
+
+            // this should not take longer than 300ms - so fail if it does
+            while (tries.get() > 0) {
+                Thread.sleep(100);
+                tries.decrementAndGet();
+            }
+
+            // will return 2 because of the terminator
+            assertEquals(2, counter.get());
+        } finally {
+            client.close();
+        }
+    }
+
 
     @Test
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
@@ -134,7 +219,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception re) {
             // can't seem to catch the server side exception - as the channel is basically closed on this error
             // can only detect a closed channel and react to that.  in some ways this is a good general piece of
-            // code to have in place, but kinda stinky when you want something specifica about why all went bad
+            // code to have in place, but kinda stinky when you want something specific about why all went bad
             assertTrue(re.getCause().getMessage().equals("Error while processing results from channel - check client and server logs for more information"));
         } finally {
             cluster.close();

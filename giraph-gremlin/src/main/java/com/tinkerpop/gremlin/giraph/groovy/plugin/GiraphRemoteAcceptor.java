@@ -87,9 +87,9 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object submit(final List<String> args) {
         try {
-            VertexProgramHelper.serializeSupplier(new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0)), this.graph.variables().<Configuration>get(GiraphGraph.CONFIGURATION), TraversalVertexProgram.TRAVERSAL_SUPPLIER);
-            final Pair<Graph, GraphComputer.Globals> result = this.graph.compute().program(this.graph.variables().<Configuration>get(GiraphGraph.CONFIGURATION)).submit().get();
-            final Optional<Iterator<String>> capResult = GiraphRemoteAcceptor.getCapIterator(this.graph.variables().<Configuration>get(GiraphGraph.CONFIGURATION));
+            VertexProgramHelper.serializeSupplier(new GremlinGroovySSupplier<>(PREFIX_SCRIPT + args.get(0)), this.graph.variables().getConfiguration(), TraversalVertexProgram.TRAVERSAL_SUPPLIER);
+            final Pair<Graph, GraphComputer.Globals> result = this.graph.compute().program(this.graph.variables().getConfiguration()).submit().get();
+            final Optional<Iterator<String>> capResult = GiraphRemoteAcceptor.getCapIterator(this.graph.variables().getConfiguration());
             this.shell.getInterp().getContext().setProperty("g", result.getValue0());
             if (capResult.isPresent())
                 return capResult.get();
@@ -110,7 +110,7 @@ public class GiraphRemoteAcceptor implements RemoteAcceptor {
             if (configuration.containsKey(GiraphGraph.GREMLIN_OUTPUT_LOCATION)) {
                 final String output = configuration.getString(GiraphGraph.GREMLIN_OUTPUT_LOCATION);
                 final FileSystem fs = FileSystem.get(ConfUtil.makeHadoopConfiguration(configuration));
-                final Path capOutput = new Path(output + "/" + SideEffectCapable.CAP_VARIABLE);
+                final Path capOutput = new Path(output + "/" + SideEffectCapable.CAP_KEY);
                 //final Path traversalResultOutput = new Path(output + "/" + "traversalResult");
                 if (fs.exists(capOutput)) {
                     final LinkedList<Path> paths = new LinkedList<>();

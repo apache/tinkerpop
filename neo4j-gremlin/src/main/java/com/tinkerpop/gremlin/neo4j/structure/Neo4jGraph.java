@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
@@ -37,10 +38,9 @@ import java.util.function.Function;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jGraph implements Graph {
-    private GraphDatabaseService rawGraph;
+public class Neo4jGraph implements Graph, WrappedGraph<GraphDatabaseService> {
+    private GraphDatabaseService baseGraph;
 
-    // todo: configuration for auto-list conversion.
     private static final String CONFIG_DIRECTORY = "gremlin.neo4j.directory";
     private static final String CONFIG_HA = "gremlin.neo4j.ha";
     private static final String CONFIG_CONF = "gremlin.neo4j.conf";
@@ -50,10 +50,10 @@ public class Neo4jGraph implements Graph {
     protected final TransactionManager transactionManager;
     private final ExecutionEngine cypher;
 
-    private Neo4jGraph(final GraphDatabaseService rawGraph) {
-        this.rawGraph = rawGraph;
-        transactionManager = ((GraphDatabaseAPI) rawGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
-        cypher = new ExecutionEngine(rawGraph);
+    private Neo4jGraph(final GraphDatabaseService baseGraph) {
+        this.baseGraph = baseGraph;
+        transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
+        cypher = new ExecutionEngine(baseGraph);
     }
 
     private Neo4jGraph(final Configuration configuration) {
@@ -63,16 +63,16 @@ public class Neo4jGraph implements Graph {
             final boolean ha = configuration.getBoolean(CONFIG_HA, false);
 
             // if HA is enabled then use the correct factory to instantiate the GraphDatabaseService
-            this.rawGraph = ha ?
+            this.baseGraph = ha ?
                     new HighlyAvailableGraphDatabaseFactory().newHighlyAvailableDatabaseBuilder(directory).setConfig(neo4jSpecificConfig).newGraphDatabase() :
                     new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(directory).setConfig(neo4jSpecificConfig).newGraphDatabase();
 
-            transactionManager = ((GraphDatabaseAPI) rawGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
-            cypher = new ExecutionEngine(rawGraph);
+            transactionManager = ((GraphDatabaseAPI) baseGraph).getDependencyResolver().resolveDependency(TransactionManager.class);
+            cypher = new ExecutionEngine(baseGraph);
 
         } catch (Exception e) {
-            if (this.rawGraph != null)
-                this.rawGraph.shutdown();
+            if (this.baseGraph != null)
+                this.baseGraph.shutdown();
             throw new RuntimeException(e.getMessage(), e);
         }
     }
@@ -106,7 +106,7 @@ public class Neo4jGraph implements Graph {
      * Construct a Neo4jGraph instance using an existing Neo4j raw instance.
      */
     public static <G extends Graph> G open(final GraphDatabaseService rawGraph) {
-        return (G) new Neo4jGraph(Optional.ofNullable(rawGraph).orElseThrow(() -> Graph.Exceptions.argumentCanNotBeNull("rawGraph")));
+        return (G) new Neo4jGraph(Optional.ofNullable(rawGraph).orElseThrow(() -> Graph.Exceptions.argumentCanNotBeNull("baseGraph")));
     }
 
     @Override
@@ -118,7 +118,7 @@ public class Neo4jGraph implements Graph {
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
 
         this.tx().readWrite();
-        final Neo4jVertex vertex = new Neo4jVertex(this.rawGraph.createNode(DynamicLabel.label(label)), this);
+        final Neo4jVertex vertex = new Neo4jVertex(this.baseGraph.createNode(DynamicLabel.label(label)), this);
         ElementHelper.attachProperties(vertex, keyValues);
         return vertex;
     }
@@ -145,7 +145,7 @@ public class Neo4jGraph implements Graph {
         if (null == id) throw Graph.Exceptions.elementNotFound();
 
         try {
-            return new Neo4jVertex(this.rawGraph.getNodeById(evaluateToLong(id)), this);
+            return new Neo4jVertex(this.baseGraph.getNodeById(evaluateToLong(id)), this);
         } catch (NotFoundException e) {
             throw Graph.Exceptions.elementNotFound();
         } catch (NumberFormatException e) {
@@ -161,7 +161,7 @@ public class Neo4jGraph implements Graph {
         if (null == id) throw Graph.Exceptions.elementNotFound();
 
         try {
-            return new Neo4jEdge(this.rawGraph.getRelationshipById(evaluateToLong(id)), this);
+            return new Neo4jEdge(this.baseGraph.getRelationshipById(evaluateToLong(id)), this);
         } catch (NotFoundException e) {
             throw Graph.Exceptions.elementNotFound();
         } catch (NumberFormatException e) {
@@ -178,7 +178,7 @@ public class Neo4jGraph implements Graph {
 
     @Override
     public Transaction tx() {
-        return neo4jTransaction;
+        return this.neo4jTransaction;
     }
 
     @Override
@@ -192,20 +192,20 @@ public class Neo4jGraph implements Graph {
         // todo: does this need to be done across threads to keep shutdown fast???
         this.tx().close();
 
-        if (this.rawGraph != null)
-            this.rawGraph.shutdown();
+        if (this.baseGraph != null)
+            this.baseGraph.shutdown();
     }
 
     public String toString() {
-        return StringFactory.graphString(this, rawGraph.toString());
+        return StringFactory.graphString(this, baseGraph.toString());
     }
 
     public Features getFeatures() {
         return new Neo4jGraphFeatures();
     }
 
-    public GraphDatabaseService getRawGraph() {
-        return this.rawGraph;
+    public GraphDatabaseService getBaseGraph() {
+        return this.baseGraph;
     }
 
     public Iterator<Map<String, Object>> query(final String query, final Map<String, Object> params) {
@@ -214,7 +214,7 @@ public class Neo4jGraph implements Graph {
     }
 
     private PropertyContainer getGraphProperties() {
-        return ((GraphDatabaseAPI) this.rawGraph).getDependencyResolver().resolveDependency(NodeManager.class).getGraphProperties();
+        return ((GraphDatabaseAPI) this.baseGraph).getDependencyResolver().resolveDependency(NodeManager.class).getGraphProperties();
     }
 
     private static Long evaluateToLong(final Object id) throws NumberFormatException {
@@ -251,7 +251,7 @@ public class Neo4jGraph implements Graph {
             if (isOpen())
                 throw Transaction.Exceptions.transactionAlreadyOpen();
             else
-                threadLocalTx.set(getRawGraph().beginTx());
+                threadLocalTx.set(getBaseGraph().beginTx());
         }
 
         @Override
@@ -480,7 +480,42 @@ public class Neo4jGraph implements Graph {
             }
 
             @Override
-            public boolean supportsPrimitiveArrayValues() {
+            public boolean supportsByteValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsBooleanArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsByteArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsDoubleArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsFloatArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsIntegerArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsLongArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsStringArrayValues() {
                 return false;
             }
 
@@ -537,7 +572,42 @@ public class Neo4jGraph implements Graph {
             }
 
             @Override
-            public boolean supportsPrimitiveArrayValues() {
+            public boolean supportsByteValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsBooleanArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsByteArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsDoubleArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsFloatArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsIntegerArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsLongArrayValues() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsStringArrayValues() {
                 return false;
             }
 

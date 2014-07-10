@@ -59,7 +59,7 @@ public class Neo4jProperty<V> implements Property<V>, Serializable {
     }
 
     public void remove() {
-        final PropertyContainer rawElement = ((Neo4jElement) element).getRawElement();
+        final PropertyContainer rawElement = ((Neo4jElement) element).getBaseElement();
         if (rawElement.hasProperty(key)) {
             this.graph.tx().readWrite();
             rawElement.removeProperty(key);

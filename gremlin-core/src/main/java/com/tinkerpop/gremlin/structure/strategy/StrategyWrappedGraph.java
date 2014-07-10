@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 
 import java.util.Optional;
 
@@ -19,7 +20,7 @@ import java.util.Optional;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StrategyWrappedGraph implements Graph, StrategyWrapped {
+public class StrategyWrappedGraph implements Graph, StrategyWrapped, WrappedGraph<Graph> {
     private final Graph baseGraph;
     protected Strategy strategy = new Strategy.Simple();
     private Strategy.Context<StrategyWrappedGraph> graphContext;

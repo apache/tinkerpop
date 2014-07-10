@@ -13,6 +13,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.util.TimeUtil;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import groovy.json.JsonBuilder;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -25,6 +26,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -139,6 +142,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldMarkHostDeadSinceServerIsDown() throws Exception {
+        stopServer();
+
+        final Cluster cluster = Cluster.open();
+        cluster.connect();
+
+        assertEquals(0, cluster.availableHosts().size());
+
+        cluster.close();
+    }
+
+    @Test
     public void shouldHandleRequestSentThatNeverReturns() throws Exception {
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
@@ -207,21 +222,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEventuallySucceedWithRoundRobin() throws Exception {
-        // todo: when we have a config on borrowed connection timeout, set it low here to make the test go faster.
         final String noGremlinServer = "74.125.225.19";
         final Cluster cluster = Cluster.create(noGremlinServer).addContactPoint("localhost").build();
         final Client client = cluster.connect();
 
-        try {
-            // this first attempt will fail because it's sending stuff to a host it can't connect to
-            client.submit("1+1").all().join();
-            fail();
-        } catch (RuntimeException re) {
-            assertTrue(re.getCause().getCause() instanceof TimeoutException);
-        }
-
-        // ensure that connection to server is good - that host should be marked "dead" and remaining
-        // requests should succeed
+        // the first host is dead on init.  request should succeed on localhost
         assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
@@ -229,5 +234,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
 
         cluster.close();
+    }
+
+    @Test
+    @Ignore
+    public void shouldFailClientSideWithTooLargeAResponse() {
+        // todo: maybe a netty issue to look into - test won't pass
+
+        final Cluster cluster = Cluster.create().maxContentLength(1).build();
+        final Client client = cluster.connect();
+
+        try {
+            final String fatty = IntStream.range(0, 100).mapToObj(String::valueOf).collect(Collectors.joining());
+            client.submitAsync("'" + fatty + "'").get().all();
+            fail("Should throw an exception.");
+        } catch (Exception re) {
+            // can't seem to catch the server side exception - as the channel is basically closed on this error
+            // can only detect a closed channel and react to that.  in some ways this is a good general piece of
+            // code to have in place, but kinda stinky when you want something specific about why all went bad
+            assertTrue(re.getCause().getMessage().equals("Error while processing results from channel - check client and server logs for more information"));
+        } finally {
+            cluster.close();
+        }
     }
 }

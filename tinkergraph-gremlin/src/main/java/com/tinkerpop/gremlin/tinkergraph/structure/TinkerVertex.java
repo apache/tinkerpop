@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.IdentityStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -18,11 +19,12 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerElementTraversal;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerVertexStep;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepTraversalStrategy;
+import com.tinkerpop.gremlin.util.StreamFactory;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,37 +75,27 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
 
     public GraphTraversal<Vertex, Vertex> start() {
-        final TinkerVertex vertex = this;
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<Vertex, Vertex>() {
-            public GraphTraversal<Vertex, Vertex> submit(final TraversalEngine engine) {
-                if (engine instanceof GraphComputer) {
-                    this.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
-                    // TODO: this.strategies().register(new ClearTraverserSourceStrategy());
-                    final String label = this.getSteps().get(0).getAs();
-                    TraversalHelper.removeStep(0, this);
-                    final Step identityStep = new IdentityStep(this);
-                    if (TraversalHelper.isLabeled(label))
-                        identityStep.setAs(label);
-
-                    TraversalHelper.insertStep(identityStep, 0, this);
-                    TraversalHelper.insertStep(new HasStep(this, new HasContainer(Element.ID, Compare.EQUAL, vertex.id())), 0, this);
-                    TraversalHelper.insertStep(new TinkerGraphStep<>(this, Vertex.class, vertex.graph), 0, this);
-                }
-                return super.submit(engine);
-            }
-        };
+        final GraphTraversal<Vertex, Vertex> traversal = new TinkerElementTraversal<>(this);
         return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
     public GraphTraversal<Vertex, Vertex> to(final Direction direction, final int branchFactor, final String... labels) {
         final GraphTraversal<Vertex, Vertex> traversal = this.start();
-        traversal.addStep(new TinkerVertexStep(traversal, Vertex.class, direction, branchFactor, labels));
+        traversal.addStep(new VertexStep(traversal, Vertex.class, direction, branchFactor, labels));
         return traversal;
     }
 
     public GraphTraversal<Vertex, Edge> toE(final Direction direction, final int branchFactor, final String... labels) {
         final GraphTraversal traversal = this.start();
-        traversal.addStep(new TinkerVertexStep(traversal, Edge.class, direction, branchFactor, labels));
+        traversal.addStep(new VertexStep(traversal, Edge.class, direction, branchFactor, labels));
         return traversal;
+    }
+
+    public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {
+        return (Iterator) StreamFactory.stream(TinkerHelper.getEdges(this, direction, labels)).limit(branchFactor).iterator();
+    }
+
+    public Iterator<Vertex> vertices(final Direction direction, final int branchFactor, final String... labels) {
+        return (Iterator) StreamFactory.stream(TinkerHelper.getVertices(this, direction, labels)).limit(branchFactor).iterator();
     }
 }

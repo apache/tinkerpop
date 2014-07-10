@@ -2,13 +2,18 @@ package com.tinkerpop.gremlin.groovy.jsr223;
 
 import com.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import com.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
+import com.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import groovy.lang.Closure;
+import groovy.lang.Script;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.kohsuke.groovy.sandbox.GroovyInterceptor;
+import org.kohsuke.groovy.sandbox.GroovyValueFilter;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
@@ -59,7 +64,7 @@ public class GremlinGroovyScriptEngineTest {
 
         final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
         assertEquals(Vertex.class.getName(), engineWithImports.eval("Vertex.class.getName()"));
-        assertEquals(2l, engineWithImports.eval("TinkerFactory.createClassic().V.has('age',T.gt,30).count()"));
+        assertEquals(2l, engineWithImports.eval("TinkerFactory.createClassic().V.has('age',T.gt,30).count().next()"));
         assertEquals(Direction.IN, engineWithImports.eval("Direction.IN"));
         assertEquals(Direction.OUT, engineWithImports.eval("Direction.OUT"));
         assertEquals(Direction.BOTH, engineWithImports.eval("Direction.BOTH"));
@@ -419,6 +424,67 @@ public class GremlinGroovyScriptEngineTest {
             scriptEngine.eval("addOne(1)");
             fail("Should have tossed ScriptException since addOne is no longer defined after reset.");
         } catch (ScriptException se) {
+        }
+    }
+
+    @Test
+    public void shouldSecureAll() throws Exception {
+        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
+        final SecurityCustomizerProvider provider = new SecurityCustomizerProvider(new DenyAll());
+        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(
+                new DefaultImportCustomizerProvider(), provider);
+        try {
+            scriptEngine.eval("g = new TinkerGraph()");
+            fail("Should have failed security");
+        } catch (ScriptException se) {
+            assertEquals(SecurityException.class, se.getCause().getCause().getClass());
+        } finally {
+            provider.unregisterInterceptors();
+        }
+    }
+
+    @Test
+    public void shouldSecureSome() throws Exception {
+        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
+        final SecurityCustomizerProvider provider = new SecurityCustomizerProvider(new AllowSome());
+        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(
+                new DefaultImportCustomizerProvider(), provider);
+        try {
+            scriptEngine.eval("g = 'new TinkerGraph()'");
+            fail("Should have failed security");
+        } catch (ScriptException se) {
+            assertEquals(SecurityException.class, se.getCause().getCause().getClass());
+        }
+
+        try {
+            final Graph g = (Graph) scriptEngine.eval("g = new TinkerGraph()");
+            assertNotNull(g);
+            assertEquals(TinkerGraph.class, g.getClass());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail("Should not have tossed an exception");
+        } finally {
+            provider.unregisterInterceptors();
+        }
+    }
+
+    public static class DenyAll extends GroovyValueFilter {
+        public Object filter(final Object o) { throw new SecurityException("Denied!"); }
+    }
+
+    public static class AllowSome extends GroovyValueFilter {
+
+        public static final Set<Class> ALLOWED_TYPES = new HashSet<Class>() {{
+            add(TinkerGraph.class);
+            add(Class.class);
+        }};
+
+        public Object filter(final Object o) {
+            if (null == o || ALLOWED_TYPES.contains(o.getClass()))
+                return o;
+            if (o instanceof Script || o instanceof Closure)
+                return o; // access to properties of compiled groovy script
+            throw new SecurityException("Unexpected type: " + o.getClass());
         }
     }
 }

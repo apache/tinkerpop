@@ -11,8 +11,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -104,37 +106,28 @@ public class Cluster {
         return create(file).build();
     }
 
-    public ClusterInfo getClusterInfo() {
-        return manager.clusterInfo;
+    public void close() { closeAsync().join(); }
+
+    public CompletableFuture<Void> closeAsync() { return manager.close(); }
+
+    public List<URI> availableHosts() {
+        return Collections.unmodifiableList(getClusterInfo().allHosts().stream()
+                .filter(Host::isAvailable)
+                .map(Host::getHostUri)
+                .collect(Collectors.toList()));
     }
 
-    public void close() {
-        closeAsync().join();
-    }
+    Factory getFactory() { return manager.factory; }
 
-    public CompletableFuture<Void> closeAsync() {
-        return manager.close();
-    }
+    MessageSerializer getSerializer() { return manager.serializer; }
 
-    Factory getFactory() {
-        return manager.factory;
-    }
+    ScheduledExecutorService executor() { return manager.executor; }
 
-    MessageSerializer getSerializer() {
-        return manager.serializer;
-    }
+    Settings.ConnectionPoolSettings connectionPoolSettings() { return manager.connectionPoolSettings; }
 
-    ScheduledExecutorService executor() {
-        return manager.executor;
-    }
+    LoadBalancingStrategy loadBalancingStrategy() { return manager.loadBalancingStrategy; }
 
-    Settings.ConnectionPoolSettings connectionPoolSettings() {
-        return manager.connectionPoolSettings;
-    }
-
-    LoadBalancingStrategy loadBalancingStrategy() {
-        return manager.loadBalancingStrategy;
-    }
+    ClusterInfo getClusterInfo() { return manager.clusterInfo; }
 
     public static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
@@ -148,6 +141,12 @@ public class Cluster {
         private int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
         private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
+        private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
+        private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
+        private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
+        private int reconnectInterval = Connection.RECONNECT_INTERVAL;
+        private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        private boolean enableSsl = false;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
 
         private Builder() {
@@ -192,6 +191,11 @@ public class Cluster {
             return this;
         }
 
+        public Builder enableSsl(final boolean enable) {
+            this.enableSsl = enable;
+            return this;
+        }
+
         public Builder minInProcessPerConnection(final int minInProcessPerConnection) {
             this.minInProcessPerConnection = minInProcessPerConnection;
             return this;
@@ -219,6 +223,47 @@ public class Cluster {
 
         public Builder minConnectionPoolSize(final int minSize) {
             this.minConnectionPoolSize = minSize;
+            return this;
+        }
+
+        /**
+         * Override the server setting that determines how many results are returned per batch.
+         */
+        public Builder resultIterationBatchSize(final int size) {
+            this.resultIterationBatchSize = size;
+            return this;
+        }
+
+        /**
+         * The maximum amount of time to wait for a connection to be borrowed from the connection pool.
+         */
+        public Builder maxWaitForConnection(final int maxWait) {
+            this.maxWaitForConnection = maxWait;
+            return this;
+        }
+
+        /**
+         * The maximum size in bytes of any request sent to the server.   This number should not exceed the same
+         * setting defined on the server.
+         */
+        public Builder maxContentLength(final int maxContentLength) {
+            this.maxContentLength = maxContentLength;
+            return this;
+        }
+
+        /**
+         * Time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
+         */
+        public Builder reconnectIntialDelay(final int initialDelay) {
+            this.reconnectInitialDelay = initialDelay;
+            return this;
+        }
+
+        /**
+         * Time in milliseconds to wait between retries when attempting to reconnect to a dead host.
+         */
+        public Builder reconnectInterval(final int interval) {
+            this.reconnectInterval = interval;
             return this;
         }
 
@@ -260,6 +305,12 @@ public class Cluster {
             connectionPoolSettings.minSimultaneousRequestsPerConnection = this.minSimultaneousRequestsPerConnection;
             connectionPoolSettings.maxSize = this.maxConnectionPoolSize;
             connectionPoolSettings.minSize = this.minConnectionPoolSize;
+            connectionPoolSettings.maxWaitForConnection = this.maxWaitForConnection;
+            connectionPoolSettings.maxContentLength = this.maxContentLength;
+            connectionPoolSettings.reconnectInitialDelay = this.reconnectInitialDelay;
+            connectionPoolSettings.reconnectInterval = this.reconnectInterval;
+            connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
+            connectionPoolSettings.enableSsl = this.enableSsl;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy);
         }

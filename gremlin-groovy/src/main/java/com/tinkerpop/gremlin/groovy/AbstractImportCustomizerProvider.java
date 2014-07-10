@@ -15,9 +15,12 @@ import com.tinkerpop.gremlin.structure.util.GraphFactory;
 import com.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import com.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.util.Gremlin;
+import com.tinkerpop.gremlin.util.function.FunctionUtils;
 import groovy.grape.Grape;
 import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
+import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import java.util.HashSet;
@@ -48,6 +51,10 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         // graph process
         imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
 
+        // utils
+        imports.add(Gremlin.class.getPackage().getName() + DOT_STAR);
+        imports.add(FunctionUtils.class.getPackage().getName() + DOT_STAR);
+
         // tinkergraph
         imports.add(TinkerGraph.class.getPackage().getName() + DOT_STAR);
 
@@ -73,7 +80,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     }
 
     @Override
-    public ImportCustomizer getImportCustomizer() {
+    public CompilationCustomizer getCompilationCustomizer() {
         final ImportCustomizer ic = new ImportCustomizer();
 
         processImports(ic, imports);

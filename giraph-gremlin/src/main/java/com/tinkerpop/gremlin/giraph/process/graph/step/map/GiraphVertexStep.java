@@ -22,17 +22,17 @@ public class GiraphVertexStep<E extends Element> extends VertexStep<E> {
         if (Vertex.class.isAssignableFrom(returnClass))
             this.setFunction(traverser -> {
                 final Vertex vertex = traverser.get();
-                //return (Iterator) vertex.getTinkerVertex().to(direction, branchFactor, labels).map(v -> graph.v(v.get().id()));
+                //return (Iterator) vertex.getBaseVertex().to(direction, branchFactor, labels).map(v -> graph.v(v.get().id()));
                 return vertex instanceof GiraphVertex ?
-                        (Iterator) ((GiraphVertex) vertex).getTinkerVertex().to(direction, branchFactor, labels).map(v -> graph.v(v.get().id())) :
+                        (Iterator) ((GiraphVertex) vertex).getBaseVertex().to(direction, branchFactor, labels).map(v -> graph.v(v.get().id())) :
                         (Iterator) traverser.get().to(direction, branchFactor, labels);
             });
         else
             this.setFunction(traverser -> {
                 final Vertex vertex = traverser.get();
-                //return (Iterator) vertex.getTinkerVertex().toE(direction, branchFactor, labels).map(e -> new GiraphEdge((TinkerEdge) e.get(), graph));
+                //return (Iterator) vertex.getBaseVertex().toE(direction, branchFactor, labels).map(e -> new GiraphEdge((TinkerEdge) e.get(), graph));
                 return vertex instanceof GiraphVertex ?
-                        (Iterator) ((GiraphVertex) vertex).getTinkerVertex().toE(direction, branchFactor, labels).map(e -> new GiraphEdge((TinkerEdge) e.get(), graph)) :
+                        (Iterator) ((GiraphVertex) vertex).getBaseVertex().toE(direction, branchFactor, labels).map(e -> new GiraphEdge((TinkerEdge) e.get(), graph)) :
                         (Iterator) traverser.get().toE(direction, branchFactor, labels);
             });
     }
