@@ -1,24 +1,24 @@
-package com.tinkerpop.gremlin.process.graph.step.map;
+package com.tinkerpop.gremlin.process.graph.step.map.match;
 
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -27,6 +27,8 @@ import java.util.function.Predicate;
  * @author Joshua Shinavier (http://fortytwo.net)
  */
 public class MatchStepNew<S, E> extends AbstractStep<S, E> {
+    public static final BiPredicate<String, Object> TRIVIAL_VISITOR = (s, t) -> true;
+
     private static final String ANON_LABEL_PREFIX = "_";
 
     // optimize before processing each start object, by default
@@ -61,6 +63,34 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         }
 
         this.startsPerOptimize = startsPerOptimize;
+    }
+
+    public String summarize() {
+        StringBuilder sb = new StringBuilder("match \"")
+                .append(startLabel).append("\":\t").append(findCost(startLabel)).append("\n");
+        summarize(startLabel, sb, new HashSet<>(), 1);
+
+        return sb.toString();
+    }
+
+    private void summarize(final String outLabel,
+                           final StringBuilder sb,
+                           final Set<String> visited,
+                           final int indent) {
+        if (!visited.contains(outLabel)) {
+            visited.add(outLabel);
+            List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
+            if (null != outs) {
+                for (TraversalWrapper<S, S> w : outs) {
+                    for (int i = 0; i < indent; i++) sb.append("\t");
+                    sb.append(outLabel).append("->").append(w.inLabel).append(":\t");
+                    sb.append(findCost(w));
+                    sb.append("\t").append(w);
+                    sb.append("\n");
+                    summarize(w.inLabel, sb, visited, indent + 1);
+                }
+            }
+        }
     }
 
     private Enumerator<S> curSolution;
@@ -99,36 +129,30 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
 
     private void addTraversal(final Traversal<S, S> traversal) {
         String outLabel, inLabel;
-        final String start = TraversalHelper.getStart(traversal).getAs();
-        final String end = TraversalHelper.getEnd(traversal).getAs();
-
+        String start = TraversalHelper.getStart(traversal).getAs();
+        String end = TraversalHelper.getEnd(traversal).getAs();
         if (!TraversalHelper.isLabeled(start)) {
             throw new IllegalArgumentException("All match traversals must have their start pipe labeled");
         } else {
             outLabel = start;
         }
-
         inLabel = TraversalHelper.isLabeled(end) ? end : null;
-
         checkLabel(outLabel);
-
         if (null == inLabel) {
             inLabel = createAnonymousLabel();
         } else {
             checkLabel(inLabel);
         }
+        labels.add(outLabel);
+        labels.add(inLabel);
 
         TraversalWrapper<S, S> wrapper = new TraversalWrapper<>(traversal, outLabel, inLabel);
-
         List<TraversalWrapper<S, S>> l2 = traversalsOut.get(outLabel);
         if (null == l2) {
             l2 = new LinkedList<>();
             traversalsOut.put(outLabel, l2);
         }
         l2.add(wrapper);
-
-        labels.add(outLabel);
-        labels.add(inLabel);
     }
 
     public Collection<TraversalWrapper<S, S>> getTraversals() {
@@ -150,7 +174,7 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         }
     }
 
-    private boolean isAnonymousLabel(final String label) {
+    public static boolean isAnonymousLabel(final String label) {
         return label.startsWith(ANON_LABEL_PREFIX);
     }
 
@@ -160,7 +184,7 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
 
     private Enumerator<S> solveFor(final String outLabel,
                                    final Iterator<S> inputs,
-                                   boolean optimizeFirst) {
+                                   final boolean optimizeFirst) {
         System.out.println("solveFor(" + outLabel + ")");
         List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
         if (null == outs) {
@@ -192,7 +216,7 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                 }
 
                 int i = 0;
-                while (result.visitSolution(i++, (BiPredicate<String, S>) trivialVisitor)) ;
+                while (result.visitSolution(i++, (BiPredicate<String, S>) TRIVIAL_VISITOR)) ;
                 System.out.println("\tsolutions at " + outLabel + "=" + o + ": " + (i - 1));
 
                 return result;
@@ -200,9 +224,9 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         }
     }
 
-    private <T> void visit(final String name,
-                           final T value,
-                           final BiPredicate<String, T> visitor) {
+    public static <T> void visit(final String name,
+                                 final T value,
+                                 final BiPredicate<String, T> visitor) {
         if (!isAnonymousLabel(name)) {
             visitor.test(name, value);
         }
@@ -290,10 +314,16 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
 
     private double findCost(final TraversalWrapper<S, S> root) {
         double bf = root.findBranchFactor();
+        return bf + findCost(root.inLabel, root.findBranchFactor());
+    }
 
-        double cost = bf;
+    private double findCost(final String outLabel,
+                            final double branchFactor) {
+        double bf = branchFactor;
 
-        List<TraversalWrapper<S, S>> outs = traversalsOut.get(root.inLabel);
+        double cost = 0;
+
+        List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
         if (null != outs) {
             for (TraversalWrapper<S, S> child : outs) {
                 cost += bf * findCost(child);
@@ -304,10 +334,18 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         return cost;
     }
 
-    public void updateOrderingFactor(final TraversalWrapper<S, S> w) {
+    public double findCost(final String outLabel) {
+        return findCost(outLabel, 1.0);
+    }
+
+    private void updateOrderingFactor(final TraversalWrapper<S, S> w) {
         w.orderingFactor = ((w.findBranchFactor() - 1) / findCost(w));
     }
 
+    // note: input and output counts are never "refreshed".
+    // The position of a traversal in a query never changes, although its priority / likelihood of being executed does.
+    // Priority in turn affects branch factor.
+    // However, with sufficient inputs and optimizations,the branch factor is expected to converge on a stable value.
     public static class TraversalWrapper<A, B> implements Comparable<TraversalWrapper<A, B>> {
         private final Traversal<A, B> traversal;
         private final String outLabel, inLabel;
@@ -342,6 +380,11 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
 
         public Traversal<A, B> getTraversal() {
             return traversal;
+        }
+
+        @Override
+        public String toString() {
+            return "[" + outLabel + "->" + inLabel + "," + findBranchFactor() + "," + totalInputs + "," + totalOutputs + "," + traversal + "]";
         }
     }
 
@@ -424,14 +467,6 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         }
     }
 
-    public static interface Enumerator<T> {
-        int size();
-
-        boolean isComplete();
-
-        boolean visitSolution(int i, BiPredicate<String, T> visitor);
-    }
-
     private static class NullEnumerator<T> implements Enumerator<T> {
         public int size() {
             return 0;
@@ -469,216 +504,6 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
             } else {
                 visit(name, value, visitor);
                 return true;
-            }
-        }
-    }
-
-    private class IteratorEnumerator<T> implements Enumerator<T> {
-        private final String name;
-        private final Iterator<T> iterator;
-        private final List<T> memory = new ArrayList<>();
-
-        public IteratorEnumerator(final String name,
-                                  final Iterator<T> iterator) {
-            this.name = name;
-            this.iterator = iterator;
-        }
-
-        public int size() {
-            return memory.size();
-        }
-
-        public boolean isComplete() {
-            return !iterator.hasNext();
-        }
-
-        public boolean visitSolution(int i, BiPredicate<String, T> visitor) {
-            T value;
-
-            if (i < size()) {
-                value = memory.get(i);
-            } else do {
-                if (isComplete()) {
-                    return false;
-                }
-
-                value = iterator.next();
-                memory.add(value);
-            } while (i >= size());
-
-            System.out.println(name + " visiting " + i + ": " + value);
-            visit(name, value, visitor);
-
-            return true;
-        }
-    }
-
-    private static final BiPredicate<String, Object> trivialVisitor = (s, t) -> true;
-
-    /**
-     * An Enumerator which finds the Cartesian product of two other Enumerators, expanding at the same rate in either dimension.
-     * This maximizes the size of the product with respect to the number of expansions of the base Enumerators.
-     */
-    private class CartesianEnumerator<T> implements Enumerator<T> {
-        private final Enumerator<T> xEnum, yEnum;
-
-        public CartesianEnumerator(final Enumerator<T> xEnum,
-                                   final Enumerator<T> yEnum) {
-            this.xEnum = xEnum;
-            this.yEnum = yEnum;
-        }
-
-        public int size() {
-            return xEnum.size() * yEnum.size();
-        }
-
-        public boolean isComplete() {
-            boolean xc = xEnum.isComplete(), yc = yEnum.isComplete();
-            return xc && 0 == xEnum.size()
-                    || yc && 0 == yEnum.size()
-                    || xc && yc;
-        }
-
-        public boolean visitSolution(final int i,
-                                     final BiPredicate<String, T> visitor) {
-            int sq = (int) Math.sqrt(i);
-
-            // choose x and y such that the solution represented by i
-            // remains constant as this Enumerator expands
-            int x, y;
-
-            if (0 == i) {
-                x = y = 0;
-            } else {
-                int r = i - sq * sq;
-                if (r < sq) {
-                    x = sq;
-                    y = r;
-                } else {
-                    x = r - sq;
-                    y = sq;
-                }
-            }
-
-            // expand x
-            while (sq >= xEnum.size()) {
-                // ran into x limit
-                if (xEnum.isComplete()) {
-                    if (0 == xEnum.size()) {
-                        return false;
-                    }
-                    x = i % xEnum.size();
-                    y = i / xEnum.size();
-                    break;
-                }
-                if (!xEnum.visitSolution(xEnum.size(), (BiPredicate<String, T>) trivialVisitor)) return false;
-            }
-
-            int height = i / Math.min(1 + sq, xEnum.size());
-
-            // expand y
-            while (height >= yEnum.size()) {
-                // ran into y limit; expand x again
-                if (yEnum.isComplete()) {
-                    if (0 == yEnum.size()) {
-                        return false;
-                    }
-                    height = yEnum.size();
-                    int width = i / height;
-                    while (width >= xEnum.size()) {
-                        if (!xEnum.visitSolution(xEnum.size(), (BiPredicate<String, T>) trivialVisitor)) return false;
-                    }
-                    x = i / yEnum.size();
-                    y = i % yEnum.size();
-                    break;
-                }
-
-                if (!yEnum.visitSolution(yEnum.size(), (BiPredicate<String, T>) trivialVisitor)) return false;
-            }
-
-            // solutions are visited completely (if we have reached this point), else not at all
-            return xEnum.visitSolution(x, visitor) && yEnum.visitSolution(y, visitor);
-        }
-    }
-
-    private class SerialEnumerator<T> implements Enumerator<T> {
-        private final String name;
-        private final Iterator<T> iterator;
-        private final Function<T, Enumerator<T>> constructor;
-        private final List<Enumerator<T>> memory = new ArrayList<>();
-        private final List<T> values = new ArrayList<>();
-
-        private SerialEnumerator(final String name,
-                                 final Iterator<T> iterator,
-                                 final Function<T, Enumerator<T>> constructor) {
-            this.name = name;
-            this.iterator = iterator;
-            this.constructor = constructor;
-        }
-
-        public int size() {
-            // TODO: replace with an incremental size when done debugging (i.e. when size is under the control of this enumerator)
-            int size = 0;
-            for (Enumerator<T> e : memory) size += e.size();
-            return size;
-        }
-
-        public boolean isComplete() {
-            System.out.println(name + " is complete: " + (!iterator.hasNext() && (memory.isEmpty() || memory.get(memory.size() - 1).isComplete())));
-            return !iterator.hasNext() && (memory.isEmpty() || memory.get(memory.size() - 1).isComplete());
-        }
-
-        public boolean visitSolution(final int i,
-                                     final BiPredicate<String, T> visitor) {
-            System.out.println(name + " visitSolution(" + i + ")");
-
-            // TODO: temporary; replace with binary search for efficient random access
-            int totalSize = 0;
-            int index = 0;
-            while (true) {
-                if (index < memory.size()) {
-                    Enumerator<T> e = memory.get(index);
-
-                    if ((!e.isComplete() || e.isComplete() && i < totalSize + e.size()) && e.visitSolution(i - totalSize, visitor)) {
-                        System.out.println("\tputting as " + name + ": " + values.get(index));
-                        System.out.println("\t\tvisitor = " + visitor);
-                        System.out.println("\t\tindex = " + index);
-                        visit(name, values.get(index), visitor);
-
-                        //if (values.get(index).toString().equals("v[2]")) {
-                        System.out.println("\t\t### b memory.size() = " + memory.size());
-                        for (int k = 0; k < memory.size(); k++) {
-                            System.out.println("\t\t### \t" + k + ":\t" + values.get(k) + "\t" + memory.get(k).size() + "\t" + memory.get(k).isComplete());
-                        }
-                        //}
-
-                        return true;
-                    }
-
-                    totalSize += e.size();
-                    index++;
-                } else {
-                    if (!iterator.hasNext()) {
-                        System.out.println("\titerator exhausted!");
-                        return false;
-                    }
-
-                    // first remove the head enumeration if it exists and is empty
-                    // only the head will ever be empty, avoiding wasted space
-                    if (!memory.isEmpty() && 0 == memory.get(index - 1).size()) {
-                        index--;
-                        memory.remove(index);
-                        values.remove(index);
-                    }
-
-                    T value = iterator.next();
-                    System.out.println("\t" + name + " = " + value);
-                    values.add(value);
-                    Enumerator<T> e = constructor.apply(value);
-                    System.out.println("\te = " + e);
-                    System.out.println("\te.isComplete() = " + e.isComplete());
-                    memory.add(memory.size(), e);
-                }
             }
         }
     }
@@ -731,34 +556,5 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         public T next() {
             return traverser.get();
         }
-    }
-
-    private void doTest() {
-        String[] a1 = new String[]{"a", "b", "c"};
-        String[] a2 = new String[]{"1", "2", "3", "4"};
-        String[] a3 = new String[]{"@", "#"};
-
-        Enumerator<String> e1 = new IteratorEnumerator<>("letter", Arrays.asList(a1).iterator());
-        Enumerator<String> e2 = new IteratorEnumerator<>("number", Arrays.asList(a2).iterator());
-        Enumerator<String> e3 = new IteratorEnumerator<>("punc", Arrays.asList(a3).iterator());
-
-        Enumerator<String> e1e2 = new CartesianEnumerator<>(e1, e2);
-        BiPredicate<String, String> visitor = (name, value) -> {
-            System.out.println("\t" + name + ":\t" + value);
-            return true;
-        };
-        Enumerator<String> e1e2e3 = new CartesianEnumerator<>(e1e2, e3);
-
-        int i = 0;
-        Enumerator<String> e
-                = e1e2e3; //e1e2;
-        while (e.visitSolution(i, visitor)) {
-            System.out.println("solution #" + (i + 1) + "^^");
-            i++;
-        }
-    }
-
-    public static void main(final String[] args) {
-        new MatchStepNew<>(GraphTraversal.of(), "a").doTest();
     }
 }

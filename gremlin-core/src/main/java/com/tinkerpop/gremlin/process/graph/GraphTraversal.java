@@ -53,7 +53,6 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.util.Tree;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
-import com.tinkerpop.gremlin.process.graph.step.map.MatchStepNew;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
