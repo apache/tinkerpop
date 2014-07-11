@@ -146,9 +146,14 @@ public class GremlinExecutor implements AutoCloseable {
         return scheduledExecutorService;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Note that the executors are not closed by virtue of this operation.  Manage them manually.
+     */
     @Override
     public void close() throws Exception {
-        // todo: shutdown pools?
+        // leave pools running as they are supplied externally.  let the sender be responsible for shutting them down
         scriptEngines.close();
     }
 
