@@ -850,6 +850,131 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 Gremlin Utilities
 =================
 
+Gremlin Console
+---------------
+
+The Gremlin Console is an interactive terminal or link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] that can be used to traverse graphs and interact with the data that they contain.  It represents the most common method for performing ad-hoc graph analysis, small to medium sized data loading projects and other exploratory functions.  The Gremlin Console is highly extensible, featuring a rich plugin system that allows new tools, commands, link:http://en.wikipedia.org/wiki/Domain-specific_language[DSLs], etc. to be exposed to users.
+
+To start the Gremlin Console, run `gremlin.sh` or `gremlin.bat`:
+
+[source,text]
+----
+bin/gremlin.sh
+
+         \,,,/
+         (o o)
+─────oOOo─(3)─oOOo─────
+plugin loaded: server
+plugin loaded: gephi
+gremlin>
+----
+
+The Gremlin Console is loaded and ready for commands. Recall that the console hosts the Gremlin-Groovy language.  Please review link:http://groovy.codehaus.org/[Groovy] for help on Groovy-related constructs. In short, Groovy is a superset of Java. What works in Java, works in Groovy. However, Groovy provides many shorthands to make it easier to interact with the Java API.  Moreoever, Gremlin provides many neat shorthands to make it easier to express paths through a property graph.
+
+[source,groovy]
+----
+gremlin> i = 'goodbye'
+==>goodbye
+gremlin> j = 'self'
+==>self
+gremlin> i + " " + j
+==>goodbye self
+gremlin> "${i} ${j}"
+==>goodbye self
+----
+
+The "toy" graph provides a way to get started with Gremlin quickly.
+
+[source,groovy]
+----
+gremlin> g = TinkerFactory.createClassic()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g.V
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+gremlin> g.V.name
+==>marko
+==>vadas
+==>lop
+==>josh
+==>ripple
+==>peter
+gremlin> g.V.has('name','marko').out('knows').name
+==>vadas
+==>josh
+----
+
+Console Commands
+~~~~~~~~~~~~~~~~
+
+In addition to the standard commands of the link:http://groovy.codehaus.org/Groovy+Shell[Groovy Shell], Gremlin adds some other useful operations.  The following table outlines the most commonly used commands:
+
+[width="100%",cols="3,^2,10",options="header"]
+|=========================================================
+|Command |Alias |Description
+|:help |:? |Displays list of commands and descriptions.  When followed by a command name, it will display more specific help on that particular item.
+|:exit |:x |Ends the Console session.
+|import |:i |Import a class into the Console session.
+|:clear |:c |Sometimes the Console can get into a state where the command buffer no longer understands input (e.g. a misplaced `(` or `}`).  Use this command to clear that buffer.
+|:load |:l |Load a file or URL into the command buffer for execution.
+|:use |:u |Imports a maven library and its dependencies into the Console.  When all dependencies are in place, it will scan for plugins and attempt to load them.
+|:remote |:rem |Configures a "remote" context where Gremlin or results of Gremlin will be processed via usage of `:submit`.
+|:submit |:> |Submit Gremlin to the currently active context defined by `:remote`.
+|=========================================================
+
+Plugins
+~~~~~~~
+
+Plugins provide a way to expand the features of Gremlin Console.  The first step to developing a plugin is to implement the `GremlinPlugin` interface:
+
+[source,java]
+----
+include::../gremlin-groovy/src/main/java/com/tinkerpop/gremlin/groovy/plugin/GremlinPlugin.java[]
+----
+
+The most simple plugin and the one most commonly implemented will likely be one that just provides a list of classes to import to the Gremlin Console.  This type of plugin is the easiest way for implementers of the TinkerPop Structure and Process APIs to make their implementations available to users.  The Neo4j implementation currently maintained by TinkerPop has just such a plugin:
+
+[source,java]
+----
+include::../neo4j-gremlin/src/main/java/com/tinkerpop/gremlin/neo4j/groovy/plugin/Neo4jGremlinPlugin.java[]
+----
+
+Note that the plugin provides a unique name for the plugin. No other plugin in the default TinkerPop namespace (i.e. the TinkerPop namespace is top-level and thus not prefixed) can be named "neo4j".  To make Neo4j classes available to the Console, the `PluginAcceptor` is given a `Set` of imports to provide to the plugin host.  The `PluginAcceptor` essentially behaves as an abstraction to the "host" that is handling the `GremlinPlugin`.  `GremlinPlugin` implementations maybe hosted by the Console as well as the `ScriptEngine` in Gremlin Server.  Obviously, registering new commands and other operations that are specific to the Groovy Shell don't make sense there.  Write the code for the plugin defensively by checking the `GremlinPlugin.env` key in the `PluginAcceptor.environment()` to understand which environment the plugin is being used in.
+
+There is one other step to follow to ensure that the `GremlinPlugin` is visible to its hosts.  `GremlinPlugin` implementations are loaded via link:http://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader] and therefore need a resource file added to the jar file where the plugin exists.  Add a file called `com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin` to `META-INF.services`.  In the case of the Neo4j plugin above, that file will have this line in it:
+
+[source,java]
+----
+include::../neo4j-gremlin/src/main/resources/META-INF/services/com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin[]
+----
+
+Once the plugin is packaged, there are two ways to test it out:
+
+1. Copy the jar and its dependencies to the Gremlin Console path and start it.  The plugin should show its name as one of the ones that was loaded at startup.
+1. Start Gremlin Console and try the `:use` command.  For the case of the Neo4j plugin, it would look like this: `:use com.tinkerpop neo4j-gremlin 3.y.z`.
+
+In either case, once one of these two approaches is taken, the Neo4j classes should be available for use within the console.
+
+A plugin can do much more than just import classes.  One can expand the Gremlin language with new functions or steps, provide useful commands to make repetitive or complex tasks easier to execute, or do helpful integrations with other systems.  The secret to doing so lies in the `PluginAcceptor`.  As mentioned earlier, the `PluginAcceptor` provides access to the host of the plugin.  It provides several important methods for doing so:
+
+1. `addBinding` - These two function allow the plugin to inject whatever context it wants to the host.  For example, doing `addBinding('x',1)` would place a variable of `x` with a value of 1 into the console at the time of the plugin load.
+1. `eval` - Evaluates a script in the context of the host at the time of plugin startup.  For example, doing `eval("sum={x,y->x+y}")` would create a `sum` function that would be available to the user of the Console after the load of the plugin.
+1. `environment` - Provides context from the host environment.  For the console, the environment will return a `Map` containing an reference to the `IO` stream and the `Groovysh` instance.  These classes represent very low-level access to the underpinnings of the console.  Access to `Groovysh` allows for advanced features such as registering new commands (e.g. like the `:use` or `:remote` commands).
+
+Plugins can also tie into the `:remote` and `:submit` commands.  Recall that a `:remote` represents a different context within which Gremlin is executed, when issued with `:submit`.  It is encouraged to use this integration point when possible, as opposed to registering new commands that can otherwise follow the `:remote` and `:submit` pattern.  To expose this integration point as part of a plugin, implement the `RemoteAcceptor` interface:
+
+[source,java]
+----
+include::../gremlin-groovy/src/main/java/com/tinkerpop/gremlin/groovy/plugin/RemoteAcceptor.java[]
+----
+
+The `RemoteAcceptor` implementation ties to a `GremlinPlugin` and will only be executed when in use with the Gremlin Console plugin host.  Simply instantiate and return a `RemoteAcceptor` in the `GremlinPlugin.remoteAcceptor()` method of the plugin implementation.  Generally speaking, each call to `remoteAcceptor()` should produce a new instance of a `RemoteAcceptor`.  It will likely be necessary that you provide context from the `GremlinPlugin` to the `RemoteAcceptor` plugin.  For example, the `RemoteAcceptor` implementation might require an instance of `Groovysh` to provide a way to dynamically evaluate a script provided to it so that it can process the results in a different way.
+
+
 Gremlin I/O
 -----------
 
