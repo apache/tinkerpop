@@ -1,8 +1,6 @@
 package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -12,21 +10,16 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalPaths implements Serializable {
+public class TraverserPathTracker implements Serializable {
 
-    protected Map<Object, List<Traverser>> previousObjectTracks;
+    protected final Map<Object, List<Traverser>> previousObjectTracks = new HashMap<>();
     protected final Map<Object, List<Traverser>> graphTracks = new HashMap<>();
     protected final Map<Object, List<Traverser>> objectTracks = new HashMap<>();
 
     protected final Map<Object, List<Traverser>> doneGraphTracks = new HashMap<>();
     protected final Map<Object, List<Traverser>> doneObjectTracks = new HashMap<>();
 
-    public TraversalPaths() {
-    }
-
-    public TraversalPaths(final Vertex vertex) {
-        final Property<TraversalPaths> tracker = vertex.property(TraversalVertexProgram.TRAVERSER_TRACKER);
-        this.previousObjectTracks = tracker.isPresent() ? tracker.value().objectTracks : new HashMap<>();
+    public TraverserPathTracker() {
     }
 
     public Map<Object, List<Traverser>> getDoneGraphTracks() {
@@ -47,5 +40,12 @@ public class TraversalPaths implements Serializable {
 
     public Map<Object, List<Traverser>> getPreviousObjectTracks() {
         return this.previousObjectTracks;
+    }
+
+    public void completeIteration() {
+        this.previousObjectTracks.clear();
+        this.previousObjectTracks.putAll(this.objectTracks);
+        this.objectTracks.clear();
+        this.graphTracks.clear();
     }
 }

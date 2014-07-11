@@ -53,7 +53,7 @@ public class TraversalVertexProgramIterator<T> implements Iterator<T> {
         if (TraversalHelper.trackPaths(this.traversalSupplier.get())) {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.originalGraph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
-                        .map(v -> this.resultantGraph.v(v.id()).<TraversalPaths>property(TraversalVertexProgram.TRAVERSER_TRACKER).orElse(null))
+                        .map(v -> this.resultantGraph.v(v.id()).<TraverserPathTracker>property(TraversalVertexProgram.TRAVERSER_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
                         .flatMap(tracker -> {
                             final List list = new ArrayList();
@@ -75,7 +75,7 @@ public class TraversalVertexProgramIterator<T> implements Iterator<T> {
         } else {
             this.itty = StreamFactory.stream((Iterator<Vertex>) this.originalGraph.V()).flatMap(vertex -> {
                 return StreamFactory.stream(vertex)
-                        .map(v -> this.resultantGraph.v(v.id()).<TraversalCounters>property(TraversalVertexProgram.TRAVERSER_TRACKER).orElse(null))
+                        .map(v -> this.resultantGraph.v(v.id()).<TraverserCountTracker>property(TraversalVertexProgram.TRAVERSER_TRACKER).orElse(null))
                         .filter(tracker -> null != tracker)
                         .flatMap(tracker -> {
                             final List list = new ArrayList();
@@ -84,6 +84,7 @@ public class TraversalVertexProgramIterator<T> implements Iterator<T> {
                                     list.add(entry.getKey().get());
                                 }
                             });
+
                             tracker.getDoneGraphTracks().entrySet().stream().forEach(entry -> {
                                 for (int i = 0; i < entry.getValue(); i++) {
                                     list.add(entry.getKey().inflate(vertex).get());
