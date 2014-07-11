@@ -37,7 +37,6 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalSupplier";
     public static final String TRAVERSAL_SUPPLIER_CLASS = "gremlin.traversalSupplierClass";
-    // TODO: public static final String TRAVERSAL_STRING = "gremlin.traversalString";
 
     private static final String TRACK_PATHS = "gremlin.traversalVertexProgram.trackPaths";
     private static final String VOTE_TO_HALT = "voteToHalt";
@@ -86,8 +85,6 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
         traversal.strategies().applyFinalOptimizers(traversal);
         final GraphStep startStep = (GraphStep) traversal.getSteps().get(0);   // TODO: make this generic to Traversal
         final String future = (traversal.getSteps().size() == 1) ? Traverser.NO_FUTURE : ((Step) traversal.getSteps().get(1)).getAs();
-        // TODO: Was doing some HasContainer.testAll() stuff prior to the big change (necessary?)
-        // TODO: Make this an optimizer.
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         if (Vertex.class.isAssignableFrom(startStep.returnClass)) {
             final Traverser<Vertex> traverser = this.trackPaths ?

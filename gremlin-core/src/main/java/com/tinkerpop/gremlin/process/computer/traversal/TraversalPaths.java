@@ -18,8 +18,8 @@ public class TraversalPaths implements Serializable {
     protected final Map<Object, List<Traverser>> graphTracks = new HashMap<>();
     protected final Map<Object, List<Traverser>> objectTracks = new HashMap<>();
 
-    protected final Map<Object, List<Traverser>> doneGraphTracks = new HashMap<>();
-    protected final Map<Object, List<Traverser>> doneObjectTracks = new HashMap<>();
+    protected Map<Object, List<Traverser>> doneGraphTracks;
+    protected Map<Object, List<Traverser>> doneObjectTracks;
 
     public TraversalPaths() {
     }
@@ -27,6 +27,8 @@ public class TraversalPaths implements Serializable {
     public TraversalPaths(final Vertex vertex) {
         final Property<TraversalPaths> tracker = vertex.property(TraversalVertexProgram.TRAVERSER_TRACKER);
         this.previousObjectTracks = tracker.isPresent() ? tracker.value().objectTracks : new HashMap<>();
+        this.doneGraphTracks = tracker.isPresent() ? tracker.value().doneGraphTracks : new HashMap<>();
+        this.doneObjectTracks = tracker.isPresent() ? tracker.value().doneObjectTracks : new HashMap<>();
     }
 
     public Map<Object, List<Traverser>> getDoneGraphTracks() {

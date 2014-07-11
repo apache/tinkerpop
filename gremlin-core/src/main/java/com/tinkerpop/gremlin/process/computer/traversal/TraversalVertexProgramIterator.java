@@ -84,6 +84,7 @@ public class TraversalVertexProgramIterator<T> implements Iterator<T> {
                                     list.add(entry.getKey().get());
                                 }
                             });
+
                             tracker.getDoneGraphTracks().entrySet().stream().forEach(entry -> {
                                 for (int i = 0; i < entry.getValue(); i++) {
                                     list.add(entry.getKey().inflate(vertex).get());
