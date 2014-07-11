@@ -103,13 +103,19 @@ class Console {
 
     private def handleResultShowNothing = { args -> null }
 
-    private def handleResultIterate = { result ->
+    private def handleResultIterate = { args ->
         try {
             // necessary to save persist history to file
             groovy.getHistory().flush()
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e)
         }
+
+        // need to copy this when evaluating gremlin that modifies a list.  easy to recreatea
+        // ConcurrentModificationException by doing
+        // gremlin> x = []
+        // gremlin> x << 1
+        final Object result = args.clone()
 
         while (true) {
             if (this.tempIterator.hasNext()) {
