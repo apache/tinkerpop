@@ -11,8 +11,8 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.PathTraverser;
 import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalCounters;
-import com.tinkerpop.gremlin.process.computer.traversal.TraversalPaths;
+import com.tinkerpop.gremlin.process.computer.traversal.TraverserCountTracker;
+import com.tinkerpop.gremlin.process.computer.traversal.TraverserPathTracker;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
@@ -227,8 +227,8 @@ public final class GremlinKryo {
             // recently added for GraphTraversal in OLAP
             add(Triplet.<Class, Serializer, Integer>with(SimpleTraverser.class, null, 55));
             add(Triplet.<Class, Serializer, Integer>with(PathTraverser.class, null, 56));
-            add(Triplet.<Class, Serializer, Integer>with(TraversalCounters.class, null, 57));
-            add(Triplet.<Class, Serializer, Integer>with(TraversalPaths.class, null, 58));
+            add(Triplet.<Class, Serializer, Integer>with(TraverserCountTracker.class, null, 57));
+            add(Triplet.<Class, Serializer, Integer>with(TraverserPathTracker.class, null, 58));
             add(Triplet.<Class, Serializer, Integer>with(Path.class, null, 59));
             add(Triplet.<Class, Serializer, Integer>with(DetachedPath.class, null, 60));
         }};

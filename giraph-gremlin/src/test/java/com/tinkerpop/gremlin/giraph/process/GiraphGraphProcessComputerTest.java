@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(ProcessComputerSuite.class)
-@Ignore
 @ProcessComputerSuite.GraphProviderClass(GiraphGraphProvider.class)
+@Ignore
 public class GiraphGraphProcessComputerTest {
 }

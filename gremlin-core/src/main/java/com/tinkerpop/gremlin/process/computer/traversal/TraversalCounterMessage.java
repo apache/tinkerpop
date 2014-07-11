@@ -46,21 +46,18 @@ public class TraversalCounterMessage extends TraversalMessage {
         this.counter = counter;
     }
 
-    public static boolean execute(final Vertex vertex,
-                                  final Iterable<TraversalCounterMessage> messages,
-                                  final Messenger messenger,
-                                  final TraversalCounters tracker,
-                                  final SSupplier<Traversal> traversalSupplier) {
+    public static boolean execute(final Vertex vertex, final Messenger messenger, final SSupplier<Traversal> traversalSupplier) {
 
+        final TraverserCountTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
         final Traversal traversal = traversalSupplier.get();
         traversal.strategies().applyFinalOptimizers(traversal);
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final Map<Traverser, Long> localCounts = new HashMap<>();
 
-        messages.forEach(message -> {
-            message.traverser.inflate(vertex);
-            if (message.executeCounts(tracker, traversal, localCounts, vertex))
+        messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {
+            ((TraversalCounterMessage) message).traverser.inflate(vertex);
+            if (((TraversalCounterMessage) message).executeCounts(tracker, traversal, localCounts, vertex))
                 voteToHalt.set(false);
         });
 
@@ -92,7 +89,7 @@ public class TraversalCounterMessage extends TraversalMessage {
         return voteToHalt.get();
     }
 
-    private boolean executeCounts(final TraversalCounters tracker,
+    private boolean executeCounts(final TraverserCountTracker tracker,
                                   final Traversal traversal, Map<Traverser, Long> localCounts,
                                   final Vertex vertex) {
 

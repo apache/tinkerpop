@@ -35,19 +35,16 @@ public class TraversalPathMessage extends TraversalMessage {
         return new TraversalPathMessage(traverser);
     }
 
-    public static boolean execute(final Vertex vertex,
-                                  final Iterable<TraversalPathMessage> messages,
-                                  final Messenger messenger,
-                                  final TraversalPaths tracker,
-                                  final SSupplier<Traversal> traversalSupplier) {
+    public static boolean execute(final Vertex vertex, final Messenger messenger, final SSupplier<Traversal> traversalSupplier) {
 
+        final TraverserPathTracker tracker = vertex.value(TraversalVertexProgram.TRAVERSER_TRACKER);
         final Traversal traversal = traversalSupplier.get();
         traversal.strategies().applyFinalOptimizers(traversal);
 
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        messages.forEach(message -> {
-            message.traverser.inflate(vertex);
-            if (message.executePaths(vertex, messenger, tracker, traversal))
+        messenger.receiveMessages(MessageType.Global.of()).forEach(message -> {
+            ((TraversalPathMessage) message).traverser.inflate(vertex);
+            if (((TraversalPathMessage) message).executePaths(vertex, messenger, tracker, traversal))
                 voteToHalt.set(false);
         });
         tracker.getPreviousObjectTracks().forEach((object, traversers) -> {
@@ -72,7 +69,7 @@ public class TraversalPathMessage extends TraversalMessage {
     }
 
     private boolean executePaths(final Vertex vertex, final Messenger messenger,
-                                 final TraversalPaths tracker,
+                                 final TraverserPathTracker tracker,
                                  final Traversal traversal) {
         if (this.traverser.isDone()) {
             this.traverser.deflate();
@@ -87,7 +84,7 @@ public class TraversalPathMessage extends TraversalMessage {
         return processStep(step, messenger, tracker);
     }
 
-    private static boolean processStep(final Step<?, ?> step, final Messenger messenger, final TraversalPaths tracker) {
+    private static boolean processStep(final Step<?, ?> step, final Messenger messenger, final TraverserPathTracker tracker) {
         final boolean messageSent = step.hasNext();
         step.forEachRemaining(traverser -> {
             final Object end = traverser.get();

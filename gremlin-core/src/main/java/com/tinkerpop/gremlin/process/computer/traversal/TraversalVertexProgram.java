@@ -103,19 +103,23 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
                 voteToHalt.set(false);
             });
         }
+        if (this.trackPaths)
+            vertex.property(TRAVERSER_TRACKER, new TraverserPathTracker());
+        else
+            vertex.property(TRAVERSER_TRACKER, new TraverserCountTracker());
+
         globals.and(VOTE_TO_HALT, voteToHalt.get());
     }
 
-    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, GraphComputer.Globals globals) {
+    private void executeOtherIterations(final Vertex vertex, final Messenger<M> messenger, final GraphComputer.Globals globals) {
         if (this.trackPaths) {
-            final TraversalPaths tracker = new TraversalPaths(vertex);
-            globals.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, (Iterable) messenger.receiveMessages(this.global), messenger, tracker, this.traversalSupplier));
-            vertex.property(TRAVERSER_TRACKER, tracker);
+            globals.and(VOTE_TO_HALT, TraversalPathMessage.execute(vertex, messenger, this.traversalSupplier));
+            vertex.<TraverserPathTracker>value(TRAVERSER_TRACKER).completeIteration();
         } else {
-            final TraversalCounters tracker = new TraversalCounters(vertex);
-            globals.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, (Iterable) messenger.receiveMessages(this.global), messenger, tracker, this.traversalSupplier));
-            vertex.property(TRAVERSER_TRACKER, tracker);
+            globals.and(VOTE_TO_HALT, TraversalCounterMessage.execute(vertex, messenger, this.traversalSupplier));
+            vertex.<TraverserCountTracker>value(TRAVERSER_TRACKER).completeIteration();
         }
+
     }
 
     @Override
@@ -136,7 +140,7 @@ public class TraversalVertexProgram<M extends TraversalMessage> implements Verte
 
     @Override
     public Map<String, KeyType> getComputeKeys() {
-        return VertexProgram.ofComputeKeys(TRAVERSER_TRACKER, KeyType.VARIABLE);
+        return VertexProgram.ofComputeKeys(TRAVERSER_TRACKER, KeyType.CONSTANT);
     }
 
     @Override
