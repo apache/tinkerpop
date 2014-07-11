@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.console.plugin
 
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
@@ -9,6 +10,7 @@ import org.codehaus.groovy.tools.shell.IO
  */
 class ConsolePluginAcceptor implements PluginAcceptor {
 
+    public static final String ENVIRONMENT_NAME = "console";
     public static final String ENVIRONMENT_SHELL = "ConsolePluginAcceptor.shell"
     public static final String ENVIRONMENT_IO = "ConsolePluginAcceptor.io"
 
@@ -40,6 +42,6 @@ class ConsolePluginAcceptor implements PluginAcceptor {
 
     @Override
     Map<String, Object> environment() {
-        return [(ENVIRONMENT_IO): io, (ENVIRONMENT_SHELL): shell]
+        return [(GremlinPlugin.ENVIRONMENT): ENVIRONMENT_NAME, (ENVIRONMENT_IO): io, (ENVIRONMENT_SHELL): shell]
     }
 }

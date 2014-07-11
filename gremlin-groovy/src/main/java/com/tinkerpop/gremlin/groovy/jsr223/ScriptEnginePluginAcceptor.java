@@ -1,10 +1,12 @@
 package com.tinkerpop.gremlin.groovy.jsr223;
 
+import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import com.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,5 +47,12 @@ public class ScriptEnginePluginAcceptor implements PluginAcceptor {
     @Override
     public Object eval(final String script) throws ScriptException {
         return this.scriptEngine.eval(script);
+    }
+
+    @Override
+    public Map<String, Object> environment() {
+        final Map<String,Object> env = new HashMap<>();
+        env.put(GremlinPlugin.ENVIRONMENT, "scriptEngine");
+        return env;
     }
 }

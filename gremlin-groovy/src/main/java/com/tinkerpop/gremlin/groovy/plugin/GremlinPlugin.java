@@ -12,13 +12,16 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GremlinPlugin {
+    public static final String ENVIRONMENT = "GremlinPlugin.env";
+
     /**
-     * The name of the plugin.  This name should be unique as naming clashes will prevent proper plugin operations.
+     * The name of the plugin.  This name should be unique (use a namespaced approach) as naming clashes will
+     * prevent proper plugin operations. Plugins developed by TinkerPop will not have any namespace.
      */
     public String getName();
 
     /**
-     * Implementors will typically execute imports of classes within their project that they want available in the
+     * Implementers will typically execute imports of classes within their project that they want available in the
      * console or they may use meta programming to introduce new extensions to the Gremlin.
      */
     public void pluginTo(final PluginAcceptor pluginAcceptor);
