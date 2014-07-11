@@ -20,7 +20,8 @@
             <directory>scripts</directory>
         </fileSet>
         <fileSet>
-            <directory>ext</directory>
+            <directory>target/${project.artifactId}-${project.version}-standalone/ext</directory>
+            <outputDirectory>ext</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>src</directory>
