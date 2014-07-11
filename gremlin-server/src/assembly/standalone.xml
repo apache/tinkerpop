@@ -12,6 +12,10 @@
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
+            <directory>src/main/ext</directory>
+            <outputDirectory>/ext</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>config</directory>
             <outputDirectory>/config</outputDirectory>
         </fileSet>

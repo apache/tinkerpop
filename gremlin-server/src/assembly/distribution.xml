@@ -20,6 +20,9 @@
             <directory>scripts</directory>
         </fileSet>
         <fileSet>
+            <directory>ext</directory>
+        </fileSet>
+        <fileSet>
             <directory>src</directory>
         </fileSet>
         <fileSet>
