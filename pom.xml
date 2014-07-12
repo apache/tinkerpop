@@ -105,17 +105,8 @@
         <url>git@github.com:tinkerpop/tinkerpop3.git</url>
     </scm>
     <properties>
-        <tinkerpop.version>3.0.0-SNAPSHOT</tinkerpop.version>
-        <junit.version>4.11</junit.version>
-        <netty.version>4.0.21.Final</netty.version>
-        <metrics.version>3.0.2</metrics.version>
         <groovy.version>2.3.4</groovy.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <skipIntegrationTests>true</skipIntegrationTests>
-        <skipPerformanceTests>true</skipPerformanceTests>
-        <slf4j.version>1.7.7</slf4j.version>
-        <log4j.properties>log4j-server.properties</log4j.properties>
+        <junit.version>4.11</junit.version>
         <kuali.s3.wagon.version>1.1.20</kuali.s3.wagon.version>
         <!-- Directory containing the file ${log4j.properties} defined
              above.  Maven interpolates ${project.basedir} in the
@@ -123,6 +114,16 @@
              the modules under the root directory, not the root
              directory itself. -->
         <log4j.properties.dir>${project.basedir}/../gremlin-server/config/</log4j.properties.dir>
+        <log4j.properties>log4j-server.properties</log4j.properties>
+        <metrics.version>3.0.2</metrics.version>
+        <netty.version>4.0.21.Final</netty.version>
+        <neo4j.version>2.1.2</neo4j.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <skipIntegrationTests>true</skipIntegrationTests>
+        <skipPerformanceTests>true</skipPerformanceTests>
+        <slf4j.version>1.7.7</slf4j.version>
+        <tinkerpop.version>3.0.0-SNAPSHOT</tinkerpop.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -397,8 +398,41 @@
         <dependencies>
             <dependency>
                 <groupId>org.neo4j</groupId>
+                <artifactId>neo4j</artifactId>
+                <version>${neo4j.version}</version>
+                <!--<type>pom</type>-->
+                <exclusions>
+                    <!-- neo4j self-conflicts -->
+                    <exclusion>
+                        <groupId>org.neo4j</groupId>
+                        <artifactId>neo4j-lucene-index</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.neo4j</groupId>
+                        <artifactId>neo4j-kernel</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.scala-lang</groupId>
+                        <artifactId>scala-library</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>net.sf.opencsv</groupId>
+                        <artifactId>opencsv</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.neo4j</groupId>
+                        <artifactId>neo4j-graph-matching</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.neo4j</groupId>
+                        <artifactId>neo4j-graph-algo</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.neo4j</groupId>
                 <artifactId>neo4j-ha</artifactId>
-                <version>2.0.0</version>
+                <version>${neo4j.version}</version>
                 <exclusions>
                     <!-- conflicts with gremlin-core -->
                     <exclusion>
