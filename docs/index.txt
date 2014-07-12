@@ -955,7 +955,7 @@ include::../neo4j-gremlin/src/main/resources/META-INF/services/com.tinkerpop.gre
 Once the plugin is packaged, there are two ways to test it out:
 
 1. Copy the jar and its dependencies to the Gremlin Console path and start it.  The plugin should show its name as one of the ones that was loaded at startup.
-1. Start Gremlin Console and try the `:use` command.  For the case of the Neo4j plugin, it would look like this: `:use com.tinkerpop neo4j-gremlin 3.y.z`.
+1. Start Gremlin Console and try the `:use` command.  For the case of the Neo4j plugin, it would look like this: `:use now com.tinkerpop neo4j-gremlin 3.y.z`.
 
 In either case, once one of these two approaches is taken, the Neo4j classes should be available for use within the console.
 
@@ -1519,7 +1519,7 @@ image:neotech-logo.png[width=150,float=left] link:http://neotechnology.com[Neo T
 
 [source,groovy]
 ----
-gremlin> :use com.tinkerpop neo4j-gremlin x.y.z
+gremlin> :use now com.tinkerpop neo4j-gremlin x.y.z
 ==>groovy.grape.Grape, org.apache.commons.configuration.*, com.tinkerpop.gremlin.structure.*, ... com.tinkerpop.gremlin.neo4j.structure.*
 ==>loaded: {disableChecksums=false, module=neo4j-gremlin, autoDownload=true, calleeDepth=4, changing=false, version=3.0.0-SNAPSHOT, group=com.tinkerpop.tinkerpop3}
 gremlin> g = Neo4jGraph.open('/tmp/neo4j')
