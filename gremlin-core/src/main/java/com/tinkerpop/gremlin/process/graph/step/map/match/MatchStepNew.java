@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.map.match;
 
 import com.tinkerpop.gremlin.process.SimpleTraverser;
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
@@ -162,10 +163,6 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         return traversals;
     }
 
-    public Enumerator<S> solve(final Iterator<S> inputs) {
-        return solveFor(startLabel, inputs, true);
-    }
-
     private void checkLabel(final String label) {
         // note: this won't happen so long as the anon prefix is the same as Traversal.UNDERSCORE
         if (isAnonymousLabel(label)) {
@@ -181,33 +178,32 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
         return ANON_LABEL_PREFIX + ++anonLabelCounter;
     }
 
+    public Enumerator<S> solve(final Iterator<S> inputs) {
+        Iterator<S> optInputs = new MapIterator<>(inputs, o -> {
+            // optimize if and only if a new start object is about to be handled
+            // do not optimize recursively; this happens once for each top-level start object
+            optimize();
+            return o;
+        });
+
+        return solveFor(startLabel, optInputs);
+    }
+
     private Enumerator<S> solveFor(final String outLabel,
-                                   final Iterator<S> inputs,
-                                   final boolean optimizeFirst) {
+                                   final Iterator<S> inputs) {
         List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
         if (null == outs) {
+            // no out-traversals from here; just enumerate the values bound to outLabel
             return new IteratorEnumerator<>(outLabel, inputs);
         } else {
-            Iterator<S> inputIterator = optimizeFirst ? new MapIterator<>(inputs, o -> {
-                // optimize if and only if a new start object is about to be handled
-                optimize();
-                return o;
-            }) : inputs;
-
-            return new SerialEnumerator<>(outLabel, inputIterator, o -> {
+            // for each value bound to outLabel, feed it into all out-traversals in parallel and join the results
+            return new SerialEnumerator<>(outLabel, inputs, o -> {
                 Enumerator<S> result = null;
                 for (TraversalWrapper<S, S> w : outs) {
                     TraversalUpdater<S, S> updater = new TraversalUpdater<>(w, new SingleIterator<S>(o));
 
-                    Enumerator<S> ie = solveFor(
-                            w.inLabel,
-                            updater,
-                            false);  // do not optimize recursively; this happens once for each top-level start object
-                    if (null == result) {
-                        result = ie;
-                    } else {
-                        result = new CartesianEnumerator<>(result, ie);
-                    }
+                    Enumerator<S> ie = solveFor(w.inLabel, updater);
+                    result = null == result ? ie : new CartesianEnumerator<>(result, ie);
                 }
 
                 int i = 0;

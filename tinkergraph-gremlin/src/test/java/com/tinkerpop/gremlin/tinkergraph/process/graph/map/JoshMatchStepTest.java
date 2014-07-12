@@ -1,15 +1,18 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph.map;
 
+import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.match.CartesianEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.Enumerator;
+import com.tinkerpop.gremlin.process.graph.step.map.match.EnumeratorIterator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.IteratorEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.util.As;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStepNew;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.io.GraphReader;
 import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -48,9 +51,10 @@ public class JoshMatchStepTest {
                 g.of().as("a").out("knows").as("b"),
                 g.of().as("b").out("created").as("c"));
         Predicate<Map<String, Object>> visitor = bindings -> {
-            System.out.println("solution:");
+            //System.out.println("solution:");
+            int count;
             for (String key : bindings.keySet()) {
-                System.out.println("\t" + key + ":\t" + bindings.get(key));
+            //    System.out.println("\t" + key + ":\t" + bindings.get(key));
             }
             return true;
         };
@@ -177,20 +181,7 @@ public class JoshMatchStepTest {
         //     the cost of d->has(name,vadas) is 1/6 -- we put in all six vertices and got out one
         // the total cost of d is the cost of its first traversal times the branch factor of the first times the cost of the second,
         //     or 1/6 + 1/6*5/3 = 4/9
-        assertEquals(4/9.0, query.findCost("d"), 0.001);
-    }
-
-    @Test
-    public void testOptimizationEffectOnPerformance() throws Exception {
-        /*
-        Graph g = TinkerGraph.open();
-        GraphMLReader r = GraphMLReader.create().build();
-        try (InputStream in = GraphMLReader.class.getResourceAsStream("grateful-dead.xml")) {
-            r.readGraph(in, g);
-        }
-
-        System.out.println("" + g.V().count());
-        */
+        assertEquals(4 / 9.0, query.findCost("d"), 0.001);
     }
 
     @Test
@@ -232,6 +223,13 @@ public class JoshMatchStepTest {
 
     private class Bindings<T> implements Comparable<Bindings<T>> {
         private final SortedMap<String, T> map = new TreeMap<>();
+
+        public Bindings() {
+        }
+
+        public Bindings(final Map<String, T> map) {
+            this.map.putAll(map);
+        }
 
         public Bindings<T> put(final String name, final T value) {
             map.put(name, value);
