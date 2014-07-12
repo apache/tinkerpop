@@ -182,6 +182,7 @@ public class JoshMatchStepTest {
 
     @Test
     public void testOptimizationEffectOnPerformance() throws Exception {
+        /*
         Graph g = TinkerGraph.open();
         GraphMLReader r = GraphMLReader.create().build();
         try (InputStream in = GraphMLReader.class.getResourceAsStream("grateful-dead.xml")) {
@@ -189,6 +190,7 @@ public class JoshMatchStepTest {
         }
 
         System.out.println("" + g.V().count());
+        */
     }
 
     @Test

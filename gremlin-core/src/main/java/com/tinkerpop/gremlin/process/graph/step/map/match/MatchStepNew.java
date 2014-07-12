@@ -100,7 +100,6 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
     protected Traverser<E> processNextStart() throws NoSuchElementException {
         if (null == curSolution || (curIndex >= curSolution.size() && curSolution.isComplete())) {
             if (this.starts.hasNext()) {
-                System.out.println("@@@@@@@@ processing next start");
                     /*
         optimizeCounter = (optimizeCounter + 1) % startsPerOptimize;
         if (0 == optimizeCounter) {
@@ -185,7 +184,6 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
     private Enumerator<S> solveFor(final String outLabel,
                                    final Iterator<S> inputs,
                                    final boolean optimizeFirst) {
-        System.out.println("solveFor(" + outLabel + ")");
         List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
         if (null == outs) {
             return new IteratorEnumerator<>(outLabel, inputs);
@@ -195,13 +193,10 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                 optimize();
                 return o;
             }) : inputs;
-            System.out.println("\tinputs = " + inputs);
-            System.out.println("\tinputIterator = " + inputIterator);
 
             return new SerialEnumerator<>(outLabel, inputIterator, o -> {
                 Enumerator<S> result = null;
                 for (TraversalWrapper<S, S> w : outs) {
-                    System.out.println("\t" + outLabel + ": " + w.outLabel + "->" + w.inLabel);
                     TraversalUpdater<S, S> updater = new TraversalUpdater<>(w, new SingleIterator<S>(o));
 
                     Enumerator<S> ie = solveFor(
@@ -217,7 +212,6 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
 
                 int i = 0;
                 while (result.visitSolution(i++, (BiPredicate<String, S>) TRIVIAL_VISITOR)) ;
-                System.out.println("\tsolutions at " + outLabel + "=" + o + ": " + (i - 1));
 
                 return result;
             });
@@ -234,13 +228,9 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
 
     public void visitSolutions(final S input,
                                final Predicate<Map<String, S>> visitor) {
-        System.out.println("### trying: " + input);
-        System.out.flush();
         optimize();
 
         visitSolutions(input, startLabel, visitor, new HashMap<>());
-        System.out.println("\t### done");
-        System.out.println();
     }
 
     private boolean visitSolutions(final S o,
@@ -257,8 +247,6 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                 for (TraversalWrapper<S, S> w : outs) {
                     Traversal<S, S> t = w.getTraversal();
                     String inLabel = w.inLabel;
-                    System.out.println("applying to " + o + ": " + t);
-                    System.out.flush();
                     t.addStarts(new SingleIterator<>(new SimpleTraverser<>(o)));
 
                     int outputs = 0;
@@ -268,8 +256,6 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
                     while (t.hasNext()) {
                         outputs++;
                         S result = t.next();
-                        System.out.println("\t" + result);
-                        System.out.flush();
 
                         visitSolutions(result, inLabel, visitor, bindings);
                     }
@@ -294,8 +280,6 @@ public class MatchStepNew<S, E> extends AbstractStep<S, E> {
     }
 
     private void optimizeAt(final String outLabel) {
-        System.out.println("optimizeAt(" + outLabel + ")");
-        System.out.flush();
         List<TraversalWrapper<S, S>> outs = traversalsOut.get(outLabel);
         if (null != outs) {
             for (TraversalWrapper<S, S> t : outs) {

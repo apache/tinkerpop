@@ -32,13 +32,11 @@ public class SerialEnumerator<T> implements Enumerator<T> {
     }
 
     public boolean isComplete() {
-        System.out.println(name + " is complete: " + (!iterator.hasNext() && (memory.isEmpty() || memory.get(memory.size() - 1).isComplete())));
         return !iterator.hasNext() && (memory.isEmpty() || memory.get(memory.size() - 1).isComplete());
     }
 
     public boolean visitSolution(final int i,
                                  final BiPredicate<String, T> visitor) {
-        System.out.println(name + " visitSolution(" + i + ")");
 
         // TODO: temporary; replace with binary search for efficient random access
         int totalSize = 0;
@@ -48,17 +46,7 @@ public class SerialEnumerator<T> implements Enumerator<T> {
                 Enumerator<T> e = memory.get(index);
 
                 if ((!e.isComplete() || e.isComplete() && i < totalSize + e.size()) && e.visitSolution(i - totalSize, visitor)) {
-                    System.out.println("\tputting as " + name + ": " + values.get(index));
-                    System.out.println("\t\tvisitor = " + visitor);
-                    System.out.println("\t\tindex = " + index);
                     MatchStepNew.visit(name, values.get(index), visitor);
-
-                    //if (values.get(index).toString().equals("v[2]")) {
-                    System.out.println("\t\t### b memory.size() = " + memory.size());
-                    for (int k = 0; k < memory.size(); k++) {
-                        System.out.println("\t\t### \t" + k + ":\t" + values.get(k) + "\t" + memory.get(k).size() + "\t" + memory.get(k).isComplete());
-                    }
-                    //}
 
                     return true;
                 }
@@ -67,7 +55,6 @@ public class SerialEnumerator<T> implements Enumerator<T> {
                 index++;
             } else {
                 if (!iterator.hasNext()) {
-                    System.out.println("\titerator exhausted!");
                     return false;
                 }
 
@@ -80,11 +67,8 @@ public class SerialEnumerator<T> implements Enumerator<T> {
                 }
 
                 T value = iterator.next();
-                System.out.println("\t" + name + " = " + value);
                 values.add(value);
                 Enumerator<T> e = constructor.apply(value);
-                System.out.println("\te = " + e);
-                System.out.println("\te.isComplete() = " + e.isComplete());
                 memory.add(memory.size(), e);
             }
         }

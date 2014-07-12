@@ -41,7 +41,6 @@ public class IteratorEnumerator<T> implements Enumerator<T> {
             memory.add(value);
         } while (i >= size());
 
-        System.out.println(name + " visiting " + i + ": " + value);
         MatchStepNew.visit(name, value, visitor);
 
         return true;
