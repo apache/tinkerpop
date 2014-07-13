@@ -117,7 +117,7 @@
         <log4j.properties>log4j-server.properties</log4j.properties>
         <metrics.version>3.0.2</metrics.version>
         <netty.version>4.0.21.Final</netty.version>
-        <neo4j.version>2.1.2</neo4j.version>
+        <neo4j.version>2.0.0</neo4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>
