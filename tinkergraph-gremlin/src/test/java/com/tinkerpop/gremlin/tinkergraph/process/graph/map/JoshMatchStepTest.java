@@ -1,24 +1,19 @@
 package com.tinkerpop.gremlin.tinkergraph.process.graph.map;
 
-import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.match.CartesianEnumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.Enumerator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.EnumeratorIterator;
 import com.tinkerpop.gremlin.process.graph.step.map.match.IteratorEnumerator;
-import com.tinkerpop.gremlin.process.graph.step.util.As;
 import com.tinkerpop.gremlin.process.graph.step.map.match.MatchStepNew;
+import com.tinkerpop.gremlin.process.graph.step.util.As;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.io.GraphReader;
-import com.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,6 +28,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -40,29 +36,6 @@ import static org.junit.Assert.fail;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class JoshMatchStepTest {
-
-    @Test
-    public void testNew() throws Exception {
-
-        Graph g = TinkerFactory.createClassic();
-        //System.out.println(g.v(1).outE().next());
-
-        MatchStepNew<Object, Object> q = new MatchStepNew<>(g.V(), "a",
-                g.of().as("a").out("knows").as("b"),
-                g.of().as("b").out("created").as("c"));
-        Predicate<Map<String, Object>> visitor = bindings -> {
-            //System.out.println("solution:");
-            int count;
-            for (String key : bindings.keySet()) {
-            //    System.out.println("\t" + key + ":\t" + bindings.get(key));
-            }
-            return true;
-        };
-
-        for (Vertex v : g.V().toList()) {
-            q.visitSolutions(v, visitor);
-        }
-    }
 
     @Test
     public void testTreePatterns() throws Exception {
@@ -185,7 +158,7 @@ public class JoshMatchStepTest {
     }
 
     @Test
-    public void testEnumerators() throws Exception {
+    public void testCartesianEnumerators() throws Exception {
         String[] a1 = new String[]{"a", "b", "c"};
         String[] a2 = new String[]{"1", "2", "3", "4"};
         String[] a3 = new String[]{"@", "#"};
@@ -196,7 +169,7 @@ public class JoshMatchStepTest {
 
         Enumerator<String> e1e2 = new CartesianEnumerator<>(e1, e2);
         BiPredicate<String, String> visitor = (name, value) -> {
-            System.out.println("\t" + name + ":\t" + value);
+            //System.out.println("\t" + name + ":\t" + value);
             return true;
         };
         Enumerator<String> e1e2e3 = new CartesianEnumerator<>(e1e2, e3);
@@ -205,8 +178,47 @@ public class JoshMatchStepTest {
         Enumerator<String> e
                 = e1e2e3; //e1e2;
         while (e.visitSolution(i, visitor)) {
-            System.out.println("solution #" + (i + 1) + "^^");
+            //System.out.println("solution #" + (i + 1) + "^^");
             i++;
+        }
+        assertEquals(24, i);
+    }
+
+    @Test
+    public void testCartesianEnumeratorLaziness() throws Exception {
+        List<Integer> l = new LinkedList<>();
+        for (int j = 0; j < 1000; j++) {
+            l.add(j);
+        }
+        Enumerator<Integer> e = null;
+        for (int k = 0; k < 10; k++) {
+            List<Integer> lNew = new LinkedList<>();
+            lNew.addAll(l);
+            Enumerator<Integer> ek = new IteratorEnumerator<>("" + k, lNew.iterator());
+            e = null == e ? ek : new CartesianEnumerator<>(e, ek);
+        }
+        // we now have an enumerator of 10^3^10 elements
+        EnumeratorIterator<Integer> iter = new EnumeratorIterator<>(e);
+
+        int count = 0;
+        // each binding set is unique
+        Set<String> values = new HashSet<>();
+        String s;
+        s = iter.next().toString();
+        values.add(s);
+        assertEquals(++count, values.size());
+        // begin at the head of all iterators
+        assertEquals("{0=0, 1=0, 2=0, 3=0, 4=0, 5=0, 6=0, 7=0, 8=0, 9=0}", s);
+        // 10 choose 1
+        for (int i = 0; i < 10; i++) {
+        //for (int i = 0; i < 1023; i++) {
+            // variables are consecutively set to "1", in a breadth-first fashion
+            // order is undefined
+            s = iter.next().toString();
+            System.out.println("s = " + s);
+            values.add(s);
+            assertEquals(++count, values.size());
+            //assertEquals(2, s.split("2").length);
         }
     }
 
@@ -270,19 +282,25 @@ public class JoshMatchStepTest {
         }
     }
 
-    private <T> void assertResults(final Enumerator<T> actual,
-                                   final Bindings<T>... expected) {
-        List<Bindings<T>> actualList = new LinkedList<>();
+    private <T> List<Bindings<T>> toBindings(final Enumerator<T> enumerator) {
+        List<Bindings<T>> bindingsList = new LinkedList<>();
         int i = 0;
-        actualList.add(new Bindings<>());
-        while (actual.visitSolution(i++, (name, value) -> {
-            actualList.get(actualList.size() - 1).put(name, value);
+        bindingsList.add(new Bindings<>());
+        while (enumerator.visitSolution(i++, (name, value) -> {
+            bindingsList.get(bindingsList.size() - 1).put(name, value);
             return true;
         })) {
-            actualList.add(new Bindings<>());
+            bindingsList.add(new Bindings<>());
         }
-        actualList.remove(actualList.size() - 1);
+        bindingsList.remove(bindingsList.size() - 1);
 
+        return bindingsList;
+    }
+
+    private <T> void assertResults(final Enumerator<T> actual,
+                                   final Bindings<T>... expected) {
+
+        List<Bindings<T>> actualList = toBindings(actual);
         List<Bindings<T>> expectedList = new LinkedList<>();
         Collections.addAll(expectedList, expected);
 
