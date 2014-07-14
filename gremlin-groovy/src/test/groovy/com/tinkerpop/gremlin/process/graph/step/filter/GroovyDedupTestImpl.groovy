@@ -18,6 +18,6 @@ class GroovyDedupTestImpl extends DedupTest {
     }
 
     public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
-        g.V.both.value("name").order { it.a <=> it.b }.value()
+        g.V.both.value("name").order { a, b -> a.get() <=> b.get() }.dedup()
     }
 }
