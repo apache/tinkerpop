@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.filter
 
+import com.tinkerpop.gremlin.process.Path
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Vertex
 
@@ -27,5 +28,9 @@ class GroovyExceptTestImpl extends ExceptTest {
 
     public Traversal<Vertex, Vertex> get_g_V_exceptXX() {
         g.V.out.except([])
+    }
+
+    Traversal<Vertex, Path> get_g_v1_asXxX_bothE_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(final Object v1Id) {
+        g.v(v1Id).as('x').bothE().except('e').aggregate('e').otherV.jump('x') { true } { true }.path
     }
 }
