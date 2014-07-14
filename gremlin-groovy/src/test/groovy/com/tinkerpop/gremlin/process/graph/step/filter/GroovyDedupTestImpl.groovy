@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
 class GroovyDedupTestImpl extends DedupTest {
 
@@ -14,5 +15,9 @@ class GroovyDedupTestImpl extends DedupTest {
 
     public Traversal<Vertex, String> get_g_V_both_dedupXlangX_name() {
         g.V.both.dedup { it.property("lang").orElse(null) }.value("name")
+    }
+
+    public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
+        g.V.both.value("name").order { it.a <=> it.b }.value()
     }
 }

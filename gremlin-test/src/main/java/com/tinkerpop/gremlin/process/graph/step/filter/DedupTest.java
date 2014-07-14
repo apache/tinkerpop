@@ -19,12 +19,15 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
 public abstract class DedupTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, String> get_g_V_both_dedup_name();
 
     public abstract Traversal<Vertex, String> get_g_V_both_dedupXlangX_name();
+
+    public abstract Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup();
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -54,6 +57,22 @@ public abstract class DedupTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_both_name_orderXb_aX_dedup() {
+        final Iterator<String> traversal = get_g_V_both_name_orderXa_bX_dedup();
+        System.out.println("Testing: " + traversal);
+        final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
+        assertEquals(6, names.size());
+        assertEquals("josh", names.get(0));
+        assertEquals("lop", names.get(1));
+        assertEquals("marko", names.get(2));
+        assertEquals("peter", names.get(3));
+        assertEquals("ripple", names.get(4));
+        assertEquals("vadas", names.get(5));
+        assertFalse(traversal.hasNext());
+    }
+
     public static class JavaDedupTest extends DedupTest {
 
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
@@ -62,6 +81,10 @@ public abstract class DedupTest extends AbstractGremlinTest {
 
         public Traversal<Vertex, String> get_g_V_both_dedupXlangX_name() {
             return g.V().both().dedup(v -> v.property("lang").orElse(null)).value("name");
+        }
+
+        public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
+            return g.V().both().value("name").order((a, b) -> ((String)a.get()).compareTo((String)b.get())).dedup().value();
         }
     }
 }
