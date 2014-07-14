@@ -1,5 +1,6 @@
 package com.tinkerpop.gremlin.process.graph.step.sideEffect
 
+import com.tinkerpop.gremlin.process.Path
 import com.tinkerpop.gremlin.process.Traversal
 import com.tinkerpop.gremlin.structure.Vertex
 
@@ -18,5 +19,9 @@ class GroovyAggregateTestImpl extends AggregateTest {
 
     public List<String> get_g_V_aggregateXa_nameX_iterate_getXaX() {
         g.V.aggregate('a') { it.value('name') }.iterate().memory().get('a')
+    }
+
+    public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
+        return g.V().out().aggregate("a").path();
     }
 }

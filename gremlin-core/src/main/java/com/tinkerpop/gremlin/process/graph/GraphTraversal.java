@@ -517,6 +517,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    public default <E2> GraphTraversal<S, E2> memory(final String key) {
+        final MapStep<S, E2> mapStep = new MapStep<>(this);
+        mapStep.setFunction(t -> this.memory().get(key));
+        this.addStep(mapStep);
+        return (GraphTraversal) this;
+    }
+
+
     /////////////////////////////////////
 
     public default GraphTraversal<S, Pair<Vertex, Double>> pageRank() {
