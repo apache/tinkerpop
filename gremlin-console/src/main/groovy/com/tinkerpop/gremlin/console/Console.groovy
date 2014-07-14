@@ -6,7 +6,7 @@ import com.tinkerpop.gremlin.console.commands.UseCommand
 import com.tinkerpop.gremlin.console.plugin.ConsolePluginAcceptor
 import com.tinkerpop.gremlin.console.plugin.PluggedIn
 import com.tinkerpop.gremlin.console.util.ArrayIterator
-import com.tinkerpop.gremlin.groovy.GremlinLoader
+import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import com.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import jline.console.history.FileHistory
 import org.codehaus.groovy.tools.shell.ExitNotification

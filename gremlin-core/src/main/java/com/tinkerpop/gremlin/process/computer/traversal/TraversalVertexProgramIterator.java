@@ -2,6 +2,8 @@ package com.tinkerpop.gremlin.process.computer.traversal;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
+import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -24,6 +26,9 @@ public class TraversalVertexProgramIterator<T> implements Iterator<T> {
     protected final Graph originalGraph;
     protected final Graph resultantGraph;
 
+    protected final boolean oneNext;
+    protected boolean oneDone = false;
+
     public TraversalVertexProgramIterator(final Graph originalGraph, final SSupplier<Traversal> traversalSupplier) {
         this.traversalSupplier = traversalSupplier;
         this.originalGraph = originalGraph;
@@ -35,14 +40,33 @@ public class TraversalVertexProgramIterator<T> implements Iterator<T> {
             throw new RuntimeException(e.getMessage(), e);
         }
         buildIterator();
+
+        final Traversal traversal = traversalSupplier.get();
+        traversal.strategies().applyFinalStrategies();
+        this.oneNext = TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep;
     }
 
     public boolean hasNext() {
-        return this.itty.hasNext();
+        if (this.oneNext) {
+            if (!this.oneDone)
+                return this.itty.hasNext();
+            else
+                return false;
+        } else
+            return this.itty.hasNext();
     }
 
     public T next() {
-        return this.itty.next();
+        if (this.oneNext) {
+            if (!this.oneDone) {
+                this.oneDone = true;
+                return this.itty.next();
+            } else {
+                throw FastNoSuchElementException.instance();
+            }
+        } else {
+            return this.itty.next();
+        }
     }
 
     public String toString() {
@@ -84,7 +108,6 @@ public class TraversalVertexProgramIterator<T> implements Iterator<T> {
                                     list.add(entry.getKey().get());
                                 }
                             });
-
                             tracker.getDoneGraphTracks().entrySet().stream().forEach(entry -> {
                                 for (int i = 0; i < entry.getValue(); i++) {
                                     list.add(entry.getKey().inflate(vertex).get());

@@ -37,8 +37,8 @@ import java.util.function.UnaryOperator;
  */
 public class SubgraphStrategy implements GraphStrategy {
 
-    private final Predicate<Vertex> vertexPredicate;
-    private final Predicate<Edge> edgePredicate;
+    protected Predicate<Vertex> vertexPredicate;
+    protected Predicate<Edge> edgePredicate;
 
     public SubgraphStrategy(final Predicate<Vertex> vertexPredicate, final Predicate<Edge> edgePredicate) {
         this.vertexPredicate = vertexPredicate;

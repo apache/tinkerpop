@@ -24,7 +24,7 @@ public class TraversalExtraJobsCalculator implements ExtraJobsCalculator {
         final VertexProgram program = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration));
         if (program instanceof TraversalVertexProgram) {
             final Traversal traversal = (Traversal) ((TraversalVertexProgram) program).getTraversalSupplier().get();
-            traversal.strategies().applyFinalOptimizers(traversal);
+            traversal.strategies().applyFinalStrategies();
             traversal.getSteps().forEach(step -> {
                 if (step instanceof JobCreator) {
                     try {

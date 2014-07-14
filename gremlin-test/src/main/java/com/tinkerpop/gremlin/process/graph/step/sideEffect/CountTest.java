@@ -48,7 +48,7 @@ public abstract class CountTest extends AbstractGremlinTest {
         final Traversal<Vertex, Long> traversal = get_g_V_both_both_count();
         System.out.println("Testing: " + traversal);
         assertEquals(new Long(30), traversal.next());
-//        assertFalse(traversal.hasNext());    TODO: Why does this not work in GraphComputer?
+        assertFalse(traversal.hasNext());
     }
 
     @Test

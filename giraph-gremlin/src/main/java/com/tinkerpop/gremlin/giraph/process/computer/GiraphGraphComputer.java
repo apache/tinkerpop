@@ -111,7 +111,7 @@ public class GiraphGraphComputer implements GraphComputer {
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
-            traversal.strategies().applyFinalOptimizers(traversal);
+            traversal.strategies().applyFinalStrategies();
             return (Iterator) Arrays.asList(((GiraphSideEffectStep) TraversalHelper.getEnd(traversal)).getSideEffect(this.hadoopConfiguration)).iterator();
         } else {
             return new TraversalVertexProgramIterator(this.giraphGraph, () -> traversal);
