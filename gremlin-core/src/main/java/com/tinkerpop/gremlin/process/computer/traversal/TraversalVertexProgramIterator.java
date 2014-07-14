@@ -42,7 +42,7 @@ public class TraversalVertexProgramIterator<T> implements Iterator<T> {
         buildIterator();
 
         final Traversal traversal = traversalSupplier.get();
-        traversal.strategies().applyFinalOptimizers(traversal);
+        traversal.strategies().applyFinalStrategies();
         this.oneNext = TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep;
     }
 

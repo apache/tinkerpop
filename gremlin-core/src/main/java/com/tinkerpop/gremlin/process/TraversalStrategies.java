@@ -14,5 +14,5 @@ public interface TraversalStrategies extends Serializable {
 
     public void unregister(final Class<? extends TraversalStrategy> optimizerClass);
 
-    public void applyFinalOptimizers(final Traversal traversal);
+    public void applyFinalStrategies();
 }

@@ -17,7 +17,7 @@ import java.util.List;
 public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     protected final List<Step> steps = new ArrayList<>();
-    protected final TraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
+    protected final TraversalStrategies traversalStrategies = new DefaultTraversalStrategies(this);
     protected final Memory memory = new DefaultMemory();
     protected boolean firstNext = true;
 
@@ -68,7 +68,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     private final void doFinalOptimization() {
         if (this.firstNext) {
-            this.strategies().applyFinalOptimizers(this);
+            this.strategies().applyFinalStrategies();
             this.firstNext = false;
         }
     }

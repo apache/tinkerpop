@@ -1,10 +1,10 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalEngine;
+import com.tinkerpop.gremlin.process.TraversalStrategies;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.strategy.DefaultTraversalStrategies;
 
 import java.util.Collections;
@@ -19,7 +19,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
     private static final Memory MEMORY = new DefaultMemory();         // TODO: make "empty memory?"
-    private static final TraversalStrategies TRAVERSAL_STRATEGIES = new DefaultTraversalStrategies();   // TODO: make "empty traversalStrategies?"
+    private static final TraversalStrategies TRAVERSAL_STRATEGIES = new DefaultTraversalStrategies(new EmptyTraversal<>());
 
     public static EmptyTraversal instance() {
         return INSTANCE;
