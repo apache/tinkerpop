@@ -528,7 +528,10 @@ public class ExceptionConsistencyTest {
             "elementHasAlreadyBeenRemovedOrDoesNotExist"
     })
     public static class DuplicateRemovalTest extends AbstractGremlinTest {
+
+        // todo: double check neo4j at 2.2.x to see if this is resolved
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
         public void shouldCauseExceptionIfEdgeRemovedMoreThanOnceNoTxCommit() {
             final Vertex v1 = g.addVertex();
             final Vertex v2 = g.addVertex();
@@ -554,6 +557,7 @@ public class ExceptionConsistencyTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
         public void shouldCauseExceptionIfEdgeRemovedMoreThanOnceTxCommit() {
             final Vertex v1 = g.addVertex();
             final Vertex v2 = g.addVertex();
@@ -579,6 +583,7 @@ public class ExceptionConsistencyTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
         public void shouldCauseExceptionIfVertexRemovedMoreThanOnceNoTxCommit() {
             final Vertex v = g.addVertex();
             assertNotNull(v);

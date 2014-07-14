@@ -15,8 +15,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class CountStep<S> extends MapStep<S, Long> implements Bulkable {
 
-    //private final String COUNT = Graph.Key.hidden("count");
-
     private long bulkCount = 1l;
     private final AtomicBoolean done = new AtomicBoolean(false);
     private final AtomicLong counter = new AtomicLong(0l);

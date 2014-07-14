@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.groovy
+package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import com.tinkerpop.gremlin.groovy.loaders.GraphLoader

@@ -144,7 +144,7 @@ public class TraversalHelper {
         return builder.toString();
     }
 
-    public static <S, E> boolean trackPaths(final Traversal<S, E> traversal) {
+    public static boolean trackPaths(final Traversal traversal) {
         return traversal.getSteps().stream()
                 .filter(step -> step instanceof PathConsumer)
                 .findFirst()

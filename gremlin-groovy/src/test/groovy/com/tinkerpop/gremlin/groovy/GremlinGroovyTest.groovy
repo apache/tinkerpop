@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin
+package com.tinkerpop.gremlin.groovy
 
 import groovy.grape.Grape
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl

@@ -71,7 +71,9 @@ public class GraphTest extends AbstractGremlinTest {
     /**
      * Test graph counts with addition and removal of vertices.
      */
+    // todo: double check neo4j at 2.2.x to see if this is resolved
     @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_FULLY_ISOLATED_TRANSACTIONS)
     public void shouldProperlyCountVerticesAndEdgesOnAddRemove() {
         final Vertex v = g.addVertex();
         StructureStandardSuite.assertVertexEdgeCounts(1, 0).accept(g);

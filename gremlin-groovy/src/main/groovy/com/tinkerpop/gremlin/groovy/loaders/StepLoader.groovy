@@ -2,7 +2,6 @@ package com.tinkerpop.gremlin.groovy.loaders
 
 import com.tinkerpop.gremlin.groovy.GFunction
 import com.tinkerpop.gremlin.groovy.GSupplier
-import com.tinkerpop.gremlin.groovy.GremlinLoader
 import com.tinkerpop.gremlin.process.graph.GraphTraversal
 import com.tinkerpop.gremlin.util.function.SFunction
 

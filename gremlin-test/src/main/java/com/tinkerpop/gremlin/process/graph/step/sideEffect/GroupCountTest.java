@@ -11,6 +11,7 @@ import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,8 +36,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         assertEquals(map.size(), 2);
         assertEquals(map.get("lop"), Long.valueOf(3l));
         assertEquals(map.get("ripple"), Long.valueOf(1l));
-        // TODO: Why is this not correct for GraphComputer?
-        // assertFalse(traversal.hasNext());
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -48,8 +48,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         assertEquals(map.size(), 2);
         assertEquals(map.get("lop").longValue(), 3l);
         assertEquals(map.get("ripple").longValue(), 1l);
-        // TODO: Why is this not correct for GraphComputer?
-        // assertFalse(traversal.hasNext());
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -60,8 +59,7 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
         System.out.println("Testing: " + traversal);
         final Map<Object, Long> map = traversal.next();
         assertEquals(map.size(), 0);
-        // TODO: Why is this not correct for GraphComputer?
-        // assertFalse(traversal.hasNext());
+        assertFalse(traversal.hasNext());
     }
 
     @Test

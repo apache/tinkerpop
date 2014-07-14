@@ -1,6 +1,5 @@
 package com.tinkerpop.gremlin.groovy.loaders
 
-import com.tinkerpop.gremlin.groovy.GremlinLoader
 import com.tinkerpop.gremlin.process.Traverser
 import com.tinkerpop.gremlin.structure.Graph
 import com.tinkerpop.gremlin.structure.Vertex

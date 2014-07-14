@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.process;
 
-import com.tinkerpop.gremlin.groovy.GremlinLoader;
+import com.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyDedupTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyExceptTestImpl;
