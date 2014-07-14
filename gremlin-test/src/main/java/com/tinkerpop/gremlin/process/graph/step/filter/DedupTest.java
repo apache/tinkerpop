@@ -12,9 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -59,7 +57,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_both_name_orderXb_aX_dedup() {
+    public void g_V_both_name_orderXa_bX_dedup() {
         final Iterator<String> traversal = get_g_V_both_name_orderXa_bX_dedup();
         System.out.println("Testing: " + traversal);
         final List<String> names = StreamFactory.stream(traversal).collect(Collectors.toList());
@@ -84,7 +82,7 @@ public abstract class DedupTest extends AbstractGremlinTest {
         }
 
         public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
-            return g.V().both().value("name").order((a, b) -> ((String)a.get()).compareTo((String)b.get())).dedup().value();
+            return g.V().both().property("name").order((a, b) -> ((String) a.get().value()).compareTo((String) b.get().value())).dedup().value();
         }
     }
 }
