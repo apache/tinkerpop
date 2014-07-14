@@ -10,7 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 class GroovyPathTestImpl extends PathTest {
 
     public Traversal<Vertex, Path> get_g_v1_valueXnameX_path(final Object v1Id) {
-        g.v(v1Id).value('name').path
+        g.v(v1Id).identity().value('name').path
     }
 
     public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
