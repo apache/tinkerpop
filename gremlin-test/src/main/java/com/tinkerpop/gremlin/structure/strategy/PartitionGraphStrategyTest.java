@@ -63,8 +63,10 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         assertEquals("b", vB.property("any").value());
         assertEquals("B", vB.property(partition).value());
 
+        /* not applicable to SubgraphStrategy
         final GraphTraversal t = g.V();
         assertTrue(t.strategies().get().stream().anyMatch(o -> o.getClass().equals(PartitionGraphStrategy.PartitionGraphTraversalStrategy.class)));
+        */
 
         g.V().forEach(v -> {
             assertTrue(v instanceof StrategyWrappedVertex);
@@ -134,8 +136,10 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         final Edge eBtovC = vB.addEdge("b->c", vC);
         final Edge eAtovC = vA.addEdge("a->c", vC);
 
+        /* not applicable to SubgraphStrategy
         final GraphTraversal t = g.V();
         assertTrue(t.strategies().get().stream().anyMatch(o -> o.getClass().equals(PartitionGraphStrategy.PartitionGraphTraversalStrategy.class)));
+        */
 
         strategy.clearReadPartitions();
         assertEquals(new Long(0), g.V().count().next());
@@ -161,19 +165,22 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
         strategy.removeReadPartition("B");
 
         assertEquals(new Long(1), g.V().count().next());
-        assertEquals(new Long(2), g.E().count().next());
+        // two edges are in the "C" partition, but one each of their incident vertices are not
+        assertEquals(new Long(0), g.E().count().next());
 
-        assertEquals(new Long(2), g.v(vC.id()).inE().count().next());
+        assertEquals(new Long(0), g.v(vC.id()).inE().count().next());
         assertEquals(new Long(0), g.v(vC.id()).in().count().next());
 
         strategy.addReadPartition("B");
-        assertEquals(new Long(2), g.v(vC.id()).inE().count().next());
+        // only one edge in, due to excluded vertices; vA is not in {B,C}
+        assertEquals(new Long(1), g.v(vC.id()).inE().count().next());
         assertEquals(new Long(1), g.v(vC.id()).in().count().next());
         assertEquals(vC.id(), g.e(eBtovC.id()).inV().id().next());
         assertEquals(vB.id(), g.e(eBtovC.id()).outV().id().next());
         assertEquals(vC.id(), g.e(eAtovC.id()).inV().id().next());
         assertFalse(g.e(eAtovC.id()).outV().hasNext());
 
+        /* not applicable to SubgraphStrategy
         strategy.addReadPartition("A");
         g.v(vA.id()).out().out().forEach(v -> {
             assertTrue(v instanceof StrategyWrapped);
@@ -184,6 +191,7 @@ public class PartitionGraphStrategyTest extends AbstractGremlinTest {
             assertTrue(e instanceof StrategyWrapped);
             assertFalse(((StrategyWrappedElement) e).getBaseElement() instanceof StrategyWrapped);
         });
+        */
     }
 
     @Test

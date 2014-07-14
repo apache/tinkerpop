@@ -1,19 +1,9 @@
 package com.tinkerpop.gremlin.structure.strategy;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.TraversalStrategy;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
-import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
-import com.tinkerpop.gremlin.process.graph.step.map.GraphStep;
-import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.HasContainer;
 import com.tinkerpop.gremlin.util.function.TriFunction;
 
 import java.util.ArrayList;
@@ -27,17 +17,27 @@ import java.util.function.UnaryOperator;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Joshua Shinavier (http://fortytwo.net)
  */
-public class PartitionGraphStrategy implements GraphStrategy {
+public class PartitionGraphStrategy extends SubgraphStrategy {
 
     private String writePartition;
     private final String partitionKey;
     private final Set<String> readPartitions = new HashSet<>();
 
     public PartitionGraphStrategy(final String partitionKey, final String partition) {
+        super(null, null);
+        this.vertexPredicate = this::testElement;
+        this.edgePredicate = this::testElement;
+
         this.writePartition = partition;
         this.addReadPartition(partition);
         this.partitionKey = partitionKey;
+    }
+
+    private boolean testElement(final Element e) {
+        Property<String> p = e.property(this.partitionKey);
+        return p.isPresent() && this.readPartitions.contains(p.value());
     }
 
     public String getWritePartition() {
@@ -69,34 +69,6 @@ public class PartitionGraphStrategy implements GraphStrategy {
     }
 
     @Override
-    public GraphTraversal applyStrategyToTraversal(final GraphTraversal traversal) {
-        traversal.strategies().register(new PartitionGraphTraversalStrategy(this.partitionKey, this.readPartitions));
-        return traversal;
-    }
-
-    @Override
-    public UnaryOperator<Function<Object, Vertex>> getGraphvStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> (id) -> {
-            final Vertex v = f.apply(id);
-            final Property<String> p = v.property(this.partitionKey);
-            if (!p.isPresent() || !this.readPartitions.contains(p.value())) throw Graph.Exceptions.elementNotFound();
-
-            return v;
-        };
-    }
-
-    @Override
-    public UnaryOperator<Function<Object, Edge>> getGrapheStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
-        return (f) -> (id) -> {
-            final Edge e = f.apply(id);
-            final Property<String> p = e.property(this.partitionKey);
-            if (!p.isPresent() || !this.readPartitions.contains(p.value())) throw Graph.Exceptions.elementNotFound();
-
-            return e;
-        };
-    }
-
-    @Override
     public UnaryOperator<Function<Object[], Vertex>> getAddVertexStrategy(final Strategy.Context<StrategyWrappedGraph> ctx) {
         return (f) -> (keyValues) -> {
             final List<Object> o = new ArrayList<>(Arrays.asList(keyValues));
@@ -117,37 +89,5 @@ public class PartitionGraphStrategy implements GraphStrategy {
     @Override
     public String toString() {
         return PartitionGraphStrategy.class.getSimpleName();
-    }
-
-    /**
-     * Analyzes the traversal and injects the partition logic after every access to a vertex or edge.  The partition
-     * logic consists of a {@link HasStep} with partition key and value.
-     */
-    public static class PartitionGraphTraversalStrategy implements TraversalStrategy.FinalTraversalStrategy {
-
-        private final String partitionKey;
-        private final Set<String> readPartitions;
-
-        public PartitionGraphTraversalStrategy(final String partitionKey, final Set<String> readPartitions) {
-            this.partitionKey = partitionKey;
-            this.readPartitions = readPartitions;
-        }
-
-        public void apply(final Traversal traversal) {
-            // inject a HasStep after each GraphStep, VertexStep or EdgeVertexStep
-            final List<Class> stepsToLookFor = Arrays.<Class>asList(GraphStep.class, VertexStep.class, EdgeVertexStep.class);
-            final List<Integer> positions = new ArrayList<>();
-            final List<?> traversalSteps = traversal.getSteps();
-            for (int ix = 0; ix < traversalSteps.size(); ix++) {
-                final int pos = ix;
-                if (stepsToLookFor.stream().anyMatch(c -> c.isAssignableFrom(traversalSteps.get(pos).getClass())))
-                    positions.add(ix);
-            }
-
-            Collections.reverse(positions);
-            for (int pos : positions) {
-                TraversalHelper.insertStep(new HasStep(traversal, new HasContainer(this.partitionKey, T.convert(T.in), readPartitions)), pos + 1, traversal);
-            }
-        }
     }
 }
