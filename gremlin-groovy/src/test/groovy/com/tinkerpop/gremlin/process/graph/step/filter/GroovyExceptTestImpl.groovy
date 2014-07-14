@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.structure.Vertex
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (daniel at thinkaurelius.com)
  */
 class GroovyExceptTestImpl extends ExceptTest {
 
@@ -18,5 +19,13 @@ class GroovyExceptTestImpl extends ExceptTest {
 
     public Traversal<Vertex, String> get_g_v1_outXcreatedX_inXcreatedX_exceptXg_v1X_valueXnameX(final Object v1Id) {
         g.v(v1Id).out('created').in('created').except(g.v(v1Id)).value('name')
+    }
+
+    public Traversal<Vertex, Vertex> get_g_V_exceptXg_VX() {
+        g.V.out.except(g.V.toList())
+    }
+
+    public Traversal<Vertex, Vertex> get_g_V_exceptXX() {
+        g.V.out.except([])
     }
 }
