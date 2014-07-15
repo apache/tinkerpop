@@ -31,6 +31,8 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path();
 
+    public abstract Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name();
+
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
@@ -98,6 +100,20 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         assertEquals(new Long(2), pathLengths.get(3));
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name() {
+        final Iterator<String> step = get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name();
+        System.out.println("Testing: " + step);
+        int count = 0;
+        while (step.hasNext()) {
+            assertEquals("marko", step.next());
+            count++;
+        }
+        assertEquals(2, count);
+        assertFalse(step.hasNext());
+    }
+
 
     public static class JavaJumpTest extends JumpTest {
         public JavaJumpTest() {
@@ -118,6 +134,10 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path() {
             return g.V().as("x").out().jump("x", t -> t.getLoops() < 2, t -> true).path();
+        }
+
+        public Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name() {
+            return g.V().as("x").out().jump("x", t -> t.getLoops() < 2).as("y").in().jump("y", t -> t.getLoops() < 2).value("name");
         }
     }
 
@@ -140,6 +160,10 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path() {
             return g.V().as("x").out().jump("x", t -> t.getLoops() < 2, t -> true).path().submit(g.compute());
+        }
+
+        public Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name() {
+            return g.V().as("x").out().jump("x", t -> t.getLoops() < 2).as("y").in().jump("y", t -> t.getLoops() < 2).<String>value("name").submit(g.compute());
         }
     }
 }

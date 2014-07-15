@@ -27,7 +27,6 @@ public interface Traverser<T> extends Serializable {
 
     public void incrLoops();
 
-    // TODO: Necessary for multiple-loops in a traversal (be sure to implement you lazy bastard)
     public void resetLoops();
 
     public String getFuture();

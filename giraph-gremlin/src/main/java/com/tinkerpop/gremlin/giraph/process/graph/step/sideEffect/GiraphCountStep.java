@@ -13,7 +13,9 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.giraph.io.VertexInputFormat;
@@ -44,12 +46,14 @@ public class GiraphCountStep<S> extends FilterStep<S> implements SideEffectCapab
     public Vertex vertex;
     private long bulkCount = 1l;
 
-    public GiraphCountStep(final Traversal traversal) {
+    public GiraphCountStep(final Traversal traversal, final CountStep countStep) {
         super(traversal);
         this.setPredicate(traverser -> {
             this.vertex.property(COUNT, this.vertex.<Long>value(COUNT) + this.bulkCount);
             return true;
         });
+        if (TraversalHelper.isLabeled(countStep))
+            this.setAs(countStep.getAs());
     }
 
     public void setCurrentBulkCount(final long bulkCount) {

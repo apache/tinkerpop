@@ -64,6 +64,8 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
             doGroup(traverser.get(), this.groupMap, this.keyFunction, this.valueFunction);
             return true;
         });
+        if (TraversalHelper.isLabeled(groupByStep))
+            this.setAs(groupByStep.getAs());
     }
 
     public void setCurrentVertex(final Vertex vertex) {
