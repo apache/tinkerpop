@@ -1,14 +1,12 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -16,7 +14,7 @@ import java.util.Queue;
 public class FlatMapStep<S, E> extends AbstractStep<S, E> {
 
     public SFunction<Traverser<S>, Iterator<E>> function;
-    protected final Queue<Iterator<Traverser<E>>> queue = new LinkedList<>();
+    protected Iterator<Traverser<E>> iterator = null;
 
     public FlatMapStep(final Traversal traversal) {
         super(traversal);
@@ -34,16 +32,15 @@ public class FlatMapStep<S, E> extends AbstractStep<S, E> {
     }
 
     protected Traverser<E> getNext() {
-        if (this.queue.isEmpty()) {
+        if (null == this.iterator) {
             final Traverser<S> traverser = this.starts.next();
-            this.queue.add(new FlatMapHolderIterator<>(traverser, this, this.function.apply(traverser)));
+            this.iterator = new FlatMapHolderIterator<>(traverser, this, this.function.apply(traverser));
             return null;
         } else {
-            final Iterator<Traverser<E>> iterator = this.queue.peek();
-            if (iterator.hasNext()) {
-                return iterator.next();
+            if (this.iterator.hasNext()) {
+                return this.iterator.next();
             } else {
-                this.queue.remove();
+                this.iterator = null;
                 return null;
             }
         }
