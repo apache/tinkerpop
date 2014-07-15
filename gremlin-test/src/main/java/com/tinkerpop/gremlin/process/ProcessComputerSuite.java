@@ -16,6 +16,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest;
+import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
@@ -72,6 +73,8 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             PathTest.JavaComputerPathTest.class,
             SelectTest.JavaComputerSelectTest.class,
             TraversalTest.JavaComputerTraversalTest.class,
+            UnfoldTest.JavaComputerUnfoldTest.class,
+            // FoldTest.JavaComputerFoldTest.class,
             ValuesTest.JavaComputerValuesTest.class,
             TreeTest.JavaComputerTreeTest.class,
             GroupCountTest.JavaComputerGroupCountTest.class,
@@ -110,6 +113,8 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             SelectTest.class,
             SideEffectCapTest.class,
             Traversal.class,
+            UnfoldTest.class,
+            // FoldTest.class,
             ValuesTest.class,
             TreeTest.class
     };

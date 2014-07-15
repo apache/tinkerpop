@@ -12,12 +12,14 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RangeTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.BackTest;
+import com.tinkerpop.gremlin.process.graph.step.map.FoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpTest;
 import com.tinkerpop.gremlin.process.graph.step.map.MapTest;
 import com.tinkerpop.gremlin.process.graph.step.map.OrderTest;
 import com.tinkerpop.gremlin.process.graph.step.map.PathTest;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest;
+import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
@@ -76,6 +78,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SelectTest.JavaSelectTest.class,
             TraversalTest.JavaTraversalTest.class,
             ValuesTest.JavaValuesTest.class,
+            UnfoldTest.JavaUnfoldTest.class,
+            FoldTest.JavaFoldTest.class,
             AggregateTest.JavaAggregateTest.class,
             CountTest.JavaCountTest.class,
             GroupByTest.JavaGroupByTest.class,
@@ -108,6 +112,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SelectTest.class,
             TraversalTest.class,
             ValuesTest.class,
+            UnfoldTest.class,
+            FoldTest.class,
             AggregateTest.class,
             CountTest.class,
             GroupByTest.class,

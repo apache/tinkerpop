@@ -9,9 +9,9 @@ import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.step.map.TinkerGraphStep;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.strategy.TinkerGraphStepTraversalStrategy;
-import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * An in-memory, reference implementation of the property graph interfaces provided by Blueprints.
+ * An in-memory, reference implementation of the property graph interfaces provided by Gremlin3.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)

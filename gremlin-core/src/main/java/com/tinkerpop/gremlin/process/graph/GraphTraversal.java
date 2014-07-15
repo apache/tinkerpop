@@ -26,6 +26,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.ElementPropertyStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ElementValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ElementValuesStep;
 import com.tinkerpop.gremlin.process.graph.step.map.FlatMapStep;
+import com.tinkerpop.gremlin.process.graph.step.map.FoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IdStep;
 import com.tinkerpop.gremlin.process.graph.step.map.IntersectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
@@ -38,6 +39,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.PropertyValueStep;
 import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
@@ -278,13 +280,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new IntersectStep(this, traversals));
     }
 
-    /*public default <E2> Traversal<S, E2> unroll() {
-        return this.addStep(new FlatMapStep<List, Object>(this, l -> l.get().iterator()));
+    public default <E2> GraphTraversal<S, E2> unfold() {
+        return (GraphTraversal) this.addStep(new UnfoldStep<>(this));
     }
 
-    public default <E2> Traversal<S, E2> rollup() {
-        return this.addStep(new Map<Object, List>(this, o -> o);
-    }*/
+    public default GraphTraversal<S, Iterator<E>> fold() {
+        return (GraphTraversal) this.addStep(new FoldStep<>(this));
+    }
 
     ///////////////////// FILTER STEPS /////////////////////
 
