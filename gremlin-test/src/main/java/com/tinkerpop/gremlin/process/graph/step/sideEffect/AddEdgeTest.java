@@ -20,14 +20,14 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class LinkTest extends AbstractGremlinTest {
-    public abstract Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(final Object v1Id);
+public abstract class AddEdgeTest extends AbstractGremlinTest {
+    public abstract Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
     @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
-    public void g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX() {
-        final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(convertToVertexId("marko"));
+    public void g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX() {
+        final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(convertToVertexId("marko"));
         System.out.println("Testing: " + step);
         final List<Vertex> cocreators = new ArrayList<>();
         final List<Object> ids = new ArrayList<>();
@@ -52,10 +52,10 @@ public abstract class LinkTest extends AbstractGremlinTest {
         }
     }
 
-    public static class JavaLinkTest extends LinkTest {
+    public static class JavaAddEdgeTest extends AddEdgeTest {
 
-        public Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_linkBothXcocreator_aX(final Object v1Id) {
-            return g.v(v1Id).as("a").out("created").in("created").linkBoth("cocreator", "a");
+        public Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id) {
+            return g.v(v1Id).as("a").out("created").in("created").addBothE("cocreator", "a");
         }
     }
 }

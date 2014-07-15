@@ -47,7 +47,7 @@ public class TinkerGraphComputerTest {
         g.V().pageRank(() -> GraphTraversal.of().out("knows").inE("knows")).forEachRemaining(System.out::println);
 
 
-        g.V().as("a").out("knows").in("knows").linkIn("knows2", "a").iterate();
+        g.V().as("a").out("knows").in("knows").addInE("knows2", "a").iterate();
         g.E().has(Element.LABEL, Compare.NOT_EQUAL, "knows2").remove();
         g.E().forEach(System.out::println);
         g.V().pageRank(() -> GraphTraversal.of().outE()).forEachRemaining(System.out::println);

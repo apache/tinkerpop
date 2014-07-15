@@ -42,11 +42,11 @@ import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.LinkStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
@@ -428,16 +428,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new GroupCountStep<>(this, SideEffectCapable.CAP_KEY, preGroupFunctions));
     }
 
-    public default GraphTraversal<S, Vertex> linkIn(final String label, final String as) {
-        return (GraphTraversal) this.addStep(new LinkStep(this, Direction.IN, label, as));
+    public default GraphTraversal<S, Vertex> addInE(final String label, final String as) {
+        return (GraphTraversal) this.addStep(new AddEdgeStep(this, Direction.IN, label, as));
     }
 
-    public default GraphTraversal<S, Vertex> linkOut(final String label, final String as) {
-        return (GraphTraversal) this.addStep(new LinkStep(this, Direction.OUT, label, as));
+    public default GraphTraversal<S, Vertex> addOutE(final String label, final String as) {
+        return (GraphTraversal) this.addStep(new AddEdgeStep(this, Direction.OUT, label, as));
     }
 
-    public default GraphTraversal<S, Vertex> linkBoth(final String label, final String as) {
-        return (GraphTraversal) this.addStep(new LinkStep(this, Direction.BOTH, label, as));
+    public default GraphTraversal<S, Vertex> addBothE(final String label, final String as) {
+        return (GraphTraversal) this.addStep(new AddEdgeStep(this, Direction.BOTH, label, as));
+    }
+
+    public default GraphTraversal<S, Vertex> addE(final Direction direction, final String label, final String as) {
+        return (GraphTraversal) this.addStep(new AddEdgeStep(this, direction, label, as));
     }
 
     public default GraphTraversal<S, E> timeLimit(final long timeLimit) {

@@ -21,11 +21,11 @@ import com.tinkerpop.gremlin.process.graph.step.map.SelectTest;
 import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.LinkTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphTest;
@@ -84,7 +84,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             CountTest.JavaCountTest.class,
             GroupByTest.JavaGroupByTest.class,
             GroupCountTest.JavaGroupCountTest.class,
-            LinkTest.JavaLinkTest.class,
+            AddEdgeTest.JavaAddEdgeTest.class,
             SideEffectTest.JavaSideEffectTest.class,
             SideEffectCapTest.JavaSideEffectCapTest.class,
             SubgraphTest.JavaSideEffectTest.class,
@@ -118,7 +118,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             CountTest.class,
             GroupByTest.class,
             GroupCountTest.class,
-            LinkTest.class,
+            AddEdgeTest.class,
             SideEffectTest.class,
             SideEffectCapTest.class,
             SubgraphTest.class,

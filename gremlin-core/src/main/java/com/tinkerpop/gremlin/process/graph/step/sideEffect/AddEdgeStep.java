@@ -11,13 +11,13 @@ import com.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LinkStep extends FilterStep<Vertex> implements PathConsumer, Reversible {
+public class AddEdgeStep extends FilterStep<Vertex> implements PathConsumer, Reversible {
 
     public Direction direction;
     public String label;
     public String as;
 
-    public LinkStep(final Traversal traversal, final Direction direction, final String label, final String as) {
+    public AddEdgeStep(final Traversal traversal, final Direction direction, final String label, final String as) {
         super(traversal);
         this.direction = direction;
         this.label = label;
