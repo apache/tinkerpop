@@ -1,6 +1,6 @@
 package com.tinkerpop.gremlin.structure;
 
-import java.util.function.BiPredicate;
+import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
 /**
  * {@link Compare} is a {@link java.util.function.BiPredicate} that determines whether the first argument is {@code ==}, {@code !=},
@@ -8,7 +8,7 @@ import java.util.function.BiPredicate;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum Compare implements BiPredicate<Object, Object> {
+public enum Compare implements SBiPredicate<Object, Object> {
 
     EQUAL, NOT_EQUAL, GREATER_THAN, GREATER_THAN_EQUAL, LESS_THAN, LESS_THAN_EQUAL;
 

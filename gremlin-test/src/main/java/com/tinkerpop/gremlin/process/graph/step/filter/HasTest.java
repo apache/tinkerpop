@@ -8,7 +8,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.StreamFactory;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -176,10 +175,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore
     public void g_V_hasXname_equalspredicate_markoX() {
-        // todo: doesn't work in graph computer because of lambda
-
         final Iterator<Vertex> traversal = get_g_V_hasXname_equalspredicate_markoX();
         System.out.println("Testing: " + traversal);
         assertEquals("marko", traversal.next().<String>value("name"));
@@ -290,7 +286,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Vertex> get_g_V_hasXname_equalspredicate_markoX() {
-            return g.V().<Vertex>has("age", (v1, v2) -> v1.equals(v2), 30).submit(g.compute());
+            return g.V().<Vertex>has("name", (v1, v2) -> v1.equals(v2), "marko").submit(g.compute());
         }
     }
 }

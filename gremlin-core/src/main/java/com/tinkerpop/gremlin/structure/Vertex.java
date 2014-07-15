@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.DefaultGraphTraversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
+import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
@@ -142,7 +143,7 @@ public interface Vertex extends Element {
         return this.start().has(key, t, value);
     }
 
-    public default <E2> GraphTraversal<Vertex, E2> has(final String key, final BiPredicate predicate, final Object value) {
+    public default <E2> GraphTraversal<Vertex, E2> has(final String key, final SBiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
     }
 

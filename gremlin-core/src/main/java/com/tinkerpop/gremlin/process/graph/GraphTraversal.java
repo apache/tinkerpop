@@ -61,6 +61,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
+import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
@@ -75,7 +76,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
 /**
@@ -326,7 +326,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.has(key, T.convert(t), value);
     }
 
-    public default <E2> GraphTraversal<S, E2> has(final String key, final BiPredicate predicate, final Object value) {
+    public default <E2> GraphTraversal<S, E2> has(final String key, final SBiPredicate predicate, final Object value) {
         return (GraphTraversal) this.addStep(new HasStep(this, new HasContainer(key, predicate, value)));
     }
 

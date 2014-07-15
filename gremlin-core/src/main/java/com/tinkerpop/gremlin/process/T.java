@@ -2,8 +2,7 @@ package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
-
-import java.util.function.BiPredicate;
+import com.tinkerpop.gremlin.util.function.SBiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -51,7 +50,7 @@ public enum T {
     nin;
 
 
-    public static BiPredicate convert(final T t) {
+    public static SBiPredicate convert(final T t) {
         if (t.equals(T.eq))
             return Compare.EQUAL;
         else if (t.equals(T.neq))

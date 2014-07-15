@@ -1,7 +1,8 @@
 package com.tinkerpop.gremlin.structure;
 
+import com.tinkerpop.gremlin.util.function.SBiPredicate;
+
 import java.util.Collection;
-import java.util.function.BiPredicate;
 
 /**
  * {@link Contains} is a {@link java.util.function.BiPredicate} that evaluates whether the first object is contained within (or not
@@ -16,7 +17,7 @@ import java.util.function.BiPredicate;
  * @author Pierre De Wilde
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum Contains implements BiPredicate<Object, Object> {
+public enum Contains implements SBiPredicate<Object, Object> {
 
     IN, NOT_IN;
 
