@@ -596,7 +596,7 @@
                                 <inherited>false</inherited>
                                 <configuration>
                                     <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
-                                    <sourceDocumentName>index.txt</sourceDocumentName>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
                                     <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>book</doctype>

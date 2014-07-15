@@ -1273,6 +1273,91 @@ gremlin> g.v(0l).value('name')
 
 By getting the "base graph" (i.e. the underlying `TinkerGraph`) it is possible to mutate the graph.  The above code demonstrates that and also shows that it then possible to read back that added vertex.
 
+Further details on specific GraphStrategy implementations follow.
+
+SubgraphStrategy
+~~~~~~~~~~~~~~~~
+
+A general-purpose `SubgraphStrategy` is created by defining a "vertex criterion" and an "edge criterion" as Java 8 `Predicates` and applying them to a `Graph`.  All vertices present in the base `Graph` which pass the vertex criterion will be present in the `StrategyWrappedGraph`.  All edges present in the base `Graph` which pass the edge criterion *and* whose in- and out-vertices both pass the vertex criterion will be present in the `StrategyWrappedGraph`.
+
+NOTE: edges are either entirely visible, or entirely invisible to a subgraph.  You will never find an edge which cannot be traversed due to a missing in- or out-vertex.
+
+For example:
+
+[source,java]
+----
+Graph g = TinkerFactory.createClassic();              
+
+Predicate<Vertex> vertexCriterion = vertex -> true;
+Predicate<Edge> edgeCriterion = edge -> (int) edge.id() >= 8 && (int) edge.id() <= 10;
+
+GraphStrategy strategy = new SubgraphStrategy(vertexCriterion, edgeCriterion);
+StrategyWrappedGraph sg = new StrategyWrappedGraph(g);
+sg.strategy().setGraphStrategy(strategy);
+
+// all vertices are here
+System.out.println("" + sg.V().count() + " of " + g.V().count() + " vertices");
+
+// only the given edges are included
+System.out.println("" + sg.E().count() + " of " + g.E().count() + " edges");
+----
+ 
+PartitionGraphStrategy
+~~~~~~~~~~~~~~~~~~~~~~
+
+`PartitionGraphStrategy` is a `SubgraphStrategy` which creates logical subgraphs through the use of designated properties.  When each element is written to the `Graph`, it is marked with a property value indicating the current write-partition.  As elements are read from the graph, they are matched against the current set of read-partitions.  The read-partitions thereby define the union of a set of vertices and edges. For example:
+
+[source,groovy]
+----
+gremlin> g = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> strategy = new PartitionGraphStrategy(Graph.Key.hidden("partition"), "A")
+==>PartitionGraphStrategy
+gremlin> sg = new StrategyWrappedGraph(g)
+==>[passthru[tinkergraph[vertices:0 edges:0]]]
+gremlin> sg.strategy().setGraphStrategy(strategy)
+==>null
+----
+
+Add vertices and edges first in one partition, then another:
+
+[source,groovy]
+----
+gremlin> v1 = sg.addVertex("name", "one")
+==>[PartitionGraphStrategy[v[0]]]
+gremlin> v2 = sg.addVertex("name", "two")
+==>[PartitionGraphStrategy[v[1]]]
+gremlin> v1.addEdge("knows", v2)
+==>[PartitionGraphStrategy[e[2][0-knows->1]]]
+gremlin> strategy.setWritePartition("B")
+==>null
+gremlin> v3 = sg.addVertex("name", "three")
+==>[PartitionGraphStrategy[v[3]]]
+gremlin> v1.addEdge("knows", v3)
+==>[PartitionGraphStrategy[e[4][0-knows->3]]]
+gremlin> 
+----
+
+Define sets of partitions which provide access to different subgraphs, or slices of the data:
+
+[source,groovy]
+----
+gremlin> "in A: " + sg.V().count().next() + ", " + sg.E().count().next()
+==>in A: 2, 1
+gremlin> strategy.addReadPartition("B")
+==>null
+gremlin> "in A+B: " + sg.V().count().next() + ", " + sg.E().count().next()
+==>in A+B: 3, 2
+gremlin> strategy.clearReadPartitions()
+==>null
+gremlin> strategy.addReadPartition("B")
+==>null
+gremlin> "in B: " + sg.V().count().next() + ", " + sg.E().count().next()
+==>in B: 1, 0
+----
+
+Note that there are no edges in the set B, as the only edge added to partition B is incident on a vertex of A.
+
 Gremlin Server
 --------------
 
