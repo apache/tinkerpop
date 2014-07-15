@@ -1,7 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.strategy;
 
-import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
@@ -15,13 +15,6 @@ public class TraverserSourceStrategy implements TraversalStrategy.FinalTraversal
         traversal.getSteps().forEach(step -> {
             if (step instanceof TraverserSource)
                 ((TraverserSource) step).generateTraverserIterator(trackPaths);
-        });
-    }
-
-    public static <S, E> void doPathTracking(final Traversal<S, E> traversal) {
-        traversal.getSteps().forEach(step -> {
-            if (step instanceof TraverserSource)
-                ((TraverserSource) step).generateTraverserIterator(true);
         });
     }
 }

@@ -2,6 +2,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
+import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.FeatureRequirement;
 import com.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -21,7 +22,9 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AddEdgeTest extends AbstractGremlinTest {
-    public abstract Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -52,10 +55,32 @@ public abstract class AddEdgeTest extends AbstractGremlinTest {
         }
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    @FeatureRequirement(featureClass = EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
+    public void g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX() {
+        final Iterator<Vertex> step = get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(convertToVertexId("marko"));
+        System.out.println("Testing: " + step);
+        int count = 0;
+        while (step.hasNext()) {
+            final Vertex vertex = step.next();
+            assertEquals(convertToVertexId("lop"), vertex.id());
+            assertEquals(Long.valueOf(1l), vertex.out("createdBy").count().next());
+            assertEquals(convertToVertexId("marko"), vertex.out("createdBy").id().next());
+            count++;
+
+        }
+        assertEquals(1, count);
+    }
+
     public static class JavaAddEdgeTest extends AddEdgeTest {
 
-        public Iterator<Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_inXcreatedX_addBothEXcocreator_aX(final Object v1Id) {
             return g.v(v1Id).as("a").out("created").in("created").addBothE("cocreator", "a");
+        }
+
+        public Traversal<Vertex, Vertex> get_g_v1_asXaX_outXcreatedX_addOutEXcreatedBy_aX(final Object v1Id) {
+            return g.v(v1Id).as("a").out("created").addOutE("createdBy", "a");
         }
     }
 }

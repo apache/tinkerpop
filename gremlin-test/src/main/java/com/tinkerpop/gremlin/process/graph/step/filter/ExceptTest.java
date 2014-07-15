@@ -32,7 +32,7 @@ public abstract class ExceptTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_exceptXX();
 
-    public abstract Traversal<Vertex, Path> get_g_v1_asXxX_bothE_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(final Object v1Id);
+    public abstract Traversal<Vertex, Path> get_g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(final Object v1Id);
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -94,14 +94,14 @@ public abstract class ExceptTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    @Ignore
-    public void g_v1_asXxX_bothE_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path() {
-        Iterator<Path> traversal = get_g_v1_asXxX_bothE_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(convertToVertexId("marko"));
+    public void g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path() {
+        Iterator<Path> traversal = get_g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(convertToVertexId("marko"));
         System.out.println("Testing: " + traversal);
         final List<Path> paths = StreamFactory.stream(traversal).collect(Collectors.toList());
-        assertEquals(6, paths.size()); // TODO: returns 7 in OLAP mode (path 4->3 / josh->lop is duplicated)
-        assertEquals(3, paths.stream().filter(path -> path.size() == 3).count());
-        assertEquals(3, paths.stream().filter(path -> path.size() == 5).count());
+        assertEquals(4, paths.size());
+        assertEquals(1, paths.stream().filter(path -> path.size() == 3).count());
+        assertEquals(2, paths.stream().filter(path -> path.size() == 5).count());
+        assertEquals(1, paths.stream().filter(path -> path.size() == 7).count());
         assertFalse(traversal.hasNext());
     }
 
@@ -126,8 +126,8 @@ public abstract class ExceptTest extends AbstractGremlinTest {
             return g.V().except(Collections.emptyList());
         }
 
-        public Traversal<Vertex, Path> get_g_v1_asXxX_bothE_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(final Object v1Id) {
-            return g.v(v1Id).as("x").bothE().except("e").aggregate("e").otherV().jump("x", x -> true, x -> true).path();
+        public Traversal<Vertex, Path> get_g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(final Object v1Id) {
+            return g.v(v1Id).as("x").bothE("created").except("e").aggregate("e").otherV().jump("x", x -> true, x -> true).path();
         }
     }
 
@@ -152,8 +152,8 @@ public abstract class ExceptTest extends AbstractGremlinTest {
             return g.V().except(Collections.emptyList()).submit(g.compute());
         }
 
-        public Traversal<Vertex, Path> get_g_v1_asXxX_bothE_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(final Object v1Id) {
-            return g.v(v1Id).as("x").bothE().except("e").aggregate("e").otherV().jump("x", x -> true, x -> true).path().submit(g.compute());
+        public Traversal<Vertex, Path> get_g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(final Object v1Id) {
+            return g.v(v1Id).as("x").bothE("created").except("e").aggregate("e").otherV().jump("x", x -> true, x -> true).path().submit(g.compute());
         }
     }
 }

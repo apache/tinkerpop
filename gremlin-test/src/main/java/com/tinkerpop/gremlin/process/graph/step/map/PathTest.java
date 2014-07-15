@@ -104,12 +104,12 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
         }
 
         public Traversal<Vertex, Path> get_g_v1_out_pathXage_nameX(final Object v1Id) {
-            // TODO: Micro elements do not store properties (attach)
+            // TODO: Detached elements do not store properties (attach)
             return g.v(v1Id).out().path(v -> ((Vertex) v).value("age"), v -> ((Vertex) v).value("name")); // .submit(g.compute())
         }
 
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2X_pathXit__name__langX() {
-            // TODO: Micro elements do not store properties (attach)
+            // TODO: Detached elements do not store properties (attach)
             return g.V().as("x").out()
                     .jump("x", t -> t.getLoops() < 2)
                     .path(v -> v, v -> ((Vertex) v).value("name"), v -> ((Vertex) v).value("lang")); // .submit(g.compute());

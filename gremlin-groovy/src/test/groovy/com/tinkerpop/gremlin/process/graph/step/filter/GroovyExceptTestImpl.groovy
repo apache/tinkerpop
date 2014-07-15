@@ -30,7 +30,7 @@ class GroovyExceptTestImpl extends ExceptTest {
         g.V.out.except([])
     }
 
-    Traversal<Vertex, Path> get_g_v1_asXxX_bothE_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(final Object v1Id) {
-        g.v(v1Id).as('x').bothE().except('e').aggregate('e').otherV.jump('x') { true } { true }.path
+    Traversal<Vertex, Path> get_g_v1_asXxX_bothEXcreatedX_exceptXeX_aggregateXeX_otherV_jumpXx_true_trueX_path(final Object v1Id) {
+        g.v(v1Id).as('x').bothE("created").except('e').aggregate('e').otherV.jump('x') { true } { true }.path
     }
 }
