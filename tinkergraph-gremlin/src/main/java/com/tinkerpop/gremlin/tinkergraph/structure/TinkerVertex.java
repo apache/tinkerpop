@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.structure.Direction;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -62,8 +61,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     //////////////////////
 
     public GraphTraversal<Vertex, Vertex> start() {
-        final GraphTraversal<Vertex, Vertex> traversal = new TinkerElementTraversal<>(this);
-        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
+        return new TinkerElementTraversal<>(this, this.graph);
     }
 
     public Iterator<Edge> edges(final Direction direction, final int branchFactor, final String... labels) {

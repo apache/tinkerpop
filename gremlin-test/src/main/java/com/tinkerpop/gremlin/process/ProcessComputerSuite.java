@@ -116,7 +116,8 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             UnfoldTest.class,
             // FoldTest.class,
             ValuesTest.class,
-            TreeTest.class
+            TreeTest.class,
+            PageRankVertexProgramTest.class
     };
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

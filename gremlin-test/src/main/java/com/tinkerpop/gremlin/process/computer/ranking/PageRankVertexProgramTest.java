@@ -24,8 +24,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinTest {
         final GraphComputer.Globals globals = pair.getValue1();
         viewGraph.V().forEach(v -> {
             assertTrue(v.keys().contains("name"));
-            // TODO: Broken in TinkerGraph
-            // assertTrue(v.keys().contains(PageRankVertexProgram.PAGE_RANK));
+            assertTrue(v.hiddenKeys().contains(Graph.Key.unHide(PageRankVertexProgram.PAGE_RANK)));
             System.out.println(v.value("name") + ":" + v.value(PageRankVertexProgram.PAGE_RANK));
             final String name = v.value("name");
             final Double pageRank = v.value(PageRankVertexProgram.PAGE_RANK);

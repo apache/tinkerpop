@@ -145,6 +145,7 @@ public class TinkerHelper {
     public static void prepareTraversalForComputer(final Traversal traversal) {
         if (traversal.getSteps().get(0) instanceof TinkerGraphStep)
             ((TinkerGraphStep) traversal.getSteps().get(0)).graph = null;
+        traversal.memory().remove(Graph.Key.hidden("g"));
         traversal.strategies().unregister(TinkerGraphStepTraversalStrategy.class);
         traversal.strategies().unregister(TraverserSourceStrategy.class);
         traversal.strategies().register(new ComputerCountStrategy());
