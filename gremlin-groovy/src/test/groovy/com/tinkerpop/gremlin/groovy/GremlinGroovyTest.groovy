@@ -1,6 +1,10 @@
 package com.tinkerpop.gremlin.groovy
 
+import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyClassLoader
 import groovy.grape.Grape
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
+import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.MethodClosure
@@ -142,5 +146,30 @@ class GremlinGroovyTest {
         throw new MissingMethodException(name, getClass(), args);
     }
 
+    /*
+    @Test
+    @Ignore("just playing - requires gremlin server running")
+    public void trySomeAstStuffDuringCompile() {
+        def conf = new CompilerConfiguration()
+        def remoteCustomizer = new ASTTransformationCustomizer(Remote)
+        conf.addCompilationCustomizers(remoteCustomizer)
 
+        def importCustomizer = new ImportCustomizer()
+        importCustomizer.addImports(Remote.class.name)
+        conf.addCompilationCustomizers(importCustomizer)
+
+        def loader = new GremlinGroovyClassLoader(this.class.classLoader, conf)
+        def x = loader.parseClass('''
+        @Remote
+        def getFriends() {
+            g.V.outE.inV.filter{it.name=='josh'}
+        }
+        ''')
+
+        Client c = Cluster.create().build().connect()
+        def script = x.newInstance().getFriends()
+        def result = c.submit(script).all().join()
+        println result
+    }
+    */
 }
