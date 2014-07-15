@@ -51,7 +51,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         try {
             if (configuration.containsKey(INCIDENT_TRAVERSAL)) {
                 final SSupplier<Traversal> traversalSupplier = VertexProgramHelper.deserializeSupplier(configuration, INCIDENT_TRAVERSAL);
-                VertexProgramHelper.verifyReversibility(traversalSupplier);  // TODO: Make this take Traversal, not Supplier
+                VertexProgramHelper.verifyReversibility(traversalSupplier.get());
                 this.messageType = MessageType.Local.of((SSupplier) traversalSupplier);
             }
         } catch (final Exception e) {

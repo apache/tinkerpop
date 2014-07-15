@@ -27,8 +27,8 @@ public class VertexProgramHelper {
         return (SSupplier) Serializer.deserializeObject(bytes);
     }
 
-    public static void verifyReversibility(final SSupplier<Traversal> traversalSupplier) {
-        if (!TraversalHelper.isReversible(traversalSupplier.get()))
+    public static void verifyReversibility(final Traversal traversal) {
+        if (!TraversalHelper.isReversible(traversal))
             throw new IllegalArgumentException("The provided traversal is not reversible");
     }
 }
