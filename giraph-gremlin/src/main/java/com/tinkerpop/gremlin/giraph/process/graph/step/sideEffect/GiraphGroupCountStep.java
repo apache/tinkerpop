@@ -18,6 +18,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MapHelper;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.giraph.io.VertexInputFormat;
@@ -60,6 +61,8 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
             MapHelper.incr(this.groupCountMap, this.functionRing.next().apply(traverser.get()), this.bulkCount);
             return true;
         });
+        if (TraversalHelper.isLabeled(groupCountStep))
+            this.setAs(groupCountStep.getAs());
     }
 
     public void setCurrentBulkCount(final long bulkCount) {

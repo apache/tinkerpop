@@ -26,6 +26,8 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
         this.jumpAs = jumpStep.jumpAs;
         this.ifPredicate = jumpStep.ifPredicate;
         this.emitPredicate = jumpStep.emitPredicate;
+        if (TraversalHelper.isLabeled(jumpStep))
+            this.setAs(jumpStep.getAs());
     }
 
     protected Traverser<S> processNextStart() {
@@ -42,11 +44,13 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
                     this.queue.add(loopTraverser);
                     if (this.emitPredicate.test(traverser)) {
                         final Traverser<S> emitTraverser = traverser.makeSibling();
+                        emitTraverser.resetLoops();
                         emitTraverser.setFuture(this.nextStep.getAs());
                         this.queue.add(emitTraverser);
                     }
                 } else {
                     final Traverser<S> emitTraverser = traverser.makeSibling();
+                    emitTraverser.resetLoops();
                     emitTraverser.setFuture(this.nextStep.getAs());
                     this.queue.add(emitTraverser);
                 }

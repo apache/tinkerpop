@@ -17,7 +17,7 @@ public class TinkerGraphStepTraversalStrategy implements TraversalStrategy.Final
 
     public void apply(final Traversal traversal) {
 
-        if (TraversalHelper.getStart(traversal) instanceof TinkerGraphStep) {  // TODO: generalize for searching the whole traversal?
+        if (TraversalHelper.getStart(traversal) instanceof TinkerGraphStep) {
             final TinkerGraphStep tinkerGraphStep = (TinkerGraphStep) traversal.getSteps().get(0);
             Step currentStep = tinkerGraphStep.getNextStep();
             while (true) {
