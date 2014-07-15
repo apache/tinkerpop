@@ -46,9 +46,6 @@ public class PathTraverser<T> extends SimpleTraverser<T> {
     }
 
     public boolean equals(final Object object) {
-        if (object instanceof PathTraverser)
-            return this.t.equals(((PathTraverser) object).get()) && this.path.equals(((PathTraverser) object).getPath());
-        else
-            return false;
+        return (object instanceof PathTraverser) && this.t.equals(((PathTraverser) object).get()) && this.path.equals(((PathTraverser) object).getPath());
     }
 }

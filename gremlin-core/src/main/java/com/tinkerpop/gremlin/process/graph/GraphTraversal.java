@@ -50,9 +50,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
-import com.tinkerpop.gremlin.process.graph.step.util.Tree;
-import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
-import com.tinkerpop.gremlin.process.util.FunctionRing;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Compare;
 import com.tinkerpop.gremlin.structure.Contains;
@@ -444,14 +442,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new TimeLimitStep<E>(this, timeLimit));
     }
 
+    public default GraphTraversal<S, E> tree(final String variable, final SFunction... branchFunctions) {
+        return (GraphTraversal) this.addStep(new TreeStep<>(this, variable, branchFunctions));
+    }
+
+    public default GraphTraversal<S, E> tree(final SFunction... branchFunctions) {
+        return (GraphTraversal) this.addStep(new TreeStep<>(this, SideEffectCapable.CAP_KEY, branchFunctions));
+    }
+
     ///////////////////// BRANCH STEPS /////////////////////
 
     public default GraphTraversal<S, E> jump(final String as) {
-        return this.jump(as, h -> true, h -> false);
+        return this.jump(as, t -> true, t -> false);
     }
 
     public default GraphTraversal<S, E> jump(final String as, final SPredicate<Traverser<E>> ifPredicate) {
-        return this.jump(as, ifPredicate, h -> false);
+        return this.jump(as, ifPredicate, t -> false);
     }
 
     public default GraphTraversal<S, E> jump(final String as, final SPredicate<Traverser<E>> ifPredicate, final SPredicate<Traverser<E>> emitPredicate) {
@@ -467,29 +473,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         steps.get(steps.size() - 1).setAs(as);
         return this;
 
-    }
-
-    // TODO: this should be side effect capable.
-    public default <T> Tree<T> tree(final SFunction... branchFunctions) {
-        final Tree<Object> tree = new Tree<>();
-        Tree<Object> depth = tree;
-        TraverserSourceStrategy.doPathTracking(this);
-        final Step endStep = TraversalHelper.getEnd(this);
-        final FunctionRing functionRing = new FunctionRing(branchFunctions);
-        try {
-            while (true) {
-                final Path path = ((Traverser) endStep.next()).getPath();
-                for (int i = 0; i < path.size(); i++) {
-                    final Object object = functionRing.next().apply(path.get(i));
-                    if (!depth.containsKey(object))
-                        depth.put(object, new Tree<>());
-                    depth = depth.get(object);
-                }
-                depth = tree;
-            }
-        } catch (final NoSuchElementException e) {
-        }
-        return (Tree) tree;
     }
 
     public default void remove() {

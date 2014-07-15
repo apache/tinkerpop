@@ -15,10 +15,13 @@ public class PathStep<S> extends MapStep<S, Path> implements PathConsumer {
 
     public PathStep(final Traversal traversal, final SFunction... pathFunctions) {
         super(traversal);
-        this.functionRing = new FunctionRing(pathFunctions);
+        this.functionRing = (pathFunctions.length == 0) ? null : new FunctionRing(pathFunctions);
         this.setFunction(traverser -> {
             final Path path = new Path();
-            traverser.getPath().forEach((a, b) -> path.add(a, this.functionRing.next().apply(b)));
+            if (null == this.functionRing)
+                path.add(traverser.getPath());
+            else
+                traverser.getPath().forEach((a, b) -> path.add(a, this.functionRing.next().apply(b)));
             return path;
         });
     }
