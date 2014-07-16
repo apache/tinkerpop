@@ -48,11 +48,16 @@ public class GiraphStoreStep<S> extends FilterStep<S> implements SideEffectCapab
 
     private static final String GREMLIN_STORE_VARIABLE = "gremlin.store.variable";
 
-    private Collection storeCollection;
-    public final FunctionRing<S, ?> functionRing;
-    public Vertex vertex;
-    public final String variable;
-    private long bulkCount = 1l;
+    public FunctionRing<S, ?> functionRing;
+    public String variable;
+    protected Collection collection;
+    protected long bulkCount = 1l;
+
+    public GiraphStoreStep(final Traversal traversal) {
+        super(traversal);
+        this.functionRing = null;
+        this.variable = null;
+    }
 
     public GiraphStoreStep(final Traversal traversal, final StoreStep storeStep) {
         super(traversal);
@@ -61,7 +66,7 @@ public class GiraphStoreStep<S> extends FilterStep<S> implements SideEffectCapab
         this.setPredicate(traverser -> {
             final Object storeObject = this.functionRing.next().apply(traverser.get());
             for (int i = 0; i < this.bulkCount; i++) {
-                this.storeCollection.add(storeObject);
+                this.collection.add(storeObject);
             }
             return true;
         });
@@ -74,8 +79,8 @@ public class GiraphStoreStep<S> extends FilterStep<S> implements SideEffectCapab
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        this.storeCollection = vertex.<Collection>property(Graph.Key.hidden(this.variable)).orElse(new ArrayList());
-        vertex.property(Graph.Key.hidden(this.variable), this.storeCollection);
+        this.collection = vertex.<Collection>property(Graph.Key.hidden(this.variable)).orElse(new ArrayList());
+        vertex.property(Graph.Key.hidden(this.variable), this.collection);
     }
 
     public static class Map extends Mapper<NullWritable, GiraphInternalVertex, NullWritable, Text> {

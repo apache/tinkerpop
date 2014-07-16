@@ -135,18 +135,24 @@ public abstract class AggregateTest extends AbstractGremlinTest {
         }*/
     }
 
-    /*public static class JavaComputerAggregateTest extends AggregateTest {
+    public static class JavaComputerAggregateTest extends AggregateTest {
 
         public Traversal<Vertex, Vertex> get_g_v1_aggregateXaX_outXcreatedX_inXcreatedX_exceptXaX(final Object v1Id) {
-            return g.v(v1Id).with("x", new HashSet<>()).aggregate("x").out("created").in("created").except("x");
+            return g.v(v1Id).with("a", new HashSet<>()).aggregate("a").out("created").in("created").except("a").submit(g.compute());
         }
 
+        // TODO: no more iterate(), use cap()
         public List<String> get_g_V_valueXnameX_aggregateXaX_iterate_getXaX() {
-            return g.V().value("name").aggregate("x").iterate().memory().get("x");
+            return g.V().value("name").aggregate("a").iterate().memory().get("a");
         }
 
+        // TODO: no more iterate(), use cap()
         public List<String> get_g_V_aggregateXa_nameX_iterate_getXaX() {
             return g.V().aggregate("a", v -> v.value("name")).iterate().memory().get("a");
         }
-    }*/
+
+        public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
+            return g.V().out().aggregate("a").path().submit(g.compute());
+        }
+    }
 }

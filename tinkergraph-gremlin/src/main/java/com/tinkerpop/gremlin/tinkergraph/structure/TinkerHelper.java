@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.strategy.ComputerAggregateStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.ComputerCountStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.ComputerJumpStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
@@ -150,6 +151,7 @@ public class TinkerHelper {
         traversal.strategies().unregister(TraverserSourceStrategy.class);
         traversal.strategies().register(new ComputerCountStrategy());
         traversal.strategies().register(new ComputerJumpStrategy());
+        traversal.strategies().register(new ComputerAggregateStrategy());
     }
 
     private static class TinkerVertexIterator implements Iterator<TinkerVertex> {

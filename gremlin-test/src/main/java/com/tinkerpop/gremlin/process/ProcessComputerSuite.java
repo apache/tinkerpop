@@ -19,6 +19,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.TraversalTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldTest;
 import com.tinkerpop.gremlin.process.graph.step.map.UnionTest;
 import com.tinkerpop.gremlin.process.graph.step.map.ValuesTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
@@ -57,6 +58,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+            AggregateTest.JavaComputerAggregateTest.class,
             CountTest.JavaComputerCountTest.class,
             CyclicPathTest.JavaComputerCyclicPathTest.class,
             // DedupTest.JavaComputerDedupTest.class,  TODO: Makes no sense in GraphComputer
@@ -86,11 +88,9 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             SideEffectCapTest.JavaComputerSideEffectCapTest.class,
 
           /*
-            // TODO: Be sure to XXComputerXX then class names
-            AggregateTest.JavaAggregateTest.class,
+            // TODO: Be sure to XXComputerXX the class names
             LinkTest.JavaLinkTest.class,
             SideEffectTest.JavaSideEffectTest.class,
-            TreeTest.JavaTreeTest.class
           */
 
             PageRankVertexProgramTest.class
@@ -100,7 +100,8 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
      */
     protected static final Class<?>[] testsToEnforce = new Class<?>[]{
-            // CountTest.class,
+            AggregateTest.class,
+            CountTest.class,
             CyclicPathTest.class,
             ExceptTest.class,
             FilterTest.class,
