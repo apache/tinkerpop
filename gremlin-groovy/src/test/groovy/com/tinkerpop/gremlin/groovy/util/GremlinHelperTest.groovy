@@ -23,14 +23,19 @@ class GremlinHelperTest {
 
     @Parameters(name = "{index}: {0}.test()")
     public static Iterable<Object[]> data() {
-        return [["simple constants", "'testing'$LINE_SEPARATOR", { 'testing' }, [], []] as Object[],
-                ["sum constants", "1 + 2$LINE_SEPARATOR", { 1 + 2 }, [], []] as Object[],
+        return [["simple constant", "'testing'$LINE_SEPARATOR", { 'testing' }, [], []] as Object[],
+                ["add constants", "1 + 2$LINE_SEPARATOR", { 1 + 2 }, [], []] as Object[],
                 ["sum one variable", "x + 1$LINE_SEPARATOR", {x -> x + 1 }, [2], ['x']] as Object[],
                 ["sum multi-variable", "x + y $LINE_SEPARATOR", {x, y -> x + y }, [1,2], ['y','x']] as Object[],
-                ["simple multiline", "java.lang.Integer z = x + y ${LINE_SEPARATOR}z / 2$LINE_SEPARATOR", { x, y ->
+                ["simple multiline with explicit declaration", "java.lang.Integer z = x + y ${LINE_SEPARATOR}z / 2$LINE_SEPARATOR", { x, y ->
                     int z = x + y
                     z / 2
-                }, [2,2], ['y','x']] as Object[]];
+                }, [2,2], ['y','x']] as Object[],
+                ["simple multiline with def", "java.lang.Object z = x + y ${LINE_SEPARATOR}z / 2$LINE_SEPARATOR", { x, y ->
+                    def z = x + y
+                    z / 2
+                }, [2,2], ['y','x']] as Object[],
+                ["embedded closure", "[ x , y ].findAll({ $LINE_SEPARATOR    it > 1$LINE_SEPARATOR})$LINE_SEPARATOR", {x, y -> [x,y].findAll{it>1} }, [1,2], ['y','x']] as Object[]];
     }
 
     @Parameter(value = 0)
