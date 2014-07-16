@@ -14,4 +14,6 @@ public interface ImportCustomizerProvider extends CompilerCustomizerProvider {
     Set<String> getExtraStaticImports();
 
     Set<String> getImports();
+
+    Set<String> getStaticImports();
 }

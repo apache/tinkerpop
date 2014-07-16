@@ -30,6 +30,7 @@ class Console {
     private static final String STANDARD_INPUT_PROMPT = "gremlin> "
     private static final String STANDARD_RESULT_PROMPT = "==>"
     private static final String IMPORT_SPACE = "import "
+    private static final String IMPORT_STATIC_SPACE = "import static "
     private static final String NULL = "null"
 
     private Iterator tempIterator = Collections.emptyIterator()
@@ -52,8 +53,10 @@ class Console {
         groovy.setResultHook(handleResultShowNothing)
 
         // add the default imports
-        new ConsoleImportCustomizerProvider().getAllImports().stream()
+        new ConsoleImportCustomizerProvider().getCombinedImports().stream()
                 .collect { IMPORT_SPACE + it }.each { groovy.execute(it) }
+        new ConsoleImportCustomizerProvider().getCombinedStaticImports().stream()
+                .collect { IMPORT_STATIC_SPACE + it }.each { groovy.execute(it) }
 
         final InteractiveShellRunner runner = new InteractiveShellRunner(groovy, handlePrompt)
         runner.setErrorHandler(handleError)

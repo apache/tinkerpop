@@ -31,4 +31,9 @@ public class NoImportCustomizerProvider implements ImportCustomizerProvider {
     public Set<String> getImports() {
         return Collections.emptySet();
     }
+
+    @Override
+    public Set<String> getStaticImports() {
+        return Collections.emptySet();
+    }
 }

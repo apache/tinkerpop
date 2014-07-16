@@ -13,4 +13,20 @@ class ConsoleImportCustomizerProvider extends AbstractImportCustomizerProvider {
         extraImports.add(Sql.class.getPackage().getName() + DOT_STAR)
         extraImports.add(HTTPBuilder.class.getPackage().getName() + DOT_STAR)
     }
+
+    public Set<String> getCombinedStaticImports() {
+        final Set<String> combined = new HashSet<>();
+        combined.addAll(getStaticImports());
+        combined.addAll(extraStaticImports);
+
+        return Collections.unmodifiableSet(combined);
+    }
+
+    public Set<String> getCombinedImports() {
+        final Set<String> combined = new HashSet<>();
+        combined.addAll(getImports());
+        combined.addAll(extraImports);
+
+        return Collections.unmodifiableSet(combined);
+    }
 }
