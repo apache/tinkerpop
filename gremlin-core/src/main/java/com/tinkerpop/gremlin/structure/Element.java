@@ -125,10 +125,6 @@ public abstract interface Element {
             return new IllegalArgumentException("The provided key/value array must have a String key or Property.Key on even array indices");
         }
 
-        public static IllegalStateException elementHasAlreadyBeenRemovedOrDoesNotExist(final Class<? extends Element> type, final Object id) {
-            return new IllegalStateException(String.format("The %s with id [%s] has already been removed or does not exist", type.getClass().getSimpleName(), id));
-        }
-
         public static IllegalStateException propertyAdditionNotSupported() {
             return new IllegalStateException("Property additions are not supported");
         }

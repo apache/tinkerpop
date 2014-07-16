@@ -42,9 +42,6 @@ public class TinkerEdge extends TinkerElement implements Edge {
     }
 
     public void remove() {
-        if (!this.graph.edges.containsKey(this.id()))
-            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.id());
-
         final TinkerVertex outVertex = (TinkerVertex) this.outVertex;
         final TinkerVertex inVertex = (TinkerVertex) this.inVertex;
 

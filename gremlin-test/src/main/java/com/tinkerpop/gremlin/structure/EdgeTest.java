@@ -149,4 +149,30 @@ public class EdgeTest extends AbstractGremlinTest {
         assertNotNull(m);
         assertEquals(0, m.size());
     }
+
+
+    @Test
+    public void shouldSupportIdempotentRemoval() {
+        final Vertex v1 =g.addVertex();
+        final Vertex v2 =g.addVertex();
+        final Edge e = v1.addEdge("test", v2);
+        tryCommit(g, StructureStandardSuite.assertVertexEdgeCounts(2, 1));
+
+        e.remove();
+        e.remove();
+        e.remove();
+
+        // some graphs may crap out on commit (i.e. doesn't really support the idempotency). that may be bad for
+        // users as they won't get a good reason for why their transaction failed.  for purposes of enforcing the
+        // test, simply rollback the tx, do a single remove and then commit again
+        try {
+            tryCommit(g);
+        } catch (Exception ex) {
+            tryRollback(g);
+            e.remove();
+            tryCommit(g);
+        } finally {
+            StructureStandardSuite.assertVertexEdgeCounts(0, 0);
+        }
+    }
 }

@@ -49,9 +49,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     public void remove() {
-        if (!this.graph.vertices.containsKey(this.id))
-            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, this.id);
-
         this.bothE().forEach(Edge::remove);
         this.properties().clear();
         this.graph.vertexIndex.removeElement(this);

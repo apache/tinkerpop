@@ -34,10 +34,10 @@ public class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<N
                 relationship.delete();
             }
             node.delete();
-        } catch (NotFoundException nfe) {
-            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, ((Node) this.baseElement).getId());
-        } catch (IllegalStateException ise) {
-            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Vertex.class, ((Node) this.baseElement).getId());
+        } catch (NotFoundException ignored) {
+            // this one happens if the vertex is committed
+        } catch (IllegalStateException ignored) {
+            // this one happens if the vertex is still chilling in the tx
         }
     }
 

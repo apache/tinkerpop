@@ -26,12 +26,10 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Relatio
         this.graph.tx().readWrite();
         try {
             ((Relationship) baseElement).delete();
-        } catch (NotFoundException nfe) {
+        } catch (NotFoundException ignored) {
             // this one happens if the edge is committed
-            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.id());
-        } catch (IllegalStateException ise) {
+        } catch (IllegalStateException ignored) {
             // this one happens if the edge is still chilling in the tx
-            throw Element.Exceptions.elementHasAlreadyBeenRemovedOrDoesNotExist(Edge.class, this.id());
         }
     }
 
