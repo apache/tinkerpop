@@ -20,7 +20,6 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.BackStep;
-import com.tinkerpop.gremlin.process.graph.step.map.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ElementPropertyStep;
@@ -41,6 +40,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
+import com.tinkerpop.gremlin.process.graph.step.map.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
@@ -273,11 +273,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new SelectStep(this, Arrays.asList(), stepFunctions));
     }
 
-    public default <E2> GraphTraversal<S, E2> branch(final Traversal<?, E2>... traversals) {
-        return (GraphTraversal) this.addStep(new BranchStep(this, traversals));
+    public default <E2> GraphTraversal<S, E2> union(final Traversal... traversals) {
+        return (GraphTraversal) this.addStep(new UnionStep(this, traversals));
     }
 
-    public default <E2> GraphTraversal<S, E2> intersect(final Traversal<?, E2>... traversals) {
+    public default <E2> GraphTraversal<S, E2> intersect(final Traversal... traversals) {
         return (GraphTraversal) this.addStep(new IntersectStep(this, traversals));
     }
 

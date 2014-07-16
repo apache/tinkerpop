@@ -93,7 +93,7 @@ public interface Graph extends AutoCloseable {
         }
     }
 
-    public default GraphTraversal of() {
+    public default <S, E> GraphTraversal<S, E> of() {
         return GraphTraversal.of();
     }
 

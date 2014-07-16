@@ -10,12 +10,12 @@ import com.tinkerpop.gremlin.process.util.TraversalRing;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BranchStep<S, E> extends AbstractStep<S, E> {
+public class UnionStep<S, E> extends AbstractStep<S, E> {
 
     public TraversalRing<S, E> traversalRing;
 
     @SafeVarargs
-    public BranchStep(final Traversal traversal, final Traversal<S, E>... branchTraversals) {
+    public UnionStep(final Traversal traversal, final Traversal<S, E>... branchTraversals) {
         super(traversal);
         this.traversalRing = new TraversalRing<>(branchTraversals);
     }

@@ -10,6 +10,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.ElementHelper;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
 import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerGraphTraversal;
+import com.tinkerpop.gremlin.tinkergraph.process.graph.TinkerTraversal;
 import org.apache.commons.configuration.Configuration;
 
 import java.io.Serializable;
@@ -100,6 +101,10 @@ public class TinkerGraph implements Graph, Serializable {
 
     public GraphTraversal<Edge, Edge> E() {
         return new TinkerGraphTraversal<>(this, Edge.class);
+    }
+
+    public GraphTraversal of() {
+        return new TinkerTraversal<>(this);
     }
 
     public Vertex addVertex(final Object... keyValues) {
