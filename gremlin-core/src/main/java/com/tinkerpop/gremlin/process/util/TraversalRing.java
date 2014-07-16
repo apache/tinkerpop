@@ -2,13 +2,14 @@ package com.tinkerpop.gremlin.process.util;
 
 import com.tinkerpop.gremlin.process.Traversal;
 
+import java.io.Serializable;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalRing<S, E> {
+public class TraversalRing<S, E> implements Serializable {
 
     public Traversal<S, E>[] traversals;
     private int currentPipeline = -1;

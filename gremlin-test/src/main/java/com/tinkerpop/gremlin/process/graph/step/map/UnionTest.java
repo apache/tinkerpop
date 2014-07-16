@@ -46,7 +46,12 @@ public abstract class UnionTest extends AbstractGremlinTest {
         public Traversal<Vertex, String> get_g_V_unionXout_inX_name() {
             return g.V().union(g.of().out(), g.of().in()).value("name");
         }
+    }
 
+    public static class JavaComputerUnionTest extends UnionTest {
 
+        public Traversal<Vertex, String> get_g_V_unionXout_inX_name() {
+            return g.V().union(g.of().out(), g.of().in()).<String>value("name").submit(g.compute());
+        }
     }
 }
