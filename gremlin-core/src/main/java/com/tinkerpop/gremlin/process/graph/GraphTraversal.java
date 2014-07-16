@@ -20,6 +20,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.RangeStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.RetainStep;
 import com.tinkerpop.gremlin.process.graph.step.filter.SimplePathStep;
 import com.tinkerpop.gremlin.process.graph.step.map.BackStep;
+import com.tinkerpop.gremlin.process.graph.step.map.BranchStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeOtherVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.EdgeVertexStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ElementPropertyStep;
@@ -40,7 +41,6 @@ import com.tinkerpop.gremlin.process.graph.step.map.SelectStep;
 import com.tinkerpop.gremlin.process.graph.step.map.ShuffleStep;
 import com.tinkerpop.gremlin.process.graph.step.map.StartStep;
 import com.tinkerpop.gremlin.process.graph.step.map.UnfoldStep;
-import com.tinkerpop.gremlin.process.graph.step.map.UnionStep;
 import com.tinkerpop.gremlin.process.graph.step.map.VertexStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AddEdgeStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.AggregateStep;
@@ -63,6 +63,7 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
+import com.tinkerpop.gremlin.util.function.SBiFunction;
 import com.tinkerpop.gremlin.util.function.SBiPredicate;
 import com.tinkerpop.gremlin.util.function.SConsumer;
 import com.tinkerpop.gremlin.util.function.SFunction;
@@ -272,8 +273,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new SelectStep(this, Arrays.asList(), stepFunctions));
     }
 
-    public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... traversals) {
-        return (GraphTraversal) this.addStep(new UnionStep(this, traversals));
+    public default <E2> GraphTraversal<S, E2> branch(final Traversal<?, E2>... traversals) {
+        return (GraphTraversal) this.addStep(new BranchStep(this, traversals));
     }
 
     public default <E2> GraphTraversal<S, E2> intersect(final Traversal<?, E2>... traversals) {
@@ -284,8 +285,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new UnfoldStep<>(this));
     }
 
-    public default GraphTraversal<S, Iterator<E>> fold() {
+    public default GraphTraversal<S, List<E>> fold() {
         return (GraphTraversal) this.addStep(new FoldStep<>(this));
+    }
+
+    public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final SBiFunction<E2, E, E2> foldFunction) {
+        return (GraphTraversal) this.addStep(new FoldStep<>(this, seed, foldFunction));
     }
 
     ///////////////////// FILTER STEPS /////////////////////

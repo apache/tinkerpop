@@ -145,7 +145,7 @@ public interface Edge extends Element {
         return (GraphTraversal) traversal.addStep(new StartStep<Edge>(traversal, this));
     }
 
-    // TODO: union
+    // TODO: branch
 
 
     // TODO: test

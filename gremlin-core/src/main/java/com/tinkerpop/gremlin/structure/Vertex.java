@@ -198,7 +198,7 @@ public interface Vertex extends Element {
         return (GraphTraversal) traversal.addStep(new StartStep<Vertex>(traversal, this));
     }
 
-    // TODO: union
+    // TODO: branch
 
 
     public default GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
