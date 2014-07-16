@@ -50,6 +50,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TimeLimitStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeStep;
@@ -459,6 +460,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> tree(final SFunction... branchFunctions) {
         return (GraphTraversal) this.addStep(new TreeStep<>(this, SideEffectCapable.CAP_KEY, branchFunctions));
+    }
+
+    public default GraphTraversal<S, E> store(final String variable, final SFunction<E,?>... storeFunctions) {
+        return (GraphTraversal) this.addStep(new StoreStep<>(this, variable, storeFunctions));
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

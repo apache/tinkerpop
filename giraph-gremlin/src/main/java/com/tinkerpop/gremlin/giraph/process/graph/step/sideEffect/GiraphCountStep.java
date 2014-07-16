@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.giraph.hdfs.TextFileLineIterator;
 import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.graph.marker.GiraphSideEffectStep;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -119,5 +120,9 @@ public class GiraphCountStep<S> extends FilterStep<S> implements SideEffectCapab
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    public String getVariable() {
+        return COUNT;
     }
 }

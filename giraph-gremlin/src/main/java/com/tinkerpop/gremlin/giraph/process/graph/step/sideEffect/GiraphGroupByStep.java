@@ -1,10 +1,14 @@
 package com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect;
 
+import com.tinkerpop.gremlin.giraph.hdfs.HDFSTools;
+import com.tinkerpop.gremlin.giraph.hdfs.HiddenFileFilter;
 import com.tinkerpop.gremlin.giraph.hdfs.KeyHelper;
+import com.tinkerpop.gremlin.giraph.hdfs.TextFileLineIterator;
 import com.tinkerpop.gremlin.giraph.process.JobCreator;
 import com.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import com.tinkerpop.gremlin.giraph.process.computer.KryoWritable;
 import com.tinkerpop.gremlin.giraph.process.computer.util.ConfUtil;
+import com.tinkerpop.gremlin.giraph.process.graph.marker.GiraphSideEffectStep;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.giraph.structure.util.GiraphInternalVertex;
 import com.tinkerpop.gremlin.process.Traversal;
@@ -21,6 +25,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.util.function.SFunction;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -36,12 +41,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable, Reversible, VertexCentric, JobCreator {
+public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffectCapable, Reversible, VertexCentric, JobCreator, GiraphSideEffectStep<java.util.Map> {
 
     private static final String GREMLIN_GROUP_BY_VARIABLE = "gremlin.groupBy.variable";
     private static final String GREMLIN_GROUP_BY_AS = "gremlin.groupBy.as";
@@ -177,5 +183,24 @@ public class GiraphGroupByStep<S, K, V, R> extends FilterStep<S> implements Side
         FileInputFormat.setInputPaths(job, new Path(newConfiguration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.G));
         FileOutputFormat.setOutputPath(job, new Path(newConfiguration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + KeyHelper.makeDirectory(this.variable)));
         return job;
+    }
+
+    public java.util.Map getSideEffect(final Configuration configuration) {
+        try {
+            final HashMap map = new HashMap<>();
+            final FileSystem fs = FileSystem.get(configuration);
+            final Iterator<String> itty = new TextFileLineIterator(fs, new LinkedList(HDFSTools.getAllFilePaths(fs, new Path(configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + KeyHelper.makeDirectory(this.variable)), new HiddenFileFilter())), Long.MAX_VALUE);
+            itty.forEachRemaining(s -> {
+                String[] splits = s.split("\t");
+                map.put(splits[0], splits[1]);
+            });
+            return map;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public String getVariable() {
+        return this.variable;
     }
 }

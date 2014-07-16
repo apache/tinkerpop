@@ -1,12 +1,13 @@
 package com.tinkerpop.gremlin.giraph.process.computer;
 
-import com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect.GiraphSideEffectStep;
+import com.tinkerpop.gremlin.giraph.process.graph.marker.GiraphSideEffectStep;
 import com.tinkerpop.gremlin.giraph.structure.GiraphGraph;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import com.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgramIterator;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountStep;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -104,7 +105,9 @@ public class GiraphGraphComputer implements GraphComputer {
     }
 
     public <E> Iterator<E> execute(final Traversal<?, E> traversal) {
-        if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable || TraversalHelper.getEnd(traversal) instanceof CountStep) {
+        if (TraversalHelper.getEnd(traversal) instanceof SideEffectCapable ||
+                TraversalHelper.getEnd(traversal) instanceof CountStep ||
+                TraversalHelper.getEnd(traversal) instanceof SideEffectCapStep) {
             this.program(TraversalVertexProgram.create().traversal(() -> traversal).getConfiguration());
             try {
                 this.submit().get().getValue0();

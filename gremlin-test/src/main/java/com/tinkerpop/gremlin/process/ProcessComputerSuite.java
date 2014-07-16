@@ -23,6 +23,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.CountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupByTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapTest;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -81,7 +82,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             TreeTest.JavaComputerTreeTest.class,
             GroupCountTest.JavaComputerGroupCountTest.class,
             GroupByTest.JavaComputerGroupByTest.class,
-
+            StoreTest.JavaComputerStoreTest.class,
             SideEffectCapTest.JavaComputerSideEffectCapTest.class,
 
           /*
@@ -120,7 +121,10 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             // FoldTest.class,
             ValuesTest.class,
             TreeTest.class,
-            PageRankVertexProgramTest.class
+            PageRankVertexProgramTest.class,
+            GroupCountTest.class,
+            GroupByTest.class,
+            StoreTest.class
     };
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

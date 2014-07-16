@@ -26,7 +26,7 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
     public GroupByStep(final Traversal traversal, final String variable, final SFunction<S, K> keyFunction, final SFunction<S, V> valueFunction, final SFunction<Collection<V>, R> reduceFunction) {
         super(traversal);
         this.variable = variable;
-        this.groupMap = traversal.memory().getOrCreate(this.variable, HashMap<K, Collection<V>>::new);
+        this.groupMap = this.traversal.memory().getOrCreate(this.variable, HashMap<K, Collection<V>>::new);
         this.reduceMap = new HashMap<>();
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction == null ? s -> (V) s : valueFunction;

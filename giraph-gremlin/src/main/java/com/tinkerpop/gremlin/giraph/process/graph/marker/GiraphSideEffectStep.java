@@ -1,4 +1,4 @@
-package com.tinkerpop.gremlin.giraph.process.graph.step.sideEffect;
+package com.tinkerpop.gremlin.giraph.process.graph.marker;
 
 import org.apache.hadoop.conf.Configuration;
 
@@ -8,4 +8,6 @@ import org.apache.hadoop.conf.Configuration;
 public interface GiraphSideEffectStep<T> {
 
     public T getSideEffect(final Configuration configuration);
+
+    public String getVariable();
 }

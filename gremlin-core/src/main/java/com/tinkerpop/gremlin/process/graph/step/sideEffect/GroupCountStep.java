@@ -25,8 +25,7 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
         super(traversal);
         this.functionRing = new FunctionRing<>(preGroupFunctions);
         this.variable = variable;
-        this.groupCountMap = traversal.memory().getOrCreate(variable, HashMap<Object, Long>::new);
-        this.traversal.memory().set(this.variable, this.groupCountMap);
+        this.groupCountMap = this.traversal.memory().getOrCreate(variable, HashMap<Object, Long>::new);
         this.setPredicate(traverser -> {
             MapHelper.incr(this.groupCountMap, this.functionRing.next().apply(traverser.get()), this.bulkCount);
             return true;

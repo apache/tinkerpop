@@ -17,7 +17,7 @@ public class CountCapStep<S> extends FilterStep<S> implements Bulkable, SideEffe
         this.setPredicate(traverser -> {
             synchronized (this) {
                 final Long count = traversal.memory().getOrCreate(CAP_KEY, () -> 0l);
-                traversal.memory().set(CAP_KEY, count + this.bulkCount);
+                this.traversal.memory().set(CAP_KEY, count + this.bulkCount);
                 return true;
             }
         });

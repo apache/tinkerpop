@@ -15,10 +15,9 @@ import com.tinkerpop.gremlin.process.graph.marker.Bulkable;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
-import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -26,45 +25,48 @@ import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, JobCreator, GiraphSideEffectStep<Map> {
+public class GiraphStoreStep<S> extends FilterStep<S> implements SideEffectCapable, Reversible, Bulkable, VertexCentric, JobCreator, GiraphSideEffectStep<Collection> {
 
-    private static final String GREMLIN_GROUP_COUNT_VARIABLE = "gremlin.groupCount.variable";
+    private static final String GREMLIN_STORE_VARIABLE = "gremlin.store.variable";
 
-    private java.util.Map<Object, Long> groupCountMap;
+    private Collection storeCollection;
     public final FunctionRing<S, ?> functionRing;
     public Vertex vertex;
     public final String variable;
     private long bulkCount = 1l;
 
-    public GiraphGroupCountStep(final Traversal traversal, final GroupCountStep groupCountStep) {
+    public GiraphStoreStep(final Traversal traversal, final StoreStep storeStep) {
         super(traversal);
-        this.functionRing = groupCountStep.functionRing;
-        this.variable = groupCountStep.variable;
+        this.functionRing = storeStep.functionRing;
+        this.variable = storeStep.variable;
         this.setPredicate(traverser -> {
-            MapHelper.incr(this.groupCountMap, this.functionRing.next().apply(traverser.get()), this.bulkCount);
+            final Object storeObject = this.functionRing.next().apply(traverser.get());
+            for (int i = 0; i < this.bulkCount; i++) {
+                this.storeCollection.add(storeObject);
+            }
             return true;
         });
-        if (TraversalHelper.isLabeled(groupCountStep))
-            this.setAs(groupCountStep.getAs());
+        if (TraversalHelper.isLabeled(storeStep))
+            this.setAs(storeStep.getAs());
     }
 
     public void setCurrentBulkCount(final long bulkCount) {
@@ -72,65 +74,38 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
     }
 
     public void setCurrentVertex(final Vertex vertex) {
-        this.groupCountMap = vertex.<java.util.Map<Object, Long>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
-        vertex.property(Graph.Key.hidden(this.variable), this.groupCountMap);
+        this.storeCollection = vertex.<Collection>property(Graph.Key.hidden(this.variable)).orElse(new ArrayList());
+        vertex.property(Graph.Key.hidden(this.variable), this.storeCollection);
     }
 
-    public static class Map extends Mapper<NullWritable, GiraphInternalVertex, Text, LongWritable> {
-        //private HashMap<Object, Long> map = new HashMap<>();
-        //private int mapSpillOver = 1000;
+    public static class Map extends Mapper<NullWritable, GiraphInternalVertex, NullWritable, Text> {
         private final Text textWritable = new Text();
-        private final LongWritable longWritable = new LongWritable();
         private String variable;
 
         @Override
-        public void setup(final Mapper<NullWritable, GiraphInternalVertex, Text, LongWritable>.Context context) {
-            this.variable = context.getConfiguration().get(GREMLIN_GROUP_COUNT_VARIABLE, "null");
+        public void setup(final Mapper<NullWritable, GiraphInternalVertex, NullWritable, Text>.Context context) {
+            this.variable = context.getConfiguration().get(GREMLIN_STORE_VARIABLE, "null");
         }
 
         @Override
-        public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, Text, LongWritable>.Context context) throws IOException, InterruptedException {
-            // TODO: Kryo is serializing the Map<Object,Long> as a Map<Object,Integer>
-            final HashMap<Object, Number> tempMap = value.getTinkerVertex().<HashMap<Object, Number>>property(Graph.Key.hidden(this.variable)).orElse(new HashMap<>());
-            tempMap.forEach((k, v) -> {
-                this.textWritable.set(null == k ? "null" : k.toString());
-                this.longWritable.set(v.longValue());
-                try {
-                    context.write(this.textWritable, this.longWritable);
-                } catch (Exception e) {
-                    throw new RuntimeException(e.getMessage(), e);
-                }
-            });
-        }
-    }
-
-    public static class Reduce extends Reducer<Text, LongWritable, Text, LongWritable> {
-        private final LongWritable longWritable = new LongWritable();
-
-        @Override
-        public void reduce(final Text key, final Iterable<LongWritable> values, final Reducer<Text, LongWritable, Text, LongWritable>.Context context) throws IOException, InterruptedException {
-            long totalCount = 0;
-            for (final LongWritable token : values) {
-                totalCount = totalCount + token.get();
+        public void map(final NullWritable key, final GiraphInternalVertex value, final Mapper<NullWritable, GiraphInternalVertex, NullWritable, Text>.Context context) throws IOException, InterruptedException {
+            for (final Object item : value.getTinkerVertex().<Collection>property(Graph.Key.hidden(this.variable)).orElse(Collections.emptyList())) {
+                this.textWritable.set(item.toString());
+                context.write(NullWritable.get(), this.textWritable);
             }
-            this.longWritable.set(totalCount);
-            context.write(key, this.longWritable);
         }
     }
 
     public Job createJob(final Configuration configuration) throws IOException {
         final Configuration newConfiguration = new Configuration(configuration);
-        newConfiguration.set(GREMLIN_GROUP_COUNT_VARIABLE, this.variable);
+        newConfiguration.set(GREMLIN_STORE_VARIABLE, this.variable);
 
         final Job job = new Job(newConfiguration, GiraphGraphComputer.GIRAPH_GREMLIN_JOB_PREFIX + this.toString() + "[SideEffect Calculation]");
         job.setJarByClass(GiraphGraph.class);
         job.setMapperClass(Map.class);
-        job.setCombinerClass(Reduce.class);
-        job.setReducerClass(Reduce.class);
-        job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(LongWritable.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(LongWritable.class);
+        job.setNumReduceTasks(0);
+        job.setMapOutputKeyClass(NullWritable.class);
+        job.setMapOutputValueClass(Text.class);
         job.setInputFormatClass(ConfUtil.getInputFormatFromVertexInputFormat((Class) newConfiguration.getClass(GiraphGraph.GIRAPH_VERTEX_INPUT_FORMAT_CLASS, VertexInputFormat.class)));
         job.setOutputFormatClass(TextOutputFormat.class);
         FileInputFormat.setInputPaths(job, new Path(newConfiguration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + GiraphGraphComputer.G));
@@ -138,16 +113,13 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
         return job;
     }
 
-    public java.util.Map<Object, Long> getSideEffect(final Configuration configuration) {
+    public Collection getSideEffect(final Configuration configuration) {
         try {
-            final HashMap<Object, Long> map = new HashMap<>();
+            final List list = new ArrayList();
             final FileSystem fs = FileSystem.get(configuration);
             final Iterator<String> itty = new TextFileLineIterator(fs, new LinkedList(HDFSTools.getAllFilePaths(fs, new Path(configuration.get(GiraphGraph.GREMLIN_OUTPUT_LOCATION) + "/" + KeyHelper.makeDirectory(this.variable)), new HiddenFileFilter())), Long.MAX_VALUE);
-            itty.forEachRemaining(s -> {
-                String[] splits = s.split("\t");
-                map.put(splits[0], Long.valueOf(splits[1]));
-            });
-            return map;
+            itty.forEachRemaining(list::add);
+            return list;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
