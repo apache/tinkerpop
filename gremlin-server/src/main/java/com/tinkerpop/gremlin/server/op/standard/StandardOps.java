@@ -62,28 +62,31 @@ final class StandardOps {
         final Timer.Context timerContext = traverseOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
-        final CompletableFuture<Traversal> future = CompletableFuture.supplyAsync(() -> {
-            try {
-                // todo: maybe this should always eval out in the scriptengine - basically a sandbox
-                final Map<String, Object> args = msg.getArgs();
-                final SFunction<Graph, Traversal> traversal = (SFunction<Graph, Traversal>) Serializer.deserializeObject((byte[]) args.get(Tokens.ARGS_GREMLIN));
 
-                // previously validated that the graph was present
-                return traversal.apply(context.getGraphs().getGraphs().get(args.get(Tokens.ARGS_GRAPH_NAME)));
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+        final Map<String, Object> args = msg.getArgs();
+        final Map<String, Object> bindings = Optional.ofNullable((Map<String, Object>) args.get(Tokens.ARGS_BINDINGS)).orElse(new HashMap<>());
 
-        future.thenAccept(o -> {
-            ctx.write(Pair.with(msg, convertToIterator(o)));
-        }).thenRun(timerContext::stop);
+        final SFunction<Graph, Traversal> traversal;
+        try {
+            // deserialize the traversal and shove it into the bindings so that it can be executed within the
+            // scriptengine.  the scriptengine acts as a sandbox within which to execute the traversal.
+            traversal = (SFunction<Graph, Traversal>) Serializer.deserializeObject((byte[]) args.get(Tokens.ARGS_GREMLIN));
+            bindings.put("____trvrslScrpt", traversal);
+        } catch (Exception ex) {
+            logger.warn(String.format("Exception processing a traversal on request [%s].", msg), ex);
+            ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_TRAVERSAL_EVALUATION).result(ex.getMessage()).build());
+            return;
+        }
 
+        final String script = String.format("____trvrslScrpt.apply(%s)", args.get(Tokens.ARGS_GRAPH_NAME));
+        final CompletableFuture<Object> future = context.getGremlinExecutor().eval(script, bindings);
+        future.handle((v, t) -> timerContext.stop());
+        future.thenAccept(o -> ctx.write(Pair.with(msg, convertToIterator(o))));
         future.exceptionally(se -> {
             logger.warn(String.format("Exception processing a traversal on request [%s].", msg), se);
             ctx.writeAndFlush(ResponseMessage.create(msg).code(ResultCode.SERVER_ERROR_TRAVERSAL_EVALUATION).result(se.getMessage()).build());
             return null;
-        }).thenRun(timerContext::stop);
+        });
     }
 
     private static Iterator convertToIterator(final Object o) {
