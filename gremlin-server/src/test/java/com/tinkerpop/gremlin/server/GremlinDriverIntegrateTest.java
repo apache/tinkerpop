@@ -45,11 +45,19 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public TestName name = new TestName();
 
     public static class RemoteTraversal implements SFunction<Graph, Traversal> {
-
-        // todo: consider how to parameterize traversals - is it best done client side during construction or through bindings as a SBiFunction<Graph, Map, Traversal>
-
         public Traversal apply(final Graph g) {
             return g.V().out().range(0, 9);
+        }
+    }
+
+    public static class ParameterizedRemoteTraversal implements SFunction<Graph, Traversal> {
+        private String name;
+        public ParameterizedRemoteTraversal(final String name) {
+            this.name = name;
+        }
+
+        public Traversal apply(final Graph g) {
+            return g.V().has("name", name).value("name");
         }
     }
 
@@ -63,6 +71,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldSendTraversal":
                 settings.scriptEngines.get("gremlin-groovy").scripts.add("scripts/generate-sample.groovy");
                 break;
+            case "shouldSendParameterizedTraversal":
+                settings.scriptEngines.get("gremlin-groovy").scripts.add("scripts/generate-classic.groovy");
+                break;
         }
 
         return settings;
@@ -75,6 +86,17 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final List<Item> results = client.submit(new RemoteTraversal()).all().get();
         assertEquals(10, results.size());
+        cluster.close();
+    }
+
+    @Test
+    public void shouldSendParameterizedTraversal() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final List<Item> results = client.submit(new ParameterizedRemoteTraversal("marko")).all().get();
+        assertEquals(1, results.size());
+        assertEquals("marko", results.get(0).getString());
         cluster.close();
     }
 
