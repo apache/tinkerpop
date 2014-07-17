@@ -24,7 +24,6 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         final Iterator<Collection> step = get_g_V_storeXa_nameX_out_capXaX();
         Collection names = step.next();
         assertEquals(6, names.size());
-        System.out.println(names);
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("josh"));
         assertTrue(names.contains("peter"));

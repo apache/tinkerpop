@@ -39,6 +39,14 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser<E>>, Serial
         this.expander.add((Iterator) iterator);
     }
 
+    public String toString() {
+        return this.expander.toString();
+    }
+
+    public boolean isEmpty() {
+        return this.expander.queue.isEmpty();
+    }
+
     public class ExpandableIterator<T> implements Iterator<T>, Serializable {
 
         private final Queue<Iterator<T>> queue = new LinkedList<>();
@@ -65,6 +73,10 @@ public class ExpandableStepIterator<E> implements Iterator<Traverser<E>>, Serial
 
         public void add(final Iterator<T> iterator) {
             this.queue.add(iterator);
+        }
+
+        public String toString() {
+            return this.queue.toString();
         }
     }
 }

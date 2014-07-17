@@ -25,7 +25,7 @@ public class PageRankVertexProgramTest extends AbstractGremlinTest {
         viewGraph.V().forEach(v -> {
             assertTrue(v.keys().contains("name"));
             assertTrue(v.hiddenKeys().contains(Graph.Key.unHide(PageRankVertexProgram.PAGE_RANK)));
-            System.out.println(v.value("name") + ":" + v.value(PageRankVertexProgram.PAGE_RANK));
+            //System.out.println(v.value("name") + ":" + v.value(PageRankVertexProgram.PAGE_RANK));
             final String name = v.value("name");
             final Double pageRank = v.value(PageRankVertexProgram.PAGE_RANK);
             if (name.equals("marko"))

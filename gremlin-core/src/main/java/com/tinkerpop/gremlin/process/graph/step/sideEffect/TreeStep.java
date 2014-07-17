@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.util.Tree;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 /**
@@ -42,6 +43,12 @@ public class TreeStep<S> extends FilterStep<S> implements Reversible, PathConsum
     public void setCurrentBulkCount(final long count) {
         // do nothing as repeated elements is not important for tree, only unique paths.
         // this is more of an optimization for not running the same path over and over again.
+    }
+
+    public String toString() {
+        return this.variable.equals(SideEffectCapable.CAP_KEY) ?
+                super.toString() :
+                TraversalHelper.makeStepString(this, this.variable);
     }
 
 }

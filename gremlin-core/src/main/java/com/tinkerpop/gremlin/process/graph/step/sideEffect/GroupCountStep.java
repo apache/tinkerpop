@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MapHelper;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.HashMap;
@@ -34,6 +35,12 @@ public class GroupCountStep<S> extends FilterStep<S> implements SideEffectCapabl
 
     public void setCurrentBulkCount(final long bulkCount) {
         this.bulkCount = bulkCount;
+    }
+
+    public String toString() {
+        return this.variable.equals(SideEffectCapable.CAP_KEY) ?
+                super.toString() :
+                TraversalHelper.makeStepString(this, this.variable);
     }
 
 }

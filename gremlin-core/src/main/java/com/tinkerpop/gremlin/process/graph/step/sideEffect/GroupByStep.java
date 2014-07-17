@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.process.graph.step.sideEffect;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
@@ -66,5 +67,11 @@ public class GroupByStep<S, K, V, R> extends FilterStep<S> implements SideEffect
         } else {
             values.add(value);
         }
+    }
+
+    public String toString() {
+        return this.variable.equals(SideEffectCapable.CAP_KEY) ?
+                super.toString() :
+                TraversalHelper.makeStepString(this, this.variable);
     }
 }

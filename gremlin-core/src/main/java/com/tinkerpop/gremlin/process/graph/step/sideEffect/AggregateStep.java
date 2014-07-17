@@ -7,6 +7,7 @@ import com.tinkerpop.gremlin.process.graph.marker.Reversible;
 import com.tinkerpop.gremlin.process.util.AbstractStep;
 import com.tinkerpop.gremlin.process.util.FastNoSuchElementException;
 import com.tinkerpop.gremlin.process.util.FunctionRing;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
@@ -52,5 +53,11 @@ public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, 
                     throw FastNoSuchElementException.instance();
             }
         }
+    }
+
+    public String toString() {
+        return this.variable.equals(SideEffectCapable.CAP_KEY) ?
+                super.toString() :
+                TraversalHelper.makeStepString(this, this.variable);
     }
 }

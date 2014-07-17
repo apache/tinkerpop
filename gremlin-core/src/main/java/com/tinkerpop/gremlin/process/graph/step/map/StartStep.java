@@ -1,12 +1,13 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
-import com.tinkerpop.gremlin.process.SimpleTraverser;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.PathTraverser;
+import com.tinkerpop.gremlin.process.SimpleTraverser;
 import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.TraverserIterator;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.marker.TraverserSource;
 import com.tinkerpop.gremlin.process.util.SingleIterator;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
+import com.tinkerpop.gremlin.process.util.TraverserIterator;
 
 import java.util.Iterator;
 
@@ -25,6 +26,18 @@ public class StartStep<S> extends MapStep<S, S> implements TraverserSource {
 
     public void clear() {
         this.starts.clear();
+    }
+
+    public String toString() {
+        if (null != this.start && !this.starts.isEmpty()) {
+            return TraversalHelper.makeStepString(this, this.start, this.starts);
+        } else if (null != this.start) {
+            return TraversalHelper.makeStepString(this, this.start);
+        } else if (!this.starts.isEmpty()) {
+            return TraversalHelper.makeStepString(this, this.starts);
+        } else {
+            return super.toString();
+        }
     }
 
     public void generateTraverserIterator(final boolean trackPaths) {

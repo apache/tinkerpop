@@ -1,6 +1,7 @@
 package com.tinkerpop.gremlin.process.graph.step.map;
 
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.util.SOptional;
 
@@ -37,5 +38,9 @@ public class ElementValueStep<E> extends MapStep<Element, E> {
         this.defaultValue = SOptional.empty();
         this.defaultSupplier = SOptional.of(defaultSupplier);
         this.setFunction(traverser -> traverser.get().<E>property(key).orElse(this.defaultSupplier.get().get()));
+    }
+
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.key);
     }
 }

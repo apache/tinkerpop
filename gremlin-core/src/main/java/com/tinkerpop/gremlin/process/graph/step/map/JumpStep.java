@@ -48,4 +48,8 @@ public class JumpStep<S> extends AbstractStep<S, S> {
             }
         }
     }
+
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.jumpAs);
+    }
 }
