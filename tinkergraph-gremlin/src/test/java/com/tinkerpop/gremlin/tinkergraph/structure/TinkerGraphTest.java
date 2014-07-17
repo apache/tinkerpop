@@ -1,9 +1,6 @@
 package com.tinkerpop.gremlin.tinkergraph.structure;
 
 import com.tinkerpop.gremlin.AbstractGremlinTest;
-import com.tinkerpop.gremlin.process.Step;
-import com.tinkerpop.gremlin.process.Traversal;
-import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.IoTest;
@@ -89,16 +86,12 @@ public class TinkerGraphTest implements Serializable {
 
     @Test
     public void testPlay() {
-        final TinkerGraph g = TinkerFactory.createClassic();
-        //System.out.println(g.v(1).outE().as("here").inV().has("name","vadas").back("here").toList());
-
-
-        System.out.println(g.V().out().getSteps());
-        Traversal t = g.V().out();
-        TraversalHelper.removeStep((Step) t.getSteps().get(1), t);
-        System.out.println(t);
-        System.out.println(((Step) t.getSteps().get(0)).getNextStep());
-        System.out.println(((Step) t.getSteps().get(0)).getPreviousStep());
+        /*final TinkerGraph g = TinkerFactory.createClassic();
+        Traversal traversal = g.V().as("x").outE().inV().jump("x", 2);
+        System.out.println(traversal);
+        traversal.strategies().applyFinalStrategies();
+        System.out.println(traversal);
+        traversal.forEachRemaining(System.out::println);*/
     }
 
     /**

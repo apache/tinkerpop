@@ -10,7 +10,6 @@ import com.tinkerpop.gremlin.process.graph.strategy.DefaultTraversalStrategies;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,7 +29,7 @@ public class EmptyTraversal<S, E> implements Traversal<S, E> {
     }
 
     public E next() {
-        throw new NoSuchElementException();
+        throw FastNoSuchElementException.instance();
     }
 
     public Memory memory() {

@@ -29,15 +29,7 @@ public class StartStep<S> extends MapStep<S, S> implements TraverserSource {
     }
 
     public String toString() {
-        if (null != this.start && !this.starts.isEmpty()) {
-            return TraversalHelper.makeStepString(this, this.start, this.starts);
-        } else if (null != this.start) {
-            return TraversalHelper.makeStepString(this, this.start);
-        } else if (!this.starts.isEmpty()) {
-            return TraversalHelper.makeStepString(this, this.starts);
-        } else {
-            return super.toString();
-        }
+        return (null != this.start) ? TraversalHelper.makeStepString(this, this.start) : super.toString();
     }
 
     public void generateTraverserIterator(final boolean trackPaths) {

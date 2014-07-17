@@ -4,7 +4,9 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.marker.PathConsumer;
 import com.tinkerpop.gremlin.process.graph.marker.Reversible;
+import com.tinkerpop.gremlin.util.Serializer;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -149,5 +151,26 @@ public class TraversalHelper {
                 .filter(step -> step instanceof PathConsumer)
                 .findFirst()
                 .isPresent();
+    }
+
+    public static List<Step> isolateSteps(final Step from, final Step to) {
+        final List<Step> steps = new ArrayList<>();
+        Step step = from.getNextStep();
+        while (step != to && !(step instanceof EmptyStep)) {
+            steps.add(step);
+            step = step.getNextStep();
+        }
+        if (step instanceof EmptyStep)
+            steps.clear();
+        return steps;
+    }
+
+    public static Step cloneStep(final Step step) {
+        try {
+            step.dehydrateStep();
+            return (Step) Serializer.deserializeObject(Serializer.serializeObject(step));
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

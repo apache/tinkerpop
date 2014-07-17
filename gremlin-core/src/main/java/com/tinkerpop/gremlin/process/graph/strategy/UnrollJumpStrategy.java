@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategy;
 import com.tinkerpop.gremlin.process.graph.step.map.JumpStep;
+import com.tinkerpop.gremlin.process.util.TraversalHelper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +19,18 @@ public class UnrollJumpStrategy implements TraversalStrategy.FinalTraversalStrat
                 .filter(step -> step instanceof JumpStep)
                 .collect(Collectors.toList());
 
-
+        for (final JumpStep toStep : list) {
+            if (toStep.unRollable()) {
+                final Step fromStep = TraversalHelper.getAs(toStep.jumpAs, traversal);
+                final List<Step> steps = TraversalHelper.isolateSteps(fromStep, toStep);
+                for (int i = 0; i < toStep.loops - 1; i++) {
+                    for (int j = steps.size() - 1; j >= 0; j--) {
+                        final Step clonedStep = TraversalHelper.cloneStep(steps.get(j));
+                        TraversalHelper.insertStep(clonedStep, traversal.getSteps().indexOf(fromStep) + 1, traversal);
+                    }
+                }
+                TraversalHelper.removeStep(toStep, traversal);
+            }
+        }
     }
 }

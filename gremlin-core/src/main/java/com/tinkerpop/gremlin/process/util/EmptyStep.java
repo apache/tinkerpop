@@ -1,8 +1,8 @@
 package com.tinkerpop.gremlin.process.util;
 
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.Traverser;
 
 import java.util.Iterator;
 
@@ -37,7 +37,11 @@ public class EmptyStep<S, E> implements Step<S, E> {
     }
 
     public <S, E> Traversal<S, E> getTraversal() {
-        return null;
+        return EmptyTraversal.instance();
+    }
+
+    public void dehydrateStep() {
+
     }
 
     public String getAs() {

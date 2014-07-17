@@ -485,7 +485,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> jump(final String as) {
-        return this.jump(as, Integer.MAX_VALUE, null);
+        return this.jump(as, t -> true, null);
     }
 
     public default GraphTraversal<S, E> jump(final String as, final int loops) {
