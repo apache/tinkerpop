@@ -4,6 +4,7 @@ notifications:
     - okrammarko@gmail.com
     - spmva@genoprime.com
     - josh@fortytwo.net
+    - daniel@thinkaurelius.com
   hipchat:
       rooms:
         secure: vMWqDialSquOmrly5TOk/cHKgUrkYYwj9RKF7SNyZnk5RVAIMUmmZFHYjKsO5uCoGDm2bD3Lbe0Ov7qodCRSj8QNKoMnuJ4ze91TSjCUyedAsk/OiNHGXxq4JYgH0aYgRWAYlzM6H4Kg2Mf+oyY+20a9/bTIgtSPi4eLvYW0y18=
