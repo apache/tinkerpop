@@ -33,6 +33,10 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2X();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2_trueX();
+
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXxX_out_jumpXx_loops_lt_2X_valueXnameX() {
@@ -114,6 +118,42 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         assertFalse(step.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_asXxX_out_jumpXx_2() {
+        final Iterator<Vertex> step = get_g_V_asXxX_out_jumpXx_2X();
+        System.out.println("Testing: " + step);
+        int counter = 0;
+        while (step.hasNext()) {
+            counter++;
+            Vertex vertex = step.next();
+            assertTrue(vertex.value("name").equals("lop") || vertex.value("name").equals("ripple"));
+        }
+        assertEquals(2, counter);
+        assertFalse(step.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_asXxX_out_jumpXx_2_trueX() {
+        final Iterator<Vertex> step = get_g_V_asXxX_out_jumpXx_2_trueX();
+        System.out.println("Testing: " + step);
+        Map<String, Long> map = new HashMap<>();
+        while (step.hasNext()) {
+            Vertex vertex = step.next();
+            MapHelper.incr(map, vertex.value("name"), 1l);
+        }
+        assertEquals(4, map.size());
+        assertTrue(map.containsKey("vadas"));
+        assertTrue(map.containsKey("josh"));
+        assertTrue(map.containsKey("ripple"));
+        assertTrue(map.containsKey("lop"));
+        assertEquals(new Long(1), map.get("vadas"));
+        assertEquals(new Long(1), map.get("josh"));
+        assertEquals(new Long(2), map.get("ripple"));
+        assertEquals(new Long(4), map.get("lop"));
+    }
+
 
     public static class JavaJumpTest extends JumpTest {
         public JavaJumpTest() {
@@ -138,6 +178,14 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name() {
             return g.V().as("x").out().jump("x", t -> t.getLoops() < 2).as("y").in().jump("y", t -> t.getLoops() < 2).value("name");
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2X() {
+            return g.V().as("x").out().jump("x", 2);
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2_trueX() {
+            return g.V().as("x").out().jump("x", 2, t -> true);
         }
     }
 
@@ -164,6 +212,14 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name() {
             return g.V().as("x").out().jump("x", t -> t.getLoops() < 2).as("y").in().jump("y", t -> t.getLoops() < 2).<String>value("name").submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2X() {
+            return g.V().as("x").out().jump("x", 2).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2_trueX() {
+            return g.V().as("x").out().jump("x", 2, t -> true).submit(g.compute());
         }
     }
 }

@@ -30,6 +30,7 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
             this.setAs(jumpStep.getAs());
     }
 
+    // TODO: Add loop checking
     protected Traverser<S> processNextStart() {
         final String loopFuture = TraversalHelper.getAs(this.jumpAs, this.traversal).getNextStep().getAs();
         while (true) {
@@ -39,10 +40,10 @@ public class JumpComputerStep<S> extends AbstractStep<S, S> {
                 final Traverser<S> traverser = this.starts.next();
                 traverser.incrLoops();
                 if (this.ifPredicate.test(traverser)) {
-                    final Traverser<S> loopTraverser = traverser.makeSibling();
-                    loopTraverser.setFuture(loopFuture);
-                    this.queue.add(loopTraverser);
-                    if (this.emitPredicate.test(traverser)) {
+                    final Traverser<S> ifTraverser = traverser.makeSibling();
+                    ifTraverser.setFuture(loopFuture);
+                    this.queue.add(ifTraverser);
+                    if (null != this.emitPredicate && this.emitPredicate.test(traverser)) {
                         final Traverser<S> emitTraverser = traverser.makeSibling();
                         emitTraverser.resetLoops();
                         emitTraverser.setFuture(this.nextStep.getAs());

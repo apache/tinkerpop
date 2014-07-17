@@ -29,4 +29,12 @@ class GroovyJumpTestImpl extends JumpTest {
         g.V().as("x").out().jump('x') { it.loops < 2 }.as("y").in().jump("y") { it.loops < 2 }.name;
     }
 
+    public Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2X() {
+        return g.V.as('x').out().jump('x', 2);
+    }
+
+    public Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2_trueX() {
+        return g.V().as('x').out.jump('x', 2) { true };
+    }
+
 }

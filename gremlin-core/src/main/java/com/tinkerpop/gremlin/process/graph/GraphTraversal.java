@@ -472,16 +472,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// BRANCH STEPS /////////////////////
 
-    public default GraphTraversal<S, E> jump(final String as) {
-        return this.jump(as, t -> true, t -> false);
+    public default GraphTraversal<S, E> jump(final String as, final SPredicate<Traverser<E>> ifPredicate, final SPredicate<Traverser<E>> emitPredicate) {
+        return (GraphTraversal) this.addStep(new JumpStep<>(this, as, ifPredicate, emitPredicate));
     }
 
     public default GraphTraversal<S, E> jump(final String as, final SPredicate<Traverser<E>> ifPredicate) {
-        return this.jump(as, ifPredicate, t -> false);
+        return this.jump(as, ifPredicate, null);
     }
 
-    public default GraphTraversal<S, E> jump(final String as, final SPredicate<Traverser<E>> ifPredicate, final SPredicate<Traverser<E>> emitPredicate) {
-        return (GraphTraversal) this.addStep(new JumpStep<>(this, as, ifPredicate, emitPredicate));
+    public default GraphTraversal<S, E> jump(final String as, final int loops, final SPredicate<Traverser<E>> emitPredicate) {
+        return (GraphTraversal) this.addStep(new JumpStep<>(this, as, loops, emitPredicate));
+    }
+
+    public default GraphTraversal<S, E> jump(final String as) {
+        return this.jump(as, Integer.MAX_VALUE, null);
+    }
+
+    public default GraphTraversal<S, E> jump(final String as, final int loops) {
+        return this.jump(as, loops, null);
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
@@ -492,7 +500,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final List<Step> steps = this.getSteps();
         steps.get(steps.size() - 1).setAs(as);
         return this;
-
     }
 
     public default void remove() {
