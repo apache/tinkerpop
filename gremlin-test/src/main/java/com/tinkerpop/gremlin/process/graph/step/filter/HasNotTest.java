@@ -48,8 +48,8 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         assertEquals(6, list.size());
     }
 
-    public static class JavaHasTest extends HasNotTest {
-        public JavaHasTest() {
+    public static class JavaHasNotTest extends HasNotTest {
+        public JavaHasNotTest() {
             requiresGraphComputer = false;
         }
 
@@ -62,8 +62,8 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         }
     }
 
-    public static class JavaComputerHasTest extends HasNotTest {
-        public JavaComputerHasTest() {
+    public static class JavaComputerHasNotTest extends HasNotTest {
+        public JavaComputerHasNotTest() {
             requiresGraphComputer = true;
         }
 

@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
@@ -58,41 +59,48 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
-            AggregateTest.JavaComputerAggregateTest.class,
-            CountTest.JavaComputerCountTest.class,
+            // filter
             CyclicPathTest.JavaComputerCyclicPathTest.class,
-            // DedupTest.JavaComputerDedupTest.class,  TODO: Makes no sense in GraphComputer
+            // TODO: REMOVE? DedupTest.JavaComputerDedupTest.class
             ExceptTest.JavaComputerExceptTest.class,
             FilterTest.JavaComputerFilterTest.class,
+            HasNotTest.JavaComputerHasNotTest.class,
             HasTest.JavaComputerHasTest.class,
             IntervalTest.JavaComputerIntervalTest.class,
             RandomTest.JavaComputerRandomTest.class,
-            //RangeTest.JavaComputerRangeTest.class, TODO: Makes no sense in GraphComputer
+            // TODO: REMOVE? RangeTest.JavaComputerRangeTest.class,
             RetainTest.JavaComputerRetainTest.class,
             SimplePathTest.JavaComputerSimplePathTest.class,
+
+
+            // map
             BackTest.JavaComputerBackTest.class,
+            // TODO: REMOVE? FoldTest.JavaComputerFoldTest.class,
             JumpTest.JavaComputerJumpTest.class,
-            MapTest.JavaMapTest.class,
-            //OrderTest.JavaOrderTest.class
+            MapTest.JavaComputerMapTest.class,
+            // TODO: REMOVE? OrderTest.JavaOrderTest.class
             PathTest.JavaComputerPathTest.class,
             SelectTest.JavaComputerSelectTest.class,
             TraversalTest.JavaComputerTraversalTest.class,
-            UnionTest.JavaComputerUnionTest.class,
             UnfoldTest.JavaComputerUnfoldTest.class,
-            // FoldTest.JavaComputerFoldTest.class,
+            UnionTest.JavaComputerUnionTest.class,
             ValuesTest.JavaComputerValuesTest.class,
-            TreeTest.JavaComputerTreeTest.class,
-            GroupCountTest.JavaComputerGroupCountTest.class,
+
+
+            // sideEffect
+            // TODO: REMOVE?  AddEdgeTest.JavaAddEdgeTest.class,
+            AggregateTest.JavaComputerAggregateTest.class,
+            CountTest.JavaComputerCountTest.class,
             GroupByTest.JavaComputerGroupByTest.class,
-            StoreTest.JavaComputerStoreTest.class,
+            GroupCountTest.JavaComputerGroupCountTest.class,
             SideEffectCapTest.JavaComputerSideEffectCapTest.class,
+            // TODO: REMOVE? SideEffectTest.JavaSideEffectTest.class,
+            StoreTest.JavaComputerStoreTest.class,
+            // TODO: REMOVE? SubgraphTest.JavaSideEffectTest.class,
+            TreeTest.JavaComputerTreeTest.class,
 
-          /*
-            // TODO: Be sure to XXComputerXX the class names
-            LinkTest.JavaLinkTest.class,
-            SideEffectTest.JavaSideEffectTest.class,
-          */
 
+            // algorithms
             PageRankVertexProgramTest.class
     };
 
@@ -100,32 +108,49 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
      */
     protected static final Class<?>[] testsToEnforce = new Class<?>[]{
-            AggregateTest.class,
-            CountTest.class,
+            // filter
             CyclicPathTest.class,
+            // DedupTest.class,
             ExceptTest.class,
             FilterTest.class,
+            HasNotTest.class,
             HasTest.class,
             IntervalTest.class,
             RandomTest.class,
             // RangeTest.class,
             RetainTest.class,
             SimplePathTest.class,
+
+
+            // map
             BackTest.class,
+            // FoldTest.class,
             JumpTest.class,
+            MapTest.class,
+            // OrderTest.class,
             PathTest.class,
             SelectTest.class,
-            SideEffectCapTest.class,
             Traversal.class,
-            UnionTest.class,
             UnfoldTest.class,
-            // FoldTest.class,
+            UnionTest.class,
             ValuesTest.class,
-            TreeTest.class,
-            PageRankVertexProgramTest.class,
-            GroupCountTest.class,
+
+
+            // sideEffect
+            // AddEdgeTest.class,
+            AggregateTest.class,
+            CountTest.class,
             GroupByTest.class,
-            StoreTest.class
+            GroupCountTest.class,
+            SideEffectCapTest.class,
+            // SideEffectTest.class,
+            StoreTest.class,
+            // SubGraphTest.class,
+            TreeTest.class,
+
+
+            // algorithms
+            PageRankVertexProgramTest.class
     };
 
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

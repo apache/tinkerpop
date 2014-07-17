@@ -1,10 +1,12 @@
 package com.tinkerpop.gremlin.process;
 
 import com.tinkerpop.gremlin.AbstractGremlinSuite;
+import com.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.CyclicPathTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.DedupTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.ExceptTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterTest;
+import com.tinkerpop.gremlin.process.graph.step.filter.HasNotTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.IntervalTest;
 import com.tinkerpop.gremlin.process.graph.step.filter.RandomTest;
@@ -63,74 +65,97 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+            // filter
             CyclicPathTest.JavaCyclicPathTest.class,
             DedupTest.JavaDedupTest.class,
             ExceptTest.JavaExceptTest.class,
             FilterTest.JavaFilterTest.class,
+            HasNotTest.JavaHasNotTest.class,
             HasTest.JavaHasTest.class,
             IntervalTest.JavaIntervalTest.class,
             RandomTest.JavaRandomTest.class,
             RangeTest.JavaRangeTest.class,
             RetainTest.JavaRetainTest.class,
             SimplePathTest.JavaSimplePathTest.class,
+
+            // map
             BackTest.JavaBackTest.class,
+            FoldTest.JavaFoldTest.class,
             JumpTest.JavaJumpTest.class,
             MapTest.JavaMapTest.class,
             OrderTest.JavaOrderTest.class,
             PathTest.JavaPathTest.class,
             SelectTest.JavaSelectTest.class,
             TraversalTest.JavaTraversalTest.class,
-            ValuesTest.JavaValuesTest.class,
             UnfoldTest.JavaUnfoldTest.class,
             UnionTest.JavaUnionTest.class,
-            FoldTest.JavaFoldTest.class,
+            ValuesTest.JavaValuesTest.class,
+
+            // sideEffect
+            AddEdgeTest.JavaAddEdgeTest.class,
             AggregateTest.JavaAggregateTest.class,
-            StoreTest.JavaStoreTest.class,
             CountTest.JavaCountTest.class,
             GroupByTest.JavaGroupByTest.class,
             GroupCountTest.JavaGroupCountTest.class,
-            AddEdgeTest.JavaAddEdgeTest.class,
-            SideEffectTest.JavaSideEffectTest.class,
             SideEffectCapTest.JavaSideEffectCapTest.class,
+            SideEffectTest.JavaSideEffectTest.class,
+            StoreTest.JavaStoreTest.class,
             SubgraphTest.JavaSideEffectTest.class,
             TreeTest.JavaTreeTest.class,
-            MemoryTest.JavaMemoryTest.class
+
+            // util
+            MemoryTest.JavaMemoryTest.class,
+
+            // algorithms
+            // PageRankVertexProgramTest.class
     };
 
     /**
      * Tests that will be enforced by the suite where instances of them should be in the list of testsToExecute.
      */
     protected static final Class<?>[] testsToEnforce = new Class<?>[]{
+            // filter
+            CyclicPathTest.class,
             DedupTest.class,
             ExceptTest.class,
             FilterTest.class,
+            HasNotTest.class,
             HasTest.class,
             IntervalTest.class,
             RandomTest.class,
             RangeTest.class,
             RetainTest.class,
             SimplePathTest.class,
+
+            // map
             BackTest.class,
+            FoldTest.class,
             JumpTest.class,
             MapTest.class,
             OrderTest.class,
             PathTest.class,
             SelectTest.class,
             TraversalTest.class,
-            ValuesTest.class,
-            UnionTest.class,
             UnfoldTest.class,
-            FoldTest.class,
+            UnionTest.class,
+            ValuesTest.class,
+
+            // sideEffect
+            AddEdgeTest.class,
             AggregateTest.class,
-            StoreTest.class,
             CountTest.class,
             GroupByTest.class,
             GroupCountTest.class,
-            AddEdgeTest.class,
-            SideEffectTest.class,
             SideEffectCapTest.class,
+            SideEffectTest.class,
+            StoreTest.class,
             SubgraphTest.class,
             TreeTest.class,
+
+            // algorithms
+            // PageRankVertexProgramTest.class,
+
+            // util
             MemoryTest.class
     };
 

@@ -5,6 +5,7 @@ import com.tinkerpop.gremlin.process.graph.step.filter.GroovyCyclicPathTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyDedupTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyExceptTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyFilterTestImpl;
+import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasNotTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyHasTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyIntervalTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.filter.GroovyRandomTestImpl;
@@ -22,6 +23,7 @@ import com.tinkerpop.gremlin.process.graph.step.map.GroovyValuesTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyAggregateTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupByTestImpl;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyGroupCountTestImpl;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroovyTreeTestImpl;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -41,16 +43,19 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] testsToExecute = new Class<?>[]{
+            // filter
             GroovyCyclicPathTestImpl.class,
             GroovyDedupTestImpl.class,
             GroovyExceptTestImpl.class,
             GroovyFilterTestImpl.class,
+            GroovyHasNotTestImpl.class,
             GroovyHasTestImpl.class,
             GroovyIntervalTestImpl.class,
             GroovyRandomTestImpl.class,
             GroovyRangeTestImpl.class,
             GroovyRetainTestImpl.class,
             GroovySimplePathTestImpl.class,
+            // map
             GroovyBackTestImpl.class,
             GroovyJumpTestImpl.class,
             GroovyMapTestImpl.class,
@@ -59,9 +64,11 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovySelectTestImpl.class,
             GroovyTraversalTestImpl.class,
             GroovyValuesTestImpl.class,
+            // sideEffect
             GroovyAggregateTestImpl.class,
             GroovyGroupByTestImpl.class,
-            GroovyGroupCountTestImpl.class
+            GroovyGroupCountTestImpl.class,
+            GroovyTreeTestImpl.class
     };
 
 
