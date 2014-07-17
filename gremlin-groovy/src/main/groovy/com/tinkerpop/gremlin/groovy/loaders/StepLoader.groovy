@@ -62,6 +62,10 @@ class StepLoader {
             return ((GraphTraversal) delegate).select(GFunction.make(stepClosures));
         }
 
+        GraphTraversal.metaClass.aggregate = { final Closure... preAggregateClosures ->
+            return ((GraphTraversal) delegate).aggregate(GFunction.make(preAggregateClosures));
+        }
+
         GraphTraversal.metaClass.aggregate = { final String variable, final Closure... preAggregateClosures ->
             return ((GraphTraversal) delegate).aggregate(variable, GFunction.make(preAggregateClosures));
         }

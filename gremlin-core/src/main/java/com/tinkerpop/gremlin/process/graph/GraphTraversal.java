@@ -398,6 +398,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new SubgraphStep<>(this, g, edgeIdHolder, vertexMap, includeEdge));
     }
 
+    public default GraphTraversal<S, E> aggregate(final SFunction<E, ?>... preAggregateFunctions) {
+        return (GraphTraversal) this.addStep(new AggregateStep<>(this, SideEffectCapable.CAP_KEY, preAggregateFunctions));
+    }
+
     public default GraphTraversal<S, E> aggregate(final String variable, final SFunction<E, ?>... preAggregateFunctions) {
         return (GraphTraversal) this.addStep(new AggregateStep<>(this, variable, preAggregateFunctions));
     }
@@ -462,7 +466,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.addStep(new TreeStep<>(this, SideEffectCapable.CAP_KEY, branchFunctions));
     }
 
-    public default GraphTraversal<S, E> store(final String variable, final SFunction<E,?>... storeFunctions) {
+    public default GraphTraversal<S, E> store(final String variable, final SFunction<E, ?>... storeFunctions) {
         return (GraphTraversal) this.addStep(new StoreStep<>(this, variable, storeFunctions));
     }
 

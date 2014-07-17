@@ -15,12 +15,22 @@ public class DefaultMemory implements Traversal.Memory {
     private Map<String, Object> memory;
 
     public <T> void set(final String key, final T value) {
+        MemoryHelper.validateVariable(key, value);
         if (null == this.memory) this.memory = new HashMap<>();
         this.memory.put(key, value);
     }
 
     public <T> T get(final String key) {
-        return null == this.memory ? null : (T) this.memory.get(key);
+        if (null == this.memory)
+            throw Traversal.Memory.Exceptions.variableValueDoesNotExist(key);
+        else {
+            final T t = (T) this.memory.get(key);
+            if (null == t)
+                throw Traversal.Memory.Exceptions.variableValueDoesNotExist(key);
+            else
+                return t;
+
+        }
     }
 
     public <T> T remove(final String key) {

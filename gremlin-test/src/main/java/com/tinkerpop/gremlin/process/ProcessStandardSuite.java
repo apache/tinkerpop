@@ -32,6 +32,7 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SubgraphTest;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.TreeTest;
+import com.tinkerpop.gremlin.process.graph.step.util.MemoryTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -92,7 +93,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SideEffectTest.JavaSideEffectTest.class,
             SideEffectCapTest.JavaSideEffectCapTest.class,
             SubgraphTest.JavaSideEffectTest.class,
-            TreeTest.JavaTreeTest.class
+            TreeTest.JavaTreeTest.class,
+            MemoryTest.JavaMemoryTest.class
     };
 
     /**
@@ -128,7 +130,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SideEffectTest.class,
             SideEffectCapTest.class,
             SubgraphTest.class,
-            TreeTest.class
+            TreeTest.class,
+            MemoryTest.class
     };
 
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

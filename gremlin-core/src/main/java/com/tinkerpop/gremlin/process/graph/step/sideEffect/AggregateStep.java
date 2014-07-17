@@ -17,7 +17,7 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, Bulkable {
+public class AggregateStep<S> extends AbstractStep<S, S> implements Reversible, Bulkable, SideEffectCapable {
 
     public final FunctionRing<S, ?> functionRing;
     final Collection aggregate;

@@ -13,12 +13,12 @@ class GroovyAggregateTestImpl extends AggregateTest {
         g.v(v1Id).aggregate('a').out('created').in('created').except('a')
     }
 
-    public List<String> get_g_V_valueXnameX_aggregateXaX_iterate_getXaX() {
-        g.V().value('name').aggregate('a').iterate().memory().get('a')
+    public Traversal<Vertex, List<String>> get_g_V_valueXnameX_aggregate() {
+        g.V().value('name').aggregate()
     }
 
-    public List<String> get_g_V_aggregateXa_nameX_iterate_getXaX() {
-        g.V.aggregate('a') { it.value('name') }.iterate().memory().get('a')
+    public Traversal<Vertex, List<String>> get_g_V_aggregateXnameX() {
+        g.V.aggregate() { it.value('name') }
     }
 
     public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {

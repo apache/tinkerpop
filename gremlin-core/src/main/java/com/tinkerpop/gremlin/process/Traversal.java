@@ -67,6 +67,29 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable {
                 return t;
             }
         }
+
+        public static class Exceptions {
+
+            public static IllegalArgumentException variableKeyCanNotBeEmpty() {
+                return new IllegalArgumentException("Memory variable key can not be the empty string");
+            }
+
+            public static IllegalArgumentException variableKeyCanNotBeNull() {
+                return new IllegalArgumentException("Memory variable key can not be null");
+            }
+
+            public static IllegalArgumentException variableValueCanNotBeNull() {
+                return new IllegalArgumentException("Memory variable value can not be null");
+            }
+
+            public static IllegalArgumentException variableValueDoesNotExist(final String variable) {
+                return new IllegalArgumentException("The memory does not have a value for provided variable: " + variable);
+            }
+
+            public static UnsupportedOperationException dataTypeOfVariableValueNotSupported(final Object val) {
+                return new UnsupportedOperationException(String.format("Memory variable value [%s] is of type %s is not supported", val, val.getClass()));
+            }
+        }
     }
 
     /////////
