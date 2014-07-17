@@ -37,15 +37,6 @@ class GraphLoader {
             }
         }
 
-        // This allows the use to not specify get() to get at the object contained in the Traverser
-        Traverser.metaClass.methodMissing = { final String name, final def args ->
-            return ((Traverser) delegate).get()."$name"(*args);
-        }
-
-        Traverser.metaClass.propertyMissing = { final String name ->
-            return ((Traverser) delegate).get()["$name"];
-        }
-
         // GraphML loading and saving
         Graph.metaClass.loadGraphML = { final def fileObject ->
             final GraphMLReader reader = GraphMLReader.create().build();

@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Iterator;
-import java.util.function.BiPredicate;
 
 /**
  * An {@link Edge} links two {@link Vertex} objects. Along with its {@link Property} objects, an {@link Edge} has both
@@ -53,104 +52,81 @@ public interface Edge extends Element {
         return this.toV(Direction.BOTH);
     }
 
-    // TODO: test
     public default GraphTraversal<Edge, Edge> aggregate(final String variable, final SFunction... preAggregateFunctions) {
         return this.start().aggregate(variable, preAggregateFunctions);
     }
 
-    // TODO: test
     public default GraphTraversal<Edge, Edge> as(final String as) {
         return this.start().as(as);
     }
 
-    // TODO: test
     public default GraphTraversal<Edge, Edge> filter(final SPredicate<Traverser<Edge>> predicate) {
         return this.start().filter(predicate);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Edge, E2> flatMap(final SFunction<Traverser<Edge>, Iterator<E2>> function) {
         return this.start().flatMap(function);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Edge, E2> has(final String key) {
         return this.start().has(key);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Edge, E2> has(final String key, final Object value) {
         return this.start().has(key, value);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Edge, E2> has(final String key, final T t, final Object value) {
         return this.start().has(key, t, value);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Edge, E2> has(final String key, final SBiPredicate predicate, final Object value) {
         return this.start().has(key, predicate, value);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Edge, E2> hasNot(final String key) {
         return this.start().hasNot(key);
     }
 
-    // TODO: intersect
-
-    // TODO: test
     public default <E2> GraphTraversal<Edge, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
         return this.start().interval(key, startValue, endValue);
     }
 
-    // TODO: test
     public default GraphTraversal<Edge, Edge> identity() {
         return this.start().identity();
     }
 
-    // TODO: test
     public default GraphTraversal<Edge, Edge> jump(final String as) {
         return this.start().jump(as);
     }
 
-    // TODO: test
     public default GraphTraversal<Edge, Edge> jump(final String as, final SPredicate<Traverser<Edge>> ifPredicate) {
         return this.start().jump(as, ifPredicate);
     }
 
-    // TODO: test
     public default GraphTraversal<Edge, Edge> jump(final String as, final SPredicate<Traverser<Edge>> ifPredicate, final SPredicate<Traverser<Edge>> emitPredicate) {
         return this.start().jump(as, ifPredicate, emitPredicate);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Edge, E2> map(final SFunction<Traverser<Edge>, E2> function) {
         return this.start().map(function);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Edge, E2> match(final String inAs, final String outAs, final Traversal... traversals) {
         return this.start().match(inAs, outAs, traversals);
     }
 
-    // TODO: test
     public default GraphTraversal<Edge, Edge> sideEffect(final SConsumer<Traverser<Edge>> consumer) {
         return this.start().sideEffect(consumer);
     }
 
-    public default GraphTraversal<Edge, Edge> start() {
-        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>();
-        return (GraphTraversal) traversal.addStep(new StartStep<Edge>(traversal, this));
-    }
-
-    // TODO: branch
-
-
-    // TODO: test
     public default GraphTraversal<Edge, Edge> with(final Object... variableValues) {
         return this.start().with(variableValues);
+    }
+
+    public default GraphTraversal<Edge, Edge> start() {
+        final GraphTraversal<Edge, Edge> traversal = new DefaultGraphTraversal<>();
+        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
     ///////////////

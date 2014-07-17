@@ -12,7 +12,6 @@ import com.tinkerpop.gremlin.util.function.SFunction;
 import com.tinkerpop.gremlin.util.function.SPredicate;
 
 import java.util.Iterator;
-import java.util.function.BiPredicate;
 
 /**
  * A {@link Vertex} maintains pointers to both a set of incoming and outgoing {@link Edge} objects. The outgoing edges
@@ -126,7 +125,6 @@ public interface Vertex extends Element {
         return this.start().filter(predicate);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> flatMap(final SFunction<Traverser<Vertex>, Iterator<E2>> function) {
         return this.start().flatMap(function);
     }
@@ -151,9 +149,6 @@ public interface Vertex extends Element {
         return this.start().hasNot(key);
     }
 
-    // TODO: intersect
-
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> interval(final String key, final Comparable startValue, final Comparable endValue) {
         return this.start().interval(key, startValue, endValue);
     }
@@ -162,17 +157,14 @@ public interface Vertex extends Element {
         return this.start().identity();
     }
 
-    // TODO: test
     public default GraphTraversal<Vertex, Vertex> jump(final String as) {
         return this.start().jump(as);
     }
 
-    // TODO: test
     public default GraphTraversal<Vertex, Vertex> jump(final String as, final SPredicate<Traverser<Vertex>> ifPredicate) {
         return this.start().jump(as, ifPredicate);
     }
 
-    // TODO: test
     public default GraphTraversal<Vertex, Vertex> jump(final String as, final SPredicate<Traverser<Vertex>> ifPredicate, final SPredicate<Traverser<Vertex>> emitPredicate) {
         return this.start().jump(as, ifPredicate, emitPredicate);
     }
@@ -181,28 +173,21 @@ public interface Vertex extends Element {
         return this.start().map(function);
     }
 
-    // TODO: test
     public default <E2> GraphTraversal<Vertex, E2> match(final String inAs, final String outAs, final Traversal... traversals) {
         return this.start().match(inAs, outAs, traversals);
     }
-
-    // TODO: pageRank
-
 
     public default GraphTraversal<Vertex, Vertex> sideEffect(final SConsumer<Traverser<Vertex>> consumer) {
         return this.start().sideEffect(consumer);
     }
 
-    public default GraphTraversal<Vertex, Vertex> start() {
-        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
-        return (GraphTraversal) traversal.addStep(new StartStep<Vertex>(traversal, this));
-    }
-
-    // TODO: branch
-
-
     public default GraphTraversal<Vertex, Vertex> with(final Object... variableValues) {
         return this.start().with(variableValues);
+    }
+
+    public default GraphTraversal<Vertex, Vertex> start() {
+        final GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>();
+        return (GraphTraversal) traversal.addStep(new StartStep<>(traversal, this));
     }
 
     ///////////////

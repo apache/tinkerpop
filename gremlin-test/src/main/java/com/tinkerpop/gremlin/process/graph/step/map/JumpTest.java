@@ -6,13 +6,17 @@ import com.tinkerpop.gremlin.process.Path;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
 import static org.junit.Assert.*;
@@ -36,6 +40,10 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2X();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2_trueX();
+
+    public abstract Traversal<Vertex, Path> get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_jumpXxX_out_out_asXxX();
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -154,6 +162,32 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
         assertEquals(new Long(4), map.get("lop"));
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path() {
+        Iterator<Path> traversal = get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(convertToVertexId("marko"));
+        System.out.println("Testing: " + traversal);
+        final List<Path> paths = StreamFactory.stream(traversal).collect(Collectors.toList());
+        assertEquals(6, paths.size());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_jumpXxX_out_out_asXxX() {
+        Iterator<Vertex> traversal = get_g_V_jumpXxX_out_out_asXxX();
+        System.out.println("Testing: " + traversal);
+        assertTrue(traversal.hasNext());
+        int counter = 0;
+        Set<Vertex> vertices = new HashSet<>();
+        while (traversal.hasNext()) {
+            vertices.add(traversal.next());
+            counter++;
+        }
+        assertEquals(6, counter);
+        assertEquals(6, vertices.size());
+    }
+
 
     public static class JavaJumpTest extends JumpTest {
         public JavaJumpTest() {
@@ -186,6 +220,14 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2_trueX() {
             return g.V().as("x").out().jump("x", 2, t -> true);
+        }
+
+        public Traversal<Vertex, Path> get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(final Object v1Id) {
+            return g.v(v1Id).out().jump("x", t -> t.get().out().hasNext()).in().jump("y").as("x").out().as("y").path();
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_jumpXxX_out_out_asXxX() {
+            return g.V().jump("x").out().out().as("x");
         }
     }
 
@@ -220,6 +262,14 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2_trueX() {
             return g.V().as("x").out().jump("x", 2, t -> true).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Path> get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(final Object v1Id) {
+            return g.v(v1Id).out().jump("x", t -> t.get().out().hasNext()).in().jump("y").as("x").out().as("y").path().submit(g.compute());
+        }
+
+        public Traversal<Vertex, Vertex> get_g_V_jumpXxX_out_out_asXxX() {
+            return g.V().jump("x").out().out().as("x").submit(g.compute());
         }
     }
 }

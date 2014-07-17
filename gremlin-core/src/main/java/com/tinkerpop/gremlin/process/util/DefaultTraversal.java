@@ -4,6 +4,7 @@ import com.tinkerpop.gremlin.process.Step;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.strategy.AsStrategy;
 import com.tinkerpop.gremlin.process.graph.strategy.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 
@@ -23,6 +24,7 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
 
     public DefaultTraversal() {
         this.traversalStrategies.register(new TraverserSourceStrategy());
+        this.traversalStrategies.register(new AsStrategy());
     }
 
     public List<Step> getSteps() {
@@ -57,8 +59,6 @@ public class DefaultTraversal<S, E> implements Traversal<S, E> {
     }
 
     public String toString() {
-        // todo: optimizing on toString can cause weird stuff when debugging - can we have doPreflightFinalOptimization?
-        //this.doFinalOptimization();
         return this.getSteps().toString();
     }
 
