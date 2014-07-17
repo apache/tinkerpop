@@ -4,7 +4,6 @@ import com.tinkerpop.gremlin.AbstractGremlinTest;
 import com.tinkerpop.gremlin.LoadGraphWith;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public abstract class GroupByTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX();
 
-    public abstract Map<String, List<String>> get_g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX();
+    public abstract Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX();
 
     public abstract Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX();
 
@@ -39,10 +38,12 @@ public abstract class GroupByTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
-    @Ignore // TODO: ???
     @LoadGraphWith(CLASSIC)
-    public void g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX() {
-        final Map<String, List<String>> map = get_g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX();
+    public void g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
+        final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX();
+        System.out.println("Testing: " + traversal);
+        final Map<String, List<String>> map = traversal.next();
+        assertFalse(traversal.hasNext());
         assertEquals(1, map.size());
         assertTrue(map.containsKey("java"));
         assertEquals(2, map.get("java").size());
@@ -67,11 +68,11 @@ public abstract class GroupByTest extends AbstractGremlinTest {
             return (Traversal) g.V().groupBy(v -> v.value("name"));
         }
 
-        public Map<String, List<String>> get_g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX() {
-            return g.V().<Vertex>has("lang")
+        public Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
+            return (Traversal) g.V().<Vertex>has("lang")
                     .groupBy("a",
                             v -> v.value("lang"),
-                            v -> v.value("name")).iterate().memory().get("a");
+                            v -> v.value("name")).out().cap("a");
         }
 
         public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX() {
@@ -87,12 +88,11 @@ public abstract class GroupByTest extends AbstractGremlinTest {
             return (Traversal) g.V().groupBy(v -> v.value("name")).submit(g.compute());
         }
 
-        public Map<String, List<String>> get_g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX() {
-            // TODO: Make legit
-            return g.V().<Vertex>has("lang")
+        public Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
+            return (Traversal) g.V().<Vertex>has("lang")
                     .groupBy("a",
                             v -> v.value("lang"),
-                            v -> v.value("name")).iterate().memory().get("a");
+                            v -> v.value("name")).out().cap("a").submit(g.compute());
         }
 
         public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX() {

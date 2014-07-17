@@ -12,8 +12,8 @@ class GroovyGroupByTestImpl extends GroupByTest {
         g.V.groupBy { it.value('name') }
     }
 
-    public Map<String, List<String>> get_g_V_hasXlangX_groupByXa_lang_nameX_iterate_getXaX() {
-        g.V.has('lang').groupBy('a') { it.value('name') }.iterate().variables().get('a')
+    public Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX() {
+        g.V.has('lang').groupBy('a') { it.value('name') }.out().cap('a')
     }
 
     public Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX() {
