@@ -89,10 +89,10 @@ public class GremlinGroovyScriptEngineTest {
 
         assertEquals(engine.eval("g.E.has('weight',f).next()", bindings), g.e(7));
         assertEquals(engine.eval("g.V.has('name',s).next()", bindings), g.v(1));
-        assertEquals(engine.eval("g.V.sideEffect{it.property('bbb',it.value('name')=='marko')}.iterate();g.V.has('bbb',b).next()", bindings), g.v(1));
-        assertEquals(engine.eval("g.V.sideEffect{it.property('iii',it.value('name')=='marko'?1:0)}.iterate();g.V.has('iii',i).next()", bindings), g.v(1));
-        assertEquals(engine.eval("g.V.sideEffect{it.property('lll',it.value('name')=='marko'?100l:0l)}.iterate();g.V.has('lll',l).next()", bindings), g.v(1));
-        assertEquals(engine.eval("g.V.sideEffect{it.property('ddd',it.value('name')=='marko'?1.55555d:0)}.iterate();g.V.has('ddd',d).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V.sideEffect{it.get().property('bbb',it.get().value('name')=='marko')}.iterate();g.V.has('bbb',b).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V.sideEffect{it.get().property('iii',it.get().value('name')=='marko'?1:0)}.iterate();g.V.has('iii',i).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V.sideEffect{it.get().property('lll',it.get().value('name')=='marko'?100l:0l)}.iterate();g.V.has('lll',l).next()", bindings), g.v(1));
+        assertEquals(engine.eval("g.V.sideEffect{it.get().property('ddd',it.get().value('name')=='marko'?1.55555d:0)}.iterate();g.V.has('ddd',d).next()", bindings), g.v(1));
     }
 
     @Test
@@ -260,7 +260,7 @@ public class GremlinGroovyScriptEngineTest {
 
         // this works on its own when the function and the line that uses it is in one "script".  this is the
         // current workaround
-        assertEquals(g.v(2), engine.eval("def isVadas(v){v.value('name')=='vadas'};g.V.filter{isVadas(it)}.next()", bindings));
+        assertEquals(g.v(2), engine.eval("def isVadas(v){v.value('name')=='vadas'};g.V.filter{isVadas(it.get())}.next()", bindings));
 
         // let's reset this piece and make sure isVadas is not hanging around.
         engine.reset();
@@ -283,7 +283,7 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals(true, engine.eval("isVadas(g.v(2))", bindings));
 
         // make sure the function works in a closure...this generates a StackOverflowError
-        assertEquals(g.v(2), engine.eval("g.V.filter{isVadas(it)}.next()", bindings));
+        assertEquals(g.v(2), engine.eval("g.V.filter{isVadas(it.get())}.next()", bindings));
     }
 
     @Test

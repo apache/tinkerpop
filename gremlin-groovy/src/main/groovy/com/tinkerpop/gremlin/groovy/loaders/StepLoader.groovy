@@ -34,18 +34,8 @@ class StepLoader {
             return ((GraphTraversal) delegate).range(index, index);
         }
 
-
         GraphTraversal.metaClass.getAt = { final Range range ->
             return ((GraphTraversal) delegate).range(range.getFrom() as Integer, range.getTo() as Integer);
-        }
-
-        // This allows the use to not specify get() to get at the object contained in the Traverser
-        Traverser.metaClass.methodMissing = { final String name, final def args ->
-            return ((Traverser) delegate).get()."$name"(*args);
-        }
-
-        Traverser.metaClass.propertyMissing = { final String name ->
-            return ((Traverser) delegate).get()["$name"];
         }
 
         // THE CODE BELOW IS REQUIRED UNTIL GROOVY 2.3+ FIXES VAR ARG CONVERSION OF CLOSURES TO LAMBDAS

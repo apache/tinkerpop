@@ -34,11 +34,11 @@ class GroovyJumpTestImpl extends JumpTest {
     }
 
     public Traversal<Vertex, Vertex> get_g_V_asXxX_out_jumpXx_2_trueX() {
-        return g.V().as('x').out.jump('x', 2) { true };
+        return g.V.as('x').out.jump('x', 2) { true };
     }
 
     public Traversal<Vertex, Path> get_g_v1_out_jumpXx_t_out_hasNextX_in_jumpXyX_asXxX_out_asXyX_path(final Object v1Id) {
-        return g.v(v1Id).out.jump('x') { it.out.hasNext() }.in.jump("y").as("x").out.as('y').path;
+        return g.v(v1Id).out.jump('x') { it.get().out.hasNext() }.in.jump("y").as("x").out.as('y').path;
     }
 
     public Traversal<Vertex, Vertex> get_g_V_jumpXxX_out_out_asXxX() {
