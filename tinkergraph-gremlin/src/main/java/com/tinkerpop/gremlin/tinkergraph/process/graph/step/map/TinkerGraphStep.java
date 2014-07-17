@@ -49,10 +49,9 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
         final Stream<? extends Edge> edgeStream = (null == indexedContainer) ?
                 TinkerHelper.getEdges(this.graph).stream() :
                 TinkerHelper.queryEdgeIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
-        return (Iterator) edgeStream.filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).collect(java.util.stream.Collectors.toList()).iterator();
 
-        // todo: concurrency errors when we maintain laziness
-        //return edgeStream.filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).iterator();
+        // the copy to a new List is intentional as remove() operations will cause ConcurrentModificationException otherwise
+        return (Iterator) edgeStream.filter(e -> HasContainer.testAll((Edge) e, this.hasContainers)).collect(java.util.stream.Collectors.toList()).iterator();
     }
 
     private Iterator<? extends Vertex> vertices() {
@@ -60,10 +59,9 @@ public class TinkerGraphStep<E extends Element> extends GraphStep<E> {
         final Stream<? extends Vertex> vertexStream = (null == indexedContainer) ?
                 TinkerHelper.getVertices(this.graph).stream() :
                 TinkerHelper.queryVertexIndex(this.graph, indexedContainer.key, indexedContainer.value).stream();
-        return (Iterator) vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).collect(java.util.stream.Collectors.toList()).iterator();
 
-        // todo: concurrency errors when we maintain laziness
-        // return vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).iterator();
+        // the copy to a new List is intentional as remove() operations will cause ConcurrentModificationException otherwise
+        return (Iterator) vertexStream.filter(v -> HasContainer.testAll((Vertex) v, this.hasContainers)).collect(java.util.stream.Collectors.toList()).iterator();
     }
 
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
