@@ -64,6 +64,9 @@ public final class GraphMigrator {
                 outPipe.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            } finally {
+                if (fromGraph.getFeatures().graph().supportsTransactions()) fromGraph.tx().rollback();
+                if (toGraph.getFeatures().graph().supportsTransactions()) toGraph.tx().rollback();
             }
         }).start();
 

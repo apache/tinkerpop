@@ -77,14 +77,18 @@ public class GraphMLReader implements GraphReader {
 
     @Override
     public void readGraph(final InputStream graphInputStream, final Graph graphToWriteTo) throws IOException {
+        final BatchGraph graph;
         try {
-            final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
-
             // will throw an exception if not constructed properly
-            final BatchGraph graph = BatchGraph.create(graphToWriteTo)
+            graph = BatchGraph.create(graphToWriteTo)
                     .vertexIdKey(vertexIdKey)
                     .bufferSize(batchSize).build();
+        } catch (Exception ex) {
+            throw new IOException("Could not instantiate BatchGraph wrapper", ex);
+        }
 
+        try {
+            final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
             final Map<String, String> keyIdMap = new HashMap<>();
             final Map<String, String> keyTypesMaps = new HashMap<>();
 
@@ -197,6 +201,8 @@ public class GraphMLReader implements GraphReader {
 
             graph.tx().commit();
         } catch (XMLStreamException xse) {
+            // rollback whatever portion failed
+            graph.tx().rollback();
             throw new IOException(xse);
         }
     }

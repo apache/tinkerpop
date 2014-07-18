@@ -122,11 +122,16 @@ public class KryoReader implements GraphReader {
         final Input input = new Input(inputStream);
         this.headerReader.read(kryo, input);
 
-        // will throw an exception if not constructed properly
-        final BatchGraph graph = BatchGraph.create(graphToWriteTo)
-                .vertexIdKey(vertexIdKey)
-                .edgeIdKey(edgeIdKey)
-                .bufferSize(batchSize).build();
+        final BatchGraph graph;
+        try {
+            // will throw an exception if not constructed properly
+            graph = BatchGraph.create(graphToWriteTo)
+                    .vertexIdKey(vertexIdKey)
+                    .edgeIdKey(edgeIdKey)
+                    .bufferSize(batchSize).build();
+        } catch (Exception ex) {
+            throw new IOException("Could not instantiate BatchGraph wrapper", ex);
+        }
 
         try (final Output output = new Output(new FileOutputStream(tempFile))) {
             final boolean supportedMemory = input.readBoolean();
@@ -176,16 +181,22 @@ public class KryoReader implements GraphReader {
 
                 }
             }
+        } catch (Exception ex) {
+            // rollback whatever portion failed
+            graph.tx().rollback();
+            throw new IOException(ex);
         }
         // done writing to temp
 
         // start reading in the edges now from the temp file
         try (final Input edgeInput = new Input(new FileInputStream(tempFile))) {
             readFromTempEdges(edgeInput, graph);
+            graph.tx().commit();
+        } catch (Exception ex) {
+            // rollback whatever portion failed
+            graph.tx().rollback();
+            throw new IOException(ex);
         } finally {
-            if (graph.getFeatures().graph().supportsTransactions())
-                graph.tx().commit();
-
             deleteTempFileSilently();
         }
     }

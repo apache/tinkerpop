@@ -57,53 +57,65 @@ public class GraphSONReader implements GraphReader {
 
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
+        final BatchGraph graph;
+        try {
+            // will throw an exception if not constructed properly
+            graph = BatchGraph.create(graphToWriteTo)
+                    .vertexIdKey(vertexIdKey)
+                    .edgeIdKey(edgeIdKey)
+                    .bufferSize(batchSize).build();
+        } catch (Exception ex) {
+            throw new IOException("Could not instantiate BatchGraph wrapper", ex);
+        }
+
         final JsonFactory factory = mapper.getFactory();
         final JsonParser parser = factory.createParser(inputStream);
 
-        // will throw an exception if not constructed properly
-        final BatchGraph graph = BatchGraph.create(graphToWriteTo)
-                .vertexIdKey(vertexIdKey)
-                .edgeIdKey(edgeIdKey)
-                .bufferSize(batchSize).build();
+        try {
+            if (parser.nextToken() != JsonToken.START_OBJECT)
+                throw new IOException("Expected data to start with an Object");
 
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                final String fieldName = parser.getCurrentName();
+                parser.nextToken();
 
-        if (parser.nextToken() != JsonToken.START_OBJECT)
-            throw new IOException("Expected data to start with an Object");
+                if (fieldName.equals(GraphSONTokens.PROPERTIES)) {
+                    final Map<String, Object> graphProperties = parser.readValueAs(mapTypeReference);
+                    if (graphToWriteTo.getFeatures().graph().memory().supportsVariables())
+                        graphProperties.entrySet().forEach(entry -> graphToWriteTo.variables().set(entry.getKey(), entry.getValue()));
+                } else if (fieldName.equals(GraphSONTokens.VERTICES)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);
+                        readVertexData(vertexData, (id, label, properties) ->
+                                        Optional.ofNullable(graph.v(id)).orElse(
+                                                graph.addVertex(Stream.concat(Stream.of(Element.LABEL, label, Element.ID, id),
+                                                        Stream.of(properties)).toArray()))
+                        );
+                    }
+                } else if (fieldName.equals(GraphSONTokens.EDGES)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        final Map<String, Object> edgeData = parser.readValueAs(mapTypeReference);
+                        readEdgeData(edgeData, (id, out, in, label, props) -> {
+                            final Vertex vOut = graph.v(out);
+                            final Vertex vIn = graph.v(in);
+                            // batchgraph checks for edge id support and uses it if possible.
+                            return vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn,
+                                    Stream.concat(Stream.of(Element.ID, id), Stream.of(props)).toArray());
+                        });
+                    }
+                } else
+                    throw new IllegalStateException(String.format("Unexpected token in GraphSON - %s", fieldName));
+            }
 
-        while (parser.nextToken() != JsonToken.END_OBJECT) {
-            final String fieldName = parser.getCurrentName();
-            parser.nextToken();
-
-            if (fieldName.equals(GraphSONTokens.PROPERTIES)) {
-                final Map<String, Object> graphProperties = parser.readValueAs(mapTypeReference);
-                if (graphToWriteTo.getFeatures().graph().memory().supportsVariables())
-                    graphProperties.entrySet().forEach(entry -> graphToWriteTo.variables().set(entry.getKey(), entry.getValue()));
-            } else if (fieldName.equals(GraphSONTokens.VERTICES)) {
-                while (parser.nextToken() != JsonToken.END_ARRAY) {
-                    final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);
-                    readVertexData(vertexData, (id, label, properties) ->
-                                    Optional.ofNullable(graph.v(id)).orElse(
-                                            graph.addVertex(Stream.concat(Stream.of(Element.LABEL, label, Element.ID, id),
-                                                    Stream.of(properties)).toArray()))
-                    );
-                }
-            } else if (fieldName.equals(GraphSONTokens.EDGES)) {
-                while (parser.nextToken() != JsonToken.END_ARRAY) {
-                    final Map<String, Object> edgeData = parser.readValueAs(mapTypeReference);
-                    readEdgeData(edgeData, (id, out, in, label, props) -> {
-                        final Vertex vOut = graph.v(out);
-                        final Vertex vIn = graph.v(in);
-                        // batchgraph checks for edge id support and uses it if possible.
-                        return vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn,
-                                Stream.concat(Stream.of(Element.ID, id), Stream.of(props)).toArray());
-                    });
-                }
-            } else
-                throw new IllegalStateException(String.format("Unexpected token in GraphSON - %s", fieldName));
+            graph.tx().commit();
+        } catch (Exception ex) {
+            // rollback whatever portion failed
+            graph.tx().rollback();
+            throw new IOException(ex);
+        } finally {
+            parser.close();
         }
 
-        graph.tx().commit();
-        parser.close();
     }
 
     @Override
