@@ -13,6 +13,3 @@ jdk:
 env:
   global:
     - secure: "BiSlH/eLH3R6lrUQeX6T1merzNCQtALmxr0iMlPCBeBakiBxwVEb2eyRx8HsYUBopeMKSuOjQmwd3x3U7/99ylHC9KbmmgtrTpdQErUHJeWr/XLE4YPbFPfU2dJMPkz0PZQLzM57ATei847ik7FMuCKPu/h2/Z7bAmLfjYRQA2Q="
-
-after_success:
-  - mvn clean cobertura:cobertura org.eluder.coveralls:coveralls-maven-plugin:cobertura
