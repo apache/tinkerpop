@@ -35,6 +35,8 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path();
 
+    public abstract Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2_trueX_path();
+
     public abstract Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name();
 
     public abstract Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_2X_asXyX_in_jumpXy_2X_name();
@@ -63,119 +65,88 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_asXxX_out_jumpXx_loops_lt_2X() {
-        final Iterator<Vertex> step = get_g_V_asXxX_out_jumpXx_loops_lt_2X();
-        System.out.println("Testing: " + step);
-        int counter = 0;
-        while (step.hasNext()) {
-            counter++;
-            Vertex vertex = step.next();
-            assertTrue(vertex.value("name").equals("lop") || vertex.value("name").equals("ripple"));
-        }
-        assertEquals(2, counter);
-        assertFalse(step.hasNext());
-    }
-
-    @Test
-    @LoadGraphWith(CLASSIC)
-    public void g_V_asXxX_out_jumpXx_loops_lt_2_trueX() {
-        final Iterator<Vertex> step = get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX();
-        System.out.println("Testing: " + step);
-        Map<String, Long> map = new HashMap<>();
-        while (step.hasNext()) {
-            Vertex vertex = step.next();
-            MapHelper.incr(map, vertex.value("name"), 1l);
-        }
-        assertEquals(4, map.size());
-        assertTrue(map.containsKey("vadas"));
-        assertTrue(map.containsKey("josh"));
-        assertTrue(map.containsKey("ripple"));
-        assertTrue(map.containsKey("lop"));
-        assertEquals(new Long(1), map.get("vadas"));
-        assertEquals(new Long(1), map.get("josh"));
-        assertEquals(new Long(2), map.get("ripple"));
-        assertEquals(new Long(4), map.get("lop"));
-    }
-
-    @Test
-    @LoadGraphWith(CLASSIC)
     public void g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path() {
-        final Iterator<Path> step = get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path();
-        System.out.println("Testing: " + step);
-        final Map<Integer, Long> pathLengths = new HashMap<>();
-        int counter = 0;
-        while (step.hasNext()) {
-            counter++;
-            MapHelper.incr(pathLengths, step.next().size(), 1l);
-        }
-        assertEquals(2, pathLengths.size());
-        assertEquals(8, counter);
-        assertEquals(new Long(6), pathLengths.get(2));
-        assertEquals(new Long(2), pathLengths.get(3));
-    }
-
-    @Test
-    @LoadGraphWith(CLASSIC)
-    public void g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name() {
-        final Iterator<String> step = get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name();
-        System.out.println("Testing: " + step);
-        int count = 0;
-        while (step.hasNext()) {
-            assertEquals("marko", step.next());
-            count++;
-        }
-        assertEquals(2, count);
-        assertFalse(step.hasNext());
+        final List<Traversal<Vertex, Path>> traversals = new ArrayList<>();
+        traversals.add(get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path());
+        traversals.add(get_g_V_asXxX_out_jumpXx_2_trueX_path());
+        traversals.forEach(traversal -> {
+            System.out.println("Testing: " + traversal);
+            final Map<Integer, Long> pathLengths = new HashMap<>();
+            int counter = 0;
+            while (traversal.hasNext()) {
+                counter++;
+                MapHelper.incr(pathLengths, traversal.next().size(), 1l);
+            }
+            assertEquals(2, pathLengths.size());
+            assertEquals(8, counter);
+            assertEquals(new Long(6), pathLengths.get(2));
+            assertEquals(new Long(2), pathLengths.get(3));
+        });
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_asXxX_out_jumpXx_2X_asXyX_in_jumpXy_2X_name() {
-        final Iterator<String> step = get_g_V_asXxX_out_jumpXx_2X_asXyX_in_jumpXy_2X_name();
-        System.out.println("Testing: " + step);
-        int count = 0;
-        while (step.hasNext()) {
-            assertEquals("marko", step.next());
-            count++;
-        }
-        assertEquals(2, count);
-        assertFalse(step.hasNext());
+        final List<Traversal<Vertex, String>> traversals = new ArrayList<>();
+        traversals.add(get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name());
+        traversals.add(get_g_V_asXxX_out_jumpXx_2X_asXyX_in_jumpXy_2X_name());
+        traversals.forEach(traversal -> {
+            System.out.println("Testing: " + traversal);
+            int count = 0;
+            while (traversal.hasNext()) {
+                assertEquals("marko", traversal.next());
+                count++;
+            }
+            assertEquals(2, count);
+            assertFalse(traversal.hasNext());
+        });
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_asXxX_out_jumpXx_2() {
-        final Iterator<Vertex> step = get_g_V_asXxX_out_jumpXx_2X();
-        System.out.println("Testing: " + step);
-        int counter = 0;
-        while (step.hasNext()) {
-            counter++;
-            Vertex vertex = step.next();
-            assertTrue(vertex.value("name").equals("lop") || vertex.value("name").equals("ripple"));
-        }
-        assertEquals(2, counter);
-        assertFalse(step.hasNext());
+        final List<Traversal<Vertex, Vertex>> traversals = new ArrayList<>();
+        traversals.add(get_g_V_asXxX_out_jumpXx_2X());
+        traversals.add(get_g_V_asXxX_out_jumpXx_loops_lt_2X());
+
+        traversals.forEach(traversal -> {
+
+            System.out.println("Testing: " + traversal);
+            int counter = 0;
+            while (traversal.hasNext()) {
+                counter++;
+                Vertex vertex = traversal.next();
+                assertTrue(vertex.value("name").equals("lop") || vertex.value("name").equals("ripple"));
+            }
+            assertEquals(2, counter);
+            assertFalse(traversal.hasNext());
+        });
     }
 
     @Test
     @LoadGraphWith(CLASSIC)
     public void g_V_asXxX_out_jumpXx_2_trueX() {
-        final Iterator<Vertex> step = get_g_V_asXxX_out_jumpXx_2_trueX();
-        System.out.println("Testing: " + step);
-        Map<String, Long> map = new HashMap<>();
-        while (step.hasNext()) {
-            Vertex vertex = step.next();
-            MapHelper.incr(map, vertex.value("name"), 1l);
-        }
-        assertEquals(4, map.size());
-        assertTrue(map.containsKey("vadas"));
-        assertTrue(map.containsKey("josh"));
-        assertTrue(map.containsKey("ripple"));
-        assertTrue(map.containsKey("lop"));
-        assertEquals(new Long(1), map.get("vadas"));
-        assertEquals(new Long(1), map.get("josh"));
-        assertEquals(new Long(2), map.get("ripple"));
-        assertEquals(new Long(4), map.get("lop"));
+        final List<Traversal<Vertex, Vertex>> traversals = new ArrayList<>();
+        traversals.add(get_g_V_asXxX_out_jumpXx_2_trueX());
+        traversals.add(get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX());
+
+        traversals.forEach(traversal -> {
+            System.out.println("Testing: " + traversal);
+            Map<String, Long> map = new HashMap<>();
+            while (traversal.hasNext()) {
+                Vertex vertex = traversal.next();
+                MapHelper.incr(map, vertex.value("name"), 1l);
+            }
+            assertEquals(4, map.size());
+            assertTrue(map.containsKey("vadas"));
+            assertTrue(map.containsKey("josh"));
+            assertTrue(map.containsKey("ripple"));
+            assertTrue(map.containsKey("lop"));
+            assertEquals(new Long(1), map.get("vadas"));
+            assertEquals(new Long(1), map.get("josh"));
+            assertEquals(new Long(2), map.get("ripple"));
+            assertEquals(new Long(4), map.get("lop"));
+        });
     }
 
     @Test
@@ -226,6 +197,10 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
             return g.V().as("x").out().jump("x", t -> t.getLoops() < 2, t -> true).path();
         }
 
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2_trueX_path() {
+            return g.V().as("x").out().jump("x", 2, t -> true).path();
+        }
+
         public Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name() {
             return g.V().as("x").out().jump("x", t -> t.getLoops() < 2).as("y").in().jump("y", t -> t.getLoops() < 2).value("name");
         }
@@ -270,6 +245,10 @@ public abstract class JumpTest extends AbstractGremlinProcessTest {
 
         public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_loops_lt_2_trueX_path() {
             return g.V().as("x").out().jump("x", t -> t.getLoops() < 2, t -> true).path().submit(g.compute());
+        }
+
+        public Traversal<Vertex, Path> get_g_V_asXxX_out_jumpXx_2_trueX_path() {
+            return g.V().as("x").out().jump("x", 2, t -> true).path().submit(g.compute());
         }
 
         public Traversal<Vertex, String> get_g_V_asXxX_out_jumpXx_loops_lt_2X_asXyX_in_jumpXy_loops_lt_2X_name() {

@@ -6,6 +6,7 @@ import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,10 @@ public abstract class GroupByTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Map<String, List<String>>> get_g_V_hasXlangX_groupByXa_lang_nameX_out_capXaX();
 
     public abstract Traversal<Vertex, Map<String, Integer>> get_g_V_hasXlangX_groupByXlang_1_sizeX();
+
+    public abstract Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_2X_capXaX();
+
+    public abstract Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX();
 
     @Test
     @LoadGraphWith(CLASSIC)
@@ -64,6 +69,28 @@ public abstract class GroupByTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(CLASSIC)
+    public void g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_2X_capXaX() {
+        List<Traversal<Vertex, Map<String, Integer>>> traversals = new ArrayList<>();
+        traversals.add(get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_2X_capXaX());
+        traversals.add(get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX());
+        traversals.forEach(traversal -> {
+            System.out.println("Testing: " + traversal);
+            final Map<String, Integer> map = traversal.next();
+            assertFalse(traversal.hasNext());
+            assertEquals(4, map.size());
+            assertTrue(map.containsKey("vadas"));
+            assertEquals(Integer.valueOf(1), map.get("vadas"));
+            assertTrue(map.containsKey("josh"));
+            assertEquals(Integer.valueOf(1), map.get("josh"));
+            assertTrue(map.containsKey("lop"));
+            assertEquals(Integer.valueOf(4), map.get("lop"));
+            assertTrue(map.containsKey("ripple"));
+            assertEquals(Integer.valueOf(2), map.get("ripple"));
+        });
+    }
+
     public static class JavaGroupByTest extends GroupByTest {
         public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_groupByXnameX() {
             return (Traversal) g.V().groupBy(v -> v.value("name"));
@@ -81,6 +108,14 @@ public abstract class GroupByTest extends AbstractGremlinTest {
                     .groupBy(v -> v.value("lang"),
                             v -> 1,
                             vv -> vv.size());
+        }
+
+        public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_2X_capXaX() {
+            return g.V().as("x").out().groupBy("a", v -> v.value("name"), v -> v, vv -> vv.size()).jump("x", 2).cap("a");
+        }
+
+        public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX() {
+            return g.V().as("x").out().groupBy("a", v -> v.value("name"), v -> v, vv -> vv.size()).jump("x", t -> t.getLoops() < 2).cap("a");
         }
     }
 
@@ -102,6 +137,14 @@ public abstract class GroupByTest extends AbstractGremlinTest {
                     .groupBy(v -> v.value("lang"),
                             v -> 1,
                             vv -> vv.size()).submit(g.compute());
+        }
+
+        public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_2X_capXaX() {
+            return g.V().as("x").out().groupBy("a", v -> v.value("name"), v -> v, vv -> vv.size()).jump("x", 2).<Map<String, Integer>>cap("a").submit(g.compute());
+        }
+
+        public Traversal<Vertex, Map<String, Integer>> get_g_V_asXxX_out_groupByXa_name_sizeX_jumpXx_loops_lt_2X_capXaX() {
+            return g.V().as("x").out().groupBy("a", v -> v.value("name"), v -> v, vv -> vv.size()).jump("x", t -> t.getLoops() < 2).<Map<String, Integer>>cap("a").submit(g.compute());
         }
     }
 

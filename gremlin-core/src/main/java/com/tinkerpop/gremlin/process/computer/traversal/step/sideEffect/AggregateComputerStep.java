@@ -11,7 +11,7 @@ import com.tinkerpop.gremlin.process.util.TraversalHelper;
 public class AggregateComputerStep<S> extends StoreStep<S> {
 
     public AggregateComputerStep(final Traversal traversal, final AggregateStep aggregateStep) {
-        super(traversal, aggregateStep.variable, aggregateStep.functionRing.functions);
+        super(traversal, aggregateStep.variable, aggregateStep.preAggregateFunction);
         if (TraversalHelper.isLabeled(aggregateStep))
             this.setAs(aggregateStep.getAs());
     }

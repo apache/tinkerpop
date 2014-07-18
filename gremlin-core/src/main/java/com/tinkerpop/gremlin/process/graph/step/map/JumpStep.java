@@ -44,18 +44,16 @@ public class JumpStep<S> extends AbstractStep<S, S> {
             final Traverser<S> traverser = this.starts.next();
             traverser.incrLoops();
             if ((this.loops != -1 && traverser.getLoops() < this.loops) || this.ifPredicate.test(traverser)) {
-                final Traverser<S> ifTraverser = traverser.makeSibling();
-                ifTraverser.setFuture(this.jumpAs);
-                this.jumpToStep.addStarts(new SingleIterator(ifTraverser));
+                traverser.setFuture(this.jumpAs);
+                this.jumpToStep.addStarts(new SingleIterator(traverser));
                 if (this.emitPredicate != null && this.emitPredicate.test(traverser)) {
                     final Traverser<S> emitTraverser = traverser.makeSibling();
                     emitTraverser.resetLoops();
                     return emitTraverser;
                 }
             } else {
-                final Traverser<S> emitTraverser = traverser.makeSibling();
-                emitTraverser.resetLoops();
-                return emitTraverser;
+                traverser.resetLoops();
+                return traverser;
             }
         }
     }

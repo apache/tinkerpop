@@ -26,7 +26,7 @@ public class UnrollJumpStrategy implements TraversalStrategy.FinalTraversalStrat
                             try {
                                 final Step clonedStep = (Step) stepsToClone.get(j).clone();
                                 TraversalHelper.insertStep(clonedStep, traversal.getSteps().indexOf(fromStep) + 1, traversal);
-                            } catch (CloneNotSupportedException e) {
+                            } catch (final CloneNotSupportedException e) {
                                 throw new IllegalStateException(e.getMessage(), e);
                             }
                         }

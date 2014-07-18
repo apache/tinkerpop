@@ -17,11 +17,11 @@ import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.GroupCountStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
-import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -50,17 +50,19 @@ public class GiraphGroupCountStep<S> extends FilterStep<S> implements SideEffect
     private static final String GREMLIN_GROUP_COUNT_VARIABLE = "gremlin.groupCount.variable";
 
     private java.util.Map<Object, Long> groupCountMap;
-    public final FunctionRing<S, ?> functionRing;
+    public final SFunction<S, ?> preGroupFunction;
     public Vertex vertex;
     public final String variable;
     private long bulkCount = 1l;
 
     public GiraphGroupCountStep(final Traversal traversal, final GroupCountStep groupCountStep) {
         super(traversal);
-        this.functionRing = groupCountStep.functionRing;
+        this.preGroupFunction = groupCountStep.preGroupFunction;
         this.variable = groupCountStep.variable;
         this.setPredicate(traverser -> {
-            MapHelper.incr(this.groupCountMap, this.functionRing.next().apply(traverser.get()), this.bulkCount);
+            MapHelper.incr(this.groupCountMap,
+                    null == this.preGroupFunction ? traverser.get() : this.preGroupFunction.apply(traverser.get()),
+                    this.bulkCount);
             return true;
         });
         if (TraversalHelper.isLabeled(groupCountStep))

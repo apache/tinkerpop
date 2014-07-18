@@ -17,10 +17,10 @@ import com.tinkerpop.gremlin.process.graph.marker.VertexCentric;
 import com.tinkerpop.gremlin.process.graph.step.filter.FilterStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.SideEffectCapable;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StoreStep;
-import com.tinkerpop.gremlin.process.util.FunctionRing;
 import com.tinkerpop.gremlin.process.util.TraversalHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.util.function.SFunction;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -48,23 +48,23 @@ public class GiraphStoreStep<S> extends FilterStep<S> implements SideEffectCapab
 
     private static final String GREMLIN_STORE_VARIABLE = "gremlin.store.variable";
 
-    public FunctionRing<S, ?> functionRing;
+    public SFunction<S, ?> preStoreFunction;
     public String variable;
     protected Collection collection;
     protected long bulkCount = 1l;
 
     public GiraphStoreStep(final Traversal traversal) {
         super(traversal);
-        this.functionRing = null;
+        this.preStoreFunction = null;
         this.variable = null;
     }
 
     public GiraphStoreStep(final Traversal traversal, final StoreStep storeStep) {
         super(traversal);
-        this.functionRing = storeStep.functionRing;
+        this.preStoreFunction = storeStep.preStoreFunction;
         this.variable = storeStep.variable;
         this.setPredicate(traverser -> {
-            final Object storeObject = this.functionRing.next().apply(traverser.get());
+            final Object storeObject = null == this.preStoreFunction ? traverser.get() : this.preStoreFunction.apply(traverser.get());
             for (int i = 0; i < this.bulkCount; i++) {
                 this.collection.add(storeObject);
             }

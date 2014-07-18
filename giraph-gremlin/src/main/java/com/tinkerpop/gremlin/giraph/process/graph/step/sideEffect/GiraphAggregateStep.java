@@ -12,10 +12,12 @@ public class GiraphAggregateStep extends GiraphStoreStep {
 
     public GiraphAggregateStep(final Traversal traversal, final AggregateStep aggregateStep) {
         super(traversal);
-        this.functionRing = aggregateStep.functionRing;
+        this.preStoreFunction = aggregateStep.preAggregateFunction;
         this.variable = aggregateStep.variable;
         this.setPredicate(traverser -> {
-            final Object storeObject = this.functionRing.next().apply(((Traverser) traverser).get());
+            final Object storeObject = (null == this.preStoreFunction) ?
+                    ((Traverser) traverser).get() :
+                    this.preStoreFunction.apply(((Traverser) traverser).get());
             for (int i = 0; i < this.bulkCount; i++) {
                 this.collection.add(storeObject);
             }
