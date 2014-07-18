@@ -48,8 +48,6 @@ class ResponseQueue {
     }
 
     public ResponseMessage poll() {
-        // todo: something still fishy with exception handling here
-
         ResponseMessage msg = null;
         do {
             if (error.get() != null) throw new RuntimeException(error.get());

@@ -95,9 +95,10 @@ public class ResultSet implements Iterable<Item> {
                 }
 
                 try {
+                    // small delay between checks for available items
                     Thread.sleep(10);
                 } catch (Exception ex) {
-                    return null; // todo: dumb?
+                    return null;
                 }
             }
 
