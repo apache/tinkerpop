@@ -45,7 +45,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
     public static class JavaComputerStoreTest extends StoreTest {
         public JavaComputerStoreTest() {
-            requiresGraphComputer = false;
+            requiresGraphComputer = true;
         }
 
         public Traversal<Vertex, Collection> get_g_V_storeXa_nameX_out_capXaX() {

@@ -72,7 +72,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             RetainTest.JavaComputerRetainTest.class,
             SimplePathTest.JavaComputerSimplePathTest.class,
 
-
             // map
             BackTest.JavaComputerBackTest.class,
             // TODO: REMOVE? FoldTest.JavaComputerFoldTest.class,
@@ -97,7 +96,6 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             StoreTest.JavaComputerStoreTest.class,
             // TODO: REMOVE? SubgraphTest.JavaSideEffectTest.class,
             TreeTest.JavaComputerTreeTest.class,
-
 
             // algorithms
             PageRankVertexProgramTest.class

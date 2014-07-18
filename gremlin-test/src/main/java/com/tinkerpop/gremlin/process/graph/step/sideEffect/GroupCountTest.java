@@ -7,6 +7,8 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.tinkerpop.gremlin.LoadGraphWith.GraphData.CLASSIC;
@@ -66,30 +68,20 @@ public abstract class GroupCountTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(CLASSIC)
-    public void g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX() {
-        Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX();
-        System.out.println("Testing: " + traversal);
-        final Map<Object, Long> map = traversal.next();
-        assertFalse(traversal.hasNext());
-        assertEquals(map.size(), 4);
-        assertEquals(map.get("lop").longValue(), 4l);
-        assertEquals(map.get("ripple").longValue(), 2l);
-        assertEquals(map.get("josh").longValue(), 1l);
-        assertEquals(map.get("vadas").longValue(), 1l);
-    }
-
-    @Test
-    @LoadGraphWith(CLASSIC)
     public void g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX() {
-        Traversal<Vertex, Map<Object, Long>> traversal = get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX();
-        System.out.println("Testing: " + traversal);
-        final Map<Object, Long> map = traversal.next();
-        assertFalse(traversal.hasNext());
-        assertEquals(map.size(), 4);
-        assertEquals(map.get("lop").longValue(), 4l);
-        assertEquals(map.get("ripple").longValue(), 2l);
-        assertEquals(map.get("josh").longValue(), 1l);
-        assertEquals(map.get("vadas").longValue(), 1l);
+        List<Traversal<Vertex, Map<Object, Long>>> traversals = new ArrayList<>();
+        traversals.add(get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_2X_capXaX());
+        traversals.add(get_g_V_asXxX_out_groupCountXa_nameX_jumpXx_loops_lt_2X_capXaX());
+        traversals.forEach(traversal -> {
+            System.out.println("Testing: " + traversal);
+            final Map<Object, Long> map = traversal.next();
+            assertFalse(traversal.hasNext());
+            assertEquals(map.size(), 4);
+            assertEquals(map.get("lop").longValue(), 4l);
+            assertEquals(map.get("ripple").longValue(), 2l);
+            assertEquals(map.get("josh").longValue(), 1l);
+            assertEquals(map.get("vadas").longValue(), 1l);
+        });
     }
 
     public static class JavaGroupCountTest extends GroupCountTest {
